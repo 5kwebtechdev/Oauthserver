@@ -1,13 +1,65 @@
 <ion-content fullscreen class="analytics-content">
-  <main class="analytics-page">
+  <main class="analytics-page" [attr.aria-busy]="isLoading">
     <header class="analytics-header">
       <button type="button" class="analytics-back" aria-label="Go back" (click)="goBack()">
-        <img src="assets/icons/back-arrow.svg" alt="" />
+        <img src="assets/figma/child-activity/back.svg" alt="" aria-hidden="true" />
       </button>
-      <h1>Insights</h1>
+      <div class="analytics-heading">
+        <h1>Insights</h1>
+        <p>See how far you have come</p>
+      </div>
     </header>
 
-    <section-coming-soon sectionName="Insights"></section-coming-soon>
+    <section *ngIf="isLoading" class="insights-skeleton" aria-label="Loading Insights">
+      <div *ngFor="let section of skeletonSections" class="insights-skeleton__section">
+        <span class="skeleton-line skeleton-line--title"></span>
+        <div class="insights-grid">
+          <div class="skeleton-card" *ngFor="let card of [1, 2]">
+            <span class="skeleton-orb"></span>
+            <span class="skeleton-line skeleton-line--label"></span>
+            <span class="skeleton-line skeleton-line--value"></span>
+            <span class="skeleton-line skeleton-line--description"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section *ngIf="hasError" class="insights-state" role="alert">
+      <h2>We couldn’t load Insights</h2>
+      <p>Check your connection and try again.</p>
+      <button type="button" class="state-button" (click)="retry()">Retry</button>
+    </section>
+
+    <section *ngIf="isEmpty" class="insights-state">
+      <h2>No Insights yet</h2>
+      <p>{{ emptyMessage }}</p>
+      <button type="button" class="state-button" (click)="retry()">Retry</button>
+    </section>
+
+    <div *ngIf="!isLoading && !hasError && !isEmpty" class="insights-sections">
+      <section *ngFor="let section of sections; trackBy: trackSection" class="insights-section" [attr.aria-labelledby]="section.id + '-title'">
+        <h2 [id]="section.id + '-title'">{{ section.title }}</h2>
+        <div class="insights-grid">
+          <article
+            *ngFor="let metric of section.metrics; trackBy: trackMetric"
+            class="insight-card"
+            [ngClass]="'insight-card--' + metric.tone"
+            [attr.aria-label]="metric.label + ': ' + displayValue(metric.value) + '. ' + metric.description"
+          >
+            <div class="insight-card__top">
+              <span class="insight-card__visual" aria-hidden="true">
+                <img [src]="metric.icon" alt="" />
+              </span>
+              <div class="insight-card__value-block">
+                <p class="insight-card__label">{{ metric.label }}</p>
+                <strong class="insight-card__value">{{ displayValue(metric.value) }}</strong>
+              </div>
+            </div>
+            <p class="insight-card__description">{{ metric.description }}</p>
+          </article>
+        </div>
+      </section>
+    </div>
   </main>
 
   <app-footer></app-footer>

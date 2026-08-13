@@ -127,14 +127,7 @@ export class TutorService {
         if (!normalizedType) return this.fetchTutors();
 
         this.tutorsLoading$.next(true);
-        const params = new HttpParams().set('entityType', normalizedType);
-        return this.http.get<Tutor[] | { content?: Tutor[]; data?: Tutor[] }>(`${this.apiUrl}/tutors`, {
-            headers: this.getHeaders(),
-            params
-        }).pipe(
-            map(response => Array.isArray(response)
-                ? response
-                : (response?.content || response?.data || [])),
+        return this.getTutorsByEntityType(normalizedType).pipe(
             tap(tutors => {
                 this.tutorsCache$.next(tutors);
                 this.tutorsLoaded = true;
@@ -146,6 +139,25 @@ export class TutorService {
                 this.tutorsLoading$.next(false);
                 return of([]);
             })
+        );
+    }
+
+    /**
+     * Strict directory request used by screens that need to distinguish a
+     * recoverable API error from a genuine empty counselor directory.
+     * `fetchTutorsByEntityType` deliberately retains its legacy empty-array
+     * fallback for callers that predate inline error states.
+     */
+    getTutorsByEntityType(entityType: string): Observable<Tutor[]> {
+        const normalizedType = String(entityType || '').trim().toUpperCase();
+        const params = new HttpParams().set('entityType', normalizedType);
+        return this.http.get<Tutor[] | { content?: Tutor[]; data?: Tutor[] }>(`${this.apiUrl}/tutors`, {
+            headers: this.getHeaders(),
+            params
+        }).pipe(
+            map(response => Array.isArray(response)
+                ? response
+                : (response?.content || response?.data || []))
         );
     }
 

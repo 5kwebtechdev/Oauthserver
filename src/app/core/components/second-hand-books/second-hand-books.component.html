@@ -1,143 +1,443 @@
-<ion-content fullscreen class="second-hand-books-content">
-  <div class="second-hand-books-page">
-    <header class="books-hero">
-      <img class="books-hero__background" src="assets/figma/second-hand-books/hero-background.png" alt="" aria-hidden="true">
-
-      <div class="books-toolbar">
-        <button type="button" class="books-back" aria-label="Back" (click)="goBack()">
-          <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
-        </button>
-        <h1>Second Hand Books</h1>
-      </div>
-
-      <div class="books-hero__message">
-        <div class="books-speech">
-          <p><strong>Find &amp; Sell</strong> Books near you</p>
-          <span>Save up to <strong>80%</strong> on books</span>
-        </div>
-        <img class="books-hero__pet" src="assets/figma/second-hand-books/pet-latest.svg" alt="" aria-hidden="true">
-      </div>
-    </header>
-
-    <main class="books-main" [class.books-main--buyer]="view === 'buyer'">
-      <ng-container *ngIf="view === 'choice'; else nonChoiceView">
-        <section class="books-choice" aria-labelledby="books-choice-title">
-          <header class="books-choice__heading">
-            <h2 id="books-choice-title">What brings you here today?</h2>
-            <p>Choose an option to get started.</p>
-          </header>
-
-          <div class="books-choice__actions">
-            <button type="button" class="books-action-card" (click)="openBuyer()">
-              <span class="books-action-card__art" aria-hidden="true">
-                <img src="assets/figma/second-hand-books/buyer-latest.svg" alt="">
-              </span>
-              <span class="books-action-card__content">
-                <strong>I am a buyer</strong>
-                <span>Search and discover books from nearby sellers</span>
-              </span>
-              <span class="books-action-card__arrow" aria-hidden="true"><ion-icon name="arrow-forward"></ion-icon></span>
-            </button>
-
-            <button type="button" class="books-action-card" (click)="openSellerFlow()">
-              <span class="books-action-card__art" aria-hidden="true">
-                <img src="assets/figma/second-hand-books/seller-latest.svg" alt="">
-              </span>
-              <span class="books-action-card__content">
-                <strong>I am a seller</strong>
-                <span>List your books and reach interested buyers.</span>
-              </span>
-              <span class="books-action-card__arrow" aria-hidden="true"><ion-icon name="arrow-forward"></ion-icon></span>
-            </button>
-
-            <button type="button" class="books-action-card" (click)="openMyListings()">
-              <span class="books-action-card__art" aria-hidden="true">
-                <img src="assets/figma/second-hand-books/my-listings-latest.svg" alt="">
-              </span>
-              <span class="books-action-card__content">
-                <strong>My Listings</strong>
-                <span>View and manage the books you have listed.</span>
-              </span>
-              <span class="books-action-card__arrow" aria-hidden="true"><ion-icon name="arrow-forward"></ion-icon></span>
-            </button>
+<ion-content fullscreen class="second-hand-books-content" [class.seller-content]="view === 'seller' || view === 'seller-success'">
+  <div class="second-hand-books-page" [class.second-hand-books-page--listing-flow]="view === 'my-listings' || view === 'book-details' || view === 'seller' || view === 'seller-success'">
+    <ng-container [ngSwitch]="view">
+      <ng-container *ngSwitchCase="'seller-success'">
+        <main class="seller-success" aria-labelledby="seller-success-title">
+          <img class="seller-success__illustration" src="assets/figma/second-hand-books/seller/success.png" alt="Your book listing has been submitted">
+          <section class="seller-success__intro">
+            <h1 id="seller-success-title">🎉 Your listing is on its way!</h1>
+            <p>Nice job! Your book has been submitted for review, and we’ll notify you as soon as it’s live.</p>
+          </section>
+          <section class="seller-success__community">
+            <img src="assets/figma/second-hand-books/seller/community.svg" alt="" aria-hidden="true">
+            <span>Thank you for helping grow a<br>community of readers and learners.</span>
+          </section>
+          <section class="seller-success__next" aria-labelledby="seller-next-title">
+            <h2 id="seller-next-title">What happens next?</h2>
+            <ol>
+              <li><span>1</span><p>Our team reviews your listing for accuracy &amp; safety.</p></li>
+              <li><span>2</span><p>You get notified once your listing is approved.</p></li>
+              <li><span>3</span><p>Interested buyers views your contact and location.</p></li>
+              <li><span>4</span><p>Buyer reaches out — you decide where &amp; when to meet!</p></li>
+            </ol>
+          </section>
+          <div class="seller-success__actions">
+            <button type="button" class="seller-secondary-button" (click)="backToHome()">Back to home</button>
+            <button type="button" class="seller-primary-button" (click)="resetSellerFlow()">List Another Book</button>
           </div>
-        </section>
+        </main>
       </ng-container>
 
-      <ng-template #nonChoiceView>
-        <ng-container *ngIf="view === 'buyer'; else listingsView">
-          <ng-container *ngTemplateOutlet="buyerView"></ng-container>
-        </ng-container>
-      </ng-template>
+      <ng-container *ngSwitchCase="'seller'">
+        <header class="seller-toolbar">
+          <button type="button" aria-label="Go back" (click)="goBack()"><img src="assets/figma/second-hand-books/seller/back.svg" alt="" aria-hidden="true"></button>
+          <h1>List Your Book</h1>
+        </header>
 
-      <ng-template #listingsView>
-        <section class="books-choice" aria-live="polite">
-          <header class="books-choice__heading">
-            <h2>{{ view === 'my-listings' ? 'My Listings' : 'Books near you' }}</h2>
-            <p *ngIf="view === 'my-listings'">Track pending, approved, and rejected books.</p>
-            <p *ngIf="view === 'listings'">Nearby books are sorted by distance when location is available.</p>
-          </header>
-          <p *ngIf="listingsLoading">Loading listings…</p>
-          <p *ngIf="listingsError">{{ listingsError }}</p>
-          <article class="books-action-card" *ngFor="let listing of listings">
-            <span class="books-action-card__art"><img *ngIf="listing.imageUrls?.length" [src]="listing.imageUrls?.[0]" [alt]="listing.title"></span>
-            <span class="books-action-card__content"><strong>{{ listing.title }}</strong><span>₹{{ listing.sellingPrice }} <span *ngIf="listing.distanceKm != null">• {{ listing.distanceKm }} km away</span><span *ngIf="view === 'my-listings'"> • {{ listing.status }}</span></span></span>
-            <button *ngIf="view === 'listings' && !listing.contactUnlocked" type="button" class="books-action-card__arrow" (click)="unlockContact(listing)" [attr.aria-label]="'Unlock contact for ' + listing.title">{{ listing.unlockCost || 10 }}</button>
-          </article>
-          <p *ngIf="!listingsLoading && !listingsError && !listings.length">No listings available right now.</p>
-        </section>
-      </ng-template>
+        <main class="seller-flow" aria-live="polite">
+          <section class="seller-progress" aria-label="Seller listing progress">
+            <p>Step {{ sellerStep }} of 4</p>
+            <span><i [style.width.%]="sellerProgress"></i></span>
+          </section>
 
-      <ng-template #buyerView>
-        <section class="buyer-form" aria-labelledby="buyer-heading">
-          <header class="buyer-form__heading">
-            <h2 id="buyer-heading">You’re a buyer!</h2>
-            <p>Select your preferences below, and search to find the right book.</p>
-          </header>
+          <ng-container [ngSwitch]="sellerStep">
+            <section *ngSwitchCase="1" class="seller-step seller-step--details" aria-labelledby="seller-details-title">
+              <header class="seller-step__heading">
+                <div><img src="assets/figma/second-hand-books/seller/book-details.svg" alt="" aria-hidden="true"><h2 id="seller-details-title">Your Book’s Details</h2></div>
+                <p>Pick a book type. We’ll show the relevant fields accordingly</p>
+              </header>
 
-          <div class="buyer-form__section">
-            <span class="buyer-form__label">Book Type <b aria-hidden="true">*</b></span>
-            <div class="book-type-grid">
-              <button *ngFor="let type of bookTypes; trackBy: trackByBookType" type="button" class="book-type-option"
-                [class.is-selected]="buyer.bookType === type.value" (click)="selectBookType(type.value)">
-                <img class="book-type-option__icon" [src]="type.icon" alt="" aria-hidden="true">
-                <span>{{ type.label }}</span>
-              </button>
-            </div>
-          </div>
+              <section class="seller-form-section">
+                <span class="seller-field__label">Book Type <b aria-hidden="true">*</b></span>
+                <div class="seller-book-type-grid">
+                  <button *ngFor="let type of sellerBookTypes; trackBy: trackByBookType" type="button" class="seller-book-type" [class.is-selected]="seller.bookType === type.value" (click)="selectSellerBookType(type.value)">
+                    <img [src]="type.icon" alt="" aria-hidden="true"><span>{{ type.label }}</span>
+                  </button>
+                </div>
+              </section>
 
-          <div class="buyer-filters">
-            <label *ngFor="let field of selectFields; let index = index; trackBy: trackByPreferenceField" class="buyer-field"
-              [class.buyer-field--wide]="index === selectFields.length - 1 && selectFields.length % 2 !== 0">
-              <span>{{ field.label }} <b aria-hidden="true">*</b></span>
-              <span class="buyer-select-wrap">
-                <select [(ngModel)]="buyer[field.key]" [attr.aria-label]="'Select ' + field.label">
-                  <option value="" disabled>Select {{ field.label }}</option>
-                  <option *ngFor="let option of field.options" [value]="option">{{ option }}</option>
-                </select>
-                <ion-icon name="chevron-down" aria-hidden="true"></ion-icon>
-              </span>
-            </label>
-          </div>
+              <ng-container [ngSwitch]="seller.bookType">
+                <section *ngSwitchCase="'school'" class="seller-fields">
+                  <label class="seller-field"><span>Class <b aria-hidden="true">*</b></span><span class="seller-select"><select [(ngModel)]="seller.classLevel" aria-label="Select class"><option value="" disabled>Select Class</option><option *ngFor="let item of ['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12']" [value]="item">{{ item }}</option></select><img src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></span></label>
+                  <label class="seller-field"><span>Board <b aria-hidden="true">*</b></span><span class="seller-select"><select [(ngModel)]="seller.board" aria-label="Select board"><option value="" disabled>Select Board</option><option *ngFor="let item of ['CBSE','ICSE','State Board','IB','Cambridge']" [value]="item">{{ item }}</option></select><img src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></span></label>
+                  <label class="seller-field seller-field--full"><span>Subject <b aria-hidden="true">*</b></span><span class="seller-select"><select [(ngModel)]="seller.subject" aria-label="Select subject"><option value="" disabled>Select Subject</option><option *ngFor="let item of ['Mathematics','Science','English','Social Science','Hindi','Other']" [value]="item">{{ item }}</option></select><img src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></span></label>
+                </section>
 
-          <label class="buyer-field buyer-field--full">
-            <span>Book Title <b aria-hidden="true">*</b></span>
-            <input type="text" [(ngModel)]="buyer.title" placeholder="eg. Mathematics Class 12 NCERT" autocomplete="off">
-          </label>
+                <section *ngSwitchCase="'college'" class="seller-fields">
+                  <label class="seller-field"><span>Degree <b aria-hidden="true">*</b></span><span class="seller-select"><select [(ngModel)]="seller.degree" aria-label="Select degree"><option value="" disabled>Select Degree</option><option *ngFor="let item of ['B.A.','B.Com','B.Sc.','B.Tech','M.A.','M.Sc.','Other']" [value]="item">{{ item }}</option></select><img src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></span></label>
+                  <label class="seller-field"><span>Stream <b aria-hidden="true">*</b></span><span class="seller-select"><select [(ngModel)]="seller.stream" aria-label="Select stream"><option value="" disabled>Select Stream</option><option *ngFor="let item of ['Arts','Commerce','Science','Engineering','Medical','Other']" [value]="item">{{ item }}</option></select><img src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></span></label>
+                  <label class="seller-field seller-field--full"><span>Year / Semester <b aria-hidden="true">*</b></span><span class="seller-select"><select [(ngModel)]="seller.year" aria-label="Select year or semester"><option value="" disabled>Select Year / Semester</option><option *ngFor="let item of ['Year 1','Year 2','Year 3','Year 4','Semester 1','Semester 2','Semester 3','Semester 4','Semester 5','Semester 6','Other']" [value]="item">{{ item }}</option></select><img src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></span></label>
+                </section>
 
-          <label class="buyer-field buyer-field--full">
-            <span>Author / Publisher <b aria-hidden="true">*</b></span>
-            <input type="text" [(ngModel)]="buyer.author" placeholder="eg. R.D Sharma" autocomplete="off">
-          </label>
+                <section *ngSwitchCase="'exam'" class="seller-fields">
+                  <label class="seller-field seller-field--full"><span>Target Exam <b aria-hidden="true">*</b></span><span class="seller-select"><select [(ngModel)]="seller.exam" aria-label="Select target exam"><option value="" disabled>Select Target Exam</option><option *ngFor="let item of ['JEE','NEET','UPSC','CUET','SSC','Other']" [value]="item">{{ item }}</option></select><img src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></span></label>
+                </section>
 
-          <button type="button" class="books-search-button" [disabled]="!isBuyerReady" (click)="searchBooks()">
-            <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
-            <span>Search</span>
+                <section *ngSwitchCase="'general'" class="seller-fields">
+                  <label class="seller-field"><span>Genre <b aria-hidden="true">*</b></span><span class="seller-select"><select [(ngModel)]="seller.genre" aria-label="Select genre"><option value="" disabled>Select Genre</option><option *ngFor="let item of ['Fiction','Non-fiction','Biography','Self-help','Children','Other']" [value]="item">{{ item }}</option></select><img src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></span></label>
+                  <label class="seller-field"><span>Language <b aria-hidden="true">*</b></span><span class="seller-select"><select [(ngModel)]="seller.language" aria-label="Select language"><option value="" disabled>Select Language</option><option *ngFor="let item of ['English','Hindi','Punjabi','Tamil','Telugu','Other']" [value]="item">{{ item }}</option></select><img src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></span></label>
+                </section>
+              </ng-container>
+
+              <section class="seller-fields seller-fields--book-copy">
+                <label class="seller-field seller-field--full"><span>Book Title <b aria-hidden="true">*</b></span><input type="text" [(ngModel)]="seller.title" placeholder="eg. Mathematics Class 12 NCERT" autocomplete="off"></label>
+                <label class="seller-field seller-field--full"><span>{{ seller.bookType === 'general' ? 'Author' : 'Author / Publisher' }} <b aria-hidden="true">*</b></span><input type="text" [(ngModel)]="seller.authorPublisher" [placeholder]="seller.bookType === 'general' ? 'eg. Paulo Coelho' : 'eg. R.D Sharma'" autocomplete="off"></label>
+              </section>
+            </section>
+
+            <section *ngSwitchCase="2" class="seller-step seller-step--condition" aria-labelledby="seller-condition-title">
+              <header class="seller-step__heading">
+                <div><img src="assets/figma/second-hand-books/seller/checklist.svg" alt="" aria-hidden="true"><h2 id="seller-condition-title">What's its condition?</h2></div>
+                <p>Honest condition builds buyer trust and sells faster.</p>
+              </header>
+              <div class="seller-condition-grid">
+                <button *ngFor="let condition of sellerConditions" type="button" class="seller-condition-card" [class.is-selected]="seller.condition === condition.value" (click)="selectSellerCondition(condition.value)">
+                  <img [src]="condition.icon" alt="" aria-hidden="true"><span><strong>{{ condition.label }}</strong><small>{{ condition.description }}</small></span>
+                </button>
+              </div>
+              <aside class="seller-notice seller-notice--warning"><img src="assets/figma/second-hand-books/seller/condition-warning.png" alt="" aria-hidden="true"><p>Misrepresenting condition may result in listing removal. We take buyer trust seriously.</p></aside>
+            </section>
+
+            <section *ngSwitchCase="3" class="seller-step seller-step--photos" aria-labelledby="seller-photos-title">
+              <header class="seller-step__heading">
+                <div><img src="assets/figma/second-hand-books/seller/add-photos.svg" alt="" aria-hidden="true"><h2 id="seller-photos-title">Add Photos</h2></div>
+                <p>Clear photos increase enquiries. All 3 required.</p>
+              </header>
+              <div class="seller-photo-grid">
+                <label *ngFor="let slot of sellerPhotoSlots; let index = index" class="seller-photo-picker" [class.has-photo]="sellerPhotoPreviews[index]">
+                  <input type="file" accept="image/*" (change)="onSellerPhotoSelected($event, index)" [attr.aria-label]="'Upload ' + slot.label">
+                  <ng-container *ngIf="sellerPhotoPreviews[index] as preview; else sellerPhotoPlaceholder">
+                    <img class="seller-photo-picker__preview" [src]="preview" [alt]="slot.label + ' preview'">
+                    <button type="button" class="seller-photo-picker__remove" [attr.aria-label]="'Remove ' + slot.label" (click)="$event.preventDefault(); $event.stopPropagation(); removeSellerPhoto(index)"><ion-icon name="close-outline" aria-hidden="true"></ion-icon></button>
+                  </ng-container>
+                  <ng-template #sellerPhotoPlaceholder><img [src]="slot.icon" alt="" aria-hidden="true"><span>{{ slot.label }}</span></ng-template>
+                </label>
+              </div>
+
+              <section class="seller-listing-type" aria-labelledby="seller-price-title">
+                <header class="seller-step__heading">
+                  <div><img src="assets/figma/second-hand-books/seller/listing-price.svg" alt="" aria-hidden="true"><h2 id="seller-price-title">Listing Type &amp; Price</h2></div>
+                  <p>Choose to sell at a price or donate for free.</p>
+                </header>
+                <div class="seller-listing-type__choices">
+                  <button type="button" [class.is-selected]="seller.listingType === 'sell'" (click)="setSellerListingType('sell')"><img src="assets/figma/second-hand-books/seller/listing-sell.svg" alt="" aria-hidden="true"><span>Sell</span></button>
+                  <button type="button" [class.is-selected]="seller.listingType === 'donate'" (click)="setSellerListingType('donate')"><img src="assets/figma/second-hand-books/seller/listing-donate.svg" alt="" aria-hidden="true"><span>Donate</span></button>
+                </div>
+                <div class="seller-fields seller-fields--prices">
+                  <label class="seller-field"><span>Original Price/MRP (₹) <b aria-hidden="true">*</b></span><input type="number" min="1" inputmode="decimal" [(ngModel)]="seller.originalPrice" placeholder="eg.400"></label>
+                  <label class="seller-field"><span>Selling Price (₹) <b aria-hidden="true">*</b></span><input type="number" min="0" inputmode="decimal" [(ngModel)]="seller.sellingPrice" [disabled]="seller.listingType === 'donate'" placeholder="eg.180"></label>
+                </div>
+                <label class="seller-negotiable" *ngIf="seller.listingType === 'sell'"><img src="assets/figma/second-hand-books/seller/negotiable.png" alt="" aria-hidden="true"><span><strong>Price Negotiable?</strong><small>Allow buyers to make offers</small></span><input type="checkbox" [(ngModel)]="seller.negotiable" aria-label="Price negotiable"><i aria-hidden="true"></i></label>
+              </section>
+            </section>
+
+            <section *ngSwitchCase="4" class="seller-step seller-step--location" aria-labelledby="seller-location-title">
+              <section class="seller-location-section">
+                <header class="seller-step__heading"><div><img src="assets/figma/second-hand-books/seller/location.svg" alt="" aria-hidden="true"><h2 id="seller-location-title">Your Location</h2></div><p>Help nearby buyers find your listing.</p></header>
+                <div class="seller-fields">
+                  <label class="seller-field"><span>State <b aria-hidden="true">*</b></span><span class="seller-select"><select [(ngModel)]="seller.state" (ngModelChange)="updateSellerState()" aria-label="Select state"><option value="" disabled>Select State</option><option *ngFor="let state of sellerStateOptions" [value]="state">{{ state }}</option></select><img src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></span></label>
+                  <label class="seller-field"><span>City <b aria-hidden="true">*</b></span><span class="seller-select"><select [(ngModel)]="seller.city" [disabled]="!seller.state" aria-label="Select city"><option value="" disabled>Select City</option><option *ngFor="let city of sellerCities" [value]="city">{{ city }}</option></select><img src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></span></label>
+                  <label class="seller-field seller-field--full"><span>Address <b aria-hidden="true">*</b></span><input type="text" [(ngModel)]="seller.address" placeholder="eg. Flat B, Silver Oak, Andheri West" autocomplete="street-address"></label>
+                  <label class="seller-field seller-field--full"><span>Landmark (optional)</span><input type="text" [(ngModel)]="seller.landmark" placeholder="eg. Near metro station" autocomplete="off"></label>
+                  <label class="seller-field seller-field--full"><span>Additional Note (optional)</span><textarea [(ngModel)]="seller.additionalNote" placeholder="eg. Available on weekend only and only during 7 - 8 PM"></textarea></label>
+                </div>
+              </section>
+              <section class="seller-location-section seller-location-section--contact" aria-labelledby="seller-contact-title">
+                <header class="seller-step__heading"><div><img src="assets/figma/second-hand-books/seller/location.svg" alt="" aria-hidden="true"><h2 id="seller-contact-title">Your Contact Number</h2></div><p>Help nearby buyers get in touch with you.</p></header>
+                <label class="seller-field seller-field--full"><span>Contact Number <b aria-hidden="true">*</b></span><span class="seller-phone"><span>🇮🇳 +91</span><input type="tel" inputmode="numeric" maxlength="10" [(ngModel)]="seller.contactNumber" placeholder="Enter your number" autocomplete="tel-national"></span></label>
+              </section>
+              <label class="seller-confirmation"><input type="checkbox" [(ngModel)]="seller.confirmed"><span>I confirm the book details and condition I've provided are accurate and honest.</span></label>
+              <aside class="seller-notice seller-notice--review"><img src="assets/figma/second-hand-books/seller/review-notice.png" alt="" aria-hidden="true"><p>Your listing will be reviewed by our team within 24 hours. You'll get notified once it's approved and live.</p></aside>
+            </section>
+          </ng-container>
+
+          <p class="seller-flow__error" *ngIf="sellerValidationMessage || sellerSubmitError" role="alert">{{ sellerValidationMessage || sellerSubmitError }}</p>
+          <button type="button" class="seller-flow__cta" [disabled]="!isSellerStepReady || sellerSubmitInProgress" (click)="continueSellerFlow()">
+            <ion-spinner *ngIf="sellerSubmitInProgress" name="crescent"></ion-spinner>
+            <ng-container *ngIf="!sellerSubmitInProgress"><img *ngIf="sellerStep === 4" src="assets/figma/second-hand-books/seller/submit-check.svg" alt="" aria-hidden="true"><span>{{ sellerPrimaryActionLabel }}</span><img *ngIf="sellerStep !== 4" class="seller-flow__next-icon" src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></ng-container>
           </button>
-        </section>
-      </ng-template>
-    </main>
+        </main>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'my-listings'">
+        <header class="listings-toolbar">
+          <button type="button" class="listings-toolbar__back" aria-label="Back" (click)="goBack()">
+            <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+          </button>
+          <h1>My listings</h1>
+        </header>
+
+        <nav class="listing-status-tabs" *ngIf="listingsLoading || listings.length" aria-label="Listing status">
+          <button *ngFor="let tab of myListingTabs; trackBy: trackByListingTab" type="button"
+            [class.is-selected]="selectedListingFilter === tab.value"
+            (click)="selectListingFilter(tab.value)">
+            {{ tab.label }}: {{ tab.count }}
+          </button>
+        </nav>
+
+        <main class="my-listings-main" aria-live="polite">
+          <section class="listing-grid listing-grid--skeleton" *ngIf="listingsLoading" aria-label="Loading your listings">
+            <article class="listing-card listing-card--skeleton" *ngFor="let placeholder of [0, 1, 2, 3]">
+              <span class="listing-skeleton listing-skeleton--image"></span>
+              <span class="listing-skeleton listing-skeleton--chip"></span>
+              <span class="listing-skeleton listing-skeleton--title"></span>
+              <span class="listing-skeleton listing-skeleton--line"></span>
+              <span class="listing-skeleton listing-skeleton--button"></span>
+            </article>
+          </section>
+
+          <section class="listing-state listing-state--error" *ngIf="!listingsLoading && listingsError">
+            <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+            <h2>Couldn’t load listings</h2>
+            <p>{{ listingsError }}</p>
+            <button type="button" (click)="retryMyListings()">Retry</button>
+          </section>
+
+          <section class="empty-listings" *ngIf="!listingsLoading && !listingsError && !listings.length">
+            <span class="empty-listings__illustration"><img src="assets/figma/second-hand-books/empty-listings-box.png" alt="" aria-hidden="true"></span>
+            <h2>You haven’t listed any books for sale yet.</h2>
+            <p>List your books in a few steps and reach nearby readers who need them.</p>
+
+            <div class="empty-listings__steps" aria-label="How listing works">
+              <div>
+                <span><ion-icon name="camera-outline" aria-hidden="true"></ion-icon></span>
+                <strong>Add Book Details</strong>
+              </div>
+              <div>
+                <span><ion-icon name="checkmark-done-outline" aria-hidden="true"></ion-icon></span>
+                <strong>We Review &amp; Approve</strong>
+              </div>
+              <div>
+                <span><ion-icon name="people-outline" aria-hidden="true"></ion-icon></span>
+                <strong>Buyers view your listing</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="listing-state" *ngIf="!listingsLoading && !listingsError && listings.length && selectedListingFilter && !visibleMyListings.length">
+            <ion-icon name="book-outline" aria-hidden="true"></ion-icon>
+            <h2>No {{ selectedListingFilterLabel() }} listings</h2>
+            <p>Your listings in this status will appear here.</p>
+          </section>
+
+          <section class="listing-grid" *ngIf="!listingsLoading && !listingsError && visibleMyListings.length">
+            <article class="listing-card" *ngFor="let listing of visibleMyListings; trackBy: trackByListing">
+              <div class="listing-card__surface">
+                <div class="listing-card__image" [class.listing-card__image--empty]="!listingImages(listing).length">
+                  <img *ngIf="listingImages(listing)[0] as image" [src]="image" [alt]="listing.title" (error)="markImageFailed(image)">
+                  <ion-icon *ngIf="!listingImages(listing).length" name="book-outline" aria-hidden="true"></ion-icon>
+                </div>
+
+                <div class="listing-card__body">
+                  <p class="listing-card__type"><img [src]="listingTypeIcon(listing)" alt="" aria-hidden="true"><span>{{ bookTypeLabel(listing.bookType) }}</span></p>
+                  <h2>{{ listing.title }}</h2>
+                  <p class="listing-card__meta">{{ secondaryListingDetails(listing) }}</p>
+                  <p class="listing-card__price"><strong>₹{{ listing.sellingPrice }}</strong><s *ngIf="listing.originalPrice && listing.originalPrice > listing.sellingPrice">₹{{ listing.originalPrice }}</s></p>
+                  <p class="listing-card__location" *ngIf="listingLocation(listing)"><img src="assets/figma/second-hand-books/listing-location.svg" alt="" aria-hidden="true"><span>{{ listingLocation(listing) }}</span></p>
+                  <button type="button" class="listing-card__details-button" (click)="openListingDetails(listing)">View Details</button>
+                </div>
+              </div>
+              <img *ngIf="listingStatusBadge(listing) as badge" class="listing-card__status-badge" [src]="badge" [alt]="listing.status === 'SOLD' ? 'Sold' : 'Under review'">
+            </article>
+          </section>
+        </main>
+
+        <div class="listing-create-bar" *ngIf="!listingsLoading && !listingsError && !listings.length">
+          <button type="button" (click)="openListingCreation()">
+            <ion-icon name="book-outline" aria-hidden="true"></ion-icon>
+            <span>List Your First Book</span>
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'book-details'">
+        <header class="details-toolbar">
+          <div>
+            <button type="button" class="details-toolbar__back" aria-label="Back to listings" (click)="goBack()">
+              <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+            </button>
+            <h1>Book Details</h1>
+          </div>
+          <button type="button" class="details-toolbar__share" aria-label="Share book listing" (click)="shareSelectedListing()">
+            <ion-icon name="share-social-outline" aria-hidden="true"></ion-icon>
+          </button>
+        </header>
+
+        <main class="book-details-main" [class.book-details-main--managed]="isManagedListingDetails" *ngIf="selectedListing as listing; else detailsUnavailable">
+          <p class="details-inline-error" *ngIf="listingDetailsError">
+            {{ listingDetailsError }} <button type="button" (click)="retryListingDetails()">Retry</button>
+          </p>
+          <p class="details-inline-error" *ngIf="shareError">{{ shareError }}</p>
+          <p class="details-inline-error" *ngIf="contactUnlockError && selectedListingContactVisible">{{ contactUnlockError }}</p>
+
+          <section class="book-gallery" [class.book-gallery--empty]="!selectedListingImages.length" [class.book-gallery--single]="selectedListingImages.length <= 1">
+            <div class="book-gallery__main">
+              <img *ngIf="selectedListingImages[0] as image; else mainImageFallback" [src]="image" [alt]="listing.title" (error)="markImageFailed(image)">
+              <ng-template #mainImageFallback><ion-icon name="book-outline" aria-hidden="true"></ion-icon></ng-template>
+            </div>
+            <div class="book-gallery__secondary" *ngIf="selectedListingImages.length > 1">
+              <img [src]="selectedListingImages[1]" [alt]="listing.title" (error)="markImageFailed(selectedListingImages[1])">
+              <img *ngIf="selectedListingImages[2] as image; else secondaryImageFallback" [src]="image" [alt]="listing.title" (error)="markImageFailed(image)">
+              <ng-template #secondaryImageFallback><span class="book-gallery__secondary-placeholder" aria-hidden="true"></span></ng-template>
+            </div>
+          </section>
+
+          <section class="book-details-summary">
+            <h2>{{ listing.title }}</h2>
+            <div class="book-details-summary__price-row">
+              <div>
+                <strong [class.book-details-summary__free-price]="selectedListingIsFree">{{ selectedListingIsFree ? 'FREE' : '₹' + listing.sellingPrice }}</strong>
+                <s *ngIf="listing.originalPrice && listing.originalPrice > listing.sellingPrice">₹{{ listing.originalPrice }}</s>
+                <span *ngIf="!selectedListingIsFree && selectedListingDiscount as discount">{{ discount }}% off</span>
+              </div>
+              <p *ngIf="selectedListingIsNegotiable">
+                <ion-icon name="pricetag-outline" aria-hidden="true"></ion-icon>
+                <span>Price Negotiable</span>
+              </p>
+            </div>
+          </section>
+
+          <section class="book-detail-rows" *ngIf="!listingDetailsLoading; else detailLoading">
+            <div class="book-detail-row" *ngFor="let field of selectedListingDetails; trackBy: trackByDetailField">
+              <span class="book-detail-row__label"><ion-icon [name]="field.icon" aria-hidden="true"></ion-icon>{{ field.label }}</span>
+              <strong>
+                <span>{{ field.value }}</span>
+                <small *ngIf="field.lockedLabel"><ion-icon name="lock-closed" aria-hidden="true"></ion-icon>{{ field.lockedLabel }}</small>
+              </strong>
+            </div>
+          </section>
+          <ng-template #detailLoading>
+            <section class="book-detail-rows book-detail-rows--skeleton" aria-label="Loading book details">
+              <span *ngFor="let placeholder of [0, 1, 2, 3, 4]" class="listing-skeleton listing-skeleton--detail"></span>
+            </section>
+          </ng-template>
+
+          <section class="seller-note" *ngIf="selectedListingNote">
+            <span class="seller-note__icon"><img src="assets/figma/second-hand-books/seller-note.png" alt="" aria-hidden="true"></span>
+            <div><strong>Seller’s Note</strong><p>{{ selectedListingNote }}</p></div>
+          </section>
+
+          <section class="book-contact-unlock" *ngIf="!isManagedListingDetails && !selectedListingContactVisible">
+            <img class="book-contact-unlock__illustration" src="assets/figma/parent-eduhub-inner/unlock-illustration.png" alt="" aria-hidden="true">
+            <div class="book-contact-unlock__content">
+              <strong>Unlock contact details</strong>
+              <p>Spend coins to unlock address and phone number to get in touch.</p>
+              <div class="book-contact-unlock__chips" aria-label="Locked contact details">
+                <span><ion-icon name="lock-closed" aria-hidden="true"></ion-icon>Location</span>
+                <span><ion-icon name="lock-closed" aria-hidden="true"></ion-icon>Phone Number</span>
+              </div>
+            </div>
+            <p class="book-contact-unlock__error" *ngIf="contactUnlockError">{{ contactUnlockError }}</p>
+            <button type="button" [disabled]="contactUnlockInProgress" (click)="unlockSelectedListingContact()">
+              <ion-spinner *ngIf="contactUnlockInProgress" name="crescent"></ion-spinner>
+              <ng-container *ngIf="!contactUnlockInProgress">
+                <ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>
+                <span>Unlock Now</span>
+                <ng-container *ngIf="selectedListingUnlockCost as cost"><img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true"><span>{{ cost }}</span></ng-container>
+              </ng-container>
+            </button>
+          </section>
+
+          <button type="button" class="book-contact-button" *ngIf="!isManagedListingDetails && selectedListingContactVisible && hasAvailableContactMethod" (click)="openContactSheet()">
+            <ion-icon name="call-outline" aria-hidden="true"></ion-icon>
+            <span>Get in touch</span>
+          </button>
+        </main>
+
+        <ng-template #detailsUnavailable>
+          <section class="listing-state listing-state--details-unavailable"><ion-icon name="book-outline" aria-hidden="true"></ion-icon><h2>Book details unavailable</h2><button type="button" (click)="goBack()">Back to listings</button></section>
+        </ng-template>
+
+        <footer class="book-details-actions" *ngIf="selectedListing && isManagedListingDetails">
+          <button type="button" class="book-details-actions__delete" [disabled]="actionInProgress" (click)="openActionConfirmation('delete')">
+            <ion-icon name="trash-outline" aria-hidden="true"></ion-icon><span>Delete Listing</span>
+          </button>
+          <button type="button" class="book-details-actions__sold" [disabled]="actionInProgress || !canMarkSelectedListingAsSold" (click)="openActionConfirmation('sold')">
+            <ion-icon name="pricetag-outline" aria-hidden="true"></ion-icon><span>Mark as sold</span>
+          </button>
+        </footer>
+      </ng-container>
+
+      <ng-container *ngSwitchDefault>
+        <header class="books-hero">
+          <img class="books-hero__background" src="assets/figma/second-hand-books/hero-background.png" alt="" aria-hidden="true">
+          <div class="books-toolbar">
+            <button type="button" class="books-back" aria-label="Back" (click)="goBack()"><ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon></button>
+            <h1>Second Hand Books</h1>
+          </div>
+          <div class="books-hero__message">
+            <div class="books-speech"><p><strong>Find &amp; Sell</strong> Books near you</p><span>Save up to <strong>80%</strong> on books</span></div>
+            <img class="books-hero__pet" src="assets/figma/second-hand-books/pet-latest.svg" alt="" aria-hidden="true">
+          </div>
+        </header>
+
+        <main class="books-main" [class.books-main--buyer]="view === 'buyer'">
+          <ng-container *ngIf="view === 'choice'; else nonChoiceView">
+            <section class="books-choice" aria-labelledby="books-choice-title">
+              <header class="books-choice__heading"><h2 id="books-choice-title">What brings you here today?</h2><p>Choose an option to get started.</p></header>
+              <div class="books-choice__actions">
+                <button type="button" class="books-action-card" (click)="openBuyer()"><span class="books-action-card__art"><img src="assets/figma/second-hand-books/buyer-latest.svg" alt=""></span><span class="books-action-card__content"><strong>I am a buyer</strong><span>Search and discover books from nearby sellers</span></span><span class="books-action-card__arrow"><ion-icon name="arrow-forward"></ion-icon></span></button>
+                <button type="button" class="books-action-card" (click)="openSellerFlow()"><span class="books-action-card__art"><img src="assets/figma/second-hand-books/seller-latest.svg" alt=""></span><span class="books-action-card__content"><strong>I am a seller</strong><span>List your books and reach interested buyers.</span></span><span class="books-action-card__arrow"><ion-icon name="arrow-forward"></ion-icon></span></button>
+                <button type="button" class="books-action-card" (click)="openMyListings()"><span class="books-action-card__art"><img src="assets/figma/second-hand-books/my-listings-latest.svg" alt=""></span><span class="books-action-card__content"><strong>My Listings</strong><span>View and manage the books you have listed.</span></span><span class="books-action-card__arrow"><ion-icon name="arrow-forward"></ion-icon></span></button>
+              </div>
+            </section>
+          </ng-container>
+
+          <ng-template #nonChoiceView>
+            <ng-container *ngIf="view === 'buyer'; else listingsView"><ng-container *ngTemplateOutlet="buyerView"></ng-container></ng-container>
+          </ng-template>
+
+          <ng-template #listingsView>
+            <section class="books-choice" aria-live="polite">
+              <header class="books-choice__heading"><h2>Books near you</h2><p>Nearby books are sorted by distance when location is available.</p></header>
+              <p *ngIf="listingsLoading">Loading listings…</p><p *ngIf="listingsError">{{ listingsError }}</p>
+              <button type="button" class="books-action-card" *ngFor="let listing of listings; trackBy: trackByListing" (click)="openListingDetails(listing, 'listings')"><span class="books-action-card__art"><img *ngIf="listingImages(listing)[0] as image" [src]="image" [alt]="listing.title" (error)="markImageFailed(image)"></span><span class="books-action-card__content"><strong>{{ listing.title }}</strong><span>{{ isListingFree(listing) ? 'FREE' : '₹' + listing.sellingPrice }} <span *ngIf="listing.distanceKm !== null">• {{ listing.distanceKm }} km away</span></span></span><span class="books-action-card__arrow" aria-hidden="true"><ion-icon name="arrow-forward"></ion-icon></span></button>
+              <p *ngIf="!listingsLoading && !listingsError && !listings.length">No listings available right now.</p>
+            </section>
+          </ng-template>
+
+          <ng-template #buyerView>
+            <section class="buyer-form" aria-labelledby="buyer-heading">
+              <header class="buyer-form__heading"><h2 id="buyer-heading">You’re a buyer!</h2><p>Select your preferences below, and search to find the right book.</p></header>
+              <div class="buyer-form__section"><span class="buyer-form__label">Book Type <b aria-hidden="true">*</b></span><div class="book-type-grid"><button *ngFor="let type of bookTypes; trackBy: trackByBookType" type="button" class="book-type-option" [class.is-selected]="buyer.bookType === type.value" (click)="selectBookType(type.value)"><img class="book-type-option__icon" [src]="type.icon" alt="" aria-hidden="true"><span>{{ type.label }}</span></button></div></div>
+              <div class="buyer-filters"><label *ngFor="let field of selectFields; let index = index; trackBy: trackByPreferenceField" class="buyer-field" [class.buyer-field--wide]="index === selectFields.length - 1 && selectFields.length % 2 !== 0"><span>{{ field.label }} <b aria-hidden="true">*</b></span><span class="buyer-select-wrap"><select [(ngModel)]="buyer[field.key]" [attr.aria-label]="'Select ' + field.label"><option value="" disabled>Select {{ field.label }}</option><option *ngFor="let option of field.options" [value]="option">{{ option }}</option></select><ion-icon name="chevron-down" aria-hidden="true"></ion-icon></span></label></div>
+              <label class="buyer-field buyer-field--full"><span>Book Title <b aria-hidden="true">*</b></span><input type="text" [(ngModel)]="buyer.title" placeholder="eg. Mathematics Class 12 NCERT" autocomplete="off"></label>
+              <label class="buyer-field buyer-field--full"><span>Author / Publisher <b aria-hidden="true">*</b></span><input type="text" [(ngModel)]="buyer.author" placeholder="eg. R.D Sharma" autocomplete="off"></label>
+              <button type="button" class="books-search-button" [disabled]="!isBuyerReady" (click)="searchBooks()"><ion-icon name="search-outline" aria-hidden="true"></ion-icon><span>Search</span></button>
+            </section>
+          </ng-template>
+        </main>
+      </ng-container>
+    </ng-container>
   </div>
 
-  <app-footer></app-footer>
+  <div class="listing-action-backdrop" *ngIf="listingAction" (click)="closeActionConfirmation()">
+    <section class="listing-action-sheet" role="dialog" aria-modal="true" [attr.aria-labelledby]="listingAction + '-listing-title'" (click)="$event.stopPropagation()">
+      <button type="button" class="listing-action-sheet__close" [disabled]="actionInProgress" aria-label="Close confirmation" (click)="closeActionConfirmation()"><ion-icon name="close-outline" aria-hidden="true"></ion-icon></button>
+      <span class="listing-action-sheet__icon" [class.listing-action-sheet__icon--delete]="listingAction === 'delete'"><ion-icon [name]="listingAction === 'delete' ? 'trash-outline' : 'pricetag-outline'" aria-hidden="true"></ion-icon></span>
+      <h2 [id]="listingAction + '-listing-title'">{{ listingAction === 'delete' ? 'Delete Listing?' : 'Mark as Sold?' }}</h2>
+      <p>{{ listingAction === 'delete' ? 'This will permanently remove your listing. This action cannot be undone.' : 'This listing will be removed from the public feed. Other buyers won’t see it anymore.' }}</p>
+      <p class="listing-action-sheet__error" *ngIf="actionError">{{ actionError }}</p>
+      <button type="button" class="listing-action-sheet__confirm" [class.listing-action-sheet__confirm--delete]="listingAction === 'delete'" [disabled]="actionInProgress" (click)="confirmListingAction()"><ion-spinner *ngIf="actionInProgress" name="crescent"></ion-spinner><span *ngIf="!actionInProgress">{{ listingAction === 'delete' ? 'Yes, Delete Listing' : 'Yes, Mark as Sold' }}</span></button>
+    </section>
+  </div>
+
+  <div class="book-contact-sheet-backdrop" *ngIf="showContactSheet" (click)="closeContactSheet()">
+    <section class="book-contact-sheet" role="dialog" aria-modal="true" aria-labelledby="book-contact-sheet-title" (click)="$event.stopPropagation()">
+      <header>
+        <h2 id="book-contact-sheet-title">Get in touch</h2>
+        <button type="button" aria-label="Close contact options" [disabled]="contactLaunching" (click)="closeContactSheet()"><ion-icon name="close-outline" aria-hidden="true"></ion-icon></button>
+      </header>
+      <div class="book-contact-sheet__options">
+        <button type="button" [class.is-selected]="selectedContactMethod === 'call'" [disabled]="!selectedListingPhone" (click)="selectContactMethod('call')"><span class="book-contact-sheet__radio" aria-hidden="true"></span><span>Call</span></button>
+        <button type="button" [class.is-selected]="selectedContactMethod === 'email'" [disabled]="!selectedListingEmail" (click)="selectContactMethod('email')"><span class="book-contact-sheet__radio" aria-hidden="true"></span><span>Email</span></button>
+      </div>
+      <button type="button" class="book-contact-sheet__confirm" [disabled]="contactLaunching" (click)="confirmContact()">
+        <ion-spinner *ngIf="contactLaunching" name="crescent"></ion-spinner>
+        <ng-container *ngIf="!contactLaunching"><ion-icon [name]="selectedContactMethod === 'call' ? 'call-outline' : 'mail-outline'" aria-hidden="true"></ion-icon><span>{{ selectedContactActionLabel }}</span></ng-container>
+      </button>
+    </section>
+  </div>
+
+  <app-footer *ngIf="view === 'choice' || view === 'buyer' || view === 'listings'"></app-footer>
 </ion-content>

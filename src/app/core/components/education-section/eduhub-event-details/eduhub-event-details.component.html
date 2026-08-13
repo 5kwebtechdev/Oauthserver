@@ -1,0 +1,101 @@
+<ion-content fullscreen class="event-detail-content">
+  <div class="event-detail-page">
+    <header class="event-detail-hero">
+      <div class="event-detail-toolbar">
+        <button type="button" class="detail-toolbar__button" aria-label="Back" (click)="goBack()">
+          <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
+        </button>
+        <div class="detail-toolbar__actions" *ngIf="item">
+          <button type="button" class="detail-toolbar__button detail-toolbar__button--round"
+            [class.is-selected]="favourite"
+            [attr.aria-label]="favourite ? 'Remove from favourites' : 'Add to favourites'"
+            (click)="toggleFavourite()">
+            <span class="detail-toolbar__heart" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="detail-toolbar__button detail-toolbar__button--round" aria-label="Share listing"
+            (click)="shareItem()">
+            <img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true">
+          </button>
+        </div>
+      </div>
+
+      <div class="event-detail-intro" *ngIf="item">
+        <div class="event-detail-image" [class.event-detail-image--empty]="!image">
+          <img *ngIf="image" class="event-detail-image__photo" [src]="image" [alt]="item.name" (error)="onImageError()">
+          <img *ngIf="item.verified" class="event-detail-image__verified"
+            src="assets/figma/parent-eduhub-inner/verified.png" alt="Verified" title="Verified">
+        </div>
+        <div class="event-detail-intro__copy">
+          <h1>{{ item.name }}</h1>
+          <p *ngIf="publicLocation">
+            <img src="assets/figma/parent-eduhub-inner/location.svg" alt="" aria-hidden="true">
+            {{ publicLocation }}
+          </p>
+          <span class="event-detail-intro__type">{{ title }}</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="event-detail-main" *ngIf="item; else unavailable">
+      <section class="event-detail-card" aria-label="Listing details">
+        <div class="event-detail-row" *ngIf="venue">
+          <img src="assets/figma/parent-eduhub-inner/location.svg" alt="" aria-hidden="true">
+          <div>
+            <span>Venue</span>
+            <strong>{{ venue }}</strong>
+            <small *ngIf="!item.unlocked">Exact address is available after contact details are unlocked.</small>
+          </div>
+        </div>
+
+        <div class="event-detail-row" *ngIf="feeLabel">
+          <img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">
+          <div>
+            <span>Fees</span>
+            <strong [class.is-free]="feeLabel === 'FREE'">{{ feeLabel }}</strong>
+          </div>
+        </div>
+
+        <div class="event-detail-row event-detail-row--about" *ngIf="item.bio">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <div>
+            <span>About</span>
+            <p>{{ item.bio }}</p>
+          </div>
+        </div>
+
+        <div class="event-detail-row" *ngIf="item.unlocked && (item.phone || item.email)">
+          <img src="assets/figma/parent-eduhub-inner/call.svg" alt="" aria-hidden="true">
+          <div>
+            <span>Contact</span>
+            <a *ngIf="item.phone" [href]="'tel:' + item.phone">{{ item.phone }}</a>
+            <a *ngIf="item.email" [href]="'mailto:' + item.email">{{ item.email }}</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="contact-lock-card" *ngIf="!item.unlocked">
+        <img src="assets/figma/parent-eduhub-inner/unlock-illustration.png" alt="" aria-hidden="true">
+        <div>
+          <h2>Unlock contact details</h2>
+          <p>Contact information and the exact address are protected by the organizer.</p>
+          <span *ngIf="item.unlockCost !== null">Unlock cost: {{ item.unlockCost }} coins</span>
+          <button type="button" [disabled]="unlockInProgress" (click)="unlockContactDetails()">
+            <ion-spinner *ngIf="unlockInProgress" name="crescent"></ion-spinner>
+            <ng-container *ngIf="!unlockInProgress">Unlock Now</ng-container>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <ng-template #unavailable>
+      <main class="event-detail-unavailable">
+        <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+        <h1>Listing unavailable</h1>
+        <p>{{ errorMessage }}</p>
+        <button type="button" (click)="goBack()">Back to {{ title }}</button>
+      </main>
+    </ng-template>
+  </div>
+
+  <app-footer></app-footer>
+</ion-content>

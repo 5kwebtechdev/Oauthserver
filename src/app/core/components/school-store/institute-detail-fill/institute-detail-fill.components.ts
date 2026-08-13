@@ -9,48 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../../environments/environment';
-
-// ── India States → Cities map ────────────────────────────────────────────────
-const INDIA_STATES: Record<string, string[]> = {
-  'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Nellore', 'Kurnool', 'Tirupati', 'Kakinada', 'Rajahmundry', 'Anantapur', 'Eluru'],
-  'Arunachal Pradesh': ['Itanagar', 'Naharlagun', 'Pasighat', 'Tawang', 'Ziro'],
-  'Assam': ['Guwahati', 'Silchar', 'Dibrugarh', 'Jorhat', 'Tezpur', 'Nagaon', 'Tinsukia'],
-  'Bihar': ['Patna', 'Gaya', 'Bhagalpur', 'Muzaffarpur', 'Darbhanga', 'Purnia', 'Arrah', 'Bihar Sharif'],
-  'Chhattisgarh': ['Raipur', 'Bhilai', 'Korba', 'Bilaspur', 'Durg', 'Rajnandgaon', 'Jagdalpur'],
-  'Goa': ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa', 'Ponda'],
-  'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar', 'Jamnagar', 'Gandhinagar', 'Junagadh', 'Anand', 'Navsari'],
-  'Haryana': ['Faridabad', 'Gurugram', 'Panipat', 'Ambala', 'Yamunanagar', 'Rohtak', 'Hisar', 'Karnal', 'Sonipat'],
-  'Himachal Pradesh': ['Shimla', 'Mandi', 'Solan', 'Dharamshala', 'Kullu', 'Manali'],
-  'Jharkhand': ['Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro', 'Deoghar', 'Hazaribagh', 'Giridih'],
-  'Karnataka': ['Bengaluru', 'Mysuru', 'Hubballi', 'Mangaluru', 'Belagavi', 'Kalaburagi', 'Ballari', 'Vijayapura', 'Davangere', 'Shivamogga'],
-  'Kerala': ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur', 'Kollam', 'Kannur', 'Alappuzha', 'Palakkad'],
-  'Madhya Pradesh': ['Bhopal', 'Indore', 'Gwalior', 'Jabalpur', 'Ujjain', 'Sagar', 'Dewas', 'Satna', 'Ratlam'],
-  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Aurangabad', 'Solapur', 'Kolhapur', 'Amravati', 'Navi Mumbai'],
-  'Manipur': ['Imphal', 'Thoubal', 'Bishnupur', 'Churachandpur'],
-  'Meghalaya': ['Shillong', 'Tura', 'Jowai'],
-  'Mizoram': ['Aizawl', 'Lunglei', 'Champhai'],
-  'Nagaland': ['Kohima', 'Dimapur', 'Mokokchung'],
-  'Odisha': ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Berhampur', 'Sambalpur', 'Puri', 'Balasore'],
-  'Punjab': ['Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda', 'Mohali', 'Hoshiarpur'],
-  'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Bikaner', 'Ajmer', 'Alwar', 'Bhilwara', 'Sikar'],
-  'Sikkim': ['Gangtok', 'Namchi', 'Gyalshing'],
-  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Tirunelveli', 'Vellore', 'Erode', 'Thoothukudi', 'Thanjavur'],
-  'Telangana': ['Hyderabad', 'Warangal', 'Nizamabad', 'Khammam', 'Karimnagar', 'Ramagundam', 'Nalgonda'],
-  'Tripura': ['Agartala', 'Udaipur', 'Dharmanagar'],
-  'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Ghaziabad', 'Agra', 'Varanasi', 'Allahabad', 'Meerut', 'Noida', 'Bareilly', 'Aligarh'],
-  'Uttarakhand': ['Dehradun', 'Haridwar', 'Roorkee', 'Rishikesh', 'Nainital', 'Haldwani'],
-  'West Bengal': ['Kolkata', 'Howrah', 'Asansol', 'Siliguri', 'Durgapur', 'Bardhaman', 'Malda'],
-  'Andaman & Nicobar Islands': ['Port Blair'],
-  'Chandigarh': ['Chandigarh'],
-  'Dadra & Nagar Haveli and Daman & Diu': ['Silvassa', 'Daman', 'Diu'],
-  'Delhi': ['New Delhi', 'Dwarka', 'Rohini', 'Lajpat Nagar', 'Janakpuri', 'Pitampura'],
-  'Jammu & Kashmir': ['Srinagar', 'Jammu', 'Anantnag', 'Baramulla', 'Udhampur'],
-  'Ladakh': ['Leh', 'Kargil'],
-  'Lakshadweep': ['Kavaratti'],
-  'Puducherry': ['Puducherry', 'Karaikal', 'Mahe'],
-};
-
-const ALL_STATES = Object.keys(INDIA_STATES).sort();
+import { INDIA_STATES, INDIA_STATE_OPTIONS } from '../../../constants/india-location-options';
 
 export interface SchoolItem {
   id: number;
@@ -117,7 +76,7 @@ export class InstituteDetailFillComponent {
   get options(): Record<string, string[]> {
     const selectedState = this.selectedValues['state'];
     return {
-      state: ALL_STATES,
+      state: INDIA_STATE_OPTIONS,
       city:  selectedState ? (INDIA_STATES[selectedState] ?? []) : []
     };
   }
