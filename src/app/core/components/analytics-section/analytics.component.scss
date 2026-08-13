@@ -6,13 +6,23 @@
 
 .analytics-content {
   --background: transparent;
-  --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 20px);
+  --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 40px);
+
+  // Ionic owns the real scrolling element in its shadow DOM. Applying the
+  // clearance to this part prevents the fixed app-footer from hiding the
+  // last cards on Android and iOS.
+  &::part(scroll) {
+    padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 40px);
+  }
 }
 
 .analytics-page {
   box-sizing: border-box;
   min-height: 100%;
-  padding: 0 16px 24px;
+  // app-footer is fixed, so keep a real content spacer here as well as the
+  // Ionic scroll padding. This guarantees the final achievement row can be
+  // scrolled completely above the bottom navigation on every device.
+  padding: 0 16px calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 24px);
   background:
     radial-gradient(ellipse 105% 40% at -24% -3%, rgba(211, 216, 242, 0.88) 0%, rgba(221, 224, 243, 0.62) 38%, transparent 70%),
     radial-gradient(ellipse 88% 34% at 116% 11%, rgba(253, 223, 230, 0.9) 0%, rgba(252, 228, 234, 0.64) 43%, transparent 73%),
@@ -369,6 +379,12 @@
   .insight-card__label {
     font-size: 13px;
   }
+}
+
+.analytics-bottom-spacer {
+  display: block;
+  height: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 40px);
+  pointer-events: none;
 }
 
 /* Keep the two-column Insights cards readable on very narrow devices. */

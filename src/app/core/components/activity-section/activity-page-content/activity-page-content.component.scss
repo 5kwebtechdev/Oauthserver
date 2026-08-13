@@ -266,6 +266,8 @@
     display: grid;
     gap: 1px;
     grid-template-columns: repeat(7, minmax(0, 1fr));
+    // Preserve vertical page scrolling while allowing a left/right date swipe.
+    touch-action: pan-y;
     width: 100%;
 }
 
@@ -311,6 +313,11 @@
 
     b { opacity: 0; }
     b.is-visible { opacity: 1; }
+
+    // Invisible placeholders keep the multi-type dots in their fixed order.
+    // For one activity, remove those placeholders so its marker sits exactly
+    // at the centre of the day rather than left, middle, or right.
+    &.has-single-dot b:not(.is-visible) { display: none; }
 }
 
 .child-activity-legend {
@@ -486,7 +493,14 @@
     .tab-task { --tab-color: var(--child-orange-dark); }
     .tab-planner { --tab-color: var(--child-aqua-dark); }
 
-    .tab-habit img { width: 24px; }
+    // Use uniformly-sized icon art for all tabs. The original Habit asset is
+    // a tall illustration and was rendered as a broken/misaligned image in
+    // the compact tab button.
+    .tab-habit img,
+    .tab-task img {
+        height: 20px;
+        width: 20px;
+    }
 }
 
 .child-status-filters {

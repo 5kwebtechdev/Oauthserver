@@ -403,7 +403,7 @@
               <div class="buyer-filters"><label *ngFor="let field of selectFields; let index = index; trackBy: trackByPreferenceField" class="buyer-field" [class.buyer-field--wide]="index === selectFields.length - 1 && selectFields.length % 2 !== 0"><span>{{ field.label }} <b aria-hidden="true">*</b></span><span class="buyer-select-wrap"><select [(ngModel)]="buyer[field.key]" [attr.aria-label]="'Select ' + field.label"><option value="" disabled>Select {{ field.label }}</option><option *ngFor="let option of field.options" [value]="option">{{ option }}</option></select><ion-icon name="chevron-down" aria-hidden="true"></ion-icon></span></label></div>
               <label class="buyer-field buyer-field--full"><span>Book Title <b aria-hidden="true">*</b></span><input type="text" [(ngModel)]="buyer.title" placeholder="eg. Mathematics Class 12 NCERT" autocomplete="off"></label>
               <label class="buyer-field buyer-field--full"><span>Author / Publisher <b aria-hidden="true">*</b></span><input type="text" [(ngModel)]="buyer.author" placeholder="eg. R.D Sharma" autocomplete="off"></label>
-              <button type="button" class="books-search-button" [disabled]="!isBuyerReady" (click)="searchBooks()"><ion-icon name="search-outline" aria-hidden="true"></ion-icon><span>Search</span></button>
+              <button type="button" class="books-search-button" (click)="searchBooks()"><ion-icon name="search-outline" aria-hidden="true"></ion-icon><span>Search</span></button>
             </section>
           </ng-template>
         </main>
