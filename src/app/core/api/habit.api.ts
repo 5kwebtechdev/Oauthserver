@@ -120,9 +120,13 @@ export class HabitApi {
      * Get all habits for the user
      * @returns Observable with all habits
      */
-    getAllHabits(): Observable<any> {
+    getAllHabits(forUserId?: string | number | null): Observable<any> {
         const url = `${this.base}/habits/all`;
-        return this.http.get(url, { headers: this.headers() });
+        let params = new HttpParams();
+        if (forUserId !== null && forUserId !== undefined && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
+        return this.http.get(url, { headers: this.headers(), params });
     }
 
     /**

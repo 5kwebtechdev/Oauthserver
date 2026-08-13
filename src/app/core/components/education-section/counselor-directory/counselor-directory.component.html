@@ -1,0 +1,130 @@
+<ion-content fullscreen class="counselor-directory-content">
+  <div class="counselor-directory-page">
+    <header class="counselor-hero">
+      <div class="counselor-toolbar">
+        <div class="counselor-toolbar__title">
+          <button type="button" class="toolbar-button toolbar-button--back" aria-label="Back" (click)="goBack()">
+            <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
+          </button>
+          <h1>Counselors</h1>
+        </div>
+        <button type="button" class="toolbar-button toolbar-button--search" aria-label="Search counselors" disabled>
+          <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
+        </button>
+      </div>
+
+      <div class="counselor-hero__message">
+        <div class="counselor-speech" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="">
+          <p>Find trusted <strong>Counselors</strong><br>around you.</p>
+        </div>
+        <img src="assets/figma/counselors/hero-panda.png" class="counselor-mascot" alt="" aria-hidden="true">
+      </div>
+    </header>
+
+    <main class="counselor-main">
+      <button type="button" class="counselor-refer" (click)="referCounselor()">
+        <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+        <span class="counselor-refer__copy">
+          <strong>Know a Counselor?</strong>
+          <small>Refer them to get listed on Eduhub.</small>
+        </span>
+        <span class="counselor-refer__cta">Refer for listing</span>
+      </button>
+
+      <section class="counselor-list-section" aria-labelledby="counselors-nearby-title">
+        <header class="counselor-list-header">
+          <div>
+            <h2 id="counselors-nearby-title">Counselors Near You</h2>
+            <p>Classifieds listings only. Contact sellers directly to enquire or buy.</p>
+          </div>
+          <div class="verified-menu" (click)="$event.stopPropagation()">
+            <button type="button" [attr.aria-expanded]="showVerifiedMenu" (click)="toggleVerifiedMenu($event)">
+              {{ verifiedOnly ? 'Verified' : 'All' }}
+              <img src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
+            </button>
+            <div *ngIf="showVerifiedMenu" class="verified-menu__options" role="menu">
+              <button type="button" role="menuitem" [class.is-active]="verifiedOnly" (click)="setVerifiedFilter(true, $event)">Verified</button>
+              <button type="button" role="menuitem" [class.is-active]="!verifiedOnly" (click)="setVerifiedFilter(false, $event)">All</button>
+            </div>
+          </div>
+        </header>
+
+        <div class="counselor-filter-row" *ngIf="!isLoading && !errorMessage">
+          <button type="button" (click)="openFilters('specialization')">
+            <img src="assets/Icons-Neutral/Icon-Tutor-Subjects.png" alt="" aria-hidden="true">
+            <span>Specialization</span>
+            <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
+          </button>
+          <button type="button" (click)="openFilters('experience')">
+            <img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">
+            <span>Experience</span>
+            <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
+          </button>
+        </div>
+
+        <div *ngIf="isLoading" class="counselor-loading" aria-label="Loading counselors">
+          <article *ngFor="let card of loadingCards" class="counselor-card counselor-card--skeleton">
+            <span class="skeleton skeleton--photo"></span><span class="skeleton skeleton--title"></span>
+            <span class="skeleton skeleton--line"></span><span class="skeleton skeleton--footer"></span>
+          </article>
+        </div>
+
+        <div class="counselor-state counselor-state--error" *ngIf="!isLoading && errorMessage">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <h3>Couldn’t load counselors</h3><p>{{ errorMessage }}</p>
+          <button type="button" (click)="loadCounselors()">Retry</button>
+        </div>
+
+        <div class="counselor-state" *ngIf="!isLoading && !errorMessage && !visibleCounselors.length">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <h3>No counselors found</h3>
+          <p *ngIf="counselors.length">Try changing your filters.</p>
+          <p *ngIf="!counselors.length">New counselors will appear here when they are added.</p>
+          <button *ngIf="counselors.length" type="button" (click)="clearFilters()">Clear filters</button>
+        </div>
+
+        <div class="counselor-list" *ngIf="!isLoading && !errorMessage && visibleCounselors.length">
+          <ng-container *ngFor="let counselor of visibleCounselors; let index = index; trackBy: trackCounselor">
+            <article class="counselor-card">
+              <div class="counselor-card__top">
+                <div class="counselor-card__photo">
+                  <img [src]="getProfileImage(counselor)" [alt]="getName(counselor) + ' profile image'" (error)="onImageError($event)">
+                </div>
+                <div class="counselor-card__body">
+                  <div class="counselor-card__headline">
+                    <div class="counselor-card__identity">
+                      <div class="counselor-card__name"><h3>{{ getName(counselor) }}</h3>
+                        <img *ngIf="isVerified(counselor)" src="assets/figma/parent-eduhub-inner/verified.png" alt="Verified" title="Verified"></div>
+                      <p class="counselor-card__specialization">{{ getSpecializationLabel(counselor) }}</p>
+                      <p class="counselor-card__stats"><span><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true">{{ getAvailability(counselor) }}</span><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">{{ getExperience(counselor) }}</span></p>
+                    </div>
+                    <div class="counselor-card__actions">
+                      <button type="button" class="counselor-action counselor-action--heart" [class.is-liked]="isLiked(counselor)" [attr.aria-label]="isLiked(counselor) ? 'Unlike counselor' : 'Like counselor'" (click)="toggleLike(counselor)"><span aria-hidden="true"></span></button>
+                      <button type="button" class="counselor-action counselor-action--share" aria-label="Share counselor" (click)="shareCounselor(counselor)"><img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true"></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="counselor-card__footer"><span>{{ getFee(counselor) }}</span><button type="button" (click)="openProfile(counselor)">Check Full Profile</button></div>
+            </article>
+            <ad-banner *ngIf="index === 2" class="counselor-ad" [screen]="eduAdScreen" variant="eduhub-inner" aria-label="Featured EduHub offers"></ad-banner>
+          </ng-container>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <app-footer></app-footer>
+
+  <div *ngIf="showFilters" class="filter-backdrop" (click)="closeFilters()">
+    <section class="filter-sheet" role="dialog" aria-modal="true" aria-labelledby="counselor-filter-title" (click)="$event.stopPropagation()">
+      <header><h2 id="counselor-filter-title">Filters</h2><button type="button" aria-label="Close filters" (click)="closeFilters()"><img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true"></button></header>
+      <div class="filter-sheet__content">
+        <nav aria-label="Filter groups"><button type="button" [class.is-active]="filterTab === 'specialization'" (click)="setFilterTab('specialization')"><img src="assets/Icons-Neutral/Icon-Tutor-Subjects.png" alt="" aria-hidden="true">Specialization</button><button type="button" [class.is-active]="filterTab === 'experience'" (click)="setFilterTab('experience')"><img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">Experience</button></nav>
+        <div class="filter-sheet__options"><label *ngFor="let option of activeFilterOptions"><span>{{ option }}</span><input type="checkbox" [checked]="activeSelectedOptions.has(option)" (change)="toggleFilterValue(option)"><span class="filter-checkbox" aria-hidden="true"></span></label><p *ngIf="!activeFilterOptions.length">No filter options are available yet.</p></div>
+      </div>
+      <footer><button type="button" class="filter-sheet__clear" (click)="clearFilters()">Clear all</button><button type="button" class="filter-sheet__apply" (click)="applyFilters()">{{ resultsLabel }}</button></footer>
+    </section>
+  </div>
+</ion-content>

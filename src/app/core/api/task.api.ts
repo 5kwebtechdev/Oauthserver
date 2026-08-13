@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, map, of } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -35,9 +35,13 @@ export class TaskApi {
      * Get all tasks for the user
      * @returns Observable with all tasks
      */
-    getAllTasks(): Observable<any> {
+    getAllTasks(forUserId?: string | number | null): Observable<any> {
         const url = `${this.base}/tasks/all`;
-        return this.http.get(url, { headers: this.headers() });
+        let params = new HttpParams();
+        if (forUserId !== null && forUserId !== undefined && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
+        return this.http.get(url, { headers: this.headers(), params });
     }
 
     getTodayTasks(): Observable<any> {
