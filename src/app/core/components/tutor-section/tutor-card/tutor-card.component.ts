@@ -77,7 +77,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     { key: 'events', label: 'Events', image: 'assets/figma/parent-eduhub/events.png', route: '/authed/education' },
     { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/parent-eduhub/stationery.png', route: '/authed/school-store' },
     { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/parent-eduhub/books.png', route: '/authed/school-store' },
-    { key: 'counselors', label: 'Counselors', image: 'assets/figma/parent-eduhub/counselors.png', route: '/authed/education' },
+    { key: 'counselors', label: 'Counselors', image: 'assets/figma/parent-eduhub/counselors.png', route: '/authed/counselors' },
     { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/parent-eduhub/second-hand-books.png', route: '/authed/second-hand-books' },
     { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/parent-eduhub/sports.png', route: '/authed/school-store' }
   ];

@@ -140,11 +140,34 @@ const routes: Routes = [
         path: 'reel-expand',
         loadComponent: () => import('../core/components/reel-section/reel-expand/reels-expand.component').then(m => m.ReelsExpandComponent)
       }, {
+        path: 'education/events/:id',
+        loadComponent: () => import('../core/components/education-section/eduhub-event-details/eduhub-event-details.component').then(m => m.EduHubEventDetailsComponent),
+        data: { entityType: 'Events', title: 'Events' }
+      }, {
+        path: 'education/workshops/:id',
+        loadComponent: () => import('../core/components/education-section/eduhub-event-details/eduhub-event-details.component').then(m => m.EduHubEventDetailsComponent),
+        data: { entityType: 'Workshop', title: 'Workshops' }
+      }, {
+        path: 'education/events',
+        loadComponent: () => import('../core/components/education-section/eduhub-events/eduhub-events.component').then(m => m.EduHubEventsComponent),
+        data: { entityType: 'Events', title: 'Events' }
+      }, {
+        path: 'education/workshops',
+        loadComponent: () => import('../core/components/education-section/eduhub-events/eduhub-events.component').then(m => m.EduHubEventsComponent),
+        data: { entityType: 'Workshop', title: 'Workshops' }
+      }, {
         path: 'education',
         loadComponent: () => import('../core/components/education-section/education-main-page/education-main-page.component').then(m => m.EducationMainPageComponent)
       }, {
         path: 'second-hand-books',
         loadComponent: () => import('../core/components/second-hand-books/second-hand-books.component').then(m => m.SecondHandBooksComponent)
+      }, {
+        path: 'counselors/:id',
+        loadComponent: () => import('../core/components/tutor-section/tutor-profile/tutor-profile.component').then(m => m.TutorProfileComponent),
+        data: { entityType: 'COUNSELOR' }
+      }, {
+        path: 'counselors',
+        loadComponent: () => import('../core/components/education-section/counselor-directory/counselor-directory.component').then(m => m.CounselorDirectoryComponent)
       }, {
         path: 'tutors/:id',
         loadComponent: () => import('../core/components/tutor-section/tutor-profile/tutor-profile.component').then(m => m.TutorProfileComponent)

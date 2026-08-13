@@ -1,3 +1,50 @@
+<ng-container *ngIf="isCounselorProfile; else standardTutorProfile">
+  <ion-content fullscreen class="counselor-detail-page">
+    <div class="counselor-detail-shell">
+      <header class="counselor-detail-header">
+        <button type="button" class="counselor-header-action" aria-label="Go back" (click)="close()">
+          <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
+        </button>
+        <div class="counselor-header-actions" *ngIf="tutor">
+          <button type="button" class="counselor-header-action counselor-header-action--round" [class.is-liked]="isLiked"
+            [disabled]="isLikeRequestInProgress" [attr.aria-label]="isLiked ? 'Unlike counselor' : 'Like counselor'" (click)="toggleLike()"><span aria-hidden="true"></span></button>
+          <button type="button" class="counselor-header-action counselor-header-action--round" aria-label="Share counselor" (click)="shareTutor()"><img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true"></button>
+        </div>
+      </header>
+
+      <div class="counselor-detail-loading" *ngIf="isLoading && !tutor" role="status" aria-live="polite"><ion-spinner name="crescent"></ion-spinner><p>Loading counselor details…</p></div>
+      <div class="counselor-detail-error" *ngIf="loadError && !tutor"><img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true"><h1>Unable to load counselor</h1><p>{{ loadError }}</p><button type="button" (click)="retryLoad()">Try again</button></div>
+
+      <main *ngIf="tutor" class="counselor-detail-content">
+        <section class="counselor-profile-hero">
+          <div class="counselor-avatar-wrap"><img [src]="getProfileImage()" [alt]="getDisplayName() + ' profile image'" (error)="onProfileImageError($event)"><img *ngIf="isVerified()" class="counselor-verified" src="assets/figma/parent-eduhub-inner/verified.png" alt="Verified" title="Verified"></div>
+          <div class="counselor-profile-copy"><h1>{{ getDisplayName() }}</h1><div class="counselor-profile-stats"><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">{{ getExperienceString() }}</span><button type="button" [disabled]="isLikeRequestInProgress" (click)="toggleLike()"><img src="assets/figma/parent-eduhub-inner/favorite.svg" alt="" aria-hidden="true">{{ getLikesCount() }} likes</button></div><span class="counselor-availability"><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true">{{ getContactModesString() }}</span></div>
+        </section>
+
+        <section class="counselor-information-card" aria-label="Counselor information">
+          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="" aria-hidden="true"><span>Qualifications</span></div><div class="counselor-information-value">{{ getCounselorQualifications() }}</div></div>
+          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Icon-Tutor-Subjects.png" alt="" aria-hidden="true"><span>Specializations</span></div><div class="counselor-information-value">{{ getCounselorSpecializations() }}</div></div>
+          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Icon-Tutor-Fees.png" alt="" aria-hidden="true"><span>Fees</span></div><div class="counselor-information-value">{{ getCounselorFee() }}</div></div>
+          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-LanguageSpoken.png" alt="" aria-hidden="true"><span>Languages Spoken</span></div><div class="counselor-information-value">{{ getLanguagesString() }}</div></div>
+          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-Location.png" alt="" aria-hidden="true"><span>Location</span></div><div class="counselor-information-value"><span>{{ getPublicLocation() }}</span><button *ngIf="!isContactUnlocked" type="button" class="counselor-locked-link" (click)="openUnlockConfirmation()"><img src="assets/figma/parent-eduhub-inner/lock.svg" alt="" aria-hidden="true">Full Address hidden</button><span *ngIf="isContactUnlocked" class="counselor-unlocked-address">{{ getFullLocation() }}</span></div></div>
+          <div class="counselor-information-row counselor-information-row--last"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="" aria-hidden="true"><span>About</span></div><div class="counselor-information-value counselor-about"><p [class.is-collapsed]="!isAboutExpanded && shouldShowReadMore()">{{ getAboutText() }}</p><button *ngIf="shouldShowReadMore()" type="button" (click)="toggleAbout()">{{ isAboutExpanded ? 'Read less' : 'Read more' }}</button></div></div>
+        </section>
+
+        <section class="counselor-unlock-card" *ngIf="!isContactUnlocked"><div class="counselor-unlock-copy"><img src="assets/figma/counselors/unlock-illustration.png" alt="" aria-hidden="true"><div><h2>Unlock contact details</h2><p>Spend coins to unlock address, phone number, and email to get in touch.</p><div class="counselor-unlock-benefits"><span><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">Full Address</span><span><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">Phone Number</span><span><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">Email</span></div></div></div><button type="button" [disabled]="isUnlockingContact" (click)="openUnlockConfirmation()"><ion-spinner *ngIf="isUnlockingContact" name="crescent"></ion-spinner><ng-container *ngIf="!isUnlockingContact"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">Unlock Now <span><img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">{{ contactUnlockCost }}</span></ng-container></button></section>
+
+        <profile-facts class="counselor-faq" [faqs]="tutorFaqs" heading="FAQ’s"></profile-facts>
+      </main>
+    </div>
+
+    <div class="mb-toast" *ngIf="(toast$ | async) as toast" [ngClass]="{'mb-toast--error': toast.type === 'error', 'mb-toast--success': toast.type === 'success'}" role="status" aria-live="polite" (click)="dismissToast()"><div class="mb-toast__text">{{ toast.message }}</div></div>
+
+    <div class="counselor-unlock-backdrop" *ngIf="showUnlockConfirmation" (click)="closeUnlockConfirmation()"><section class="counselor-unlock-sheet" role="dialog" aria-modal="true" aria-labelledby="counselor-unlock-title" (click)="$event.stopPropagation()"><button type="button" aria-label="Close unlock details" (click)="closeUnlockConfirmation()"><img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true"></button><img class="counselor-unlock-sheet__art" src="assets/figma/counselors/unlock-illustration.png" alt="" aria-hidden="true"><h2 id="counselor-unlock-title">Unlock contact Details?</h2><p>This will unlock full contact information and other details of {{ getDisplayName() }}</p><div class="counselor-unlock-balance"><img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true"><span><strong>{{ contactUnlockCost }} coins will be deducted</strong> from your SuperMeApp coin balance.</span><small>Your balance <b><img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">{{ getCoinBalance() }}</b></small></div><p class="counselor-unlock-access">You will get access to:</p><div class="counselor-unlock-access-list"><span>Full Address</span><span>Phone Number</span><span>Email</span><span>View on map</span></div><button type="button" class="counselor-unlock-confirm" [disabled]="isUnlockingContact" (click)="confirmUnlock()"><ion-spinner *ngIf="isUnlockingContact" name="crescent"></ion-spinner><ng-container *ngIf="!isUnlockingContact"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">Unlock Now <span><img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">{{ contactUnlockCost }}</span></ng-container></button></section></div>
+
+    <div class="contact-backdrop" *ngIf="showContactSheet" (click)="closeContactSheet()"><section class="contact-sheet" role="dialog" aria-modal="true" aria-labelledby="contact-title" (click)="$event.stopPropagation()"><div class="sheet-handle" aria-hidden="true"></div><div class="sheet-header"><div><h2 id="contact-title">Contact {{ getDisplayName() }}</h2><p>Choose how you would like to get in touch.</p></div><button type="button" class="sheet-close" aria-label="Close contact options" (click)="closeContactSheet()"><img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true"></button></div><div class="contact-options"><button type="button" [class.selected]="selectedContactMethod === 'call'" [disabled]="!hasPhoneNumber()" (click)="selectContact('call')"><span class="option-icon">☎</span><span><strong>Call</strong><small>{{ hasPhoneNumber() ? 'Phone number available' : 'Not available' }}</small></span><span class="radio"></span></button><button type="button" [class.selected]="selectedContactMethod === 'whatsapp'" [disabled]="!hasPhoneNumber()" (click)="selectContact('whatsapp')"><span class="option-icon">◉</span><span><strong>WhatsApp</strong><small>{{ hasPhoneNumber() ? 'Start a conversation' : 'Not available' }}</small></span><span class="radio"></span></button><button type="button" [class.selected]="selectedContactMethod === 'email'" [disabled]="!hasEmailAddress()" (click)="selectContact('email')"><span class="option-icon">✉</span><span><strong>Email</strong><small>{{ hasEmailAddress() ? 'Send an enquiry' : 'Not available' }}</small></span><span class="radio"></span></button></div><button type="button" class="contact-confirm" [disabled]="isContactLaunching" (click)="confirmContact()"><ion-spinner *ngIf="isContactLaunching" name="crescent"></ion-spinner><span *ngIf="!isContactLaunching">{{ getSelectedContactLabel() }}</span></button></section></div>
+  </ion-content>
+</ng-container>
+
+<ng-template #standardTutorProfile>
 <ion-content fullscreen class="tutor-detail-page">
   <div class="detail-shell">
     <header class="detail-header">
@@ -258,3 +305,4 @@
     </section>
   </div>
 </ion-content>
+</ng-template>

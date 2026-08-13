@@ -1,0 +1,313 @@
+import { CommonModule, Location } from '@angular/common';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { Share } from '@capacitor/share';
+import { IonicModule } from '@ionic/angular';
+import { Subscription } from 'rxjs';
+
+import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
+import { FooterComponent } from '../../footer/footer.component';
+import { Tutor, formatContactModes, formatExperience } from '../../../models/tutor.model';
+import { AuthService } from '../../../services/auth.service';
+import { CoreService } from '../../../services/core.service';
+import { TutorLikeService } from '../../../services/tutor-like.service';
+import { TutorService } from '../../../services/tutor.service';
+
+type FilterTab = 'specialization' | 'experience';
+
+@Component({
+  selector: 'app-counselor-directory',
+  standalone: true,
+  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent],
+  templateUrl: './counselor-directory.component.html',
+  styleUrls: ['./counselor-directory.component.scss']
+})
+export class CounselorDirectoryComponent implements OnInit, OnDestroy {
+  readonly loadingCards = [0, 1, 2];
+
+  counselors: Tutor[] = [];
+  isLoading = true;
+  errorMessage = '';
+  showVerifiedMenu = false;
+  verifiedOnly = true;
+  showFilters = false;
+  filterTab: FilterTab = 'specialization';
+  selectedSpecializations = new Set<string>();
+  selectedExperience = new Set<string>();
+
+  private readonly subscriptions = new Subscription();
+  private readonly likeSubscriptions = new Map<number, Subscription>();
+
+  constructor(
+    private readonly location: Location,
+    private readonly router: Router,
+    private readonly tutorService: TutorService,
+    private readonly likeService: TutorLikeService,
+    private readonly authService: AuthService,
+    private readonly core: CoreService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadCounselors();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+    this.likeSubscriptions.forEach(subscription => subscription.unsubscribe());
+    this.likeSubscriptions.clear();
+    document.body.style.overflow = '';
+  }
+
+  get visibleCounselors(): Tutor[] {
+    return this.counselors.filter(counselor => {
+      const specializations = this.getSpecializations(counselor);
+      const experience = this.getExperienceFilterValue(counselor);
+      return (!this.verifiedOnly || this.isVerified(counselor))
+        && (!this.selectedSpecializations.size || specializations.some(value => this.selectedSpecializations.has(value)))
+        && (!this.selectedExperience.size || this.selectedExperience.has(experience));
+    });
+  }
+
+  get specializationOptions(): string[] {
+    const values = this.counselors.reduce<string[]>(
+      (all, counselor) => all.concat(this.getSpecializations(counselor)),
+      []
+    );
+    return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
+  }
+
+  get experienceOptions(): string[] {
+    return [...new Set(this.counselors.map(counselor => this.getExperienceFilterValue(counselor)))];
+  }
+
+  get activeFilterOptions(): string[] {
+    return this.filterTab === 'specialization' ? this.specializationOptions : this.experienceOptions;
+  }
+
+  get activeSelectedOptions(): Set<string> {
+    return this.filterTab === 'specialization' ? this.selectedSpecializations : this.selectedExperience;
+  }
+
+  get resultsLabel(): string {
+    const count = this.visibleCounselors.length;
+    return `Show ${count} ${count === 1 ? 'result' : 'results'}`;
+  }
+
+  get eduAdScreen(): AdScreen {
+    return this.authService.isParentUser() ? 'EDUHUB_PARENTS' : 'EDUHUB';
+  }
+
+  @HostListener('document:click')
+  closeVerifiedMenu(): void {
+    this.showVerifiedMenu = false;
+  }
+
+  goBack(): void {
+    this.location.back();
+  }
+
+  loadCounselors(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.subscriptions.add(
+      this.tutorService.getTutorsByEntityType('COUNSELOR').subscribe({
+        next: counselors => {
+          this.counselors = Array.isArray(counselors) ? counselors : [];
+          this.counselors.forEach(counselor => this.watchLikes(counselor));
+          this.isLoading = false;
+        },
+        error: () => {
+          this.isLoading = false;
+          this.errorMessage = 'We couldn’t load counselors right now. Check your connection and try again.';
+        }
+      })
+    );
+  }
+
+  toggleVerifiedMenu(event: Event): void {
+    event.stopPropagation();
+    this.showVerifiedMenu = !this.showVerifiedMenu;
+  }
+
+  setVerifiedFilter(value: boolean, event: Event): void {
+    event.stopPropagation();
+    this.verifiedOnly = value;
+    this.showVerifiedMenu = false;
+  }
+
+  openFilters(tab: FilterTab): void {
+    this.filterTab = tab;
+    this.showFilters = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeFilters(): void {
+    this.showFilters = false;
+    document.body.style.overflow = '';
+  }
+
+  setFilterTab(tab: FilterTab): void {
+    this.filterTab = tab;
+  }
+
+  toggleFilterValue(value: string): void {
+    const selected = this.activeSelectedOptions;
+    if (selected.has(value)) selected.delete(value); else selected.add(value);
+    this.refreshSelections();
+  }
+
+  clearFilters(): void {
+    this.selectedSpecializations.clear();
+    this.selectedExperience.clear();
+    this.refreshSelections();
+  }
+
+  applyFilters(): void {
+    this.closeFilters();
+  }
+
+  isVerified(counselor: Tutor): boolean {
+    return !!(counselor.isVerified || counselor.verified);
+  }
+
+  isLiked(counselor: Tutor): boolean {
+    return !!counselor.likedByUser;
+  }
+
+  toggleLike(counselor: Tutor): void {
+    const request = this.likeService.toggleLike(counselor);
+    if (!request) return;
+    void request.catch(() => this.core.triggerToasrt('Unable to update like. Please try again.', 'error'));
+  }
+
+  async shareCounselor(counselor: Tutor): Promise<void> {
+    try {
+      await Share.share({
+        title: this.getName(counselor),
+        text: `View ${this.getName(counselor)} on SuperMe EduHub.`,
+        url: window.location.href
+      });
+    } catch (error) {
+      const message = String((error as { message?: string })?.message ?? error ?? '').toLowerCase();
+      if (!message.includes('cancel') && !message.includes('dismiss')) {
+        this.core.triggerToasrt('Unable to share this counselor. Please try again.', 'error');
+      }
+    }
+  }
+
+  async referCounselor(): Promise<void> {
+    try {
+      await Share.share({
+        title: 'Refer for listing',
+        text: 'Know a counselor? Refer them to get listed on SuperMe EduHub.',
+        url: 'https://supermeapp.com'
+      });
+    } catch (error) {
+      const message = String((error as { message?: string })?.message ?? error ?? '').toLowerCase();
+      if (!message.includes('cancel') && !message.includes('dismiss')) {
+        this.core.triggerToasrt('Unable to open sharing right now. Please try again.', 'error');
+      }
+    }
+  }
+
+  openProfile(counselor: Tutor): void {
+    void this.router.navigate(['/authed/counselors', counselor.id], {
+      state: { tutor: counselor }
+    });
+  }
+
+  getName(counselor: Tutor): string {
+    return counselor.name?.trim() || counselor.entityName?.trim() || 'Counselor';
+  }
+
+  getProfileImage(counselor: Tutor): string {
+    return counselor.profilePicUrl?.trim() || 'assets/Images-Transparent/Image-Tutor.png';
+  }
+
+  onImageError(event: Event): void {
+    const image = event.target as HTMLImageElement;
+    image.src = 'assets/Images-Transparent/Image-Tutor.png';
+  }
+
+  getSpecializationLabel(counselor: Tutor): string {
+    const values = this.getSpecializations(counselor);
+    if (!values.length) return counselor.qualification?.trim() || 'Specialization not specified';
+    if (values.length <= 2) return values.join(', ');
+    return `${values.slice(0, 2).join(', ')} + ${values.length - 2}`;
+  }
+
+  getAvailability(counselor: Tutor): string {
+    const modes = counselor.contactModes?.length ? formatContactModes(counselor.contactModes) : '';
+    return modes || 'Availability not specified';
+  }
+
+  getExperience(counselor: Tutor): string {
+    const years = Math.max(0, ...(counselor.categoryMappings || []).map(mapping => mapping.yearsOfExperience || 0));
+    return years > 0 ? `${years} years exp` : formatExperience(counselor.experience || 'FRESHER').replace('Exp', 'exp');
+  }
+
+  getFee(counselor: Tutor): string {
+    const mappingFee = (counselor.categoryMappings || []).find(mapping => mapping.categoryHourlyRate > 0)?.categoryHourlyRate;
+    const fee = Number(mappingFee || counselor.hourlyRate || counselor.fees || 0);
+    if (!Number.isFinite(fee) || fee <= 0) return 'Pricing on request';
+    const labels: Record<string, string> = {
+      PER_SESSION: 'Per Session',
+      PER_HOUR: 'Per Hour',
+      PER_MONTH: 'Per Month'
+    };
+    return `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / ${labels[String(counselor.feeType)] || 'Session'}`;
+  }
+
+  trackCounselor(_: number, counselor: Tutor): number {
+    return counselor.id;
+  }
+
+  private watchLikes(counselor: Tutor): void {
+    if (!counselor?.id || this.likeSubscriptions.has(counselor.id)) return;
+    this.likeService.initFromServer(counselor);
+    this.likeSubscriptions.set(counselor.id, this.likeService.watch(counselor.id).subscribe(state => {
+      counselor.likedByUser = state.liked;
+      counselor.champsLiked = state.count;
+    }));
+  }
+
+  private getSpecializations(counselor: Tutor): string[] {
+    const direct = (counselor.subjects || []).map(value => String(value).trim()).filter(Boolean);
+    const configured = (counselor.categoryMappings || []).reduce<string[]>(
+      (all, mapping) => all.concat(this.getMappedSpecializations(mapping.selectedFieldOptions)),
+      []
+    );
+    return Array.from(new Set(direct.concat(configured)));
+  }
+
+  private getMappedSpecializations(value: unknown): string[] {
+    if (!value) return [];
+    let selected: Record<string, unknown> = {};
+    try {
+      selected = typeof value === 'string' ? JSON.parse(value) : value as Record<string, unknown>;
+    } catch {
+      return [];
+    }
+    return Object.keys(selected)
+      .filter(key => /special|subject|expert/i.test(key))
+      .reduce<string[]>((items, key) => {
+        const raw = selected[key];
+        const values = Array.isArray(raw) ? raw : String(raw ?? '').split(',');
+        return items.concat(values.map(item => String(item).replace(/[_-]+/g, ' ').trim()).filter(Boolean));
+      }, []);
+  }
+
+  private getExperienceFilterValue(counselor: Tutor): string {
+    const years = Math.max(0, ...(counselor.categoryMappings || []).map(mapping => mapping.yearsOfExperience || 0));
+    if (years <= 0) return 'Fresher';
+    if (years <= 3) return '1-3 years';
+    if (years <= 5) return '3-5 years';
+    if (years <= 10) return '5-10 years';
+    return '10+ years';
+  }
+
+  private refreshSelections(): void {
+    this.selectedSpecializations = new Set(this.selectedSpecializations);
+    this.selectedExperience = new Set(this.selectedExperience);
+  }
+}

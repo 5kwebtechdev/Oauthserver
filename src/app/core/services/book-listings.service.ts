@@ -4,16 +4,53 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 
-export type BookListingType = 'SCHOOL_TEXTBOOK' | 'FICTION_NOVEL' | 'REFERENCE' | 'COMPETITIVE_EXAM' | 'CHILDRENS_BOOKS';
+export type BookListingType = 'SCHOOL' | 'COLLEGE' | 'EXAM_PREP' | 'GENERAL' | 'SCHOOL_TEXTBOOK' | 'FICTION_NOVEL' | 'REFERENCE' | 'COMPETITIVE_EXAM' | 'CHILDRENS_BOOKS';
 export type BookListingCondition = 'NEW' | 'LIKE_NEW' | 'GOOD' | 'ACCEPTABLE';
+export type BookListingStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'UNDER_REVIEW' | 'SOLD' | 'ACTIVE' | string;
+
+/** Matches the documented /v1/book-listings create contract. */
+export interface BookListingCreateRequest {
+  bookType: Extract<BookListingType, 'SCHOOL' | 'COLLEGE' | 'EXAM_PREP' | 'GENERAL'>;
+  title: string;
+  authorPublisher: string;
+  bookClass?: string;
+  board?: string;
+  subject?: string;
+  degreeStream?: string;
+  year?: string;
+  targetExam?: string;
+  genre?: string;
+  condition: BookListingCondition;
+  language?: string;
+  sellerNote?: string;
+  originalPrice?: number;
+  sellingPrice: number;
+  negotiable: boolean;
+  listingType: 'SELL' | 'DONATE';
+  state: string;
+  city: string;
+  address: string;
+  landmark?: string;
+  additionalNote?: string;
+}
 
 export interface BookListing {
   id: number; title: string; bookType: BookListingType; condition: BookListingCondition;
   sellingPrice: number; originalPrice?: number | null; discountPercent?: number | null;
-  imageUrls?: string[]; status: 'PENDING' | 'APPROVED' | 'REJECTED'; rejectionReason?: string | null;
+  imageUrls?: string[]; status: BookListingStatus; rejectionReason?: string | null;
   city?: string | null; state?: string | null; distanceKm?: number | null;
   sellerName?: string | null; sellerVerified?: boolean; contactUnlocked?: boolean;
   unlockCost?: number; sellerPhone?: string | null; sellerAddress?: string | null;
+  classLevel?: string | null; board?: string | null; subject?: string | null;
+  author?: string | null; publisher?: string | null; exam?: string | null;
+  genre?: string | null; degree?: string | null; stream?: string | null;
+  authorPublisher?: string | null; bookClass?: string | null; degreeStream?: string | null;
+  year?: string | null; targetExam?: string | null; language?: string | null;
+  address?: string | null; landmark?: string | null; additionalNote?: string | null;
+  negotiable?: boolean | null; listingType?: string | null;
+  location?: string | null; contactNumber?: string | null; phone?: string | null;
+  sellerNote?: string | null; note?: string | null; description?: string | null;
+  priceNegotiable?: boolean | null; isPriceNegotiable?: boolean | null;
   [key: string]: unknown;
 }
 
@@ -34,9 +71,19 @@ export class BookListingsService {
     return this.http.get<BookListing>(`${this.baseUrl}/${id}`, { headers: this.headers(), params });
   }
   unlockContact(id: number): Observable<BookListing> { return this.http.post<BookListing>(`${this.baseUrl}/${id}/unlock-contact`, {}, { headers: this.headers() }); }
-  mine(): Observable<BookListing[]> { return this.http.get<BookListing[]>(`${this.baseUrl}/mine`, { headers: this.headers() }); }
-  create(data: FormData): Observable<BookListing> { return this.http.post<BookListing>(this.baseUrl, data, { headers: this.headers() }); }
+  mine(): Observable<BookListing[] | BookListingPage> { return this.http.get<BookListing[] | BookListingPage>(`${this.baseUrl}/mine`, { headers: this.headers() }); }
+  create(request: BookListingCreateRequest, images: File[]): Observable<BookListing> {
+    let params = new HttpParams();
+    Object.entries(request).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') params = params.set(key, String(value));
+    });
+
+    const data = new FormData();
+    images.forEach(image => data.append('images', image, image.name));
+    return this.http.post<BookListing>(this.baseUrl, data, { headers: this.headers(), params });
+  }
   update(id: number, data: FormData): Observable<BookListing> { return this.http.put<BookListing>(`${this.baseUrl}/${id}`, data, { headers: this.headers() }); }
+  markAsSold(id: number): Observable<BookListing> { return this.http.put<BookListing>(`${this.baseUrl}/${id}/mark-sold`, {}, { headers: this.headers() }); }
   remove(id: number): Observable<void> { return this.http.delete<void>(`${this.baseUrl}/${id}`, { headers: this.headers() }); }
   private headers(): HttpHeaders { const token = this.auth.getToken(); return new HttpHeaders(token ? { Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`, Accept: 'application/json' } : { Accept: 'application/json' }); }
 }
