@@ -30,7 +30,28 @@
           <div class="counselor-information-row counselor-information-row--last"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="" aria-hidden="true"><span>About</span></div><div class="counselor-information-value counselor-about"><p [class.is-collapsed]="!isAboutExpanded && shouldShowReadMore()">{{ getAboutText() }}</p><button *ngIf="shouldShowReadMore()" type="button" (click)="toggleAbout()">{{ isAboutExpanded ? 'Read less' : 'Read more' }}</button></div></div>
         </section>
 
-        <section class="counselor-unlock-card" *ngIf="!isContactUnlocked"><div class="counselor-unlock-copy"><img src="assets/figma/counselors/unlock-illustration.png" alt="" aria-hidden="true"><div><h2>Unlock contact details</h2><p>Spend coins to unlock address, phone number, and email to get in touch.</p><div class="counselor-unlock-benefits"><span><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">Full Address</span><span><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">Phone Number</span><span><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">Email</span></div></div></div><button type="button" [disabled]="isUnlockingContact" (click)="openUnlockConfirmation()"><ion-spinner *ngIf="isUnlockingContact" name="crescent"></ion-spinner><ng-container *ngIf="!isUnlockingContact"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">Unlock Now <span><img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">{{ contactUnlockCost }}</span></ng-container></button></section>
+        <section class="counselor-unlock-card" *ngIf="!isContactUnlocked">
+          <div class="counselor-unlock-copy">
+            <img src="assets/figma/contact-unlock/card-illustration.png" alt="" aria-hidden="true">
+            <div>
+              <h2>Unlock contact details</h2>
+              <p>Spend coins to unlock address, phone number, and email to get in touch.</p>
+              <div class="counselor-unlock-benefits">
+                <span><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Full Address</span>
+                <span><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Phone Number</span>
+                <span><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Email</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" [disabled]="isUnlockingContact" (click)="openUnlockConfirmation()">
+            <ion-spinner *ngIf="isUnlockingContact" name="crescent"></ion-spinner>
+            <ng-container *ngIf="!isUnlockingContact">
+              <img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
+              <span>Unlock Now</span>
+              <span><img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">{{ contactUnlockCost }}</span>
+            </ng-container>
+          </button>
+        </section>
 
         <profile-facts class="counselor-faq" [faqs]="tutorFaqs" heading="FAQ’s"></profile-facts>
       </main>
@@ -38,7 +59,25 @@
 
     <div class="mb-toast" *ngIf="(toast$ | async) as toast" [ngClass]="{'mb-toast--error': toast.type === 'error', 'mb-toast--success': toast.type === 'success'}" role="status" aria-live="polite" (click)="dismissToast()"><div class="mb-toast__text">{{ toast.message }}</div></div>
 
-    <div class="counselor-unlock-backdrop" *ngIf="showUnlockConfirmation" (click)="closeUnlockConfirmation()"><section class="counselor-unlock-sheet" role="dialog" aria-modal="true" aria-labelledby="counselor-unlock-title" (click)="$event.stopPropagation()"><button type="button" aria-label="Close unlock details" (click)="closeUnlockConfirmation()"><img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true"></button><img class="counselor-unlock-sheet__art" src="assets/figma/counselors/unlock-illustration.png" alt="" aria-hidden="true"><h2 id="counselor-unlock-title">Unlock contact Details?</h2><p>This will unlock full contact information and other details of {{ getDisplayName() }}</p><div class="counselor-unlock-balance"><img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true"><span><strong>{{ contactUnlockCost }} coins will be deducted</strong> from your SuperMeApp coin balance.</span><small>Your balance <b><img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">{{ getCoinBalance() }}</b></small></div><p class="counselor-unlock-access">You will get access to:</p><div class="counselor-unlock-access-list"><span>Full Address</span><span>Phone Number</span><span>Email</span><span>View on map</span></div><button type="button" class="counselor-unlock-confirm" [disabled]="isUnlockingContact" (click)="confirmUnlock()"><ion-spinner *ngIf="isUnlockingContact" name="crescent"></ion-spinner><ng-container *ngIf="!isUnlockingContact"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">Unlock Now <span><img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">{{ contactUnlockCost }}</span></ng-container></button></section></div>
+    <div class="counselor-unlock-backdrop" *ngIf="showUnlockConfirmation" (click)="closeUnlockConfirmation()">
+      <section class="counselor-unlock-sheet" role="dialog" aria-modal="true" aria-labelledby="counselor-unlock-title" (click)="$event.stopPropagation()">
+        <button type="button" aria-label="Close unlock details" (click)="closeUnlockConfirmation()"><img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true"></button>
+        <img class="counselor-unlock-sheet__art" src="assets/figma/contact-unlock/sheet-illustration.png" alt="" aria-hidden="true">
+        <h2 id="counselor-unlock-title">Unlock contact Details?</h2>
+        <p>This will unlock full contact information and other details of {{ getDisplayName() }}</p>
+        <div class="counselor-unlock-balance">
+          <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
+          <span><strong>{{ contactUnlockCost }} coins will be deducted</strong> from your SuperMeApp coin balance.</span>
+          <small>Your balance <b><img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">{{ getCoinBalance() }}</b></small>
+        </div>
+        <p class="counselor-unlock-access">You will get access to:</p>
+        <div class="counselor-unlock-access-list"><span>Full Address</span><span>Phone Number</span><span>Email</span><span>View on map</span></div>
+        <button type="button" class="counselor-unlock-confirm" [disabled]="isUnlockingContact" (click)="confirmUnlock()">
+          <ion-spinner *ngIf="isUnlockingContact" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!isUnlockingContact"><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Unlock Now <span><img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">{{ contactUnlockCost }}</span></ng-container>
+        </button>
+      </section>
+    </div>
 
     <div class="contact-backdrop" *ngIf="showContactSheet" (click)="closeContactSheet()"><section class="contact-sheet" role="dialog" aria-modal="true" aria-labelledby="contact-title" (click)="$event.stopPropagation()"><div class="sheet-handle" aria-hidden="true"></div><div class="sheet-header"><div><h2 id="contact-title">Contact {{ getDisplayName() }}</h2><p>Choose how you would like to get in touch.</p></div><button type="button" class="sheet-close" aria-label="Close contact options" (click)="closeContactSheet()"><img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true"></button></div><div class="contact-options"><button type="button" [class.selected]="selectedContactMethod === 'call'" [disabled]="!hasPhoneNumber()" (click)="selectContact('call')"><span class="option-icon">☎</span><span><strong>Call</strong><small>{{ hasPhoneNumber() ? 'Phone number available' : 'Not available' }}</small></span><span class="radio"></span></button><button type="button" [class.selected]="selectedContactMethod === 'whatsapp'" [disabled]="!hasPhoneNumber()" (click)="selectContact('whatsapp')"><span class="option-icon">◉</span><span><strong>WhatsApp</strong><small>{{ hasPhoneNumber() ? 'Start a conversation' : 'Not available' }}</small></span><span class="radio"></span></button><button type="button" [class.selected]="selectedContactMethod === 'email'" [disabled]="!hasEmailAddress()" (click)="selectContact('email')"><span class="option-icon">✉</span><span><strong>Email</strong><small>{{ hasEmailAddress() ? 'Send an enquiry' : 'Not available' }}</small></span><span class="radio"></span></button></div><button type="button" class="contact-confirm" [disabled]="isContactLaunching" (click)="confirmContact()"><ion-spinner *ngIf="isContactLaunching" name="crescent"></ion-spinner><span *ngIf="!isContactLaunching">{{ getSelectedContactLabel() }}</span></button></section></div>
   </ion-content>
@@ -220,10 +259,7 @@
       <section class="unlock-card" *ngIf="!isContactUnlocked">
         <div class="unlock-heading">
           <div class="unlock-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10M6 10h12v10H6z" />
-              <path d="M12 14v3" />
-            </svg>
+            <img src="assets/figma/contact-unlock/card-illustration.png" alt="">
           </div>
           <div>
             <h2>Unlock contact details</h2>
@@ -232,21 +268,21 @@
         </div>
 
         <div class="unlock-benefits" aria-label="Details included">
-          <span>🔒 Phone number</span>
-          <span>🔒 WhatsApp</span>
-          <span>🔒 Exact address</span>
-          <span>🔒 View on map</span>
-          <span>🔒 Full schedule</span>
-          <span>🔒 Fee details</span>
+          <span><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Phone number</span>
+          <span><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">WhatsApp</span>
+          <span><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Exact address</span>
+          <span><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">View on map</span>
+          <span><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Full schedule</span>
+          <span><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Fee details</span>
         </div>
 
         <button type="button" class="unlock-button" [disabled]="isUnlockingContact" (click)="requestUnlock()">
           <ion-spinner *ngIf="isUnlockingContact" name="crescent"></ion-spinner>
           <ng-container *ngIf="!isUnlockingContact">
-          <span class="unlock-button__lock" aria-hidden="true">♛</span>
+          <img class="unlock-button__lock" src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
           <span>Unlock Now</span>
           <span class="unlock-button__cost">
-            <img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">
+            <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
             {{ contactUnlockCost }}
           </span>
           </ng-container>

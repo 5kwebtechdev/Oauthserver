@@ -681,10 +681,22 @@ button {
 
 .listing-action--primary,
 .sheet-primary-action {
-  border-color: #1432a8;
-  background: linear-gradient(105deg, #1432a8 0%, #2453cb 52%, #1432a8 100%);
+  border: 1px solid #3158a8;
+  background: radial-gradient(184% 190% at 50% 0%, #3158a8 0%, #2345a8 50%, #1432a8 100%);
   color: #fff;
-  box-shadow: 0 3px 8px rgba(20, 50, 168, 0.28);
+  box-shadow: inset -2px -2px 2px #b2caf2;
+}
+
+.listing-action--primary {
+  min-height: 48px;
+  border-radius: 16px;
+}
+
+.listing-action__unlock-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  object-fit: contain;
 }
 
 .listing-action__coins,
@@ -839,6 +851,10 @@ button {
   animation: sheet-in 240ms cubic-bezier(0.2, 0.75, 0.25, 1);
 }
 
+.unlock-sheet {
+  border-radius: 32px 32px 0 0;
+}
+
 .sheet-close {
   position: absolute;
   z-index: 2;
@@ -980,24 +996,23 @@ button {
 
 .sheet-primary-action {
   display: flex;
-  width: min(100%, 220px);
-  min-height: 36px;
+  width: 100%;
+  min-height: 48px;
   align-items: center;
   justify-content: center;
   gap: 6px;
   margin: 16px auto 0;
-  padding: 8px 12px;
-  border: 0;
-  border-radius: 6px;
+  padding: 12px;
+  border-radius: 16px;
   color: #fff;
   font-family: var(--font-sans, 'Nunito', sans-serif);
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 700;
   line-height: 1.2;
 
   > img {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
   }
 
   ion-spinner {
@@ -1015,8 +1030,8 @@ button {
     font-variant-numeric: tabular-nums;
 
     img {
-      width: 15px;
-      height: 15px;
+      width: 20px;
+      height: 20px;
     }
   }
 }

@@ -33,4 +33,32 @@ describe('SupermeDropdownComponent', () => {
     expect(onChangeSpy).toHaveBeenCalledWith(testOption);
     expect(component.isOpen).toBeFalse();
   });
+
+  it('filters options using whitespace-safe matching', () => {
+    component.options = [
+      { key: 'math', value: 'Engineering Mathematics' },
+      { key: 'dsa', value: 'Data Structures & Algorithms' }
+    ];
+    component.searchTerm = 'data    structures';
+
+    expect(component.filteredOptions).toEqual([{ key: 'dsa', value: 'Data Structures & Algorithms' }]);
+  });
+
+  it('uses an attached menu for the Second-Hand Books variant', () => {
+    component.variant = 'second-hand-books';
+    component.width = 'full-width';
+    component.searchable = true;
+    component.options = [{ key: 'nursery', value: 'Nursery' }];
+    fixture.detectChanges();
+
+    component.toggleDropdown();
+    fixture.detectChanges();
+
+    const selector = fixture.nativeElement.querySelector('.dropdown-selector') as HTMLElement;
+    const menu = fixture.nativeElement.querySelector('.dropdown-options') as HTMLElement;
+    expect(menu).toBeTruthy();
+    expect(getComputedStyle(menu).position).toBe('absolute');
+    expect(getComputedStyle(menu).top).toBe('56px');
+    expect(getComputedStyle(selector).minHeight).toBe('56px');
+  });
 });

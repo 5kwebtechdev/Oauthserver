@@ -74,14 +74,19 @@
       </section>
 
       <section class="contact-lock-card" *ngIf="!item.unlocked">
-        <img src="assets/figma/parent-eduhub-inner/unlock-illustration.png" alt="" aria-hidden="true">
+        <img src="assets/figma/contact-unlock/card-illustration.png" alt="" aria-hidden="true">
         <div>
           <h2>Unlock contact details</h2>
           <p>Contact information and the exact address are protected by the organizer.</p>
-          <span *ngIf="item.unlockCost !== null">Unlock cost: {{ item.unlockCost }} coins</span>
           <button type="button" [disabled]="unlockInProgress" (click)="unlockContactDetails()">
             <ion-spinner *ngIf="unlockInProgress" name="crescent"></ion-spinner>
-            <ng-container *ngIf="!unlockInProgress">Unlock Now</ng-container>
+            <ng-container *ngIf="!unlockInProgress">
+              <img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
+              <span>Unlock Now</span>
+              <span class="contact-lock-card__coins" *ngIf="item.unlockCost !== null">
+                <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">{{ item.unlockCost }}
+              </span>
+            </ng-container>
           </button>
         </div>
       </section>

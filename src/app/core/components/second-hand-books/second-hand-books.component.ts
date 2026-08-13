@@ -8,12 +8,28 @@ import { Share } from '@capacitor/share';
 import { IonicModule } from '@ionic/angular';
 
 import { FooterComponent } from '../footer/footer.component';
+import { SupermeDropdownComponent } from '../superme-dropdown/superme-dropdown.component';
 import { BookListing, BookListingCondition, BookListingCreateRequest, BookListingPage, BookListingType, BookListingsService } from '../../services/book-listings.service';
 import { AuthService } from '../../services/auth.service';
 import { INDIA_STATES, INDIA_STATE_OPTIONS } from '../../constants/india-location-options';
 import { LocationService } from '../../services/location.service';
+import {
+  COLLEGE_DEGREE_STREAM_OPTIONS,
+  COLLEGE_YEAR_OPTIONS,
+  EXAM_PREP_TARGET_EXAM_OPTIONS,
+  GENERAL_GENRE_OPTIONS,
+  GENERAL_LANGUAGE_OPTIONS,
+  SCHOOL_BOARD_OPTIONS,
+  SCHOOL_CLASS_OPTIONS,
+  SCHOOL_SUBJECT_OPTIONS,
+  SECOND_HAND_BOOK_TYPES,
+  SecondHandBookDropdownOption,
+  SecondHandBookType,
+  collegeSubjectsForDegree,
+  dropdownOptions
+} from '../../constants/second-hand-book-options';
 
-type BookType = 'school' | 'college' | 'exam' | 'general';
+type BookType = SecondHandBookType;
 type SecondHandBooksView = 'choice' | 'buyer' | 'listings' | 'my-listings' | 'book-details' | 'seller' | 'seller-success';
 type ListingEntryPoint = 'buyer' | 'seller' | 'my-listings';
 type ListingFilter = 'active' | 'sold' | 'review';
@@ -41,7 +57,9 @@ interface BuyerPreferences {
 interface PreferenceField {
   key: keyof BuyerPreferences;
   label: string;
-  options: string[];
+  placeholder: string;
+  options: SecondHandBookDropdownOption[];
+  fullWidth?: boolean;
 }
 
 interface ListingDetailField {
@@ -88,23 +106,19 @@ interface SellerConditionOption {
 @Component({
   selector: 'app-second-hand-books',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, FooterComponent],
+  imports: [CommonModule, FormsModule, IonicModule, FooterComponent, SupermeDropdownComponent],
   templateUrl: './second-hand-books.component.html',
   styleUrls: ['./second-hand-books.component.scss']
 })
 export class SecondHandBooksComponent implements OnInit, OnDestroy {
-  readonly bookTypes: Array<{ value: BookType; label: string; icon: string }> = [
-    { value: 'school', label: 'School', icon: 'assets/figma/second-hand-books/book-type-school.svg' },
-    { value: 'college', label: 'College', icon: 'assets/figma/second-hand-books/book-type-college.svg' },
-    { value: 'exam', label: 'Exam Prep', icon: 'assets/figma/second-hand-books/book-type-exam.svg' },
-    { value: 'general', label: 'General', icon: 'assets/figma/second-hand-books/book-type-general.svg' }
-  ];
-  readonly sellerBookTypes: Array<{ value: BookType; label: string; icon: string }> = [
-    { value: 'school', label: 'School', icon: 'assets/figma/second-hand-books/seller/book-school.svg' },
-    { value: 'college', label: 'College', icon: 'assets/figma/second-hand-books/seller/book-college.svg' },
-    { value: 'exam', label: 'Exam Prep', icon: 'assets/figma/second-hand-books/seller/book-exam.svg' },
-    { value: 'general', label: 'General', icon: 'assets/figma/second-hand-books/seller/book-general.svg' }
-  ];
+  readonly bookTypes: Array<{ value: BookType; label: string; icon: string }> = SECOND_HAND_BOOK_TYPES.map(type => ({
+    ...type,
+    icon: `assets/figma/second-hand-books/book-type-${type.value}.svg`
+  }));
+  readonly sellerBookTypes: Array<{ value: BookType; label: string; icon: string }> = SECOND_HAND_BOOK_TYPES.map(type => ({
+    ...type,
+    icon: `assets/figma/second-hand-books/seller/book-${type.value}.svg`
+  }));
   readonly sellerConditions: SellerConditionOption[] = [
     { value: 'NEW', label: 'New', description: 'Never used. No marks or damage.', icon: 'assets/figma/second-hand-books/seller/condition-new.svg' },
     { value: 'LIKE_NEW', label: 'Like New', description: 'Used once or twice. No writing or highlights.', icon: 'assets/figma/second-hand-books/seller/condition-like-new.svg' },
@@ -116,7 +130,17 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
     { label: 'Back Cover', icon: 'assets/figma/second-hand-books/seller/photo-back.svg' },
     { label: 'Inside Pages', icon: 'assets/figma/second-hand-books/seller/photo-pages.svg' }
   ];
-  readonly sellerStateOptions = INDIA_STATE_OPTIONS;
+  readonly sellerStateDropdownOptions = dropdownOptions(INDIA_STATE_OPTIONS);
+  readonly schoolClassOptions = SCHOOL_CLASS_OPTIONS;
+  readonly schoolBoardOptions = SCHOOL_BOARD_OPTIONS;
+  readonly schoolSubjectOptions = SCHOOL_SUBJECT_OPTIONS;
+  readonly collegeDegreeStreamOptions = COLLEGE_DEGREE_STREAM_OPTIONS;
+  readonly collegeYearOptions = COLLEGE_YEAR_OPTIONS;
+  readonly examTargetOptions = EXAM_PREP_TARGET_EXAM_OPTIONS;
+  readonly generalGenreOptions = GENERAL_GENRE_OPTIONS;
+  readonly generalLanguageOptions = GENERAL_LANGUAGE_OPTIONS;
+  readonly dropdownChevronAsset = 'assets/figma/second-hand-books/seller/chevron-left.svg';
+  readonly dropdownSearchAsset = 'assets/figma/parent-eduhub-inner/search.svg';
 
   view: SecondHandBooksView = 'choice';
   buyer: BuyerPreferences = this.createEmptyPreferences();
@@ -168,26 +192,44 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
   get selectFields(): PreferenceField[] {
     switch (this.buyer.bookType) {
       case 'college':
-        return [
-          { key: 'degree', label: 'Degree / Stream', options: ['B.A. (Arts)', 'B.Com (Commerce)', 'B.Sc. (Science)', 'B.Tech (Engineering)', 'M.A. (Arts)', 'M.Sc. (Science)', 'Other'] },
-          { key: 'year', label: 'Year / Semester', options: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Other'] }
-        ];
+        return this.buyerCollegeSubjectOptions.length
+          ? [
+            { key: 'degree', label: 'Degree / Stream', placeholder: 'Select Degree / Stream', options: this.collegeDegreeStreamOptions, fullWidth: true },
+            { key: 'year', label: 'Year / Semester', placeholder: 'Select year', options: this.collegeYearOptions },
+            { key: 'subject', label: 'College Subject', placeholder: 'Select subject', options: this.buyerCollegeSubjectOptions }
+          ]
+          : [
+            { key: 'degree', label: 'Degree / Stream', placeholder: 'Select Degree / Stream', options: this.collegeDegreeStreamOptions, fullWidth: true },
+            { key: 'year', label: 'Year / Semester', placeholder: 'Select year', options: this.collegeYearOptions, fullWidth: true }
+          ];
       case 'exam':
         return [
-          { key: 'exam', label: 'Target Exam', options: ['JEE', 'NEET', 'UPSC', 'CUET', 'SSC', 'Other'] }
+          { key: 'exam', label: 'Target Exam', placeholder: 'Select target exam', options: this.examTargetOptions, fullWidth: true }
         ];
       case 'general':
         return [
-          { key: 'genre', label: 'Genre', options: ['Fiction', 'Non-fiction', 'Biography', 'Self-help', 'Children', 'Other'] },
-          { key: 'language', label: 'Language', options: ['English', 'Hindi', 'Punjabi', 'Tamil', 'Telugu', 'Other'] }
+          { key: 'genre', label: 'Genre', placeholder: 'Select genre', options: this.generalGenreOptions },
+          { key: 'language', label: 'Language', placeholder: 'Select language', options: this.generalLanguageOptions }
         ];
       default:
         return [
-          { key: 'classLevel', label: 'Class', options: ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'] },
-          { key: 'board', label: 'Board', options: ['CBSE', 'ICSE', 'State Board', 'IB', 'Cambridge'] },
-          { key: 'subject', label: 'Subject', options: ['Mathematics', 'Science', 'English', 'Social Science', 'Hindi', 'Other'] }
+          { key: 'classLevel', label: 'Class', placeholder: 'Select Class', options: this.schoolClassOptions },
+          { key: 'board', label: 'Board', placeholder: 'Select Board', options: this.schoolBoardOptions },
+          { key: 'subject', label: 'Subject', placeholder: 'Select Subject', options: this.schoolSubjectOptions, fullWidth: true }
         ];
     }
+  }
+
+  get sellerCollegeSubjectOptions(): SecondHandBookDropdownOption[] {
+    return collegeSubjectsForDegree(this.seller.degree);
+  }
+
+  get buyerCollegeSubjectOptions(): SecondHandBookDropdownOption[] {
+    return collegeSubjectsForDegree(this.buyer.degree);
+  }
+
+  get sellerCityDropdownOptions(): SecondHandBookDropdownOption[] {
+    return dropdownOptions(this.sellerCities);
   }
 
   get isBuyerReady(): boolean {
@@ -207,7 +249,8 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
         return !!this.seller.classLevel && !!this.seller.board && !!this.seller.subject;
       }
       if (this.seller.bookType === 'college') {
-        return !!this.seller.degree && !!this.seller.stream && !!this.seller.year;
+        return !!this.seller.degree && !!this.seller.year
+          && (!this.sellerCollegeSubjectOptions.length || !!this.seller.subject);
       }
       if (this.seller.bookType === 'exam') return !!this.seller.exam;
       return !!this.seller.genre && !!this.seller.language;
@@ -384,7 +427,13 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
   }
 
   selectBookType(bookType: BookType): void {
+    if (this.buyer.bookType === bookType) return;
     this.buyer.bookType = bookType;
+    this.clearBuyerCategorySelections();
+  }
+
+  onBuyerPreferenceChanged(key: keyof BuyerPreferences): void {
+    if (key === 'degree') this.buyer.subject = '';
   }
 
   goBack(): void {
@@ -441,7 +490,14 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
   }
 
   selectSellerBookType(bookType: BookType): void {
+    if (this.seller.bookType === bookType) return;
     this.seller.bookType = bookType;
+    this.clearSellerCategorySelections();
+    this.sellerValidationMessage = '';
+  }
+
+  onSellerDegreeChanged(): void {
+    this.seller.subject = '';
     this.sellerValidationMessage = '';
   }
 
@@ -810,7 +866,7 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
       bookType: typeMap[this.buyer.bookType],
       bookClass: this.buyer.bookType === 'school' ? this.buyer.classLevel : undefined,
       board: this.buyer.bookType === 'school' ? this.buyer.board : undefined,
-      subject: this.buyer.bookType === 'school' ? this.buyer.subject : undefined,
+      subject: this.buyer.bookType === 'school' || this.buyer.bookType === 'college' ? this.buyer.subject : undefined,
       degreeStream: this.buyer.bookType === 'college' ? this.buyer.degree : undefined,
       year: this.buyer.bookType === 'college' ? this.buyer.year : undefined,
       targetExam: this.buyer.bookType === 'exam' ? this.buyer.exam : undefined,
@@ -984,8 +1040,8 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
       authorPublisher: this.seller.authorPublisher.trim(),
       bookClass: isSchool ? this.seller.classLevel : undefined,
       board: isSchool ? this.seller.board : undefined,
-      subject: isSchool ? this.seller.subject : undefined,
-      degreeStream: isCollege ? this.joinValues(this.seller.degree, this.seller.stream) : undefined,
+      subject: isSchool || (isCollege && this.seller.subject) ? this.seller.subject : undefined,
+      degreeStream: isCollege ? this.seller.degree : undefined,
       year: isCollege ? this.seller.year : undefined,
       targetExam: isExam ? this.seller.exam : undefined,
       genre: this.seller.bookType === 'general' ? this.seller.genre : undefined,
@@ -1037,6 +1093,7 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
       const parsed = JSON.parse(saved) as Partial<BuyerPreferences>;
       if (parsed.bookType && this.bookTypes.some(type => type.value === parsed.bookType)) {
         this.buyer = { ...this.buyer, ...parsed };
+        this.clearInvalidBuyerSelections();
       }
     } catch {
       sessionStorage.removeItem('superme_second_hand_books_preferences');
@@ -1070,5 +1127,49 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
       title: '', authorPublisher: '', condition: 'NEW', listingType: 'sell', originalPrice: '', sellingPrice: '', negotiable: false,
       state: '', city: '', address: '', landmark: '', additionalNote: '', contactNumber: '', confirmed: false
     };
+  }
+
+  private clearBuyerCategorySelections(): void {
+    this.buyer.classLevel = '';
+    this.buyer.board = '';
+    this.buyer.subject = '';
+    this.buyer.degree = '';
+    this.buyer.stream = '';
+    this.buyer.year = '';
+    this.buyer.exam = '';
+    this.buyer.genre = '';
+    this.buyer.language = '';
+  }
+
+  private clearSellerCategorySelections(): void {
+    this.seller.classLevel = '';
+    this.seller.board = '';
+    this.seller.subject = '';
+    this.seller.degree = '';
+    this.seller.stream = '';
+    this.seller.year = '';
+    this.seller.exam = '';
+    this.seller.genre = '';
+    this.seller.language = '';
+  }
+
+  private clearInvalidBuyerSelections(): void {
+    const validForCurrentType = this.selectFields;
+    const validKeys = new Set(validForCurrentType.map(field => field.key));
+    (['classLevel', 'board', 'subject', 'degree', 'stream', 'year', 'exam', 'genre', 'language'] as Array<Exclude<keyof BuyerPreferences, 'bookType' | 'title' | 'author'>>)
+      .filter(key => !validKeys.has(key))
+      .forEach(key => { this.buyer[key] = ''; });
+
+    if (this.buyer.bookType === 'college' && this.buyer.subject
+      && !this.buyerCollegeSubjectOptions.some(option => option.value === this.buyer.subject)) {
+      this.buyer.subject = '';
+    }
+
+    for (const field of this.selectFields) {
+      const value = this.buyer[field.key];
+      if (typeof value === 'string' && value && !field.options.some(option => option.value === value)) {
+        (this.buyer as unknown as Record<string, string>)[field.key] = '';
+      }
+    }
   }
 }
