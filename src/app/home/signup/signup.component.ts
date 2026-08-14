@@ -20,6 +20,7 @@ import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard, KeyboardInfo } from '@capacitor/keyboard';
 import { environment } from '../../../environments/environment';
+import { AvatarDefinition, AvatarService } from '../../core/services/avatar.service';
 
 type SignupRole = 'child' | 'parent' | 'self';
 type SignupGender = StoredGender;
@@ -109,7 +110,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   public roleSelected?: SignupRole;
   public gender: SignupGender | null = null;
-  public avatarSelected: any;
+  public avatarSelected: string | null = null;
 
   public errorMessage: string | null = null;
   // Referral code UI and value
@@ -167,20 +168,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     "They'll grow with you, cheer you on"   // Step 4 - Pet Selection
   ]
 
-  public avatars = [
-    { key: 1, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png' },
-    { key: 2, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png' },
-    { key: 3, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png' },
-    { key: 4, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png' },
-    { key: 5, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png' },
-    { key: 6, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png' },
-    { key: 7, gender: 'male', value: 'assets/Images-Transparent/details-avatar-1-figma.png' },
-    { key: 8, gender: 'male', value: 'assets/Images-Transparent/details-avatar-2-figma.png' },
-    { key: 9, gender: 'male', value: 'assets/Images-Transparent/details-avatar-3-figma.png' },
-    { key: 10, gender: 'male', value: 'assets/Images-Transparent/details-avatar-4-figma.png' },
-    { key: 11, gender: 'male', value: 'assets/Images-Transparent/details-avatar-5-figma.png' },
-    { key: 12, gender: 'male', value: 'assets/Images-Transparent/details-avatar-6-figma.png' },
-  ]
+  public get avatars(): AvatarDefinition[] {
+    return this.avatarService.getAvatarsForUser(this.profileForm?.get('dob')?.value, this.gender);
+  }
 
   @ViewChild('swiperEl', { static: false }) swiperEl?: ElementRef;
   @ViewChild('swiperEl', { static: false }) swiperRef!: ElementRef;
@@ -437,7 +427,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private signupCredentialState: SignupCredentialStateService,
     private navCtrl: NavController,
     private onboardingState: OnboardingStateService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private avatarService: AvatarService
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -477,7 +468,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       })
     );
     this.subscription.add(
-      this.profileForm.get('dob')!.valueChanges.subscribe(value => this.updateComputedAge(value))
+    this.profileForm.get('dob')!.valueChanges.subscribe(value => {
+      this.updateComputedAge(value);
+      this.ensureAvatarSelectionIsValid();
+    })
     );
 
     this.route.queryParams.subscribe(params => {
@@ -856,10 +850,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   selectGender(gender: SignupGender): void {
-    if (this.gender !== gender) {
-      this.avatarSelected = null;
-    }
     this.gender = gender;
+    this.ensureAvatarSelectionIsValid();
   }
 
   // Determine current role from session or selection
@@ -1568,8 +1560,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     const persistedDraft = this.onboardingState.getRegistrationState()?.savedData || {};
-    const avatarKey = Number(profile.avatar || this.avatarSelected);
-    const avatar = this.avatars.find(item => item.key === avatarKey);
+    const avatar = this.getAvatarDefinition(profile.avatar || this.avatarSelected);
     const dobValue = profile.dob
       || persistedDraft.dateOfBirth
       || this.profileForm.get('dob')?.value;
@@ -1586,8 +1577,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       username: profile.username || persistedDraft.username || this.profileForm.get('username')?.value,
       relationship: 'CHILD',
       familyCode: this.managedChildFamilyCode,
-      avatarName: avatarKey ? `avatar${avatarKey}` : undefined,
-      avatarImageName: avatar?.value?.split('/').pop(),
+      avatarName: avatar?.key,
+      avatarImageName: avatar?.imageName,
       petName: selectedPetName,
       referralCode: this.referralCode || null,
       unlockPotential: false
@@ -2723,9 +2714,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) { profile = {}; }
 
     // Determine avatar selection (prefer saved profile value, then current selection)
-    const avatarKey = profile.avatar ?? this.avatarSelected ?? null;
-    const avatarNameValue = avatarKey ? `avatar${avatarKey}` : undefined;
-    const avatarImageNameValue = avatarKey ? `Avatar ${Number(avatarKey)}` : undefined;
+    const avatar = this.getAvatarDefinition(profile.avatar ?? this.avatarSelected);
+    const avatarNameValue = avatar?.key;
+    const avatarImageNameValue = avatar?.imageName;
 
     // Optional — omit entirely rather than defaulting to a value the user
     // never actually chose (toApiGender() always resolves to a real enum).
@@ -3030,13 +3021,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const authorizationCode = sessionStorage.getItem('oauth_signup_authorization_code') || '';
     const rawNonce = sessionStorage.getItem('oauth_signup_raw_nonce') || '';
     const clientId = sessionStorage.getItem('oauth_signup_client_id') || '';
-    const avatarKey  = profile.avatar ?? this.avatarSelected ?? null;
-
-    // Resolve avatar filename from the avatars list (e.g. "Image-Onboarding-Avatar-Female1.png")
-    const foundAvatar = avatarKey ? this.avatars.find(a => a.key === avatarKey) : null;
-    const avatarImageName = foundAvatar
-      ? (foundAvatar.value.split('/').pop() ?? `Avatar ${Number(avatarKey)}`)
-      : (avatarKey ? `Avatar ${Number(avatarKey)}` : undefined);
+    const avatar = this.getAvatarDefinition(profile.avatar ?? this.avatarSelected);
+    const avatarImageName = avatar?.imageName;
 
     const resolvedName = provider === 'apple'
       ? this.resolveAppleAccountName(
@@ -3063,7 +3049,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       name:            resolvedName,
       avatarUrl,
       role:            role.toUpperCase(),          // backend uses "role", not "relationship"
-      avatarName:      avatarKey ? `avatar${avatarKey}` : undefined,
+      avatarName:      avatar?.key,
       avatarImageName,
       referralCode:    sessionStorage.getItem('referralCode') || null
     };
@@ -3268,9 +3254,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) { profile = {}; }
 
     // Determine avatar selection (prefer saved profile value, then current selection)
-    const avatarKey2 = profile.avatar ?? this.avatarSelected ?? null;
-    const avatarNameValue2 = avatarKey2 ? `avatar${avatarKey2}` : undefined;
-    const avatarImageNameValue2 = avatarKey2 ? `Avatar ${Number(avatarKey2)}` : undefined;
+    const avatar = this.getAvatarDefinition(profile.avatar ?? this.avatarSelected);
+    const avatarNameValue2 = avatar?.key;
+    const avatarImageNameValue2 = avatar?.imageName;
 
     // Both 'self' and 'child' register as relationship SELF now — a UI role
     // of 'child' just additionally sets asChild:true, marking them "pending"
@@ -3841,19 +3827,36 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return finalizedUserData;
   }
 
-  /**
-   * Get avatar URL from avatar selection number
-   */
-  private getAvatarUrlFromSelection(avatarNumber: number, gender?: string): string {
-    const parsedAvatarNumber = Number(avatarNumber);
-    if (!Number.isInteger(parsedAvatarNumber) || parsedAvatarNumber < 1 || parsedAvatarNumber > 12) {
-      return '/assets/app-assets/Default-avatar-home.svg';
-    }
+  private getAvatarDefinition(value: unknown): AvatarDefinition | null {
+    const direct = this.avatarService.getAvatarAsset(value);
+    if (direct) return direct;
 
-    const isFemaleAvatar = parsedAvatarNumber <= 6;
-    const avatarIndex = isFemaleAvatar ? parsedAvatarNumber : parsedAvatarNumber - 6;
-    const genderPrefix = isFemaleAvatar ? 'Female' : 'Male';
-    return `/assets/Images-Transparent/Image-Onboarding-Avatar-${genderPrefix}${avatarIndex}.png`;
+    const text = String(value || '').trim();
+    if (!/^avatar\s*\d+$/i.test(text) && !/^\d+$/.test(text)) return null;
+    return this.avatarService.getAvatarForUser({
+      avatarImageName: text,
+      dateOfBirth: this.profileForm.get('dob')?.value,
+      gender: this.gender
+    });
+  }
+
+  private ensureAvatarSelectionIsValid(): void {
+    if (!this.avatarSelected) return;
+    const selectionIsStillAllowed = this.avatars.some(avatar => avatar.key === this.avatarSelected);
+    if (!selectionIsStillAllowed) {
+      this.avatarSelected = null;
+    }
+  }
+
+  public selectAvatar(avatar: AvatarDefinition): void {
+    if (this.avatars.some(option => option.key === avatar?.key)) {
+      this.avatarSelected = avatar.key;
+    }
+  }
+
+  private getAvatarUrlFromSelection(avatarSelection: unknown, gender?: string): string {
+    return this.getAvatarDefinition(avatarSelection)?.value
+      || this.avatarService.getFallbackAvatar(this.profileForm.get('dob')?.value, gender || this.gender).value;
   }
 
   /**
@@ -3922,7 +3925,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           }
         }
         if (profile?.avatar) {
-          this.avatarSelected = profile.avatar;
+          const avatar = this.getAvatarDefinition(profile.avatar);
+          this.avatarSelected = avatar && this.avatars.some(option => option.key === avatar.key)
+            ? avatar.key
+            : null;
         }
       }
 
@@ -4033,10 +4039,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   private persistProfileDraft(profile: any): void {
     const role = this.currentRole;
-    const avatarKey = Number(profile?.avatar);
-    const avatar = Number.isInteger(avatarKey)
-      ? this.avatars.find(item => item.key === avatarKey)
-      : undefined;
+    const avatar = this.getAvatarDefinition(profile?.avatar);
     const dateOfBirth = this.toDateInputValue(profile?.dob);
 
     this.onboardingState.updateRegistrationDraft({
@@ -4048,8 +4051,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       dateOfBirth: dateOfBirth || undefined,
       relationship: role ? role.toUpperCase() : undefined,
       asChild: role === 'child',
-      avatarName: avatarKey ? `avatar${avatarKey}` : undefined,
-      avatarImageName: avatar?.value?.split('/').pop(),
+      avatarName: avatar?.key,
+      avatarImageName: avatar?.imageName,
       referralCode: this.showReferral && this.referralCode ? this.referralCode : null,
       onboardingStep: 4
     }, 4);
@@ -4249,11 +4252,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     });
   }
 
-  private extractAvatarKey(value: unknown): number | null {
-    const matches = String(value || '').match(/(\d+)/g);
-    if (!matches?.length) return null;
-    const key = Number(matches[matches.length - 1]);
-    return Number.isInteger(key) && key >= 1 && key <= 12 ? key : null;
+  private extractAvatarKey(value: unknown): string | null {
+    return this.getAvatarDefinition(value)?.key || null;
   }
 
   private toDateInputValue(value: unknown): string {

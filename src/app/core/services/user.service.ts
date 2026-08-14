@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { StoredGender } from '../models/gender.model';
 import { MoodService } from './mood.service';
+import { AvatarService } from './avatar.service';
 
 export interface UserStats {
   coins: number;
@@ -23,6 +24,7 @@ export interface UserProfile {
   gender?: StoredGender;
   avatarUrl?: string;
   avatarName?: string;
+  avatarImageName?: string;
   pet?: string;
   relationship?: 'CHILD' | 'PARENT' | 'SELF';
 }
@@ -45,7 +47,11 @@ export class UserService {
   public stats$: Observable<UserStats | null> = this.statsSubject.asObservable();
   private statsRefresh$: Observable<UserStats | null> | null = null;
 
-  constructor(private http: HttpClient, private moodService: MoodService) {
+  constructor(
+    private http: HttpClient,
+    private moodService: MoodService,
+    private avatarService: AvatarService
+  ) {
     // Initialize user profile from storage
     this.loadUserFromStorage();
   }
@@ -110,19 +116,7 @@ export class UserService {
   }
 
   private calculateAgeFromDob(dob: string): number | null {
-    if (!dob) return null;
-    const birthDate = new Date(dob);
-    if (Number.isNaN(birthDate.getTime())) return null;
-
-    const today = new Date();
-    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      calculatedAge--;
-    }
-
-    return calculatedAge > 0 ? calculatedAge : null;
+    return this.avatarService.calculateAge(dob);
   }
 
   /**
@@ -138,16 +132,10 @@ export class UserService {
    */
   getUserAvatarUrl(): string {
     const profile = this.userProfileSubject.value;
-    if (profile?.avatarUrl) {
-      return profile.avatarUrl;
-    }
-    // Return default avatar based on gender or a generic default
-    if (profile?.gender === 'male') {
-      return 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
-    } else if (profile?.gender === 'female') {
-      return 'assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png';
-    }
-    return 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+    return this.avatarService.getAvatarForUser({
+      ...(profile || {}),
+      dateOfBirth: profile?.dob
+    }).value;
   }
 
   /**
@@ -266,8 +254,17 @@ export class UserService {
           name: profile.name,
           dob: profile.dob ? new Date(profile.dob).toISOString() : undefined,
           gender: profile.gender,
-          avatarName: signupAvatar ? `avatar${signupAvatar}` : undefined,
-          avatarUrl: profile.avatar ? this.getAvatarUrlFromSelection(profile.avatar, profile.gender) : undefined,
+          avatarName: signupAvatar || undefined,
+          avatarImageName: signupAvatar
+            ? this.avatarService.getAvatarAsset(signupAvatar)?.imageName
+            : undefined,
+          avatarUrl: profile.avatar
+            ? this.avatarService.getAvatarForUser({
+              avatarImageName: profile.avatar,
+              dateOfBirth: profile.dob,
+              gender: profile.gender
+            }).value
+            : undefined,
           relationship: signupRole ? signupRole.toUpperCase() as 'CHILD' | 'PARENT' | 'SELF' : undefined
         };
 
@@ -278,18 +275,4 @@ export class UserService {
     }
   }
 
-  /**
-   * Get avatar URL from avatar selection number
-   */
-  private getAvatarUrlFromSelection(avatarNumber: number, gender?: string): string {
-    const parsedAvatarNumber = Number(avatarNumber);
-    if (!Number.isInteger(parsedAvatarNumber) || parsedAvatarNumber < 1 || parsedAvatarNumber > 12) {
-      return '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
-    }
-
-    const isFemaleAvatar = parsedAvatarNumber <= 6;
-    const avatarIndex = isFemaleAvatar ? parsedAvatarNumber : parsedAvatarNumber - 6;
-    const genderPrefix = isFemaleAvatar ? 'Female' : 'Male';
-    return `/assets/Images-Transparent/Image-Onboarding-Avatar-${genderPrefix}${avatarIndex}.png`;
-  }
 }

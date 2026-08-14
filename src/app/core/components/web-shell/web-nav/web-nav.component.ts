@@ -142,7 +142,7 @@ export class WebNavComponent implements OnInit, OnDestroy {
   }
 
   get selectedChildAvatarUrl(): string {
-    return this.selectedChild?.avatarUrl || 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+    return this.selectedChild?.avatarUrl || 'assets/figma/avatars/below-11-male-1.png';
   }
 
   get selectedChildName(): string {

@@ -1031,7 +1031,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         email: userData.email,
         phone: userData.phone,
         gender: userData.gender,
-        relationship: userData.relationship
+        relationship: userData.relationship,
+        dob: userData.dateOfBirth || userData.dob,
+        avatarName: userData.avatarName || userData.avatar?.avatarName,
+        avatarImageName: userData.avatarImageName || userData.avatar?.avatarImageName
       });
     }
 

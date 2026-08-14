@@ -70,16 +70,21 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   listingCount = 0;
   isLoading = false;
 
+  readonly listingVerifiedAsset = 'assets/figma/eduhub-home/listing-verified.png';
+  readonly profileVerifiedAsset = 'assets/figma/eduhub-home/profile-verified.png';
+  readonly favoriteAsset = 'assets/figma/eduhub-home/favorite.svg';
+  readonly onlineModeAsset = 'assets/figma/eduhub-home/online-mode.svg';
+
   readonly categories: EduHubCategory[] = [
-    { key: 'tutors', label: 'Tutors', image: 'assets/figma/parent-eduhub/tutor.png', route: '/authed/tutors' },
-    { key: 'academies', label: 'Academies', image: 'assets/figma/parent-eduhub/academies.png', route: '/authed/academies' },
-    { key: 'workshops', label: 'Workshops', image: 'assets/figma/parent-eduhub/workshops.png', route: '/authed/education' },
-    { key: 'events', label: 'Events', image: 'assets/figma/parent-eduhub/events.png', route: '/authed/education' },
-    { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/parent-eduhub/stationery.png', route: '/authed/school-store' },
-    { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/parent-eduhub/books.png', route: '/authed/school-store' },
-    { key: 'counselors', label: 'Counselors', image: 'assets/figma/parent-eduhub/counselors.png', route: '/authed/counselors' },
-    { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/parent-eduhub/second-hand-books.png', route: '/authed/second-hand-books' },
-    { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/parent-eduhub/sports.png', route: '/authed/school-store' }
+    { key: 'tutors', label: 'Tutors', image: 'assets/figma/eduhub-home/category-tutors.png', route: '/authed/tutors' },
+    { key: 'academies', label: 'Academies', image: 'assets/figma/eduhub-home/category-academies.png', route: '/authed/academies' },
+    { key: 'workshops', label: 'Workshops', image: 'assets/figma/eduhub-home/category-workshops.png', route: '/authed/education' },
+    { key: 'events', label: 'Events', image: 'assets/figma/eduhub-home/category-events.png', route: '/authed/education' },
+    { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/eduhub-home/category-stationery.png', route: '/authed/school-store' },
+    { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/eduhub-home/category-book-stores.png', route: '/authed/school-store' },
+    { key: 'counselors', label: 'Counselors', image: 'assets/figma/eduhub-home/category-counselors.png', route: '/authed/counselors' },
+    { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/eduhub-home/category-second-hand-books.png', route: '/authed/second-hand-books' },
+    { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/eduhub-home/category-sports-shops.png', route: '/authed/school-store' }
   ];
 
   selectedCategoryKey: CategoryKey = 'tutors';
@@ -155,16 +160,11 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     return this.externalLoading.has(this.selectedCategoryKey);
   }
 
-  /**
-   * Whether to show the View All button for the current category. Tutors
-   * and Academies only show it once there are more than 4 items to see;
-   * the remaining categories have no inline preview data yet, so the
-   * button is their only way to reach that category's section at all.
-   */
+  /** Keep the category CTA available whenever the selected preview has data. */
   get showViewAll(): boolean {
     if (this.isLoading) return false;
-    if (this.selectedCategoryKey === 'tutors') return this.hasMoreTutors;
-    if (this.selectedCategoryKey === 'academies') return this.academyTotalCount > this.maxTutors;
+    if (this.selectedCategoryKey === 'tutors') return this.visibleTutors.length > 0;
+    if (this.selectedCategoryKey === 'academies') return this.academyTutors.length > 0;
     if (this.isExternalCategory(this.selectedCategoryKey)) return this.visibleExternalPreviews.length > 0;
     return true;
   }
@@ -391,6 +391,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       rating: Number(a?.rating ?? 0),
       champsLiked: Number(a?.champsLiked ?? 0),
       likedByUser: !!(a?.likedByUser ?? a?.liked),
+      isVerified: !!(a?.isVerified ?? a?.verified),
       experience: a?.experience ?? a?.experienceRange ?? '',
       qualification: a?.qualification ?? a?.headline ?? 'Academy',
       hourlyRate: fees,
@@ -436,6 +437,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
           .forEach(currentTutor => {
             currentTutor.champsLiked = state.count;
             (currentTutor as any).likedByUser = state.liked;
+            (currentTutor as any).likePending = state.pending;
           });
       });
       this.likeSubscriptions.set(id, subscription);
@@ -458,6 +460,44 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
     if (likes === null) return experience || '';
     return experience ? `${likes} | ${experience}` : String(likes);
+  }
+
+  isVerified(tutor: TutorListItem): boolean {
+    return !!tutor.isVerified;
+  }
+
+  isLikePending(tutor: TutorListItem): boolean {
+    return !!(tutor as TutorListItem & { likePending?: boolean }).likePending;
+  }
+
+  toggleLike(event: Event, tutor: TutorListItem): void {
+    event.stopPropagation();
+    if (this.isLikePending(tutor)) return;
+
+    const request = this.likeService.toggleLike(tutor);
+    if (!request) return;
+
+    void request.catch(() => {
+      // The shared like service restores the prior state after a failed request.
+    });
+  }
+
+  onImageError(event: Event, fallbackImage: string): void {
+    const image = event.target as HTMLImageElement | null;
+    if (!image || image.src.endsWith(fallbackImage)) return;
+    image.src = fallbackImage;
+  }
+
+  trackCategory(_: number, category: EduHubCategory): CategoryKey {
+    return category.key;
+  }
+
+  trackTutor(_: number, tutor: TutorListItem): number {
+    return tutor.id;
+  }
+
+  trackPreview(_: number, preview: EduHubPreview): string | number {
+    return preview.id;
   }
 
   onViewProfile(tutor: TutorListItem): void {

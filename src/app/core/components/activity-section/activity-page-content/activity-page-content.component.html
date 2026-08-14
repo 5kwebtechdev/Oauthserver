@@ -2,7 +2,7 @@
     <section class="child-activity-design" aria-label="Daily planner">
         <header class="child-activity-header">
             <button type="button" class="child-icon-button" aria-label="Go back" (click)="back.emit()">
-                <img src="assets/figma/child-activity/back.svg" alt="" />
+                <img src="assets/figma/planner-daily/back.svg" alt="" />
             </button>
             <h1>One Day at a Time!</h1>
         </header>
@@ -10,11 +10,11 @@
         <section class="child-week-card" aria-label="Select a day">
             <div class="child-month-picker">
                 <button type="button" class="child-month-button" aria-label="Previous month" (click)="moveChildMonth(-1)">
-                    <img src="assets/figma/child-activity/chevron-left.svg" alt="" />
+                    <img src="assets/figma/planner-daily/month-prev.svg" alt="" />
                 </button>
                 <span>{{ childMonthLabel }}</span>
                 <button type="button" class="child-month-button" aria-label="Next month" (click)="moveChildMonth(1)">
-                    <img src="assets/figma/child-activity/chevron-right.svg" alt="" />
+                    <img src="assets/figma/planner-daily/month-next.svg" alt="" />
                 </button>
             </div>
 
@@ -80,58 +80,82 @@
             <nav class="child-category-tabs" aria-label="Activity categories">
                 <button type="button" [class.is-active]="childCalendarTab === 'all'" class="tab-all"
                     (click)="selectChildCalendarTab('all')">
-                    <img src="assets/figma/child-activity/tab-all.png" alt="" /><span>All</span>
+                    <img src="assets/figma/planner-daily/tab-all.png" alt="" /><span>All</span>
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'habit'" class="tab-habit"
                     (click)="selectChildCalendarTab('habit')">
-                    <img src="assets/figma/child-home/glance-habit.png" alt="" /><span>Habit</span>
+                    <img src="assets/figma/planner-daily/tab-habit.png" alt="" /><span>Habit</span>
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'task'" class="tab-task"
                     (click)="selectChildCalendarTab('task')">
-                    <img src="assets/figma/child-home/glance-task.png" alt="" /><span>Task</span>
+                    <img src="assets/figma/planner-daily/tab-task.png" alt="" /><span>Task</span>
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'planner'" class="tab-planner"
                     (click)="selectChildCalendarTab('planner')">
-                    <img src="assets/figma/child-activity/tab-planner.png" alt="" /><span>Planner</span>
+                    <img src="assets/figma/planner-daily/tab-planner.png" alt="" /><span>Planner</span>
                 </button>
             </nav>
 
-            <div class="child-status-filters" aria-label="Filter by status"
-                *ngIf="childCalendarTab === 'habit' || childCalendarTab === 'task'">
-                <button type="button" [class.is-active]="childStatusFilter === 'pending'" class="status-pending"
-                    (click)="selectChildStatusFilter('pending')">Pending</button>
-                <button type="button" [class.is-active]="childStatusFilter === 'ongoing'" class="status-ongoing"
-                    (click)="selectChildStatusFilter('ongoing')">Ongoing</button>
-                <button type="button" [class.is-active]="childStatusFilter === 'completed'" class="status-completed"
-                    (click)="selectChildStatusFilter('completed')">Completed</button>
-                <button type="button" [class.is-active]="childStatusFilter === 'skipped'" class="status-skipped"
-                    (click)="selectChildStatusFilter('skipped')">Skipped</button>
-            </div>
+            <div class="child-activity-list" *ngIf="!loading && !plannerLoading; else childActivityLoading">
+                <!-- Events remain above every selected-day activity, matching the Planner design. -->
+                <ng-container *ngIf="showsPlannerEvents">
+                    <button type="button" class="child-event-card" *ngFor="let event of childEventItems"
+                        (click)="onCardTap(event)">
+                        <img src="assets/figma/planner-daily/event-cake.svg" alt="" />
+                        <span>
+                            <strong>{{ getChildItemTitle(event) }}</strong>
+                            <em>{{ getChildEventSubtitle(event) }}</em>
+                        </span>
+                    </button>
+                </ng-container>
 
-            <div class="child-activity-list" *ngIf="!loading; else childActivityLoading">
                 <button type="button" class="child-activity-card" *ngFor="let entry of childVisibleItems"
                     [ngClass]="'child-activity-card--' + entry.type" (click)="onCardTap(entry.item)">
-                    <ng-container *ngIf="entry.type !== 'planner'; else plannerCard">
-                        <div class="child-card-copy">
-                            <strong>{{ getChildItemTitle(entry.item) }}</strong>
-                            <span>{{ getChildItemTime(entry.item) }}</span>
-                        </div>
-                        <em *ngIf="getChildItemTag(entry.item) as tag">{{ tag }}</em>
-                    </ng-container>
-                    <ng-template #plannerCard>
-                        <div class="child-planner-symbol" aria-hidden="true">
-                            <img src="assets/figma/child-activity/tab-planner.png" alt="" />
-                        </div>
-                        <div class="child-card-copy">
-                            <strong>{{ getChildItemTitle(entry.item) }}</strong>
-                            <span>{{ getChildItemTime(entry.item) }}</span>
-                        </div>
-                    </ng-template>
+                    <div class="child-card-copy">
+                        <strong>{{ getChildItemTitle(entry.item) }}</strong>
+                        <span>{{ getChildItemTime(entry.item) }}</span>
+                    </div>
+                    <em *ngIf="getChildItemTag(entry.item) as tag">{{ tag }}</em>
                 </button>
 
-                <div class="child-calendar-empty" *ngIf="childVisibleItems.length === 0">
+                <section class="child-planner-cards" *ngIf="childCalendarTab === 'all' || childCalendarTab === 'planner'">
+                    <article class="child-planner-card" *ngFor="let card of childPlannerCards; let i = index; trackBy: trackPlannerCard"
+                        [style.--planner-color]="card.color">
+                        <button type="button" class="child-planner-card__header"
+                            [attr.aria-expanded]="isPlannerExpanded(card, i)" (click)="togglePlannerCard(card, i)">
+                            <span class="child-planner-card__heading">
+                                <i></i>
+                                <strong>{{ getChildItemTitle(card.source) }}</strong>
+                            </span>
+                            <span class="child-planner-card__actions">
+                                <em>{{ card.entries.length }} today</em>
+                                <img src="assets/figma/planner-daily/planner-chevron.svg" alt=""
+                                    [class.is-collapsed]="!isPlannerExpanded(card, i)" />
+                            </span>
+                        </button>
+                        <p>{{ getPlannerDateRange(card.source) }}</p>
+                        <div class="child-planner-card__entries" *ngIf="isPlannerExpanded(card, i)">
+                            <div class="child-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackPlannerEntry"
+                                [class.is-passed]="isPlannerEntryPassed(entry)">
+                                <time>{{ getPlannerEntryTime(entry) }}</time>
+                                <strong>{{ getChildItemTitle(entry) }}</strong>
+                                <em *ngIf="getPlannerEntryCountdown(entry) as countdown">{{ countdown }}</em>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <div class="child-calendar-empty child-calendar-error"
+                    *ngIf="plannerLoadError && !hasChildCalendarContent">
+                    <strong>Couldn’t load your planner</strong>
+                    <span>Check your connection and try again.</span>
+                    <button type="button" (click)="retryPlannerData()">Retry</button>
+                </div>
+
+                <div class="child-calendar-empty"
+                    *ngIf="!plannerLoadError && !hasChildCalendarContent">
                     <strong>{{ childCalendarTab === 'planner' ? 'No planner items for this day' : 'Nothing here yet' }}</strong>
-                    <span>{{ childCalendarTab === 'planner' ? 'Your events will appear here.' : 'Choose another status or add a new activity.' }}</span>
+                    <span>{{ childCalendarTab === 'planner' ? 'Your schedules and events will appear here.' : 'Choose another date or add a new activity.' }}</span>
                 </div>
             </div>
             <ng-template #childActivityLoading>

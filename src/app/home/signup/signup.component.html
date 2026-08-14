@@ -522,11 +522,11 @@
               <ng-container *ngFor="let avatar of avatars">
                 <button type="button" class="col-4 single-avatar"
                   *ngIf="!gender || gender === 'prefer_not_to_say' || avatar.gender === gender"
-                  (click)="avatarSelected = avatar.key"
+                  (click)="selectAvatar(avatar)"
                   [ngClass]="avatarSelected === avatar.key ? 'active' : null"
-                  [attr.aria-label]="'Choose avatar ' + avatar.key"
+                  [attr.aria-label]="'Choose ' + avatar.label"
                   [attr.aria-pressed]="avatarSelected === avatar.key">
-                  <img [src]="avatar.value" [alt]="'Avatar ' + avatar.key">
+                  <img [src]="avatar.value" [alt]="avatar.label">
                 </button>
               </ng-container>
             </div>

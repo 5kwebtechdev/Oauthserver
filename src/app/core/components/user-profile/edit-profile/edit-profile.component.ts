@@ -15,6 +15,7 @@ import { UserProfile, UserService } from '../../../services/user.service';
 import { finalize, debounceTime, distinctUntilChanged, switchMap, filter, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { ApiGender, toApiGender, toStoredGender } from '../../../models/gender.model';
+import { AvatarDefinition, AvatarService } from '../../../services/avatar.service';
 
 type ProfileGender = 'Male' | 'Female' | 'PreferNotToSay';
 
@@ -103,21 +104,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   gender: ProfileGender | null = null;
 
   // Avatar selection
-  avatarSelected: any = null;
-  public avatars = [
-    { key: 1, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png', imageName: 'Avatar 1' },
-    { key: 2, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png', imageName: 'Avatar 2' },
-    { key: 3, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png', imageName: 'Avatar 3' },
-    { key: 4, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png', imageName: 'Avatar 4' },
-    { key: 5, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png', imageName: 'Avatar 5' },
-    { key: 6, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png', imageName: 'Avatar 6' },
-    { key: 7, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', imageName: 'Avatar 7' },
-    { key: 8, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png', imageName: 'Avatar 8' },
-    { key: 9, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png', imageName: 'Avatar 9' },
-    { key: 10, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png', imageName: 'Avatar 10' },
-    { key: 11, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png', imageName: 'Avatar 11' },
-    { key: 12, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png', imageName: 'Avatar 12' },
-  ];
+  avatarSelected: string | null = null;
 
   // Birthday picker control
   openBirthdayPicker = false;
@@ -160,7 +147,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     private coreAuthService: CoreAuthService,
     private coreService: CoreService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private avatarService: AvatarService
   ) {
     // initialize selected country with service default
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -187,6 +175,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
           this.prefillFormFromUserData(userData);
         }
       })
+    );
+
+    this.subscription.add(
+      this.profileForm.get('dob')!.valueChanges.subscribe(() => this.ensureAvatarSelectionIsValid())
     );
 
     // Load current user profile data (fallback for initial load)
@@ -282,35 +274,28 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       }
     }
 
-    // 7. Auto-fill Avatar for non-parent accounts
-    if (this.accountType !== 'parent') {
-      // Support both flat (new API) and nested avatar object (legacy)
+    // 7. Auto-fill the same avatar for every role using the shared mapping.
+    {
       const avatarInfo = userData.avatar || {};
       this.avatarName = userData.avatarName || avatarInfo.avatarName || this.avatarName;
       const avatarImageName = userData.avatarImageName || avatarInfo.avatarImageName;
+      const avatarIdentifier = avatarImageName || userData.avatarName || avatarInfo.avatarName;
 
       // Store avatarId from API response (flat format)
       if (userData.avatarId != null) {
         this.currentAvatarId = userData.avatarId;
       }
 
-      if (avatarImageName) {
-        this.avatarImageName = avatarImageName;
+      if (avatarIdentifier) {
+        this.avatarImageName = avatarIdentifier;
         console.log('[EditProfile] Avatar Image Name set to:', this.avatarImageName);
       }
 
-      // Select avatar by avatarId (new flat format) or imageName (legacy)
-      if (this.currentAvatarId != null) {
-        const avatar = this.avatars.find(a => a.key === this.currentAvatarId);
-        if (avatar) {
+      if (avatarIdentifier) {
+        const avatar = this.avatarService.getAvatarAsset(avatarIdentifier);
+        if (avatar && this.isAvatarValidForCurrentUser(avatar)) {
           this.avatarSelected = avatar.key;
-          console.log('[EditProfile] Avatar selected by avatarId:', avatar.key);
-        }
-      } else if (avatarImageName) {
-        const avatar = this.avatars.find(a => a.imageName === avatarImageName);
-        if (avatar) {
-          this.avatarSelected = avatar.key;
-          console.log('[EditProfile] Avatar selected by imageName:', avatar.key);
+          console.log('[EditProfile] Avatar selected by image name:', avatar.key);
         }
       }
     }
@@ -357,6 +342,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     // Only use avatarImageName to derive avatarUrl
     if (payload.avatarImageName) {
       updatedProfile.avatarUrl = this.deriveAvatarUrlFromImageName(payload.avatarImageName);
+      updatedProfile.avatarImageName = payload.avatarImageName;
     }
 
     // Update the UserService with the new profile
@@ -368,44 +354,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
    * Derive avatar URL from avatar image name
    */
   private deriveAvatarUrlFromImageName(imageName: string): string | undefined {
-    if (!imageName) return undefined;
-
-    // Extract number from avatar name like "Avatar 3"
-    const match = imageName.match(/\d+/);
-    if (match) {
-      const num = parseInt(match[0], 10);
-      if (num >= 1 && num <= 12) {
-        if (num <= 6) {
-          return `/assets/Images-Transparent/Image-Onboarding-Avatar-Female${num}.png`;
-        } else {
-          const maleIndex = num - 6; // map 7..12 -> 1..6
-          return `/assets/Images-Transparent/Image-Onboarding-Avatar-Male${maleIndex}.png`;
-        }
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Derive avatar URL from avatar name (e.g., "avatar3" -> extract number)
-   */
-  private deriveAvatarUrlFromName(avatarName: string): string | undefined {
-    if (!avatarName) return undefined;
-
-    // Extract number from avatar name like "avatar3", "pare261551", etc.
-    const match = avatarName.match(/\d+/);
-    if (match) {
-      const num = parseInt(match[0], 10);
-      if (num >= 1 && num <= 12) {
-        if (num <= 6) {
-          return `/assets/Images-Transparent/Image-Onboarding-Avatar-Female${num}.png`;
-        } else {
-          const maleIndex = num - 6;
-          return `/assets/Images-Transparent/Image-Onboarding-Avatar-Male${maleIndex}.png`;
-        }
-      }
-    }
-    return undefined;
+    return this.avatarService.getAvatarAsset(imageName)?.value;
   }
 
   /**
@@ -575,7 +524,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
                 gender: this.normalizeStoredGender(response.gender),
                 dob: response.dateOfBirth,
                 avatarUrl: avatarImgName ? this.deriveAvatarUrlFromImageName(avatarImgName) : undefined,
-                avatarName: response.avatarName || response.avatar?.avatarName
+                avatarName: response.avatarName || response.avatar?.avatarName,
+                avatarImageName: avatarImgName
               });
 
               if (avatarImgName) this.avatarImageName = avatarImgName;
@@ -623,7 +573,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         name: this.fullName?.trim(),
         gender: this.gender ? this.toApiGender(this.gender) : undefined,
         email: this.profileForm.get('email')!.value!.trim(),
-        ...(this.avatarSelected ? { avatarName: `avatar${this.avatarSelected}` } : {}),
+        ...(this.avatarSelected ? { avatarImageName: this.avatarService.getAvatarAsset(this.avatarSelected)?.imageName } : {}),
       };
       if (dobRaw) {
         base.dateOfBirth = this.formatDateForBackend(dobRaw);
@@ -663,8 +613,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
     // Avatar selection
     if (this.avatarSelected !== this.initialValues.avatarSelected && this.avatarSelected) {
-      payload.avatarId = this.avatarSelected;
-      const sel = this.avatars.find(a => a.key === this.avatarSelected);
+      const sel = this.avatarService.getAvatarAsset(this.avatarSelected);
       if (sel) payload.avatarImageName = sel.imageName;
     }
 
@@ -677,7 +626,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
     if (Object.keys(payload).length === 0) return null;
 
-    // Always send avatarId, avatarName, avatarImageName so backend has full context
+    // Preserve the server's legacy avatar id only when no new Figma avatar was selected.
     if (!payload.avatarId && this.currentAvatarId != null) payload.avatarId = this.currentAvatarId;
     if (!payload.avatarName && this.avatarName?.trim()) payload.avatarName = this.avatarName.trim();
     if (!payload.avatarImageName && this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
@@ -701,6 +650,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       if (response.dateOfBirth !== undefined) merged.dateOfBirth = response.dateOfBirth;
       if (response.gender !== undefined) merged.gender = response.gender;
       if (response.avatar !== undefined) merged.avatar = response.avatar;
+      if (response.avatarImageName !== undefined) merged.avatarImageName = response.avatarImageName;
 
       // The Profile page displays a precomputed `age` field rather than
       // deriving it live from dateOfBirth, so it must be refreshed here too —
@@ -727,18 +677,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
    * extractAgeFromUserData) so the recomputed value stays consistent.
    */
   private calculateAgeFromDob(dob: string): number | null {
-    const birthDate = new Date(dob);
-    if (Number.isNaN(birthDate.getTime())) return null;
-
-    const today = new Date();
-    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      calculatedAge--;
-    }
-
-    return calculatedAge > 0 ? calculatedAge : null;
+    return this.avatarService.calculateAge(dob);
   }
 
   /**
@@ -964,25 +903,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
    */
   get calculatedAge(): string {
     const dobValue = this.profileForm.get('dob')?.value;
-    if (!dobValue) {
-      return '';
-    }
-
-    const birthDate = new Date(dobValue);
-    if (isNaN(birthDate.getTime())) {
-      return '';
-    }
-
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    // Adjust age if birthday hasn't occurred yet this year
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-
-    return age >= 0 ? `${age} year${age !== 1 ? 's' : ''} old` : '';
+    const age = this.avatarService.calculateAge(dobValue);
+    return age === null ? '' : `${age} year${age !== 1 ? 's' : ''} old`;
   }
 
   /**
@@ -993,15 +915,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     const dobValue = this.profileForm.get('dob')?.value;
     if (!dobValue) return;
 
-    const birthDate = new Date(dobValue);
-    if (isNaN(birthDate.getTime())) return;
-
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
+    const age = this.avatarService.calculateAge(dobValue);
+    if (age === null) return;
 
     if (this.accountType === 'child') {
       if (age > 18) {
@@ -1049,28 +964,14 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   /**
    * Get filtered avatars for the selected gender
    */
-  get avatarsFiltered(): any[] {
-    // Prefer the currently selected gender in the form. If that's empty,
-    // fallback to the loaded user data gender so avatars appear on edit.
-    let selectedGender = this.gender;
-    if (!selectedGender && this.currentUserData && this.currentUserData.gender) {
-      selectedGender = this.normalizeProfileGender(this.currentUserData.gender);
-    }
-
-    if (!selectedGender) return [];
-    if (selectedGender === 'PreferNotToSay') return this.avatars;
-    return this.avatars.filter(a => a.gender === selectedGender);
+  get avatarsFiltered(): AvatarDefinition[] {
+    const selectedGender = this.gender || this.normalizeProfileGender(this.currentUserData?.gender);
+    return this.avatarService.getAvatarsForUser(this.profileForm.get('dob')?.value, selectedGender);
   }
 
   selectGender(gender: ProfileGender): void {
-    if (this.gender !== gender && gender !== 'PreferNotToSay' && this.avatarSelected) {
-      const selectedAvatar = this.avatars.find(avatar => avatar.key === this.avatarSelected);
-      if (selectedAvatar && selectedAvatar.gender !== gender) {
-        this.avatarSelected = null;
-        this.avatarImageName = null;
-      }
-    }
     this.gender = gender;
+    this.ensureAvatarSelectionIsValid();
   }
 
   private normalizeProfileGender(value: unknown): ProfileGender | null {
@@ -1092,15 +993,28 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   /**
    * Select an avatar and update the profile
    */
-  selectAvatar(avatar: any): void {
+  selectAvatar(avatar: AvatarDefinition): void {
     if (!avatar) return;
     this.avatarSelected = avatar.key;
-    this.avatarImageName = avatar.imageName || `Avatar ${avatar.key}`;
+    this.avatarImageName = avatar.imageName;
+    this.currentAvatarId = null;
     console.log('[EditProfile] Avatar selected:', {
       key: avatar.key,
       imageName: this.avatarImageName,
       path: avatar.value
     });
+  }
+
+  private ensureAvatarSelectionIsValid(): void {
+    if (!this.avatarSelected) return;
+    if (!this.avatarsFiltered.some(avatar => avatar.key === this.avatarSelected)) {
+      this.avatarSelected = null;
+      this.avatarImageName = null;
+    }
+  }
+
+  private isAvatarValidForCurrentUser(avatar: AvatarDefinition): boolean {
+    return this.avatarsFiltered.some(option => option.key === avatar.key);
   }
 
   /**

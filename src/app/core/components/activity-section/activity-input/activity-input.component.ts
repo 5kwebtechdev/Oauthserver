@@ -1431,7 +1431,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
           next: (res) => {
             try {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
-              this.habitService.updateHabit(updatedHabit);
+              this.habitService.updateHabit(updatedHabit, 'planner');
               this.showSuccessToast(this.title, 'timetable', true);
               this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
@@ -1443,7 +1443,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
           next: (res) => {
             try {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
-              this.habitService.addHabit(createdHabit);
+              this.habitService.addHabit(createdHabit, 'planner');
               this.showSuccessToast(this.title, 'timetable');
               this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
@@ -1558,8 +1558,10 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
             formattedStartTime,
             formattedEndTime
           );
-          if (this.editingId) this.habitService.updateHabit(savedEvent);
-          else this.habitService.addHabit(savedEvent);
+          // Events are rendered by the Planner calendar, so notify the shared
+          // Planner refresh channel instead of treating the event as a habit.
+          if (this.editingId) this.habitService.updateHabit(savedEvent, 'planner');
+          else this.habitService.addHabit(savedEvent, 'planner');
           this.showSuccessToast(this.title.trim(), 'event', !!this.editingId);
           this.finalizeAndReturn();
         } finally {
