@@ -10,6 +10,8 @@ export interface CalendarResponse {
     totalHabits?: number;
     totalHabitsCompleted?: number;
     habitCompletionRate?: number;
+    /** Set only when the calendar request failed and an empty fallback was returned. */
+    loadError?: boolean;
 }
 
 export interface CalendarEvent {

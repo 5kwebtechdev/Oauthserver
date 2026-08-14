@@ -59,7 +59,7 @@
       </div>
 
       <!-- Avatar Picker Section (only for child/self accounts) -->
-      <div class="edit-details" *ngIf="(gender || currentUserData?.gender) && accountType !== 'parent'">
+      <div class="edit-details" *ngIf="gender || currentUserData?.gender">
         <div class="input-heading">
           <h2 class="heading-text">Choose an avatar</h2>
           <div class="validation-text">Pick your profile picture</div>
@@ -68,7 +68,7 @@
           <ng-container *ngFor="let avatar of avatarsFiltered">
             <div class="avatar-item" (click)="selectAvatar(avatar)"
               [ngClass]="avatarSelected === avatar.key ? 'active' : null">
-              <img [src]="avatar.value" [alt]="'Avatar ' + avatar.key" />
+              <img [src]="avatar.value" [alt]="avatar.label" />
             </div>
           </ng-container>
         </div>

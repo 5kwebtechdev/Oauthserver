@@ -76,24 +76,13 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Resolve avatar URL+alt for a family member.
-   * Use ChildSelfImageService only for members whose relationship is Child.
-   */
+  /** Resolve every family member through the one shared avatar mapping. */
   getMemberAvatar(member: FamilyMember | null): { url: string | null; alt: string | null } | null {
     if (!member) return null;
 
     try {
-      const rel = String(member.relationship || '').toLowerCase();
-
-      // Only use child resolver for children — avoid using avatarImageName for parents/co-parents
-      if (rel === 'child') {
-        // ChildSelfImageService gracefully handles multiple input shapes (avatarName/avatarImageName)
-        const resolved = this.childSelfImageService.resolveAvatarForMember(member as any);
-        return resolved || { url: null, alt: null };
-      }
-
-      return null;
+      const resolved = this.childSelfImageService.resolveAvatarForMember(member as any);
+      return resolved || { url: null, alt: null };
     } catch (e) {
       console.error('[FamilyConnection] getMemberAvatar error', e);
       return null;

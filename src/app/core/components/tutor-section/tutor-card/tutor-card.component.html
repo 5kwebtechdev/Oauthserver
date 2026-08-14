@@ -1,18 +1,18 @@
 <section class="eduhub-section" aria-labelledby="eduhub-title">
   <header class="eduhub-header">
     <div>
-      <h3 id="eduhub-title">EduHub</h3>
-      <p>Tutors • Academies • And more</p>
+      <h3 id="eduhub-title"><span>Edu</span><span>Hub</span></h3>
+      <p><span>Tutors</span><img src="assets/figma/eduhub-home/tagline-dot.svg" alt="" aria-hidden="true"><span>Academies</span><img src="assets/figma/eduhub-home/tagline-dot.svg" alt="" aria-hidden="true"><span>And more</span></p>
     </div>
     <div class="eduhub-listings" *ngIf="!isLoading">
-      <img src="assets/figma/child-home/footer/eduhub-verified.png" alt="" aria-hidden="true">
+      <img [src]="listingVerifiedAsset" alt="" aria-hidden="true">
       <strong>{{ totalListingCount }}<ng-container *ngIf="totalListingCount > 0">+</ng-container></strong>
       <span>Listings</span>
     </div>
   </header>
 
   <nav class="eduhub-categories" aria-label="Education categories">
-    <button *ngFor="let category of categories" type="button" class="eduhub-category"
+    <button *ngFor="let category of categories; trackBy: trackCategory" type="button" class="eduhub-category"
       [class.active]="selectedCategoryKey === category.key"
       [attr.aria-pressed]="selectedCategoryKey === category.key ? 'true' : 'false'"
       (click)="selectCategory(category)">
@@ -26,12 +26,18 @@
   <ng-container *ngIf="!isLoading && !isExternalCategoryLoading">
     <ng-container *ngIf="selectedCategoryKey === 'tutors'">
       <div class="eduhub-tutors" *ngIf="visibleTutors.length">
-        <article class="eduhub-tutor" *ngFor="let tutor of visibleTutors" (click)="onViewProfile(tutor)" role="button" tabindex="0" (keyup.enter)="onViewProfile(tutor)">
-          <img class="eduhub-tutor__avatar" [src]="tutor.avatar" [alt]="tutor.name">
+        <article class="eduhub-tutor" *ngFor="let tutor of visibleTutors; trackBy: trackTutor" (click)="onViewProfile(tutor)" role="button" tabindex="0" (keyup.enter)="onViewProfile(tutor)">
+          <img class="eduhub-tutor__avatar" [src]="tutor.avatar" [alt]="tutor.name" (error)="onImageError($event, selectedCategory.image)">
           <div class="eduhub-tutor__body">
-            <div class="eduhub-tutor__headline"><strong>{{ tutor.name }}</strong><span class="eduhub-tutor__favorite" aria-label="Favourite tutor" role="img">♡</span></div>
+            <div class="eduhub-tutor__headline">
+              <div class="eduhub-tutor__identity">
+                <strong>{{ tutor.name }}</strong>
+                <img *ngIf="isVerified(tutor)" class="eduhub-tutor__verified" [src]="profileVerifiedAsset" alt="Verified">
+              </div>
+              <button type="button" class="eduhub-tutor__favorite" [class.is-liked]="tutor.likedByUser" [disabled]="isLikePending(tutor)" [attr.aria-label]="tutor.likedByUser ? 'Unlike ' + tutor.name : 'Like ' + tutor.name" [attr.aria-pressed]="tutor.likedByUser ? 'true' : 'false'" (click)="toggleLike($event, tutor)"><img [src]="favoriteAsset" alt="" aria-hidden="true"></button>
+            </div>
             <p>{{ tutor.description }}</p>
-            <small class="eduhub-tutor__time" *ngIf="tutor.startTime || tutor.endTime"><img src="assets/figma/child-home/eduhub-time.png" alt="" aria-hidden="true">{{ tutor.startTime }}<ng-container *ngIf="tutor.startTime && tutor.endTime">–</ng-container>{{ tutor.endTime }}</small>
+            <small class="eduhub-tutor__time" *ngIf="tutor.startTime || tutor.endTime"><img [src]="onlineModeAsset" alt="" aria-hidden="true">{{ tutor.startTime }}<ng-container *ngIf="tutor.startTime && tutor.endTime">–</ng-container>{{ tutor.endTime }}</small>
           </div>
           <div class="eduhub-tutor__footer">
             <span>{{ tutor.hourlyRate ? ('₹ ' + tutor.hourlyRate + ' / Hours') : 'Contact for pricing' }}</span>
@@ -44,12 +50,18 @@
 
     <ng-container *ngIf="selectedCategoryKey === 'academies'">
       <div class="eduhub-tutors" *ngIf="academyTutors.length">
-        <article class="eduhub-tutor" *ngFor="let academy of academyTutors" (click)="onViewAcademyProfile(academy)" role="button" tabindex="0" (keyup.enter)="onViewAcademyProfile(academy)">
-          <img class="eduhub-tutor__avatar" [src]="academy.avatar" [alt]="academy.name">
+        <article class="eduhub-tutor" *ngFor="let academy of academyTutors; trackBy: trackTutor" (click)="onViewAcademyProfile(academy)" role="button" tabindex="0" (keyup.enter)="onViewAcademyProfile(academy)">
+          <img class="eduhub-tutor__avatar" [src]="academy.avatar" [alt]="academy.name" (error)="onImageError($event, selectedCategory.image)">
           <div class="eduhub-tutor__body">
-            <div class="eduhub-tutor__headline"><strong>{{ academy.name }}</strong><span class="eduhub-tutor__favorite" aria-label="Favourite academy" role="img">♡</span></div>
+            <div class="eduhub-tutor__headline">
+              <div class="eduhub-tutor__identity">
+                <strong>{{ academy.name }}</strong>
+                <img *ngIf="isVerified(academy)" class="eduhub-tutor__verified" [src]="profileVerifiedAsset" alt="Verified">
+              </div>
+              <button type="button" class="eduhub-tutor__favorite" [class.is-liked]="academy.likedByUser" [disabled]="isLikePending(academy)" [attr.aria-label]="academy.likedByUser ? 'Unlike ' + academy.name : 'Like ' + academy.name" [attr.aria-pressed]="academy.likedByUser ? 'true' : 'false'" (click)="toggleLike($event, academy)"><img [src]="favoriteAsset" alt="" aria-hidden="true"></button>
+            </div>
             <p>{{ academy.description }}</p>
-            <small class="eduhub-tutor__time" *ngIf="academy.startTime || academy.endTime"><img src="assets/figma/child-home/eduhub-time.png" alt="" aria-hidden="true">{{ academy.startTime }}<ng-container *ngIf="academy.startTime && academy.endTime">–</ng-container>{{ academy.endTime }}</small>
+            <small class="eduhub-tutor__time" *ngIf="academy.startTime || academy.endTime"><img [src]="onlineModeAsset" alt="" aria-hidden="true">{{ academy.startTime }}<ng-container *ngIf="academy.startTime && academy.endTime">–</ng-container>{{ academy.endTime }}</small>
           </div>
           <div class="eduhub-tutor__footer">
             <span>{{ academy.hourlyRate ? ('₹ ' + academy.hourlyRate + ' / Hours') : 'Contact for pricing' }}</span>
@@ -62,8 +74,8 @@
 
     <ng-container *ngIf="visibleExternalPreviews.length">
       <div class="eduhub-tutors">
-        <article class="eduhub-tutor" *ngFor="let listing of visibleExternalPreviews">
-          <img class="eduhub-tutor__avatar" [src]="listing.image" [alt]="listing.name">
+        <article class="eduhub-tutor" *ngFor="let listing of visibleExternalPreviews; trackBy: trackPreview">
+          <img class="eduhub-tutor__avatar" [src]="listing.image" [alt]="listing.name" (error)="onImageError($event, selectedCategory.image)">
           <div class="eduhub-tutor__body">
             <div class="eduhub-tutor__headline"><strong>{{ listing.name }}</strong></div>
             <p>{{ listing.description }}</p>

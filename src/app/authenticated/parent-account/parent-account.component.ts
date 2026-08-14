@@ -550,8 +550,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             String(parent?.gender || '').toLowerCase() === 'female',
             54
         );
-        this.userAvatarUrl = parent?.avatarUrl
-            || parent?.avatar?.url
+        this.userAvatarUrl = this.childSelfImage.resolveAvatarFromUser(parent).url
             || this.userService.getUserAvatarUrl()
             || '';
     }

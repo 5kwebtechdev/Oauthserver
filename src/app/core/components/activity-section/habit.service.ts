@@ -14,7 +14,7 @@ export class HabitService {
   // Use ReplaySubject(1) so late subscribers (navigating back) still receive
   // the last change event even if it was emitted before they subscribed.
   // Extend actions to include 'updated' for edit flows.
-  private dataChangedSubject = new ReplaySubject<{ type: 'habit' | 'task', action: 'added' | 'deleted' | 'updated' }>(1);
+  private dataChangedSubject = new ReplaySubject<{ type: 'habit' | 'task' | 'planner', action: 'added' | 'deleted' | 'updated' }>(1);
   public dataChanged$ = this.dataChangedSubject.asObservable();
 
   private currentLoadedDate: string = '';
@@ -182,10 +182,10 @@ export class HabitService {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
-  addHabit(habit: Habit): void {
+  addHabit(habit: Habit, dataType: 'habit' | 'planner' = 'habit'): void {
     const currentHabits = this.habitsSubject.value;
     this.habitsSubject.next([...currentHabits, habit]);
-    this.dataChangedSubject.next({ type: 'habit', action: 'added' });
+    this.dataChangedSubject.next({ type: dataType, action: 'added' });
   }
 
   getHabits(): Observable<Habit[]> {
@@ -200,14 +200,14 @@ export class HabitService {
     return this.habitsSubject.value.find(h => h.id === id);
   }
 
-  updateHabit(updatedHabit: Habit): void {
+  updateHabit(updatedHabit: Habit, dataType: 'habit' | 'planner' = 'habit'): void {
     const currentHabits = this.habitsSubject.value;
     const index = currentHabits.findIndex(h => h.id === updatedHabit.id);
     if (index !== -1) {
       currentHabits[index] = updatedHabit;
       this.habitsSubject.next([...currentHabits]);
       // Notify subscribers that a habit was updated so lists can refresh
-      try { this.dataChangedSubject.next({ type: 'habit', action: 'updated' }); } catch (e) { /* ignore */ }
+      try { this.dataChangedSubject.next({ type: dataType, action: 'updated' }); } catch (e) { /* ignore */ }
     }
   }
 

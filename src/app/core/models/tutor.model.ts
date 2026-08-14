@@ -169,6 +169,7 @@ export interface TutorListItem {
     rating: number;
     champsLiked?: number;
     likedByUser?: boolean;
+    isVerified?: boolean;
     experience: string;
     qualification: string;
     hourlyRate: number;
@@ -231,6 +232,7 @@ export function toTutorListItem(tutor: Tutor): TutorListItem {
             : `${tutor.qualification} Specialist`,
         champsLiked: tutor.champsLiked || 0,
         likedByUser: !!tutor.likedByUser,
+        isVerified: !!(tutor.isVerified ?? tutor.verified),
         rating: tutor.champsLiked || tutor.likes?.length || 0,
         experience: experienceStr,
         qualification: tutor.qualification,

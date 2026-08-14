@@ -19,16 +19,30 @@ export class CalendarService {
     ) { }
 
     getUserCalendar(date: string | Date, viewType: 'day' | 'month' = 'day', forceReload: boolean = false): Observable<CalendarResponse> {
+        const includePersonalEvents = this.authService.getUserRelationship() === 'CHILD';
+        return this.getCalendar(date, viewType, includePersonalEvents);
+    }
+
+    /**
+     * The Figma Planner is available to Child, Self, and parent-selected-child
+     * contexts. It is the only view that needs personal events merged for all
+     * of those contexts; legacy calendar consumers retain their old behavior.
+     */
+    getUserPlannerCalendar(date: string | Date, viewType: 'day' | 'month' = 'day'): Observable<CalendarResponse> {
+        return this.getCalendar(date, viewType, true);
+    }
+
+    private getCalendar(date: string | Date, viewType: 'day' | 'month', includePersonalEvents: boolean): Observable<CalendarResponse> {
         const dateStr = this.formatDateToYYYYMMDD(date);
         const url = `${this.apiUrl}/user-calendar?date=${dateStr}&viewType=${viewType}`;
         const calendar$ = this.http.get<CalendarResponse>(url).pipe(
-            catchError(() => of(this.emptyCalendarResponse()))
+            catchError(() => of({ ...this.emptyCalendarResponse(), loadError: true }))
         );
 
-        // Planner Events have their own API and are not included in
-        // /calendar/user-calendar. Only merge them for the Child flow so a
-        // parent viewing a selected child never sees the parent's own events.
-        const plannerEvents$ = this.authService.getUserRelationship() === 'CHILD'
+        // Personal events use their existing endpoint while Planner schedules
+        // come from /calendar/user-calendar. The profile-selector interceptor
+        // scopes this request to a selected child when a parent is viewing one.
+        const plannerEvents$ = includePersonalEvents
             ? this.eventApi.getEvents().pipe(catchError(() => of([] as EventDto[])))
             : of([] as EventDto[]);
 
@@ -126,6 +140,10 @@ export class CalendarService {
      */
     getUserCalendarMonth(date: string): Observable<CalendarResponse> {
         return this.getUserCalendar(date, 'month');
+    }
+
+    getUserPlannerCalendarMonth(date: string): Observable<CalendarResponse> {
+        return this.getUserPlannerCalendar(date, 'month');
     }
 
     transformToTimelineEvents(response: CalendarResponse): TimelineEvent[] {

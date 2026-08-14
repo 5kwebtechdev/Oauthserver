@@ -31,7 +31,7 @@ export class UserProfileComponent implements OnInit, OnChanges {
   // Local user avatar URL
   // This is a real bundled asset. The previous fallback path no longer
   // exists, which caused a broken-image/question-mark icon in child view.
-  userAvatarUrl: string = 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+  userAvatarUrl: string = 'assets/figma/avatars/18-plus-male-1.png';
   // Avatar image name (e.g., "Avatar 3") coming from login response
   avatarImageName: string | null = null;
 

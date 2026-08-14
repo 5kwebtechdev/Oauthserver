@@ -100,6 +100,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                   : undefined,
                 avatarUrl: resolved.url || undefined,
                 avatarName: user.avatar?.avatarName || undefined,
+                avatarImageName: (user as any).avatarImageName || (user.avatar as any)?.avatarImageName || undefined,
                 relationship: (user.relationship || '').toUpperCase() as any
               });
               console.log('[LoginComponent] UserService profile synced:', this.userService.getUserProfile());

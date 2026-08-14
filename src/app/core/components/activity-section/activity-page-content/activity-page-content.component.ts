@@ -17,7 +17,14 @@ import { CustomToastService, Toast } from '../../../services/custom-toast.servic
 import { Habit } from '../habit.types';
 import { CalendarService } from '../../../services/calendar.service';
 import { CalendarResponse } from '../../../models/calendar.model';
-import { Observable, Subscription, filter, take } from 'rxjs';
+import { Observable, Subscription, filter, skip, take } from 'rxjs';
+
+interface PlannerScheduleCard {
+    id: string;
+    source: any;
+    color: string;
+    entries: any[];
+}
 
 @Component({
     standalone: true,
@@ -52,19 +59,26 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     public selectedDate: Date = new Date();
     public currentTimestamp: number = Date.now();
     public loading: boolean = false;
+    public plannerLoading: boolean = false;
+    public plannerLoadError: boolean = false;
     public showSingleMode: boolean = false;
     public singleModeHabit: Habit | null = null;
     public readonly MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER;
 
-    /** Latest Figma calendar controls. These are kept separate from the legacy filters. */
+    /** Latest Figma calendar controls, shared by Child, Self, and parent-child contexts. */
     public childCalendarTab: 'all' | 'habit' | 'task' | 'planner' = 'all';
     public childStatusFilter: 'pending' | 'ongoing' | 'completed' | 'skipped' = 'pending';
     public childDateActivities: Record<string, { habit?: boolean; task?: boolean; planner?: boolean }> = {};
     public childPlannerItems: any[] = [];
+    public childEventItems: any[] = [];
     /** First date currently visible in the seven-day carousel. */
     private childCarouselStartDate: Date | null = null;
     private childCarouselPointerStartX: number | null = null;
     private childCarouselDidSwipe = false;
+    private readonly plannerExpansion = new Map<string, boolean>();
+    private habitRequestId = 0;
+    private taskRequestId = 0;
+    private plannerRequestId = 0;
 
     // Normalize timestamps coming from API: if timestamp looks like seconds, convert to ms
     private normalizeTimestamp(ts: any): number {
@@ -94,9 +108,17 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         this.toast$ = this.toastService.toast$;
     }
 
-    /** The new calendar design is intentionally limited to linked Child accounts. */
+    /**
+     * The Planner screen follows one Figma layout for every role. The data it
+     * renders is still scoped to the active user or currently selected child.
+     */
+    public get isPlannerCalendarDesign(): boolean {
+        return true;
+    }
+
+    /** Backward-compatible name for existing template and route logic. */
     public get isChildCalendarDesign(): boolean {
-        return String(this.authService.getUserRelationship() || '').toUpperCase() === 'CHILD';
+        return this.isPlannerCalendarDesign;
     }
 
     /**
@@ -130,6 +152,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         // Ensure we show today's data by default when component opens
         this.selectedDate = new Date();
+        this.resetPlannerContext();
         this.checkRouteParameters();
         this.initializeSubscriptions();
 
@@ -153,9 +176,9 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
             // Reload when selected child changes (parent switches child)
             this.subscriptions.add(
-                this.profileSelector.childChanged$.subscribe(() => {
-                    this.loadHabits(true);
-                    this.loadTasksForSelectedDate(this.selectedDate, true); // force-clear task cache
+                this.profileSelector.childChanged$.pipe(skip(1)).subscribe(() => {
+                    this.resetPlannerContext();
+                    this.loadInitialData(true);
                 })
             );
         } else {
@@ -223,6 +246,10 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     private initializeSubscriptions(): void {
         this.subscriptions.add(
             this.habitService.getHabits().subscribe(habits => {
+                // The Planner screen always issues a context-scoped request.  The
+                // shared HabitService stream may still contain a previous child
+                // or account, so it must not overwrite the guarded result here.
+                if (this.isPlannerCalendarDesign) return;
                 if (habits?.length) {
                     // Interceptor already filters by selected child - no manual filtering needed
                     this.allHabits = habits;
@@ -250,16 +277,28 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     this.applyFilters();
                     try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
                 }
+                if (evt.type === 'planner') {
+                    // A timetable save returns to this screen with the Planner
+                    // tab selected. Refresh the active profile rather than
+                    // relying on a cached list from the previous context.
+                    this.childCalendarTab = 'planner';
+                    this.currentMainTab = 'habits';
+                    this.loadChildCalendarData();
+                    try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
+                }
             })
         );
     }
 
-    private loadInitialData(): void {
-        this.loadHabits();
+    private loadInitialData(forceReload: boolean = false): void {
+        // The enhanced calendar always fetches fresh data for its active
+        // profile context. HabitService's old date-only cache is not allowed
+        // to carry a previous account or child's entries into this screen.
+        this.loadHabits(forceReload || this.isPlannerCalendarDesign);
         // Only fetch tasks if Tasks tab is already active (e.g. pre-selected via route param).
         // Otherwise tasks are fetched lazily on first tap of the Tasks tab.
         if (this.currentMainTab === 'tasks' || this.isChildCalendarDesign) {
-            this.loadTasksForSelectedDate(this.selectedDate);
+            this.loadTasksForSelectedDate(this.selectedDate, forceReload || this.isPlannerCalendarDesign);
         }
         if (this.isChildCalendarDesign) {
             this.loadChildCalendarData();
@@ -267,22 +306,34 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     private startTimestampInterval(): void {
-        // Reduced polling from 1 minute to 5 minutes to prevent excessive change detection
-        // Using markForCheck() instead of detectChanges() to avoid forced cycles
+        // Recalculate Planner countdowns and passed states every minute.
         this.timestampInterval = setInterval(() => {
             this.currentTimestamp = Date.now();
             this.applyFilters();
             try { this.cdr.markForCheck(); } catch (e) { /* ignore */ }
-        }, 300000);
+        }, 60000);
     }
 
     onDateSelected(date: Date): void {
-        this.selectedDate = date;
-        this.loadHabits();
+        const nextDate = this.startOfDay(date);
+        const changedDate = this.getSelectedDateString() !== this.habitService.formatDateToYYYYMMDD(nextDate);
+        this.selectedDate = nextDate;
+        if (changedDate && this.isPlannerCalendarDesign) {
+            // Keep month dots stable, but remove selected-day content until the
+            // correct date has been loaded. This avoids displaying yesterday's
+            // (or another child's) schedules under the new date label.
+            this.habitRequestId++;
+            this.taskRequestId++;
+            this.allHabits = [];
+            this.tasks = [];
+            this.childPlannerItems = [];
+            this.childEventItems = [];
+        }
+        this.loadHabits(this.isPlannerCalendarDesign);
         // Only reload tasks when the Tasks tab is visible — avoids a redundant
         // API call when the user is on the Habits tab and picks a different date.
         if (this.currentMainTab === 'tasks' || this.isChildCalendarDesign) {
-            this.loadTasksForSelectedDate(date);
+            this.loadTasksForSelectedDate(nextDate, this.isPlannerCalendarDesign);
         }
         if (this.isChildCalendarDesign) {
             this.loadChildCalendarData();
@@ -379,34 +430,51 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     get childHabitItems(): Habit[] {
-        return this.sortArrayByUpcoming(this.getHabitsForSelectedDate().filter(item => this.matchesChildStatus(item)));
+        return this.sortArrayByUpcoming(this.getHabitsForSelectedDate());
     }
 
     get childTaskItems(): any[] {
-        return this.sortArrayByUpcoming(this.tasks.filter(item => this.matchesChildStatus(item)));
+        return this.sortArrayByUpcoming(this.tasks);
     }
 
-    get childPlannerItemsForStatus(): any[] {
-        // Planner events do not have the Habit/Task state machine, so retain them for every status view.
-        return this.childPlannerItems;
+    /** Planner cards are grouped schedules, not one card per schedule row. */
+    get childPlannerCards(): PlannerScheduleCard[] {
+        return this.childPlannerItems
+            .filter(item => this.plannerOccursOnSelectedDate(item))
+            .map((source, index) => ({
+                id: String(source?.id ?? source?.calendarId ?? source?.title ?? index),
+                source,
+                color: this.getPlannerColor(source),
+                entries: this.getPlannerEntriesForSelectedDate(source)
+            }))
+            .filter(card => card.entries.length > 0)
+            .sort((left, right) => this.getPlannerStartTimestamp(left.source) - this.getPlannerStartTimestamp(right.source));
     }
 
-    get childVisibleItems(): Array<{ item: any; type: 'habit' | 'task' | 'planner' }> {
-        const items: Array<{ item: any; type: 'habit' | 'task' | 'planner' }> = [];
+    get childVisibleItems(): Array<{ item: any; type: 'habit' | 'task' }> {
+        const items: Array<{ item: any; type: 'habit' | 'task' }> = [];
         if (this.childCalendarTab === 'all' || this.childCalendarTab === 'habit') {
             this.childHabitItems.forEach(item => items.push({ item, type: 'habit' }));
         }
         if (this.childCalendarTab === 'all' || this.childCalendarTab === 'task') {
             this.childTaskItems.forEach(item => items.push({ item, type: 'task' }));
         }
-        if (this.childCalendarTab === 'planner') {
-            this.childPlannerItemsForStatus.forEach(item => items.push({ item, type: 'planner' }));
-        }
         return this.sortArrayByUpcoming(items.map(entry => ({
             ...entry,
             startTimeStamp: entry.item.startTimeStamp || this.getTimestampFromTime(entry.item.startTime),
             endTimeStamp: entry.item.endTimeStamp || this.getTimestampFromTime(entry.item.endTime)
-        }))) as Array<{ item: any; type: 'habit' | 'task' | 'planner' }>;
+        }))) as Array<{ item: any; type: 'habit' | 'task' }>;
+    }
+
+    get showsPlannerEvents(): boolean {
+        return this.childCalendarTab === 'all' || this.childCalendarTab === 'planner';
+    }
+
+    get hasChildCalendarContent(): boolean {
+        if (this.childCalendarTab === 'habit' || this.childCalendarTab === 'task') {
+            return this.childVisibleItems.length > 0;
+        }
+        return this.childVisibleItems.length > 0 || this.childPlannerCards.length > 0 || this.childEventItems.length > 0;
     }
 
     get childHabitCompletedCount(): number {
@@ -451,9 +519,17 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         return start && end ? `${start} - ${end}` : (start || end || 'Any time');
     }
 
-    getChildPlannerMeta(item: any): string {
-        const eventType = String(item?.eventType || item?.type || 'Planner').replace(/_/g, ' ');
-        return eventType.charAt(0).toUpperCase() + eventType.slice(1).toLowerCase();
+    getChildEventSubtitle(event: any): string {
+        const eventDate = this.getLocalDate(event?.startDate || event?.eventDate);
+        if (!eventDate) return event?.allDay ? 'All day' : this.getChildItemTime(event);
+
+        const today = this.startOfDay(new Date());
+        const eventDay = this.startOfDay(eventDate);
+        const difference = Math.round((eventDay.getTime() - today.getTime()) / 86400000);
+        if (difference === 0) return 'Today';
+        if (difference === 1) return 'Tomorrow';
+        if (difference > 1) return `In ${difference} days`;
+        return new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(eventDay);
     }
 
     private matchesChildStatus(item: any): boolean {
@@ -485,29 +561,97 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         return date.getTime();
     }
 
+    isPlannerExpanded(card: PlannerScheduleCard, index: number): boolean {
+        return this.plannerExpansion.has(card.id) ? !!this.plannerExpansion.get(card.id) : index === 0;
+    }
+
+    togglePlannerCard(card: PlannerScheduleCard, index: number): void {
+        this.plannerExpansion.set(card.id, !this.isPlannerExpanded(card, index));
+    }
+
+    trackPlannerCard(_index: number, card: PlannerScheduleCard): string {
+        return card.id;
+    }
+
+    trackPlannerEntry(index: number, entry: any): string | number {
+        return entry?.id ?? entry?.activityId ?? `${entry?.name ?? entry?.title ?? 'entry'}-${entry?.startTime ?? index}`;
+    }
+
+    getPlannerDateRange(source: any): string {
+        const start = this.getLocalDate(source?.startDate || source?.start_date);
+        const end = this.getLocalDate(source?.endDate || source?.end_date) || start;
+        if (!start) return '';
+        const format = (date: Date) => new Intl.DateTimeFormat('en-IN', {
+            day: '2-digit', month: 'short', year: 'numeric'
+        }).format(date);
+        return end && this.dateKey(start) !== this.dateKey(end) ? `${format(start)} - ${format(end)}` : format(start);
+    }
+
+    getPlannerEntryTime(entry: any): string {
+        const format = (value: any): string => {
+            const match = String(value || '').match(/(\d{1,2}):(\d{2})/);
+            if (!match) return '';
+            return `${Number(match[1])}.${match[2]}`;
+        };
+        const start = format(entry?.startTime || entry?.start_time);
+        const end = format(entry?.endTime || entry?.end_time);
+        return start && end ? `${start} - ${end}` : (start || end || 'Any time');
+    }
+
+    isPlannerEntryPassed(entry: any): boolean {
+        const end = this.getPlannerEntryTimestamp(entry, 'end');
+        return end > 0 && end < this.currentTimestamp;
+    }
+
+    getPlannerEntryCountdown(entry: any): string | null {
+        const start = this.getPlannerEntryTimestamp(entry, 'start');
+        const end = this.getPlannerEntryTimestamp(entry, 'end');
+        if (!start || start <= this.currentTimestamp) {
+            return end >= this.currentTimestamp ? 'Now' : null;
+        }
+
+        const diffMinutes = Math.ceil((start - this.currentTimestamp) / 60000);
+        const days = Math.floor(diffMinutes / 1440);
+        const hours = Math.floor((diffMinutes % 1440) / 60);
+        const minutes = diffMinutes % 60;
+        if (days > 0) return `In ${days}d${hours ? ` ${hours}h` : ''}`;
+        if (hours > 0) return `In ${hours}h ${minutes} min`;
+        return `In ${Math.max(minutes, 1)} min`;
+    }
+
     private loadChildCalendarData(): void {
         const selectedDateString = this.getSelectedDateString();
+        const requestId = ++this.plannerRequestId;
+        const contextKey = this.getPlannerContextKey(selectedDateString);
+        this.plannerLoading = true;
         this.subscriptions.add(
-            this.calendarService.getUserCalendarMonth(selectedDateString).subscribe({
+            this.calendarService.getUserPlannerCalendarMonth(selectedDateString).subscribe({
                 next: (response: CalendarResponse) => {
+                    if (!this.isCurrentPlannerRequest(requestId, contextKey, selectedDateString)) return;
+                    const allEvents = response.events || [];
+                    const plannerItems = allEvents.filter(item => this.isPlannerSchedule(item));
+                    const eventItems = allEvents.filter(item => !this.isPlannerSchedule(item));
+
                     this.childDateActivities = {};
                     this.recordChildCalendarActivities(response.habits || [], 'habit');
                     this.recordChildCalendarActivities(response.tasks || [], 'task');
-                    this.recordChildCalendarActivities(response.events || [], 'planner');
-                    this.childPlannerItems = (response.events || [])
+                    this.recordChildCalendarActivities(plannerItems, 'planner');
+                    this.recordChildCalendarActivities(eventItems, 'planner');
+                    this.childPlannerItems = plannerItems;
+                    this.childEventItems = eventItems
                         .filter(event => this.eventOccursOnSelectedDate(event, selectedDateString))
-                        .map(event => ({
-                            ...event,
-                            type: 'timetable',
-                            status: event.completed ? 'completed' : 'pending',
-                            startTimeStamp: this.getTimestampFromTime(event.startTime),
-                            endTimeStamp: this.getTimestampFromTime(event.endTime)
-                        }));
+                        .sort((left, right) => this.getPlannerStartTimestamp(left) - this.getPlannerStartTimestamp(right));
+                    this.plannerLoadError = !!response.loadError;
+                    this.plannerLoading = false;
                     try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
                 },
                 error: () => {
+                    if (!this.isCurrentPlannerRequest(requestId, contextKey, selectedDateString)) return;
                     this.childDateActivities = {};
                     this.childPlannerItems = [];
+                    this.childEventItems = [];
+                    this.plannerLoadError = true;
+                    this.plannerLoading = false;
                 }
             })
         );
@@ -522,20 +666,183 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     private getItemCalendarDates(item: any): string[] {
-        const candidates = item?.completionDate ?? item?.completion_date ?? item?.completions ?? item?.startDate ?? item?.start_date;
-        const values = Array.isArray(candidates) ? candidates : [candidates];
-        return values
-            .map(value => value ? new Date(value) : null)
+        const selectedMonth = this.selectedDate.getMonth();
+        const selectedYear = this.selectedDate.getFullYear();
+        const monthStart = new Date(selectedYear, selectedMonth, 1);
+        const monthEnd = new Date(selectedYear, selectedMonth + 1, 0);
+        const explicitCandidates = item?.completionDate ?? item?.completion_date ?? item?.completions;
+        const values = Array.isArray(explicitCandidates) ? explicitCandidates : [explicitCandidates];
+        const explicitDates = values
+            .map(value => this.getLocalDate(value))
             .filter((date): date is Date => !!date && !isNaN(date.getTime()))
-            .map(date => this.habitService.formatDateToYYYYMMDD(date));
+            .filter(date => date >= monthStart && date <= monthEnd)
+            .map(date => this.dateKey(date));
+        if (explicitDates.length) return explicitDates;
+
+        const start = this.getLocalDate(item?.startDate ?? item?.start_date ?? item?.eventDate);
+        const end = this.getLocalDate(item?.endDate ?? item?.end_date) || start;
+        if (!start) return [];
+
+        const recurrence = String(item?.recurrence || '').toUpperCase();
+        // Repeating personal events are returned once by the events API, so
+        // derive the occurrence for the visible month rather than only marking
+        // their original creation date.
+        if (recurrence === 'MONTHLY' || recurrence === 'YEARLY') {
+            if (recurrence === 'YEARLY' && start.getMonth() !== selectedMonth) return [];
+            const visibleMonthStartsBeforeEvent = new Date(selectedYear, selectedMonth, 1) < new Date(start.getFullYear(), start.getMonth(), 1);
+            if (visibleMonthStartsBeforeEvent) return [];
+            const occurrence = new Date(selectedYear, selectedMonth, Math.min(start.getDate(), monthEnd.getDate()));
+            return [this.dateKey(occurrence)];
+        }
+
+        const dates: string[] = [];
+        const from = start > monthStart ? start : monthStart;
+        const to = end && end < monthEnd ? end : monthEnd;
+        for (let date = this.startOfDay(from); date <= to; date.setDate(date.getDate() + 1)) {
+            const snapshot = new Date(date);
+            if (recurrence && !this.eventOccursOnSelectedDate(item, this.dateKey(snapshot))) continue;
+            if (this.isPlannerSchedule(item) && !this.plannerOccursOnDate(item, snapshot)) continue;
+            dates.push(this.dateKey(snapshot));
+        }
+        return dates;
     }
 
     private eventOccursOnSelectedDate(event: any, selectedDate: string): boolean {
         const eventDate = String(event?.startDate || event?.eventDate || '').slice(0, 10);
         if (eventDate === selectedDate) return true;
-        if (event?.recurrence === 'YEARLY') return eventDate.slice(5) === selectedDate.slice(5);
-        if (event?.recurrence === 'MONTHLY') return eventDate.slice(8) === selectedDate.slice(8);
+        if (String(event?.recurrence).toUpperCase() === 'YEARLY') return eventDate.slice(5) === selectedDate.slice(5);
+        if (String(event?.recurrence).toUpperCase() === 'MONTHLY') return eventDate.slice(8) === selectedDate.slice(8);
         return false;
+    }
+
+    private isPlannerSchedule(item: any): boolean {
+        const type = String(item?.type || item?.eventType || '').toUpperCase();
+        return Array.isArray(item?.activities)
+            || Boolean(item?.colorCode || item?.color_code)
+            || type.includes('TIMETABLE')
+            || type.includes('PLANNER')
+            || type.includes('SCHEDULE');
+    }
+
+    private plannerOccursOnSelectedDate(item: any): boolean {
+        return this.plannerOccursOnDate(item, this.selectedDate);
+    }
+
+    private plannerOccursOnDate(item: any, date: Date): boolean {
+        const candidate = this.startOfDay(date);
+        const start = this.startOfDay(this.getLocalDate(item?.startDate || item?.start_date) || candidate);
+        const end = this.startOfDay(this.getLocalDate(item?.endDate || item?.end_date) || start);
+        if (candidate < start || candidate > end) return false;
+
+        const entries = Array.isArray(item?.activities) && item.activities.length
+            ? item.activities
+            : [item];
+        return entries.some((entry: any) => this.entryOccursOnDate(entry, candidate, item?.daysOfWeek));
+    }
+
+    private getPlannerEntriesForSelectedDate(item: any): any[] {
+        const entries = Array.isArray(item?.activities) && item.activities.length ? item.activities : [item];
+        return entries
+            .filter((entry: any) => this.entryOccursOnDate(entry, this.selectedDate, item?.daysOfWeek))
+            .sort((left: any, right: any) => this.getPlannerEntryTimestamp(left, 'start') - this.getPlannerEntryTimestamp(right, 'start'));
+    }
+
+    private entryOccursOnDate(entry: any, date: Date, inheritedDays?: any): boolean {
+        const rawDays = entry?.daysOfWeek ?? entry?.days ?? inheritedDays;
+        const days = Array.isArray(rawDays) ? rawDays : [];
+        if (!days.length) return true;
+        const day = date.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+        return days.some((value: any) => {
+            const normalized = String(value || '').trim().toUpperCase();
+            return normalized === day
+                || normalized === day.slice(0, 3)
+                || normalized === day.slice(0, 1)
+                || (day === 'THURSDAY' && (normalized === 'TH' || normalized === 'THU'))
+                || (day === 'SATURDAY' && normalized === 'SA');
+        });
+    }
+
+    private getPlannerEntryTimestamp(entry: any, part: 'start' | 'end'): number {
+        const field = part === 'start' ? 'startTime' : 'endTime';
+        const time = entry?.[field] ?? entry?.[`${field}_time`] ?? entry?.[`${part}Time`];
+        return this.timestampForDateAndTime(this.selectedDate, time);
+    }
+
+    private getPlannerStartTimestamp(item: any): number {
+        const start = this.getLocalDate(item?.startDate || item?.start_date);
+        return start ? start.getTime() : Number.MAX_SAFE_INTEGER;
+    }
+
+    private getPlannerColor(item: any): string {
+        const color = String(item?.colorCode ?? item?.color_code ?? '').trim();
+        return /^#[0-9a-f]{3,8}$/i.test(color) ? color : '#537C81';
+    }
+
+    private timestampForDateAndTime(date: Date, time: any): number {
+        const match = String(time || '').match(/(\d{1,2}):(\d{2})/);
+        if (!match) return 0;
+        const timestamp = this.startOfDay(date);
+        timestamp.setHours(Number(match[1]), Number(match[2]), 0, 0);
+        return timestamp.getTime();
+    }
+
+    private getLocalDate(value: any): Date | null {
+        if (!value) return null;
+        if (value instanceof Date) return isNaN(value.getTime()) ? null : new Date(value.getTime());
+        const text = String(value);
+        const match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (match) return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+        const parsed = new Date(text);
+        return isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    private startOfDay(date: Date): Date {
+        const result = new Date(date);
+        result.setHours(0, 0, 0, 0);
+        return result;
+    }
+
+    private dateKey(date: Date): string {
+        return this.habitService.formatDateToYYYYMMDD(date);
+    }
+
+    private getPlannerContextKey(date: string = this.getSelectedDateString()): string {
+        const accountId = this.authService.getUserId() ?? 'anonymous';
+        const relationship = String(this.authService.getUserRelationship() || 'SELF').toUpperCase();
+        const selectedChildId = this.authService.isParentUser() ? (this.profileSelector.getChildId() ?? 'none') : 'self';
+        return `${accountId}:${relationship}:${selectedChildId}:${date}`;
+    }
+
+    private isCurrentPlannerRequest(requestId: number, contextKey: string, date: string): boolean {
+        return requestId === this.plannerRequestId
+            && contextKey === this.getPlannerContextKey(date)
+            && date === this.getSelectedDateString();
+    }
+
+    /**
+     * Clear every view-specific collection before a profile/context changes.
+     * This prevents a slower response for Child A (or a previous login) from
+     * being rendered while Child B is being loaded.
+     */
+    private resetPlannerContext(): void {
+        this.habitRequestId++;
+        this.taskRequestId++;
+        this.plannerRequestId++;
+        this.allHabits = [];
+        this.tasks = [];
+        this.filteredHabits = [];
+        this.filteredTasks = [];
+        this.childDateActivities = {};
+        this.childPlannerItems = [];
+        this.childEventItems = [];
+        this.plannerExpansion.clear();
+        this.loading = false;
+        this.plannerLoading = false;
+        this.plannerLoadError = false;
+    }
+
+    retryPlannerData(): void {
+        this.loadInitialData(true);
     }
 
     /**
@@ -549,10 +856,16 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     loadHabits(forceReload: boolean = false): void {
         this.loading = true;
         const formattedDate = this.habitService.formatDateToYYYYMMDD(this.selectedDate);
+        const requestId = ++this.habitRequestId;
+        const contextKey = this.getPlannerContextKey(formattedDate);
 
         this.subscriptions.add(
             this.habitService.loadHabitsForDate(formattedDate, forceReload).subscribe({
                 next: (res: any) => {
+                    if (this.isPlannerCalendarDesign &&
+                        (requestId !== this.habitRequestId || contextKey !== this.getPlannerContextKey(formattedDate) || formattedDate !== this.getSelectedDateString())) {
+                        return;
+                    }
                     let habitData = Array.isArray(res) ? res : (res?.data || []);
 
                     // ONLY filter by selected child if PARENT is viewing a child profile
@@ -613,6 +926,10 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
                 },
                 error: () => {
+                    if (this.isPlannerCalendarDesign &&
+                        (requestId !== this.habitRequestId || contextKey !== this.getPlannerContextKey(formattedDate) || formattedDate !== this.getSelectedDateString())) {
+                        return;
+                    }
                     this.loading = false;
                     this.allHabits = [];
                 }
@@ -623,10 +940,16 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     loadTasksForSelectedDate(date: Date, forceReload: boolean = false): void {
         this.loading = true;
         const formatted = this.habitService.formatDateToYYYYMMDD(date);
+        const requestId = ++this.taskRequestId;
+        const contextKey = this.getPlannerContextKey(formatted);
 
         this.subscriptions.add(
             this.taskApi.getTasksByDate(formatted, forceReload).subscribe({
                 next: (res: any) => {
+                    if (this.isPlannerCalendarDesign &&
+                        (requestId !== this.taskRequestId || contextKey !== this.getPlannerContextKey(formatted) || formatted !== this.getSelectedDateString())) {
+                        return;
+                    }
                     let list = Array.isArray(res?.data || res?.tasks || res) ? res.data || res.tasks || res : [];
 
                     // ONLY filter by selected child if PARENT is viewing a child profile
@@ -673,6 +996,10 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
                 },
                 error: () => {
+                    if (this.isPlannerCalendarDesign &&
+                        (requestId !== this.taskRequestId || contextKey !== this.getPlannerContextKey(formatted) || formatted !== this.getSelectedDateString())) {
+                        return;
+                    }
                     this.tasks = [];
                     this.loading = false;
                     this.applyFilters();
