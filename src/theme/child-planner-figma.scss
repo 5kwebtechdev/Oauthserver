@@ -13,16 +13,19 @@
 	}
 
 	.activity-tab-icon-frame {
-		position: relative;
-		display: inline-block;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		width: 20px;
 		height: 20px;
 		flex: 0 0 20px;
-		overflow: hidden;
 
 		img {
-			position: absolute;
-			max-width: none;
+			display: block;
+			width: 20px;
+			height: 20px;
+			object-fit: contain;
+			filter: none;
 		}
 	}
 
@@ -47,40 +50,40 @@
 		.tab-tasks { color: #e04d16; }
 		.tab-planner { color: #537c81; }
 
-		.tab-planner.active {
-			background: var(--planner-main);
-			color: var(--planner-soft);
-		}
+		.activity-tab.active {
+			color: #fff;
 
-		.activity-tab-icon-frame--habits {
-			width: 24px;
-			height: 20px;
-			flex-basis: 24px;
-
-			img {
-				left: -51.2%;
-				top: -121.02%;
-				width: 189.28%;
-				height: 339.82%;
+			.activity-tab-icon {
+				/* The active state uses the white version of the tab artwork. */
+				filter: brightness(0) invert(1);
 			}
 		}
 
-		.activity-tab-icon-frame--tasks img {
-			left: -16.67%;
-			top: -16.67%;
-			width: 133.33%;
-			height: 133.33%;
+		.tab-habits.active { background: #8b8dcb; }
+		.tab-tasks.active { background: #e04d16; }
+		.tab-planner.active {
+			background: var(--planner-main);
+			color: #fff;
+		}
+
+		.activity-tab-icon-frame--habits {
+			width: 20px;
+			height: 20px;
+			flex-basis: 20px;
+
+			img {
+				width: 20px;
+				height: 20px;
+			}
 		}
 
 		.activity-tab-icon-frame--planner {
-			width: 21px;
-			flex-basis: 21px;
+			width: 20px;
+			flex-basis: 20px;
 
 			img {
-				left: -19.12%;
-				top: -25%;
-				width: 141.18%;
-				height: 150%;
+				width: 20px;
+				height: 20px;
 			}
 		}
 	}

@@ -23,7 +23,7 @@
         <div class="event-detail-image" [class.event-detail-image--empty]="!image">
           <img *ngIf="image" class="event-detail-image__photo" [src]="image" [alt]="item.name" (error)="onImageError()">
           <img *ngIf="item.verified" class="event-detail-image__verified"
-            src="assets/figma/parent-eduhub-inner/verified.png" alt="Verified" title="Verified">
+            src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified">
         </div>
         <div class="event-detail-intro__copy">
           <h1>{{ item.name }}</h1>

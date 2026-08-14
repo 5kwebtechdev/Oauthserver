@@ -1,6 +1,6 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Share } from '@capacitor/share';
 import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
@@ -34,6 +34,9 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   filterTab: FilterTab = 'specialization';
   selectedSpecializations = new Set<string>();
   selectedExperience = new Set<string>();
+  entityType = 'COUNSELOR';
+  directoryTitle = 'Counselors';
+  singularTitle = 'Counselor';
 
   private readonly subscriptions = new Subscription();
   private readonly likeSubscriptions = new Map<number, Subscription>();
@@ -41,6 +44,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   constructor(
     private readonly location: Location,
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
     private readonly tutorService: TutorService,
     private readonly likeService: TutorLikeService,
     private readonly authService: AuthService,
@@ -48,6 +52,10 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    const routeData = this.route.snapshot.data;
+    this.entityType = String(routeData['entityType'] || 'COUNSELOR').trim().toUpperCase();
+    this.directoryTitle = String(routeData['title'] || 'Counselors').trim() || 'Counselors';
+    this.singularTitle = String(routeData['singularTitle'] || this.directoryTitle.replace(/s$/i, '')).trim() || 'Listing';
     this.loadCounselors();
   }
 
@@ -110,7 +118,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
     this.subscriptions.add(
-      this.tutorService.getTutorsByEntityType('COUNSELOR').subscribe({
+      this.tutorService.getTutorsByEntityType(this.entityType).subscribe({
         next: counselors => {
           this.counselors = Array.isArray(counselors) ? counselors : [];
           this.counselors.forEach(counselor => this.watchLikes(counselor));
@@ -211,13 +219,14 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   openProfile(counselor: Tutor): void {
-    void this.router.navigate(['/authed/counselors', counselor.id], {
+    const profileBaseRoute = this.entityType === 'COUNSELOR' ? '/authed/counselors' : '/authed/tutors';
+    void this.router.navigate([profileBaseRoute, counselor.id], {
       state: { tutor: counselor }
     });
   }
 
   getName(counselor: Tutor): string {
-    return counselor.name?.trim() || counselor.entityName?.trim() || 'Counselor';
+    return counselor.name?.trim() || counselor.entityName?.trim() || this.singularTitle;
   }
 
   getProfileImage(counselor: Tutor): string {

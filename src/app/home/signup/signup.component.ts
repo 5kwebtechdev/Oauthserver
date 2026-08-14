@@ -1287,14 +1287,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Get the role from session storage or current selection
     const role = ((sessionStorage.getItem('signup_role') as SignupRole) || this.roleSelected)!;
 
-    if (this.isManagedChildSignup) {
-      this.navigateToSignupStep(4);
-      return;
-    }
-
+    // A child added by a parent follows the same age rules as a child creating
+    // an account independently. Do this before routing to the Pet step so an
+    // adult date of birth cannot be registered as a managed child.
     const suggestionRoles = this.getAgeSuggestionRoles(role, age);
     if (suggestionRoles.length) {
       this.openAgeSuggestionModal(suggestionRoles);
+      return;
+    }
+
+    if (this.isManagedChildSignup) {
+      this.navigateToSignupStep(4);
       return;
     }
 

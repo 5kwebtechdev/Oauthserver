@@ -84,7 +84,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
         // If `user` wasn't provided as an Input, create it from the profile.
         if (!this.user || Object.keys(this.user).length === 0) {
           this.user = {
-            name: profile.name,
+            name: profile.avatarName || profile.name,
+            avatarName: profile.avatarName,
             age: profile.age,
             avatarUrl: this.userAvatarUrl
           };
@@ -117,7 +118,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
         // Update user object with new data
         this.user = {
           ...this.user,
-          name: userData.name || this.user?.name || 'User',
+          name: userData.avatarName || userData.avatar?.avatarName || userData.name || this.user?.name || 'User',
+          avatarName: userData.avatarName || userData.avatar?.avatarName || this.user?.avatarName,
           email: userData.email || this.user?.email,
           phone: userData.phone || this.user?.phone,
           age: userData.age || this.user?.age,
@@ -136,7 +138,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
       if (profile && this.user) {
         // Only update if not already set from CoreAuthService
         if (!this.user.name || this.user.name === 'User') {
-          this.user.name = profile.name || 'User';
+          this.user.name = profile.avatarName || profile.name || 'User';
+          this.user.avatarName = profile.avatarName || this.user.avatarName;
         }
       }
     });
@@ -192,7 +195,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
         // Map basic user info but do NOT trust server-provided `avatar.url` for image display.
         // We will resolve avatar URL from `avatarImageName` using our resolver below.
         this.user = {
-          name: parsedData.name || 'User',
+          name: parsedData.avatarName || parsedData.avatar?.avatarName || parsedData.name || 'User',
+          avatarName: parsedData.avatarName || parsedData.avatar?.avatarName || '',
           email: parsedData.email,
           phone: parsedData.phone,
           age: parsedData.age,

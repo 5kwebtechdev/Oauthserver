@@ -1,10 +1,9 @@
 <ng-template #repeatSection>
-  <div class="repeat-card">
+  <section class="form-field-section">
+    <label class="form-field-section__label">Repeat</label>
+    <div class="repeat-card">
     <div class="repeat-header">
-      <div class="repeat-header-left">
         <span class="repeat-icon form-icon form-icon--repeat" aria-hidden="true"></span>
-        <label>Repeat</label>
-      </div>
       <div class="everyday-toggle">
         <span class="everyday-label-text">Everyday</span>
         <div class="toggle-right">
@@ -16,7 +15,8 @@
       <button *ngFor="let d of weekdays" class="day" (click)="toggleDay(d)"
         [class.selected]="selectedDays.has(d)">{{d}}</button>
     </div>
-  </div>
+    </div>
+  </section>
   <div *ngIf="attemptedSubmit && showWeekdaysError" class="field-error" role="alert">Pick at least one day.</div>
 </ng-template>
 
@@ -30,7 +30,7 @@
         <div class="picker-body">
           <span class="picker-title">Start Time</span>
           <div class="superme-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
-            <superme-timepicker #startTimeCtrl placeholder="Select Start Time" label="Start Time" [(ngModel)]="startTime"
+            <superme-timepicker #startTimeCtrl placeholder="" label="Start Time" [(ngModel)]="startTime"
               (ngModelChange)="onStartTimeChanged()"></superme-timepicker>
           </div>
         </div>
@@ -43,7 +43,7 @@
         <div class="picker-body">
           <span class="picker-title">End Time</span>
           <div class="superme-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
-            <superme-timepicker #endTimeCtrl placeholder="Select End Time" label="End Time"
+            <superme-timepicker #endTimeCtrl placeholder="" label="End Time"
               [seedTime]="startTime" [quickDurations]="[15, 30, 45, 60]" [(ngModel)]="endTime"
               (ngModelChange)="clearTimeError()"></superme-timepicker>
           </div>
@@ -69,7 +69,7 @@
         <span class="picker-title">Start Date</span>
         <div class="superme-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
           <superme-datepicker #startDateCtrl type="date" label="Start Date" [(ngModel)]="startDate" (ngModelChange)="clearDateError()" [minDate]="today"
-            [rangeStart]="rangeStartShown" [rangeEnd]="rangeEndShown" placeholder="Select Start Date"></superme-datepicker>
+            [rangeStart]="rangeStartShown" [rangeEnd]="rangeEndShown" placeholder=""></superme-datepicker>
         </div>
       </div>
       <span class="picker-plus" aria-hidden="true">+</span>
@@ -84,7 +84,7 @@
           <superme-datepicker #endDateCtrl type="date" label="End Date" [(ngModel)]="endDate" (ngModelChange)="clearDateError()"
             [minDate]="today" [rangeStart]="rangeStartShown" [rangeEnd]="rangeEndShown"
             [seedDate]="startDate" [quickRanges]="endDateQuickRanges"
-            placeholder="Select End Date"></superme-datepicker>
+            placeholder=""></superme-datepicker>
         </div>
       </div>
       <span class="picker-plus" aria-hidden="true">+</span>
@@ -113,6 +113,7 @@
 <ng-template #titleInputSection let-placeholder="placeholder" let-errorMsg="errorMsg" let-subtitle="subtitle"
   let-showCategory="showCategory">
   <div class="title-input" [class.invalid]="attemptedSubmit && showTitleError">
+    <label class="form-field-section__label">{{ placeholder.replace(' to build?', '').replace(' to complete?', '') }}</label>
     <div class="title-card-main" [class.has-value]="title.trim().length > 0">
       <div class="title-card-icon" aria-hidden="true">
         <img *ngIf="showCategory === false" class="title-card-figma-icon"
@@ -121,14 +122,14 @@
       </div>
       <div class="superme-input-group w-100 title-card-body" [class.missing-placeholder]="showTitleError && attemptedSubmit">
         <input *ngIf="showCategory !== false" class="w-100" [(ngModel)]="title"
-          (ngModelChange)="clearTitleError()" [placeholder]="placeholder" maxlength="20" />
+          (ngModelChange)="clearTitleError()" placeholder="Enter a name" maxlength="20" />
         <textarea *ngIf="showCategory === false" class="planner-title-textarea" [(ngModel)]="title"
-          (ngModelChange)="clearTitleError()" [placeholder]="placeholder" maxlength="20" rows="2"></textarea>
+          (ngModelChange)="clearTitleError()" placeholder="Enter a name" maxlength="20" rows="2"></textarea>
         <div class="title-card-subtitle">{{ subtitle || 'Be specific and actionable.' }}</div>
       </div>
       <div class="priority-selection priority-toggle-row" [class.invalid]="attemptedSubmit && showPriorityError">
     <div class="priority-toggle-control">
-      <span class="priority-toggle-label">{{ showCategory === false ? 'High Priority' : (priority === 'high' ? 'High Priority' : 'Low Priority') }}</span>
+      <span class="priority-toggle-label">{{ priority === 'high' ? 'Higher Priority' : 'Low Priority' }}</span>
       <superme-toggle [checked]="priority === 'high'"
         (checkedChange)="selectPriority($event ? 'high' : 'low')"></superme-toggle>
     </div>
@@ -140,14 +141,13 @@
     <div class="title-card-count">{{ title.length }}/20</div>
   </div>
   <!-- <div class="title-card-count">{{ title.length }}/20</div> -->
-  <div *ngIf="showCategory !== false" class="category-card">
+  <section *ngIf="showCategory !== false" class="form-field-section">
+    <label class="form-field-section__label">Category</label>
+    <div class="category-card">
     <div class="category-header">
-      <div class="category-header-left">
         <span class="category-icon-tile" aria-hidden="true">
           <span class="form-icon form-icon--category"></span>
         </span>
-        <span class="category-heading">Category</span>
-      </div>
       <button type="button" class="category-add-btn" #categoryAddBtn
         (click)="openAddCategory(categoryAddBtn)">+ Add new</button>
     </div>
@@ -163,7 +163,8 @@
     </div>
 
     <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Pick a tag for this activity.</div>
-  </div>
+    </div>
+  </section>
 
   <!-- superme-tags stays mounted (its pill row is hidden) so add/edit/delete popovers,
        localStorage sync and formGroup wiring keep working behind the redesigned pills above -->

@@ -6,7 +6,7 @@
           <button type="button" class="toolbar-button toolbar-button--back" aria-label="Back" (click)="goBack()">
             <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
           </button>
-          <h1>Counselors</h1>
+          <h1>{{ directoryTitle }}</h1>
         </div>
         <button type="button" class="toolbar-button toolbar-button--search" aria-label="Search counselors" disabled>
           <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
@@ -16,7 +16,7 @@
       <div class="counselor-hero__message">
         <div class="counselor-speech" aria-hidden="true">
           <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="">
-          <p>Find trusted <strong>Counselors</strong><br>around you.</p>
+          <p>Find trusted <strong>{{ directoryTitle }}</strong><br>around you.</p>
         </div>
         <img src="assets/figma/counselors/hero-panda.png" class="counselor-mascot" alt="" aria-hidden="true">
       </div>
@@ -26,7 +26,7 @@
       <button type="button" class="counselor-refer" (click)="referCounselor()">
         <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
         <span class="counselor-refer__copy">
-          <strong>Know a Counselor?</strong>
+            <strong>Know a {{ singularTitle }}?</strong>
           <small>Refer them to get listed on Eduhub.</small>
         </span>
         <span class="counselor-refer__cta">Refer for listing</span>
@@ -35,8 +35,8 @@
       <section class="counselor-list-section" aria-labelledby="counselors-nearby-title">
         <header class="counselor-list-header">
           <div>
-            <h2 id="counselors-nearby-title">Counselors Near You</h2>
-            <p>Classifieds listings only. Contact sellers directly to enquire or buy.</p>
+            <h2 id="counselors-nearby-title">{{ directoryTitle }} Near You</h2>
+            <p>Browse profiles and connect with the right {{ singularTitle.toLowerCase() }}.</p>
           </div>
           <div class="verified-menu" (click)="$event.stopPropagation()">
             <button type="button" [attr.aria-expanded]="showVerifiedMenu" (click)="toggleVerifiedMenu($event)">
@@ -78,9 +78,9 @@
 
         <div class="counselor-state" *ngIf="!isLoading && !errorMessage && !visibleCounselors.length">
           <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
-          <h3>No counselors found</h3>
+          <h3>No {{ directoryTitle.toLowerCase() }} found</h3>
           <p *ngIf="counselors.length">Try changing your filters.</p>
-          <p *ngIf="!counselors.length">New counselors will appear here when they are added.</p>
+          <p *ngIf="!counselors.length">New {{ directoryTitle.toLowerCase() }} will appear here when they are added.</p>
           <button *ngIf="counselors.length" type="button" (click)="clearFilters()">Clear filters</button>
         </div>
 
@@ -95,7 +95,7 @@
                   <div class="counselor-card__headline">
                     <div class="counselor-card__identity">
                       <div class="counselor-card__name"><h3>{{ getName(counselor) }}</h3>
-                        <img *ngIf="isVerified(counselor)" src="assets/figma/parent-eduhub-inner/verified.png" alt="Verified" title="Verified"></div>
+                        <img *ngIf="isVerified(counselor)" src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified"></div>
                       <p class="counselor-card__specialization">{{ getSpecializationLabel(counselor) }}</p>
                       <p class="counselor-card__stats"><span><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true">{{ getAvailability(counselor) }}</span><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">{{ getExperience(counselor) }}</span></p>
                     </div>
