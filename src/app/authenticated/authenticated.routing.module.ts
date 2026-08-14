@@ -173,7 +173,8 @@ const routes: Routes = [
         loadComponent: () => import('../core/components/tutor-section/tutor-profile/tutor-profile.component').then(m => m.TutorProfileComponent)
       }, {
         path: 'tutors',
-        loadComponent: () => import('../core/components/tutor-section/tutor-homepage/tutor-homepage.component').then(m => m.TutorHomepageComponent)
+        loadComponent: () => import('../core/components/education-section/counselor-directory/counselor-directory.component').then(m => m.CounselorDirectoryComponent),
+        data: { entityType: 'TUTOR', title: 'Tutors', singularTitle: 'Tutor' }
       }, {
         path: 'academy',
         loadComponent: () => import('../core/components/academy-section/academy-home/academy-home.component').then(m => m.AcademyHomeComponent)
@@ -185,7 +186,8 @@ const routes: Routes = [
         loadComponent: () => import('../core/components/academy-section/academy-course/academy-course.component').then(m => m.AcademyCourseComponent)
       }, {
         path: 'academies',
-        loadComponent: () => import('../core/components/academy-section/academies-list/academies-list.component').then(m => m.AcademiesListComponent)
+        loadComponent: () => import('../core/components/education-section/counselor-directory/counselor-directory.component').then(m => m.CounselorDirectoryComponent),
+        data: { entityType: 'ACADEMY', title: 'Academies', singularTitle: 'Academy' }
       }, {
         path: 'analytics',
         loadComponent: () => import('../core/components/analytics-section/analytics.component').then(m => m.AnalyticsComponent)

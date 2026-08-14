@@ -243,7 +243,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   everyday = false;
   weekdays = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
   selectedDays = new Set<string>();
-  priority: '' | 'low' | 'medium' | 'high' = '';
+  priority: '' | 'low' | 'medium' | 'high' = 'high';
   reminderOffset: ReminderOffset | null = null;
   reminderExpanded = false;
 
@@ -861,7 +861,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.routineTags = [];
     this.selectedDays = new Set<string>();
     this.everyday = false;
-    this.priority = '';
+    this.priority = 'high';
     this.reminderOffset = null;
     this.reminderExpanded = false;
     this.eventDate = null;

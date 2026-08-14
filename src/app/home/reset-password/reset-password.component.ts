@@ -68,8 +68,9 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
       email:           ['', [Validators.email]],
       phone:           ['', []],
       otp:             ['', [Validators.required, Validators.minLength(4)]],
-      newPassword:     ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required, Validators.minLength(8)]],
+      // Keep reset-password rules and feedback consistent with signup.
+      newPassword:     ['', [Validators.required, Validators.minLength(6), Validators.maxLength(12)]],
+      confirmPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(12)]],
     });
   }
 

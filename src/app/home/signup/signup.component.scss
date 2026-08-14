@@ -2685,16 +2685,12 @@ swiper-slide.swiper-slide-active .pet-card {
     font: 700 13px/1.3 var(--font-sans, 'Nunito', sans-serif);
     text-align: center;
 
-    &::before, &::after {
-      width: 10px;
-      height: 19px;
-      content: '';
-      background: linear-gradient(15deg, transparent 45%, #432477 47% 53%, transparent 55%), linear-gradient(-15deg, transparent 45%, #432477 47% 53%, transparent 55%);
-      background-size: 100% 50%;
-      background-repeat: no-repeat;
+    img {
+      width: 11px;
+      height: 20px;
+      flex: 0 0 11px;
+      object-fit: contain;
     }
-
-    &::after { transform: scaleX(-1); }
   }
 }
 
