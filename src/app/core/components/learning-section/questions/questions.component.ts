@@ -261,8 +261,20 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.currentHintText = '';
         this.hintErrorText = '';
 
-        // Parse and set timer from timeDuration (e.g., "5 Minutes")
-        this.parseTimeDuration(this.challenge.timeDuration);
+        // Prefer the duration supplied by the API. Different challenge endpoints
+        // expose it as timeDuration, durationMinutes, or estimatedTimeMinutes.
+        const challengeWithDuration = this.challenge as Challenge & {
+            durationMinutes?: unknown;
+            duration?: unknown;
+            timeLimitMinutes?: unknown;
+        };
+        [
+            challengeWithDuration.timeDuration,
+            challengeWithDuration.durationMinutes,
+            challengeWithDuration.estimatedTimeMinutes,
+            challengeWithDuration.duration,
+            challengeWithDuration.timeLimitMinutes
+        ].some((duration) => this.parseTimeDuration(duration));
 
         // Load first question
         this.loadCurrentQuestion();
@@ -358,15 +370,29 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             : option.answerValue === currentQuestion.correctAnswer;
     }
 
-    parseTimeDuration(duration: string) {
-        // Parse duration string like "5 Minutes" or "10 Minutes"
-        const match = duration.match(/(\d+)\s*min/i);
-        if (match) {
-            const minutes = parseInt(match[1]);
-            this.totalTimeSeconds = minutes * 60;
-            this.remainingTimeSeconds = this.totalTimeSeconds;
-            this.updateTimerDisplay();
-        }
+    parseTimeDuration(duration: unknown): boolean {
+        const value = String(duration ?? '').trim();
+        if (!value) return false;
+
+        const namedDurations: Record<string, number> = {
+            SHORT: 3,
+            MEDIUM: 5,
+            LONG: 10
+        };
+        const numericDuration = typeof duration === 'number' ? duration : Number(value);
+        const durationMatch = value.match(/(\d+(?:\.\d+)?)\s*(?:min|minute)/i);
+        const minutes = Number.isFinite(numericDuration) && numericDuration > 0
+            ? numericDuration
+            : durationMatch
+                ? Number(durationMatch[1])
+                : namedDurations[value.toUpperCase()];
+
+        if (!Number.isFinite(minutes) || minutes <= 0) return false;
+
+        this.totalTimeSeconds = Math.round(minutes * 60);
+        this.remainingTimeSeconds = this.totalTimeSeconds;
+        this.updateTimerDisplay();
+        return true;
     }
 
     startTimer() {
