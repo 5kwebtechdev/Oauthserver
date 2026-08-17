@@ -33,6 +33,13 @@ export interface RegistrationDraftData {
   familyName?: string | null;
   familyRole?: string | null;
   asChild?: boolean;
+  authProvider?: 'google' | 'apple';
+  socialProviderId?: string;
+  socialOnboarding?: boolean;
+  socialDetailsCompleted?: boolean;
+  socialRolePending?: boolean;
+  selectedSignupRole?: 'child' | 'parent' | 'self';
+  familyLinkSkipped?: boolean;
   [key: string]: unknown;
 }
 
@@ -158,6 +165,12 @@ export class OnboardingStateService {
         ? source.onboardingStep
         : state?.onboardingStep
     );
+    const localStep = this.normalizeOnboardingStep(state?.onboardingStep);
+
+    if (this.isSocialOnboarding(savedData)) {
+      return this.getSocialResumeNavigation(savedData, backendStep, localStep);
+    }
+
     if (!backendStep || backendStep >= this.completedOnboardingStep) return null;
 
     let signupStep: number;
@@ -192,6 +205,26 @@ export class OnboardingStateService {
       ...(this.getRegistrationState()?.savedData || {}),
       ...(source || {})
     };
+    const explicitlySelectedRole = String(combined.selectedSignupRole || '').trim().toLowerCase();
+    if (
+      explicitlySelectedRole === 'child'
+      || explicitlySelectedRole === 'parent'
+      || explicitlySelectedRole === 'self'
+    ) {
+      return explicitlySelectedRole;
+    }
+
+    if (combined.socialRolePending === true) {
+      try {
+        const pendingSessionRole = sessionStorage.getItem('signup_role');
+        return pendingSessionRole === 'child' || pendingSessionRole === 'parent' || pendingSessionRole === 'self'
+          ? pendingSessionRole
+          : null;
+      } catch {
+        return null;
+      }
+    }
+
     const relationship = String(combined.relationship || combined.role || '').trim().toUpperCase();
 
     if (relationship === 'CHILD') return 'child';
@@ -204,6 +237,26 @@ export class OnboardingStateService {
       }
     } catch {}
     return null;
+  }
+
+  isSocialOnboarding(source?: RegistrationDraftData | null): boolean {
+    const combined = {
+      ...(this.getRegistrationState()?.savedData || {}),
+      ...(source || {})
+    };
+    return combined.socialOnboarding === true
+      || combined.authProvider === 'google'
+      || combined.authProvider === 'apple';
+  }
+
+  getSocialProvider(source?: RegistrationDraftData | null): 'google' | 'apple' | null {
+    const combined = {
+      ...(this.getRegistrationState()?.savedData || {}),
+      ...(source || {})
+    };
+    return combined.authProvider === 'apple' || combined.authProvider === 'google'
+      ? combined.authProvider
+      : null;
   }
 
   hasSeenSplash(): boolean {
@@ -286,6 +339,65 @@ export class OnboardingStateService {
     return step;
   }
 
+  private getSocialResumeNavigation(
+    savedData: RegistrationDraftData,
+    backendStep: number | null,
+    localStep: number | null
+  ): OnboardingResumeNavigation | null {
+    const effectiveStep = Math.max(backendStep || 0, localStep || 0);
+    if (effectiveStep >= this.completedOnboardingStep) return null;
+
+    const role = this.getSignupRole(savedData);
+    if (!role) {
+      return {
+        url: '/home/sign-up',
+        queryParams: { step: 1 }
+      };
+    }
+
+    const detailsCompleted = savedData.socialDetailsCompleted === true || effectiveStep >= 5;
+    if (!detailsCompleted) {
+      return {
+        url: '/home/sign-up',
+        queryParams: { step: 2, role }
+      };
+    }
+
+    if (effectiveStep >= 6) {
+      return {
+        url: '/home/sign-up',
+        queryParams: { step: 5, role }
+      };
+    }
+
+    if (role === 'parent') {
+      return {
+        url: '/home/instructions-for-parent',
+        queryParams: { role: 'parent' }
+      };
+    }
+
+    if (role === 'child') {
+      const linkedToFamily = String(savedData.relationship || '').toUpperCase() === 'CHILD'
+        && savedData.asChild !== true;
+      if (savedData.familyLinkSkipped === true || linkedToFamily) {
+        return {
+          url: '/home/sign-up',
+          queryParams: { step: 4, role: 'child' }
+        };
+      }
+      return {
+        url: '/home/join-family',
+        queryParams: { role: 'child' }
+      };
+    }
+
+    return {
+      url: '/home/sign-up',
+      queryParams: { step: 4, role: 'self' }
+    };
+  }
+
   private sanitizeDraftData(data: RegistrationDraftData): RegistrationDraftData {
     const sanitized = { ...(data || {}) };
     // Registration passwords and auth tokens must never be written to browser
@@ -293,6 +405,15 @@ export class OnboardingStateService {
     delete sanitized['password'];
     delete sanitized['confirmPassword'];
     delete sanitized['token'];
+    // OAuth proof values are short-lived credentials. They belong only in
+    // the native/session authentication hand-off and must never be copied to
+    // the resumable local registration draft.
+    delete sanitized['idToken'];
+    delete sanitized['accessToken'];
+    delete sanitized['serverAuthCode'];
+    delete sanitized['identityToken'];
+    delete sanitized['authorizationCode'];
+    delete sanitized['rawNonce'];
     return sanitized;
   }
 }

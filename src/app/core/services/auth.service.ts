@@ -39,6 +39,7 @@ export interface AuthResponse {
     dob?: string | number;
     birthDate?: string | number;
     relationship?: 'CHILD' | 'PARENT' | 'SELF';
+    asChild?: boolean;
     role?: string;
     referralCode?: string | null;
     family?: {

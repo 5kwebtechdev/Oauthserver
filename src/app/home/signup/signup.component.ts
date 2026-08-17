@@ -73,32 +73,51 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   public get isOAuthSignup(): boolean {
     try {
-      return sessionStorage.getItem('signup_via_oauth') === 'true'
-        || sessionStorage.getItem('signup_via_google') === 'true';
+      if (
+        sessionStorage.getItem('signup_via_oauth') === 'true'
+        || sessionStorage.getItem('signup_via_google') === 'true'
+      ) {
+        return true;
+      }
     } catch {
-      return false;
+      // Fall through to the persisted onboarding context below.
     }
+    return this.onboardingState?.isSocialOnboarding() === true;
   }
 
   public get isAppleOAuthSignup(): boolean {
     if (!this.isOAuthSignup) return false;
     try {
-      return sessionStorage.getItem('oauth_signup_provider') === 'apple';
+      const sessionProvider = sessionStorage.getItem('oauth_signup_provider');
+      if (sessionProvider) return sessionProvider === 'apple';
     } catch {
-      return false;
+      // Fall through to the persisted provider below.
     }
+    return this.onboardingState?.getSocialProvider() === 'apple';
+  }
+
+  public get oauthProviderLabel(): string {
+    return this.isAppleOAuthSignup ? 'Apple' : 'Google';
+  }
+
+  public get oauthAccountName(): string {
+    if (!this.isOAuthSignup) return '';
+    return this.resolveAppleAccountName(this.profileForm?.get('name')?.value);
+  }
+
+  public get oauthAccountEmail(): string {
+    if (!this.isOAuthSignup) return '';
+    return this.resolveAppleAccountEmail(this.signupForm?.get('email')?.value);
   }
 
   /** The immutable account name supplied by Apple or returned by our backend. */
   public get appleAccountName(): string {
-    if (!this.isAppleOAuthSignup) return '';
-    return this.resolveAppleAccountName(this.profileForm?.get('name')?.value);
+    return this.isAppleOAuthSignup ? this.oauthAccountName : '';
   }
 
   /** The immutable email supplied by Apple or returned by our backend. */
   public get appleAccountEmail(): string {
-    if (!this.isAppleOAuthSignup) return '';
-    return this.resolveAppleAccountEmail(this.signupForm?.get('email')?.value);
+    return this.isAppleOAuthSignup ? this.oauthAccountEmail : '';
   }
 
   // OTP related properties
@@ -398,12 +417,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // payload, so the backend never receives an empty required name.
       if (this.isAppleOAuthSignup) {
         this.hydrateAppleIdentity();
-        this.profileForm.get('name')?.clearValidators();
-        this.profileForm.get('name')?.updateValueAndValidity({ emitEvent: false });
       }
 
-      // Apple and Google don't provide DOB. It is optional for OAuth accounts
-      // and must not block App Store review or account completion.
+      // Provider identity is authoritative. Social users never need to retype
+      // a provider name, and DOB remains optional for Apple and Google.
+      this.profileForm.get('name')?.clearValidators();
+      this.profileForm.get('name')?.updateValueAndValidity({ emitEvent: false });
       this.profileForm.get('dob')?.clearValidators();
       this.profileForm.get('dob')?.updateValueAndValidity({ emitEvent: false });
     }
@@ -511,6 +530,22 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       } else if (stepParam === '0.3') {
         this.step = 0.3;
       }
+
+      // OAuth users are authenticated by Apple/Google before this page is
+      // opened. A stale deep link or restored query param must therefore
+      // never render the email OTP or password screens.
+      if (this.isOAuthSignup && (this.step === 0.2 || this.step === 0.3)) {
+        const socialRole = this.onboardingState.getSignupRole();
+        this.step = 2;
+        void this.router.navigate(['home/sign-up'], {
+          queryParams: {
+            step: 2,
+            ...(socialRole ? { role: socialRole } : {})
+          },
+          replaceUrl: true
+        });
+        return;
+      }
       this.enforceParentFlowRestrictions();
       this.renderer.setStyle(document.documentElement, '--step', this.step);
       this.syncSignupStatusBar();
@@ -603,10 +638,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   get isProfileStepInvalid(): boolean {
-    if (this.name?.invalid || this.dob()?.invalid) return true;
+    if (!this.isOAuthSignup && (this.name?.invalid || this.dob()?.invalid)) return true;
     if (this.currentRole !== 'parent' && this.username?.invalid) return true;
     if (this.currentRole !== 'parent' && this.usernameAvailability !== 'available') return true;
-    // Phone and gender remain optional; DOB and avatar are required.
+    // Phone, gender and (for social accounts) DOB remain optional. An avatar
+    // is still selected explicitly from the centralized age/gender mapping.
     if (!this.avatarSelected) return true;
     return false;
   }
@@ -1060,7 +1096,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     try { sessionStorage.setItem('signup_role', this.roleSelected); } catch (e) { }
     this.onboardingState.updateRegistrationDraft({
       relationship: this.roleSelected.toUpperCase(),
-      asChild: this.roleSelected === 'child'
+      asChild: this.roleSelected === 'child',
+      selectedSignupRole: this.roleSelected,
+      socialRolePending: false,
+      ...(this.isOAuthSignup ? { socialOnboarding: true } : {})
     });
     this.onboardingState.markRoleSelectionCompleted();
 
@@ -1211,19 +1250,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    if (this.isAppleOAuthSignup) {
-      const appleName = this.resolveAppleAccountName(this.profileForm.get('name')?.value);
-      if (!appleName) {
-        this.errorMessage = 'We could not retrieve your name from Apple. Please try Sign in with Apple again.';
-        this.core.triggerToasrt(this.errorMessage);
-        return;
+    if (this.isOAuthSignup) {
+      const providerName = this.resolveAppleAccountName(this.profileForm.get('name')?.value);
+      if (providerName) {
+        this.profileForm.get('name')?.setValue(providerName, { emitEvent: false });
       }
-      this.profileForm.get('name')?.setValue(appleName, { emitEvent: false });
     }
 
     this.profileForm.markAllAsTouched();
 
-    if (this.profileForm.get('name')?.invalid) {
+    if (!this.isOAuthSignup && this.profileForm.get('name')?.invalid) {
       this.core.triggerToasrt(this.getNameErrorMessage());
       return;
     }
@@ -1233,7 +1269,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    if (this.profileForm.get('dob')?.invalid) {
+    if (!this.isOAuthSignup && this.profileForm.get('dob')?.invalid) {
       this.core.triggerToasrt('Please select your date of birth.');
       return;
     }
@@ -1400,7 +1436,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.navigateToSignupStep(0.1);
     } else if (this.step === 1) {
       if (this.isOAuthSignup) {
-        this.navigateReplacing('/home/login');
+        // Social authentication is already complete. Never send an OAuth user
+        // back to Login/Password from role selection; continue with the
+        // preserved role when available and otherwise keep role selection.
+        const socialRole = this.onboardingState.getSignupRole();
+        if (socialRole) {
+          this.navigateToSignupStep(2);
+        }
       } else if (this.signupCredentialState.getPassword()) {
         this.navigateToSignupStep(0.3);
       } else {
@@ -2984,7 +3026,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    */
   private completeGoogleOnboardingFlow(
     role: 'child' | 'parent' | 'self',
-    unlockPotential = false
+    unlockPotential = false,
+    includePet = false
   ): void {
     this.registrationInProgress = true;
     this.errorMessage = null;
@@ -3004,15 +3047,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const profileStr = sessionStorage.getItem('signup_profile');
     let profile: any = {};
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) {}
+    const persistedDraft = this.onboardingState.getRegistrationState()?.savedData || {};
 
-    const provider  = (sessionStorage.getItem('oauth_signup_provider') || 'google') as 'google' | 'apple';
+    const provider  = (
+      sessionStorage.getItem('oauth_signup_provider')
+      || persistedDraft.authProvider
+      || 'google'
+    ) as 'google' | 'apple';
     const email = provider === 'apple'
       ? this.resolveAppleAccountEmail(
         sessionStorage.getItem('google_signup_email'),
-        this.email?.value
+        this.email?.value,
+        persistedDraft.email
       )
-      : sessionStorage.getItem('google_signup_email') || this.email?.value;
-    const providerId = sessionStorage.getItem('google_signup_provider_id') || '';
+      : sessionStorage.getItem('google_signup_email') || this.email?.value || persistedDraft.email;
+    const providerId = sessionStorage.getItem('google_signup_provider_id')
+      || persistedDraft.socialProviderId
+      || '';
     const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
     const idToken    = sessionStorage.getItem('oauth_signup_id_token') || '';
     const accessToken = sessionStorage.getItem('oauth_signup_access_token') || '';
@@ -3028,31 +3079,46 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       ? this.resolveAppleAccountName(
         profile.name,
         this.profileForm.get('name')?.value,
-        sessionStorage.getItem('google_signup_name')
+        sessionStorage.getItem('google_signup_name'),
+        persistedDraft.name
       )
-      : profile.name || this.profileForm.get('name')?.value || sessionStorage.getItem('google_signup_name');
-
-    if (provider === 'apple' && (!resolvedName || !email)) {
-      this.registrationInProgress = false;
-      this.loadingService.forceHide();
-      this.errorMessage = !resolvedName
-        ? 'We could not retrieve your name from Apple. Please try Sign in with Apple again.'
-        : 'We could not retrieve your email from Apple. Please try Sign in with Apple again.';
-      this.core.triggerToasrt(this.errorMessage);
-      return;
-    }
+      : profile.name
+        || this.profileForm.get('name')?.value
+        || sessionStorage.getItem('google_signup_name')
+        || persistedDraft.name;
 
     const googlePayload: any = {
       provider,
       providerId,
       email,
-      name:            resolvedName,
+      ...(resolvedName ? { name: resolvedName } : {}),
       avatarUrl,
       role:            role.toUpperCase(),          // backend uses "role", not "relationship"
       avatarName:      avatar?.key,
       avatarImageName,
       referralCode:    sessionStorage.getItem('referralCode') || null
     };
+    const username = profile.username
+      || this.profileForm.get('username')?.value
+      || persistedDraft.username;
+    if (username) {
+      googlePayload.username = username;
+    }
+    const profilePhone = String(
+      profile.phone
+      || this.profileForm.get('phone')?.value
+      || persistedDraft.phone
+      || ''
+    ).trim();
+    if (profilePhone) {
+      const countryCode = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
+      googlePayload.phone = profilePhone.startsWith('+')
+        ? profilePhone
+        : `${countryCode}${profilePhone}`;
+    }
+    if (role === 'child') {
+      googlePayload.asChild = true;
+    }
 
     if (idToken) {
       googlePayload.idToken = idToken;
@@ -3095,7 +3161,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (familyCode) googlePayload.familyCode = familyCode;
     }
 
-    if (role !== 'parent') {
+    if (role !== 'parent' && includePet) {
       try {
         // Backend expects short pet name ("Dragon"), not the filename ("Dragon-Age1-Happy.png")
         const storedPet = sessionStorage.getItem('signup_pet') || this.currentImage?.apiName;
@@ -3123,13 +3189,29 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       });
     }
 
-    // Use oauth2-login — it creates the user if new, returns a valid token
-    this.authService.googleOAuthLogin(googlePayload).subscribe({
+    const hasProviderProof = !!(
+      idToken
+      || accessToken
+      || serverAuthCode
+      || identityToken
+      || authorizationCode
+    );
+    // A resumed authenticated onboarding session may no longer have the
+    // short-lived provider credential in sessionStorage. In that case use the
+    // existing authenticated profile-completion endpoint and never ask for a
+    // password or OTP.
+    const onboardingRequest = hasProviderProof
+      ? this.authService.googleOAuthLogin(googlePayload)
+      : this.authService.completeGoogleOnboarding(googlePayload);
+
+    onboardingRequest.subscribe({
       next: (response) => {
         const responseStep = this.getResponseOnboardingStep(response);
+        const resolvedStep = responseStep
+          || (unlockPotential ? 7 : (includePet ? 6 : (role === 'parent' ? 4 : 5)));
         const responseUser = {
           ...(response?.user || {}),
-          ...(responseStep ? { onboardingStep: responseStep } : {})
+          onboardingStep: resolvedStep
         };
         const userId = responseUser.id;
         if (response.token && userId) {
@@ -3149,11 +3231,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
             responseData.relationship || role
           ).toUpperCase(),
           asChild: role === 'child',
-          ...(responseStep ? { onboardingStep: responseStep } : {})
+          authProvider: provider,
+          socialProviderId: providerId,
+          socialOnboarding: true,
+          socialDetailsCompleted: true,
+          socialRolePending: false,
+          selectedSignupRole: role,
+          onboardingStep: resolvedStep
         };
-        if (responseStep) {
-          this.onboardingState.saveRegistrationDraft(responseDraft, responseStep, 'EMAIL');
-        }
+        this.onboardingState.saveRegistrationDraft(responseDraft, resolvedStep, 'EMAIL');
 
         // An OAuth account already exists as soon as Apple/Google authenticates
         // it. Keep its OAuth credentials until activation is complete, so the
@@ -3173,7 +3259,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.registrationInProgress = false;
           this.loadingService.forceHide();
 
-          if (googlePayload.petName) {
+          if (includePet && googlePayload.petName) {
             // Step 6 is the activation screen. Replacing the route prevents
             // the prior Pet page from flashing or returning via device Back.
             this.navigateToSignupStep(5);
@@ -3187,13 +3273,26 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           return;
         }
 
-        this.onboardingState.markExistingUser();
-        this.clearGoogleSignupSession();
-        const route = role === 'parent' ? '/authed/parent-account' : '/authed/user-dashboard';
+        this.registrationInProgress = false;
+        this.loadingService.forceHide();
+
+        if (role === 'self') {
+          this.navigateToSignupStep(includePet && googlePayload.petName ? 5 : 4);
+          return;
+        }
+
+        if (role === 'parent') {
+          void this.navCtrl.navigateRoot('/home/instructions-for-parent', {
+            queryParams: { role: 'parent' },
+            animated: false
+          });
+          return;
+        }
+
         setTimeout(() => {
           this.registrationInProgress = false;
           this.loadingService.forceHide();
-          this.navigateReplacing(route);
+          this.navigateReplacing(this.authService.getDashboardRoute());
         }, 50);
       },
       error: (err) => {
@@ -3233,7 +3332,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // OAuth flow: user already has an account, just complete their profile
     if (this.isOAuthSignup) {
-      this.completeGoogleOnboardingFlow(role);
+      this.completeGoogleOnboardingFlow(role, false, includePet);
       return;
     }
     this.registrationInProgress = true;
@@ -3958,6 +4057,27 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private applyRegistrationDraft(savedData: RegistrationDraftData): void {
     if (!savedData) return;
 
+    if (this.onboardingState.isSocialOnboarding(savedData)) {
+      try {
+        const provider = savedData.authProvider || 'google';
+        sessionStorage.setItem('signup_via_oauth', 'true');
+        sessionStorage.setItem('signup_via_google', 'true');
+        sessionStorage.setItem('oauth_signup_provider', provider);
+        if (savedData.email) sessionStorage.setItem('google_signup_email', savedData.email);
+        if (savedData.name) sessionStorage.setItem('google_signup_name', savedData.name);
+        if (savedData.socialProviderId) {
+          sessionStorage.setItem('google_signup_provider_id', savedData.socialProviderId);
+        }
+      } catch {
+        // The local registration draft remains sufficient for rendering.
+      }
+
+      this.profileForm.get('name')?.clearValidators();
+      this.profileForm.get('name')?.updateValueAndValidity({ emitEvent: false });
+      this.profileForm.get('dob')?.clearValidators();
+      this.profileForm.get('dob')?.updateValueAndValidity({ emitEvent: false });
+    }
+
     const role = this.onboardingState.getSignupRole(savedData);
     if (role) {
       this.roleSelected = role;
@@ -4035,6 +4155,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       avatar: avatarKey || undefined
     };
     try { sessionStorage.setItem('signup_profile', JSON.stringify(profile)); } catch {}
+    this.ensureAvatarSelectionIsValid();
   }
 
   private persistProfileDraft(profile: any): void {
@@ -4054,6 +4175,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       avatarName: avatar?.key,
       avatarImageName: avatar?.imageName,
       referralCode: this.showReferral && this.referralCode ? this.referralCode : null,
+      selectedSignupRole: role,
+      socialRolePending: false,
+      ...(this.isOAuthSignup ? {
+        socialOnboarding: true,
+        socialDetailsCompleted: true,
+        authProvider: this.isAppleOAuthSignup ? 'apple' : 'google'
+      } : {}),
       onboardingStep: 4
     }, 4);
   }

@@ -356,7 +356,7 @@
 
       <div class="profile">
         <form [formGroup]="profileForm">
-          <ng-container *ngIf="!isAppleOAuthSignup; else appleIdentityProvided">
+          <ng-container *ngIf="!isOAuthSignup; else oauthIdentityProvided">
             <h4 class="profile-field-heading">
               <span class="profile-field-title">Full Name</span>
             </h4>
@@ -368,34 +368,31 @@
               </div>
             </div>
           </ng-container>
-          <ng-template #appleIdentityProvided>
-            <ng-container *ngIf="appleAccountName; else appleNameUnavailable">
+          <ng-template #oauthIdentityProvided>
+            <ng-container *ngIf="oauthAccountName">
               <h4 class="profile-field-heading">
                 <span class="profile-field-title">Full Name</span>
-                <span class="profile-field-hint">Provided by Apple</span>
+                <span class="profile-field-hint">Provided by {{ oauthProviderLabel }}</span>
               </h4>
               <div class="input-group">
-                <input type="text" [value]="appleAccountName" readonly aria-readonly="true" autocomplete="name" />
-              </div>
-              <h4 class="profile-field-heading">
-                <span class="profile-field-title">Email Address</span>
-                <span class="profile-field-hint">Provided by Apple</span>
-              </h4>
-              <div class="input-group">
-                <input type="email" [value]="appleAccountEmail" readonly aria-readonly="true" autocomplete="email" />
+                <input type="text" [value]="oauthAccountName" readonly aria-readonly="true" autocomplete="name" />
               </div>
             </ng-container>
-            <ng-template #appleNameUnavailable>
-              <p class="oauth-account-note" role="alert">
-                Apple did not return a full name for this authorization. Please try Sign in with Apple again.
-              </p>
-            </ng-template>
+            <ng-container *ngIf="oauthAccountEmail">
+              <h4 class="profile-field-heading">
+                <span class="profile-field-title">Email Address</span>
+                <span class="profile-field-hint">Provided by {{ oauthProviderLabel }}</span>
+              </h4>
+              <div class="input-group">
+                <input type="email" [value]="oauthAccountEmail" readonly aria-readonly="true" autocomplete="email" />
+              </div>
+            </ng-container>
           </ng-template>
 
           <ng-container *ngIf="currentRole !== 'parent'">
           <h4 class="profile-field-heading">
-            <span class="profile-field-title">{{ isAppleOAuthSignup ? 'Choose a SuperMe username' : 'Username' }}</span>
-            <span class="profile-field-hint">{{ isAppleOAuthSignup ? 'Visible in SuperMe only' : 'Name used in the app' }}</span>
+            <span class="profile-field-title">{{ isOAuthSignup ? 'Choose a SuperMe username' : 'Username' }}</span>
+            <span class="profile-field-hint">{{ isOAuthSignup ? 'Visible in SuperMe only' : 'Name used in the app' }}</span>
           </h4>
           <div class="input-group username-field">
             <div class="username-input-shell"
@@ -457,6 +454,7 @@
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Date of Birth</span>
             <span class="profile-field-meta">
+              <span *ngIf="isOAuthSignup" class="profile-optional-badge">Optional</span>
               <span *ngIf="computedAge !== null" class="profile-field-hint age-count">
                 {{ computedAge }} years old
               </span>
@@ -582,7 +580,7 @@
       <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
       <div class="profile-button-wrapper">
         <button type="button" class="details-next-button"
-          [disabled]="(!isAppleOAuthSignup && isProfileStepInvalid) || registrationInProgress || referralValidationStatus === 'pending'"
+          [disabled]="isProfileStepInvalid || registrationInProgress || referralValidationStatus === 'pending'"
           (click)="registerOrProceed()">Next</button>
       </div>
 

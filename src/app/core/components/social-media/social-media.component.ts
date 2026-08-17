@@ -140,32 +140,15 @@ export class SocialMediaComponent implements OnInit {
       // fails silently if Firebase is not yet initialized.
       await this.registerWithFirebaseAuth(googleUser);
 
-      this.authService.checkEmailExists(googleProfile.email).subscribe({
-        next: (res) => {
-          if (res.exists) {
-            this.loginWithOAuthProfile(googleProfile, loading, 'google');
-          } else {
-            void this.finishSocialLogin(loading);
-            this.storeOAuthSignupSession('google', googleProfile);
-            this.analytics.logSignUp('google');
-            this.router.navigate(['home/sign-up'], { queryParams: { step: 1 }, replaceUrl: true });
-          }
-        },
-        error: async (err) => {
-          await this.finishSocialLogin(loading);
-          console.error('[SocialMedia] Email check error:', err);
-          this.crashlytics.recordException(err, {
-            provider: 'google',
-            stage: 'checkEmailExists'
-          });
-          const toast = await this.toastCtrl.create({
-            message: 'Unable to verify account. Please try again.',
-            duration: 3000,
-            position: 'bottom'
-          });
-          await toast.present();
-        }
-      });
+      // The OAuth endpoint is the single authority for both existing and new
+      // accounts. An email-exists preflight races with private relay emails and
+      // can create two different navigation paths for the same provider user.
+      this.storeOAuthSignupSession('google', googleProfile);
+      this.loginWithOAuthProfile(
+        this.withSelectedSignupRole(googleProfile),
+        loading,
+        'google'
+      );
     } catch (err: any) {
       await this.finishSocialLogin(loading);
       const normalizedError = this.normalizeGoogleSignInError(err);
@@ -223,12 +206,29 @@ export class SocialMediaComponent implements OnInit {
         // unsigned token or synthetic identity to Firebase or the live API.
         await this.finishSocialLogin(loading);
         this.storeOAuthSignupSession('apple', credential);
+        const selectedRole = this.getSelectedSignupRole();
+        this.onboardingState.saveRegistrationDraft({
+          email: credential.email,
+          name: credential.name,
+          authProvider: 'apple',
+          socialProviderId: credential.providerId,
+          socialOnboarding: true,
+          socialDetailsCompleted: false,
+          socialRolePending: !selectedRole,
+          selectedSignupRole: selectedRole || undefined,
+          relationship: selectedRole?.toUpperCase(),
+          asChild: selectedRole === 'child',
+          onboardingStep: 3
+        }, 3, 'EMAIL');
         await this.presentToast(
           'Apple development mock verified. Live backend authentication was not called.'
         );
         this.router.navigate(
           ['home/sign-up'],
-          { queryParams: { step: 1 }, replaceUrl: true }
+          {
+            queryParams: selectedRole ? { step: 2, role: selectedRole } : { step: 1 },
+            replaceUrl: true
+          }
         );
         return;
       }
@@ -254,7 +254,11 @@ export class SocialMediaComponent implements OnInit {
       // Capacitor callbacks can resolve outside Angular's zone on iOS. Enter
       // it explicitly so routing and the Ionic view update reliably on iPhone
       // and iPad after the native authorization sheet is dismissed.
-      this.ngZone.run(() => this.loginWithOAuthProfile(appleProfile, loading, 'apple'));
+      this.ngZone.run(() => this.loginWithOAuthProfile(
+        this.withSelectedSignupRole(appleProfile),
+        loading,
+        'apple'
+      ));
     } catch (err: any) {
       await this.finishSocialLogin(loading);
       const normalizedError = this.appleSignIn.normalizeError(err);
@@ -300,9 +304,8 @@ export class SocialMediaComponent implements OnInit {
         };
         const userId = responseUser.id;
         if (response.token && userId) {
-          const appleOnboardingStep = provider === 'apple'
-            ? this.onboardingState.getOnboardingStep(responseUser)
-            : null;
+          const onboardingStep = this.onboardingState.getOnboardingStep(responseUser);
+          const selectedRole = this.getSelectedSignupRole();
 
           this.authService.setSession(
             { token: response.token, userId, expiresIn: response.expiresIn, user: responseUser },
@@ -311,40 +314,38 @@ export class SocialMediaComponent implements OnInit {
           this.analytics.logLogin(provider);
           this.analytics.setUserId(String(userId));
 
-          if (provider === 'apple') {
-            // Apple authentication replaces email/OTP/password steps. A new
-            // Apple user still selects a role before entering optional profile
-            // details. Preserve the identity supplied by Apple (or already
-            // stored on the user) so onboarding never requests it again.
-            const savedRole = this.onboardingState.getSignupRole(responseUser);
-            if (appleOnboardingStep === null && !savedRole) {
-              // New Apple accounts can legitimately start without an
-              // onboarding step. Let the user choose a role instead of
-              // showing a false sign-in error.
-              this.storeOAuthSignupSession('apple', {
-                ...profile,
-                email: String(profile?.email || responseUser.email || '').trim(),
-                name: String(profile?.name || responseUser.name || '').trim()
-              });
-              this.router.navigate(
-                ['home/sign-up'],
-                { queryParams: { step: 1 }, replaceUrl: true }
-              );
-              return;
-            }
+          if (onboardingStep !== null && onboardingStep < 7) {
+            // Keep the exact Apple private-relay email and the one-time Apple
+            // name. Returning Apple users fall back to the backend/cached name.
+            const signupIdentity: OAuthSignupSessionData = {
+              ...profile,
+              email: String(profile?.email || responseUser.email || '').trim(),
+              name: String(profile?.name || responseUser.name || '').trim(),
+              avatarUrl: String(profile?.avatarUrl || '').trim(),
+              providerId: String(profile?.providerId || '').trim()
+            };
+            this.storeOAuthSignupSession(provider, signupIdentity);
 
-            if ((appleOnboardingStep !== null && appleOnboardingStep < 4) || !savedRole) {
-              this.storeOAuthSignupSession('apple', {
-                ...profile,
-                email: String(profile?.email || responseUser.email || '').trim(),
-                name: String(profile?.name || responseUser.name || '').trim()
-              });
-              this.router.navigate(
-                ['home/sign-up'],
-                { queryParams: { step: 1 }, replaceUrl: true }
-              );
-              return;
-            }
+            const roleFromBackend = onboardingStep >= 5
+              ? this.onboardingState.getSignupRole(responseUser)
+              : null;
+            const onboardingRole = selectedRole || roleFromBackend;
+            this.onboardingState.saveRegistrationDraft({
+              ...responseUser,
+              email: signupIdentity.email || responseUser.email,
+              name: signupIdentity.name || responseUser.name,
+              authProvider: provider,
+              socialProviderId: signupIdentity.providerId,
+              socialOnboarding: true,
+              socialDetailsCompleted: onboardingStep >= 5,
+              socialRolePending: !onboardingRole,
+              selectedSignupRole: onboardingRole || undefined,
+              relationship: onboardingRole
+                ? onboardingRole.toUpperCase()
+                : responseUser.relationship,
+              asChild: onboardingRole === 'child' || responseUser.asChild === true,
+              onboardingStep
+            }, onboardingStep, 'EMAIL');
           }
 
           const onboardingResume = this.onboardingState.getResumeNavigation(responseUser);
@@ -355,9 +356,7 @@ export class SocialMediaComponent implements OnInit {
             });
           } else {
             this.onboardingState.markExistingUser();
-            if (provider === 'apple') {
-              this.clearAppleSignupSession();
-            }
+            this.clearOAuthSignupSession();
             this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });
           }
           return;
@@ -368,9 +367,7 @@ export class SocialMediaComponent implements OnInit {
       },
       error: async (err) => {
         await this.finishSocialLogin(loading);
-        if (provider === 'apple') {
-          this.clearAppleSignupSession();
-        }
+        this.clearOAuthSignupSession();
         console.error('[SocialMedia] OAuth login error:', err);
         this.crashlytics.recordException(err, {
           provider,
@@ -451,7 +448,7 @@ export class SocialMediaComponent implements OnInit {
     } catch (e) {}
   }
 
-  private clearAppleSignupSession(): void {
+  private clearOAuthSignupSession(): void {
     try {
       [
         'signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
@@ -486,6 +483,26 @@ export class SocialMediaComponent implements OnInit {
 
   private getProviderLabel(provider: OAuthProviderName): string {
     return provider === 'apple' ? 'Apple' : 'Google';
+  }
+
+  private getSelectedSignupRole(): 'child' | 'parent' | 'self' | null {
+    try {
+      const role = sessionStorage.getItem('signup_role');
+      return role === 'child' || role === 'parent' || role === 'self' ? role : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private withSelectedSignupRole(profile: any): any {
+    const selectedRole = this.getSelectedSignupRole();
+    if (!selectedRole) return profile;
+
+    return {
+      ...profile,
+      role: selectedRole.toUpperCase(),
+      ...(selectedRole === 'child' ? { asChild: true } : {})
+    };
   }
 
   private buildGoogleOAuthProfile(googleUser: any): GoogleOAuthProfile {
