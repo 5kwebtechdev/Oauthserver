@@ -13,10 +13,16 @@ export const startupGuard: CanActivateFn = () => {
     const onboardingState = inject(OnboardingStateService);
 
     if (authService.isLoggedIn()) {
+        const resume = onboardingState.getResumeNavigation(authService.getUserData());
+        // A social Child may still need Details, or may have intentionally
+        // skipped family linking. Respect that resumable social step before
+        // applying the legacy pending-child redirect.
+        if (resume && onboardingState.isSocialOnboarding()) {
+            return router.createUrlTree([resume.url], { queryParams: resume.queryParams });
+        }
         if (authService.isPendingChild()) {
             return router.parseUrl('/home/join-family');
         }
-        const resume = onboardingState.getResumeNavigation(authService.getUserData());
         if (resume) {
             return router.createUrlTree([resume.url], { queryParams: resume.queryParams });
         }
@@ -82,10 +88,13 @@ export const authGuard: CanActivateFn = (
     });
 
     if (isLoggedIn) {
+        const resume = onboardingState.getResumeNavigation(authService.getUserData());
+        if (resume && onboardingState.isSocialOnboarding()) {
+            return router.createUrlTree([resume.url], { queryParams: resume.queryParams });
+        }
         if (authService.isPendingChild()) {
             return router.parseUrl('/home/join-family');
         }
-        const resume = onboardingState.getResumeNavigation(authService.getUserData());
         if (resume) {
             return router.createUrlTree([resume.url], { queryParams: resume.queryParams });
         }
@@ -169,6 +178,17 @@ export const guestGuard: CanActivateFn = (
 
     if (!isLoggedIn) {
         return true;
+    } else if (registrationResume && onboardingState.isSocialOnboarding()) {
+        const targetStep = registrationResume.queryParams?.['step'];
+        const currentStep = route.queryParamMap.get('step');
+        const isExactSocialResumeTarget = state.url.includes(registrationResume.url)
+            && (targetStep == null || currentStep === String(targetStep));
+        if (isExactSocialResumeTarget) {
+            return true;
+        }
+        return router.createUrlTree([registrationResume.url], {
+            queryParams: registrationResume.queryParams
+        });
     } else if (authService.isPendingChild()) {
         return router.parseUrl('/home/join-family');
     } else if (registrationResume) {

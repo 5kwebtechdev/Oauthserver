@@ -66,7 +66,9 @@ describe('OnboardingStateService', () => {
       emailVerified: true,
       petName: null,
       password: 'must-not-be-stored',
-      token: 'must-not-be-stored'
+      token: 'must-not-be-stored',
+      idToken: 'oauth-proof-must-not-be-stored',
+      authorizationCode: 'oauth-code-must-not-be-stored'
     }, 5, 'EMAIL');
 
     const restored = service.getRegistrationState();
@@ -75,7 +77,10 @@ describe('OnboardingStateService', () => {
     expect(restored?.savedData.petName).toBeNull();
     expect(restored?.savedData['password']).toBeUndefined();
     expect(restored?.savedData['token']).toBeUndefined();
+    expect(restored?.savedData['idToken']).toBeUndefined();
+    expect(restored?.savedData['authorizationCode']).toBeUndefined();
     expect(localStorage.getItem(REGISTRATION_ONBOARDING_STATE_KEY)).not.toContain('must-not-be-stored');
+    expect(localStorage.getItem(REGISTRATION_ONBOARDING_STATE_KEY)).not.toContain('oauth-proof');
   });
 
   it('maps backend steps to the existing signup screens', () => {
@@ -95,7 +100,62 @@ describe('OnboardingStateService', () => {
     expect(service.getResumeNavigation({
       onboardingStep: 6,
       relationship: 'SELF'
-    })).toBeNull();
+    })?.queryParams?.['step']).toBe(5);
+  });
+
+  it('never maps social onboarding to OTP or password screens', () => {
+    service.saveRegistrationDraft({
+      onboardingStep: 3,
+      authProvider: 'apple',
+      socialOnboarding: true,
+      socialDetailsCompleted: false,
+      selectedSignupRole: 'parent',
+      relationship: 'PARENT'
+    }, 3);
+
+    expect(service.getResumeNavigation({ onboardingStep: 3 })).toEqual({
+      url: '/home/sign-up',
+      queryParams: { step: 2, role: 'parent' }
+    });
+  });
+
+  it('resumes each social role at its role-specific screen after Details', () => {
+    const base = {
+      onboardingStep: 5,
+      authProvider: 'google' as const,
+      socialOnboarding: true,
+      socialDetailsCompleted: true
+    };
+
+    expect(service.getResumeNavigation({
+      ...base,
+      selectedSignupRole: 'parent'
+    })).toEqual({
+      url: '/home/instructions-for-parent',
+      queryParams: { role: 'parent' }
+    });
+    expect(service.getResumeNavigation({
+      ...base,
+      selectedSignupRole: 'self'
+    })).toEqual({
+      url: '/home/sign-up',
+      queryParams: { step: 4, role: 'self' }
+    });
+    expect(service.getResumeNavigation({
+      ...base,
+      selectedSignupRole: 'child'
+    })).toEqual({
+      url: '/home/join-family',
+      queryParams: { role: 'child' }
+    });
+    expect(service.getResumeNavigation({
+      ...base,
+      selectedSignupRole: 'child',
+      familyLinkSkipped: true
+    })).toEqual({
+      url: '/home/sign-up',
+      queryParams: { step: 4, role: 'child' }
+    });
   });
 
   it('clears only the temporary registration draft when onboarding completes', () => {

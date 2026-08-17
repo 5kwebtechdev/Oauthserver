@@ -104,11 +104,19 @@ export class FooterComponent implements OnInit, OnDestroy {
   }
 
   get primaryLink(): string {
-    return this.mode === 'parenting' ? '/authed/parent-learning' : '/authed/content';
+    return this.isParentNavigation ? '/authed/parent-learning' : '/authed/content';
   }
 
   get primaryLabel(): string {
-    return this.mode === 'parenting' ? 'Parenting' : 'Learning';
+    return this.isParentNavigation ? 'Parenting' : 'Learning';
+  }
+
+  /**
+   * Parent navigation is role-aware rather than relying on each page to pass
+   * an input. Child and Self accounts therefore continue to see Learning.
+   */
+  get isParentNavigation(): boolean {
+    return this.mode === 'parenting' || this.authService.isParentUser();
   }
 
   // Check if the current user is a parent
