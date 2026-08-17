@@ -123,7 +123,11 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
     }
   }
 
-  confirmSelection() {
+  confirmSelection(event?: Event) {
+    // The picker can live inside a clickable date card. Stop this tap before
+    // removing the overlay, otherwise the same mobile click reaches that card
+    // and immediately opens the calendar again.
+    event?.stopPropagation();
     this.isOpen = false;
     if (this.type === 'date') {
       // Only emit when a date is actually selected (prevents accidental defaulting
@@ -132,6 +136,7 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
     } else {
       this.onChange({ start: this.startDate, end: this.endDate });
     }
+    this.onTouched();
   }
 
   private computeRangeDate(range: { unit: 'day' | 'month'; amount: number }): Date {
@@ -157,8 +162,10 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
     this.onChange(this.startDate);
   }
 
-  cancelSelection() {
+  cancelSelection(event?: Event) {
+    event?.stopPropagation();
     this.isOpen = false;
+    this.onTouched();
   }
 
   writeValue(value: any): void {
@@ -176,6 +183,16 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
 
   registerOnTouched(fn: any): void {
     this.onTouched = fn;
+  }
+
+  /** Display a selected date without a weekday prefix (for example, Aug 17, 2026). */
+  formatDisplayDate(date: Date | null): string {
+    if (!date || Number.isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   }
 
   getMonthDays(): Date[] {

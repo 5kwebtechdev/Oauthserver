@@ -180,7 +180,11 @@
   object-fit: contain;
 }
 
-.family-code-how__heading h2 {
+.family-code-how__heading img:last-child {
+  transform: scaleX(-1);
+}
+
+.family-code-how .family-code-how__heading h2 {
   margin: 0;
   color: #432477;
   font-family: 'Nunito', sans-serif;
@@ -235,7 +239,7 @@
   object-fit: contain;
 }
 
-.family-code-step p {
+.family-code-how .family-code-step p {
   width: 100%;
   margin: 0;
   color: #282527;
@@ -545,7 +549,7 @@
     height: 42px;
   }
 
-  .family-code-step p {
+  .family-code-how .family-code-step p {
     font-size: 6px;
   }
 
@@ -588,7 +592,7 @@
     height: 38px;
   }
 
-  .family-code-step p {
+  .family-code-how .family-code-step p {
     font-size: 5.7px;
   }
 

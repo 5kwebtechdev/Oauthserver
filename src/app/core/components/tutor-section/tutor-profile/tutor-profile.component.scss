@@ -546,10 +546,22 @@ ion-content.tutor-detail-page {
 
 .unlock-button {
   width: 100%;
+  min-height: 52px;
+  padding: 11px 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 7px;
+  color: #fff;
+  font-family: var(--font-sans, Nunito, sans-serif);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+
+  > span:not(.unlock-button__cost) {
+    white-space: nowrap;
+  }
 
   &:disabled {
     cursor: wait;
@@ -569,7 +581,7 @@ ion-content.tutor-detail-page {
     gap: 3px;
     color: #FFFFFF;
     font-size: 18px;
-    font-weight: 750;
+    font-weight: 800;
     line-height: 1;
 
     img {
@@ -587,7 +599,7 @@ ion-content.tutor-detail-page {
   border: 1px solid #3158a8;
   border-radius: 16px;
   background: radial-gradient(184% 190% at 50% 0%, #3158a8 0%, #2345a8 50%, #1432a8 100%);
-  box-shadow: inset -2px -2px 2px #b2caf2;
+  box-shadow: inset -2px -2px 2px #b2caf2, 0 5px 12px rgba(20, 50, 168, .2);
 }
 
 .unlock-card {

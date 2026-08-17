@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { ToastController } from '@ionic/angular';
-import { finalize } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { filter, finalize, takeUntil } from 'rxjs/operators';
 import { JournalAvailabilityService } from '../../services/journal-availability.service';
 
 @Component({
@@ -12,14 +13,32 @@ import { JournalAvailabilityService } from '../../services/journal-availability.
   templateUrl: './quick-access-section.component.html',
   styleUrls: ['./quick-access-section.component.scss']
 })
-export class QuickAccessSectionComponent {
+export class QuickAccessSectionComponent implements OnInit, OnDestroy {
   checkingJournalAvailability = false;
+  journalAvailable: boolean | null = null;
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
     private toastController: ToastController,
     private journalAvailability: JournalAvailabilityService
   ) { }
+
+  ngOnInit(): void {
+    this.refreshJournalAvailability();
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        filter(event => event.urlAfterRedirects.startsWith('/authed/user-dashboard')),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.refreshJournalAvailability());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   openJournal(event: Event): void {
     event.preventDefault();
@@ -30,6 +49,7 @@ export class QuickAccessSectionComponent {
       .pipe(finalize(() => this.checkingJournalAvailability = false))
       .subscribe({
         next: response => {
+          this.journalAvailable = response?.allowForTheDay === true;
           if (response?.allowForTheDay) {
             this.router.navigate(['/authed/journal-input']).catch(() => { });
             return;
@@ -39,7 +59,27 @@ export class QuickAccessSectionComponent {
         // Do not prevent journaling if availability cannot be checked (for
         // example, a temporary network failure). The add endpoint remains the
         // final server-side safeguard.
-        error: () => this.router.navigate(['/authed/journal-input']).catch(() => { })
+        error: () => {
+          this.journalAvailable = true;
+          this.router.navigate(['/authed/journal-input']).catch(() => { });
+        }
+      });
+  }
+
+  private refreshJournalAvailability(): void {
+    if (this.checkingJournalAvailability) return;
+    this.checkingJournalAvailability = true;
+    this.journalAvailability.allowForTheDay()
+      .pipe(
+        finalize(() => this.checkingJournalAvailability = false),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: response => this.journalAvailable = response?.allowForTheDay === true,
+        // Preserve the previous behavior during a temporary availability API
+        // failure: journaling remains accessible and the add endpoint is the
+        // final server-side safeguard.
+        error: () => this.journalAvailable = true
       });
   }
 

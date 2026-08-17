@@ -125,6 +125,10 @@
   border-bottom-color: #E1527C;
 }
 
+.qa-shortcut-journal {
+  border-bottom-color: #DD0099;
+}
+
 .qa-shortcut-icon {
   width: 32px;
   height: 32px;
@@ -280,6 +284,24 @@
 .qa-shortcut-calendar {
   background: #FFF0F5;
   box-shadow: 0 0 2px rgba(255, 45, 121, 0.5);
+}
+
+.qa-shortcut-journal {
+  background: #FFF0FB;
+  box-shadow: 0 0 2px rgba(221, 0, 153, 0.5);
+}
+
+.qa-shortcuts--with-journal .qa-shortcut-card {
+  padding-inline: 6px;
+}
+
+.qa-shortcuts--with-journal .qa-shortcut-icon {
+  width: clamp(30px, 10vw, 40px);
+  height: clamp(30px, 10vw, 40px);
+}
+
+.qa-shortcuts--with-journal .qa-shortcut-label {
+  font-size: clamp(11px, 3.4vw, 13px);
 }
 
 .qa-shortcut-icon {

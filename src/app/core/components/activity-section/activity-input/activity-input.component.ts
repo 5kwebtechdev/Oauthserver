@@ -39,6 +39,20 @@ interface PlannerEntry {
   days: string[];
 }
 
+type PlannerMode = 'timetable' | 'events';
+
+interface PlannerModeDraft {
+  title: string;
+  notes: string;
+  startDate: Date | null;
+  endDate: Date | null;
+  startTime: string;
+  endTime: string;
+  reminderOffset: ReminderOffset | null;
+  isPrivate: boolean;
+  startTimeUserSet: boolean;
+}
+
 interface EventChoice {
   key: string;
   label: string;
@@ -249,8 +263,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     personal: 'assets/icons/Personal.svg'
   };
 
-  getCategoryIcon(value: string): string | null {
-    return this.categoryIcons[(value || '').trim().toLowerCase()] || null;
+  getCategoryIcon(value: string): string {
+    const normalizedValue = (value || '').trim().toLowerCase();
+    return this.categoryIcons[normalizedValue] ? normalizedValue : 'personal';
   }
 
   isCategorySelected(key: any): boolean {
@@ -261,7 +276,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.tagsComponent?.toggleSelection(key);
   }
 
-  openAddCategory(elRef?: any) {
+  openAddCategory(elRef?: any, event?: Event) {
+    // The visible category button lives outside the hidden tag engine. Stop
+    // this opening click before the engine's document listener sees it as an
+    // outside click and immediately closes the sheet.
+    event?.stopPropagation();
     this.tagsComponent?.openAdd(elRef);
   }
 
@@ -345,6 +364,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     { name: '', startTime: '', endTime: '', days: ['S'] },
     { name: '', startTime: '', endTime: '', days: ['S'] }
   ];
+
+  private plannerModeDrafts: Record<PlannerMode, PlannerModeDraft> = {
+    timetable: this.createEmptyPlannerModeDraft(),
+    events: this.createEmptyPlannerModeDraft()
+  };
 
   @ViewChild(SupermeTagsComponent) tagsComponent?: SupermeTagsComponent;
   @ViewChild(SupermeSelectorsComponent) selectorsComponent?: SupermeSelectorsComponent;
@@ -538,19 +562,85 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   selectActivityTab(tab: ActivityNavigationTab): void {
     const nextTab: ActivityTab = tab === 'planner' ? 'timetable' : tab;
     if (this.currentActive === nextTab || (tab === 'planner' && this.isPlannerActive)) return;
+
+    if (this.isPlannerActive) {
+      this.savePlannerModeDraft(this.currentActive as PlannerMode);
+    }
+
     this.currentActive = nextTab;
+    if (nextTab === 'timetable' || nextTab === 'events') {
+      this.restorePlannerModeDraft(nextTab);
+    }
     if (nextTab === 'timetable' && !this.priority) this.priority = 'low';
-    this.attemptedSubmit = false;
-    this.serverErrorMessage = '';
-    Object.keys(this.errors).forEach(key => (this.errors as any)[key] = false);
+    this.clearTabValidationState();
   }
 
   isActivityTabSelected(tab: ActivityNavigationTab): boolean {
     return tab === 'planner' ? this.isPlannerActive : this.currentActive === tab;
   }
 
-  selectPlannerType(type: 'timetable' | 'events'): void {
-    this.selectActivityTab(type);
+  selectPlannerType(type: PlannerMode): void {
+    if (this.currentActive === type) return;
+
+    if (this.isPlannerActive) {
+      this.savePlannerModeDraft(this.currentActive as PlannerMode);
+    }
+
+    this.currentActive = type;
+    this.restorePlannerModeDraft(type);
+    if (type === 'timetable' && !this.priority) this.priority = 'low';
+    this.clearTabValidationState();
+  }
+
+  private createEmptyPlannerModeDraft(): PlannerModeDraft {
+    return {
+      title: '', notes: '', startDate: null, endDate: null,
+      startTime: '', endTime: '', reminderOffset: null,
+      isPrivate: false, startTimeUserSet: false
+    };
+  }
+
+  private resetPlannerModeDrafts(): void {
+    this.plannerModeDrafts = {
+      timetable: this.createEmptyPlannerModeDraft(),
+      events: this.createEmptyPlannerModeDraft()
+    };
+  }
+
+  private savePlannerModeDraft(type: PlannerMode): void {
+    this.plannerModeDrafts[type] = {
+      title: this.title,
+      notes: this.notes,
+      startDate: this._startDate ? new Date(this._startDate) : null,
+      endDate: this._endDate ? new Date(this._endDate) : null,
+      startTime: this.startTime,
+      endTime: this.endTime,
+      reminderOffset: this.reminderOffset,
+      isPrivate: this.isPrivate,
+      startTimeUserSet: this.startTimeUserSet
+    };
+  }
+
+  private restorePlannerModeDraft(type: PlannerMode): void {
+    const draft = this.plannerModeDrafts[type];
+    this.title = draft.title;
+    this.notes = draft.notes;
+    // Avoid date setter side effects while changing between planner forms.
+    this._startDate = draft.startDate ? new Date(draft.startDate) : null;
+    this._endDate = draft.endDate ? new Date(draft.endDate) : null;
+    this.startTime = draft.startTime;
+    this.endTime = draft.endTime;
+    this.reminderOffset = draft.reminderOffset;
+    this.isPrivate = draft.isPrivate;
+    this.startTimeUserSet = draft.startTimeUserSet;
+    this.reminderExpanded = false;
+  }
+
+  private clearTabValidationState(): void {
+    this.attemptedSubmit = false;
+    this.serverErrorMessage = '';
+    this.showDaySelectionError = false;
+    Object.keys(this.errors).forEach(key => (this.errors as any)[key] = false);
   }
 
   selectPlannerColor(color: string): void {
@@ -741,6 +831,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         this.resetForNewEntry();
         return;
       }
+      this.resetPlannerModeDrafts();
       const h: any = stateHabit;
       this.originalHabit = h;
       if (h.id) this.editingId = String(h.id);
@@ -859,6 +950,10 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
           }
         }
       } catch (e: any) { console.warn('Failed to sync tag selection with SupermeTags component', e); }
+
+      if (this.isPlannerActive) {
+        this.savePlannerModeDraft(this.currentActive as PlannerMode);
+      }
     } catch (e: any) {
       console.warn('Failed to read navigation state for habit-input', e);
     }
@@ -903,6 +998,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       { name: '', startTime: '', endTime: '', days: ['S'] },
       { name: '', startTime: '', endTime: '', days: ['S'] }
     ];
+    this.resetPlannerModeDrafts();
     this.selectedPlannerColor = this.plannerColors[0];
     this.selectedTags = [];
     this.attemptedSubmit = false;

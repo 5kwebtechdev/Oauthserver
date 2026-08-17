@@ -39,6 +39,7 @@ export class SupermeTagsComponent implements OnInit, OnDestroy, OnChanges {
   @Input() size: 'small' | 'medium' | 'large' = 'small';
   @Input() singleSelection: boolean = false;
   @Input() variant: 'blue' | 'orange' | 'green' | 'gray' = 'blue';
+  @Input() inputPresentation: 'popover' | 'bottom-sheet' = 'popover';
   @Input() storageKey: string = 'superme-tags'; // Key for localStorage
 
   @Output() selectedKeysChange = new EventEmitter<any[]>();
@@ -55,6 +56,7 @@ export class SupermeTagsComponent implements OnInit, OnDestroy, OnChanges {
   inputValue: string = '';
   inputPopupPosition: { left: number; top: number } | null = null;
   editingTagKey: any = null;
+  private readonly defaultCustomCategoryIcon = 'assets/icons/Personal.svg';
 
   private onDocClick?: any;
   // Delete confirmation popup state
@@ -256,7 +258,7 @@ export class SupermeTagsComponent implements OnInit, OnDestroy, OnChanges {
         this.showLimitErrorMessage();
       } else {
         if (this.serverManaged) {
-          this.add.emit({ value: val });
+          this.add.emit({ value: val, icon: this.defaultCustomCategoryIcon });
           this.cancelInputPopup();
           return;
         }
@@ -396,7 +398,9 @@ export class SupermeTagsComponent implements OnInit, OnDestroy, OnChanges {
     this.isEditMode = false;
     this.inputValue = '';
     this.editingTagKey = null;
-    if (elRef && elRef.getBoundingClientRect) {
+    if (this.inputPresentation === 'bottom-sheet') {
+      this.inputPopupPosition = null;
+    } else if (elRef && elRef.getBoundingClientRect) {
       const rect = elRef.getBoundingClientRect();
       const center = rect.left + rect.width / 2;
       this.inputPopupPosition = { left: this.clampPopupCenter(center), top: rect.bottom + 8 };

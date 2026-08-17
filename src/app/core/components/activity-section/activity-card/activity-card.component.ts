@@ -1157,33 +1157,33 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   /**
    * Set up timers to automatically reload habits/tasks at key time points:
-   * 1. When "Let's Go" window opens (5 min before start time)
-   * 2. When activity ends (at end time)
+   * 1. When the API-provided activity start time is reached
+   * 2. Immediately after the API-provided activity end time
    */
   private setupAutoReloadTimers(): void {
     // Clear any existing timers
     this.clearAutoReloadTimers();
 
-    // Only set up timers for list or recent mode
-    if (this.mode !== 'list' && this.mode !== 'recent') {
-      return;
-    }
-
     const now = Date.now();
-    const fiveMinutes = 5 * 60 * 1000;
     const upcomingEvents: { time: number, type: 'letsgo' | 'end' }[] = [];
 
-    // Check all habits and tasks in list or recent mode
-    const allActivities = [...this.habits, ...this.tasks, ...this.recentHabits, ...this.recentTasks];
+    // Home/calendar rows render nested cards in single mode, so they also need
+    // a boundary refresh without requiring the user to leave and reopen them.
+    const allActivities = this.mode === 'single'
+      ? [this.habit]
+      : [...this.habits, ...this.tasks, ...this.recentHabits, ...this.recentTasks];
 
     allActivities.forEach(activity => {
-      if (activity && activity.startTimeStamp && activity.endTimeStamp) {
-        const letsGoWindowStart = activity.startTimeStamp - fiveMinutes;
+      if (activity) {
+        const { startTimeStamp, endTimeStamp } = this.buttonLogic.calculateTimestamps(activity);
+        if (!startTimeStamp || !endTimeStamp) return;
+
+        const letsGoWindowStart = startTimeStamp;
         if (now < letsGoWindowStart) {
           upcomingEvents.push({ time: letsGoWindowStart, type: 'letsgo' });
         }
-        if (now < activity.endTimeStamp) {
-          upcomingEvents.push({ time: activity.endTimeStamp, type: 'end' });
+        if (now <= endTimeStamp) {
+          upcomingEvents.push({ time: endTimeStamp + 1, type: 'end' });
         }
       }
     });
@@ -1196,10 +1196,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
       // Set a single timer for the next event
       this.letsGoWindowTimer = setTimeout(() => {
-        this.reloadData();
+        if (this.mode === 'single') {
+          this.cdr.detectChanges();
+        } else {
+          this.reloadData();
+        }
         // After reloading, set up timers again for next events
         this.setupAutoReloadTimers();
-      }, timeUntilEvent);
+      }, Math.max(0, timeUntilEvent));
     }
   }
 
@@ -1533,6 +1537,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       this.isParent = !!changes['isParentOverride'].currentValue;
       this.cdr.detectChanges();
     }
+    if (this.mode === 'single' && changes['habit']) {
+      this.setupAutoReloadTimers();
+    }
     // If in recent mode and recent habits or tasks change, update the display
     if (this.mode === 'recent' && (changes['recentHabits'] || changes['recentTasks'] || changes['recentTimetables'])) {
       this.updateRecentDisplay();
@@ -1793,6 +1800,38 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       next: (resp: any) => {
         const rawTasks = Array.isArray(resp?.tasks) ? resp.tasks : [];
 
+        // The same calendar response also contains planner/time-table entries.
+        // Populate them here so list mode (including the parent home card) gets
+        // the count and content without needing a second request.
+        const rawTimetables = Array.isArray(resp?.events)
+          ? resp.events.filter((item: any) => item?.expired !== true)
+          : [];
+        this.totalTimetablesLoaded = rawTimetables.length;
+        this.timetables = rawTimetables
+          .map((item: any) => {
+            const isRecurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
+            const itemForTimestamp = isRecurring
+              ? { ...item, startDate: formatted, endDate: formatted }
+              : item;
+            const timestamps = this.buttonLogic.calculateTimestamps(itemForTimestamp);
+
+            return {
+              ...item,
+              type: 'timetable',
+              title: item.title || item.name || 'Time Table',
+              notes: item.description || item.notes || '',
+              startTimeStamp: timestamps.startTimeStamp,
+              endTimeStamp: timestamps.endTimeStamp,
+              status: item.completed ? 'completed' : 'pending',
+              coinReward: 0,
+              routine: null
+            };
+          })
+          .filter((item: any) => item.status !== 'completed')
+          .sort((a: any, b: any) => Number(a.startTimeStamp || 0) - Number(b.startTimeStamp || 0))
+          .slice(0, this.maxItemsToShow);
+        this.hasTimetables = this.timetables.length > 0;
+
         // Track total tasks loaded BEFORE any filtering
         this.totalTasksLoaded = rawTasks.length;
         
@@ -1855,9 +1894,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       error: (error) => {
         console.error('Error fetching calendar tasks:', error);
         this.tasks = [];
+        this.timetables = [];
         this.hasTasks = false;
+        this.hasTimetables = false;
         this.totalTasksLoaded = 0;
         this.totalTasksCompleted = 0;
+        this.totalTimetablesLoaded = 0;
         this.updateEmptyState();
         this.cdr.detectChanges();
       }
@@ -1890,8 +1932,21 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     this.habitAllDoneComputed = this.habitCompletionRate === 100 && this.totalHabitsLoaded > 0;
     this.taskAllDoneComputed = this.taskCompletionRate === 100 && this.totalTasksLoaded > 0;
     
-    // Update isEmpty based on filtered items
-    this.isEmpty = !this.hasHabits && !this.hasTasks;
+    // Keep the empty state scoped to the selected tab. Previously the generic
+    // habit/task check could render together with a tab-specific blank state.
+    switch (this.currentActive) {
+      case 'habits':
+        this.isEmpty = !this.hasHabits;
+        break;
+      case 'tasks':
+        this.isEmpty = !this.hasTasks;
+        break;
+      case 'timetable':
+        this.isEmpty = !this.hasTimetables;
+        break;
+      default:
+        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
+    }
 
     this.showContent = !this.isEmpty;
   }
@@ -1969,6 +2024,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     if (tab === 'habits' && this.habits.length === 0) {
       this.loadHabits();
     } else if (tab === 'tasks' && this.tasks.length === 0) {
+      this.loadTodayTasks();
+    } else if (tab === 'timetable' && this.timetables.length === 0) {
       this.loadTodayTasks();
     } else if (tab === 'all') {
       if (this.habits.length === 0) this.loadHabits();
@@ -2288,12 +2345,18 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   get glanceSubtitle(): string {
     const parts = [
       `${this.totalHabitsLoaded} Habit${this.totalHabitsLoaded === 1 ? '' : 's'}`,
-      `${this.totalTasksLoaded} Task${this.totalTasksLoaded === 1 ? '' : 's'}`
+      `${this.totalTasksLoaded} Task${this.totalTasksLoaded === 1 ? '' : 's'}`,
+      `${this.totalTimetablesLoaded} ${this.plannerTabLabel}${this.totalTimetablesLoaded === 1 ? '' : 's'}`
     ];
-    if (this.totalTimetablesLoaded > 0) {
-      parts.push(`${this.totalTimetablesLoaded} ${this.plannerTabLabel}${this.totalTimetablesLoaded === 1 ? '' : 's'}`);
-    }
     return parts.join(' • ');
+  }
+
+  /** True when every loaded habit/task is complete; timetable entries do not have completion state. */
+  get isAllLoadedContentCompleted(): boolean {
+    const trackableTotal = this.totalHabitsLoaded + this.totalTasksLoaded;
+    if (trackableTotal === 0 || this.totalTimetablesLoaded > 0) return false;
+
+    return this.totalHabitsCompleted + this.totalTasksCompleted === trackableTotal;
   }
 
   /** Combined habit+task completion percentage shown in the header pill */

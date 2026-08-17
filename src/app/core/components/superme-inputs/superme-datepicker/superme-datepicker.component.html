@@ -1,9 +1,9 @@
 <div class="datepicker-wrapper">
   <input type="text" [attr.placeholder]="placeholder"
-    [value]="startDate ? (type === 'range' && endDate ? startDate.toDateString() + ' - ' + endDate.toDateString() : startDate.toDateString()) : ''"
+    [value]="startDate ? (type === 'range' && endDate ? formatDisplayDate(startDate) + ' - ' + formatDisplayDate(endDate) : formatDisplayDate(startDate)) : ''"
     (click)="openCalendar($event)" readonly />
 
-  <div class="calendar-overlay" *ngIf="isOpen">
+  <div class="calendar-overlay" *ngIf="isOpen" (click)="$event.stopPropagation()">
     <div class="calendar-popup">
       <h2 class="calendar-title">Set {{ label }}</h2>
 
@@ -30,7 +30,7 @@
 
       <div class="calendar-grid">
         <div class="day" *ngFor="let d of ['Su','Mo','Tu','We','Th','Fr','Sa']">{{ d }}</div>
-        <button *ngFor="let date of getVisibleMonthDays()" [class.isStartDate]="isStartOfRange(date)"
+        <button type="button" *ngFor="let date of getVisibleMonthDays()" [class.isStartDate]="isStartOfRange(date)"
           [class.isEndDate]="isEndOfRange(date)" [class.currentMonth]="isDateinCurrentMonth(date)"
           [class.selected]="isSameDay(date, getEffectiveStart()) || isSameDay(date, getEffectiveEnd())"
           [class.in-range]="isInRange(date)" [class.disabled]="isDisabled(date)" [class.today]="isToday(date)" [disabled]="isDisabled(date)"
@@ -46,8 +46,8 @@
       </div>
 
       <div class="calendar-actions">
-        <button type="button" class="cancel" (click)="cancelSelection()">Cancel</button>
-        <button type="button" class="done" (click)="confirmSelection()">Done</button>
+        <button type="button" class="cancel" (click)="cancelSelection($event)">Cancel</button>
+        <button type="button" class="done" (click)="confirmSelection($event)">Done</button>
       </div>
     </div>
   </div>

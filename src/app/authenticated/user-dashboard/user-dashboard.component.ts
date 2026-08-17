@@ -38,6 +38,7 @@ import { Observable, Subject, catchError, forkJoin, of } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { MoodService } from '../../core/services/mood.service';
 import { MoodTransition } from '../../core/models/mood.model';
+import { PetAgeService } from '../../core/services/pet-age.service';
 import { Capacitor } from '@capacitor/core';
 
 type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
@@ -204,9 +205,15 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private refreshService: RefreshService,
     private streakRestoreApi: StreakRestoreApi,
     private petMessageApi: PetMessageApiService,
-    private moodService: MoodService
+    private moodService: MoodService,
+    private petAgeService: PetAgeService
   ) {
     this.toast$ = this.toastService.toast$;
+  }
+
+  /** Panda alone uses the larger, bottom-attached Figma placement on Home. */
+  get isHomePanda(): boolean {
+    return this.petAgeService.getCurrentPetType() === 'panda';
   }
 
   get performanceMetrics(): SelfMetric[] {

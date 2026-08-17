@@ -1,6 +1,6 @@
-import { Component, Input, TemplateRef, ContentChild, EventEmitter, Output, OnInit, ElementRef, ViewChild, AfterViewInit, Renderer2, OnDestroy } from '@angular/core';
+import { Component, Input, TemplateRef, ContentChild, EventEmitter, Output, OnInit, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewInit, Renderer2, OnDestroy } from '@angular/core';
 import { NgIf, NgForOf } from "@angular/common";
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { IonicModule } from "@ionic/angular";
 import { Router, RouterModule } from '@angular/router';
@@ -49,6 +49,15 @@ import { AuthService } from 'src/app/core/services/auth.service';
         </div>
       </div>
 
+      <div class="content-state" *ngIf="isLoading" aria-live="polite">
+        <ion-spinner name="crescent"></ion-spinner>
+        <span>Loading content...</span>
+      </div>
+
+      <div class="content-state content-state--empty" *ngIf="!isLoading && items.length === 0">
+        <span>No content is available right now.</span>
+      </div>
+
       <div class="pager" *ngIf="showPager" #pager>
         <div class="dot" [class.active]="i === activeIndex" *ngFor="let item of items; let i = index"
           (click)="goToSlide(i)"></div>
@@ -66,6 +75,24 @@ import { AuthService } from 'src/app/core/services/auth.service';
       padding: 0;
       box-shadow: none;
       overflow: visible;
+
+      .content-state {
+        display: flex;
+        min-height: 72px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: #6b656a;
+        font-family: var(--font-sans);
+        font-size: 13px;
+        text-align: center;
+
+        ion-spinner {
+          width: 20px;
+          height: 20px;
+          color: #b51f59;
+        }
+      }
 
       .content-header {
         display: flex;
@@ -555,11 +582,13 @@ import { AuthService } from 'src/app/core/services/auth.service';
   imports: [NgIf, NgForOf, IonicModule, RouterModule, LearningCardComponent],
   standalone: true
 })
-export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestroy {
+export class LearningSectionComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
   @Input() title: string = '';
   @Input() subtitle: string = '';
   @Input() headerIcon: string = '';
   @Input() rewardMode: boolean = false;
+  @Input() contentMode: 'learning' | 'parenting' = 'learning';
+  @Input() forUserId: string | number | null = null;
   /** Opens the dedicated learning listing only for Child or Self accounts. */
   @Input() childSelfLearningViewAll: boolean = false;
   /** Opens the Figma Parenting listing only for Parent accounts. */
@@ -588,8 +617,11 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
   @ViewChild('pager', { read: ElementRef }) pagerRef!: ElementRef<HTMLElement>;
 
   activeIndex: number = 0;
+  isLoading = false;
 
   private scrollHandler?: () => void;
+  private initialized = false;
+  private loadRequestId = 0;
 
   constructor(
     private renderer: Renderer2,
@@ -607,6 +639,14 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
 
   ngOnDestroy(): void {
     if (this.scrollHandler) this.scrollHandler();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.initialized) return;
+    if (changes['forUserId'] || changes['contentMode']) {
+      this.items = [];
+      this.loadLatestFromService();
+    }
   }
 
   private updateActiveDot(): void {
@@ -689,6 +729,7 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   ngOnInit(): void {
+    this.initialized = true;
     if (!this.items || this.items.length === 0) {
       try {
         this.loadLatestFromService();
@@ -700,27 +741,32 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   private loadLatestFromService() {
-    forkJoin([
-      this.learningService.fetchChallenges().pipe(
-        map(challenges => {
-          const quizzes = challenges.filter(c => c.category === 'QUIZ').map(c => this.learningService.transformChallengeToCard(c));
-          const puzzles = challenges.filter(c => c.category === 'PUZZLE').map(c => this.learningService.transformChallengeToCard(c));
-          const latestQuiz = this.pickLatest(quizzes);
-          const latestPuzzle = this.pickLatest(puzzles);
-          return { latestQuiz, latestPuzzle };
-        })
-      ),
-      this.learningService.getArticleCards().pipe(
-        map(articles => this.pickLatest(articles))
-      )
-    ])
+    const requestId = ++this.loadRequestId;
+    this.isLoading = true;
+    const scopedUserId = this.contentMode === 'parenting' ? null : this.forUserId;
+    const requests: Observable<any[]> = this.contentMode === 'parenting'
+      ? forkJoin([
+          this.learningService.fetchArticleCards(true).pipe(map(items => this.pickLatest(items))),
+          this.learningService.fetchQuizCards(true).pipe(map(items => this.pickLatest(items)))
+        ])
+      : forkJoin([
+          this.learningService.fetchQuizCards(true, scopedUserId).pipe(map(items => this.pickLatest(items))),
+          this.learningService.fetchPuzzleCards(true, scopedUserId).pipe(map(items => this.pickLatest(items))),
+          this.learningService.fetchArticleCards(true, scopedUserId).pipe(map(items => this.pickLatest(items)))
+        ]);
+
+    requests
       .subscribe({
-        next: ([{ latestQuiz, latestPuzzle }, latestArticle]) => {
-          const combined = [latestQuiz, latestPuzzle, latestArticle].filter(x => !!x) as any[];
-          if (combined.length) this.items = combined;
+        next: (latestItems: any[]) => {
+          if (requestId !== this.loadRequestId) return;
+          this.items = latestItems.filter((item: any) => !!item) as any[];
+          this.isLoading = false;
         },
-        error: (err) => {
+        error: (err: any) => {
+          if (requestId !== this.loadRequestId) return;
           console.error('Error fetching latest learning items', err);
+          this.items = [];
+          this.isLoading = false;
         }
       });
   }

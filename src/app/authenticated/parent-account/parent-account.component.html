@@ -259,13 +259,20 @@
           subtitle="Assign bonus coins to learning activities to boost motivation"
           headerIcon="assets/icons/child-home-coin-figma.png"
           [rewardMode]="true"
+          [forUserId]="selectedChild?.id ?? null"
           source="/authed/parent-account">
         </learning-section>
       </section>
 
-      <section class="parent-learning-card" aria-label="Learning and skills">
-        <learning-section source="/authed/parent-account" [parentLearningViewAll]="true"></learning-section>
-        <academy-section></academy-section>
+      <section class="parent-learning-card" aria-label="Parenting insights">
+        <learning-section
+          title="Parenting"
+          subtitle="Practical insights and quizzes for your parenting journey"
+          headerIcon="assets/figma/parent-home/parent-learning-blogs.png"
+          contentMode="parenting"
+          source="/authed/parent-account"
+          [parentLearningViewAll]="true">
+        </learning-section>
       </section>
 
       <tutor-card class="parent-eduhub"></tutor-card>
