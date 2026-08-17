@@ -117,6 +117,32 @@ $theme-colors-dark: (
     }
   }
 
+  // All form toggles use one geometry so Habit, Task, Timetable, and Event do
+  // not jump in size when the active tab changes.
+  .priority-toggle-control ::ng-deep .superme-toggle,
+  .everyday-toggle ::ng-deep .superme-toggle,
+  .event-toggle-control ::ng-deep .superme-toggle,
+  .planner-event-priority ::ng-deep .superme-toggle {
+    width: 40px !important;
+    height: 24px !important;
+
+    .track {
+      width: 40px !important;
+      height: 24px !important;
+      border-radius: 999px !important;
+    }
+
+    .thumb {
+      width: 20px !important;
+      height: 20px !important;
+      transform: translateX(2px) !important;
+    }
+
+    &[aria-checked="true"] .thumb {
+      transform: translateX(18px) !important;
+    }
+  }
+
 /* coin selector removed: styles for .assign-coin and .coin-badge deleted */
 }
 
@@ -145,27 +171,27 @@ $theme-colors-dark: (
 }
 
 .header-toggle ::ng-deep .superme-toggle {
-  width: 50px;
-  height: 28px;
+  width: 40px;
+  height: 24px;
 }
 
 .header-toggle ::ng-deep .superme-toggle .track {
-  width: 50px;
-  height: 31px;
-  border-radius: 20px;
+  width: 40px;
+  height: 24px;
+  border-radius: 999px;
   background: #C9C6DA;
 }
 
 .header-toggle ::ng-deep .superme-toggle .thumb {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   background: #3F3D56;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
-  transform: translateX(4px);
+  transform: translateX(2px);
 }
 
 .header-toggle ::ng-deep .superme-toggle[aria-checked="true"] .thumb {
-  transform: translateX(22px);
+  transform: translateX(18px);
   background: #3F3D56;
 }
 
@@ -267,20 +293,19 @@ $theme-colors-dark: (
 }
 
 .reminder-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
   min-width: 0;
-  overflow: hidden;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
 }
 
 .reminder-trigger {
   box-sizing: border-box;
   display: flex;
   width: 100%;
-  min-height: 56px;
-  padding: 12px 8px;
+  min-height: 40px;
+  padding: 0;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -435,6 +460,45 @@ $theme-colors-dark: (
   outline-offset: 1px;
 }
 
+.reminder-options-card {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 0 solid #e8ecf7;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: none;
+  transition: border-width 160ms ease, box-shadow 160ms ease;
+}
+
+.reminder-options-card.open {
+  border-width: 1px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+// Planner reminder controls should use the same teal-green palette as the
+// Planner tab instead of inheriting the default Habit purple.
+.habit-input-root.timetable {
+  .reminder-radio {
+    border-color: #89b3b6;
+  }
+
+  .reminder-option.selected {
+    border-color: #89b3b6;
+    background: rgba(137, 179, 182, 0.16);
+    color: #3e5a60;
+  }
+
+  .reminder-option.selected .reminder-radio {
+    border-color: #89b3b6;
+  }
+
+  .reminder-trigger:focus-visible,
+  .reminder-option:focus-visible {
+    outline-color: #3e5a60;
+  }
+}
+
 @media (max-width: 359px) {
   .reminder-options-inner {
     grid-template-columns: minmax(0, 1fr);
@@ -454,6 +518,11 @@ $theme-colors-dark: (
 
   &.invalid {
     border-color: #BB2124;
+  }
+
+  &.invalid .title-card-main {
+    border-color: #BB2124;
+    box-shadow: 0 0 0 2px rgba(187, 33, 36, 0.08);
   }
 
   /* Title input field itself */
@@ -488,23 +557,49 @@ $theme-colors-dark: (
   line-height: 1.3;
 }
 
-.title-input > .form-field-section__label {
+.form-field-section__header,
+.form-field-section__heading {
+  display: flex;
+  align-items: center;
+}
+
+.form-field-section__header {
+  width: 100%;
+  min-width: 0;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.form-field-section__heading {
+  min-width: 0;
+  gap: 10px;
+}
+
+.title-input__header {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 8px;
 }
 
 .title-card-main {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-columns: 36px minmax(0, 1fr);
   align-items: center;
   column-gap: 10px;
   width: 100%;
   min-width: 0;
   position: relative;
-  padding: 10px;
-  border: 1px solid #E5E7EB;
+  min-height: 68px;
+  padding: 12px;
+  border: 1.5px solid #D9DDE9;
   border-radius: 16px;
   background: #ffffff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .title-card-icon {
@@ -570,7 +665,7 @@ $theme-colors-dark: (
 /* Category selection card (redesigned pills, driven by the hidden superme-tags engine below) */
 .category-card {
   width: 100%;
-  padding: 14px 20px;
+  padding: 12px 16px;
   border: 1px solid #E8EAF3;
   border-radius: 20px;
   background: #ffffff;
@@ -582,7 +677,7 @@ $theme-colors-dark: (
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .category-header-left {
@@ -942,6 +1037,20 @@ $theme-colors-dark: (
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
+.repeat-card .days {
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 0;
+}
+
+.repeat-card .day {
+  width: auto;
+  min-width: 0;
+  max-width: 36px;
+  flex: 1 1 0;
+  aspect-ratio: 1;
+}
+
 .repeat-header {
   display: flex;
   align-items: center;
@@ -997,6 +1106,7 @@ $theme-colors-dark: (
   background: #ffffff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   cursor: pointer;
+  overflow: hidden;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -1028,6 +1138,18 @@ $theme-colors-dark: (
   text-align: center;
 }
 
+.picker-body .superme-input-group,
+.picker-body superme-timepicker,
+.picker-body superme-datepicker,
+.picker-card ::ng-deep .superme-timepicker-wrapper,
+.picker-card ::ng-deep .datepicker-wrapper {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
 .picker-title {
   color: #282527;
   font-family: var(--font-sans);
@@ -1047,15 +1169,23 @@ $theme-colors-dark: (
 
 .picker-card ::ng-deep .superme-timepicker-wrapper input,
 .picker-card ::ng-deep .datepicker-wrapper input {
+  display: block;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
   border: none !important;
   background: transparent !important;
   padding: 0 !important;
   color: #6B656A;
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 11px !important;
   font-weight: 500;
+  line-height: 1.25 !important;
   text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .picker-card ::ng-deep .superme-timepicker-wrapper input::placeholder,
@@ -1102,7 +1232,7 @@ $theme-colors-dark: (
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 2px;
+  gap: 4px;
   width: auto;
   flex-direction: column;
 }
@@ -1121,8 +1251,7 @@ $theme-colors-dark: (
 .priority-selection {
   display: flex;
   flex-direction: column;
-  grid-column: 3;
-  min-width: 48px;
+  min-width: 72px;
   align-items: center;
   border-bottom: 0px solid;
 }
@@ -1235,6 +1364,11 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
 .habit-input-root {
   @each $theme, $color in $title-colors {
     &.#{$theme} .title-input .superme-input-group input { @include input-style($color); }
+
+    &.#{$theme} .title-card-main:focus-within {
+      border-color: $color;
+      box-shadow: 0 0 0 3px rgba($color, 0.14);
+    }
   }
 }
 
@@ -1279,11 +1413,12 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
 
 /* An empty field should look like an instruction, while entered text stays
    dark and bold. This makes the fill state clear at a glance. */
-.title-card-main:not(.has-value) .title-card-body input::placeholder,
-.title-card-main:not(.has-value) .planner-title-textarea::placeholder {
-  color: #817b84 !important;
+.habit-input-root .title-card-main:not(.has-value) .title-card-body input::placeholder,
+.habit-input-root .title-card-main:not(.has-value) .planner-title-textarea::placeholder {
+  color: #9a96a0 !important;
+  font-size: 13px !important;
   font-weight: 500 !important;
-  opacity: 1;
+  opacity: 0.78 !important;
 }
 
 .title-card-main.has-value .title-card-body input,
@@ -1294,7 +1429,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
 
 @media (max-width: 360px) {
   .title-card-main {
-    grid-template-columns: 28px minmax(0, 1fr) 42px;
+    grid-template-columns: 28px minmax(0, 1fr);
     column-gap: 6px;
     padding: 8px;
     border-radius: 12px;
@@ -1332,14 +1467,49 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
     white-space: nowrap;
   }
 
-  .priority-selection {
-    min-width: 42px;
-  }
+  .priority-selection { min-width: 66px; }
 
   .priority-toggle-label {
-    font-size: 8px;
+    font-size: 10px;
     line-height: 1;
     white-space: nowrap;
+  }
+
+  .picker-row {
+    gap: 8px;
+  }
+
+  .picker-card {
+    min-height: 52px;
+    gap: 6px;
+    padding: 8px 6px;
+  }
+
+  .picker-icon-tile {
+    left: 7px;
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+  }
+
+  .picker-body {
+    margin-inline: 28px;
+  }
+
+  .picker-title {
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .picker-plus {
+    right: 7px;
+    font-size: 16px;
+  }
+
+  .picker-card ::ng-deep .superme-timepicker-wrapper input,
+  .picker-card ::ng-deep .datepicker-wrapper input {
+    font-size: 9px !important;
   }
 }
 
@@ -1499,6 +1669,8 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
 .event-form {
   gap: 18px;
   padding-bottom: max(24px, env(safe-area-inset-bottom));
+  color: #282527;
+  font-size: 14px;
 }
 
 .event-info,
@@ -1606,7 +1778,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   gap: 2px;
   color: #a19ca0;
   font-family: var(--font-sans);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.3;
 }
@@ -1620,14 +1792,14 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   background: transparent;
   color: #282527;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.3;
 }
 
 .event-title-field__copy input::placeholder {
   color: #a19ca0 !important;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   opacity: 1;
 }
@@ -1646,6 +1818,24 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
 .event-card {
   width: 100%;
   padding: 12px 8px;
+}
+
+.event-field-section {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-field-section.invalid .event-card {
+  border: 1px solid #bb2124;
+}
+
+.event-section-header--outside,
+.event-card-trigger--outside {
+  min-height: 40px;
+  padding: 0 8px;
 }
 
 .event-type-card,
@@ -1673,7 +1863,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   gap: 12px;
   color: #282527;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
 }
@@ -1685,7 +1875,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   background: transparent;
   color: #282527;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -1717,7 +1907,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   background: #d9d6d8;
   color: #282527;
   font-family: var(--font-sans);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
@@ -1795,7 +1985,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   gap: 8px;
   color: #6b656a;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -1804,28 +1994,32 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   height: 24px;
 }
 
-.event-toggle-control ::ng-deep .superme-toggle .track {
+.event-toggle-control ::ng-deep .superme-toggle .track,
+.planner-event-priority ::ng-deep .superme-toggle .track {
   width: 40px;
   height: 24px;
   border-radius: 28px;
-  background: #a19ca0;
+  background: #bbd2d4;
 }
 
-.event-toggle-control ::ng-deep .superme-toggle .thumb {
+.event-toggle-control ::ng-deep .superme-toggle .thumb,
+.planner-event-priority ::ng-deep .superme-toggle .thumb {
   width: 20px;
   height: 20px;
   transform: translateX(2px);
-  background: #282527;
+  background: #3e5a60;
   box-shadow: none;
 }
 
-.event-toggle-control ::ng-deep .superme-toggle[aria-checked='true'] .track {
-  background: #a19ca0;
+.event-toggle-control ::ng-deep .superme-toggle[aria-checked='true'] .track,
+.planner-event-priority ::ng-deep .superme-toggle[aria-checked='true'] .track {
+  background: #89b3b6;
 }
 
-.event-toggle-control ::ng-deep .superme-toggle[aria-checked='true'] .thumb {
+.event-toggle-control ::ng-deep .superme-toggle[aria-checked='true'] .thumb,
+.planner-event-priority ::ng-deep .superme-toggle[aria-checked='true'] .thumb {
   transform: translateX(18px);
-  background: #282527;
+  background: #3e5a60;
 }
 
 .event-date-time-card {
@@ -1866,14 +2060,14 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   overflow: hidden;
   color: #6b656a;
   font-family: var(--font-sans);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.15;
 }
 
 .event-picker-copy strong {
   color: #282527;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
 }
@@ -1885,7 +2079,17 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
 
   superme-datepicker,
   superme-timepicker {
-    display: none;
+    /* Keep the component mounted so its bottom-sheet overlay can open. */
+    display: block;
+    width: 0;
+    height: 0;
+    overflow: visible;
+  }
+
+  /* Hide only the empty inline control; never hide the picker popup itself. */
+  ::ng-deep .datepicker-wrapper > input,
+  ::ng-deep .superme-timepicker-wrapper > input {
+    display: none !important;
   }
 }
 
@@ -1905,7 +2109,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   box-shadow: none !important;
   color: #6b656a !important;
   font-family: var(--font-sans) !important;
-  font-size: 10px !important;
+  font-size: 12px !important;
   font-weight: 600 !important;
   line-height: 1.15 !important;
   text-overflow: ellipsis;
@@ -1913,7 +2117,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
 
 .event-picker-copy ::ng-deep input::placeholder {
   color: #6b656a !important;
-  font-size: 10px !important;
+  font-size: 12px !important;
   font-weight: 600 !important;
   opacity: 1 !important;
 }
@@ -1938,6 +2142,13 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
 .event-expandable-card {
   padding: 0;
   overflow: hidden;
+  border-width: 0;
+  box-shadow: none;
+}
+
+.event-expandable-card.open {
+  border-width: 1px;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
 }
 
 .event-card-trigger {
@@ -1957,7 +2168,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
 
 .event-trigger-copy small {
   color: #6b656a;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -2000,7 +2211,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   background: #ffffff;
   color: #6b656a;
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   text-align: left;
 }
@@ -2052,7 +2263,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   background: transparent;
   color: #282527;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.3;
 }

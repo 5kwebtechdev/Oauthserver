@@ -181,7 +181,7 @@
 
 	&.timetable .title-card-main {
 		display: grid;
-		grid-template-columns: 40px minmax(0, 1fr) 70px;
+		grid-template-columns: 40px minmax(0, 1fr);
 		min-height: 74px;
 		align-items: flex-start;
 		gap: 8px;
@@ -238,7 +238,7 @@
 		}
 	}
 
-	&.timetable .title-input .priority-toggle-row {
+	&.timetable .title-input__header .priority-toggle-row {
 		width: 70px;
 		flex: 0 0 70px;
 		min-width: 70px;
@@ -416,7 +416,16 @@
 
 		superme-datepicker,
 		superme-timepicker {
-			display: none;
+			// Keep the picker component mounted so its fixed calendar/time overlay
+			// can render. Only the empty display input is hidden below.
+			display: block;
+			height: 0;
+			overflow: visible;
+		}
+
+		superme-datepicker .datepicker-wrapper > input,
+		superme-timepicker .superme-timepicker-wrapper > input {
+			display: none !important;
 		}
 	}
 
@@ -563,10 +572,14 @@
 		line-height: 1.4;
 	}
 
-	&.timetable .reminder-section,
 	&.timetable .notes-card {
 		border: 0;
 		border-radius: 12px;
+		box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.1);
+	}
+
+	&.timetable .reminder-options-card.open {
+		border-color: rgba(137, 179, 182, 0.45);
 		box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.1);
 	}
 
@@ -631,6 +644,10 @@
 }
 
 .header-toggle.planner .superme-toggle .track {
+	background: #dbe8e9 !important;
+}
+
+.header-toggle.planner .superme-toggle[aria-checked='true'] .track {
 	background: #89b3b6 !important;
 }
 

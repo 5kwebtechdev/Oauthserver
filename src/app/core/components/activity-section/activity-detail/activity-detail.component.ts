@@ -169,6 +169,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
             this.habit.endTimeStamp = ts.endTimeStamp;
           } catch { /* Use original timestamps */ }
         }
+        this.setupButtonStateChecker();
         
         this.cdr.detectChanges();
         this.prepareCoinStats();
@@ -810,8 +811,25 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   // === Button State Logic ===
 
   private setupButtonStateChecker(): void {
-    // Reactive updates via OnPush - no polling needed
-    if (this.buttonStateCheckerInterval) clearInterval(this.buttonStateCheckerInterval);
+    if (this.buttonStateCheckerInterval) {
+      clearTimeout(this.buttonStateCheckerInterval);
+      this.buttonStateCheckerInterval = null;
+    }
+    if (!this.habit) return;
+
+    const { startTimeStamp, endTimeStamp } = this.buttonLogic.calculateTimestamps(this.getHabitForButtonLogic());
+    const now = Date.now();
+    const nextBoundary = now < startTimeStamp
+      ? startTimeStamp
+      : (now <= endTimeStamp ? endTimeStamp + 1 : 0);
+    if (!nextBoundary) return;
+
+    const delay = Math.min(Math.max(nextBoundary - now + 25, 25), 2_147_483_647);
+    this.buttonStateCheckerInterval = setTimeout(() => {
+      this.buttonStateCheckerInterval = null;
+      this.cdr.detectChanges();
+      this.setupButtonStateChecker();
+    }, delay);
   }
 
   isLetsGoEnabled(): boolean {

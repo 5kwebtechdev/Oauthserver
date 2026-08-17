@@ -7,6 +7,8 @@ export interface ChildInfo {
   name: string;
   avatarUrl: string;
   relationship?: string;
+  age?: number;
+  dateOfBirth?: string;
   mood?: string;
   // Stats
   coins?: number;
@@ -49,11 +51,15 @@ export function mapVibeToChildInfo(d: any, avatarUrl: string): ChildInfo {
   } else {
     id = null;
   }
+  const parsedAge = Number(d?.age);
+  const dateOfBirth = String(d?.dateOfBirth || d?.dob || '').trim();
   return {
     id,
     name: d.userName || 'Child',
     avatarUrl: avatarUrl || 'assets/figma/avatars/below-11-male-1.png',
     relationship: d.relationship || 'Child',
+    age: Number.isFinite(parsedAge) && parsedAge >= 0 ? Math.floor(parsedAge) : undefined,
+    dateOfBirth: dateOfBirth || undefined,
     mood: d.mood || null,
     coins: d.coins ?? 0,
     streak: d.streak ?? 0,

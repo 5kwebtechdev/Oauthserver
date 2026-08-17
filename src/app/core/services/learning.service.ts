@@ -383,9 +383,13 @@ export class LearningService {
     fetchArticlesForLearningCategory(
         categoryName: string,
         recoverWithEmpty = true,
-        forUserId?: string | number | null
+        forUserId?: string | number | null,
+        age?: number | null
     ): Observable<LearningCardData[]> {
         let params = new HttpParams().set('category', categoryName);
+        if (age != null && Number.isFinite(age) && age >= 0) {
+            params = params.set('age', String(Math.floor(age)));
+        }
         if (forUserId != null && String(forUserId).trim()) {
             params = params.set('forUserId', String(forUserId));
         }
@@ -435,6 +439,7 @@ export class LearningService {
 
         const result = new Map<string, T>();
         let anonymousIndex = 0;
+        const scopedCollectionName = primaryKey.charAt(0).toUpperCase() + primaryKey.slice(1);
         const addItems = (items: unknown, status?: string) => {
             if (!Array.isArray(items)) return;
             items.forEach(item => {
@@ -451,6 +456,19 @@ export class LearningService {
             });
         };
 
+        const addScopedItems = (container: Record<string, unknown>) => {
+            addItems(container['pending'], 'PENDING');
+            addItems(container[`pending${scopedCollectionName}`], 'PENDING');
+            addItems(container['assigned'], 'ASSIGNED');
+            addItems(container[`assigned${scopedCollectionName}`], 'ASSIGNED');
+            addItems(container['inProgress'], 'IN_PROGRESS');
+            addItems(container[`inProgress${scopedCollectionName}`], 'IN_PROGRESS');
+            addItems(container['completed'], 'COMPLETED');
+            addItems(container[`completed${scopedCollectionName}`], 'COMPLETED');
+            addItems(container['read'], 'COMPLETED');
+            addItems(container[`read${scopedCollectionName}`], 'COMPLETED');
+        };
+
         addItems(response[primaryKey]);
         // Spring pagination and some user-scoped endpoints wrap the list in
         // `content`, `items`, or `data`.  Support each response shape so a
@@ -464,14 +482,14 @@ export class LearningService {
             addItems(data['content']);
             addItems(data['items']);
             addItems(data['results']);
+            addScopedItems(data);
         } else {
             addItems(response['data']);
         }
-        addItems(response['pending'], 'PENDING');
-        addItems(response['assigned'], 'ASSIGNED');
-        addItems(response['inProgress'], 'IN_PROGRESS');
-        addItems(response['completed'], 'COMPLETED');
-        addItems(response['read'], 'COMPLETED');
+        // The challenge endpoint uses keys such as `pendingChallenges` and
+        // `completedChallenges`. Add those after the general `challenges`
+        // collection so the user-scoped state wins when an item is repeated.
+        addScopedItems(response as Record<string, unknown>);
 
         return Array.from(result.values());
     }

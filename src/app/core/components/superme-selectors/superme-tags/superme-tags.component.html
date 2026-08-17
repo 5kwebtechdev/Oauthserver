@@ -51,9 +51,33 @@
   </app-superme-popup>
 
   <!-- Unified Edit/Add popup -->
-  <div class="tag-input-fixed" *ngIf="showInputPopup && inputPopupPosition" (click)="cancelInputPopup()">
+  <div class="tag-input-fixed" *ngIf="showInputPopup && (inputPresentation === 'bottom-sheet' || inputPopupPosition)"
+    [class.tag-input-fixed--sheet]="inputPresentation === 'bottom-sheet'" (click)="cancelInputPopup()">
+    <section *ngIf="inputPresentation === 'bottom-sheet'; else anchoredInput" class="tag-input-sheet"
+      role="dialog" aria-modal="true" aria-labelledby="new-category-title" (click)="$event.stopPropagation()">
+      <div class="tag-input-sheet__handle" aria-hidden="true"></div>
+      <header class="tag-input-sheet__header">
+        <h2 id="new-category-title">{{ isEditMode ? 'Edit Category' : 'New Category' }}</h2>
+        <p>Name your new category</p>
+      </header>
+
+      <label class="tag-input-sheet__field">
+        <span class="tag-input-sheet__edit-icon" aria-hidden="true">
+          <img src="assets/icons/edit.svg" alt="">
+        </span>
+        <input class="custom-tag-input__field" type="text" maxlength="10" [(ngModel)]="inputValue"
+          [placeholder]="isEditMode ? 'Edit tag' : 'eg: Mindfulness, Finance, Sport'"
+          (keydown.enter)="saveInputPopup()" #tagInput />
+      </label>
+      <span class="tag-input-sheet__count" aria-live="polite">{{ inputValue.length }}/10</span>
+
+      <button type="button" class="tag-input-sheet__submit" [disabled]="!inputValue.trim()"
+        (click)="saveInputPopup()">{{ isEditMode ? 'Save Category' : 'Add Category' }}</button>
+    </section>
+
+    <ng-template #anchoredInput>
     <div class="tag-input-inner" (click)="$event.stopPropagation()"
-      [ngStyle]="{ left: (inputPopupPosition.left) + 'px', top: (inputPopupPosition.top) + 'px' }">
+      [ngStyle]="{ left: (inputPopupPosition?.left) + 'px', top: (inputPopupPosition?.top) + 'px' }">
       <div class="custom-tag-input">
         <input class="custom-tag-input__field" type="text" maxlength="10" [(ngModel)]="inputValue" 
           [placeholder]="isEditMode ? 'Edit tag' : 'Type the name here'"
@@ -61,5 +85,6 @@
       </div>
       <superme-button type="plum" [text]="isEditMode ? 'Save' : 'Add'" (click)="saveInputPopup()"></superme-button>
     </div>
+    </ng-template>
   </div>
 </div>

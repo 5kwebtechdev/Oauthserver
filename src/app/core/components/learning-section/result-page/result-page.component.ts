@@ -122,7 +122,17 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   }
 
   private goToContent(): void {
-    this.router.navigateByUrl('/authed/content', { replaceUrl: true });
+    this.returnToUpdatedLearningList();
+  }
+
+  private returnToUpdatedLearningList(): void {
+    const challengeId = Number(this.challenge?.challengeId ?? (this.challenge as any)?.id);
+    this.router.navigateByUrl('/authed/content', {
+      replaceUrl: true,
+      state: Number.isFinite(challengeId) && challengeId > 0
+        ? { completedChallengeId: challengeId }
+        : undefined
+    });
   }
 
 
@@ -210,7 +220,7 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   }
 
   onCancel(): void {
-    this.router.navigateByUrl('/authed/content', { replaceUrl: true });
+    this.returnToUpdatedLearningList();
   }
 
   onPetClick(): void {
@@ -218,7 +228,7 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   }
 
   onContinue(): void {
-    this.router.navigateByUrl('/authed/content', { replaceUrl: true });
+    this.returnToUpdatedLearningList();
   }
 
 

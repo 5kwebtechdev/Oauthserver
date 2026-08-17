@@ -1,9 +1,10 @@
 <ng-template #repeatSection>
   <section class="form-field-section">
-    <label class="form-field-section__label">Repeat</label>
-    <div class="repeat-card">
-    <div class="repeat-header">
+    <div class="form-field-section__header repeat-header">
+      <span class="form-field-section__heading">
         <span class="repeat-icon form-icon form-icon--repeat" aria-hidden="true"></span>
+        <label class="form-field-section__label">Repeat</label>
+      </span>
       <div class="everyday-toggle">
         <span class="everyday-label-text">Everyday</span>
         <div class="toggle-right">
@@ -11,10 +12,11 @@
         </div>
       </div>
     </div>
-    <div class="days">
-      <button *ngFor="let d of weekdays" class="day" (click)="toggleDay(d)"
-        [class.selected]="selectedDays.has(d)">{{d}}</button>
-    </div>
+    <div class="repeat-card">
+      <div class="days">
+        <button *ngFor="let d of weekdays" class="day" (click)="toggleDay(d)"
+          [class.selected]="selectedDays.has(d)">{{d}}</button>
+      </div>
     </div>
   </section>
   <div *ngIf="attemptedSubmit && showWeekdaysError" class="field-error" role="alert">Pick at least one day.</div>
@@ -113,7 +115,16 @@
 <ng-template #titleInputSection let-placeholder="placeholder" let-errorMsg="errorMsg" let-subtitle="subtitle"
   let-showCategory="showCategory">
   <div class="title-input" [class.invalid]="attemptedSubmit && showTitleError">
-    <label class="form-field-section__label">{{ placeholder.replace(' to build?', '').replace(' to complete?', '') }}</label>
+    <div class="title-input__header">
+      <label class="form-field-section__label" for="activity-title-input">{{ placeholder.replace(' to build?', '').replace(' to complete?', '') }}</label>
+      <div class="priority-selection priority-toggle-row" [class.invalid]="attemptedSubmit && showPriorityError">
+        <div class="priority-toggle-control">
+          <span class="priority-toggle-label">Higher Priority</span>
+          <superme-toggle [checked]="priority === 'high'"
+            (checkedChange)="selectPriority($event ? 'high' : 'low')"></superme-toggle>
+        </div>
+      </div>
+    </div>
     <div class="title-card-main" [class.has-value]="title.trim().length > 0">
       <div class="title-card-icon" aria-hidden="true">
         <img *ngIf="showCategory === false" class="title-card-figma-icon"
@@ -121,48 +132,44 @@
         <span *ngIf="showCategory !== false" class="form-icon form-icon--edit"></span>
       </div>
       <div class="superme-input-group w-100 title-card-body" [class.missing-placeholder]="showTitleError && attemptedSubmit">
-        <input *ngIf="showCategory !== false" class="w-100" [(ngModel)]="title"
-          (ngModelChange)="clearTitleError()" placeholder="Enter a name" maxlength="20" />
-        <textarea *ngIf="showCategory === false" class="planner-title-textarea" [(ngModel)]="title"
-          (ngModelChange)="clearTitleError()" placeholder="Enter a name" maxlength="20" rows="2"></textarea>
+        <input *ngIf="showCategory !== false" id="activity-title-input" class="w-100" [(ngModel)]="title"
+          (ngModelChange)="clearTitleError()"
+          [placeholder]="currentActive === 'tasks' ? 'Type your task name' : 'Type your habit name'" maxlength="20" />
+        <textarea *ngIf="showCategory === false" id="activity-title-input" class="planner-title-textarea" [(ngModel)]="title"
+          (ngModelChange)="clearTitleError()" placeholder="Type your timetable name" maxlength="20" rows="2"></textarea>
         <div class="title-card-subtitle">{{ subtitle || 'Be specific and actionable.' }}</div>
       </div>
-      <div class="priority-selection priority-toggle-row" [class.invalid]="attemptedSubmit && showPriorityError">
-    <div class="priority-toggle-control">
-      <span class="priority-toggle-label">{{ priority === 'high' ? 'Higher Priority' : 'Low Priority' }}</span>
-      <superme-toggle [checked]="priority === 'high'"
-        (checkedChange)="selectPriority($event ? 'high' : 'low')"></superme-toggle>
     </div>
     <div *ngIf="attemptedSubmit && showPriorityError" class="field-error" role="alert">How important is this? Pick a
       priority.</div>
-  </div>
-    </div>
     <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">{{errorMsg}}</div>
     <div class="title-card-count">{{ title.length }}/20</div>
   </div>
   <!-- <div class="title-card-count">{{ title.length }}/20</div> -->
   <section *ngIf="showCategory !== false" class="form-field-section">
-    <label class="form-field-section__label">Category</label>
-    <div class="category-card">
-    <div class="category-header">
+    <div class="form-field-section__header category-header">
+      <span class="form-field-section__heading">
         <span class="category-icon-tile" aria-hidden="true">
           <span class="form-icon form-icon--category"></span>
         </span>
+        <label class="form-field-section__label">Category</label>
+      </span>
       <button type="button" class="category-add-btn" #categoryAddBtn
-        (click)="openAddCategory(categoryAddBtn)">+ Add new</button>
+        (click)="openAddCategory(categoryAddBtn, $event)">+ Add new</button>
     </div>
 
-    <div class="category-pills" role="list">
-      <button type="button" *ngFor="let option of tagOptions" class="category-pill"
-        [class.selected]="isCategorySelected(option.key)" role="listitem"
-        (click)="selectCategory(option.key)">
-        <span *ngIf="getCategoryIcon(option.value)" class="category-pill-icon form-icon"
-          [ngClass]="'form-icon--' + (option.value | lowercase)" aria-hidden="true"></span>
-        <span class="category-pill-text">{{ option.value }}</span>
-      </button>
-    </div>
+    <div class="category-card">
+      <div class="category-pills" role="list">
+        <button type="button" *ngFor="let option of tagOptions" class="category-pill"
+          [class.selected]="isCategorySelected(option.key)" role="listitem"
+          (click)="selectCategory(option.key)">
+          <span class="category-pill-icon form-icon"
+            [ngClass]="'form-icon--' + getCategoryIcon(option.value)" aria-hidden="true"></span>
+          <span class="category-pill-text">{{ option.value }}</span>
+        </button>
+      </div>
 
-    <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Pick a tag for this activity.</div>
+      <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Pick a tag for this activity.</div>
     </div>
   </section>
 
@@ -175,6 +182,8 @@
     [persistCustomTags]="false"
     [serverManaged]="true"
     [allowEdit]="false"
+    [maxTags]="50"
+    inputPresentation="bottom-sheet"
     [singleSelection]="true"
     [size]="'small'"
     [variant]="tagVariants[currentActive]"
@@ -224,17 +233,19 @@
         aria-hidden="true"></span>
     </button>
 
-    <div id="activity-reminder-options" class="reminder-options" [class.open]="reminderExpanded"
-      [attr.aria-hidden]="!reminderExpanded">
-      <div class="reminder-options-inner" role="radiogroup" aria-label="Select reminder time">
-        <button *ngFor="let option of reminderOptions" type="button" class="reminder-option"
-          [class.selected]="reminderOffset === option.value"
-          [attr.aria-checked]="reminderOffset === option.value"
-          [attr.tabindex]="reminderExpanded ? 0 : -1" role="radio"
-          (click)="selectReminderOffset(option.value)">
-          <span class="reminder-radio" aria-hidden="true"></span>
-          <span>{{ option.label }}</span>
-        </button>
+    <div class="reminder-options-card" [class.open]="reminderExpanded">
+      <div id="activity-reminder-options" class="reminder-options" [class.open]="reminderExpanded"
+        [attr.aria-hidden]="!reminderExpanded">
+        <div class="reminder-options-inner" role="radiogroup" aria-label="Select reminder time">
+          <button *ngFor="let option of reminderOptions" type="button" class="reminder-option"
+            [class.selected]="reminderOffset === option.value"
+            [attr.aria-checked]="reminderOffset === option.value"
+            [attr.tabindex]="reminderExpanded ? 0 : -1" role="radio"
+            (click)="selectReminderOffset(option.value)">
+            <span class="reminder-radio" aria-hidden="true"></span>
+            <span>{{ option.label }}</span>
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -370,8 +381,11 @@
           <h2 id="planner-period-title">Active Period</h2>
         </div>
         <div class="planner-date-row">
-          <button type="button" class="planner-picker-card" [class.planner-picker-card--empty]="!startDate"
-            (click)="startDateCtrl.toggleCalendar()">
+          <div class="planner-picker-card" [class.planner-picker-card--empty]="!startDate"
+            role="button" tabindex="0" aria-label="Select start date"
+            (click)="startDateCtrl.toggleCalendar()"
+            (keydown.enter)="startDateCtrl.toggleCalendar()"
+            (keydown.space)="$event.preventDefault(); startDateCtrl.toggleCalendar()">
             <span class="planner-picker-icon" aria-hidden="true">
               <img src="assets/figma/child-planner/calendar.svg" alt="">
             </span>
@@ -382,9 +396,12 @@
                 placeholder=""></superme-datepicker>
             </span>
             <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
-          </button>
-          <button type="button" class="planner-picker-card" [class.planner-picker-card--empty]="!endDate"
-            (click)="endDateCtrl.toggleCalendar()">
+          </div>
+          <div class="planner-picker-card" [class.planner-picker-card--empty]="!endDate"
+            role="button" tabindex="0" aria-label="Select end date"
+            (click)="endDateCtrl.toggleCalendar()"
+            (keydown.enter)="endDateCtrl.toggleCalendar()"
+            (keydown.space)="$event.preventDefault(); endDateCtrl.toggleCalendar()">
             <span class="planner-picker-icon" aria-hidden="true">
               <img src="assets/figma/child-planner/calendar.svg" alt="">
             </span>
@@ -395,7 +412,7 @@
                 [quickRanges]="endDateQuickRanges" placeholder=""></superme-datepicker>
             </span>
             <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
-          </button>
+          </div>
         </div>
         <div *ngIf="attemptedSubmit && showDateError" class="field-error" role="alert">Please pick both dates.</div>
         <div *ngIf="showStartAfterEnd" class="field-error" role="alert">End date must be after the start date.</div>
@@ -428,8 +445,11 @@
           </div>
 
           <div class="planner-entry-time-row">
-            <button type="button" class="planner-picker-card" [class.planner-picker-card--empty]="!entry.startTime"
-              (click)="plannerStartTimeCtrl.openPopup()">
+            <div class="planner-picker-card" [class.planner-picker-card--empty]="!entry.startTime"
+              role="button" tabindex="0" [attr.aria-label]="'Select start time for entry ' + (i + 1)"
+              (click)="plannerStartTimeCtrl.openPopup()"
+              (keydown.enter)="plannerStartTimeCtrl.openPopup()"
+              (keydown.space)="$event.preventDefault(); plannerStartTimeCtrl.openPopup()">
               <span class="planner-picker-icon" aria-hidden="true">
                 <img src="assets/figma/child-planner/schedule.svg" alt="">
               </span>
@@ -439,9 +459,12 @@
                   [(ngModel)]="entry.startTime"></superme-timepicker>
               </span>
               <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
-            </button>
-            <button type="button" class="planner-picker-card" [class.planner-picker-card--empty]="!entry.endTime"
-              (click)="plannerEndTimeCtrl.openPopup()">
+            </div>
+            <div class="planner-picker-card" [class.planner-picker-card--empty]="!entry.endTime"
+              role="button" tabindex="0" [attr.aria-label]="'Select end time for entry ' + (i + 1)"
+              (click)="plannerEndTimeCtrl.openPopup()"
+              (keydown.enter)="plannerEndTimeCtrl.openPopup()"
+              (keydown.space)="$event.preventDefault(); plannerEndTimeCtrl.openPopup()">
               <span class="planner-picker-icon" aria-hidden="true">
                 <img src="assets/figma/child-planner/schedule.svg" alt="">
               </span>
@@ -452,7 +475,7 @@
                   [(ngModel)]="entry.endTime"></superme-timepicker>
               </span>
               <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
-            </button>
+            </div>
           </div>
         </div>
 
@@ -487,7 +510,7 @@
                 <div class="superme-input-group" [class.missing-placeholder]="attemptedSubmit && showDateError">
                   <superme-datepicker #startDateCtrl type="date" label="Start Date" [(ngModel)]="startDate"
                     [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate"
-                    placeholder="Select Start Date"></superme-datepicker>
+                    placeholder=""></superme-datepicker>
                 </div>
               </div>
               <span class="picker-plus" aria-hidden="true">+</span>
@@ -501,7 +524,7 @@
                 <div class="superme-input-group" [class.missing-placeholder]="attemptedSubmit && showDateError">
                   <superme-datepicker #endDateCtrl type="date" label="End Date" [(ngModel)]="endDate"
                     [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate" [seedDate]="startDate"
-                    [quickRanges]="endDateQuickRanges" placeholder="Select End Date"></superme-datepicker>
+                    [quickRanges]="endDateQuickRanges" placeholder=""></superme-datepicker>
                 </div>
               </div>
               <span class="picker-plus" aria-hidden="true">+</span>
@@ -561,8 +584,8 @@
         <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Please give this event a name.</div>
       </section>
 
-      <section class="event-card event-type-card" [class.invalid]="attemptedSubmit && showEventTypeError">
-        <div class="event-section-header">
+      <section class="event-field-section" [class.invalid]="attemptedSubmit && showEventTypeError">
+        <div class="event-section-header event-section-header--outside">
           <span class="event-section-title">
             <span class="event-icon-tile" aria-hidden="true">
               <img src="assets/figma/activity-event/event-type.svg" alt="">
@@ -572,25 +595,27 @@
           <button type="button" class="event-add-new" (click)="beginAddEventType()">+ Add new</button>
         </div>
 
-        <div class="event-pill-row" role="radiogroup" aria-label="Event type">
-          <button *ngFor="let option of eventTypes" type="button" class="event-pill"
-            [class.selected]="selectedEventType === option.key"
-            [attr.aria-checked]="selectedEventType === option.key" role="radio"
-            (click)="selectEventType(option.key)">
-            <img [src]="option.icon" alt="" aria-hidden="true">
-            <span>{{ option.label }}</span>
-          </button>
-        </div>
+        <div class="event-card event-type-card">
+          <div class="event-pill-row" role="radiogroup" aria-label="Event type">
+            <button *ngFor="let option of eventTypes" type="button" class="event-pill"
+              [class.selected]="selectedEventType === option.key"
+              [attr.aria-checked]="selectedEventType === option.key" role="radio"
+              (click)="selectEventType(option.key)">
+              <img [src]="option.icon" alt="" aria-hidden="true">
+              <span>{{ option.label }}</span>
+            </button>
+          </div>
 
-        <div *ngIf="addingEventType" class="event-custom-type">
-          <input [(ngModel)]="customEventTypeName" maxlength="20" placeholder="Event type name"
-            aria-label="New event type" (keyup.enter)="saveCustomEventType()">
-          <button type="button" (click)="cancelAddEventType()">Cancel</button>
-          <button type="button" class="event-custom-type__save" [disabled]="!customEventTypeName.trim() || savingEventType"
-            (click)="saveCustomEventType()">{{ savingEventType ? 'Adding...' : 'Add' }}</button>
+          <div *ngIf="addingEventType" class="event-custom-type">
+            <input [(ngModel)]="customEventTypeName" maxlength="20" placeholder="Event type name"
+              aria-label="New event type" (keyup.enter)="saveCustomEventType()">
+            <button type="button" (click)="cancelAddEventType()">Cancel</button>
+            <button type="button" class="event-custom-type__save" [disabled]="!customEventTypeName.trim() || savingEventType"
+              (click)="saveCustomEventType()">{{ savingEventType ? 'Adding...' : 'Add' }}</button>
+          </div>
+          <div *ngIf="eventTypeErrorMessage" class="field-error" role="alert">{{ eventTypeErrorMessage }}</div>
+          <div *ngIf="attemptedSubmit && showEventTypeError" class="field-error" role="alert">Select an event type.</div>
         </div>
-        <div *ngIf="eventTypeErrorMessage" class="field-error" role="alert">{{ eventTypeErrorMessage }}</div>
-        <div *ngIf="attemptedSubmit && showEventTypeError" class="field-error" role="alert">Select an event type.</div>
       </section>
 
       <section class="event-card event-date-time-card">
@@ -654,8 +679,8 @@
         <div *ngIf="showEndTimeBeforeStart || showEndTimeSingleDayError" class="field-error" role="alert">End time must be later than start time.</div>
       </section>
 
-      <section class="event-card event-recurrence-card">
-        <div class="event-section-header">
+      <section class="event-field-section">
+        <div class="event-section-header event-section-header--outside">
           <span class="event-section-title">
             <span class="event-icon-tile" aria-hidden="true">
               <img src="assets/figma/activity-event/recurrence.svg" alt="">
@@ -663,18 +688,20 @@
             <span>Recurrence</span>
           </span>
         </div>
-        <div class="event-pill-row" role="radiogroup" aria-label="Event recurrence">
-          <button *ngFor="let option of recurrenceOptions" type="button" class="event-pill"
-            [class.selected]="eventRecurrence === option.key" [attr.aria-checked]="eventRecurrence === option.key"
-            role="radio" (click)="selectEventRecurrence(option.key)">
-            <img [src]="option.icon" alt="" aria-hidden="true">
-            <span>{{ option.label }}</span>
-          </button>
+        <div class="event-card event-recurrence-card">
+          <div class="event-pill-row" role="radiogroup" aria-label="Event recurrence">
+            <button *ngFor="let option of recurrenceOptions" type="button" class="event-pill"
+              [class.selected]="eventRecurrence === option.key" [attr.aria-checked]="eventRecurrence === option.key"
+              role="radio" (click)="selectEventRecurrence(option.key)">
+              <img [src]="option.icon" alt="" aria-hidden="true">
+              <span>{{ option.label }}</span>
+            </button>
+          </div>
         </div>
       </section>
 
-      <section class="event-card event-expandable-card">
-        <button type="button" class="event-card-trigger" [attr.aria-expanded]="reminderExpanded"
+      <section class="event-field-section event-reminder-section">
+        <button type="button" class="event-card-trigger event-card-trigger--outside" [attr.aria-expanded]="reminderExpanded"
           aria-controls="event-reminder-options" (click)="toggleReminderOptions()">
           <span class="event-section-title">
             <span class="event-icon-tile" aria-hidden="true">
@@ -688,12 +715,14 @@
           <img class="event-trigger-add" src="assets/figma/activity-event/add.svg" alt="" aria-hidden="true"
             [class.expanded]="reminderExpanded">
         </button>
-        <div id="event-reminder-options" class="event-reminder-options" [class.open]="reminderExpanded">
-          <button *ngFor="let option of reminderOptions" type="button" class="event-reminder-option"
-            [class.selected]="reminderOffset === option.value" (click)="selectReminderOffset(option.value)">
-            <span class="event-reminder-radio" aria-hidden="true"></span>
-            <span>{{ option.label }}</span>
-          </button>
+        <div class="event-card event-expandable-card" [class.open]="reminderExpanded">
+          <div id="event-reminder-options" class="event-reminder-options" [class.open]="reminderExpanded">
+            <button *ngFor="let option of reminderOptions" type="button" class="event-reminder-option"
+              [class.selected]="reminderOffset === option.value" (click)="selectReminderOffset(option.value)">
+              <span class="event-reminder-radio" aria-hidden="true"></span>
+              <span>{{ option.label }}</span>
+            </button>
+          </div>
         </div>
       </section>
 

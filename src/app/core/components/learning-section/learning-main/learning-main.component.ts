@@ -566,7 +566,24 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   ionViewWillEnter(): void {
-    // Refresh current tab when returning to the page
+    // Refresh the open category listing as well as its summary when returning
+    // from a quiz/puzzle. Ionic keeps this component alive in the navigation
+    // stack, so without this refresh the completed item remains in Pending
+    // until the user leaves the Learning screen and comes back again.
+    const completedChallengeId = Number((history as any)?.state?.completedChallengeId);
+    if (this.selectedCategoryItem) {
+      const selectedCategoryItem = this.selectedCategoryItem;
+      this.onCategoryCardClick(selectedCategoryItem);
+      if (Number.isFinite(completedChallengeId) && completedChallengeId > 0) {
+        this.parentStatus = 'completed';
+        const nextHistoryState = { ...((history as any)?.state || {}) };
+        delete nextHistoryState.completedChallengeId;
+        history.replaceState(nextHistoryState, document.title);
+      }
+      return;
+    }
+
+    // Refresh the category summaries when returning to the main Learning page.
     if (!this.parentView || this.hasSelectedChild) {
       this.loadTab(this.selectedCategory, true);
     }
@@ -939,10 +956,17 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
         requestChildId
       ).pipe(map(courses => (courses || []).map(course => this.mapCourseToLearningCard(course))));
     } else if (this.selectedCategory === 'articles') {
+      const articleUserId = this.parentView
+        ? this.selectedChildId
+        : this.authService.getUserId();
+      const articleAge = this.parentView
+        ? this.getSelectedChildAge()
+        : this.authService.getCurrentUserAge();
       request = this.learningService.fetchArticlesForLearningCategory(
         categoryName,
         !this.parentView,
-        requestChildId
+        articleUserId,
+        articleAge
       );
     } else {
       request = this.learningService.fetchChallengesForLearningCategory(
@@ -966,6 +990,27 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
         this.categoryContentError = true;
       }
     });
+  }
+
+  private getSelectedChildAge(): number | null {
+    const directAge = Number(this.selectedChild?.age);
+    if (Number.isFinite(directAge) && directAge >= 0) {
+      return Math.floor(directAge);
+    }
+
+    const dateOfBirth = String(this.selectedChild?.dateOfBirth || '').trim();
+    if (!dateOfBirth) return null;
+
+    const birthDate = new Date(dateOfBirth);
+    if (Number.isNaN(birthDate.getTime())) return null;
+
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 0 ? age : null;
   }
 
   closeCategoryContent(): void {

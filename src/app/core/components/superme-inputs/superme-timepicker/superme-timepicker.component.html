@@ -2,7 +2,7 @@
   <input type="text" [attr.placeholder]="placeholder" [value]="hasValue ? timeString : ''" [disabled]="disabled"
     (click)="openPopup()" class="time-display-input" readonly />
 
-  <div class="overlay" *ngIf="showPopup">
+  <div class="overlay" *ngIf="showPopup" (click)="$event.stopPropagation()">
     <div class="popup wheel-popup" #popup>
       <h2 class="wheel-title">Set {{ label }}</h2>
       <p class="wheel-subtitle">Scroll to pick your time</p>

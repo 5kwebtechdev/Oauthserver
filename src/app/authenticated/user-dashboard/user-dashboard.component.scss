@@ -1278,6 +1278,27 @@ ion-content {
   filter: drop-shadow(0 4px 5px rgba(40, 37, 39, 0.14));
 }
 
+// The Figma panda is larger and stands directly on the bottom of the hero.
+// Keep this scoped to Panda so the placement of the other selected pets stays unchanged.
+.digital-pet--panda {
+  top: auto;
+  right: 0;
+  bottom: 0;
+  transform: none;
+
+  ::ng-deep .superme-pet {
+    align-items: flex-end;
+  }
+
+  ::ng-deep .pet-image {
+    display: block;
+    width: clamp(120px, 34vw, 132px) !important;
+    height: clamp(132px, 37vw, 145px) !important;
+    object-fit: contain;
+    object-position: center bottom;
+  }
+}
+
 .header-stats-row {
   position: absolute;
   left: 16px;
@@ -1328,9 +1349,9 @@ ion-content {
 .header-stat-value {
   color: #282527;
   font-family: var(--font-sans);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.4;
+  font-size: clamp(14px, 4vw, 17px);
+  font-weight: 800;
+  line-height: 1.15;
 }
 
 .header-stat-divider {
@@ -1424,6 +1445,12 @@ footer {
     right: -10px;
     transform: scale(0.9);
     transform-origin: right center;
+  }
+
+  .digital-pet--panda {
+    right: 0;
+    bottom: 0;
+    transform: none;
   }
 
   .header-stats-row {

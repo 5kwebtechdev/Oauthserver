@@ -15,7 +15,6 @@ import { CommonModule } from '@angular/common';
       [attr.aria-disabled]="disabled"
       [disabled]="disabled"
       (click)="toggle()"
-      (keydown)="onKeydown($event)"
     >
       <span class="track" aria-hidden="true">
         <span class="thumb" aria-hidden="true"></span>
@@ -24,7 +23,8 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [`
     :host {
-      display: inline-block;
+      display: inline-flex;
+      vertical-align: middle;
     }
 
     .superme-toggle {
@@ -36,10 +36,16 @@ import { CommonModule } from '@angular/common';
       border: none;
       cursor: pointer;
       width: 50px;
-      /* overall control width (matches SVG) */
       height: 25px;
-      /* overall control height (matches SVG) */
       padding: 0;
+      border-radius: 999px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .superme-toggle:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 3px;
     }
 
     .superme-toggle[disabled] {
@@ -50,11 +56,8 @@ import { CommonModule } from '@angular/common';
     .superme-toggle .track {
       position: relative;
       width: 50px;
-      /* match SVG */
       height: 31px;
-      /* match SVG rect height */
       border-radius: 20px;
-      /* rx=20 in SVG */
       background: #C9C6DA;
       /* inactive track */
       transition: background 0.18s ease-in-out;
@@ -67,7 +70,6 @@ import { CommonModule } from '@angular/common';
     .superme-toggle .thumb {
       position: relative;
       width: 24px;
-      /* diameter 24 (r=12) */
       height: 24px;
       border-radius: 50%;
       background: #3F3D56;
@@ -103,16 +105,8 @@ export class SupermeToggleComponent {
 
   toggle() {
     if (this.disabled) return;
-    this.checked = !this.checked;
-    this.checkedChange.emit(this.checked);
-  }
-
-  onKeydown(event: KeyboardEvent) {
-    if (this.disabled) return;
-    const key = event.key;
-    if (key === ' ' || key === 'Enter') {
-      event.preventDefault();
-      this.toggle();
-    }
+    // Let the owning form update the input through checkedChange. Mutating an
+    // @Input locally can temporarily disagree with one-way bindings.
+    this.checkedChange.emit(!this.checked);
   }
 }

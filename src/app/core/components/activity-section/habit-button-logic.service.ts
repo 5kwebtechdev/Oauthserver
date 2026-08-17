@@ -6,21 +6,22 @@ import { Injectable } from '@angular/core';
  */
 @Injectable({ providedIn: 'root' })
 export class HabitButtonLogicService {
-  private readonly FIVE_MINUTES = 5 * 60 * 1000;
-
   /**
    * Combine date string (YYYY-MM-DD) with time string (HH:MM:SS or HH:MM) to create timestamp
    */
   combineDateAndTime(dateStr: string, timeStr: string): number {
     if (!dateStr || !timeStr) return 0;
+    const normalizedDate = dateStr.split('T')[0];
+    const dateParts = normalizedDate.split('-').map(Number);
     const timeParts = timeStr.split(':');
     const hours = parseInt(timeParts[0], 10) || 0;
     const minutes = parseInt(timeParts[1], 10) || 0;
     const seconds = parseInt(timeParts[2], 10) || 0;
+    if (dateParts.length !== 3 || dateParts.some(part => !Number.isFinite(part))) return 0;
 
-    const date = new Date(dateStr);
-    date.setHours(hours, minutes, seconds, 0);
-    return date.getTime();
+    // Construct in local time. Parsing YYYY-MM-DD directly uses UTC and can
+    // shift an activity onto the wrong local day in some time zones.
+    return new Date(dateParts[0], dateParts[1] - 1, dateParts[2], hours, minutes, seconds, 0).getTime();
   }
 
   /**
@@ -40,13 +41,12 @@ export class HabitButtonLogicService {
   }
 
   /**
-   * Check if within "Let's Go" window (5 minutes before start to 5 minutes after start)
+   * Check whether the current time is inside the scheduled activity window.
    */
   isWithinLetsGoWindow(startTimeStamp: number, endTimeStamp: number): boolean {
     if (!startTimeStamp || !endTimeStamp) return false;
     const now = Date.now();
-    // Window: [start - 5min, start + 5min]
-    return (now >= (startTimeStamp - this.FIVE_MINUTES)) && (now <= (startTimeStamp + this.FIVE_MINUTES));
+    return now >= startTimeStamp && now <= endTimeStamp;
   }
 
   /**
@@ -66,30 +66,29 @@ export class HabitButtonLogicService {
   }
 
   /**
-   * Check if "Let's Go" button should be enabled.
-   * Window: 5 min before start time → 5 min after start time.
+   * Enable "Let's Go" only during the API-provided start/end window.
    */
   isLetsGoEnabled(habit: any, hasOtherOngoing: boolean = false): boolean {
     if (hasOtherOngoing) return false;
-    const { startTimeStamp } = this.getTimestamps(habit);
-    if (!startTimeStamp) return false;
+    const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
+    if (!startTimeStamp || !endTimeStamp) return false;
     if (!this.isToday(startTimeStamp)) return false;
     const now = Date.now();
-    return now >= (startTimeStamp - this.FIVE_MINUTES) && now <= (startTimeStamp + this.FIVE_MINUTES);
+    return now >= startTimeStamp && now <= endTimeStamp;
   }
 
   /**
-   * Check if "Let's Go" button should be visible.
-   * Hidden once the 5-min grace window after start time has passed.
+   * Show "Let's Go" only during the API-provided start/end window.
    */
   isLetsGoVisible(habit: any): boolean {
     if (!habit) return false;
     const status = habit.status?.toLowerCase();
     if (status === 'ongoing' || status === 'completed' || status === 'skipped') return false;
-    const { startTimeStamp } = this.getTimestamps(habit);
+    const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
+    if (!startTimeStamp || !endTimeStamp) return false;
     if (!this.isToday(startTimeStamp)) return false;
-    if (startTimeStamp && Date.now() > (startTimeStamp + this.FIVE_MINUTES)) return false;
-    return true;
+    const now = Date.now();
+    return now >= startTimeStamp && now <= endTimeStamp;
   }
 
   /**
@@ -109,7 +108,7 @@ export class HabitButtonLogicService {
     if (!habit) return false;
     if (hasOtherOngoing) return false;
     const status = habit.status?.toLowerCase();
-    const { startTimeStamp } = this.getTimestamps(habit);
+    const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
     // No Done action for past/future dates
     if (!this.isToday(startTimeStamp)) return false;
 
@@ -119,11 +118,10 @@ export class HabitButtonLogicService {
     // If ongoing, enable (but caller must ensure `hasOtherOngoing` is false)
     if (status === 'ongoing') return true;
 
-    // For pending: enable Done only after Let's Go window closes (startTime + 5min).
-    // Does not disable with end time — only disables when the day passes (handled above).
+    // For pending: enable Done after the scheduled activity window ends.
     if (status === 'pending') {
-      if (!startTimeStamp) return false;
-      return Date.now() > (startTimeStamp + this.FIVE_MINUTES);
+      if (!startTimeStamp || !endTimeStamp) return false;
+      return Date.now() > endTimeStamp;
     }
 
     return false;
@@ -177,12 +175,8 @@ export class HabitButtonLogicService {
   private getTimestamps(habit: any): { startTimeStamp: number; endTimeStamp: number } {
     if (!habit) return { startTimeStamp: 0, endTimeStamp: 0 };
     
-    // Use existing timestamps if valid
-    if (habit.startTimeStamp && habit.endTimeStamp) {
-      return { startTimeStamp: habit.startTimeStamp, endTimeStamp: habit.endTimeStamp };
-    }
-    
-    // Calculate from date + time
+    // Prefer API date/time fields so stale cached timestamps cannot enable a
+    // button before the current schedule starts.
     return this.calculateTimestamps(habit);
   }
 
