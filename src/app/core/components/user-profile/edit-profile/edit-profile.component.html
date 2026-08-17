@@ -4,8 +4,8 @@
     <div class="edit-profile-container">
 
       <div class="edit-details" *ngIf="accountType !== 'parent'">
-        <profile-edit-input title="Avatar Name" description="Your in-app identity name" type="text"
-          placeholder="Avatar name"
+        <profile-edit-input title="Username" description="Your in-app identity name" type="text"
+          placeholder="Username"
           [value]="avatarName"
           (valueChange)="onAvatarNameChange($event)"
           [suggestions]="avatarSuggestions"
@@ -28,7 +28,7 @@
         </div>
         <div class="input-container">
           <superme-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
-            [variant]="'white-green'" [initialDate]="birthdayInitialDate" style="width: 100%">
+            [variant]="'figma-purple'" [initialDate]="birthdayInitialDate" style="width: 100%">
             <input class="dob-input" [ngClass]="{ 'invalid': ageError }" type="text" formControlName="dob"
               (click)="openBirthdayPickerNow()" placeholder="Date of Birth" readonly />
           </superme-birthdaypicker>

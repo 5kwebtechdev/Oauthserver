@@ -222,10 +222,11 @@
                 </div>
               </div>
               <div class="child-learning-hero__actions">
-                <span class="child-learning-coins" [attr.aria-label]="childCoins + ' coins'">
+                <button type="button" class="child-learning-coins" (click)="openCoinPage()"
+                  [attr.aria-label]="'Open coins. ' + childCoins + ' coins'">
                   <img src="assets/figma/parent-child-learning/coin.png" alt="" aria-hidden="true">
                   <strong>{{ childCoins }}</strong>
-                </span>
+                </button>
                 <button type="button" class="child-learning-search-toggle" (click)="toggleParentSearch()"
                   [class.child-learning-search-toggle--active]="parentSearchOpen"
                   [attr.aria-expanded]="parentSearchOpen" aria-controls="child-learning-search"

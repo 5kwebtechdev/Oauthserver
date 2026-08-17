@@ -928,6 +928,10 @@ export class RoleSelectComponent implements OnDestroy {
     this.isSubmitting = true;
     const familyCode = this.familyInput.trim().toUpperCase();
     const relationship = this.selectedRole.toUpperCase() as 'CHILD' | 'PARENT';
+    // The acknowledgement belongs only to the deliberate Self → family-role
+    // conversion. A new user joining/creating a family should continue straight
+    // to their dashboard without seeing this extra popup.
+    const isSelfRoleSwitch = this.isSelfRoleSwitch();
 
     this.familyService
       .joinFamilyWithCode(familyCode, relationship)
@@ -936,7 +940,7 @@ export class RoleSelectComponent implements OnDestroy {
         next: async (response) => {
           this.isSubmitting = false;
           this.applyRoleConversionResponse(response, relationship, familyCode);
-          this.queueFamilyConnectedAcknowledgment(relationship);
+          if (isSelfRoleSwitch) this.queueFamilyConnectedAcknowledgment(relationship);
           await this.showToast("You're connected to your family", 'success');
 
           const target = relationship === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
@@ -947,7 +951,7 @@ export class RoleSelectComponent implements OnDestroy {
 
           if (error.status === 200) {
             this.applyRoleConversionResponse({}, relationship, familyCode);
-            this.queueFamilyConnectedAcknowledgment(relationship);
+            if (isSelfRoleSwitch) this.queueFamilyConnectedAcknowledgment(relationship);
             const target = relationship === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
             this.router.navigate([target], { replaceUrl: true });
             return;
@@ -1028,10 +1032,18 @@ export class RoleSelectComponent implements OnDestroy {
   private queueFamilyConnectedAcknowledgment(relationship: 'CHILD' | 'PARENT'): void {
     try {
       const displayRole = relationship === 'PARENT' ? 'Parent' : 'Child';
-      sessionStorage.setItem('family_connected_ack', displayRole);
+      sessionStorage.setItem('family_connected_ack', JSON.stringify({
+        source: 'self-role-switch',
+        role: displayRole
+      }));
     } catch {
       // Storage can be unavailable in restricted browser contexts; role switching still succeeds.
     }
+  }
+
+  private isSelfRoleSwitch(): boolean {
+    const relationship = String(this.authService.getUserData()?.relationship ?? '').trim().toUpperCase();
+    return relationship === 'SELF';
   }
 
   private readStoredUserData(): any {

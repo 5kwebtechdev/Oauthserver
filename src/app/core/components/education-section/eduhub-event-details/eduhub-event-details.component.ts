@@ -73,6 +73,24 @@ export class EduHubEventDetailsComponent implements OnInit {
     return cityAndState || String(this.item.address ?? '').trim();
   }
 
+  get displayName(): string {
+    return this.firstText(this.item?.title, this.item?.name) || (this.entityType === 'Workshop' ? 'Workshop' : 'Event');
+  }
+
+  get schedule(): string {
+    const start = this.formatDate(this.item?.startDt);
+    const end = this.formatDate(this.item?.endDt);
+    return start && end && start !== end ? `${start} – ${end}` : start || end;
+  }
+
+  get organizer(): string {
+    return this.firstText(this.item?.organizer, this.item?.contactPerson);
+  }
+
+  get description(): string {
+    return this.firstText(this.item?.description, this.item?.bio);
+  }
+
   get venue(): string {
     if (!this.item) return '';
     return this.item.unlocked
@@ -102,8 +120,8 @@ export class EduHubEventDetailsComponent implements OnInit {
     if (!this.item) return;
     try {
       await Share.share({
-        title: this.item.name,
-        text: `View ${this.item.name}${this.publicLocation ? ` in ${this.publicLocation}` : ''} on SuperMe EduHub.`,
+        title: this.displayName,
+        text: `View ${this.displayName}${this.publicLocation ? ` in ${this.publicLocation}` : ''} on SuperMe EduHub.`,
         url: window.location.href
       });
     } catch (error) {
@@ -144,6 +162,18 @@ export class EduHubEventDetailsComponent implements OnInit {
     } catch {
       return null;
     }
+  }
+
+  private formatDate(value: string | null | undefined): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+      ? ''
+      : new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+  }
+
+  private firstText(...values: Array<string | null | undefined>): string {
+    return values.map(value => String(value ?? '').trim()).find(Boolean) ?? '';
   }
 
   private favouritesKey(): string {

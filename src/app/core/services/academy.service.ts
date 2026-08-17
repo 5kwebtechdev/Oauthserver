@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthService } from '../../../package/api/auth.service';
+import { AuthService } from './auth.service';
 
 export interface Lesson {
   id: number;
@@ -47,6 +47,8 @@ export interface CourseAssignmentResponse {
   courseName: string;
   assignedBy: number;
   assignedToChild: number[];
+  /** Extra reward coins selected by the parent for this assignment. */
+  extraCoinsByParent?: number;
   assignedAt: string;
 }
 
@@ -237,16 +239,26 @@ export class AcademyService {
   assignCourse(
     courseId: number,
     childIds: number[],
+    extraCoinsByParent: number,
   ): Observable<CourseAssignmentResponse> {
     return this.http.post<CourseAssignmentResponse>(
       `${this.base}/courses/assign`,
-      { courseId, childIds },
+      { courseId, childIds, extraCoinsByParent },
       { headers: this.getHeaders() },
     );
   }
 
   getCategories(): Observable<AcademyCategory[]> {
-    return this.http.get<AcademyCategory[]>(`${this.base}/category`, { headers: this.getHeaders() });
+    let params = new HttpParams();
+    const age = this.authService.getCurrentUserAge();
+    if (age !== null) {
+      params = params.set('age', String(age));
+    }
+
+    return this.http.get<AcademyCategory[]>(`${this.base}/category`, {
+      headers: this.getHeaders(),
+      params,
+    });
   }
 
   getCourseById(courseId: number | string): Observable<CourseDetailResponse> {

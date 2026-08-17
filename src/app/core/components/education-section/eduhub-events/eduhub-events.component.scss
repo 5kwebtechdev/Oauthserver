@@ -501,6 +501,19 @@ button {
   }
 }
 
+.event-card__meta {
+  display: -webkit-box;
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: var(--event-muted);
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .event-card__quick-actions {
   display: flex;
   flex: 0 0 auto;

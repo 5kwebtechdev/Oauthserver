@@ -1,7 +1,9 @@
 <section class="qa-section" aria-labelledby="qa-heading">
   <h3 class="qa-title" id="qa-heading">Quick Access</h3>
 
-  <a class="qa-hero-card" [routerLink]="['/authed/journal-input']">
+  <a class="qa-hero-card" role="button" tabindex="0" [class.is-checking]="checkingJournalAvailability"
+    (click)="openJournal($event)" (keydown.enter)="openJournal($event)"
+    [attr.aria-busy]="checkingJournalAvailability">
     <img class="qa-hero-icon" src="assets/figma/child-home/quick-journal.png" alt="" aria-hidden="true">
     <span class="qa-hero-copy">
       <span class="qa-hero-kicker">Your Journal</span>

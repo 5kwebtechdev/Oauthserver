@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpClientModule } from '@angular/common/http';
 import { NavController } from '@ionic/angular';
 import { environment } from 'src/environments/environment';
@@ -77,9 +77,17 @@ export class ResetPaswordComponent implements OnDestroy {
   ) {
     this.form = this.fb.group({
       currentPassword: ['', [Validators.required, Validators.minLength(8)]],
-      newPassword: ['', [Validators.required, Validators.minLength(8)]],
+      // Match the account-creation policy: 6 to 12 characters.
+      // Do not limit the current password, because existing users may have
+      // passwords created under an older policy.
+      newPassword: ['', [
+        Validators.required,
+        Validators.minLength(6),
+        Validators.maxLength(12),
+        this.noCommonPasswordValidator()
+      ]],
       retypeNewPassword: ['', [Validators.required]]
-    });
+    }, { validators: this.passwordsMatchValidator() });
   }
 
   onCurrentPasswordChange(value: string | null): void {
@@ -92,6 +100,7 @@ export class ResetPaswordComponent implements OnDestroy {
     this.newPassword = value || '';
     this.form.patchValue({ newPassword: value });
     this.validateNewPassword();
+    this.validateRetypePassword();
   }
 
   onRetypePasswordChange(value: string | null): void {
@@ -135,7 +144,11 @@ export class ResetPaswordComponent implements OnDestroy {
       if (control.hasError('required') && control.touched) {
         this.newPasswordError = 'New password is required';
       } else if (control.hasError('minlength') && value.length > 0) {
-        this.newPasswordError = 'Minimum 8 characters required';
+        this.newPasswordError = 'Password should be 6 characters or more.';
+      } else if (control.hasError('maxlength')) {
+        this.newPasswordError = 'Password cannot be more than 12 characters.';
+      } else if (control.hasError('commonPassword')) {
+        this.newPasswordError = 'This password is too common. Please choose a stronger one.';
       } else {
         this.newPasswordError = '';
       }
@@ -155,14 +168,31 @@ export class ResetPaswordComponent implements OnDestroy {
     if (control.touched || value.length > 0) {
       if (control.hasError('required') && control.touched) {
         this.retypePasswordError = 'Please retype your new password';
-      } else if (this.newPassword && value.length > 0 && this.newPassword !== value) {
-        this.retypePasswordError = 'Mismatch of password';
+      } else if (this.form.hasError('passwordMismatch') && value.length > 0) {
+        this.retypePasswordError = 'Passwords do not match.';
       } else {
         this.retypePasswordError = '';
       }
     } else {
       this.retypePasswordError = '';
     }
+  }
+
+  /** Keep this policy identical to the Create a Password onboarding step. */
+  private noCommonPasswordValidator(): ValidatorFn {
+    const common = ['123456', '1234567', '12345678', '123456789', '1234567890', 'password', 'abcdef', 'qwerty', '111111', '000000', 'abc123'];
+    return (control: AbstractControl) => {
+      const value = String(control.value || '').toLowerCase();
+      return common.includes(value) ? { commonPassword: true } : null;
+    };
+  }
+
+  private passwordsMatchValidator(): ValidatorFn {
+    return (control: AbstractControl) => {
+      const password = control.get('newPassword')?.value;
+      const confirmation = control.get('retypeNewPassword')?.value;
+      return password && confirmation && password !== confirmation ? { passwordMismatch: true } : null;
+    };
   }
 
   private showToast(message: string, type: 'success' | 'error' = 'error', duration = 3000): void {
@@ -192,7 +222,7 @@ export class ResetPaswordComponent implements OnDestroy {
     }
 
     if (this.newPassword !== this.retypeNewPassword) {
-      this.retypePasswordError = 'Mismatch of password';
+      this.retypePasswordError = 'Passwords do not match.';
       this.showToast('New passwords do not match', 'error', 3000);
       return;
     }

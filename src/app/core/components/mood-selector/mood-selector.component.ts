@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -7,6 +7,7 @@ import { AuthApi } from '../../api/auth.api';
 import { MoodService } from '../../services/mood.service';
 import { VibesDisplayResponse } from '../../models/mood.model';
 import { AuthService } from '../../services/auth.service';
+import { Subscription } from 'rxjs';
 
 export interface MoodOption { key: string; label: string; emoji?: string }
 type PopupMoodOption = { src: string; label: string; vibe: string; art: string };
@@ -18,7 +19,7 @@ type PopupMoodOption = { src: string; label: string; vibe: string; art: string }
   templateUrl: './mood-selector.component.html',
   styleUrls: ['./mood-selector.component.scss']
 })
-export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
+export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestroy {
   @Input() options: MoodOption[] = [];
   @Input() value: string | null = null;
   /** When set (parent view), the mood-selector shows data for this specific child id */
@@ -31,6 +32,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
   private setsToday = 0;
   /** Retains the most recently confirmed API mood while the display request refreshes. */
   private savedMoodKey: string | null = null;
+  private dailyMoodStateSubscription?: Subscription;
 
   // selection state
   popupSelection: string | null = null;
@@ -81,6 +83,23 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
   ngOnInit() {
     this.getTodayVibe();
     this.loadDailySetCount();
+    this.dailyMoodStateSubscription = this.moodService.dailyMoodStateUpdated$.subscribe((update) => {
+      if (update.storageKey !== this.dailyStateKey()) return;
+
+      this.setsToday = this.toDailyCount(update.count);
+      this.savedMoodKey = String(update.mood || '').trim().toUpperCase() || null;
+      if (this.savedMoodKey) {
+        this.value = 'asset:' + (this.moodAssetMap[this.savedMoodKey] || this.moodAssetMap['NEUTRAL']);
+      }
+      this.popupSelection = null;
+      this.pickerOpen = false;
+      this.limitInfoVisible = false;
+      this.valueChange.emit(this.value || '');
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.dailyMoodStateSubscription?.unsubscribe();
   }
 
   ionViewWillEnter(): void {
@@ -417,11 +436,13 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
 
   private persistDailyMoodState(): void {
     const state = { count: Math.min(2, Math.max(0, this.setsToday || 0)), mood: this.savedMoodKey || null };
-    localStorage.setItem(this.dailyStateKey(), JSON.stringify(state));
+    const storageKey = this.dailyStateKey();
+    localStorage.setItem(storageKey, JSON.stringify(state));
     // Preserve the original counter too for backwards compatibility with any
     // already-installed WebView that has not yet received this code.
     localStorage.setItem(this.dailyKey(), String(state.count));
     if (state.mood) localStorage.setItem(this.legacyMoodKey(), state.mood);
+    this.moodService.notifyDailyMoodStateUpdated({ storageKey, ...state });
   }
 
   private toDailyCount(value: unknown): number {

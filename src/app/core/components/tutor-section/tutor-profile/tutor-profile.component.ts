@@ -5,7 +5,7 @@ import { AppLauncher } from '@capacitor/app-launcher';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { TutorApi } from '../../../api/tutor.api';
 import {
@@ -18,7 +18,7 @@ import {
   getExperienceYears
 } from '../../../models/tutor.model';
 import { AuthService } from '../../../services/auth.service';
-import { CustomToastService, Toast } from '../../../services/custom-toast.service';
+import { CustomToastService } from '../../../services/custom-toast.service';
 import { TutorLikeService } from '../../../services/tutor-like.service';
 import { TutorService } from '../../../services/tutor.service';
 import { UserService } from '../../../services/user.service';
@@ -58,7 +58,6 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   isContactLaunching = false;
   isUnlockingContact = false;
   isContactUnlocked = false;
-  toast$: Observable<Toast | null> = this.toastService.toast$;
 
   private tutorCategories: TutorCategory[] = [];
   private activeLikeTutorId: number | null = null;
@@ -141,7 +140,13 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   private setTutor(tutor: Tutor): void {
     this.tutor = tutor;
-    this.isContactUnlocked = !!((tutor as any)?.unlocked || (tutor as any)?.isUnlocked);
+    const alreadySpentCoins = (tutor as any)?.alreadySpentCoinsForThisProfile;
+    // The tutor API now returns a per-user unlock flag. When it is supplied,
+    // it takes precedence over legacy `unlocked` values so one user's payment
+    // never exposes contact details to another user.
+    this.isContactUnlocked = alreadySpentCoins === undefined || alreadySpentCoins === null
+      ? !!((tutor as any)?.unlocked || (tutor as any)?.isUnlocked)
+      : alreadySpentCoins === true || String(alreadySpentCoins).toLowerCase() === 'true';
     this.categoryFieldRows = this.buildCategoryFieldRows(this.tutorCategories);
     this.initializeLikeState(tutor);
   }
@@ -211,10 +216,6 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
         this.toastService.error('Unable to share this tutor right now.');
       }
     }
-  }
-
-  dismissToast(): void {
-    this.toastService.hide();
   }
 
   getDisplayName(): string {
@@ -518,6 +519,14 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     return !!this.getRawEmail();
   }
 
+  getUnlockedPhone(): string {
+    return this.getRawPhone() || 'Not available';
+  }
+
+  getUnlockedEmail(): string {
+    return this.getRawEmail() || 'Not available';
+  }
+
   async confirmContact(): Promise<void> {
     if (this.isContactLaunching) return;
 
@@ -561,7 +570,8 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       state: unlocked.state ?? (this.tutor as any).state,
       city: unlocked.city ?? (this.tutor as any).city,
       pincode: unlocked.pincode ?? (this.tutor as any).pincode,
-      unlocked: true
+      unlocked: true,
+      alreadySpentCoinsForThisProfile: true
     });
   }
 

@@ -46,6 +46,83 @@
   }
 }
 
+.coin-balance-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483645;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(40, 37, 39, 0.42);
+}
+
+.coin-balance-dialog {
+  position: relative;
+  width: min(100%, 340px);
+  padding: 26px 22px 22px;
+  border: 2px solid transparent;
+  border-radius: 24px;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(135deg, #8b8dcb, #f0ad4e, #e1527c) border-box;
+  box-shadow: 0 18px 48px rgba(40, 37, 39, 0.28);
+  color: #282527;
+  text-align: center;
+
+  &__close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #6b656a;
+    font-size: 25px;
+    line-height: 1;
+  }
+
+  &__icon {
+    display: grid;
+    width: 58px;
+    height: 58px;
+    place-items: center;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: #fff3d6;
+    box-shadow: inset 0 0 0 2px rgba(240, 173, 78, 0.3);
+    font-size: 30px;
+  }
+
+  h2 {
+    margin: 0;
+    color: #432477;
+    font-family: var(--font-heading, 'Fredoka', sans-serif);
+    font-size: 21px;
+  }
+
+  p {
+    margin: 8px 0 18px;
+    color: #6b656a;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  &__cta {
+    width: 100%;
+    min-height: 44px;
+    border: 0;
+    border-radius: 13px;
+    background: linear-gradient(90deg, #432477, #90214d);
+    box-shadow: 0 4px 0 #2e1953;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+  }
+}
+
 :host ::ng-deep app-superme-popup.force-update-popup .superme-popup-backdrop {
   z-index: 2147483647;
 }

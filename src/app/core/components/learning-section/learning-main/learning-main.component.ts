@@ -401,6 +401,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     const value = Number(
       raw?.assignmentCoins
       ?? raw?.bonusCoins
+      ?? raw?.extraCoinsByParent
       ?? raw?.extraCoins
       ?? raw?.coinsForCorrectAnswer
       ?? 0
@@ -433,7 +434,8 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
 
     if (!this.isParentItemAssigned(item) && this.getParentItemStatus(item) !== 'completed') {
-      this.toastService.show(`Assign ${this.getParentAssignmentCoins(item)} coins to ${item.title} when the assignment API is available.`, 'info', 3000);
+      // Quiz, puzzle, and article assignment is not available yet. Keep the
+      // CTA inert without showing a temporary implementation message.
       return;
     }
 
@@ -449,8 +451,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
     if (this.isParentCourseAssigning(item)) return;
 
+    const extraCoinsByParent = this.getParentAssignmentCoins(item);
     this.assigningCourseIds.add(String(item.id));
-    this.academyService.assignCourse(courseId, [childId])
+    this.academyService.assignCourse(courseId, [childId], extraCoinsByParent)
       .pipe(takeUntil(this.destroy$), takeUntil(this.childRequestCancel$))
       .subscribe({
         next: response => {
@@ -464,6 +467,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
                     ...(course.rawData as Record<string, unknown>),
                     assignedToChild: true,
                     assignedAt: response.assignedAt,
+                    extraCoinsByParent: response.extraCoinsByParent ?? extraCoinsByParent,
                   },
                 }
               : course,
@@ -907,19 +911,6 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     if (!categoryName) return;
     this.scrollLearningToTop();
 
-    if (this.selectedCategory === 'masterclass' && !this.parentView) {
-      const age = this.authService.getCurrentUserAge();
-      const queryParams: Record<string, string | number> = {
-        category: categoryName,
-        categoryId: item.id,
-        title: this.getCategoryTitle(item),
-        subtitle: item.description || ''
-      };
-      if (age) queryParams['age'] = age;
-      this.router.navigate(['/authed/academy/subject'], { queryParams });
-      return;
-    }
-
     this.selectedCategoryItem = item;
     this.categoryContentItems = [];
     this.categoryContentLoading = true;
@@ -928,13 +919,23 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.parentPage = 1;
     this.parentSearchOpen = false;
     this.clearSearch();
-    const requestChildId = this.parentView ? this.selectedChildId : null;
+    // Keep MasterClass in the current Learning UI for every role.  Passing the
+    // viewer's ID for child/self lets the API return `assignedToChild` for the
+    // exact account, rather than showing the old Academy subject page.
+    const requestChildId = this.parentView
+      ? this.selectedChildId
+      : this.selectedCategory === 'masterclass' && this.childView
+        ? this.authService.getUserId()
+        : null;
+    const requestAge = this.selectedCategory === 'masterclass' && !this.parentView
+      ? this.authService.getCurrentUserAge()
+      : null;
 
     let request: Observable<LearningCardData[]>;
     if (this.selectedCategory === 'masterclass') {
       request = this.academyService.getCoursesByCategory(
         categoryName,
-        null,
+        requestAge,
         requestChildId
       ).pipe(map(courses => (courses || []).map(course => this.mapCourseToLearningCard(course))));
     } else if (this.selectedCategory === 'articles') {

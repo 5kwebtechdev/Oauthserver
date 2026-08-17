@@ -370,7 +370,8 @@
           <h2 id="planner-period-title">Active Period</h2>
         </div>
         <div class="planner-date-row">
-          <button type="button" class="planner-picker-card" (click)="startDateCtrl.toggleCalendar()">
+          <button type="button" class="planner-picker-card" [class.planner-picker-card--empty]="!startDate"
+            (click)="startDateCtrl.toggleCalendar()">
             <span class="planner-picker-icon" aria-hidden="true">
               <img src="assets/figma/child-planner/calendar.svg" alt="">
             </span>
@@ -378,11 +379,12 @@
               <strong>Start Date</strong>
               <superme-datepicker #startDateCtrl type="date" label="Start Date" [(ngModel)]="startDate"
                 [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate"
-                placeholder="Select Start Date"></superme-datepicker>
+                placeholder=""></superme-datepicker>
             </span>
             <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
           </button>
-          <button type="button" class="planner-picker-card" (click)="endDateCtrl.toggleCalendar()">
+          <button type="button" class="planner-picker-card" [class.planner-picker-card--empty]="!endDate"
+            (click)="endDateCtrl.toggleCalendar()">
             <span class="planner-picker-icon" aria-hidden="true">
               <img src="assets/figma/child-planner/calendar.svg" alt="">
             </span>
@@ -390,7 +392,7 @@
               <strong>End Date</strong>
               <superme-datepicker #endDateCtrl type="date" label="End Date" [(ngModel)]="endDate"
                 [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate" [seedDate]="startDate"
-                [quickRanges]="endDateQuickRanges" placeholder="Select End Date"></superme-datepicker>
+                [quickRanges]="endDateQuickRanges" placeholder=""></superme-datepicker>
             </span>
             <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
           </button>
@@ -426,24 +428,26 @@
           </div>
 
           <div class="planner-entry-time-row">
-            <button type="button" class="planner-picker-card" (click)="plannerStartTimeCtrl.openPopup()">
+            <button type="button" class="planner-picker-card" [class.planner-picker-card--empty]="!entry.startTime"
+              (click)="plannerStartTimeCtrl.openPopup()">
               <span class="planner-picker-icon" aria-hidden="true">
                 <img src="assets/figma/child-planner/schedule.svg" alt="">
               </span>
               <span class="planner-picker-copy">
                 <strong>Start Time</strong>
-                <superme-timepicker #plannerStartTimeCtrl label="Start Time" placeholder="Select"
+                <superme-timepicker #plannerStartTimeCtrl label="Start Time" placeholder=""
                   [(ngModel)]="entry.startTime"></superme-timepicker>
               </span>
               <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
             </button>
-            <button type="button" class="planner-picker-card" (click)="plannerEndTimeCtrl.openPopup()">
+            <button type="button" class="planner-picker-card" [class.planner-picker-card--empty]="!entry.endTime"
+              (click)="plannerEndTimeCtrl.openPopup()">
               <span class="planner-picker-icon" aria-hidden="true">
                 <img src="assets/figma/child-planner/schedule.svg" alt="">
               </span>
               <span class="planner-picker-copy">
                 <strong>End Time</strong>
-                <superme-timepicker #plannerEndTimeCtrl label="End Time" placeholder="Select"
+                <superme-timepicker #plannerEndTimeCtrl label="End Time" placeholder=""
                   [seedTime]="entry.startTime" [quickDurations]="[15, 30, 45, 60]"
                   [(ngModel)]="entry.endTime"></superme-timepicker>
               </span>
@@ -603,37 +607,40 @@
           </span>
         </div>
 
-        <div class="event-picker-card" (click)="eventDateCtrl.toggleCalendar()">
+        <div class="event-picker-card" [class.event-picker-card--empty]="!eventDate"
+          (click)="eventDateCtrl.toggleCalendar()">
           <span class="event-picker-icon" aria-hidden="true">
             <img src="assets/figma/activity-event/event-date.svg" alt="">
           </span>
           <span class="event-picker-copy">
             <strong>Event Date</strong>
             <superme-datepicker #eventDateCtrl type="date" label="Event Date" [(ngModel)]="eventDate"
-              (ngModelChange)="onEventDateChanged()" [minDate]="today" placeholder="Select Date"></superme-datepicker>
+              (ngModelChange)="onEventDateChanged()" [minDate]="today" placeholder=""></superme-datepicker>
           </span>
           <img class="event-picker-add" src="assets/figma/activity-event/add.svg" alt="" aria-hidden="true">
         </div>
 
         <div *ngIf="!eventAllDay" class="event-time-row">
-          <div class="event-picker-card" (click)="eventStartTimeCtrl.openPopup()">
+          <div class="event-picker-card" [class.event-picker-card--empty]="!startTime"
+            (click)="eventStartTimeCtrl.openPopup()">
             <span class="event-picker-icon" aria-hidden="true">
               <img src="assets/figma/activity-event/time.svg" alt="">
             </span>
             <span class="event-picker-copy">
               <strong>Start Time</strong>
-              <superme-timepicker #eventStartTimeCtrl label="Start Time" placeholder="Select Start Time"
+              <superme-timepicker #eventStartTimeCtrl label="Start Time" placeholder=""
                 [(ngModel)]="startTime" (ngModelChange)="onStartTimeChanged()"></superme-timepicker>
             </span>
             <img class="event-picker-add" src="assets/figma/activity-event/add.svg" alt="" aria-hidden="true">
           </div>
-          <div class="event-picker-card" (click)="eventEndTimeCtrl.openPopup()">
+          <div class="event-picker-card" [class.event-picker-card--empty]="!endTime"
+            (click)="eventEndTimeCtrl.openPopup()">
             <span class="event-picker-icon" aria-hidden="true">
               <img src="assets/figma/activity-event/time.svg" alt="">
             </span>
             <span class="event-picker-copy">
               <strong>End Time</strong>
-              <superme-timepicker #eventEndTimeCtrl label="End Time" placeholder="Select End Time"
+              <superme-timepicker #eventEndTimeCtrl label="End Time" placeholder=""
                 [seedTime]="startTime" [quickDurations]="[15, 30, 45, 60]"
                 [(ngModel)]="endTime" (ngModelChange)="clearTimeError()"></superme-timepicker>
             </span>

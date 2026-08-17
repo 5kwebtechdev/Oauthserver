@@ -113,6 +113,9 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     // selected child — the template shows an animated skeleton instead of
     // the (possibly stale, previous child's) numbers while this is true.
     public performanceLoading = false;
+    /** True only when the selected child has activity/statistics to analyse. */
+    public hasPerformanceData = false;
+    public activeMetricInfo: string | null = null;
     
     // Stats
     public completionRate: number = 0;
@@ -171,11 +174,27 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     private createEmptyMoodBalance(): MoodBalanceSegment[] {
         return [
-            { key: 'good', label: 'Good', value: 0, color: '#4CAF50' },
-            { key: 'okay', label: 'Okay', value: 0, color: '#F0AD4E' },
-            { key: 'tough', label: 'Tough', value: 0, color: '#EE6621' },
-            { key: 'hard', label: 'Hard', value: 0, color: '#BB2124' }
+            { key: 'good', label: 'Growing Well', value: 0, color: '#4CAF50' },
+            { key: 'okay', label: 'Needs Support', value: 0, color: '#F2B44C' },
+            { key: 'tough', label: 'Difficult Moments', value: 0, color: '#BE1E2D' },
+            { key: 'hard', label: 'No Data', value: 0, color: '#AAA7AC' }
         ];
+    }
+
+    getMetricInfo(metric: ParentMetric): string {
+        const details: Record<string, string> = {
+            'Completion Rate': 'The percentage of planned habits and tasks completed this week.',
+            'Consistency Rate': 'How regularly your child followed their planned activities this week.',
+            'Improvement Rate': 'The change in progress compared with the previous week.',
+            'App’s Score': 'A combined score based on completion, consistency, and improvement.'
+        };
+        return details[metric.label] || 'This metric is updated from your child’s weekly activity.';
+    }
+
+    toggleMetricInfo(metric: ParentMetric, event: Event): void {
+        event.stopPropagation();
+        const message = this.getMetricInfo(metric);
+        this.activeMetricInfo = this.activeMetricInfo === message ? null : message;
     }
 
     /** PRD color logic: Red 0-59, Yellow 60-79, Green 80-100 */
@@ -413,11 +432,14 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
         // Check for family connected acknowledgment
         try {
-            const ack = sessionStorage.getItem('family_connected_ack');
-            if (ack) {
+            const rawAck = sessionStorage.getItem('family_connected_ack');
+            if (rawAck) {
                 sessionStorage.removeItem('family_connected_ack');
-                this.familyAckRole = ack;
-                this.showFamilyAck = true;
+                const ack = JSON.parse(rawAck) as { source?: string; role?: string };
+                if (ack.source === 'self-role-switch' && (ack.role === 'Parent' || ack.role === 'Child')) {
+                    this.familyAckRole = ack.role;
+                    this.showFamilyAck = true;
+                }
             }
         } catch {}
 
@@ -867,6 +889,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.consistencyRate = c.consistencyRate ?? 0;
         this.improvementRate = c.improvementRate ?? 0;
         this.appScore = c.appScore ?? 0;
+        this.hasPerformanceData = this.hasWeeklyPerformanceData(c);
+        this.activeMetricInfo = null;
         this.userService.saveUserStats({
             coins: this.userCoins,
             streaks: this.userStreaks,
@@ -1032,6 +1056,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                     this.consistencyRate = Math.round(d.consistencyRate || 0);
                     this.improvementRate = Math.round(d.improvementRate || 0);
                     this.appScore = Math.round(d.appScore || 0);
+                    this.hasPerformanceData = this.hasWeeklyPerformanceData(d);
                     this.userService.saveUserStats({
                         coins: this.userCoins,
                         streaks: this.userStreaks,
@@ -1039,6 +1064,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                         badges: this.userBadges
                     });
                     this.statsUpdatedAt = new Date();
+                } else {
+                    this.hasPerformanceData = false;
                 }
                 this.performanceLoading = false;
             },
@@ -1047,6 +1074,20 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                 this.performanceLoading = false;
             }
         });
+    }
+
+    private hasWeeklyPerformanceData(stats: Partial<VibesDisplayResponse | ChildInfo>): boolean {
+        const numericFields = [
+            stats.totalHabits,
+            stats.completedHabits,
+            stats.totalTasks,
+            stats.completedTasks,
+            stats.completionRate,
+            stats.consistencyRate,
+            stats.improvementRate,
+            stats.appScore
+        ];
+        return numericFields.some(value => Number(value || 0) !== 0);
     }
 
     openActivityInput(): void {

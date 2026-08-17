@@ -389,11 +389,14 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
     // Check for family connected acknowledgment
     try {
-      const ack = sessionStorage.getItem('family_connected_ack');
-      if (ack) {
+      const rawAck = sessionStorage.getItem('family_connected_ack');
+      if (rawAck) {
         sessionStorage.removeItem('family_connected_ack');
-        this.familyAckRole = ack;
-        this.showFamilyAck = true;
+        const ack = JSON.parse(rawAck) as { source?: string; role?: string };
+        if (ack.source === 'self-role-switch' && (ack.role === 'Parent' || ack.role === 'Child')) {
+          this.familyAckRole = ack.role;
+          this.showFamilyAck = true;
+        }
       }
     } catch {}
 
@@ -404,7 +407,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       .subscribe(userData => {
         if (userData) {
           console.log('[UserDashboard] User data updated from AuthService:', userData.name);
-          this.userName = userData.name || '';
+          this.userName = this.resolveGreetingUsername(userData);
 
           // The avatar is resolved only from the logged-in user's API/stored profile.
           const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
@@ -436,7 +439,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       .subscribe(profile => {
         if (profile) {
           if (!this.userName) {
-            this.userName = profile.name || '';
+            this.userName = this.resolveGreetingUsername(profile);
           }
           if (!this.userAvatarUrl && profile.avatarUrl) {
             this.userAvatarUrl = profile.avatarUrl;
@@ -1020,7 +1023,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     // Update local user data from refreshed storage
     const userData = this.authService.getUserData();
     if (userData) {
-      this.userName = userData.name || this.userName;
+      this.userName = this.resolveGreetingUsername(userData) || this.userName;
 
       const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
       this.userAvatarUrl = resolved.url || null;
@@ -1052,6 +1055,16 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       streakDays: this.userStreaks
     });
     this.petMood = this.currentPetMessage.mood;
+  }
+
+  /**
+   * The home greeting is the user's in-app identity, not their legal/full
+   * name. Older sessions may not have a username yet, so retain name as a
+   * fallback until the profile is refreshed.
+   */
+  private resolveGreetingUsername(user: any): string {
+    const username = user?.username ?? user?.userName;
+    return String(username || user?.name || '').trim();
   }
 
   private checkStreakRestore(): void {
