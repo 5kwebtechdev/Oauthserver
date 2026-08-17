@@ -73,6 +73,17 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
     }
   }
 
+  /**
+   * A datepicker is often rendered inside a clickable picker card.  Let the
+   * input own its click so the card does not immediately toggle the calendar
+   * closed again through event bubbling.
+   */
+  openCalendar(event: MouseEvent): void {
+    event.stopPropagation();
+    this.onTouched();
+    if (!this.isOpen) this.toggleCalendar();
+  }
+
   prevMonth() {
     this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() - 1, 1);
   }

@@ -21,12 +21,12 @@
 
       <div class="event-detail-intro" *ngIf="item">
         <div class="event-detail-image" [class.event-detail-image--empty]="!image">
-          <img *ngIf="image" class="event-detail-image__photo" [src]="image" [alt]="item.name" (error)="onImageError()">
+          <img *ngIf="image" class="event-detail-image__photo" [src]="image" [alt]="displayName" (error)="onImageError()">
           <img *ngIf="item.verified" class="event-detail-image__verified"
             src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified">
         </div>
         <div class="event-detail-intro__copy">
-          <h1>{{ item.name }}</h1>
+          <h1>{{ displayName }}</h1>
           <p *ngIf="publicLocation">
             <img src="assets/figma/parent-eduhub-inner/location.svg" alt="" aria-hidden="true">
             {{ publicLocation }}
@@ -55,11 +55,27 @@
           </div>
         </div>
 
-        <div class="event-detail-row event-detail-row--about" *ngIf="item.bio">
+        <div class="event-detail-row" *ngIf="schedule">
+          <img src="assets/figma/learning-details/schedule.svg" alt="" aria-hidden="true">
+          <div>
+            <span>Dates</span>
+            <strong>{{ schedule }}</strong>
+          </div>
+        </div>
+
+        <div class="event-detail-row" *ngIf="organizer">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <div>
+            <span>Organizer</span>
+            <strong>{{ organizer }}</strong>
+          </div>
+        </div>
+
+        <div class="event-detail-row event-detail-row--about" *ngIf="description">
           <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
           <div>
             <span>About</span>
-            <p>{{ item.bio }}</p>
+            <p>{{ description }}</p>
           </div>
         </div>
 

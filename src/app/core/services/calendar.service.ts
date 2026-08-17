@@ -49,14 +49,27 @@ export class CalendarService {
         return forkJoin({ calendar: calendar$, plannerEvents: plannerEvents$ }).pipe(
             map(({ calendar, plannerEvents }) => ({
                 ...calendar,
+                // The calendar API marks finished records with `expired: true`.
+                // Exclude them before any screen builds its All/Habit/Task/Planner
+                // lists or day indicators. Missing `expired` remains compatible with
+                // older responses and is treated as active.
+                habits: this.excludeExpired(calendar.habits),
+                tasks: this.excludeExpired(calendar.tasks),
                 events: [
-                    ...(calendar.events || []),
+                    ...this.excludeExpired(calendar.events),
                     ...plannerEvents
                         .filter(event => this.eventOccursInView(event, dateStr, viewType))
                         .map(event => this.toCalendarEvent(event))
                 ]
             }))
         );
+    }
+
+    private excludeExpired<T>(items: T[] | null | undefined): T[] {
+        return (items || []).filter((item: any) => {
+            const expired = item?.expired;
+            return expired !== true && String(expired).toLowerCase() !== 'true';
+        });
     }
 
     /** No-op kept for call-site compatibility */

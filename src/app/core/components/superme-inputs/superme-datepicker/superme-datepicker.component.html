@@ -1,7 +1,7 @@
 <div class="datepicker-wrapper">
   <input type="text" [attr.placeholder]="placeholder"
     [value]="startDate ? (type === 'range' && endDate ? startDate.toDateString() + ' - ' + endDate.toDateString() : startDate.toDateString()) : ''"
-    (click)="toggleCalendar()" readonly />
+    (click)="openCalendar($event)" readonly />
 
   <div class="calendar-overlay" *ngIf="isOpen">
     <div class="calendar-popup">

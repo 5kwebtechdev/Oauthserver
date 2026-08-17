@@ -1,14 +1,27 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of } from 'rxjs';
+import { Observable, Subject, map, of } from 'rxjs';
 import { MoodTransition, MoodData, MOOD_EMOJI_MAP, VibesDisplayResponse } from '../models/mood.model';
 import { environment } from 'src/environments/environment';
+
+export interface DailyMoodStateUpdate {
+  storageKey: string;
+  count: number;
+  mood: string | null;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class MoodService {
   private readonly apiUrl = `${environment.apiUrl}/mood`;
+  private readonly dailyMoodStateUpdatedSubject = new Subject<DailyMoodStateUpdate>();
+
+  /**
+   * Shares a successful mood save between the first-time mood prompt and the
+   * mood card already mounted behind it on the dashboard.
+   */
+  readonly dailyMoodStateUpdated$ = this.dailyMoodStateUpdatedSubject.asObservable();
 
   constructor(private http: HttpClient) { }
 
@@ -108,4 +121,8 @@ export class MoodService {
 
   /** No-op kept for call-site compatibility */
   clearVibesDisplayCache(): void { }
+
+  notifyDailyMoodStateUpdated(update: DailyMoodStateUpdate): void {
+    this.dailyMoodStateUpdatedSubject.next(update);
+  }
 }

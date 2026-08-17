@@ -12,25 +12,36 @@ import { AuthService } from './auth.service';
  */
 export interface EduHubEventItem {
   id: number;
-  categoryId: number;
-  categoryName: string;
+  categoryId: number | null;
+  categoryName: string | null;
   entityType: string;
-  name: string;
-  phone: string;
-  email: string;
-  bio: string;
+  /** Events are named by `title`; `name` is often intentionally empty. */
+  name: string | null;
+  title?: string | null;
+  phone: string | null;
+  email: string | null;
+  bio: string | null;
   fee: number | null;
   imageUrls: string[];
-  address: string;
-  city: string;
-  state: string;
+  address: string | null;
+  city: string | null;
+  state: string | null;
   status: string;
   verified: boolean;
   latitude: number | null;
   longitude: number | null;
-  exactLocation: string;
+  exactLocation: string | null;
   unlocked: boolean;
   unlockCost: number | null;
+  startDt?: string | null;
+  endDt?: string | null;
+  venue?: string | null;
+  organizer?: string | null;
+  contactPerson?: string | null;
+  instructor?: string | null;
+  isFree?: boolean | null;
+  regLink?: string | null;
+  description?: string | null;
 }
 
 export interface EduHubEventPage {

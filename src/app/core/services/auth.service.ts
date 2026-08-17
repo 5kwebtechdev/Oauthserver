@@ -407,7 +407,11 @@ export class AuthService {
         const pet = typeof currentPet === 'object' && currentPet !== null
           ? { ...currentPet, petName }
           : { petName };
-        this.updateUserData({ pet });
+        // Keep both API shapes in sync. Some screens read `user.pet`, while
+        // others still read the top-level `petName` returned during login.
+        // Leaving the latter stale made the newly selected pet appear only
+        // after the next login/profile refresh.
+        this.updateUserData({ pet, petName });
       })
     );
   }

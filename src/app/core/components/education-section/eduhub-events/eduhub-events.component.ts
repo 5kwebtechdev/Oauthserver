@@ -88,6 +88,9 @@ export class EduHubEventsComponent implements OnInit {
     return this.items.filter(item => {
       const matchesQuery = !query || this.normalise([
         item.name,
+        item.title,
+        item.venue,
+        item.organizer,
         item.address,
         item.city,
         item.state,
@@ -199,6 +202,17 @@ export class EduHubEventsComponent implements OnInit {
     return (item.imageUrls ?? []).find(url => typeof url === 'string' && url.trim())?.trim() ?? '';
   }
 
+  getDisplayName(item: EduHubEventItem): string {
+    return this.firstText(item.title, item.name) || `${this.singularTitle[0].toUpperCase()}${this.singularTitle.slice(1)}`;
+  }
+
+  getEventMeta(item: EduHubEventItem): string {
+    const schedule = this.getScheduleLabel(item);
+    const venue = this.firstText(item.venue);
+    const organizer = this.firstText(item.organizer);
+    return [schedule, venue, organizer ? `By ${organizer}` : ''].filter(Boolean).join(' • ');
+  }
+
   onImageError(item: EduHubEventItem): void {
     item.imageUrls = [];
   }
@@ -212,6 +226,7 @@ export class EduHubEventsComponent implements OnInit {
   }
 
   getFeeLabel(item: EduHubEventItem): string {
+    if (item.isFree) return 'FREE';
     const fee = Number(item.fee);
     if (!Number.isFinite(fee)) return '';
     if (fee === 0) return 'FREE';
@@ -240,10 +255,11 @@ export class EduHubEventsComponent implements OnInit {
 
   async shareItem(item: EduHubEventItem): Promise<void> {
     const location = this.getLocation(item);
+    const name = this.getDisplayName(item);
     try {
       await Share.share({
-        title: item.name,
-        text: `View ${item.name}${location ? ` in ${location}` : ''} on SuperMe EduHub.`,
+        title: name,
+        text: `View ${name}${location ? ` in ${location}` : ''} on SuperMe EduHub.`,
         url: window.location.href
       });
     } catch (error) {
@@ -286,8 +302,26 @@ export class EduHubEventsComponent implements OnInit {
     return Number.isFinite(numeric) && numeric >= 0 ? numeric : fallback;
   }
 
-  private normalise(value: string): string {
-    return value.toLowerCase().replace(/\s+/g, ' ').trim();
+  private getScheduleLabel(item: EduHubEventItem): string {
+    const start = this.formatDate(item.startDt);
+    const end = this.formatDate(item.endDt);
+    return start && end && start !== end ? `${start} – ${end}` : start || end;
+  }
+
+  private formatDate(value: string | null | undefined): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+      ? ''
+      : new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+  }
+
+  private firstText(...values: Array<string | null | undefined>): string {
+    return values.map(value => String(value ?? '').trim()).find(Boolean) ?? '';
+  }
+
+  private normalise(value: unknown): string {
+    return String(value ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
   }
 
   private favouritesKey(): string {

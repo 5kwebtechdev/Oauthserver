@@ -178,7 +178,11 @@
             <article class="metric" *ngFor="let metric of performanceMetrics">
               <div class="metric__label">
                 <span>{{ metric.label }}</span>
-                <img src="assets/figma/parent-home/info.svg" alt="" aria-hidden="true">
+                <button type="button" class="metric__info" (click)="toggleMetricInfo(metric, $event)"
+                  [attr.aria-expanded]="activeMetricInfo === getMetricInfo(metric)"
+                  [attr.aria-label]="'About ' + metric.label">
+                  <img src="assets/figma/parent-home/info.svg" alt="" aria-hidden="true">
+                </button>
               </div>
               <div class="metric__ring" [class.metric__ring--loading]="performanceLoading"
                 [style.--metric-value]="metric.value + '%'"
@@ -187,10 +191,24 @@
               </div>
               <strong *ngIf="!performanceLoading" [style.color]="metric.color">{{ metric.status }}</strong>
               <span *ngIf="performanceLoading" class="metric__status-skeleton" aria-hidden="true"></span>
+              <p *ngIf="activeMetricInfo === getMetricInfo(metric)" class="metric__tooltip" role="status">
+                {{ activeMetricInfo }}
+              </p>
             </article>
           </div>
 
-          <button class="ai-insight" type="button" (click)="openInsights()">
+          <section *ngIf="!performanceLoading && !hasPerformanceData" class="performance-empty-state" aria-live="polite">
+            <div class="performance-empty-state__visual" aria-hidden="true">
+              <span>★</span><strong>7<br>days</strong>
+            </div>
+            <div>
+              <h3>The adventure is just beginning!</h3>
+              <p>The SuperMe app needs seven days of activity to spot patterns and share real insights about your child.</p>
+              <small>♥ Let them keep their streak alive, their first insight is closer than you think.</small>
+            </div>
+          </section>
+
+          <button *ngIf="performanceLoading || hasPerformanceData" class="ai-insight" type="button" (click)="openInsights()">
             <img src="assets/figma/parent-home/ai-insight.png" alt="" aria-hidden="true">
             <span>
               <span><strong>AI Insight :</strong> {{ aiInsight }}</span>

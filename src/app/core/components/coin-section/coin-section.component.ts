@@ -191,6 +191,7 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             case 'LESSON_COMPLETED':        return 'L';
             case 'COURSE_COMPLETED':        return 'C';
             case 'ARTICLE_READ':            return 'A';
+            case 'HINT_USED':                return 'H';
             case 'CHALLENGE_BATCH_REWARD':  return 'C';
             case 'REFERRAL_BONUS':          return 'R';
             case 'STREAK_7DAY_BONUS':       return 'S';
@@ -207,6 +208,7 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             case 'LESSON_COMPLETED':        return '#F3E5F5';
             case 'COURSE_COMPLETED':        return '#FFF8E1';
             case 'ARTICLE_READ':            return '#E8EAF6';
+            case 'HINT_USED':                return '#FFF3E0';
             case 'CHALLENGE_BATCH_REWARD':  return '#FCE4EC';
             case 'REFERRAL_BONUS':          return '#E0F7FA';
             case 'STREAK_7DAY_BONUS':       return '#FFF3E0';
@@ -223,6 +225,7 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             case 'LESSON_COMPLETED':        return 'Lesson';
             case 'COURSE_COMPLETED':        return 'Course';
             case 'ARTICLE_READ':            return 'Article';
+            case 'HINT_USED':                return 'Spend';
             case 'CHALLENGE_BATCH_REWARD':  return 'Challenge';
             case 'REFERRAL_BONUS':          return 'Referral';
             case 'STREAK_7DAY_BONUS':       return 'Streak Bonus';
@@ -258,6 +261,9 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             }
             case 'ARTICLE_READ': {
                 return this.formatCoinDescription(item.description) || 'Article Read';
+            }
+            case 'HINT_USED': {
+                return this.formatCoinDescription(item.description) || 'Hint used';
             }
             case 'CHALLENGE_BATCH_REWARD': {
                 return item.description || 'Challenge Reward';

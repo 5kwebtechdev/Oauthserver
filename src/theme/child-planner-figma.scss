@@ -409,6 +409,17 @@
 		}
 	}
 
+	// Match the Habit and Task picker treatment: before a value is chosen,
+	// keep the field name centred and do not show a second "Select ..." line.
+	.planner-picker-card--empty .planner-picker-copy {
+		justify-content: center;
+
+		superme-datepicker,
+		superme-timepicker {
+			display: none;
+		}
+	}
+
 	.planner-picker-copy superme-datepicker input,
 	.planner-picker-copy superme-timepicker input,
 	.planner-picker-copy .time-display-input,

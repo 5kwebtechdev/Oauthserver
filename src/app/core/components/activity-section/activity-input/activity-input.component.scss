@@ -1878,6 +1878,17 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   line-height: 1.4;
 }
 
+// Use the same empty picker state as Habit, Task, and Planner: the field
+// label is centred until the user selects a date or time.
+.event-picker-card--empty .event-picker-copy {
+  justify-content: center;
+
+  superme-datepicker,
+  superme-timepicker {
+    display: none;
+  }
+}
+
 .event-picker-copy ::ng-deep .datepicker-wrapper,
 .event-picker-copy ::ng-deep .superme-timepicker-wrapper {
   width: 100%;

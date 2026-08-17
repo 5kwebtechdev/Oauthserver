@@ -36,6 +36,12 @@
   &:active {
     transform: scale(0.98);
   }
+
+  &.is-checking {
+    cursor: progress;
+    opacity: 0.72;
+    pointer-events: none;
+  }
 }
 
 .qa-hero-icon {

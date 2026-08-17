@@ -87,6 +87,87 @@ ion-content.tutor-detail-page {
   gap: 22px;
 }
 
+.unlocked-contact-card {
+  padding: 16px;
+  border: 1px solid #c9c2ef;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f5f2ff, #fff8fb);
+  box-shadow: 0 4px 14px rgba(67, 36, 119, .08);
+
+  &__heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    > span {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      flex: 0 0 32px;
+      place-items: center;
+      border-radius: 50%;
+      background: #4daf50;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    h2 {
+      margin: 0;
+      color: #432477;
+      font-size: 17px;
+      font-weight: 750;
+    }
+
+    p {
+      margin: 2px 0 0;
+      color: #625c68;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+  }
+
+  &__details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 13px;
+
+    span {
+      min-width: 0;
+      padding: 9px 10px;
+      border: 1px solid rgba(113, 85, 183, .2);
+      border-radius: 11px;
+      background: #fff;
+      color: #2d2831;
+      font-size: 12px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    b {
+      display: block;
+      margin-bottom: 2px;
+      color: #6b4ab0;
+      font-size: 11px;
+    }
+  }
+
+  > button {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 12px;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #432477, #90214d);
+    box-shadow: 0 3px 0 #2e1953;
+    color: #fff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 800;
+  }
+}
+
 .profile-hero {
   display: grid;
   grid-template-columns: 106px minmax(0, 1fr);
@@ -874,6 +955,10 @@ ion-content.tutor-detail-page {
 
   .unlock-benefits {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .unlocked-contact-card__details {
+    grid-template-columns: 1fr;
   }
 }
 

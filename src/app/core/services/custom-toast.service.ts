@@ -8,6 +8,7 @@ export interface Toast {
   type: ToastType;
   visible: boolean;
   duration?: number;
+  variant?: 'insufficient-coins';
   iconPath?: string;
   iconColor?: string;
 }
@@ -21,10 +22,16 @@ export class CustomToastService {
 
   show(message: string, type: ToastType = 'default', duration = 3000): void {
     this.clearTimer();
-    const toast: Toast = { message, type, visible: true, duration };
+    const variant = type === 'error' && /insufficient\s+coins?/i.test(message)
+      ? 'insufficient-coins'
+      : undefined;
+    // An insufficient-balance message needs a conscious acknowledgement; it
+    // should not disappear while the user is deciding what to do next.
+    const resolvedDuration = variant ? 0 : duration;
+    const toast: Toast = { message, type, visible: true, duration: resolvedDuration, variant };
     this.subject.next(toast);
-    if (duration > 0) {
-      this.hideTimer = setTimeout(() => this.hide(), duration);
+    if (resolvedDuration > 0) {
+      this.hideTimer = setTimeout(() => this.hide(), resolvedDuration);
     }
   }
 

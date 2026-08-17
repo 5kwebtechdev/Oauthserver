@@ -93,15 +93,15 @@
             <article class="event-card">
               <div class="event-card__top">
                 <div class="event-card__image" [class.event-card__image--empty]="!getImage(item)">
-                  <img *ngIf="getImage(item)" [src]="getImage(item)" [alt]="item.name"
+                  <img *ngIf="getImage(item)" [src]="getImage(item)" [alt]="getDisplayName(item)"
                     (error)="onImageError(item)">
                 </div>
 
                 <div class="event-card__details">
                   <div class="event-card__header">
-                    <div class="event-card__identity">
-                      <div class="event-card__name-row">
-                        <h3>{{ item.name }}</h3>
+                      <div class="event-card__identity">
+                        <div class="event-card__name-row">
+                        <h3>{{ getDisplayName(item) }}</h3>
                         <img *ngIf="item.verified" class="event-card__verified"
                           src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified">
                       </div>
@@ -109,6 +109,7 @@
                         <img src="assets/figma/parent-eduhub-inner/location.svg" alt="" aria-hidden="true">
                         <span>{{ getLocation(item) }}</span>
                       </p>
+                      <p *ngIf="getEventMeta(item)" class="event-card__meta">{{ getEventMeta(item) }}</p>
                     </div>
 
                     <div class="event-card__quick-actions">

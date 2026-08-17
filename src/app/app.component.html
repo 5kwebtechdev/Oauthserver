@@ -17,15 +17,31 @@
     <ion-spinner name="crescent"></ion-spinner>
   </div>
 
-  <!-- Global Toast (z-indexed above loader) -->
-  <div class="mb-toast" *ngIf="(toast$ | async) as toast" [ngClass]="{'mb-toast--success': toast.type === 'success', 'mb-toast--error': toast.type === 'error'}" [style.display]="toast.visible ? 'flex' : 'none'" role="status" aria-live="polite" (click)="dismissToast()">
-    <div class="mb-toast__icon-wrapper" *ngIf="toast.iconPath">
-      <svg class="mb-toast__icon" [style.fill]="toast.iconColor || '#2D6830'" viewBox="0 0 8 6" xmlns="http://www.w3.org/2000/svg">
-        <path d="M2.81319 5.70608C2.61793 5.90134 2.30134 5.90134 2.10608 5.70608L0.146523 3.74652C-0.0487396 3.55126 -0.0487401 3.23468 0.146522 3.03942L0.372748 2.81319C0.568011 2.61793 0.884593 2.61793 1.07986 2.81319L2.10608 3.83942C2.30134 4.03468 2.61793 4.03468 2.81319 3.83942L6.50608 0.146523C6.70134 -0.0487396 7.01793 -0.04874 7.21319 0.146522L7.43942 0.372748C7.63468 0.568011 7.63468 0.884593 7.43942 1.07986L2.81319 5.70608Z" fill="currentColor" />
-      </svg>
+  <!-- Global Toast / themed insufficient-coins dialog -->
+  <ng-container *ngIf="(toast$ | async) as toast">
+    <div *ngIf="toast.variant === 'insufficient-coins'; else standardToast" class="coin-balance-backdrop"
+      role="presentation" (click)="dismissToast()">
+      <section class="coin-balance-dialog" role="dialog" aria-modal="true" aria-labelledby="coin-balance-title"
+        (click)="$event.stopPropagation()">
+        <button type="button" class="coin-balance-dialog__close" aria-label="Close" (click)="dismissToast()">×</button>
+        <div class="coin-balance-dialog__icon" aria-hidden="true">🪙</div>
+        <h2 id="coin-balance-title">Not enough coins yet</h2>
+        <p>You need more coins before you can unlock these details. Complete activities and lessons to earn more.</p>
+        <button type="button" class="coin-balance-dialog__cta" (click)="dismissToast()">Got it</button>
+      </section>
     </div>
-    <div class="mb-toast__text">{{ toast.message }}</div>
-  </div>
+
+    <ng-template #standardToast>
+      <div class="mb-toast" [ngClass]="{'mb-toast--success': toast.type === 'success', 'mb-toast--error': toast.type === 'error'}" [style.display]="toast.visible ? 'flex' : 'none'" role="status" aria-live="polite" (click)="dismissToast()">
+        <div class="mb-toast__icon-wrapper" *ngIf="toast.iconPath">
+          <svg class="mb-toast__icon" [style.fill]="toast.iconColor || '#2D6830'" viewBox="0 0 8 6" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.81319 5.70608C2.61793 5.90134 2.30134 5.90134 2.10608 5.70608L0.146523 3.74652C-0.0487396 3.55126 -0.0487401 3.23468 0.146522 3.03942L0.372748 2.81319C0.568011 2.61793 0.884593 2.61793 1.07986 2.81319L2.10608 3.83942C2.30134 4.03468 2.61793 4.03468 2.81319 3.83942L6.50608 0.146523C6.70134 -0.0487396 7.01793 -0.04874 7.21319 0.146522L7.43942 0.372748C7.63468 0.568011 7.63468 0.884593 7.43942 1.07986L2.81319 5.70608Z" fill="currentColor" />
+          </svg>
+        </div>
+        <div class="mb-toast__text">{{ toast.message }}</div>
+      </div>
+    </ng-template>
+  </ng-container>
 
   <!-- Global Badge Popup - shown from any screen when user earns a badge -->
   <div *ngIf="showBadgePopup && currentBadge" class="d-flex flex-column justify-content-center gap-4 congrats-popup global-badge-popup">
