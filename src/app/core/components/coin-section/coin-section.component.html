@@ -27,7 +27,9 @@
             <div *ngIf="!isParent" class="panda-message d-flex space-between w-100">
                 <app-speech-bubble [message]="message" type="talking" arrowSide="right">
                 </app-speech-bubble>
-                <superme-pet [mood]="coinPetMood"></superme-pet>
+                <img *ngIf="isCoinPanda" class="coin-panda-image"
+                    src="assets/figma/child-learning/header-pet.png" alt="Panda buddy">
+                <superme-pet *ngIf="!isCoinPanda" [mood]="coinPetMood"></superme-pet>
             </div>
 
             <superme-button *ngIf="!isParent" (click)="onRedeem()" text="Redeem" type="gold" size="large"></superme-button>

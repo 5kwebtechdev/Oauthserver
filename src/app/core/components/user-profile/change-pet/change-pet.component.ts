@@ -1,8 +1,9 @@
-import { Component, AfterViewInit, ViewChild, ElementRef, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, Input, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { PetAgeService } from '../../../services/pet-age.service';
 
 @Component({
   selector: 'app-change-pet',
@@ -15,11 +16,15 @@ import { SupermeButtonComponent } from '../../superme-button/superme-button.comp
 export class ChangePetComponent implements AfterViewInit, OnInit, OnDestroy {
   @ViewChild('swiperEl', { static: false }) swiperEl?: ElementRef;
 
+  /** The user's currently saved pet type (e.g. "panda"). Defaults to the live PetAgeService value if not passed in. */
+  @Input() currentPetType: string | null = null;
+
   pets: any[] = [];
   currentIndex = 0;
+  selectedIndex = 0;
   private resizeObserver?: ResizeObserver;
 
-  constructor(private modalCtrl: ModalController) { }
+  constructor(private modalCtrl: ModalController, private petAgeService: PetAgeService) { }
 
   ngOnInit() {
     this.pets = [
@@ -52,6 +57,15 @@ export class ChangePetComponent implements AfterViewInit, OnInit, OnDestroy {
         text: ['Master of staying cool under pressure', 'Loves colorful, quirky adventures']
       }
     ];
+
+    const activePetType = (this.currentPetType || this.petAgeService.getCurrentPetType() || '').toLowerCase();
+    const matchedIndex = this.pets.findIndex(pet => pet.name.toLowerCase() === activePetType);
+    this.selectedIndex = matchedIndex >= 0 ? matchedIndex : 0;
+    this.currentIndex = this.selectedIndex;
+  }
+
+  isCurrentPet(index: number): boolean {
+    return index === this.selectedIndex;
   }
 
   onSlideChange() {

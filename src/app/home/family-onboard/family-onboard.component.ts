@@ -954,7 +954,15 @@ Thank you!`;
 
         if (this.pendingOAuthFamilyCompletion) {
             this.pendingOAuthFamilyCompletion = false;
-            this.clearOAuthSignupSession();
+            // Do NOT clear the OAuth provider tokens here. The parent still has
+            // to go through the "Unlock My Journey" step (signup.component.ts),
+            // which — for a resumed session with no provider proof — falls back
+            // to a different, Google-profile-specific completion endpoint that
+            // 404s for Apple accounts ("Resource not found"). Keeping the tokens
+            // around until Unlock actually succeeds keeps that step on the same
+            // working oauth2-login endpoint already used here for family
+            // creation. signup.component.ts clears the session itself once
+            // Unlock succeeds (see clearGoogleSignupSession()).
             if (this.beginManagedChildSignup()) {
                 return;
             }

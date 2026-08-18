@@ -11,6 +11,7 @@ import { CoinService, CoinHistoryItem } from '../../services/coin.service';
 import { AuthService } from '../../services/auth.service';
 import { RefreshService } from '../../services/refresh.service';
 import { PetMessagesService, PetMood } from '../../services/pet-messages.service';
+import { PetAgeService } from '../../services/pet-age.service';
 
 interface CoinItem {
     id: number;
@@ -59,12 +60,18 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
         return this.getCoinPetMessage().mood;
     }
 
+    /** Panda uses the same Figma artwork shown on Home/EduHub instead of the generic 3D render. */
+    get isCoinPanda(): boolean {
+        return this.petAgeService.getCurrentPetType() === 'panda';
+    }
+
     constructor(
         private router: Router,
         private coinService: CoinService,
         private authService: AuthService,
         private refreshService: RefreshService,
-        private petMessagesService: PetMessagesService
+        private petMessagesService: PetMessagesService,
+        private petAgeService: PetAgeService
     ) {}
 
     ngOnInit() {

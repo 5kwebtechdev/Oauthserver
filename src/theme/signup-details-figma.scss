@@ -830,53 +830,6 @@
   background: #fff !important;
 }
 
-/* The referral label uses a visible field label (unlike the registration
-   email's screen-reader-only label). Keep it outside the input border and
-   constrain the whole control to the profile column on every role. */
-.signup-container.profile-layout .profile-step.profile-step--figma .profile .details-referral-section,
-.signup-container.profile-layout .profile-step.profile-step--figma > .details-referral-section {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
-
-.signup-container.profile-layout .profile-step.profile-step--figma .details-referral-section .input-group {
-  display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-}
-
-.signup-container.profile-layout .profile-step.profile-step--figma .details-referral-section .referral-field-label {
-  display: block !important;
-  width: 100% !important;
-  min-height: 18px;
-  margin: 0 0 6px !important;
-  padding: 0 !important;
-  overflow: visible !important;
-  clip: auto !important;
-  border: 0 !important;
-  color: #282527 !important;
-  font-family: 'Nunito', sans-serif !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  line-height: 18px !important;
-  white-space: normal !important;
-  box-sizing: border-box !important;
-}
-
-.signup-container.profile-layout .profile-step.profile-step--figma .details-referral-section .input-group input {
-  display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-}
-
 .signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group input.error {
   border-color: var(--error_color) !important;
 }

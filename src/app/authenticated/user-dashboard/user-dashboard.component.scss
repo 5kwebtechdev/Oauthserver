@@ -1297,6 +1297,20 @@ ion-content {
     object-fit: contain;
     object-position: center bottom;
   }
+
+  // The source PNG has transparent padding below the grass/rock base (same
+  // asset used on the EduHub header, which offsets it the same way) — shift
+  // the element down so the visible ground lines up with the hero's bottom
+  // edge instead of floating above it.
+  .digital-pet__panda-image {
+    display: block;
+    position: relative;
+    bottom: -10px;
+    width: clamp(120px, 34vw, 132px);
+    height: clamp(132px, 37vw, 145px);
+    object-fit: contain;
+    object-position: center bottom;
+  }
 }
 
 .header-stats-row {

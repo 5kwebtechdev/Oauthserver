@@ -161,7 +161,9 @@
           </div>
 
           <div class="digital-pet" [class.digital-pet--panda]="isHomePanda" aria-hidden="false">
-            <superme-pet [mood]="petMood" [size]="132"></superme-pet>
+            <img *ngIf="isHomePanda" class="digital-pet__panda-image"
+              src="assets/figma/child-learning/header-pet.png" alt="Panda buddy">
+            <superme-pet *ngIf="!isHomePanda" [mood]="petMood" [size]="132"></superme-pet>
           </div>
 
           <div class="header-stats-row" aria-label="Your stats">

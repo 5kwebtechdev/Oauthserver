@@ -28,10 +28,47 @@ swiper-slide.swiper-slide-active .pet-card p {
   padding-bottom: 16px;
   border-radius: 20px;
   background: #fff;
+  border: 2px solid transparent;
   transition: 0.2s;
   transform: scale(0.95);
   position: relative;
   overflow: hidden;
+}
+
+// The pet that's actually saved on the account — independent of which slide
+// is currently centered in the carousel.
+.pet-card--current {
+  border-color: #4CAF50;
+}
+
+.pet-card__current-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #4CAF50;
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.4;
+
+  ion-icon {
+    font-size: 14px;
+  }
+}
+
+swiper-slide.swiper-slide-active .pet-card--current {
+  border-color: #fff;
+}
+
+swiper-slide.swiper-slide-active .pet-card__current-badge {
+  background: #fff;
+  color: #2e7d32;
 }
 
 .pet-card img {

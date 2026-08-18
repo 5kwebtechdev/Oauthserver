@@ -3,9 +3,14 @@
 
   <div class="change-pet-container">
     <swiper-container slides-per-view="1.2" centered-slides="true" space-between="10" grab-cursor="true"
+      [attr.initial-slide]="selectedIndex"
       (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl [style]="{padding: '0 0 24px 0', height: '67vh'}">
       <swiper-slide *ngFor="let pet of pets; let i = index">
-        <div class="pet-card d-flex flex-column">
+        <div class="pet-card d-flex flex-column" [class.pet-card--current]="isCurrentPet(i)">
+          <span class="pet-card__current-badge" *ngIf="isCurrentPet(i)">
+            <ion-icon name="checkmark-circle"></ion-icon>
+            Currently Selected
+          </span>
           <h4>{{pet.displayName}}</h4>
           <p>{{pet.text[0]}}</p>
           <p>{{pet.text[1]}}</p>

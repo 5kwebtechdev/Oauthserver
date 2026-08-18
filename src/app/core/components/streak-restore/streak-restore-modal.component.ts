@@ -81,7 +81,7 @@ export class StreakRestoreModalComponent implements OnInit {
       error: (err) => {
         this.isRestoring = false;
         console.error('[StreakRestore][DEBUG] restore failed. status=', err?.status, 'error=', err?.error, 'full=', err);
-        const msg: string = err?.error?.message || '';
+        const msg: string = err?.error?.message || (typeof err?.error === 'string' ? err.error : '') || '';
         if (msg.toLowerCase().includes('not enough coins')) {
           this.errorMessage = "You don't have enough coins";
         } else if (msg.toLowerCase().includes('window expired') || msg.toLowerCase().includes('restore window')) {
@@ -91,8 +91,14 @@ export class StreakRestoreModalComponent implements OnInit {
           this.dismiss(null);
         } else if (msg.toLowerCase().includes('not found') || msg.toLowerCase().includes('already restored')) {
           this.errorMessage = 'This item could not be restored, please try another';
+        } else if (err?.status === 401 || err?.status === 403) {
+          this.errorMessage = 'Your session expired. Please log out and back in, then try again.';
+        } else if (err?.status === 0) {
+          this.errorMessage = 'No connection. Check your internet and try again.';
         } else {
-          this.errorMessage = 'Something went wrong. Please try again.';
+          // Surface the status/raw message so this is diagnosable without device console access.
+          const detail = msg || (err?.status ? `status ${err.status}` : 'unknown error');
+          this.errorMessage = `Something went wrong (${detail}). Please try again.`;
         }
       }
     });
