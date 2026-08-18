@@ -384,7 +384,8 @@ import { AuthService } from 'src/app/core/services/auth.service';
 
       ::ng-deep learning-card .desc,
       ::ng-deep learning-card superme-button,
-      ::ng-deep learning-card .tags-row {
+      ::ng-deep learning-card .tags-row,
+      ::ng-deep learning-card superme-badge {
         display: none;
       }
 
@@ -433,28 +434,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
       }
 
       ::ng-deep learning-card .difficulty {
-        top: 8px;
-        right: 8px;
-        min-width: 32px;
-        min-height: 18px;
-        padding: 4px 8px;
-        border: 1px solid #BB2124;
-        border-radius: 16px;
-        background: #F8E9E9;
-        box-sizing: border-box;
-      }
-
-      ::ng-deep learning-card .difficulty img {
         display: none;
-      }
-
-      ::ng-deep learning-card .difficulty::after {
-        content: attr(data-label);
-        color: #BB2124;
-        font-family: var(--font-sans);
-        font-size: 7px;
-        font-weight: 600;
-        line-height: 1.4;
       }
 
       .pager {
@@ -552,16 +532,6 @@ import { AuthService } from 'src/app/core/services/auth.service';
         ::ng-deep learning-card .trophy img {
           width: 20px !important;
           height: 20px !important;
-        }
-
-        ::ng-deep learning-card .difficulty {
-          min-width: 40px;
-          min-height: 22px;
-          padding: 5px 10px;
-        }
-
-        ::ng-deep learning-card .difficulty::after {
-          font-size: 9px;
         }
 
         .pager {

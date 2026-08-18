@@ -12,12 +12,10 @@
 
 @keyframes glanceCardFadeIn {
   from {
-    opacity: 0;
     transform: translateY(6px);
   }
 
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
@@ -48,6 +46,11 @@
   position: relative;
   overflow: hidden;
   border-radius: 16px;
+  // Defensive white backing: the card can shift a hair off-pixel while it
+  // animates/swipes, and without this any sub-pixel gap between the card's
+  // edge and this container's clip boundary exposes the red delete panel
+  // behind it as a thin line along the top/bottom edge.
+  background: #FFF;
 }
 
 .swipe-delete-action {
@@ -281,6 +284,8 @@ p {
 }
 
 .habit-wrapper {
+  position: relative;
+  z-index: 1;
   display: flex;
   height: auto;
   padding: 14px 16px 14px 20px;

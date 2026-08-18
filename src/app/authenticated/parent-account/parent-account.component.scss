@@ -184,12 +184,12 @@ button {
 .switcher-child {
   position: relative;
   display: flex;
-  flex: 0 0 104px;
+  flex: 0 0 auto;
   min-width: 104px;
   align-items: center;
-  width: 104px;
+  width: auto;
   height: 76px;
-  padding: 18px 8px;
+  padding: 18px 12px;
   overflow: hidden;
   border: 0;
   background: transparent;
@@ -203,18 +203,18 @@ button {
   }
 
   &--selected-single {
-    width: 212px;
-    flex: 0 1 212px;
+    width: auto;
+    flex: 0 1 auto;
     min-width: 160px;
-    padding: 10px 8px;
+    padding: 10px 16px;
     border-radius: 16px 0 0 16px;
   }
 
   &--selected-multiple {
-    width: 104px;
-    flex: 0 0 104px;
+    width: auto;
+    flex: 0 0 auto;
     min-width: 104px;
-    padding: 10px 8px;
+    padding: 10px 14px;
   }
 
   &__shape {
@@ -272,7 +272,8 @@ button {
     min-width: 0;
 
     > strong {
-      max-width: 76px;
+      display: block;
+      width: 100%;
       overflow: hidden;
       color: #282527;
       font-size: 13px;
@@ -316,25 +317,6 @@ button {
     color: #ffffff;
   }
 
-  &--selected-single &__details > strong {
-    max-width: 148px;
-  }
-
-  &--selected-multiple &__details > strong {
-    max-width: 48px;
-  }
-
-  &--selected-single &__details > strong,
-  &--selected-multiple &__details > strong {
-    display: -webkit-box;
-    overflow: hidden;
-    line-height: 1.15;
-    overflow-wrap: anywhere;
-    text-overflow: clip;
-    white-space: normal;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
 }
 
 @keyframes switcher-shape-in {
@@ -420,6 +402,10 @@ button {
   &--add {
     flex-basis: 108px;
     min-width: 108px;
+  }
+
+  &--invite {
+    margin-left: auto;
   }
 }
 
@@ -1951,21 +1937,21 @@ button {
   }
 
   .switcher-child {
-    width: 178px;
-    flex: 0 1 178px;
+    width: auto;
+    flex: 0 1 auto;
     min-width: 130px;
     height: 100px;
-    padding: 20px 12px;
+    padding: 20px 16px;
 
     &--selected-single {
-      width: 280px;
-      flex: 0 1 280px;
+      width: auto;
+      flex: 0 1 auto;
       min-width: 220px;
     }
 
     &--selected-multiple {
-      width: 256px;
-      flex: 0 1 256px;
+      width: auto;
+      flex: 0 1 auto;
       min-width: 200px;
     }
 
@@ -1993,17 +1979,8 @@ button {
       gap: 6px;
 
       > strong {
-        max-width: 100px;
         font-size: 17px;
       }
-    }
-
-    &--selected-single &__details > strong {
-      max-width: 190px;
-    }
-
-    &--selected-multiple &__details > strong {
-      max-width: 170px;
     }
 
     &__stats {

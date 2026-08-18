@@ -88,6 +88,21 @@ $svg-icons: (
   --sar: env(safe-area-inset-right,  0px);
 }
 
+// Android's WebView is already positioned below the status bar natively
+// (StatusBar.setOverlaysWebView is set to false in app.component.ts), so the
+// safe-area insets should be 0 there. Some Android WebView versions/devices
+// still report a non-zero env(safe-area-inset-*) anyway, which stacks on top
+// of the native offset and shows up as extra blank space above the header on
+// those specific devices. Force the insets to 0 on Android so CSS never
+// double-counts space the OS has already reserved; iOS keeps the real values
+// since its WebView draws full-screen behind the status bar by design.
+.plt-android:root {
+  --sat: 0px;
+  --sab: 0px;
+  --sal: 0px;
+  --sar: 0px;
+}
+
 html,
 body {
   font-family: var(--font-sans);

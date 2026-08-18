@@ -246,7 +246,7 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
     return base + pathPart + levelSuffix;
   }
 
-  private loadSubCategoryLevel(levelIndex: number, path: string[]): void {
+  loadSubCategoryLevel(levelIndex: number, path: string[]): void {
     const requestId = ++this.subCategoryRequestId;
     this.subCategoriesLoading = true;
     this.subCategoriesError = false;

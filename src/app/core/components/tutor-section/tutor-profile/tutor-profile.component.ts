@@ -413,10 +413,6 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   requestUnlock(): void {
-    if (this.isChildUser()) {
-      this.toastService.error('Ask your parent to unlock the tutor contact details.');
-      return;
-    }
     if (this.isContactUnlocked) {
       this.openContactSheet();
       return;

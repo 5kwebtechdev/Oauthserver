@@ -69,6 +69,24 @@
                     </button>
                 </aside>
 
+                <!-- Rail is briefly empty while a refresh re-fetches subcategories —
+                     show a matching skeleton instead of letting the sidebar vanish. -->
+                <aside *ngIf="!railSubCategoryLevel && subCategoriesLoading" class="subcategory-rail"
+                    aria-label="Loading product types" aria-hidden="true">
+                    <div class="rail-category rail-category--skel" *ngFor="let s of [1,2,3,4,5]">
+                        <span class="rail-category__visual rail-category__visual--skel"></span>
+                        <span class="skel-line--rail"></span>
+                    </div>
+                </aside>
+
+                <!-- Genuine failure with nothing cached to show — say so instead of
+                     silently rendering an empty sidebar. -->
+                <aside *ngIf="!railSubCategoryLevel && !subCategoriesLoading && subCategoriesError"
+                    class="subcategory-rail subcategory-rail--error" aria-label="Product types unavailable">
+                    <p>Couldn't load categories</p>
+                    <button type="button" class="rail-retry" (click)="loadSubCategoryLevel(0, [])">Retry</button>
+                </aside>
+
                 <section class="product-pane" aria-label="Products">
                     <div class="product-filter-pills">
                         <button type="button" class="product-filter-pill" (click)="openFilters('brand')">
@@ -136,20 +154,24 @@
                                 </ng-container>
 
                                 <ng-template #emptyState>
-                                    <empty-state [imageSrc]="'assets/School-assets/empty-product-list.png'"
-                                        [imageAlt]="'No products'" [leadText]="'Nothing Here... Yet!'"
-                                        [buttonText]="'View all Products'" [buttonType]="'magenta'"
-                                        (buttonClick)="resetSubCategories()">
-                                    </empty-state>
+                                    <div class="product-pane-empty">
+                                        <empty-state [imageSrc]="'assets/School-assets/empty-product-list.png'"
+                                            [imageAlt]="'No products'" [leadText]="'Nothing Here... Yet!'"
+                                            [buttonText]="'View all Products'" [buttonType]="'magenta'"
+                                            (buttonClicked)="resetSubCategories()">
+                                        </empty-state>
+                                    </div>
                                 </ng-template>
                             </ng-container>
 
                             <ng-template #productsErrorState>
-                                <empty-state [imageSrc]="'assets/School-assets/empty-product-list.png'"
-                                    [imageAlt]="'Unable to load products'" [leadText]="'Unable to load products'"
-                                    [buttonText]="'Retry'" [buttonType]="'magenta'"
-                                    (buttonClick)="retryProducts()">
-                                </empty-state>
+                                <div class="product-pane-empty">
+                                    <empty-state [imageSrc]="'assets/School-assets/empty-product-list.png'"
+                                        [imageAlt]="'Unable to load products'" [leadText]="'Unable to load products'"
+                                        [buttonText]="'Retry'" [buttonType]="'magenta'"
+                                        (buttonClicked)="retryProducts()">
+                                    </empty-state>
+                                </div>
                             </ng-template>
                         </ng-container>
                     </div>

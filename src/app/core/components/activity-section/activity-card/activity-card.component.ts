@@ -2300,10 +2300,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   /** "Today at a Glance" header subtitle, e.g. "5 Habits • 3 Tasks • 1 Time Table" */
-  /** True for the independent Child and Self experiences. */
+  /** "Planner" label/icon is used for every role now, matching the Child/Self experience. */
   get usesPlannerExperience(): boolean {
-    const relationship = String(this.authService.getUserRelationship?.() || '').toUpperCase();
-    return relationship === 'CHILD' || relationship === 'SELF';
+    return true;
   }
 
   get plannerTabLabel(): string {

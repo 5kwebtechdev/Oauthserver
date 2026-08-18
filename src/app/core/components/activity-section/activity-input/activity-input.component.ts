@@ -208,9 +208,10 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   selectedPlannerColor = this.plannerColors[0];
 
   get isChildPlannerFlow(): boolean {
-    // The compact Habit / Task / Planner experience is for independent users.
-    // Keep parent-created activities on the full assignment form.
-    return (this.isChild || this.isSelf) && !this.isParentCreated;
+    // The compact Habit / Task / Planner experience is now shared by every role.
+    // Editing an item originally created by someone other than the person it's
+    // assigned to (e.g. a parent-assigned item) still uses the full assignment form.
+    return (this.isChild || this.isSelf || this.isParent) && !this.isParentCreated;
   }
 
   get visibleActivityTabs(): ReadonlyArray<ActivityTabOption> {

@@ -62,8 +62,8 @@
   flex-shrink: 0;
 
   &.completed {
-    background: radial-gradient(circle at 50% 45%, #F6AC72 0%, #EB7D44 50%, #E6652D 75%, #E04D16 100%);
-    box-shadow: 2px 4px 8px rgba(224, 77, 22, 0.4);
+    background: #FFFFFF;
+    border: 1px solid #D9D6D8;
   }
 
   &.missed {

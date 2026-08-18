@@ -17,6 +17,7 @@ import { AuthService, FamilyMember, FamilyDetailsResponse } from '../../../../pa
 import { ParentImageService } from '../../services/parent-image.service';
 import { ChildSelfImageService } from '../../services/child-self-image.service';
 import { SkeletonImageComponent } from '../skeleton-image/skeleton-image.component';
+import { PetAgeService } from '../../services/pet-age.service';
 
 @Component({
   selector: 'user-profile',
@@ -60,7 +61,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
     private userService: UserService,
     private moodService: MoodService,
     private childSelfImageService: ChildSelfImageService,
-    public parentImageService: ParentImageService
+    public parentImageService: ParentImageService,
+    private petAgeService: PetAgeService
   ) {
     // Subscribe to user profile changes
     this.userService.getUserProfile$().subscribe(profile => {
@@ -305,14 +307,9 @@ export class UserProfileComponent implements OnInit, OnChanges {
   }
 
   async onChangePet() {
-    const slides = [
-      { image: 'assets/app-assets/pet1.png', title: 'Pet 1', subtitle: ['Friendly', 'Playful'], color: '#fff', next_color: '#512100', background: 'linear-gradient(to top right,#ffb974,#ffe3c8)' },
-      { image: 'assets/app-assets/pet2.png', title: 'Pet 2', subtitle: ['Calm', 'Loyal'], color: '#fff', next_color: '#512100', background: 'linear-gradient(to top right,#a1c4fd,#c2e9fb)' }
-    ];
-
     const modal = await this.modalCtrl.create({
       component: ChangePetComponent,
-      componentProps: { slides }
+      componentProps: { currentPetType: this.petAgeService.getCurrentPetType() }
     });
     await modal.present();
     const { data } = await modal.onWillDismiss();
@@ -338,6 +335,12 @@ export class UserProfileComponent implements OnInit, OnChanges {
             };
           }
           this.userService.updateUserProfile({ pet: petName });
+          // Push the new pet into the shared, live pet state so every
+          // `superme-pet` instance across the app (home, EduHub, coins, etc.)
+          // updates immediately — without this, only the next login/profile
+          // refresh would pick up the change since PetAgeService is a
+          // singleton seeded once from localStorage at app start.
+          this.petAgeService.syncFromUserPet(petName);
         },
         error: error => {
           console.error('[UserProfile] Failed to update selected pet:', error);

@@ -292,6 +292,14 @@ export class LearningService {
         const url = `${this.apiUrl}/challenges/categories/summary?challengeType=${challengeType}`;
         const type = challengeType === 'QUIZ' ? 'quiz' : 'puzzle';
         let params = new HttpParams();
+        const age = this.getUserAge();
+        if (age != null) {
+            params = params.set('age', String(age));
+        }
+        const userId = forUserId != null && String(forUserId).trim() ? forUserId : this.authService.getUserId();
+        if (userId != null && String(userId).trim()) {
+            params = params.set('userId', String(userId));
+        }
         if (forUserId != null && String(forUserId).trim()) {
             params = params.set('forUserId', String(forUserId));
         }
@@ -326,6 +334,14 @@ export class LearningService {
         forUserId?: string | number | null
     ): Observable<LearningCategorySummary[]> {
         let params = new HttpParams();
+        const age = this.getUserAge();
+        if (age != null) {
+            params = params.set('age', String(age));
+        }
+        const userId = forUserId != null && String(forUserId).trim() ? forUserId : this.authService.getUserId();
+        if (userId != null && String(userId).trim()) {
+            params = params.set('userId', String(userId));
+        }
         if (forUserId != null && String(forUserId).trim()) {
             params = params.set('forUserId', String(forUserId));
         }

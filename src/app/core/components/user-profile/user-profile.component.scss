@@ -110,11 +110,12 @@ p, h1, h2 { margin: 0; }
   width: 100%;
 }
 
-// Override coins-stats for warm hero background
-.user-stats ::ng-deep .superme-coins-stats,
-.user-stats ::ng-deep [class*='coins-stats'] {
-  background: rgba(255, 255, 255, 0.15) !important;
+// Override coins-stats for warm hero background — give the row its own
+// readable surface instead of sitting directly on the orange/red gradient.
+.user-stats ::ng-deep .stats-row {
+  background: rgba(255, 255, 255, 0.94) !important;
   border-radius: 16px !important;
+  padding: 12px 8px !important;
   backdrop-filter: blur(4px) !important;
 }
 

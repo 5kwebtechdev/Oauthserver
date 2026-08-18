@@ -1,3 +1,10 @@
+.coin-panda-image {
+    width: 96px;
+    height: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 // ── Keyframe animations ──────────────────────────────────────────────────────
 
 @keyframes coinIconPop {

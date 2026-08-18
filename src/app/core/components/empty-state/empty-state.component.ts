@@ -27,6 +27,11 @@ import { buttonStyles } from '../superme-button/button.types';
     </div>
   `,
   styles: [`
+    :host {
+      display: block;
+      width: 100%;
+    }
+
     .empty-state__body {
       display: flex;
       flex-direction: column;
