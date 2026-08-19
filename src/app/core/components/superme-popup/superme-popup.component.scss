@@ -8,6 +8,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
   background: linear-gradient(180deg, rgba(40, 37, 39, 0.30) 0%, rgba(40, 37, 39, 0.30) 100%);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
@@ -19,8 +21,14 @@
   border-radius: 16px;
   box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.12);
   overflow-y: auto;
+  box-sizing: border-box;
 
-  display: inline-flex;
+  width: 100%;
+  max-width: min(360px, 100%);
+  max-height: calc(100vh - 32px);
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -244,11 +252,9 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 420px) {
   .superme-popup-container {
-    padding: 16px 20px;
-    width: 90%;
-
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
   }
 
   .superme-popup-content {
@@ -256,10 +262,11 @@
   }
 
   .superme-popup-dual-cta {
-    gap: 24px;
+    gap: 16px;
 
     .superme-button {
-      // width: 100%;
+      min-width: 0;
+      flex: 1 1 0;
     }
   }
 

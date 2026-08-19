@@ -1,4 +1,4 @@
-<ion-content #content [scrollY]="step !== 0.1 && step !== 0.2 && (step !== 5 || isParentWelcomeScreen)"
+<ion-content #content [scrollY]="step !== 5 || isParentWelcomeScreen"
   [class.auth-static-content]="step === 0.1 || step === 0.2"
   [class.password-scroll-content]="step === 0.3"
   [class.password-keyboard-open]="step === 0.3 && isPasswordKeyboardOpen"

@@ -1,13 +1,11 @@
 .superme-pet {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   cursor: pointer;
 }
 
 .pet-image {
-  width: 104px!important;
-    height: 117px!important;
   object-fit: contain;
   animation: wave-hand 2s ease-in-out;
   transform-origin: bottom center;

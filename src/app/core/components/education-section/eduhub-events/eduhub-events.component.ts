@@ -6,8 +6,10 @@ import { InfiniteScrollCustomEvent, IonicModule } from '@ionic/angular';
 
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
+import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
+import { PetAgeService } from '../../../services/pet-age.service';
 import {
   EduHubEventEntityType,
   EduHubEventItem,
@@ -24,7 +26,7 @@ interface EventListingRouteData {
 @Component({
   selector: 'app-eduhub-events',
   standalone: true,
-  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent],
+  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent],
   templateUrl: './eduhub-events.component.html',
   styleUrls: ['./eduhub-events.component.scss']
 })
@@ -56,8 +58,14 @@ export class EduHubEventsComponent implements OnInit {
     private readonly location: Location,
     private readonly eventsService: EduHubEventsService,
     private readonly authService: AuthService,
-    private readonly core: CoreService
+    private readonly core: CoreService,
+    private readonly petAgeService: PetAgeService
   ) {}
+
+  /** Panda uses the same Figma artwork shown on Home/Coins/Learning instead of this page's decorative mascot. */
+  get isPandaPet(): boolean {
+    return this.petAgeService.getCurrentPetType() === 'panda';
+  }
 
   ngOnInit(): void {
     const data = this.route.snapshot.data as EventListingRouteData;

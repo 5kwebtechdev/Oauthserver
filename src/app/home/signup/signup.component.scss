@@ -17,10 +17,15 @@ ion-content {
 }
 
 ion-content.auth-static-content {
-  --overflow: hidden;
+  --overflow: auto;
   --padding-top: 0px;
   height: 100%;
-  overscroll-behavior: none;
+  overscroll-behavior-y: contain;
+}
+
+ion-content.auth-static-content::part(scroll) {
+  scroll-padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+  -webkit-overflow-scrolling: touch;
 }
 
 ion-content.password-scroll-content {
@@ -3346,11 +3351,9 @@ ion-content.details-content.referral-keyboard-open {
 
 // Registration OTP redesign
 .signup-container.otp-layout {
-  height: 100%;
-  min-height: 0;
+  min-height: 100%;
   gap: 0;
   padding: 0;
-  overflow: hidden;
   background: #ffffff;
   color: #282527;
 }
@@ -3359,9 +3362,7 @@ ion-content.details-content.referral-keyboard-open {
   position: relative;
   display: block;
   width: 100%;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
+  min-height: 100%;
   background: #ffffff;
   color: #282527;
   font-family: var(--font-sans, 'Nunito', sans-serif);
@@ -3729,10 +3730,8 @@ ion-content.details-content.referral-keyboard-open {
 
 // Email-only registration entry (Step 1 of 6)
 .signup-container.signup-entry-layout {
-  height: 100%;
-  min-height: 0;
+  min-height: 100%;
   padding: 0;
-  overflow: hidden;
   background: #ffffff;
   color: #282527;
   font-family: 'Nunito', sans-serif;
@@ -3741,9 +3740,7 @@ ion-content.details-content.referral-keyboard-open {
     position: relative;
     display: block;
     width: 100%;
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
+    min-height: 100%;
     padding: 0;
     background: #ffffff;
   }
@@ -3777,8 +3774,7 @@ ion-content.details-content.referral-keyboard-open {
 
   .signup-entry-shell {
     width: min(100%, 560px);
-    height: 100%;
-    min-height: 0;
+    min-height: 100%;
     margin: 0 auto;
     padding: calc(env(safe-area-inset-top, 0px) + clamp(84px, 10dvh, 104px)) 22px
       calc(env(safe-area-inset-bottom, 0px) + 42px);

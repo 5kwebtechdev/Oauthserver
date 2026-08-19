@@ -199,6 +199,11 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     private userService: UserService
   ) { }
 
+  /** Panda uses the same Figma artwork shown on Home/Coins instead of the generic 3D render. */
+  get isPandaPet(): boolean {
+    return this.petAgeService.getCurrentPetType() === 'panda';
+  }
+
   openCoinPage(): void {
     void this.router.navigateByUrl('/authed/coin', {
       state: { coins: this.childCoins }

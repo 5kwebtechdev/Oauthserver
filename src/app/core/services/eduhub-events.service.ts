@@ -33,6 +33,12 @@ export interface EduHubEventItem {
   exactLocation: string | null;
   unlocked: boolean;
   unlockCost: number | null;
+  /** true if this viewer had already unlocked this listing before this response's call. */
+  alreadySpentCoinsForThisProfile?: boolean;
+  /** Coins actually deducted by the unlock-contact call that produced this response: 0 on a repeat unlock, unlockCost on the first. */
+  coinsSpent?: number | null;
+  /** Viewer's coin balance after the unlock-contact call; null when nothing was spent. */
+  remainingBalance?: number | null;
   startDt?: string | null;
   endDt?: string | null;
   venue?: string | null;

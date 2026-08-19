@@ -29,8 +29,8 @@
           <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="" aria-hidden="true">
           <p>Find trusted <strong>{{ pageTitle.toLowerCase() }}</strong> around you.</p>
         </div>
-        <!-- Decorative EduHub mascot from the design, independent of the user's selected pet. -->
-        <superme-pet class="directory-pet" pet="panda" [age]="3" mood="playful" [size]="180" [animated]="false"></superme-pet>
+        <img *ngIf="isPandaPet" class="directory-pet" src="assets/figma/child-learning/header-pet.png" alt="" aria-hidden="true">
+        <superme-pet *ngIf="!isPandaPet" class="directory-pet" mood="happy" [size]="120"></superme-pet>
       </div>
     </header>
 

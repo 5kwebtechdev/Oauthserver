@@ -1020,6 +1020,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.authService.registerRequestOtp(identifier, true).subscribe({
       next: (response) => {
         this.otpRequestInProgress = false;
+        this.loadingService.forceHide();
         if (response?.success === false) {
           this.errorMessage = response.message || 'Failed to send OTP. Please try again.';
           return;
@@ -1074,6 +1075,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       },
       error: (err) => {
         this.otpRequestInProgress = false;
+        this.loadingService.forceHide();
         this.errorMessage = this.getApiErrorMessage(
           err,
           'Failed to send OTP. Please try again.'
@@ -2361,6 +2363,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     ).subscribe({
       next: (response) => {
         this.otpVerifyInProgress = false;
+        // Defensive: the shared LoadingService overlay is driven by a global
+        // request counter, so an unrelated slow/parallel call elsewhere can
+        // leave it spinning after this response has already arrived.
+        this.loadingService.forceHide();
         if (response?.success === false) {
           this.errorMessage = response.message || 'OTP verification failed. Please try again.';
           return;
@@ -2383,6 +2389,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       },
       error: (err) => {
         this.otpVerifyInProgress = false;
+        this.loadingService.forceHide();
         console.error('OTP verification failed:', err);
         if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
           this.errorMessage = 'Network error. Please check your internet connection and try again.';
@@ -2425,6 +2432,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.authService.resendRegisterOtp(identifier, isEmail, countryCode).subscribe({
       next: () => {
         this.otpResendInProgress = false;
+        this.loadingService.forceHide();
         this.errorMessage = null;
         this.otpDigits = ['', '', '', ''];
         for (let i = 0; i < 4; i++) {
@@ -2440,6 +2448,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       },
       error: (err) => {
         this.otpResendInProgress = false;
+        this.loadingService.forceHide();
         let body = err?.error;
         if (typeof body === 'string') { try { body = JSON.parse(body); } catch { } }
         const msg = body?.message || body?.error || 'Failed to resend OTP. Please try again.';

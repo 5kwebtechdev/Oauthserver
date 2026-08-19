@@ -7,9 +7,11 @@ import { Subscription } from 'rxjs';
 
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
+import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { Tutor, formatContactModes, formatExperience } from '../../../models/tutor.model';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
+import { PetAgeService } from '../../../services/pet-age.service';
 import { TutorLikeService } from '../../../services/tutor-like.service';
 import { TutorService } from '../../../services/tutor.service';
 
@@ -18,7 +20,7 @@ type FilterTab = 'specialization' | 'experience';
 @Component({
   selector: 'app-counselor-directory',
   standalone: true,
-  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent],
+  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent],
   templateUrl: './counselor-directory.component.html',
   styleUrls: ['./counselor-directory.component.scss']
 })
@@ -48,8 +50,14 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     private readonly tutorService: TutorService,
     private readonly likeService: TutorLikeService,
     private readonly authService: AuthService,
-    private readonly core: CoreService
+    private readonly core: CoreService,
+    private readonly petAgeService: PetAgeService
   ) {}
+
+  /** Panda uses the same Figma artwork shown on Home/Coins/Learning instead of this page's decorative mascot. */
+  get isPandaPet(): boolean {
+    return this.petAgeService.getCurrentPetType() === 'panda';
+  }
 
   ngOnInit(): void {
     const routeData = this.route.snapshot.data;
@@ -189,15 +197,24 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   async shareCounselor(counselor: Tutor): Promise<void> {
+    const title = this.getName(counselor);
+    const text = `View ${title} on SuperMe EduHub.`;
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+
     try {
-      await Share.share({
-        title: this.getName(counselor),
-        text: `View ${this.getName(counselor)} on SuperMe EduHub.`,
-        url: window.location.href
-      });
+      await Share.share({ title, text, url, dialogTitle: `Share ${title}` });
     } catch (error) {
       const message = String((error as { message?: string })?.message ?? error ?? '').toLowerCase();
-      if (!message.includes('cancel') && !message.includes('dismiss')) {
+      if (message.includes('cancel') || message.includes('dismiss')) return;
+
+      // The native share sheet can be unavailable in some environments even
+      // though sharing itself isn't the point of failure — fall back to
+      // copying the link before treating this as an actual error.
+      try {
+        await navigator.clipboard.writeText(url || text);
+        this.core.triggerToasrt('Counselor link copied.', 'success');
+      } catch {
+        console.warn('[CounselorDirectory] Unable to share counselor', error);
         this.core.triggerToasrt('Unable to share this counselor. Please try again.', 'error');
       }
     }

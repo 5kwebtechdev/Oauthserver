@@ -268,6 +268,23 @@
 	height: 144px;
 	object-fit: contain;
 	pointer-events: none;
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+
+	::ng-deep .superme-pet {
+		align-items: flex-end;
+		justify-content: center;
+		width: 100%;
+	}
+
+	::ng-deep .pet-image {
+		max-width: 120px !important;
+		max-height: 120px !important;
+		width: auto !important;
+		height: auto !important;
+		object-fit: contain;
+	}
 }
 
 .child-learning-body {

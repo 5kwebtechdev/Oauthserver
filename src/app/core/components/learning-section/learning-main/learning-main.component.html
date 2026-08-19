@@ -269,8 +269,9 @@
             </p>
           </div>
 
-          <img class="child-learning-hero__pet" src="assets/figma/child-learning/header-pet.png"
+          <img *ngIf="isPandaPet" class="child-learning-hero__pet" src="assets/figma/child-learning/header-pet.png"
             alt="SuperMe learning companion holding a trophy">
+          <superme-pet *ngIf="!isPandaPet" class="child-learning-hero__pet" mood="happy" [size]="140"></superme-pet>
         </header>
 
         <section class="child-learning-body">

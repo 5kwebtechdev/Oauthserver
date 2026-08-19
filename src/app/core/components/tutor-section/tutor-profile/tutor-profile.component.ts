@@ -62,6 +62,13 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   private tutorCategories: TutorCategory[] = [];
   private activeLikeTutorId: number | null = null;
   private subscriptions = new Subscription();
+  /**
+   * The image shown on the listing card the user tapped. The by-ID detail
+   * fetch doesn't always return `profilePicUrl` on every backend build, so
+   * this is kept as a fallback to stop the detail page flashing to the
+   * generic placeholder even though the real photo is known.
+   */
+  private navigationProfileImage?: string;
 
   constructor(
     private authService: AuthService,
@@ -81,6 +88,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     this.loadCategoryFieldLabels();
 
     const navigationTutor = this.getNavigationTutor();
+    this.navigationProfileImage = (navigationTutor?.profilePicUrl || this.tutor?.profilePicUrl)?.trim() || undefined;
     if (!this.tutor && navigationTutor) {
       this.setTutor(navigationTutor);
     } else if (this.tutor) {
@@ -139,6 +147,14 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   private setTutor(tutor: Tutor): void {
+    // The list card and the by-ID detail fetch can disagree on the image
+    // field. Never let a later fetch downgrade a known-good photo to the
+    // generic placeholder.
+    if (!tutor.profilePicUrl?.trim() && this.navigationProfileImage) {
+      tutor = { ...tutor, profilePicUrl: this.navigationProfileImage };
+    } else if (tutor.profilePicUrl?.trim()) {
+      this.navigationProfileImage = tutor.profilePicUrl.trim();
+    }
     this.tutor = tutor;
     const alreadySpentCoins = (tutor as any)?.alreadySpentCoinsForThisProfile;
     // The tutor API now returns a per-user unlock flag. When it is supplied,
@@ -479,6 +495,13 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   getCounselorSpecializations(): string {
+    // The API returns a dedicated `specializations` array for counselors —
+    // it isn't part of the tutor "what I teach" subjects/classes rows, so it
+    // has to be read directly rather than derived from getTeachingRows().
+    const tutor = this.tutor as any;
+    const specializations = [...new Set(this.normalizeFieldValue(tutor?.specializations || []))];
+    if (specializations.length) return specializations.join(', ');
+
     const rows = this.getTeachingRows();
     const specializationRows = rows.filter(row => /special|subject|expert/i.test(row.label));
     const values = specializationRows.map(row => row.value).filter(Boolean);

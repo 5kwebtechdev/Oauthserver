@@ -8,7 +8,7 @@
         <div class="counselor-header-actions" *ngIf="tutor">
           <button type="button" class="counselor-header-action counselor-header-action--round" [class.is-liked]="isLiked"
             [disabled]="isLikeRequestInProgress" [attr.aria-label]="isLiked ? 'Unlike counselor' : 'Like counselor'" (click)="toggleLike()"><span aria-hidden="true"></span></button>
-          <button type="button" class="counselor-header-action counselor-header-action--round" aria-label="Share counselor" (click)="shareTutor()"><img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true"></button>
+          <button type="button" class="counselor-header-action counselor-header-action--round" aria-label="Share counselor" (click)="shareTutor()"><span class="counselor-header-action__share" aria-hidden="true"></span></button>
         </div>
       </header>
 

@@ -78,6 +78,15 @@ a {
   }
 }
 
+.detail-toolbar__share {
+  display: block;
+  width: 19px;
+  height: 19px;
+  background: var(--detail-blue);
+  mask: url('/assets/figma/parent-eduhub-inner/share.svg') center / contain no-repeat;
+  -webkit-mask: url('/assets/figma/parent-eduhub-inner/share.svg') center / contain no-repeat;
+}
+
 .detail-toolbar__heart {
   display: block;
   width: 19px;
