@@ -35,7 +35,11 @@
           <h1 id="signup-entry-title" class="signup-entry-title">
             {{ isManagedChildSignup ? "Let's Create Your Child's Account" : "Let's Create Your Account" }}
           </h1>
-          <p class="signup-entry-subtitle">We'll send a verification code to your email</p>
+          <p class="signup-entry-subtitle">
+            {{ isManagedChildSignup
+              ? "We'll send a verification code to your child's email"
+              : "We'll send a verification code to your email" }}
+          </p>
         </header>
 
         <div class="signup-entry-progress" role="progressbar" aria-label="Registration progress"
@@ -47,10 +51,12 @@
         <form [formGroup]="signupForm" autocomplete="on" class="signup-entry-form" (ngSubmit)="signupFromLogin()">
           <div class="signup-entry-field"
             [class.signup-entry-field--error]="email?.invalid && (email?.dirty || email?.touched)">
-            <label for="signup-email" class="signup-entry-sr-label">Email address</label>
+            <label for="signup-email" class="signup-entry-sr-label">
+              {{ isManagedChildSignup ? "Child's email address" : 'Email address' }}
+            </label>
             <input id="signup-email" formControlName="email" type="email" name="email"
               autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false"
-              placeholder="Enter Your Email Address" />
+              [placeholder]="isManagedChildSignup ? 'Enter Your Child’s Email Address' : 'Enter Your Email Address'" />
           </div>
 
           <p class="signup-entry-error" *ngIf="email?.invalid && (email?.dirty || email?.touched)" role="alert">
@@ -65,16 +71,16 @@
           </button>
         </form>
 
-        <div class="signup-entry-divider" aria-hidden="true">
+        <div *ngIf="!isManagedChildSignup" class="signup-entry-divider" aria-hidden="true">
           <img src="assets/icons/signup-divider-line-figma.svg" alt="" />
           <strong>OR</strong>
           <img src="assets/icons/signup-divider-line-figma.svg" alt="" />
         </div>
 
-        <social-media class="signup-entry-social" [variant]="'login-with'"></social-media>
+        <social-media *ngIf="!isManagedChildSignup" class="signup-entry-social" [variant]="'login-with'"></social-media>
 
         <p class="signup-entry-login">
-          Already have an account?
+          {{ isManagedChildSignup ? 'Does your child already have an account?' : 'Already have an account?' }}
           <a [routerLink]="['/home/login']">Login</a>
         </p>
       </div>
@@ -87,9 +93,13 @@
         <header class="otp-hero">
           <p class="otp-step-label">Step 2 of {{ isManagedChildSignup || currentRole === 'self' ? 5 : 6 }}</p>
           <h1 id="signup-otp-title" class="otp-hero__title">
-            {{ loginMode === 'phone' ? 'Check Your Phone' : 'Check Your Email' }}
+            {{ loginMode === 'phone'
+              ? 'Check Your Phone'
+              : (isManagedChildSignup ? "Check Your Child's Email" : 'Check Your Email') }}
           </h1>
-          <p class="otp-hero__text">We've sent an OTP to</p>
+          <p class="otp-hero__text">
+            {{ isManagedChildSignup ? "We've sent an OTP to your child's email" : "We've sent an OTP to" }}
+          </p>
           <p class="otp-hero__destination">
             <span>
               {{ loginMode === 'phone' ? (selectedCountry.code + ' ' + getMaskedPhoneNumber()) : getMaskedEmail() }}
@@ -143,7 +153,9 @@
       <div class="pwd-shell">
         <header class="pwd-hero">
           <p class="pwd-step-label">Step 3 of {{ isManagedChildSignup || currentRole === 'self' ? 5 : 6 }}</p>
-          <h1 id="signup-password-title" class="pwd-hero__title">Create a Password</h1>
+          <h1 id="signup-password-title" class="pwd-hero__title">
+            {{ isManagedChildSignup ? "Create a Password for Your Child" : 'Create a Password' }}
+          </h1>
         </header>
 
         <div class="pwd-progress" role="progressbar" aria-label="Registration progress"
@@ -156,7 +168,9 @@
             [value]="getSignupCredentialIdentifier()" tabindex="-1" aria-hidden="true" />
 
           <div class="pwd-field pwd-field--password">
-            <label for="signup-password" class="pwd-sr-label">Password</label>
+            <label for="signup-password" class="pwd-sr-label">
+              {{ isManagedChildSignup ? "Child's password" : 'Password' }}
+            </label>
             <div class="pwd-field__row">
               <input id="signup-password" class="pwd-field__input" formControlName="password" name="password"
                 autocomplete="new-password" [type]="hidePassword ? 'password' : 'text'" placeholder="Enter password"
@@ -173,7 +187,9 @@
           </div>
 
           <div class="pwd-field pwd-field--confirm">
-            <label for="signup-confirm-password" class="pwd-field__label">Confirm password</label>
+            <label for="signup-confirm-password" class="pwd-field__label">
+              {{ isManagedChildSignup ? "Confirm your child's password" : 'Confirm password' }}
+            </label>
             <div class="pwd-field__row">
               <input id="signup-confirm-password" class="pwd-field__input" formControlName="confirmPassword"
                 name="confirmPassword" autocomplete="new-password"
@@ -642,7 +658,9 @@
 
       <header class="pet-step-header">
         <p>Step 5 of {{ isManagedChildSignup || currentRole === 'self' ? 5 : 6 }}</p>
-        <h1 id="pet-step-title">Choose Your Digital Pet</h1>
+        <h1 id="pet-step-title">
+          {{ isManagedChildSignup ? "Choose Your Child's Digital Pet" : 'Choose Your Digital Pet' }}
+        </h1>
       </header>
 
       <div class="pet-step-progress" role="progressbar" aria-label="Registration progress"

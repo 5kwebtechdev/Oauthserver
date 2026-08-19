@@ -90,21 +90,24 @@
       </section>
 
       <section class="contact-lock-card" *ngIf="!item.unlocked">
-        <img src="assets/figma/contact-unlock/card-illustration.png" alt="" aria-hidden="true">
-        <div>
-          <h2>Unlock contact details</h2>
-          <p>Contact information and the exact address are protected by the organizer.</p>
-          <button type="button" [disabled]="unlockInProgress" (click)="unlockContactDetails()">
-            <ion-spinner *ngIf="unlockInProgress" name="crescent"></ion-spinner>
-            <ng-container *ngIf="!unlockInProgress">
-              <img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
-              <span>Unlock Now</span>
-              <span class="contact-lock-card__coins" *ngIf="item.unlockCost !== null">
-                <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">{{ item.unlockCost }}
-              </span>
-            </ng-container>
-          </button>
+        <div class="contact-lock-card__summary">
+          <img src="assets/figma/contact-unlock/card-illustration.png" alt="" aria-hidden="true">
+          <div class="contact-lock-card__copy">
+            <h2>Unlock contact details</h2>
+            <p>Contact information and the exact address are protected by the organizer.</p>
+          </div>
         </div>
+        <button type="button" [disabled]="unlockInProgress" (click)="unlockContactDetails()">
+          <ion-spinner *ngIf="unlockInProgress" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!unlockInProgress">
+            <img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
+            <span>Unlock Now</span>
+            <span class="contact-lock-card__coins" *ngIf="unlockCost as cost">
+              <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
+              <span>{{ cost }}</span>
+            </span>
+          </ng-container>
+        </button>
       </section>
     </main>
 

@@ -48,6 +48,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private static readonly MANAGED_CHILD_SUCCESS_EMAIL_KEY = 'managed_child_success_email';
   private static readonly MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY = 'managed_child_parent_welcome_pending';
   private static readonly MANAGED_CHILD_REFRESH_KEY = 'family_children_refresh_pending';
+  private static readonly MANAGED_CHILD_SNAPSHOT_KEY = 'managed_child_created_snapshot';
   // Persist identifier used to request OTP so it can be reused in later steps
   public requestedIdentifier: string | null = null;
   public signupForm: FormGroup;
@@ -546,6 +547,25 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         });
         return;
       }
+
+      // A child's password is intentionally never written to web storage.
+      // After a full refresh the in-memory credential is gone, while the
+      // saved onboarding route can still point at Pet selection. Return to
+      // the child-password step before rendering Pet selection so the parent
+      // can continue normally instead of seeing a misleading error on Next.
+      if (
+        this.step === 4
+        && this.isManagedChildSignup
+        && !this.signupCredentialState.getPassword()
+      ) {
+        this.step = 0.3;
+        void this.router.navigate(['home/sign-up'], {
+          queryParams: { step: 0.3, role: 'child', managedChild: true },
+          replaceUrl: true
+        });
+        return;
+      }
+
       this.enforceParentFlowRestrictions();
       this.renderer.setStyle(document.documentElement, '--step', this.step);
       this.syncSignupStatusBar();
@@ -1468,14 +1488,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   returnToParentApp(): void {
-    let showParentWelcome = false;
     try {
-      showParentWelcome = sessionStorage.getItem(
-        SignupComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY
-      ) === 'true';
+      // This legacy flag can survive an interrupted older onboarding flow.
+      // A parent who has just created a child must always return to Parent
+      // Home, never be sent through the parent welcome/login flow again.
       sessionStorage.removeItem(SignupComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY);
     } catch (error) {
-      console.warn('[Signup] Unable to read deferred parent welcome state', error);
+      console.warn('[Signup] Unable to clear deferred parent welcome state', error);
     }
 
     try {
@@ -1486,17 +1505,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       console.warn('[Signup] Unable to mark parent child-list refresh', error);
     }
 
+    this.authService.restoreManagedChildParentSession();
     this.clearManagedChildSignupState();
     this.loadingService.forceHide();
-    if (showParentWelcome) {
-      void this.navCtrl.navigateRoot('/home/sign-up', {
-        queryParams: { step: 5 },
-        animated: false
-      });
-      return;
-    }
-
-    void this.navCtrl.navigateRoot(this.authService.getDashboardRoute() || '/authed/parent-account', {
+    // Do not resolve this through getDashboardRoute(): transient onboarding
+    // state can make it fall back to Login. This completion belongs only to
+    // an already authenticated parent, so its destination is explicit.
+    void this.navCtrl.navigateRoot('/authed/parent-account', {
       animated: false
     });
   }
@@ -1545,6 +1560,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           );
         }
         this.managedChildRegistrationComplete = true;
+        this.persistManagedChildSnapshot(registrationResponse);
       }
 
       await firstValueFrom(this.authService.shareLoginCredentials({
@@ -1644,6 +1660,37 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return payload;
   }
 
+  /**
+   * The family-members projection may take a short time to include a newly
+   * created child. Preserve only display-safe data from the confirmed
+   * registration response so Parent Home can show the child immediately.
+   * No credential, token, or password is stored here.
+   */
+  private persistManagedChildSnapshot(response: any): void {
+    const child = response?.user ?? response?.data?.user ?? response?.data ?? response;
+    const id = child?.id ?? child?.userId ?? child?.memberId;
+    if (id === null || id === undefined || !String(id).trim()) return;
+
+    try {
+      sessionStorage.setItem(SignupComponent.MANAGED_CHILD_SNAPSHOT_KEY, JSON.stringify({
+        id,
+        userId: id,
+        parentUserId: this.authService.getUserId(),
+        name: String(child?.name || child?.userName || '').trim(),
+        userName: String(child?.userName || child?.name || '').trim(),
+        relationship: 'CHILD',
+        avatar: child?.avatar,
+        avatarImageName: child?.avatarImageName || child?.avatar?.avatarImageName,
+        gender: child?.gender,
+        dateOfBirth: child?.dateOfBirth,
+        age: child?.age,
+        coins: child?.coins ?? 0
+      }));
+    } catch (error) {
+      console.warn('[Signup] Unable to persist created child snapshot', error);
+    }
+  }
+
   private clearManagedChildSignupState(): void {
     this.onboardingState.clearRegistrationDraft();
     this.signupCredentialState.clear();
@@ -1651,6 +1698,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.managedChildFamilyCode = '';
     this.managedChildSuccessEmail = '';
     this.managedChildRegistrationComplete = false;
+    this.authService.clearManagedChildParentSession();
     this.expandedManagedChildFaq = null;
     try {
       [

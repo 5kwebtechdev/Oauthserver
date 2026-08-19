@@ -23,6 +23,15 @@ export class ProfileSelectorInterceptor implements HttpInterceptor {
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // Account-level actions (such as a parent creating a child account) must
+    // always run as the authenticated user. They must never receive the
+    // dashboard's currently selected child as `forUserId`.
+    if (req.headers.get('X-Skip-Profile-Selector') === 'true') {
+      return next.handle(req.clone({
+        headers: req.headers.delete('X-Skip-Profile-Selector')
+      }));
+    }
+
     // Course assignment already receives the selected child in `childIds`.
     // Do not append the profile-selector `forUserId`, because this endpoint's
     // request contract is intentionally limited to courseId and childIds.

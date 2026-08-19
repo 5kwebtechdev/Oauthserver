@@ -129,6 +129,10 @@ export class AuthService {
   private readonly LAST_ACTIVITY_KEY = 'last_activity';
   private readonly REMEMBER_ME_KEY = 'remember_me';
   private readonly PLATFORM_KEY = 'platform';
+  // In-memory only. Used solely for Parent Home → Add Child → Parent Home,
+  // where an unrelated request must not turn a successful child creation
+  // into an unexpected login redirect.
+  private managedChildParentSession: { token: string; userId: number; user: any } | null = null;
 
   private isMobilePlatform: boolean = false;
 
@@ -368,6 +372,31 @@ export class AuthService {
     );
   }
 
+  /** Preserve the authenticated parent while they create a child on this device. */
+  beginManagedChildParentSession(): boolean {
+    const token = this.getToken();
+    const userId = Number(this.getUserId());
+    const user = this.getUserData();
+    if (!token || !Number.isSafeInteger(userId) || userId <= 0 || String(user?.relationship || '').toUpperCase() !== 'PARENT') {
+      return false;
+    }
+
+    this.managedChildParentSession = { token, userId, user: { ...user } };
+    return true;
+  }
+
+  /** Restore only the parent who started the current managed-child flow. */
+  restoreManagedChildParentSession(): boolean {
+    const session = this.managedChildParentSession;
+    if (!session) return this.isParentUser();
+    if (!this.isParentUser()) this.setSession(session, false);
+    return this.isParentUser();
+  }
+
+  clearManagedChildParentSession(): void {
+    this.managedChildParentSession = null;
+  }
+
   /**
    * Replace only the active JWT after a role conversion or parent-child view switch.
    * User profile data is updated separately by the calling screen.
@@ -498,7 +527,14 @@ export class AuthService {
     if (Object.prototype.hasOwnProperty.call(requestPayload, 'gender')) {
       requestPayload.gender = toApiGender(requestPayload.gender);
     }
-    const headers = new HttpHeaders({ 'X-Skip-Loading': 'true' });
+    // This request is made by the authenticated parent. It must not inherit
+    // a selected child's `forUserId`, and a registration-specific error must
+    // never log the parent out of the app.
+    const headers = new HttpHeaders({
+      'X-Skip-Loading': 'true',
+      'X-Skip-Auth-Handler': 'true',
+      'X-Skip-Profile-Selector': 'true'
+    });
 
     return this.http.post<any>(url, requestPayload, { headers }).pipe(
       tap(() => this.analytics.logSignUp(payload.email ? 'email' : 'phone'))
@@ -511,7 +547,14 @@ export class AuthService {
    */
   shareLoginCredentials(payload: ShareLoginCredentialsPayload): Observable<string> {
     const url = `${this.apiUrl}/auth/parent/share-login-credentials`;
-    const headers = new HttpHeaders({ 'X-Skip-Loading': 'true' });
+    // Credential delivery belongs to the signed-in parent, not the selected
+    // child profile. Keep a recoverable endpoint error from ending the parent
+    // session while the managed-child flow is completing.
+    const headers = new HttpHeaders({
+      'X-Skip-Loading': 'true',
+      'X-Skip-Auth-Handler': 'true',
+      'X-Skip-Profile-Selector': 'true'
+    });
     return this.http.post(url, payload, { headers, responseType: 'text' });
   }
 

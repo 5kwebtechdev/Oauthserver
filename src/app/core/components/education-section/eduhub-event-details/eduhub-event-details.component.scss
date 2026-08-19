@@ -288,22 +288,30 @@ a {
 
 .contact-lock-card {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  align-items: stretch;
+  gap: 12px;
   padding: 16px;
+  flex-direction: column;
   border: 1px solid #c5d7f6;
   border-radius: 20px;
   background: #d9e5f9;
   box-sizing: border-box;
 
-  > img {
+  &__summary {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 14px;
+  }
+
+  &__summary > img {
     width: 60px;
     height: 56px;
     flex: 0 0 60px;
     object-fit: contain;
   }
 
-  > div {
+  &__copy {
     display: flex;
     min-width: 0;
     flex: 1;
@@ -318,8 +326,7 @@ a {
     font-weight: 500;
   }
 
-  p,
-  span {
+  &__copy p {
     margin: 3px 0 0;
     color: var(--detail-muted);
     font-family: var(--font-sans, 'Nunito', sans-serif);
@@ -335,8 +342,8 @@ a {
     align-items: center;
     justify-content: center;
     gap: 4px;
-    margin-top: 12px;
-    padding: 12px;
+    margin: 0;
+    padding: 11px 16px;
     border: 1px solid #3158a8;
     border-radius: 16px;
     background: radial-gradient(184% 190% at 50% 0%, #3158a8 0%, #2345a8 50%, #1432a8 100%);
@@ -345,23 +352,41 @@ a {
     font-family: var(--font-sans, 'Nunito', sans-serif);
     font-size: 15px;
     font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.72;
+    }
 
     ion-spinner {
       width: 18px;
       height: 18px;
     }
 
-    > img,
-    .contact-lock-card__coins img {
+    > img {
       width: 24px;
       height: 24px;
       object-fit: contain;
     }
 
+    > span {
+      margin: 0;
+      color: #fff;
+      font: inherit;
+      line-height: 1;
+    }
+
     .contact-lock-card__coins {
       display: inline-flex;
       align-items: center;
-      gap: 2px;
+      gap: 3px;
+      color: #fff;
+
+      > span {
+        color: inherit;
+      }
     }
 
     .contact-lock-card__coins img {
@@ -434,7 +459,7 @@ a {
   .contact-lock-card {
     padding: 13px;
 
-    > img {
+    &__summary > img {
       width: 60px;
       height: 60px;
       flex-basis: 60px;

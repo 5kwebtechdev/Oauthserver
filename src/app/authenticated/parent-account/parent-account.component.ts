@@ -79,6 +79,7 @@ interface FamilySwitcherParent {
 })
 export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter {
     private static readonly MANAGED_CHILD_REFRESH_KEY = 'family_children_refresh_pending';
+    private static readonly MANAGED_CHILD_SNAPSHOT_KEY = 'managed_child_created_snapshot';
     private readonly destroy$ = new Subject<void>();
     private childrenRequestId = 0;
     private moodBalanceRequestId = 0;
@@ -608,11 +609,13 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             this.familyCode = this.extractFamilyCode(result.family.data);
             this.applyFamilySwitcherMetadata(result.family.data);
             const explicitlyNoFamily = result.family.data?.hasFamily === false;
-            const children = familyChildren.length
+            let children = familyChildren.length
                 ? this.mergeChildStats(familyChildren, vibeChildren)
                 : explicitlyNoFamily
                     ? []
                     : vibeChildren;
+
+            children = this.includePendingManagedChild(children);
 
             this.profileStore.setChildren(children);
             this.childrenLoadState = 'loaded';
@@ -621,7 +624,15 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         }
 
         if (!result.vibes.failed && vibeChildren.length) {
-            this.profileStore.setChildren(vibeChildren);
+            this.profileStore.setChildren(this.includePendingManagedChild(vibeChildren));
+            this.childrenLoadState = 'loaded';
+            this.statsUpdatedAt = new Date();
+            return;
+        }
+
+        const pendingChild = this.getPendingManagedChild();
+        if (pendingChild) {
+            this.profileStore.setChildren(this.includePendingManagedChild([]));
             this.childrenLoadState = 'loaded';
             this.statsUpdatedAt = new Date();
             return;
@@ -629,6 +640,51 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
         // Preserve any previously loaded children during a temporary network failure.
         this.childrenLoadState = 'error';
+    }
+
+    /** Use the just-created child response until the eventually-consistent family list catches up. */
+    private includePendingManagedChild(children: ChildInfo[]): ChildInfo[] {
+        const pendingChild = this.getPendingManagedChild();
+        if (!pendingChild) return children;
+
+        const alreadyReturned = children.some(child => String(child.id) === String(pendingChild.id));
+        if (alreadyReturned) {
+            try { sessionStorage.removeItem(ParentAccountComponent.MANAGED_CHILD_SNAPSHOT_KEY); } catch {}
+            return children;
+        }
+
+        return [...children, pendingChild];
+    }
+
+    private getPendingManagedChild(): ChildInfo | null {
+        try {
+            const raw = sessionStorage.getItem(ParentAccountComponent.MANAGED_CHILD_SNAPSHOT_KEY);
+            if (!raw) return null;
+            const member = JSON.parse(raw);
+            const id = member?.id ?? member?.userId ?? member?.memberId;
+            if (id === null || id === undefined || !String(id).trim()) return null;
+            const snapshotParentId = member?.parentUserId;
+            const activeParentId = this.authService.getUserId();
+            if (
+                snapshotParentId !== null && snapshotParentId !== undefined
+                && activeParentId !== null && activeParentId !== undefined
+                && String(snapshotParentId) !== String(activeParentId)
+            ) {
+                sessionStorage.removeItem(ParentAccountComponent.MANAGED_CHILD_SNAPSHOT_KEY);
+                return null;
+            }
+            const normalized = {
+                ...member,
+                userId: id,
+                userName: member?.userName || member?.name || 'Child',
+                relationship: 'CHILD'
+            };
+            const avatarUrl = this.childSelfImage.resolveAvatarForMember(normalized).url || '';
+            return mapVibeToChildInfo(normalized, avatarUrl);
+        } catch (error) {
+            console.warn('[ParentAccount] Unable to read created child snapshot', error);
+            return null;
+        }
     }
 
     private mapFamilyChildren(status: any): ChildInfo[] {

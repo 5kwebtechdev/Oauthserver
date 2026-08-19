@@ -7,7 +7,7 @@ ion-content {
     --background: #ffffff;
     // The footer is fixed, so reserve room in Ionic's actual scroll area.
     // This keeps the final EduHub section reachable on small devices.
-    --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 32px);
+    --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 80px);
 }
 
 .parent-eduhub-page {
@@ -91,6 +91,12 @@ ion-content {
     gap: 32px;
     width: 100%;
     margin-top: 8px;
+    /* The footer is fixed above the Ionic scroll viewport.  Keep a real
+       end-of-list safe zone so the last Events/Workshops cards never finish
+       beneath it, including devices with the raised centre navigation icon. */
+    padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 32px);
+    scroll-margin-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 32px);
+    box-sizing: border-box;
 }
 
 .parent-eduhub-section {
