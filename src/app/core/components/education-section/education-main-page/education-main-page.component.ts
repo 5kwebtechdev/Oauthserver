@@ -78,14 +78,14 @@ export class EducationMainPageComponent implements OnInit {
         {
             id: 'tutors',
             label: 'Tutor',
-            image: 'assets/figma/parent-eduhub/tutor.png',
+            image: 'assets/figma/parent-eduhub/tutor.webp',
             kind: 'route',
             route: '/authed/tutors'
         },
         {
             id: 'academies',
             label: 'Academies',
-            image: 'assets/figma/parent-eduhub/academies.png',
+            image: 'assets/figma/parent-eduhub/academies.webp',
             kind: 'route',
             route: '/authed/academies'
         }
@@ -95,7 +95,7 @@ export class EducationMainPageComponent implements OnInit {
         {
             id: 'counselors',
             label: 'Counselors',
-            image: 'assets/figma/parent-eduhub/counselors.png',
+            image: 'assets/figma/parent-eduhub/counselors.webp',
             kind: 'route',
             route: '/authed/counselors'
         }
@@ -105,14 +105,14 @@ export class EducationMainPageComponent implements OnInit {
         {
             id: 'events',
             label: 'Events',
-            image: 'assets/figma/parent-eduhub/events.png',
+            image: 'assets/figma/parent-eduhub/events.webp',
             kind: 'route',
             route: '/authed/education/events'
         },
         {
             id: 'workshops',
             label: 'Workshops',
-            image: 'assets/figma/parent-eduhub/workshops.png',
+            image: 'assets/figma/parent-eduhub/workshops.webp',
             kind: 'route',
             route: '/authed/education/workshops'
         }
@@ -122,25 +122,25 @@ export class EducationMainPageComponent implements OnInit {
         {
             id: 'stationery-shops',
             label: 'Stationery Shops',
-            image: 'assets/figma/parent-eduhub/stationery.png',
+            image: 'assets/figma/parent-eduhub/stationery.webp',
             aliases: ['stationery']
         },
         {
             id: 'book-stores',
             label: 'Book Stores',
-            image: 'assets/figma/parent-eduhub/books.png',
+            image: 'assets/figma/parent-eduhub/books.webp',
             aliases: ['book store', 'books', 'textbook']
         },
         {
             id: 'second-hand-books',
             label: 'Second-hand Books',
-            image: 'assets/figma/parent-eduhub/second-hand-books.png',
+            image: 'assets/figma/parent-eduhub/second-hand-books.webp',
             aliases: ['second hand book', 'secondhand book', 'used book']
         },
         {
             id: 'sports-shop',
             label: 'Sports Shop',
-            image: 'assets/figma/parent-eduhub/sports.png',
+            image: 'assets/figma/parent-eduhub/sports.webp',
             aliases: ['sports', 'sport shop']
         }
     ];

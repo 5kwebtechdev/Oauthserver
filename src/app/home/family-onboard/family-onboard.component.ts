@@ -1001,10 +1001,9 @@ Thank you!`;
 
     /**
      * Start the managed Child signup on the same device with this family's
-     * code ready for linking. At this point the parent is already in the
-     * family-success screen, so routing through completeFamilySuccess() first
-     * is incorrect: it can reopen the parent's final Unlock screen instead of
-     * the child's account-creation entry screen.
+     * code ready for linking. A newly registered parent must complete their
+     * pending parent registration first, then the same handler opens the
+     * child wizard without showing the parent Welcome screen.
      */
     startChildAccountCreation(): void {
         if (this.isLoading) return;
@@ -1012,13 +1011,6 @@ Thank you!`;
     const familyCode = (this.familyCode || '').trim().toUpperCase();
     if (!familyCode) {
       this.core.triggerToasrt('Family code is not available yet. Please try again.');
-      return;
-    }
-
-    // Capture the signed-in Parent before routing into the child wizard. The
-    // child account is created without changing this parent session.
-    if (!this.authService.beginManagedChildParentSession()) {
-      this.core.triggerToasrt('Your parent session is no longer available. Please sign in again.');
       return;
     }
 
@@ -1033,9 +1025,13 @@ Thank you!`;
             console.warn('[FamilyOnboard] Unable to prepare child account creation', error);
         }
 
-        if (!this.beginManagedChildSignup()) {
-            this.core.triggerToasrt('We could not start child account creation. Please try again.');
-        }
+        // A newly registered parent reaches this family-success screen before
+        // their final session has been established. Complete that existing
+        // parent registration first; completeFamilySuccess() sees the flag
+        // above and immediately opens the child wizard (never the Welcome
+        // screen). This leaves a real parent session available for the final
+        // "Go back to my app" action.
+        this.completeFamilySuccess();
     }
 
     /**
@@ -1697,6 +1693,11 @@ Thank you!`;
         if (!shouldStart || !familyCode) {
             return false;
         }
+
+        // At this point fresh parents have completed their registration and
+        // existing parents already have an active session. Preserve it before
+        // leaving the parent/family screen for the child wizard.
+        this.authService.beginManagedChildParentSession();
 
         this.onboardingState.clearRegistrationDraft();
         this.signupCredentialState.clear();

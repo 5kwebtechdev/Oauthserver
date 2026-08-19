@@ -32,12 +32,12 @@ export class ParentLearningListingComponent implements OnInit, OnDestroy {
     {
       key: 'blogs',
       label: 'Blogs',
-      icon: 'assets/figma/parent-home/parent-learning-blogs.png'
+      icon: 'assets/figma/parent-home/parent-learning-blogs.webp'
     },
     {
       key: 'quizzes',
       label: 'Quizzes',
-      icon: 'assets/figma/parent-home/parent-learning-quizzes.png'
+      icon: 'assets/figma/parent-home/parent-learning-quizzes.webp'
     }
   ];
   readonly pageSize = 5;
