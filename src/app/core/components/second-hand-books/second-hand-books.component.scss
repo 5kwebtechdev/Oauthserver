@@ -174,7 +174,13 @@
   box-sizing: border-box;
 }
 
-.books-main--buyer { padding-top: 16px; }
+.books-main--buyer {
+  padding-top: 16px;
+  /* Keep room for the sticky search action as well as the fixed global tab
+     bar. Without this, the last form control/action can sit underneath the
+     navigation on compact devices. */
+  padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 98px);
+}
 
 .books-choice,
 .buyer-form {
@@ -410,6 +416,9 @@
 }
 
 .books-search-button {
+  position: sticky;
+  bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 10px);
+  z-index: 8;
   width: 100%;
   min-height: 48px;
   display: inline-flex;
@@ -1559,6 +1568,11 @@
 }
 
 .seller-flow__cta { margin-top: 24px; }
+.seller-flow__cta {
+  position: sticky;
+  bottom: max(12px, calc(8px + var(--sab, env(safe-area-inset-bottom, 0px))));
+  z-index: 8;
+}
 .seller-step--condition + .seller-flow__error + .seller-flow__cta { margin-top: auto; }
 
 .seller-success {

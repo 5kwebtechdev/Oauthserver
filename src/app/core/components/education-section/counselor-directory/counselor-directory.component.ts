@@ -1,5 +1,5 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Share } from '@capacitor/share';
 import { IonicModule } from '@ionic/angular';
@@ -26,11 +26,14 @@ type FilterTab = 'specialization' | 'experience';
 })
 export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   readonly loadingCards = [0, 1, 2];
+  @ViewChild('directorySearchInput') private directorySearchInput?: ElementRef<HTMLInputElement>;
 
   counselors: Tutor[] = [];
   isLoading = true;
   errorMessage = '';
   showVerifiedMenu = false;
+  searchOpen = false;
+  searchQuery = '';
   verifiedOnly = true;
   showFilters = false;
   filterTab: FilterTab = 'specialization';
@@ -78,9 +81,18 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     return this.counselors.filter(counselor => {
       const specializations = this.getSpecializations(counselor);
       const experience = this.getExperienceFilterValue(counselor);
+      const searchableText = [
+        this.getName(counselor),
+        this.getSpecializationLabel(counselor),
+        counselor.qualification,
+        counselor.location,
+        counselor.city,
+        counselor.state
+      ].filter(Boolean).join(' ').toLocaleLowerCase();
       return (!this.verifiedOnly || this.isVerified(counselor))
         && (!this.selectedSpecializations.size || specializations.some(value => this.selectedSpecializations.has(value)))
-        && (!this.selectedExperience.size || this.selectedExperience.has(experience));
+        && (!this.selectedExperience.size || this.selectedExperience.has(experience))
+        && (!this.searchQuery.trim() || searchableText.includes(this.searchQuery.trim().toLocaleLowerCase()));
     });
   }
 
@@ -120,6 +132,20 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.location.back();
+  }
+
+  toggleSearch(): void {
+    this.searchOpen = !this.searchOpen;
+    if (!this.searchOpen) {
+      this.searchQuery = '';
+      return;
+    }
+
+    setTimeout(() => this.directorySearchInput?.nativeElement.focus());
+  }
+
+  updateSearch(value: string): void {
+    this.searchQuery = value;
   }
 
   loadCounselors(): void {

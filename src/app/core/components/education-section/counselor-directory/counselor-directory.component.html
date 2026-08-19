@@ -8,9 +8,18 @@
           </button>
           <h1>{{ directoryTitle }}</h1>
         </div>
-        <button type="button" class="toolbar-button toolbar-button--search" aria-label="Search counselors" disabled>
+        <button type="button" class="toolbar-button toolbar-button--search" [attr.aria-label]="'Search ' + directoryTitle.toLowerCase()"
+          [attr.aria-expanded]="searchOpen" (click)="toggleSearch()">
           <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
         </button>
+      </div>
+
+      <div *ngIf="searchOpen" class="directory-search">
+        <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
+        <input #directorySearchInput type="search" autocomplete="off"
+          [value]="searchQuery" [placeholder]="'Search ' + directoryTitle.toLowerCase()"
+          (input)="updateSearch(directorySearchInput.value)">
+        <button type="button" aria-label="Close search" (click)="toggleSearch()">×</button>
       </div>
 
       <div class="counselor-hero__message">
@@ -79,8 +88,9 @@
 
         <div class="counselor-state" *ngIf="!isLoading && !errorMessage && !visibleCounselors.length">
           <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
-          <h3>No {{ directoryTitle.toLowerCase() }} found</h3>
-          <p *ngIf="counselors.length">Try changing your filters.</p>
+          <h3>{{ searchQuery ? 'No matching ' + directoryTitle.toLowerCase() : 'No ' + directoryTitle.toLowerCase() + ' found' }}</h3>
+          <p *ngIf="searchQuery">Try another name, specialization, or location.</p>
+          <p *ngIf="!searchQuery && counselors.length">Try changing your filters.</p>
           <p *ngIf="!counselors.length">New {{ directoryTitle.toLowerCase() }} will appear here when they are added.</p>
           <button *ngIf="counselors.length" type="button" (click)="clearFilters()">Clear filters</button>
         </div>

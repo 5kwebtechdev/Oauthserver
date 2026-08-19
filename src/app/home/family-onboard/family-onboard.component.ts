@@ -221,8 +221,14 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                     if (this.isValidCode(savedFamilyCode)) {
                         this.checkFamilyCodeValidity(savedFamilyCode, 'child');
                     }
-                } else if (this.viewMode === 'join-family-parent' && !this.joinFamilyForm.get('familyCode')?.value) {
-                    this.selectedMode = 'join';
+                } else if (
+                    this.viewMode === 'join-family-parent'
+                    && this.selectedMode === 'join'
+                    && !this.joinFamilyForm.get('familyCode')?.value
+                ) {
+                    // A saved/stale family code is only a resume value for the
+                    // Join flow. It must never override an explicit
+                    // `mode=create` route after a refresh.
                     this.joinFamilyForm.patchValue({ familyCode: savedFamilyCode });
                     if (this.isValidCode(savedFamilyCode)) {
                         this.checkFamilyCodeValidity(savedFamilyCode, 'parent');
@@ -994,27 +1000,42 @@ Thank you!`;
     }
 
     /**
-     * Complete the parent account first, then start the existing Child signup
-     * wizard on the same device with this family's code ready for linking.
+     * Start the managed Child signup on the same device with this family's
+     * code ready for linking. At this point the parent is already in the
+     * family-success screen, so routing through completeFamilySuccess() first
+     * is incorrect: it can reopen the parent's final Unlock screen instead of
+     * the child's account-creation entry screen.
      */
     startChildAccountCreation(): void {
         if (this.isLoading) return;
 
-        const familyCode = (this.familyCode || '').trim().toUpperCase();
-        if (!familyCode) {
-            this.core.triggerToasrt('Family code is not available yet. Please try again.');
-            return;
-        }
+    const familyCode = (this.familyCode || '').trim().toUpperCase();
+    if (!familyCode) {
+      this.core.triggerToasrt('Family code is not available yet. Please try again.');
+      return;
+    }
 
-        try {
+    // Capture the signed-in Parent before routing into the child wizard. The
+    // child account is created without changing this parent session.
+    if (!this.authService.beginManagedChildParentSession()) {
+      this.core.triggerToasrt('Your parent session is no longer available. Please sign in again.');
+      return;
+    }
+
+    try {
             sessionStorage.setItem(FamilyOnboardComponent.CREATE_CHILD_AFTER_FAMILY_KEY, 'true');
             sessionStorage.setItem(FamilyOnboardComponent.MANAGED_CHILD_FAMILY_CODE_KEY, familyCode);
-            sessionStorage.setItem(FamilyOnboardComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY, 'true');
+            // This is an existing parent's "Add child" action, not their
+            // initial onboarding completion. Never defer the parent Unlock
+            // screen for this path.
+            sessionStorage.removeItem(FamilyOnboardComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY);
         } catch (error) {
             console.warn('[FamilyOnboard] Unable to prepare child account creation', error);
         }
 
-        this.completeFamilySuccess();
+        if (!this.beginManagedChildSignup()) {
+            this.core.triggerToasrt('We could not start child account creation. Please try again.');
+        }
     }
 
     /**

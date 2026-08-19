@@ -108,6 +108,12 @@ export class EduHubEventDetailsComponent implements OnInit {
       : `₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)}`;
   }
 
+  /** Only render a coin cost when the API supplied a usable amount. */
+  get unlockCost(): number | null {
+    const cost = Number(this.item?.unlockCost);
+    return Number.isFinite(cost) && cost > 0 ? cost : null;
+  }
+
   toggleFavourite(): void {
     if (!this.item) return;
     this.favourite = !this.favourite;
