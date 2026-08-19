@@ -150,6 +150,8 @@ export interface Tutor {
     totalReviews: number;
     likes: TutorLike[];
     likedByUser?: boolean;
+    /** Some API responses use this name instead of `likedByUser`. */
+    likedBySelf?: boolean;
     categoryMappings: CategoryMapping[];
     active: boolean;
     verified: boolean;
@@ -231,7 +233,7 @@ export function toTutorListItem(tutor: Tutor): TutorListItem {
             ? tutor.subjects.join(', ')
             : `${tutor.qualification} Specialist`,
         champsLiked: tutor.champsLiked || 0,
-        likedByUser: !!tutor.likedByUser,
+        likedByUser: !!(tutor.likedByUser ?? tutor.likedBySelf),
         isVerified: !!(tutor.isVerified ?? tutor.verified),
         rating: tutor.champsLiked || tutor.likes?.length || 0,
         experience: experienceStr,

@@ -49,7 +49,7 @@ export class EduHubEventsComponent implements OnInit {
   activeFilter: ListingFilter = 'verified';
 
   private readonly pageSize = 20;
-  private readonly favourites = new Set<number>();
+  private readonly likeInProgress = new Set<number>();
   private requestVersion = 0;
 
   constructor(
@@ -71,7 +71,6 @@ export class EduHubEventsComponent implements OnInit {
     const data = this.route.snapshot.data as EventListingRouteData;
     this.entityType = data.entityType === 'Workshop' ? 'Workshop' : 'Events';
     this.title = data.title === 'Workshops' ? 'Workshops' : 'Events';
-    this.restoreFavourites();
     this.loadFirstPage();
   }
 
@@ -242,16 +241,34 @@ export class EduHubEventsComponent implements OnInit {
   }
 
   isFavourite(item: EduHubEventItem): boolean {
-    return this.favourites.has(item.id);
+    return !!item.likedBySelf;
   }
 
   toggleFavourite(item: EduHubEventItem): void {
-    if (this.isFavourite(item)) {
-      this.favourites.delete(item.id);
-    } else {
-      this.favourites.add(item.id);
-    }
-    this.persistFavourites();
+    if (this.likeInProgress.has(item.id)) return;
+
+    const nextLiked = !item.likedBySelf;
+    const previousLiked = item.likedBySelf;
+    const previousCount = item.champsLiked;
+
+    // Optimistic update so the heart responds instantly.
+    item.likedBySelf = nextLiked;
+    item.champsLiked = Math.max(0, (Number(item.champsLiked) || 0) + (nextLiked ? 1 : -1));
+    this.likeInProgress.add(item.id);
+
+    this.eventsService.toggleLike(item.id, nextLiked).subscribe({
+      next: response => {
+        this.likeInProgress.delete(item.id);
+        if (typeof response.likedBySelf === 'boolean') item.likedBySelf = response.likedBySelf;
+        if (typeof response.champsLiked === 'number') item.champsLiked = response.champsLiked;
+      },
+      error: () => {
+        this.likeInProgress.delete(item.id);
+        item.likedBySelf = previousLiked;
+        item.champsLiked = previousCount;
+        this.core.triggerToasrt('Unable to update like. Please try again.', 'error');
+      }
+    });
   }
 
   openDetails(item: EduHubEventItem): void {
@@ -330,32 +347,6 @@ export class EduHubEventsComponent implements OnInit {
 
   private normalise(value: unknown): string {
     return String(value ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
-  }
-
-  private favouritesKey(): string {
-    return `superme_eduhub_${this.entityType.toLowerCase()}_favourites_${this.authService.getUserId() ?? 'guest'}`;
-  }
-
-  private restoreFavourites(): void {
-    try {
-      const saved = JSON.parse(localStorage.getItem(this.favouritesKey()) ?? '[]');
-      if (Array.isArray(saved)) {
-        saved.forEach(id => {
-          const numericId = Number(id);
-          if (Number.isFinite(numericId)) this.favourites.add(numericId);
-        });
-      }
-    } catch {
-      this.favourites.clear();
-    }
-  }
-
-  private persistFavourites(): void {
-    try {
-      localStorage.setItem(this.favouritesKey(), JSON.stringify([...this.favourites]));
-    } catch {
-      // Local favourites are a convenience only; the listing remains usable.
-    }
   }
 
   private saveItemForDetails(item: EduHubEventItem): void {

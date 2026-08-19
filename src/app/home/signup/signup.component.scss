@@ -3943,10 +3943,10 @@ ion-content.details-content.referral-keyboard-open {
     background:
       linear-gradient(90deg, #7341A7 0%, #432477 50%, #20143F 100%) padding-box,
       linear-gradient(90deg, #7341A7 0%, #432477 100%) border-box;
-    box-shadow: none;
+    box-shadow: inset -2px -2px 2px 0 #ffffff;
     color: #ffffff;
     font-family: 'Nunito', sans-serif;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: 0;
     cursor: pointer;

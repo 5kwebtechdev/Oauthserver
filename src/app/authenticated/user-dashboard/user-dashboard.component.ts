@@ -1121,6 +1121,11 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       // Refresh streak count
       this.checkStreakRestore();
       this.loadUserStats();
+    } else if (data?.notEligible) {
+      // The dedicated eligibility check disagreed with the dashboard's
+      // streak-status flag — trust it and stop offering a restore that
+      // would just reopen to the same "not eligible" dead end.
+      this.canRestoreStreak = false;
     }
   }
 

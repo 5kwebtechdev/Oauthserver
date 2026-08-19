@@ -100,14 +100,18 @@ export class HabitApi {
         return this.taskApi.getCalendarByDate(date, force).pipe(
             map((resp: any) => {
                 if (!resp) return [];
-                if (Array.isArray(resp.habits)) return resp.habits;
+                // The calendar API includes a `today` flag per habit — only
+                // `today === false` should hide it from Home's "Today at a Glance";
+                // missing the field keeps older responses working as before.
+                const isToday = (i: any) => i?.today !== false;
+                if (Array.isArray(resp.habits)) return resp.habits.filter(isToday);
                 if (Array.isArray(resp.data)) return resp.data.filter((i: any) => {
                     const t = (i?.type || '').toString().toLowerCase();
-                    return t.includes('habit') || t === 'habits';
+                    return (t.includes('habit') || t === 'habits') && isToday(i);
                 });
                 if (Array.isArray(resp.tasks)) return resp.tasks.filter((i: any) => {
                     const t = (i?.type || '').toString().toLowerCase();
-                    return t.includes('habit') || t === 'habits';
+                    return (t.includes('habit') || t === 'habits') && isToday(i);
                 });
                 return [];
             })

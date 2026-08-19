@@ -18,7 +18,7 @@ export class CalendarService {
         private authService: AuthService
     ) { }
 
-    getUserCalendar(date: string | Date, viewType: 'day' | 'month' = 'day', forceReload: boolean = false): Observable<CalendarResponse> {
+    getUserCalendar(date: string | Date, viewType: 'day' | 'week' | 'month' = 'day', forceReload: boolean = false): Observable<CalendarResponse> {
         const includePersonalEvents = this.authService.getUserRelationship() === 'CHILD';
         return this.getCalendar(date, viewType, includePersonalEvents);
     }
@@ -28,11 +28,11 @@ export class CalendarService {
      * contexts. It is the only view that needs personal events merged for all
      * of those contexts; legacy calendar consumers retain their old behavior.
      */
-    getUserPlannerCalendar(date: string | Date, viewType: 'day' | 'month' = 'day'): Observable<CalendarResponse> {
+    getUserPlannerCalendar(date: string | Date, viewType: 'day' | 'week' | 'month' = 'day'): Observable<CalendarResponse> {
         return this.getCalendar(date, viewType, true);
     }
 
-    private getCalendar(date: string | Date, viewType: 'day' | 'month', includePersonalEvents: boolean): Observable<CalendarResponse> {
+    private getCalendar(date: string | Date, viewType: 'day' | 'week' | 'month', includePersonalEvents: boolean): Observable<CalendarResponse> {
         const dateStr = this.formatDateToYYYYMMDD(date);
         const url = `${this.apiUrl}/user-calendar?date=${dateStr}&viewType=${viewType}`;
         const calendar$ = this.http.get<CalendarResponse>(url).pipe(
@@ -73,7 +73,7 @@ export class CalendarService {
     }
 
     /** No-op kept for call-site compatibility */
-    clearCache(date?: string | Date, viewType?: 'day' | 'month') { }
+    clearCache(date?: string | Date, viewType?: 'day' | 'week' | 'month') { }
 
     private formatDateToYYYYMMDD(date: string | Date): string {
         // String already in YYYY-MM-DD — use directly to avoid UTC-midnight timezone shift
@@ -96,7 +96,7 @@ export class CalendarService {
         };
     }
 
-    private eventOccursInView(event: EventDto, targetDate: string, viewType: 'day' | 'month'): boolean {
+    private eventOccursInView(event: EventDto, targetDate: string, viewType: 'day' | 'week' | 'month'): boolean {
         const eventDate = String(event?.eventDate || '').slice(0, 10);
         if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) return false;
 
@@ -108,10 +108,34 @@ export class CalendarService {
             return true;
         }
 
+        if (viewType === 'week') {
+            const { start, end } = this.getWeekRange(targetDate);
+            if (event.recurrence === 'ONE_TIME') return eventDate >= start && eventDate <= end;
+            if (eventDate > end) return false;
+            // Recurring events can't be range-matched by date string alone —
+            // keep them visible for the week and let daily filtering downstream
+            // (e.g. the day-of-week/anniversary check) narrow it further.
+            return true;
+        }
+
         if (event.recurrence === 'ONE_TIME') return eventDate === targetDate;
         if (eventDate > targetDate) return false;
         if (event.recurrence === 'YEARLY') return eventDate.slice(5) === targetDate.slice(5);
         return eventDate.slice(8) === targetDate.slice(8);
+    }
+
+    /** Monday–Sunday week (ISO week) containing `targetDate` (YYYY-MM-DD). */
+    private getWeekRange(targetDate: string): { start: string; end: string } {
+        const [year, month, day] = targetDate.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        const isoDayIndex = (date.getDay() + 6) % 7; // Monday = 0 ... Sunday = 6
+
+        const monday = new Date(date);
+        monday.setDate(date.getDate() - isoDayIndex);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+
+        return { start: this.formatDateToYYYYMMDD(monday), end: this.formatDateToYYYYMMDD(sunday) };
     }
 
     private toCalendarEvent(event: EventDto): CalendarResponse['events'][number] {
@@ -157,6 +181,10 @@ export class CalendarService {
 
     getUserPlannerCalendarMonth(date: string): Observable<CalendarResponse> {
         return this.getUserPlannerCalendar(date, 'month');
+    }
+
+    getUserPlannerCalendarWeek(date: string): Observable<CalendarResponse> {
+        return this.getUserPlannerCalendar(date, 'week');
     }
 
     transformToTimelineEvents(response: CalendarResponse): TimelineEvent[] {

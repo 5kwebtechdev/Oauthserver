@@ -48,6 +48,10 @@ export interface EduHubEventItem {
   isFree?: boolean | null;
   regLink?: string | null;
   description?: string | null;
+  /** Total like count for this item. */
+  champsLiked?: number | null;
+  /** Whether the requesting user has liked this item. */
+  likedBySelf?: boolean;
 }
 
 export interface EduHubEventPage {
@@ -72,15 +76,43 @@ export class EduHubEventsService {
     page: number,
     size = 20
   ): Observable<EduHubEventPage> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('entityType', entityType)
       .set('page', String(page))
       .set('size', String(size));
+
+    const userId = this.authService.getUserId();
+    if (userId != null) {
+      params = params.set('forUserId', String(userId));
+    }
 
     return this.http.get<EduHubEventPage>(`${environment.apiUrl}/eduhub/events`, {
       headers: this.getHeaders(),
       params
     });
+  }
+
+  /**
+   * POST /eduhub/like?userId=&id=&like= — toggles the like state for an
+   * EduHub item (event/workshop/shop listing). Returns the same DTO shape as
+   * the list/detail endpoints, with `champsLiked`/`likedBySelf` refreshed.
+   */
+  toggleLike(itemId: number, like: boolean): Observable<Partial<EduHubEventItem>> {
+    const userId = this.authService.getUserId();
+    if (userId == null) {
+      return throwError(() => new Error('Unable to identify your account. Please sign in again.'));
+    }
+
+    const params = new HttpParams()
+      .set('userId', String(userId))
+      .set('id', String(itemId))
+      .set('like', String(like));
+
+    return this.http.post<Partial<EduHubEventItem>>(
+      `${environment.apiUrl}/eduhub/like`,
+      null,
+      { headers: this.getHeaders(), params }
+    );
   }
 
   /**
