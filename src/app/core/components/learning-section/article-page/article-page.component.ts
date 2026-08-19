@@ -57,17 +57,17 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     {
       value: 'very-helpful',
       label: 'Very Helpful',
-      image: 'assets/figma/learning-details/very-helpful.svg'
+      image: 'assets/figma/learning-details/very-helpful.webp'
     },
     {
       value: 'helpful',
       label: 'Helpful',
-      image: 'assets/figma/learning-details/helpful.svg'
+      image: 'assets/figma/learning-details/helpful.webp'
     },
     {
       value: 'not-helpful',
       label: 'Not Helpful',
-      image: 'assets/figma/learning-details/not-helpful.svg'
+      image: 'assets/figma/learning-details/not-helpful.webp'
     }
   ];
 
@@ -165,7 +165,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
       article?.author?.avatarUrl
       || article?.authorAvatarUrl
       || article?.createdByAvatarUrl
-      || 'assets/figma/learning-details/app-icon.png'
+      || 'assets/figma/learning-details/app-icon.webp'
     );
   }
 
@@ -413,7 +413,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
   useAuthorFallback(event: Event): void {
     const image = event.target as HTMLImageElement;
-    const fallback = 'assets/figma/learning-details/app-icon.png';
+    const fallback = 'assets/figma/learning-details/app-icon.webp';
     if (!image.src.endsWith(fallback)) image.src = fallback;
   }
 

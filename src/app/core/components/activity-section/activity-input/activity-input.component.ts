@@ -192,16 +192,16 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   originUrl: string | null = null;
 
   readonly activityTabs: ReadonlyArray<ActivityTabOption> = [
-    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.svg' },
-    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.svg' },
+    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.webp' },
+    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.webp' },
     { key: 'timetable', label: 'Time Table', icon: 'assets/figma/child-planner/calendar.svg' },
     { key: 'events', label: 'Event', icon: 'assets/figma/activity-event/event-type.svg' }
   ];
 
   readonly childActivityTabs: ReadonlyArray<ActivityTabOption> = [
-    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.svg' },
-    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.svg' },
-    { key: 'planner', label: 'Planner', icon: 'assets/figma/child-planner/schedule.svg' }
+    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.webp' },
+    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.webp' },
+    { key: 'planner', label: 'Planner', icon: 'assets/figma/child-planner/schedule.webp' }
   ];
 
   readonly plannerColors = ['#0D47A1', '#B71C1C', '#880E4F', '#1B5E20', '#4A148C'];

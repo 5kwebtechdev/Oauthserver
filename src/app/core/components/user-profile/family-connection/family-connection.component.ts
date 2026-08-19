@@ -731,9 +731,15 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
     if (!this.memberToRemove) return;
 
     const member = this.memberToRemove;
-    const userId = String(member.userId || member.id || '');
+    const memberId = member.userId ?? member.id;
     this.showRemovePopup = false;
     this.memberToRemove = null;
+    if (memberId === null || memberId === undefined) {
+      console.error('[FamilyConnection] Cannot remove a member without an id');
+      this.loadFamilyDetails();
+      return;
+    }
+    const userId = String(memberId);
 
     // Optimistic update — remove from UI immediately
     this.members = this.members.filter(m =>
@@ -742,9 +748,13 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
     try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
 
     // Call backend API to remove the member from the family
-    this.authService.removeMemberFromFamily(member.userId).pipe(take(1)).subscribe({
+    this.authService.removeMemberFromFamily(memberId).pipe(take(1)).subscribe({
       next: () => {
         console.log('[FamilyConnection] Member removed successfully:', member.userId);
+        // Pass every identifier the API supplied. Different family endpoints
+        // expose either id, userId, or memberId; all cached consumers must
+        // recognise this as the same removed child.
+        this.coreAuthService.notifyFamilyMemberRemoved(member);
         // Reload fresh from server so screen reflects confirmed server state
         this.loadFamilyDetails();
       },

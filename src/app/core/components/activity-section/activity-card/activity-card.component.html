@@ -57,17 +57,17 @@
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-all.svg" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-all.webp" alt="" aria-hidden="true">
           <span>All</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-habit.svg" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-habit.webp" alt="" aria-hidden="true">
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-task.svg" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-task.webp" alt="" aria-hidden="true">
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
@@ -228,17 +228,17 @@
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-all.svg" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-all.webp" alt="" aria-hidden="true">
           <span>All</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-habit.svg" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-habit.webp" alt="" aria-hidden="true">
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-task.svg" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-task.webp" alt="" aria-hidden="true">
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
@@ -412,7 +412,7 @@
     <div *ngIf="habit?.type === 'timetable'" class="planner-home-card" (tap)="toggle()" long-press
       [delay]="1500" (press)="onLongPress()">
       <span class="planner-home-card__icon" aria-hidden="true">
-        <img src="assets/figma/child-planner/schedule.svg" alt="">
+        <img src="assets/figma/child-planner/schedule.webp" alt="">
       </span>
       <span class="planner-home-card__copy">
         <strong>{{ habit?.title || 'Planner' }}</strong>

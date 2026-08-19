@@ -3,7 +3,7 @@
     <ng-container [ngSwitch]="view">
       <ng-container *ngSwitchCase="'seller-success'">
         <main class="seller-success" aria-labelledby="seller-success-title">
-          <img class="seller-success__illustration" src="assets/figma/second-hand-books/seller/success.png" alt="Your book listing has been submitted">
+          <img class="seller-success__illustration" src="assets/figma/second-hand-books/seller/success.webp" alt="Your book listing has been submitted">
           <section class="seller-success__intro">
             <h1 id="seller-success-title">🎉 Your listing is on its way!</h1>
             <p>Nice job! Your book has been submitted for review, and we’ll notify you as soon as it’s live.</p>
@@ -95,7 +95,7 @@
                   <img [src]="condition.icon" alt="" aria-hidden="true"><span><strong>{{ condition.label }}</strong><small>{{ condition.description }}</small></span>
                 </button>
               </div>
-              <aside class="seller-notice seller-notice--warning"><img src="assets/figma/second-hand-books/seller/condition-warning.png" alt="" aria-hidden="true"><p>Misrepresenting condition may result in listing removal. We take buyer trust seriously.</p></aside>
+              <aside class="seller-notice seller-notice--warning"><img src="assets/figma/second-hand-books/seller/condition-warning.webp" alt="" aria-hidden="true"><p>Misrepresenting condition may result in listing removal. We take buyer trust seriously.</p></aside>
             </section>
 
             <section *ngSwitchCase="3" class="seller-step seller-step--photos" aria-labelledby="seller-photos-title">
@@ -127,7 +127,7 @@
                   <label class="seller-field"><span>Original Price/MRP (₹) <b aria-hidden="true">*</b></span><input type="number" min="1" inputmode="decimal" [(ngModel)]="seller.originalPrice" placeholder="eg.400"></label>
                   <label class="seller-field"><span>Selling Price (₹) <b aria-hidden="true">*</b></span><input type="number" min="0" inputmode="decimal" [(ngModel)]="seller.sellingPrice" [disabled]="seller.listingType === 'donate'" placeholder="eg.180"></label>
                 </div>
-                <label class="seller-negotiable" *ngIf="seller.listingType === 'sell'"><img src="assets/figma/second-hand-books/seller/negotiable.png" alt="" aria-hidden="true"><span><strong>Price Negotiable?</strong><small>Allow buyers to make offers</small></span><input type="checkbox" [(ngModel)]="seller.negotiable" aria-label="Price negotiable"><i aria-hidden="true"></i></label>
+                <label class="seller-negotiable" *ngIf="seller.listingType === 'sell'"><img src="assets/figma/second-hand-books/seller/negotiable.webp" alt="" aria-hidden="true"><span><strong>Price Negotiable?</strong><small>Allow buyers to make offers</small></span><input type="checkbox" [(ngModel)]="seller.negotiable" aria-label="Price negotiable"><i aria-hidden="true"></i></label>
               </section>
             </section>
 
@@ -147,7 +147,7 @@
                 <label class="seller-field seller-field--full"><span>Contact Number <b aria-hidden="true">*</b></span><span class="seller-phone"><span>🇮🇳 +91</span><input type="tel" inputmode="numeric" maxlength="10" [(ngModel)]="seller.contactNumber" placeholder="Enter your number" autocomplete="tel-national"></span></label>
               </section>
               <label class="seller-confirmation"><input type="checkbox" [(ngModel)]="seller.confirmed"><span>I confirm the book details and condition I've provided are accurate and honest.</span></label>
-              <aside class="seller-notice seller-notice--review"><img src="assets/figma/second-hand-books/seller/review-notice.png" alt="" aria-hidden="true"><p>Your listing will be reviewed by our team within 24 hours. You'll get notified once it's approved and live.</p></aside>
+              <aside class="seller-notice seller-notice--review"><img src="assets/figma/second-hand-books/seller/review-notice.webp" alt="" aria-hidden="true"><p>Your listing will be reviewed by our team within 24 hours. You'll get notified once it's approved and live.</p></aside>
             </section>
           </ng-container>
 
@@ -194,7 +194,7 @@
           </section>
 
           <section class="empty-listings" *ngIf="!listingsLoading && !listingsError && !listings.length">
-            <span class="empty-listings__illustration"><img src="assets/figma/second-hand-books/empty-listings-box.png" alt="" aria-hidden="true"></span>
+            <span class="empty-listings__illustration"><img src="assets/figma/second-hand-books/empty-listings-box.webp" alt="" aria-hidden="true"></span>
             <h2>You haven’t listed any books for sale yet.</h2>
             <p>List your books in a few steps and reach nearby readers who need them.</p>
 
@@ -313,12 +313,12 @@
           </ng-template>
 
           <section class="seller-note" *ngIf="selectedListingNote">
-            <span class="seller-note__icon"><img src="assets/figma/second-hand-books/seller-note.png" alt="" aria-hidden="true"></span>
+            <span class="seller-note__icon"><img src="assets/figma/second-hand-books/seller-note.webp" alt="" aria-hidden="true"></span>
             <div><strong>Seller’s Note</strong><p>{{ selectedListingNote }}</p></div>
           </section>
 
           <section class="book-contact-unlock" *ngIf="!isManagedListingDetails && !selectedListingContactVisible">
-            <img class="book-contact-unlock__illustration" src="assets/figma/contact-unlock/card-illustration.png" alt="" aria-hidden="true">
+            <img class="book-contact-unlock__illustration" src="assets/figma/contact-unlock/card-illustration.webp" alt="" aria-hidden="true">
             <div class="book-contact-unlock__content">
               <strong>Unlock contact details</strong>
               <p>Spend coins to unlock address and phone number to get in touch.</p>
@@ -333,7 +333,7 @@
               <ng-container *ngIf="!contactUnlockInProgress">
                 <img class="book-contact-unlock__lock" src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
                 <span>Unlock Now</span>
-                <ng-container *ngIf="selectedListingUnlockCost as cost"><img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true"><span>{{ cost }}</span></ng-container>
+                <ng-container *ngIf="selectedListingUnlockCost as cost"><img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true"><span>{{ cost }}</span></ng-container>
               </ng-container>
             </button>
           </section>
@@ -360,14 +360,14 @@
 
       <ng-container *ngSwitchDefault>
         <header class="books-hero">
-          <img class="books-hero__background" src="assets/figma/second-hand-books/hero-background.png" alt="" aria-hidden="true">
+          <img class="books-hero__background" src="assets/figma/second-hand-books/hero-background.webp" alt="" aria-hidden="true">
           <div class="books-toolbar">
             <button type="button" class="books-back" aria-label="Back" (click)="goBack()"><ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon></button>
             <h1>Second Hand Books</h1>
           </div>
           <div class="books-hero__message">
             <div class="books-speech"><p><strong>Find &amp; Sell</strong> Books near you</p><span>Save up to <strong>80%</strong> on books</span></div>
-            <img class="books-hero__pet" src="assets/figma/second-hand-books/pet-latest.svg" alt="" aria-hidden="true">
+            <img class="books-hero__pet" src="assets/figma/second-hand-books/pet-latest.webp" alt="" aria-hidden="true">
           </div>
         </header>
 
@@ -376,9 +376,9 @@
             <section class="books-choice" aria-labelledby="books-choice-title">
               <header class="books-choice__heading"><h2 id="books-choice-title">What brings you here today?</h2><p>Choose an option to get started.</p></header>
               <div class="books-choice__actions">
-                <button type="button" class="books-action-card" (click)="openBuyer()"><span class="books-action-card__art"><img src="assets/figma/second-hand-books/buyer-latest.svg" alt=""></span><span class="books-action-card__content"><strong>I am a buyer</strong><span>Search and discover books from nearby sellers</span></span><span class="books-action-card__arrow"><ion-icon name="arrow-forward"></ion-icon></span></button>
-                <button type="button" class="books-action-card" (click)="openSellerFlow()"><span class="books-action-card__art"><img src="assets/figma/second-hand-books/seller-latest.svg" alt=""></span><span class="books-action-card__content"><strong>I am a seller</strong><span>List your books and reach interested buyers.</span></span><span class="books-action-card__arrow"><ion-icon name="arrow-forward"></ion-icon></span></button>
-                <button type="button" class="books-action-card" (click)="openMyListings()"><span class="books-action-card__art"><img src="assets/figma/second-hand-books/my-listings-latest.svg" alt=""></span><span class="books-action-card__content"><strong>My Listings</strong><span>View and manage the books you have listed.</span></span><span class="books-action-card__arrow"><ion-icon name="arrow-forward"></ion-icon></span></button>
+                <button type="button" class="books-action-card" (click)="openBuyer()"><span class="books-action-card__art"><img src="assets/figma/second-hand-books/buyer-latest.webp" alt=""></span><span class="books-action-card__content"><strong>I am a buyer</strong><span>Search and discover books from nearby sellers</span></span><span class="books-action-card__arrow"><ion-icon name="arrow-forward"></ion-icon></span></button>
+                <button type="button" class="books-action-card" (click)="openSellerFlow()"><span class="books-action-card__art"><img src="assets/figma/second-hand-books/seller-latest.webp" alt=""></span><span class="books-action-card__content"><strong>I am a seller</strong><span>List your books and reach interested buyers.</span></span><span class="books-action-card__arrow"><ion-icon name="arrow-forward"></ion-icon></span></button>
+                <button type="button" class="books-action-card" (click)="openMyListings()"><span class="books-action-card__art"><img src="assets/figma/second-hand-books/my-listings-latest.webp" alt=""></span><span class="books-action-card__content"><strong>My Listings</strong><span>View and manage the books you have listed.</span></span><span class="books-action-card__arrow"><ion-icon name="arrow-forward"></ion-icon></span></button>
               </div>
             </section>
           </ng-container>

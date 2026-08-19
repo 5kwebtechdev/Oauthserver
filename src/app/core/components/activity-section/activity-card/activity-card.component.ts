@@ -2532,8 +2532,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   get plannerTabIcon(): string {
     return this.usesPlannerExperience
-      ? 'assets/figma/child-home/glance-planner.svg'
-      : 'assets/figma/child-home/glance-timetable.png';
+      ? 'assets/figma/child-home/glance-planner.webp'
+      : 'assets/figma/child-home/glance-timetable.webp';
   }
 
   get viewActionLabel(): string {

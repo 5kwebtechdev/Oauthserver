@@ -32,7 +32,7 @@ export class UserProfileComponent implements OnInit, OnChanges {
   // Local user avatar URL
   // This is a real bundled asset. The previous fallback path no longer
   // exists, which caused a broken-image/question-mark icon in child view.
-  userAvatarUrl: string = 'assets/figma/avatars/18-plus-male-1.png';
+  userAvatarUrl: string = 'assets/figma/avatars/18-plus-male-1.webp';
   // Avatar image name (e.g., "Avatar 3") coming from login response
   avatarImageName: string | null = null;
 
@@ -134,6 +134,13 @@ export class UserProfileComponent implements OnInit, OnChanges {
         if (resolved.url) this.userAvatarUrl = resolved.url;
         if (resolved.alt) this.avatarImageName = resolved.alt;
       }
+    });
+
+    // Ionic keeps this page in the navigation stack. Update its existing
+    // member list as soon as My Family confirms a removal, rather than
+    // waiting for the user to recreate the Profile page.
+    this.coreAuthService.familyMemberRemoved$.subscribe(memberId => {
+      this.members = this.coreAuthService.excludeRemovedFamilyMembers(this.members);
     });
 
     this.userService.getUserProfile$().subscribe(profile => {
@@ -293,7 +300,10 @@ export class UserProfileComponent implements OnInit, OnChanges {
       next: (response: FamilyDetailsResponse) => {
         if (response.family) {
           this.creator = response.family.creator;
-          this.members = response.family.members;
+          // The backend's family read model can be briefly stale right after
+          // a removal. Never allow that response to re-add a confirmed
+          // removed child to the cached My Profile screen.
+          this.members = this.coreAuthService.excludeRemovedFamilyMembers(response.family.members);
           console.log('[UserProfile] Loaded family details:', {
             creator: this.creator,
             members: this.members

@@ -33,12 +33,12 @@
           [attr.aria-label]="getStreakDayAriaLabel(day, dayIndex)">
           <span *ngIf="dayIndex === currentStreakDayIndex"
             class="daily-streak-popup__current-fire" aria-hidden="true">
-            <img src="assets/figma/child-home/daily-streak-fire.png" alt="">
+            <img src="assets/figma/child-home/daily-streak-fire.webp" alt="">
           </span>
 
           <span *ngIf="dayIndex !== currentStreakDayIndex && day.status === 'completed'"
             class="daily-streak-popup__small-fire" aria-hidden="true">
-            <img src="assets/figma/child-home/daily-streak-fire.png" alt="">
+            <img src="assets/figma/child-home/daily-streak-fire.webp" alt="">
           </span>
 
           <span *ngIf="dayIndex !== currentStreakDayIndex && day.status === 'missed'"
@@ -162,7 +162,7 @@
 
           <div class="digital-pet" [class.digital-pet--panda]="isHomePanda" aria-hidden="false">
             <img *ngIf="isHomePanda" class="digital-pet__panda-image"
-              src="assets/figma/child-learning/header-pet.png" alt="Panda buddy">
+              src="assets/figma/child-learning/header-pet.webp" alt="Panda buddy">
             <superme-pet *ngIf="!isHomePanda" [mood]="petMood" [size]="132"></superme-pet>
           </div>
 

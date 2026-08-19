@@ -24,7 +24,7 @@
             <h2>Guide, Encourage,<br>Celebrate Progress</h2>
             <p>{{ parentGuidanceText }}</p>
           </div>
-          <img class="parent-learning-hero__art" src="assets/figma/parent-child-learning/header-family.png"
+          <img class="parent-learning-hero__art" src="assets/figma/parent-child-learning/header-family.webp"
             alt="A parent encouraging their child's learning progress">
         </div>
       </header>
@@ -163,11 +163,11 @@
                     </ng-template>
                     <div class="parent-learning-card-item__footer">
                       <div class="parent-learning-card-item__rewards">
-                        <span><img src="assets/figma/parent-child-learning/coin.png" alt="Coins">{{ item.coins || 0 }}</span>
+                        <span><img src="assets/figma/parent-child-learning/coin.webp" alt="Coins">{{ item.coins || 0 }}</span>
                         <ng-container *ngIf="isParentItemAssigned(item) && getParentBonusCoins(item) as bonus">
                           <b aria-hidden="true">+</b>
                           <span class="parent-learning-card-item__bonus"><img
-                              src="assets/figma/parent-child-learning/coin.png" alt="Bonus coins">{{ bonus }}</span>
+                              src="assets/figma/parent-child-learning/coin.webp" alt="Bonus coins">{{ bonus }}</span>
                         </ng-container>
                       </div>
                       <button *ngIf="!isParentItemAssigned(item) || getParentItemStatus(item) === 'completed' || item.type === 'masterclass'"
@@ -176,7 +176,7 @@
                         [attr.aria-busy]="isParentCourseAssigning(item)">
                         {{ isParentCourseAssigning(item) ? 'Assigning...' : getParentActionLabel(item) }}
                         <ng-container *ngIf="getParentItemStatus(item) === 'pending' && !isParentItemAssigned(item)">
-                          <img src="assets/figma/parent-child-learning/coin.png" alt="">{{ getParentAssignmentCoins(item) }}
+                          <img src="assets/figma/parent-child-learning/coin.webp" alt="">{{ getParentAssignmentCoins(item) }}
                         </ng-container>
                       </button>
                     </div>
@@ -207,7 +207,7 @@
       <main class="child-learning-page">
         <header class="child-learning-hero" [class.child-learning-hero--detail]="selectedCategoryItem">
           <img class="child-learning-hero__background"
-            src="assets/figma/child-learning/header-background.png" alt="" aria-hidden="true">
+            src="assets/figma/child-learning/header-background.webp" alt="" aria-hidden="true">
 
           <div class="child-learning-hero__top">
             <ng-container *ngIf="selectedCategoryItem as activeCategory; else childMainHeader">
@@ -224,7 +224,7 @@
               <div class="child-learning-hero__actions">
                 <button type="button" class="child-learning-coins" (click)="openCoinPage()"
                   [attr.aria-label]="'Open coins. ' + childCoins + ' coins'">
-                  <img src="assets/figma/parent-child-learning/coin.png" alt="" aria-hidden="true">
+                  <img src="assets/figma/parent-child-learning/coin.webp" alt="" aria-hidden="true">
                   <strong>{{ childCoins }}</strong>
                 </button>
                 <button type="button" class="child-learning-search-toggle" (click)="toggleParentSearch()"
@@ -240,7 +240,7 @@
               <h1>Learnings</h1>
               <button type="button" class="child-learning-coins" (click)="openCoinPage()"
                 [attr.aria-label]="'Open coins. ' + childCoins + ' coins'">
-                <img src="assets/figma/parent-child-learning/coin.png" alt="" aria-hidden="true">
+                <img src="assets/figma/parent-child-learning/coin.webp" alt="" aria-hidden="true">
                 <strong>{{ childCoins }}</strong>
               </button>
             </ng-template>
@@ -269,7 +269,7 @@
             </p>
           </div>
 
-          <img *ngIf="isPandaPet" class="child-learning-hero__pet" src="assets/figma/child-learning/header-pet.png"
+          <img *ngIf="isPandaPet" class="child-learning-hero__pet" src="assets/figma/child-learning/header-pet.webp"
             alt="SuperMe learning companion holding a trophy">
           <superme-pet *ngIf="!isPandaPet" class="child-learning-hero__pet" mood="happy" [size]="140"></superme-pet>
         </header>
@@ -388,14 +388,14 @@
                     <strong>{{ item.title }}</strong>
                     <span *ngIf="getParentItemDetail(item) as detail" class="child-learning-item__detail">{{ detail }}</span>
                     <span class="child-learning-item__rewards">
-                      <span><img src="assets/figma/parent-child-learning/coin.png" alt="Coins">{{ item.coins || 0 }}</span>
+                      <span><img src="assets/figma/parent-child-learning/coin.webp" alt="Coins">{{ item.coins || 0 }}</span>
                       <ng-container *ngIf="isParentItemAssigned(item) && getParentBonusCoins(item) as bonus">
                         <b aria-hidden="true">+</b>
                         <span class="child-learning-item__bonus"><img
-                            src="assets/figma/parent-child-learning/coin.png" alt="Bonus coins">{{ bonus }}</span>
+                            src="assets/figma/parent-child-learning/coin.webp" alt="Bonus coins">{{ bonus }}</span>
                       </ng-container>
                       <span *ngIf="getChildTrophyCount(item) as trophies">
-                        <img src="assets/figma/child-learning/trophy.png" alt="Trophies">{{ trophies }}
+                        <img src="assets/figma/child-learning/trophy.webp" alt="Trophies">{{ trophies }}
                       </span>
                       <span *ngIf="getChildTimeText(item) as time">
                         <img src="assets/figma/child-learning/schedule.svg" alt="Duration">{{ time }}

@@ -28,14 +28,14 @@
           <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="">
           <p>Find exciting <strong>{{ title }}</strong><br>around you.</p>
         </div>
-        <img *ngIf="isPandaPet" class="events-mascot" src="assets/figma/child-learning/header-pet.png" alt="" aria-hidden="true">
+        <img *ngIf="isPandaPet" class="events-mascot" src="assets/figma/child-learning/header-pet.webp" alt="" aria-hidden="true">
         <superme-pet *ngIf="!isPandaPet" class="events-mascot" mood="happy" [size]="120"></superme-pet>
       </div>
     </header>
 
     <main class="events-main">
       <button type="button" class="refer-card" (click)="referForListing()">
-        <img class="refer-card__icon" src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+        <img class="refer-card__icon" src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
         <span class="refer-card__copy">
           <strong>Know an Organizer?</strong>
           <small>Refer them to get listed on EduHub.</small>
@@ -75,14 +75,14 @@
         </div>
 
         <div class="events-state events-state--error" *ngIf="!isLoading && errorMessage">
-          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
           <h3>Couldn’t load {{ title.toLowerCase() }}</h3>
           <p>{{ errorMessage }}</p>
           <button type="button" (click)="retry()">Retry</button>
         </div>
 
         <div class="events-state" *ngIf="!isLoading && !errorMessage && !visibleItems.length">
-          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
           <h3>{{ searchQuery || activeFilter === 'verified' && items.length ? 'No matching listings' : 'No listings available yet' }}</h3>
           <p *ngIf="searchQuery || activeFilter === 'verified' && items.length">Try another search or show all listings.</p>
           <p *ngIf="!searchQuery && !(activeFilter === 'verified' && items.length)">New {{ title.toLowerCase() }} will appear here when they are added.</p>
@@ -104,7 +104,7 @@
                         <div class="event-card__name-row">
                         <h3>{{ getDisplayName(item) }}</h3>
                         <img *ngIf="item.verified" class="event-card__verified"
-                          src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified">
+                          src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified">
                       </div>
                       <p *ngIf="getLocation(item)" class="event-card__location">
                         <img src="assets/figma/parent-eduhub-inner/location.svg" alt="" aria-hidden="true">

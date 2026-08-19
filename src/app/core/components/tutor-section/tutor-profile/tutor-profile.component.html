@@ -13,11 +13,11 @@
       </header>
 
       <div class="counselor-detail-loading" *ngIf="isLoading && !tutor" role="status" aria-live="polite"><ion-spinner name="crescent"></ion-spinner><p>Loading counselor details…</p></div>
-      <div class="counselor-detail-error" *ngIf="loadError && !tutor"><img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true"><h1>Unable to load counselor</h1><p>{{ loadError }}</p><button type="button" (click)="retryLoad()">Try again</button></div>
+      <div class="counselor-detail-error" *ngIf="loadError && !tutor"><img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true"><h1>Unable to load counselor</h1><p>{{ loadError }}</p><button type="button" (click)="retryLoad()">Try again</button></div>
 
       <main *ngIf="tutor" class="counselor-detail-content">
         <section class="counselor-profile-hero">
-          <div class="counselor-avatar-wrap"><img [src]="getProfileImage()" [alt]="getDisplayName() + ' profile image'" (error)="onProfileImageError($event)"><img *ngIf="isVerified()" class="counselor-verified" src="assets/figma/parent-eduhub-inner/verified.png" alt="Verified" title="Verified"></div>
+          <div class="counselor-avatar-wrap"><img [src]="getProfileImage()" [alt]="getDisplayName() + ' profile image'" (error)="onProfileImageError($event)"><img *ngIf="isVerified()" class="counselor-verified" src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified"></div>
           <div class="counselor-profile-copy"><h1>{{ getDisplayName() }}</h1><div class="counselor-profile-stats"><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">{{ getExperienceString() }}</span><button type="button" [disabled]="isLikeRequestInProgress" (click)="toggleLike()"><img src="assets/figma/parent-eduhub-inner/favorite.svg" alt="" aria-hidden="true">{{ getLikesCount() }} likes</button></div><span class="counselor-availability"><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true">{{ getContactModesString() }}</span></div>
         </section>
 
@@ -38,7 +38,7 @@
 
         <section class="counselor-unlock-card" *ngIf="!isContactUnlocked">
           <div class="counselor-unlock-copy">
-            <img src="assets/figma/contact-unlock/card-illustration.png" alt="" aria-hidden="true">
+            <img src="assets/figma/contact-unlock/card-illustration.webp" alt="" aria-hidden="true">
             <div>
               <h2>Unlock contact details</h2>
               <p>Spend coins to unlock address, phone number, and email to get in touch.</p>
@@ -54,7 +54,7 @@
             <ng-container *ngIf="!isUnlockingContact">
               <img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
               <span>Unlock Now</span>
-              <span><img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">{{ contactUnlockCost }}</span>
+              <span><img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">{{ contactUnlockCost }}</span>
             </ng-container>
           </button>
         </section>
@@ -67,19 +67,19 @@
     <div class="counselor-unlock-backdrop" *ngIf="showUnlockConfirmation" (click)="closeUnlockConfirmation()">
       <section class="counselor-unlock-sheet" role="dialog" aria-modal="true" aria-labelledby="counselor-unlock-title" (click)="$event.stopPropagation()">
         <button type="button" aria-label="Close unlock details" (click)="closeUnlockConfirmation()"><img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true"></button>
-        <img class="counselor-unlock-sheet__art" src="assets/figma/contact-unlock/sheet-illustration.png" alt="" aria-hidden="true">
+        <img class="counselor-unlock-sheet__art" src="assets/figma/contact-unlock/sheet-illustration.webp" alt="" aria-hidden="true">
         <h2 id="counselor-unlock-title">Unlock contact Details?</h2>
         <p>This will unlock full contact information and other details of {{ getDisplayName() }}</p>
         <div class="counselor-unlock-balance">
-          <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
+          <img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">
           <span><strong>{{ contactUnlockCost }} coins will be deducted</strong> from your SuperMeApp coin balance.</span>
-          <small>Your balance <b><img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">{{ getCoinBalance() }}</b></small>
+          <small>Your balance <b><img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">{{ getCoinBalance() }}</b></small>
         </div>
         <p class="counselor-unlock-access">You will get access to:</p>
         <div class="counselor-unlock-access-list"><span>Full Address</span><span>Phone Number</span><span>Email</span><span>View on map</span></div>
         <button type="button" class="counselor-unlock-confirm" [disabled]="isUnlockingContact" (click)="confirmUnlock()">
           <ion-spinner *ngIf="isUnlockingContact" name="crescent"></ion-spinner>
-          <ng-container *ngIf="!isUnlockingContact"><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Unlock Now <span><img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">{{ contactUnlockCost }}</span></ng-container>
+          <ng-container *ngIf="!isUnlockingContact"><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Unlock Now <span><img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">{{ contactUnlockCost }}</span></ng-container>
         </button>
       </section>
     </div>
@@ -270,7 +270,7 @@
       <section class="unlock-card" *ngIf="!isContactUnlocked">
         <div class="unlock-heading">
           <div class="unlock-icon" aria-hidden="true">
-            <img src="assets/figma/contact-unlock/card-illustration.png" alt="">
+            <img src="assets/figma/contact-unlock/card-illustration.webp" alt="">
           </div>
           <div>
             <h2>Unlock contact details</h2>
@@ -293,7 +293,7 @@
           <img class="unlock-button__lock" src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
           <span>Unlock Now</span>
           <span class="unlock-button__cost">
-            <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
+            <img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">
             {{ contactUnlockCost }}
           </span>
           </ng-container>
