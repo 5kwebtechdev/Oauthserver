@@ -18,7 +18,8 @@
           <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="">
           <p>Find trusted <strong>{{ directoryTitle }}</strong><br>around you.</p>
         </div>
-        <img src="assets/figma/counselors/hero-panda.png" class="counselor-mascot" alt="" aria-hidden="true">
+        <img *ngIf="isPandaPet" src="assets/figma/child-learning/header-pet.png" class="counselor-mascot" alt="" aria-hidden="true">
+        <superme-pet *ngIf="!isPandaPet" class="counselor-mascot" mood="happy" [size]="120"></superme-pet>
       </div>
     </header>
 

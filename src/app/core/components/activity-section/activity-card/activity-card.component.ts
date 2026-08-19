@@ -1022,6 +1022,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       this.switchTab(this.currentActive);
     }
 
+    // Planner tab cards are grouped by schedule and need their own fetch
+    // regardless of mode, since `recentTimetables`/`timetables` are flat
+    // per-entry lists without schedule-level grouping (title, date range).
+    if (this.mode === 'list' || this.mode === 'recent') {
+      this.loadGlancePlannerCards();
+    }
+
     // If in recent mode, check if we have recent habits/tasks (excluding completed ones)
     if (this.mode === 'recent') {
       this.hasHabits = this.filteredRecentHabits.length > 0;
@@ -1061,7 +1068,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           this.isEmpty = false;
         }
       } else if (this.currentActive === 'timetable') {
-        this.isEmpty = !this.hasTimetables;
+        this.isEmpty = !this.hasTimetables && !this.hasGlancePlannerCards;
       } else {
         this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
       }
@@ -1593,7 +1600,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           this.isEmpty = false;
         }
       } else if (this.currentActive === 'timetable') {
-        this.isEmpty = !this.hasTimetables;
+        this.isEmpty = !this.hasTimetables && !this.hasGlancePlannerCards;
       } else {
         this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
       }
@@ -1906,12 +1913,225 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     });
   }
 
+  // ── Planner tab: grouped schedule cards (title, date range, expand/collapse) ──
+  // Fetches the same planner-schedule API used by the full Planner page, grouped
+  // by schedule rather than the flat per-entry list `timetables`/`recentTimetables`
+  // use elsewhere in this component.
+  public glancePlannerRaw: any[] = [];
+  public glancePlannerLoading = false;
+  public glancePlannerLoaded = false;
+  private readonly glancePlannerExpansion = new Map<string, boolean>();
+
+  get glancePlannerCards(): Array<{ id: string; source: any; color: string; entries: any[] }> {
+    const today = new Date();
+    return this.glancePlannerRaw
+      .filter(item => this.glancePlannerOccursOnDate(item, today))
+      .map((source, index) => ({
+        // Fall back to an index-qualified key (not just the title) so that
+        // multiple schedules sharing the same title never collide on the
+        // same expand/collapse state — each card must be independently
+        // toggleable regardless of backend id/title duplication.
+        id: String(source?.id ?? source?.calendarId ?? `${source?.title ?? 'entry'}-${index}`),
+        source,
+        color: this.getGlancePlannerColor(source),
+        entries: this.getGlancePlannerEntriesForDate(source, today)
+      }))
+      .filter(card => card.entries.length > 0)
+      .sort((left, right) => this.getGlancePlannerStartTimestamp(left.source) - this.getGlancePlannerStartTimestamp(right.source));
+  }
+
+  get hasGlancePlannerCards(): boolean {
+    return this.glancePlannerCards.length > 0;
+  }
+
+  loadGlancePlannerCards(force = false): void {
+    if (this.glancePlannerLoading) return;
+    if (this.glancePlannerLoaded && !force) return;
+
+    const today = new Date();
+    const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    this.glancePlannerLoading = true;
+    this.calendarService.getUserPlannerCalendarMonth(formatted).subscribe({
+      next: (response: any) => {
+        const allEvents = Array.isArray(response?.events) ? response.events : [];
+        this.glancePlannerRaw = allEvents.filter((item: any) => this.isGlancePlannerSchedule(item));
+        this.glancePlannerLoading = false;
+        this.glancePlannerLoaded = true;
+        this.refreshTimetableEmptyState();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.glancePlannerRaw = [];
+        this.glancePlannerLoading = false;
+        this.glancePlannerLoaded = true;
+        this.refreshTimetableEmptyState();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /** Re-checks the timetable tab's empty state once planner cards resolve async, since `isEmpty` is a plain snapshot, not reactive. */
+  private refreshTimetableEmptyState(): void {
+    if (this.currentActive !== 'timetable') return;
+    this.isEmpty = !this.hasTimetables && !this.hasGlancePlannerCards;
+    this.showContent = !this.isEmpty;
+  }
+
+  isGlancePlannerExpanded(card: { id: string }, index: number): boolean {
+    return this.glancePlannerExpansion.has(card.id) ? !!this.glancePlannerExpansion.get(card.id) : index === 0;
+  }
+
+  toggleGlancePlannerCard(card: { id: string }, index: number): void {
+    this.glancePlannerExpansion.set(card.id, !this.isGlancePlannerExpanded(card, index));
+  }
+
+  trackGlancePlannerCard(_index: number, card: { id: string }): string {
+    return card.id;
+  }
+
+  trackGlancePlannerEntry(index: number, entry: any): string | number {
+    return entry?.id ?? entry?.activityId ?? `${entry?.name ?? entry?.title ?? 'entry'}-${entry?.startTime ?? index}`;
+  }
+
+  getGlancePlannerTitle(source: any): string {
+    return source?.title || source?.name || 'Time Table';
+  }
+
+  getGlancePlannerDateRange(source: any): string {
+    const start = this.getGlanceLocalDate(source?.startDate || source?.start_date);
+    const end = this.getGlanceLocalDate(source?.endDate || source?.end_date) || start;
+    if (!start) return '';
+    const format = (date: Date) => new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric'
+    }).format(date);
+    return end && this.glanceDateKey(start) !== this.glanceDateKey(end) ? `${format(start)} - ${format(end)}` : format(start);
+  }
+
+  getGlancePlannerEntryTime(entry: any): string {
+    const format = (value: any): string => {
+      const match = String(value || '').match(/(\d{1,2}):(\d{2})/);
+      if (!match) return '';
+      return `${Number(match[1])}.${match[2]}`;
+    };
+    const start = format(entry?.startTime || entry?.start_time);
+    const end = format(entry?.endTime || entry?.end_time);
+    return start && end ? `${start} - ${end}` : (start || end || 'Any time');
+  }
+
+  isGlancePlannerEntryPassed(entry: any): boolean {
+    const end = this.getGlancePlannerEntryTimestamp(entry, 'end');
+    return end > 0 && end < Date.now();
+  }
+
+  getGlancePlannerEntryCountdown(entry: any): string | null {
+    const now = Date.now();
+    const start = this.getGlancePlannerEntryTimestamp(entry, 'start');
+    const end = this.getGlancePlannerEntryTimestamp(entry, 'end');
+    if (!start || start <= now) {
+      return end >= now ? 'Now' : null;
+    }
+
+    const diffMinutes = Math.ceil((start - now) / 60000);
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    if (hours > 0) return `In ${hours}h ${minutes} min`;
+    return `In ${Math.max(minutes, 1)} min`;
+  }
+
+  private isGlancePlannerSchedule(item: any): boolean {
+    const type = String(item?.type || item?.eventType || '').toUpperCase();
+    // 'EVENT' entries are personal calendar events (birthdays, appointments) merged
+    // in from a separate endpoint — everything else in this feed is a timetable/
+    // planner schedule, even a simple single time-block without a colorCode/
+    // activities array (e.g. one created via the plain, non-multi-entry form).
+    if (type === 'EVENT') return false;
+    return Array.isArray(item?.activities)
+      || Boolean(item?.colorCode || item?.color_code)
+      || type.includes('TIMETABLE')
+      || type.includes('PLANNER')
+      || type.includes('SCHEDULE')
+      || Boolean(item?.startTime && item?.endTime);
+  }
+
+  private glancePlannerOccursOnDate(item: any, date: Date): boolean {
+    const candidate = this.glanceStartOfDay(date);
+    const start = this.glanceStartOfDay(this.getGlanceLocalDate(item?.startDate || item?.start_date) || candidate);
+    const end = this.glanceStartOfDay(this.getGlanceLocalDate(item?.endDate || item?.end_date) || start);
+    if (candidate < start || candidate > end) return false;
+
+    const entries = Array.isArray(item?.activities) && item.activities.length ? item.activities : [item];
+    return entries.some((entry: any) => this.glanceEntryOccursOnDate(entry, candidate, item?.daysOfWeek));
+  }
+
+  private getGlancePlannerEntriesForDate(item: any, date: Date): any[] {
+    const entries = Array.isArray(item?.activities) && item.activities.length ? item.activities : [item];
+    return entries
+      .filter((entry: any) => this.glanceEntryOccursOnDate(entry, date, item?.daysOfWeek))
+      .sort((left: any, right: any) => this.getGlancePlannerEntryTimestamp(left, 'start') - this.getGlancePlannerEntryTimestamp(right, 'start'));
+  }
+
+  private glanceEntryOccursOnDate(entry: any, date: Date, inheritedDays?: any): boolean {
+    const rawDays = entry?.daysOfWeek ?? entry?.days ?? inheritedDays;
+    const days = Array.isArray(rawDays) ? rawDays : [];
+    if (!days.length) return true;
+    const day = date.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+    return days.some((value: any) => {
+      const normalized = String(value || '').trim().toUpperCase();
+      return normalized === day
+        || normalized === day.slice(0, 3)
+        || normalized === day.slice(0, 1)
+        || (day === 'THURSDAY' && (normalized === 'TH' || normalized === 'THU'))
+        || (day === 'SATURDAY' && normalized === 'SA');
+    });
+  }
+
+  private getGlancePlannerEntryTimestamp(entry: any, part: 'start' | 'end'): number {
+    const field = part === 'start' ? 'startTime' : 'endTime';
+    const time = entry?.[field] ?? entry?.[`${field}_time`] ?? entry?.[`${part}Time`];
+    const match = String(time || '').match(/(\d{1,2}):(\d{2})/);
+    if (!match) return 0;
+    const timestamp = this.glanceStartOfDay(new Date());
+    timestamp.setHours(Number(match[1]), Number(match[2]), 0, 0);
+    return timestamp.getTime();
+  }
+
+  private getGlancePlannerStartTimestamp(item: any): number {
+    const start = this.getGlanceLocalDate(item?.startDate || item?.start_date);
+    return start ? start.getTime() : Number.MAX_SAFE_INTEGER;
+  }
+
+  private getGlancePlannerColor(item: any): string {
+    const color = String(item?.colorCode ?? item?.color_code ?? '').trim();
+    return /^#[0-9a-f]{3,8}$/i.test(color) ? color : '#537C81';
+  }
+
+  private getGlanceLocalDate(value: any): Date | null {
+    if (!value) return null;
+    if (value instanceof Date) return isNaN(value.getTime()) ? null : new Date(value.getTime());
+    const text = String(value);
+    const match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    const parsed = new Date(text);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  private glanceStartOfDay(date: Date): Date {
+    const result = new Date(date);
+    result.setHours(0, 0, 0, 0);
+    return result;
+  }
+
+  private glanceDateKey(date: Date): string {
+    return this.habitService.formatDateToYYYYMMDD(date);
+  }
+
   /**
    * Update the empty state based on current tab
    */
   /**
    * Update the empty state based on current tab
-   * 
+   *
    * NEW ALGORITHM (based on completion rates):
    * - habitCompletionRate = (totalHabitsCompleted / totalHabitsLoaded) * 100
    * - taskCompletionRate = (totalTasksCompleted / totalTasksLoaded) * 100
@@ -1942,7 +2162,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         this.isEmpty = !this.hasTasks;
         break;
       case 'timetable':
-        this.isEmpty = !this.hasTimetables;
+        this.isEmpty = !this.hasTimetables && !this.hasGlancePlannerCards;
         break;
       default:
         this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
@@ -2009,7 +2229,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           this.isEmpty = false;
         }
       } else if (this.currentActive === 'timetable') {
-        this.isEmpty = !this.hasTimetables;
+        this.isEmpty = !this.hasTimetables && !this.hasGlancePlannerCards;
       } else {
         this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
       }
@@ -2027,6 +2247,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       this.loadTodayTasks();
     } else if (tab === 'timetable' && this.timetables.length === 0) {
       this.loadTodayTasks();
+      this.loadGlancePlannerCards();
     } else if (tab === 'all') {
       if (this.habits.length === 0) this.loadHabits();
       if (this.tasks.length === 0) this.loadTodayTasks();

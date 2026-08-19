@@ -403,10 +403,13 @@
       <button type="button" class="message-composer-cancel" (click)="closeMessageComposer()">
         Cancel
       </button>
-      <button type="button" class="message-composer-send" [disabled]="!messageDraft.trim()"
+      <button type="button" class="message-composer-send" [disabled]="!messageDraft.trim() || isSendingMessage"
         (click)="sendMessageNow()">
-        <img src="assets/figma/parent-home/message-send.svg" alt="" aria-hidden="true">
-        Send Now
+        <ion-spinner *ngIf="isSendingMessage" name="crescent"></ion-spinner>
+        <ng-container *ngIf="!isSendingMessage">
+          <img src="assets/figma/parent-home/message-send.svg" alt="" aria-hidden="true">
+          Send Now
+        </ng-container>
       </button>
     </div>
   </section>

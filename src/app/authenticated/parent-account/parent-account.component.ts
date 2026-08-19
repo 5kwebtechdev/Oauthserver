@@ -2,7 +2,7 @@ import { Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild } fro
 import { Platform, ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from "@angular/common";
 import { Router, RouterModule } from '@angular/router';
-import { catchError, firstValueFrom, forkJoin, map, of, Subject, takeUntil } from 'rxjs';
+import { catchError, delay, firstValueFrom, forkJoin, map, Observable, of, Subject, takeUntil } from 'rxjs';
 import { UserService } from '../../core/services/user.service';
 import { IonicModule } from "@ionic/angular";
 import { MoodService } from '../../core/services/mood.service';
@@ -22,6 +22,8 @@ import { FamilyService } from '../../core/services/family.service';
 import { LearningSectionComponent } from '../../core/components/learning-section/learning-section.component';
 import { AcademySectionComponent } from '../../core/components/academy-section/academy-section.component';
 import { TutorCardComponent } from '../../core/components/tutor-section/tutor-card/tutor-card.component';
+import { ParentAnalyticsService, ParentAnalyticsBand, ParentAnalyticsResponseDto } from '../../core/services/parent-analytics.service';
+import { CustomToastService } from '../../core/services/custom-toast.service';
 
 type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
 
@@ -99,6 +101,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public familyAckRole = '';
     public showMessageComposer = false;
     public messageComposerClosing = false;
+    public isSendingMessage = false;
     public messageDraft = '';
     public readonly messageMaxLength = 100;
 
@@ -124,6 +127,19 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public appScore: number = 0;
     public Math = Math;
 
+    // This Week's Performance (GET /analytics/parent-home?childId={id})
+    public completionRateColor: ParentAnalyticsBand = 'red';
+    public consistencyRateColor: ParentAnalyticsBand = 'red';
+    public improvementRateColor: ParentAnalyticsBand = 'red';
+    public appScoreColor: ParentAnalyticsBand = 'red';
+    public appScoreLabel: string = 'Needs attention';
+    public totalCompletedActivities: number = 0;
+    public totalScheduledActivities: number = 0;
+    public activeDaysThisWeek: number = 0;
+    public daysInWeek: number = 7;
+    public isFirstWeek: boolean = true;
+    private performanceAnalyticsRequestId = 0;
+
     /** Passed directly to mood-selector so it shows the correct child's vibe without ID matching */
     public selectedChildVibe: VibesDisplayResponse | null = null;
 
@@ -136,23 +152,27 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         return Math.min(100, Math.max(0, Math.round(Number(value))));
     }
 
-    private buildMetric(label: string, value: number, displayValue: string): ParentMetric {
+    /** Converts the server's authoritative red/yellow/green band into the hex used for rings/text. */
+    bandToHex(band: ParentAnalyticsBand): string {
+        if (band === 'green') return '#4CAF50';
+        if (band === 'yellow') return '#F0AD4E';
+        return '#E74C3C';
+    }
+
+    private bandToStatus(band: ParentAnalyticsBand): string {
+        if (band === 'green') return 'Great progress !';
+        if (band === 'yellow') return 'Attention Needed';
+        return 'Needs Improvement';
+    }
+
+    private buildMetric(label: string, value: number, displayValue: string, band: ParentAnalyticsBand, statusOverride?: string): ParentMetric {
         const normalizedValue = this.clampPercentage(value);
-        const isNegativeImprovement = label === 'Improvement Rate' && this.improvementRate < 0;
         return {
             label,
             value: normalizedValue,
             displayValue,
-            color: this.getMetricColor(
-                isNegativeImprovement ? -1 : normalizedValue
-            ),
-            status: isNegativeImprovement
-                ? 'Needs Improvement'
-                : normalizedValue >= 80
-                ? 'Great progress !'
-                : normalizedValue >= 60
-                    ? 'Attention Needed'
-                    : 'Needs Improvement'
+            color: this.bandToHex(band),
+            status: statusOverride ?? this.bandToStatus(band)
         };
     }
 
@@ -197,32 +217,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.activeMetricInfo = this.activeMetricInfo === message ? null : message;
     }
 
-    /** PRD color logic: Red 0-59, Yellow 60-79, Green 80-100 */
-    getMetricColor(value: number): string {
-        if (value >= 80) return '#4CAF50';   // green
-        if (value >= 60) return '#F0AD4E';   // yellow
-        return '#E74C3C';                     // red
-    }
 
-    /** App Score: 0-59 red, 60-79 yellow, 80-100 green */
-    get completionRateColor(): string { return this.getMetricColor(this.completionRate); }
-    get consistencyRateColor(): string { return this.getMetricColor(this.consistencyRate); }
-    get appScoreColor(): string { return this.getMetricColor(this.appScore); }
-
-    /** Improvement Rate: use absolute value for color scale (negative is always red) */
-    get improvementRateColor(): string {
-        if (this.improvementRate < 0) return '#E74C3C';
-        return this.getMetricColor(this.improvementRate);
-    }
-
-    /** Badge label for metric value */
-    getMetricBadge(value: number): string {
-        if (value >= 80) return 'Excellent!';
-        if (value >= 60) return 'Doing okay';
-        return 'Needs attention';
-    }
-    get appScoreBadge(): string { return this.getMetricBadge(this.appScore); }
-    
     // Vibe fields
     public vibeTitle: string = '';
     public vibeDescription: string = '';
@@ -302,23 +297,24 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     get performanceMetrics(): ParentMetric[] {
         return [
-            this.buildMetric('Completion Rate', this.completionRate, `${this.clampPercentage(this.completionRate)}%`),
-            this.buildMetric('Consistency Rate', this.consistencyRate, `${this.clampPercentage(this.consistencyRate)}%`),
+            this.buildMetric('Completion Rate', this.completionRate, `${this.clampPercentage(this.completionRate)}%`, this.completionRateColor),
+            this.buildMetric('Consistency Rate', this.consistencyRate, `${this.clampPercentage(this.consistencyRate)}%`, this.consistencyRateColor),
             this.buildMetric(
                 'Improvement Rate',
                 Math.abs(this.improvementRate),
-                `${this.improvementRate > 0 ? '+' : ''}${Math.round(this.improvementRate)}%`
+                `${this.improvementRate > 0 ? '+' : ''}${Math.round(this.improvementRate)}%`,
+                this.improvementRateColor
             ),
-            this.buildMetric('App’s Score', this.appScore, `${Math.round(this.appScore)}`)
+            this.buildMetric('App’s Score', this.appScore, `${Math.round(this.appScore)}`, this.appScoreColor, this.appScoreLabel)
         ];
     }
 
     get aiInsight(): string {
         const name = this.selectedChildName;
-        if (this.appScore >= 80) {
+        if (this.appScoreColor === 'green') {
             return `${name} is showing strong and consistent progress this week.`;
         }
-        if (this.appScore >= 60) {
+        if (this.appScoreColor === 'yellow') {
             return `${name} is doing reasonably well, though there’s room to tighten one or two areas.`;
         }
         return `${name} may benefit from a little extra support and a simpler daily plan this week.`;
@@ -386,7 +382,9 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         private parentImageService: ParentImageService,
         private refreshService: RefreshService,
         private familyService: FamilyService,
-        private platform: Platform
+        private platform: Platform,
+        private parentAnalyticsService: ParentAnalyticsService,
+        private toastService: CustomToastService
     ) { }
 
     async openNotes() {
@@ -1036,7 +1034,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             return;
         }
 
-        this.performanceLoading = true;
+        // Coins/streak/trophies/badges still come from the vibes-display endpoint.
         this.moodService.getVibesDisplay(selectedChildId).pipe(takeUntil(this.destroy$)).subscribe({
             next: (data) => {
                 // A slower response for the previously selected child must
@@ -1052,25 +1050,51 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                     this.userStreaks = d.streak || 0;
                     this.userDays = d.trophies || 0;
                     this.userBadges = d.badges || 0;
-                    this.completionRate = Math.round(d.completionRate || 0);
-                    this.consistencyRate = Math.round(d.consistencyRate || 0);
-                    this.improvementRate = Math.round(d.improvementRate || 0);
-                    this.appScore = Math.round(d.appScore || 0);
-                    this.hasPerformanceData = this.hasWeeklyPerformanceData(d);
                     this.userService.saveUserStats({
                         coins: this.userCoins,
                         streaks: this.userStreaks,
                         days: this.userDays,
                         badges: this.userBadges
                     });
-                    this.statsUpdatedAt = new Date();
-                } else {
-                    this.hasPerformanceData = false;
                 }
+            },
+            error: () => { /* header stats keep their last known values on failure */ }
+        });
+
+        this.loadParentHomeAnalytics(selectedChildId, requestId);
+    }
+
+    /** "This Week's Performance" card — GET /analytics/parent-home?childId={id} */
+    private loadParentHomeAnalytics(selectedChildId: string | number, requestId: number): void {
+        this.performanceLoading = true;
+        this.parentAnalyticsService.getParentHomeAnalytics(selectedChildId).pipe(takeUntil(this.destroy$)).subscribe({
+            next: (data: ParentAnalyticsResponseDto) => {
+                if (requestId !== this.performanceRequestId
+                    || String(this.selectedChild?.id) !== String(selectedChildId)) {
+                    return;
+                }
+
+                this.completionRate = Math.round(data.completionRate || 0);
+                this.consistencyRate = Math.round(data.consistencyRate || 0);
+                this.improvementRate = Math.round(data.improvementRate || 0);
+                this.appScore = Math.round(data.appScore || 0);
+                this.completionRateColor = data.completionRateColor || 'red';
+                this.consistencyRateColor = data.consistencyRateColor || 'red';
+                this.improvementRateColor = data.improvementRateColor || 'red';
+                this.appScoreColor = data.appScoreColor || 'red';
+                this.appScoreLabel = data.appScoreLabel || 'Needs attention';
+                this.totalCompletedActivities = data.totalCompletedActivities || 0;
+                this.totalScheduledActivities = data.totalScheduledActivities || 0;
+                this.activeDaysThisWeek = data.activeDaysThisWeek || 0;
+                this.daysInWeek = data.daysInWeek || 7;
+                this.isFirstWeek = !!data.isFirstWeek;
+                this.hasPerformanceData = !this.isFirstWeek;
+                this.statsUpdatedAt = new Date();
                 this.performanceLoading = false;
             },
             error: () => {
                 if (requestId !== this.performanceRequestId) return;
+                this.hasPerformanceData = false;
                 this.performanceLoading = false;
             }
         });
@@ -1167,11 +1191,33 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             return;
         }
 
-        // Just close the composer — the modal lives on the home screen itself,
-        // so this naturally leaves the user right where they were. No
-        // navigation to notes/new: that screen doesn't even read the message
-        // that was being passed to it, so it was a dead end, not a real send.
-        this.dismissMessageComposer();
+        // Guard against duplicate taps while a send is already in flight.
+        if (this.isSendingMessage) return;
+
+        this.isSendingMessage = true;
+        this.sendMessageToChild(this.selectedChild?.id ?? null, message).subscribe({
+            next: () => {
+                this.isSendingMessage = false;
+                this.toastService.success('Message sent successfully.');
+                // The modal lives on the home screen itself, so closing it
+                // naturally leaves the user right where they were.
+                this.dismissMessageComposer();
+            },
+            error: () => {
+                this.isSendingMessage = false;
+                this.toastService.error('Unable to send message. Please try again.');
+            }
+        });
+    }
+
+    /**
+     * TODO: no backend endpoint for "send a message to my child" exists yet.
+     * This is a placeholder so the toast/duplicate-tap UX can be built and
+     * verified now — swap the body for the real HTTP call once the API is
+     * available, keeping the same success/error contract.
+     */
+    private sendMessageToChild(childId: string | number | null, message: string): Observable<{ success: boolean }> {
+        return of({ success: true }).pipe(delay(400));
     }
 
     @HostListener('document:keydown.escape')

@@ -951,3 +951,178 @@ h4 {
     height: 12px;
   }
 }
+
+// ── Planner tab: grouped schedule cards ─────────────────────────────────────
+.glance-planner-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.glance-planner-card {
+  background: #fff;
+  border: 0;
+  border-left: 4px solid var(--planner-color, #537C81);
+  border-radius: 16px;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, .1);
+  overflow: hidden;
+  padding: 8px 12px 12px 16px;
+}
+
+.glance-planner-card__header {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: #282527;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  min-height: 36px;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.glance-planner-card__heading,
+.glance-planner-card__actions {
+  align-items: center;
+  display: flex;
+  min-width: 0;
+}
+
+.glance-planner-card__heading {
+  flex: 1 1 auto;
+  gap: 8px;
+
+  i {
+    background: var(--planner-color, #537C81);
+    border-radius: 50%;
+    display: block;
+    flex: 0 0 auto;
+    height: 12px;
+    width: 12px;
+  }
+
+  strong {
+    color: #282527;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.glance-planner-card__actions {
+  flex: 0 0 auto;
+  gap: 6px;
+
+  em {
+    background: #e8f2f2;
+    border-radius: 16px;
+    color: #3e5a60;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 18px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+}
+
+.glance-planner-card__chevron {
+  height: 24px;
+  width: 24px;
+  color: #282527;
+  transform: rotate(180deg);
+  transition: transform 180ms ease;
+
+  &.is-collapsed {
+    transform: rotate(0deg);
+  }
+}
+
+.glance-planner-card > p {
+  color: #6b656a;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0 0 8px 20px;
+}
+
+.glance-planner-card__entries {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px 0 0 20px;
+}
+
+.glance-planner-entry {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(72px, .9fr) minmax(0, 1fr) auto;
+  min-height: 30px;
+  transition: opacity 180ms ease, color 180ms ease;
+
+  time,
+  strong,
+  em {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  time {
+    color: #6b656a;
+  }
+
+  strong {
+    color: #282527;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  em {
+    background: #e8f2f2;
+    border-radius: 16px;
+    color: #3e5a60;
+    font-size: 12px;
+    font-style: normal;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+
+  &.is-passed {
+    opacity: .7;
+
+    time,
+    strong {
+      color: #6b656a;
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .glance-planner-entry {
+    grid-template-columns: minmax(58px, .8fr) minmax(0, 1fr) auto;
+    gap: 5px;
+  }
+
+  .glance-planner-entry time,
+  .glance-planner-entry strong {
+    font-size: 13px;
+  }
+
+  .glance-planner-entry em {
+    font-size: 11px;
+    padding: 2px 5px;
+  }
+}

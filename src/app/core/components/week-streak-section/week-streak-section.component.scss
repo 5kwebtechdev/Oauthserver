@@ -66,8 +66,12 @@
     border: 1px solid #D9D6D8;
   }
 
+  // A soft tinted fill (rather than a stark white ring or a heavy solid
+  // gradient) reads as its own calm, "resting" state while still sitting in
+  // the same light, rounded family as the other three day markers.
   &.missed {
-    background: radial-gradient(circle at 50% 45%, #7341A7 0%, #5B338F 50%, #432477 100%);
+    background: linear-gradient(160deg, #F3EAFC 0%, #EADBF9 100%);
+    border: 1px solid #E1CBF4;
   }
 
   &.pending {
@@ -111,8 +115,14 @@
 }
 
 .week-streak-rest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
-  font-size: 16px;
+  // The fire/check icons are custom art deliberately oversized to fill their
+  // 16px crop — a plain emoji glyph at the same 16px looks tiny and lost by
+  // comparison, so size it up to read with the same visual weight.
+  font-size: 20px;
   line-height: 1;
 }
 

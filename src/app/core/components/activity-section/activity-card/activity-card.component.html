@@ -14,6 +14,39 @@
     </div>
   </div>
 </ng-template>
+
+<!-- Planner tab: grouped schedule cards with expand/collapse, shared by List and Recent modes -->
+<ng-template #plannerCards>
+  <section class="glance-planner-cards" *ngIf="currentActive === 'timetable' && hasGlancePlannerCards">
+    <article class="glance-planner-card" *ngFor="let card of glancePlannerCards; let i = index; trackBy: trackGlancePlannerCard"
+      [style.--planner-color]="card.color">
+      <button type="button" class="glance-planner-card__header"
+        [attr.aria-expanded]="isGlancePlannerExpanded(card, i)" (click)="toggleGlancePlannerCard(card, i)">
+        <span class="glance-planner-card__heading">
+          <i></i>
+          <strong>{{ getGlancePlannerTitle(card.source) }}</strong>
+        </span>
+        <span class="glance-planner-card__actions">
+          <em>{{ card.entries.length }} today</em>
+          <svg class="glance-planner-card__chevron" [class.is-collapsed]="!isGlancePlannerExpanded(card, i)"
+            viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+      </button>
+      <p>{{ getGlancePlannerDateRange(card.source) }}</p>
+      <div class="glance-planner-card__entries" *ngIf="isGlancePlannerExpanded(card, i)">
+        <div class="glance-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackGlancePlannerEntry"
+          [class.is-passed]="isGlancePlannerEntryPassed(entry)">
+          <time>{{ getGlancePlannerEntryTime(entry) }}</time>
+          <strong>{{ getGlancePlannerTitle(entry) }}</strong>
+          <em *ngIf="getGlancePlannerEntryCountdown(entry) as countdown">{{ countdown }}</em>
+        </div>
+      </div>
+    </article>
+  </section>
+</ng-template>
+
 <div *ngIf="mode === 'list'" class="d-flex flex-column gap-2 glance-card"
   [ngClass]="'glance-card--' + currentActive">
   <div class="day-at-glance-container">
@@ -55,6 +88,8 @@
 
     <!-- Task-specific: no tasks at all (totalTasks === 0 AND habitCompletionRate < 100) -->
     <empty-state *ngIf="currentActive === 'tasks' && totalTasksLoaded === 0"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No tasks illustration"
       leadText="No tasks lined up for today"
       subText="No tasks are scheduled for today. Add one to start building your streak and earn coins."
       buttonText="">
@@ -76,6 +111,8 @@
 
     <!-- Habit-specific: no habits at all (totalHabits === 0 AND taskCompletionRate < 100) -->
     <empty-state *ngIf="currentActive === 'habits' && totalHabitsLoaded === 0"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No habits illustration"
       leadText="No habit lined up for today"
       subText="No habits are scheduled for today. Add one to start building your streak and earn coins."
       buttonText="">
@@ -90,6 +127,8 @@
 
     <!-- Timetable-specific: no time table entries for today -->
     <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables"
+      imageSrc="/assets/Images-Transparent/Image-Calendar-Blank.png"
+      imageAlt="No planner entries illustration"
       leadText="No time table entries for today"
       subText="Nothing scheduled yet. Add a time block to plan out your day."
       buttonText="">
@@ -140,9 +179,10 @@
     </activity-card>
   </div>
 
-  <!-- Timetable Items (when timetable tab is active) -->
+  <!-- Timetable/Planner Items (when timetable tab is active) -->
+  <ng-container *ngTemplateOutlet="plannerCards"></ng-container>
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'timetable' && hasTimetables">
+    *ngIf="currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
     <activity-card *ngFor="let ttItem of timetables.slice(0, maxItemsToShow)" [habit]="ttItem"
       [startTime]="ttItem.startTimeStamp || 0" [endTime]="ttItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
@@ -219,6 +259,8 @@
 
     <!-- Task-specific: no tasks at all (totalTasks === 0 AND habitCompletionRate < 100) -->
     <empty-state *ngIf="currentActive === 'tasks' && totalTasksLoaded === 0"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No tasks illustration"
       leadText="No tasks lined up for today"
       subText="No tasks are scheduled for today. Add one to start building your streak and earn coins."
       buttonText="">
@@ -240,6 +282,8 @@
 
     <!-- Habit-specific: no habits at all (totalHabits === 0 AND taskCompletionRate < 100) -->
     <empty-state *ngIf="currentActive === 'habits' && totalHabitsLoaded === 0"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No habits illustration"
       leadText="No habit lined up for today"
       subText="No habits are scheduled for today. Add one to start building your streak and earn coins."
       buttonText="">
@@ -253,6 +297,8 @@
 
     <!-- Timetable-specific: no time table entries for today -->
     <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables"
+      imageSrc="/assets/Images-Transparent/Image-Calendar-Blank.png"
+      imageAlt="No planner entries illustration"
       leadText="No time table entries for today"
       subText="Nothing scheduled yet. Add a time block to plan out your day."
       buttonText="">
@@ -301,9 +347,10 @@
     </activity-card>
   </div>
 
-  <!-- Recent Timetable Items (when timetable tab is active) -->
+  <!-- Recent Timetable/Planner Items (when timetable tab is active) -->
+  <ng-container *ngTemplateOutlet="plannerCards"></ng-container>
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'timetable' && hasTimetables">
+    *ngIf="currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
     <activity-card *ngFor="let ttItem of filteredRecentTimetables" [habit]="ttItem"
       [startTime]="ttItem.startTimeStamp || 0" [endTime]="ttItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, timer, of } from 'rxjs';
+import { BehaviorSubject, Observable, timer, of, firstValueFrom } from 'rxjs';
 import { tap, map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
@@ -618,8 +618,39 @@ export class AuthService {
   /**
    * Logout user and clear session
    */
+  /**
+   * POST /v1/auth/logout/{userId} — tells the backend to invalidate this
+   * session server-side (e.g. revoke the token, drop device registration).
+   */
+  logoutUser(userId: string | number): Observable<{ success: boolean; message: string }> {
+    const token = this.getToken();
+    const headers = new HttpHeaders({
+      Authorization: token?.startsWith('Bearer ') ? token : `Bearer ${token || ''}`
+    });
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.apiUrl}/auth/logout/${userId}`,
+      {},
+      { headers }
+    );
+  }
+
   async logout(redirectToLogin: boolean = true): Promise<void> {
     console.log('[AuthService] Logging out user');
+
+    // Capture the id before any local state is cleared, and call the backend
+    // logout endpoint first. Wait for it (and the local cleanup that follows)
+    // to finish before this method resolves — the caller/navigation must not
+    // treat the user as logged out until the old session data is actually gone.
+    const userId = this.getUserId();
+    if (userId) {
+      try {
+        await firstValueFrom(this.logoutUser(userId));
+      } catch (error) {
+        // Server-side logout failing shouldn't trap the user in a session
+        // they can no longer use locally — fall through to local cleanup.
+        console.warn('[AuthService] Backend logout call failed, continuing with local cleanup:', error);
+      }
+    }
 
     // Start device-token cleanup while the old session is still identifiable,
     // but revoke all local/in-memory access immediately rather than waiting on

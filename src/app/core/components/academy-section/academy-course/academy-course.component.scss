@@ -12,7 +12,10 @@
 }
 
 .course-page {
-  min-height: 100%;
+  // Was `min-height: 100%`, which forced the page to fill the full viewport
+  // even when the hero + lessons + footer content is shorter than the
+  // screen — leaving a trailing blank gap below the reward bar on taller
+  // screens or shorter lesson lists. Size to content instead.
   padding-bottom: calc(28px + env(safe-area-inset-bottom));
   background:
     radial-gradient(circle at 96% 22%, rgba(255, 211, 86, .25) 0 24px, transparent 25px),

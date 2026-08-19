@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { FooterComponent } from '../../footer/footer.component';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
+import { UserService } from '../../../services/user.service';
 import { EduHubEventEntityType, EduHubEventItem, EduHubEventsService } from '../../../services/eduhub-events.service';
 
 interface EventDetailRouteData {
@@ -34,6 +35,7 @@ export class EduHubEventDetailsComponent implements OnInit {
     private readonly location: Location,
     private readonly core: CoreService,
     private readonly authService: AuthService,
+    private readonly userService: UserService,
     private readonly eventsService: EduHubEventsService
   ) {}
 
@@ -141,7 +143,18 @@ export class EduHubEventDetailsComponent implements OnInit {
         const unlockedRecord = this.unwrapUnlockResponse(response);
         this.item = { ...this.item!, ...unlockedRecord, unlocked: true };
         this.unlockInProgress = false;
-        this.core.triggerToasrt('Contact details unlocked successfully.', 'success');
+
+        const coinsSpent = Number(unlockedRecord?.coinsSpent ?? 0);
+        if (coinsSpent > 0) {
+          // First-time unlock: coins were actually deducted — confirm that
+          // and refresh the visible wallet balance from the response.
+          this.core.triggerToasrt(`${coinsSpent} coins deducted. Contact details unlocked.`, 'success');
+          this.updateCoinBalance(unlockedRecord);
+        } else {
+          // Repeat tap on an already-unlocked listing — no coins moved, so
+          // just reveal the contact info without a coin animation/toast.
+          this.core.triggerToasrt('Contact details unlocked.', 'success');
+        }
       },
       error: (error: unknown) => {
         this.unlockInProgress = false;
@@ -198,6 +211,20 @@ export class EduHubEventDetailsComponent implements OnInit {
     } catch {
       // Favourite state is non-critical and remains usable in this view.
     }
+  }
+
+  /** Mirrors the Tutor/Academy unlock-contact coin-balance refresh (see tutor-profile.component.ts). */
+  private updateCoinBalance(response: any): void {
+    const amount = Number(response?.remainingBalance ?? response?.data?.remainingBalance);
+    if (!Number.isFinite(amount)) {
+      this.userService.refreshStats().subscribe();
+      return;
+    }
+    const coins = Math.max(0, amount);
+    this.authService.updateUserData({ coins });
+    const stats = this.userService.getUserStats();
+    if (stats) this.userService.saveUserStats({ ...stats, coins });
+    else this.userService.refreshStats().subscribe();
   }
 
   private unwrapUnlockResponse(response: Partial<EduHubEventItem> | { data?: Partial<EduHubEventItem> }): Partial<EduHubEventItem> {

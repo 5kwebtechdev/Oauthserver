@@ -364,5 +364,9 @@ export function formatContactModes(modes: ContactMode[] | string[]): string {
         'CHAT': 'Chat',
         'HYBRID': 'Hybrid'
     };
-    return modes.map(m => modeMap[m] || m).join(', ');
+    // The API can return the same mode more than once (e.g. duplicate
+    // IN_PERSON/VIDEO_CALL entries) — dedupe the formatted labels so the
+    // same option never shows twice.
+    const labels = modes.map(m => modeMap[m] || m);
+    return [...new Set(labels)].join(', ');
 }

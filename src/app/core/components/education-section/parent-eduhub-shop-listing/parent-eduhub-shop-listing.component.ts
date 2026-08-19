@@ -1,6 +1,6 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { AppLauncher } from '@capacitor/app-launcher';
 import { Capacitor } from '@capacitor/core';
@@ -12,6 +12,8 @@ import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { UserService } from '../../../services/user.service';
+import { EduHubEventsService } from '../../../services/eduhub-events.service';
+import { PetAgeService } from '../../../services/pet-age.service';
 import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
@@ -119,8 +121,15 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     private readonly http: HttpClient,
     private readonly authService: AuthService,
     private readonly core: CoreService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly eduHubEventsService: EduHubEventsService,
+    private readonly petAgeService: PetAgeService
   ) {}
+
+  /** Panda uses the same Figma artwork shown on Home/Coins/Learning instead of this page's decorative mascot. */
+  get isPandaPet(): boolean {
+    return this.petAgeService.getCurrentPetType() === 'panda';
+  }
 
   ngOnInit(): void {
     this.restoreFavourites();
@@ -330,24 +339,29 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     }
 
     this.unlockRequestInProgress = true;
-    const params = new HttpParams()
-      .set('userId', String(userId))
-      .set('id', String(item.id));
 
-    this.http.post<any>(
-      `${environment.apiUrl}/eduhub/unlock-contact`,
-      null,
-      { headers: this.getApiHeaders(), params }
-    ).subscribe({
+    // Reuses the same EduHub unlock-contact call as the event/workshop detail
+    // screen instead of duplicating the raw HTTP request here.
+    this.eduHubEventsService.unlockContact(item.id).subscribe({
       next: response => {
         this.applyUnlockedListing(item, response);
         item.unlocked = true;
-        this.persistUnlockedItem(item.id);
         this.unlockRequestInProgress = false;
         this.unlockItem = null;
         document.body.style.overflow = '';
-        this.refreshCoinBalance();
-        this.core.triggerToasrt('Contact details unlocked successfully.', 'success');
+
+        const coinsSpent = Number((response as any)?.coinsSpent ?? 0);
+        if (coinsSpent > 0) {
+          // First-time unlock — coins were actually deducted. Trust the
+          // unlock response's own balance rather than firing a second GET.
+          this.core.triggerToasrt(`${coinsSpent} coins deducted. Contact details unlocked.`, 'success');
+          this.applyRemainingBalance((response as any)?.remainingBalance);
+        } else {
+          // Repeat tap on an already-unlocked listing — nothing was spent,
+          // so just reveal the contact info without a coin animation.
+          this.core.triggerToasrt('Contact details unlocked.', 'success');
+        }
+
         this.openContactSheet(item);
       },
       error: (error: HttpErrorResponse) => {
@@ -358,6 +372,24 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
         );
       }
     });
+  }
+
+  /** Updates the visible wallet balance from the unlock response; falls back to a fresh GET only if it's missing. */
+  private applyRemainingBalance(remainingBalance: unknown): void {
+    const coins = Number(remainingBalance);
+    if (!Number.isFinite(coins)) {
+      this.refreshCoinBalance();
+      return;
+    }
+
+    this.coinBalance = Math.max(0, coins);
+    this.authService.updateUserData({ coins: this.coinBalance });
+    const currentStats = this.userService.getUserStats();
+    if (currentStats) {
+      this.userService.saveUserStats({ ...currentStats, coins: this.coinBalance });
+    } else {
+      this.userService.refreshStats().subscribe();
+    }
   }
 
   openContactSheet(item: EduHubShopListing): void {
@@ -553,7 +585,10 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
       latitude: this.toFiniteNumber(item.latitude),
       longitude: this.toFiniteNumber(item.longitude),
       unlockCost: Math.max(0, this.toFiniteNumber(item.contactUnlockCost ?? item.unlockCost) ?? 10),
-      unlocked: apiUnlocked || this.isItemPersistedAsUnlocked(Number(item.id))
+      // Driven purely by the server's per-viewer flag (matches the Tutor/Academy
+      // unlock-contact pattern) — no local persistence, so this always reflects
+      // the account's real unlock state even across devices/reinstalls.
+      unlocked: apiUnlocked
     };
   }
 
@@ -722,29 +757,4 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     localStorage.setItem(this.favouritesStorageKey(), JSON.stringify([...this.favourites]));
   }
 
-  private unlocksStorageKey(): string {
-    return `superme_eduhub_unlocks_${this.authService.getUserId() ?? 'anonymous'}`;
-  }
-
-  private isItemPersistedAsUnlocked(itemId: number): boolean {
-    try {
-      const raw = JSON.parse(localStorage.getItem(this.unlocksStorageKey()) ?? '[]');
-      return Array.isArray(raw) && raw.map(Number).includes(itemId);
-    } catch {
-      return false;
-    }
-  }
-
-  private persistUnlockedItem(itemId: number): void {
-    try {
-      const raw = JSON.parse(localStorage.getItem(this.unlocksStorageKey()) ?? '[]');
-      const ids = new Set<number>(
-        (Array.isArray(raw) ? raw : []).map(value => Number(value)).filter(Number.isFinite)
-      );
-      ids.add(itemId);
-      localStorage.setItem(this.unlocksStorageKey(), JSON.stringify([...ids]));
-    } catch {
-      localStorage.setItem(this.unlocksStorageKey(), JSON.stringify([itemId]));
-    }
-  }
 }
