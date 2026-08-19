@@ -27,6 +27,8 @@ export class StreakRestoreModalComponent implements OnInit {
   isRestoring = false;
   notEnoughCoins = false;
   errorMessage = '';
+  notEligible = false;
+  notEligibleMessage = '';
 
   constructor(
     private modalCtrl: ModalController,
@@ -45,7 +47,10 @@ export class StreakRestoreModalComponent implements OnInit {
       next: (data) => {
         this.isLoading = false;
         if (!data.canRestore || data.eligibleItems.length === 0) {
-          this.dismiss(null);
+          this.notEligible = true;
+          this.notEligibleMessage = !data.canRestore
+            ? "The restore window for yesterday's streak has already closed."
+            : "There's nothing from yesterday left to restore.";
           return;
         }
         this.eligibility = data;
@@ -53,7 +58,8 @@ export class StreakRestoreModalComponent implements OnInit {
       },
       error: () => {
         this.isLoading = false;
-        this.dismiss(null);
+        this.notEligible = true;
+        this.notEligibleMessage = 'Unable to check your streak restore right now. Please try again later.';
       }
     });
   }

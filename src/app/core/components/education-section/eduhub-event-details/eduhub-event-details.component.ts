@@ -27,8 +27,8 @@ export class EduHubEventDetailsComponent implements OnInit {
   title = 'Events';
   item: EduHubEventItem | null = null;
   errorMessage = '';
-  favourite = false;
   unlockInProgress = false;
+  likeInProgress = false;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -51,7 +51,6 @@ export class EduHubEventDetailsComponent implements OnInit {
 
     if (candidate) {
       this.item = candidate;
-      this.favourite = this.isStoredFavourite(candidate.id);
       return;
     }
 
@@ -114,10 +113,36 @@ export class EduHubEventDetailsComponent implements OnInit {
     return Number.isFinite(cost) && cost > 0 ? cost : null;
   }
 
+  get favourite(): boolean {
+    return !!this.item?.likedBySelf;
+  }
+
   toggleFavourite(): void {
-    if (!this.item) return;
-    this.favourite = !this.favourite;
-    this.persistFavourite(this.item.id, this.favourite);
+    if (!this.item || this.likeInProgress) return;
+
+    const nextLiked = !this.item.likedBySelf;
+    const previousLiked = this.item.likedBySelf;
+    const previousCount = this.item.champsLiked;
+
+    this.item.likedBySelf = nextLiked;
+    this.item.champsLiked = Math.max(0, (Number(this.item.champsLiked) || 0) + (nextLiked ? 1 : -1));
+    this.likeInProgress = true;
+
+    this.eventsService.toggleLike(this.item.id, nextLiked).subscribe({
+      next: response => {
+        this.likeInProgress = false;
+        if (!this.item) return;
+        if (typeof response.likedBySelf === 'boolean') this.item.likedBySelf = response.likedBySelf;
+        if (typeof response.champsLiked === 'number') this.item.champsLiked = response.champsLiked;
+      },
+      error: () => {
+        this.likeInProgress = false;
+        if (!this.item) return;
+        this.item.likedBySelf = previousLiked;
+        this.item.champsLiked = previousCount;
+        this.core.triggerToasrt('Unable to update like. Please try again.', 'error');
+      }
+    });
   }
 
   onImageError(): void {
@@ -193,30 +218,6 @@ export class EduHubEventDetailsComponent implements OnInit {
 
   private firstText(...values: Array<string | null | undefined>): string {
     return values.map(value => String(value ?? '').trim()).find(Boolean) ?? '';
-  }
-
-  private favouritesKey(): string {
-    return `superme_eduhub_${this.entityType.toLowerCase()}_favourites_${this.authService.getUserId() ?? 'guest'}`;
-  }
-
-  private isStoredFavourite(itemId: number): boolean {
-    try {
-      const favourites = JSON.parse(localStorage.getItem(this.favouritesKey()) ?? '[]');
-      return Array.isArray(favourites) && favourites.map(Number).includes(itemId);
-    } catch {
-      return false;
-    }
-  }
-
-  private persistFavourite(itemId: number, selected: boolean): void {
-    try {
-      const current = JSON.parse(localStorage.getItem(this.favouritesKey()) ?? '[]');
-      const favourites = new Set<number>(Array.isArray(current) ? current.map(Number).filter(Number.isFinite) : []);
-      if (selected) favourites.add(itemId); else favourites.delete(itemId);
-      localStorage.setItem(this.favouritesKey(), JSON.stringify([...favourites]));
-    } catch {
-      // Favourite state is non-critical and remains usable in this view.
-    }
   }
 
   /** Mirrors the Tutor/Academy unlock-contact coin-balance refresh (see tutor-profile.component.ts). */

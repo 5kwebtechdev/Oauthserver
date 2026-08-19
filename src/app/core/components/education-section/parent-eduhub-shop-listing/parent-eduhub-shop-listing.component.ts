@@ -55,6 +55,8 @@ interface EduHubDirectoryResponse {
   contactUnlockCost?: number | string | null;
   unlocked?: boolean | null;
   isUnlocked?: boolean | null;
+  champsLiked?: number | null;
+  likedBySelf?: boolean | null;
 }
 
 interface EduHubShopListing {
@@ -72,6 +74,8 @@ interface EduHubShopListing {
   longitude: number | null;
   unlockCost: number;
   unlocked: boolean;
+  champsLiked: number;
+  likedBySelf: boolean;
 }
 
 @Component({
@@ -113,7 +117,7 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
 
   private readonly subscriptions = new Subscription();
   private listingsRequestId = 0;
-  private favourites = new Set<number>();
+  private readonly likeInProgress = new Set<number>();
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -132,7 +136,6 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.restoreFavourites();
     this.loadStoredCoinBalance();
 
     this.subscriptions.add(
@@ -259,16 +262,33 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
   }
 
   toggleFavourite(item: EduHubShopListing): void {
-    if (this.favourites.has(item.id)) {
-      this.favourites.delete(item.id);
-    } else {
-      this.favourites.add(item.id);
-    }
-    this.persistFavourites();
+    if (this.likeInProgress.has(item.id)) return;
+
+    const nextLiked = !item.likedBySelf;
+    const previousLiked = item.likedBySelf;
+    const previousCount = item.champsLiked;
+
+    item.likedBySelf = nextLiked;
+    item.champsLiked = Math.max(0, item.champsLiked + (nextLiked ? 1 : -1));
+    this.likeInProgress.add(item.id);
+
+    this.eduHubEventsService.toggleLike(item.id, nextLiked).subscribe({
+      next: response => {
+        this.likeInProgress.delete(item.id);
+        if (typeof response.likedBySelf === 'boolean') item.likedBySelf = response.likedBySelf;
+        if (typeof response.champsLiked === 'number') item.champsLiked = response.champsLiked;
+      },
+      error: () => {
+        this.likeInProgress.delete(item.id);
+        item.likedBySelf = previousLiked;
+        item.champsLiked = previousCount;
+        this.core.triggerToasrt('Unable to update like. Please try again.', 'error');
+      }
+    });
   }
 
   isFavourite(item: EduHubShopListing): boolean {
-    return this.favourites.has(item.id);
+    return item.likedBySelf;
   }
 
   async shareListing(item: EduHubShopListing): Promise<void> {
@@ -478,9 +498,12 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     this.loadError = '';
     this.listings = [];
 
+    const userId = this.authService.getUserId();
+    const params = userId != null ? { forUserId: String(userId) } : undefined;
+
     this.http.get<any>(
       `${environment.apiUrl}/eduhub`,
-      { headers: this.getApiHeaders() }
+      { headers: this.getApiHeaders(), params }
     ).subscribe({
       next: response => {
         if (requestId !== this.listingsRequestId) return;
@@ -588,7 +611,9 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
       // Driven purely by the server's per-viewer flag (matches the Tutor/Academy
       // unlock-contact pattern) — no local persistence, so this always reflects
       // the account's real unlock state even across devices/reinstalls.
-      unlocked: apiUnlocked
+      unlocked: apiUnlocked,
+      champsLiked: Math.max(0, this.toFiniteNumber(item.champsLiked) ?? 0),
+      likedBySelf: !!item.likedBySelf
     };
   }
 
@@ -736,25 +761,6 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
       .replace(/[^a-z0-9]+/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
-  }
-
-  private favouritesStorageKey(): string {
-    return `superme_eduhub_favourites_${this.authService.getUserId() ?? 'anonymous'}`;
-  }
-
-  private restoreFavourites(): void {
-    try {
-      const raw = JSON.parse(localStorage.getItem(this.favouritesStorageKey()) ?? '[]');
-      this.favourites = new Set(
-        (Array.isArray(raw) ? raw : []).map(value => Number(value)).filter(Number.isFinite)
-      );
-    } catch {
-      this.favourites = new Set<number>();
-    }
-  }
-
-  private persistFavourites(): void {
-    localStorage.setItem(this.favouritesStorageKey(), JSON.stringify([...this.favourites]));
   }
 
 }

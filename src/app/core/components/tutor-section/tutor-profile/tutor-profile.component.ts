@@ -148,9 +148,10 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   private setTutor(tutor: Tutor): void {
     // The list card and the by-ID detail fetch can disagree on the image
-    // field. Never let a later fetch downgrade a known-good photo to the
-    // generic placeholder.
-    if (!tutor.profilePicUrl?.trim() && this.navigationProfileImage) {
+    // field (missing on one, or simply a different photo on the other). The
+    // detail page must always show the exact photo the user tapped from the
+    // list, so the navigation-supplied image wins whenever one was captured.
+    if (this.navigationProfileImage) {
       tutor = { ...tutor, profilePicUrl: this.navigationProfileImage };
     } else if (tutor.profilePicUrl?.trim()) {
       this.navigationProfileImage = tutor.profilePicUrl.trim();

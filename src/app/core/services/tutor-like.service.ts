@@ -91,8 +91,16 @@ export class TutorLikeService {
     const persisted = this.loadUserLikes();
     const pending = this.loadPending();
 
+    // The server's own like flag is the source of truth whenever the API
+    // supplies one — a stale local cache must never override it.
+    const serverLiked = typeof tutor.likedByUser === 'boolean'
+      ? tutor.likedByUser
+      : typeof tutor.likedBySelf === 'boolean'
+        ? tutor.likedBySelf
+        : undefined;
+
     const base: TutorLikeState = {
-      liked: !!(persisted[id] ?? tutor.likedByUser),
+      liked: serverLiked ?? !!persisted[id],
       count: typeof tutor.champsLiked === 'number' ? tutor.champsLiked : (Array.isArray(tutor.likes) ? tutor.likes.length : 0),
       pending: !!pending[id]
     };

@@ -19,8 +19,13 @@
     <p>Loading eligible items…</p>
   </div>
 
+  <!-- ── Not eligible ── -->
+  <div class="no-coins-notice" *ngIf="!isLoading && notEligible">
+    😔 {{ notEligibleMessage }}
+  </div>
+
   <!-- ── Content ── -->
-  <ng-container *ngIf="!isLoading && eligibility">
+  <ng-container *ngIf="!isLoading && !notEligible && eligibility">
 
     <!-- Coin balance -->
     <div class="coin-balance" [class.coin-balance--low]="notEnoughCoins">
@@ -61,9 +66,11 @@
 
   <!-- ── Actions ── -->
   <div class="restore-actions" *ngIf="!isLoading">
-    <button class="btn-cancel" (click)="dismiss(null)" type="button">Cancel</button>
+    <button class="btn-cancel" (click)="dismiss(notEligible ? { notEligible: true } : null)" type="button">
+      {{ notEligible ? 'Close' : 'Cancel' }}
+    </button>
     <button
-      *ngIf="!notEnoughCoins"
+      *ngIf="!notEnoughCoins && !notEligible"
       class="btn-restore"
       [disabled]="!canRestore"
       (click)="restore()"

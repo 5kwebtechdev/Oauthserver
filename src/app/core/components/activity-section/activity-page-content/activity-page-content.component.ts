@@ -625,7 +625,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         const contextKey = this.getPlannerContextKey(selectedDateString);
         this.plannerLoading = true;
         this.subscriptions.add(
-            this.calendarService.getUserPlannerCalendarMonth(selectedDateString).subscribe({
+            this.calendarService.getUserPlannerCalendarWeek(selectedDateString).subscribe({
                 next: (response: CalendarResponse) => {
                     if (!this.isCurrentPlannerRequest(requestId, contextKey, selectedDateString)) return;
                     const allEvents = response.events || [];
