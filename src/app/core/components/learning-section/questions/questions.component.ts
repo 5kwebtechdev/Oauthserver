@@ -818,14 +818,9 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
     quitQuiz() {
         this.stopTimer();
-        // Navigate back to the description screen
-        if (this.challenge) {
-            this.router.navigate(['/authed/content/description', this.challenge.challengeId], {
-                state: { source: this.returnUrl }
-            });
-        } else {
-            this.router.navigateByUrl(this.returnUrl);
-        }
+        // The challenge now opens directly from its listing, so leaving should
+        // return there instead of reopening the retired detail/start screen.
+        this.router.navigateByUrl(this.returnUrl);
     }
 
     restartQuiz() {

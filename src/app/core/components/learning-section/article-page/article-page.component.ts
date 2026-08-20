@@ -374,7 +374,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
   openRelatedQuiz(): void {
     if (!this.relatedQuiz) return;
-    void this.router.navigate(['/authed/content/description', this.relatedQuiz.id], {
+    void this.router.navigate(['/authed/content/questions', this.relatedQuiz.id], {
       state: { source: this.router.url }
     });
   }

@@ -222,7 +222,7 @@ export class ParentLearningListingComponent implements OnInit, OnDestroy {
       void this.router.navigate(['/authed/content/article', item.id], extras);
       return;
     }
-    void this.router.navigate(['/authed/content/description', item.id], extras);
+    void this.router.navigate(['/authed/content/questions', item.id], extras);
   }
 
   getItemTag(item: LearningCardData): string {

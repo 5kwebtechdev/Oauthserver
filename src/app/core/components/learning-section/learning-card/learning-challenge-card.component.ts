@@ -16,7 +16,7 @@ import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.comp
 export class LearningChallengeCardComponent {
     @Input() item!: LearningCardData;
     @Input() index: number = 0;
-    /** Optional source route to return to when back is pressed from the description page */
+    /** Optional source route to return to when the challenge is closed. */
     @Input() source?: string;
     @Output() cardClick = new EventEmitter<{ item: LearningCardData; index: number }>();
 
@@ -24,8 +24,9 @@ export class LearningChallengeCardComponent {
 
     onCardClick() {
         this.cardClick.emit({ item: this.item, index: this.index });
-        // Navigate with the challenge ID, passing source so description page can return correctly
-        this.router.navigate(['/authed/content/description', this.item.id], {
+        // Quiz and puzzle cards start the challenge immediately. The questions
+        // page loads the full challenge by ID and returns to the originating list.
+        this.router.navigate(['/authed/content/questions', this.item.id], {
             state: this.source ? { source: this.source } : undefined
         });
     }
