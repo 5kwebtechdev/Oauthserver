@@ -1,4 +1,12 @@
-import { Component, Input, OnInit, Renderer2, ElementRef, OnDestroy, NgZone } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  Renderer2,
+  ElementRef,
+  OnDestroy,
+  NgZone,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { IonicModule, NavController } from '@ionic/angular';
@@ -13,9 +21,10 @@ import { Capacitor } from '@capacitor/core';
   standalone: true,
   imports: [CommonModule, RouterModule, IonicModule],
   templateUrl: './footer.component.html',
-  styleUrls: ['./footer.component.scss']
+  styleUrls: ['./footer.component.scss'],
 })
 export class FooterComponent implements OnInit, OnDestroy {
+  readonly isNativePlatform = Capacitor.isNativePlatform();
   @Input() mode: 'default' | 'parenting' = 'default';
   private resizeListener: any;
   private routerSub: Subscription | undefined;
@@ -35,8 +44,8 @@ export class FooterComponent implements OnInit, OnDestroy {
     private navController: NavController,
     private renderer: Renderer2,
     private elRef: ElementRef,
-    private ngZone: NgZone
-  ) { }
+    private ngZone: NgZone,
+  ) {}
 
   ngOnInit() {
     // On init, detect whether a system navigation bar (on-screen nav) exists.
@@ -44,10 +53,12 @@ export class FooterComponent implements OnInit, OnDestroy {
     const checkNav = () => {
       try {
         const screenH = (window && window.screen && window.screen.height) || 0;
-        const innerH = window && window.innerHeight || 0;
+        const innerH = (window && window.innerHeight) || 0;
         const navHeight = screenH - innerH;
         const hasSystemNav = navHeight > 48; // threshold (px)
-        const host = this.elRef.nativeElement.querySelector('.footer-main') || this.elRef.nativeElement;
+        const host =
+          this.elRef.nativeElement.querySelector('.footer-main') ||
+          this.elRef.nativeElement;
         if (host) {
           if (hasSystemNav) this.renderer.addClass(host, 'has-system-nav');
           else this.renderer.removeClass(host, 'has-system-nav');
@@ -67,23 +78,41 @@ export class FooterComponent implements OnInit, OnDestroy {
 
     // Check education active
     this.currentUrl = this.router.url;
-    this.isEducationActive = this.isAnyRouteActive(['/authed/education', '/authed/tutors', '/authed/academies']);
-    this.routerSub = this.router.events.subscribe(event => {
+    this.isEducationActive = this.isAnyRouteActive([
+      '/authed/education',
+      '/authed/tutors',
+      '/authed/academies',
+    ]);
+    this.routerSub = this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.currentUrl = event.urlAfterRedirects || event.url;
-        this.isEducationActive = this.isAnyRouteActive(['/authed/education', '/authed/tutors', '/authed/academies']);
+        this.isEducationActive = this.isAnyRouteActive([
+          '/authed/education',
+          '/authed/tutors',
+          '/authed/academies',
+        ]);
       }
     });
 
     // Wire Capacitor Keyboard listeners if available
     try {
       if (!Capacitor.isNativePlatform()) return;
-      this.keyboardShowListener = Keyboard.addListener('keyboardDidShow', () => {
-        this.ngZone.run(() => { this.isKeyboardOpen = true; });
-      });
-      this.keyboardHideListener = Keyboard.addListener('keyboardDidHide', () => {
-        this.ngZone.run(() => { this.isKeyboardOpen = false; });
-      });
+      this.keyboardShowListener = Keyboard.addListener(
+        'keyboardDidShow',
+        () => {
+          this.ngZone.run(() => {
+            this.isKeyboardOpen = true;
+          });
+        },
+      );
+      this.keyboardHideListener = Keyboard.addListener(
+        'keyboardDidHide',
+        () => {
+          this.ngZone.run(() => {
+            this.isKeyboardOpen = false;
+          });
+        },
+      );
     } catch (e) {
       // Capacitor Keyboard may not be available in desktop browser; ignore
     }
@@ -94,8 +123,10 @@ export class FooterComponent implements OnInit, OnDestroy {
       this.routerSub.unsubscribe();
     }
     if (this.resizeListener) this.resizeListener();
-    if (this.keyboardShowListener && this.keyboardShowListener.remove) this.keyboardShowListener.remove();
-    if (this.keyboardHideListener && this.keyboardHideListener.remove) this.keyboardHideListener.remove();
+    if (this.keyboardShowListener && this.keyboardShowListener.remove)
+      this.keyboardShowListener.remove();
+    if (this.keyboardHideListener && this.keyboardHideListener.remove)
+      this.keyboardHideListener.remove();
   }
 
   // Get the appropriate dashboard route based on user relationship
@@ -104,7 +135,9 @@ export class FooterComponent implements OnInit, OnDestroy {
   }
 
   get primaryLink(): string {
-    return this.isParentNavigation ? '/authed/parent-learning' : '/authed/content';
+    return this.isParentNavigation
+      ? '/authed/parent-learning'
+      : '/authed/content';
   }
 
   get primaryLabel(): string {
@@ -134,7 +167,7 @@ export class FooterComponent implements OnInit, OnDestroy {
 
     this.navController.navigateRoot(targetRoute, {
       animated: false,
-      replaceUrl: true
+      replaceUrl: true,
     });
   }
 
@@ -149,15 +182,19 @@ export class FooterComponent implements OnInit, OnDestroy {
 
     this.navController.navigateRoot(targetRoute, {
       animated: false,
-      replaceUrl: true
+      replaceUrl: true,
     });
   }
 
   isRouteActive(route: string): boolean {
-    return this.currentUrl === route || this.currentUrl.startsWith(`${route}/`) || this.currentUrl.startsWith(`${route}?`);
+    return (
+      this.currentUrl === route ||
+      this.currentUrl.startsWith(`${route}/`) ||
+      this.currentUrl.startsWith(`${route}?`)
+    );
   }
 
   private isAnyRouteActive(routes: string[]): boolean {
-    return routes.some(route => this.isRouteActive(route));
+    return routes.some((route) => this.isRouteActive(route));
   }
 }

@@ -1,18 +1,25 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { CustomToastService } from '../../services/custom-toast.service';
+import { AuthService } from '../../services/auth.service';
+import { Capacitor } from '@capacitor/core';
 
 interface FooterLink {
   label: string;
-  link?: string;
+  routerLink?: string;
   queryParams?: Record<string, string>;
   href?: string;
 }
 
-interface FooterColumn {
+interface FooterSection {
   title: string;
   links: FooterLink[];
+}
+
+interface TrustFeature {
+  title: string;
+  subtitle?: string;
+  icon: string;
 }
 
 @Component({
@@ -20,58 +27,163 @@ interface FooterColumn {
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './dashboard-web-footer.component.html',
-  styleUrls: ['./dashboard-web-footer.component.scss']
+  styleUrls: ['./dashboard-web-footer.component.scss'],
 })
-export class DashboardWebFooterComponent {
+export class DashboardWebFooterComponent implements OnInit {
+  readonly isWebBrowser = !Capacitor.isNativePlatform();
   readonly currentYear = new Date().getFullYear();
-  readonly playStoreUrl = 'https://play.google.com/store/apps/details?id=com.superme.app';
+  readonly assetRoot = 'assets/Landing/figma-logged-in-footer';
+  readonly logoSrc = `${this.assetRoot}/superme-logo.png`;
+  readonly googlePlaySrc =
+    'assets/Landing/a545087c920a7aa3d0b8e311d8b60b7ded2efb74.png';
+  readonly appleStoreSrc = `${this.assetRoot}/store-apple.svg`;
+  readonly desktopStoreSrc = `${this.assetRoot}/store-desktop.svg`;
+  readonly qrSrc = `${this.assetRoot}/download-qr.png`;
+  readonly trustedShieldSrc = `${this.assetRoot}/trusted-shield.png`;
+  readonly featureDividerSrc = `${this.assetRoot}/feature-divider.svg`;
 
-  readonly logoSrc = 'assets/Landing/SuperMe Logo Final.png';
-  readonly googlePlaySrc = 'assets/Landing/a545087c920a7aa3d0b8e311d8b60b7ded2efb74.png';
-  readonly qrSrc = 'assets/Landing/2f248945e515f53a46e556ed5d49f6415934d59a.png';
+  readonly googlePlayUrl =
+    'https://play.google.com/store/apps/details?id=io.ionic.starter';
+  readonly websiteUrl = 'https://supermeapp.com';
+  isParent = false;
 
   readonly socialLinks = [
-    { name: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/SuperMeAppOfficial' },
-    { name: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/supermeappofficial' },
-    { name: 'youtube', label: 'YouTube', url: 'https://www.youtube.com/@SuperMeApp' },
-    { name: 'x', label: 'X', url: 'https://x.com/GetSuperMeApp' }
+    {
+      label: 'Facebook',
+      href: 'https://www.facebook.com/SuperMeAppOfficial',
+      icon: `${this.assetRoot}/social-facebook.svg`,
+    },
+    {
+      label: 'Instagram',
+      href: 'https://www.instagram.com/supermeappofficial',
+      icon: `${this.assetRoot}/social-instagram.svg`,
+    },
+    {
+      label: 'YouTube',
+      href: 'https://www.youtube.com/@SuperMeApp',
+      icon: `${this.assetRoot}/social-youtube.svg`,
+    },
+    {
+      label: 'X',
+      href: 'https://x.com/GetSuperMeApp',
+      icon: `${this.assetRoot}/social-x.svg`,
+    },
+    {
+      label: 'LinkedIn',
+      href: 'https://www.linkedin.com/company/supermeapp',
+      icon: `${this.assetRoot}/social-linkedin.svg`,
+    },
   ];
 
-  readonly columns: FooterColumn[] = [
+  readonly companySection: FooterSection = {
+    title: 'COMPANY',
+    links: [
+      { label: 'About Us', href: 'https://supermeapp.com/about' },
+      { label: 'Meet the team', href: 'https://supermeapp.com/about' },
+    ],
+  };
+
+  readonly supportSection: FooterSection = {
+    title: 'SUPPORT',
+    links: [
+      { label: "FAQ's", routerLink: '/authed/help-support' },
+      { label: 'Contact Us', routerLink: '/authed/bot-helpline' },
+    ],
+  };
+
+  readonly footerSections: FooterSection[] = [
     {
-      title: 'TUTOR',
+      title: 'SHOP',
       links: [
-        { label: 'Find a Tutor', link: '/authed/tutors' },
-        { label: 'Become a Tutor', href: 'https://supermeapp.com/become-a-tutor' },
-        { label: 'Submit an Ad', href: 'https://supermeapp.com/advertise' }
-      ]
+        { label: 'School Uniforms', routerLink: '/authed/school-store' },
+        { label: 'Textbook', routerLink: '/authed/school-store' },
+        { label: 'Stationery', routerLink: '/authed/school-store' },
+        { label: 'Entrance Exam Books', routerLink: '/authed/school-store' },
+        { label: 'General Books', routerLink: '/authed/school-store' },
+      ],
     },
     {
-      title: 'COMPANY',
+      title: 'GET LISTED',
       links: [
-        { label: 'About Us', href: 'https://supermeapp.com/about' },
-        { label: 'Child Safety', href: 'https://supermeapp.com/child-safety' }
-      ]
+        {
+          label: 'Become a Tutor',
+          href: 'https://supermeapp.com/become-a-tutor',
+        },
+        {
+          label: 'List your Business',
+          href: 'https://supermeapp.com/submit-an-ad',
+        },
+        {
+          label: 'Advertise your Event/Workshop',
+          href: 'https://supermeapp.com/submit-an-ad',
+        },
+        {
+          label: 'Advertise with Us',
+          href: 'https://supermeapp.com/submit-an-ad',
+        },
+      ],
     },
     {
-      title: 'SUPPORT',
+      title: 'EDUHUB',
       links: [
-        { label: "FAQ's", link: '/authed/help-support' },
-        { label: 'Contact Us', link: '/authed/bot-helpline' }
-      ]
+        { label: 'Find a Tutor', routerLink: '/authed/tutors' },
+        { label: 'Find an Academy', routerLink: '/authed/academies' },
+        { label: 'Find a Stationery Shop', routerLink: '/authed/education' },
+        { label: 'Find a Book Store', routerLink: '/authed/education' },
+        {
+          label: 'Find a Second-hand Book',
+          routerLink: '/authed/second-hand-books',
+        },
+        { label: 'Find a Sports Shop', routerLink: '/authed/education' },
+        {
+          label: 'Find a Counselor',
+          routerLink: '/authed/education/counselors',
+        },
+        { label: 'Find an Event', routerLink: '/authed/education/events' },
+        { label: 'Find a Workshop', routerLink: '/authed/education/workshops' },
+      ],
     },
-    {
-      title: 'LEGAL',
-      links: [
-        { label: 'Privacy Policy', link: '/authed/our-policies', queryParams: { tab: 'privacy' } },
-        { label: 'Terms of Use', link: '/authed/our-policies', queryParams: { tab: 'terms' } }
-      ]
-    }
   ];
 
-  constructor(private toastService: CustomToastService) {}
+  readonly trustFeatures: TrustFeature[] = [
+    {
+      title: 'Age‑Appropriate Content',
+      icon: `${this.assetRoot}/trust-age.svg`,
+    },
+    { title: 'Privacy First', icon: `${this.assetRoot}/trust-privacy.svg` },
+    {
+      title: 'Secure & Safe environment',
+      icon: `${this.assetRoot}/trust-secure.svg`,
+    },
+    {
+      title: 'No Ads',
+      subtitle: 'For Kids',
+      icon: `${this.assetRoot}/trust-no-ads.svg`,
+    },
+  ];
 
-  notifyIosComingSoon(): void {
-    this.toastService.show('SuperMe for iOS is coming soon!', 'info');
+  readonly legalLinks: FooterLink[] = [
+    {
+      label: 'Privacy Policy',
+      routerLink: '/authed/our-policies',
+      queryParams: { tab: 'privacy' },
+    },
+    {
+      label: 'Terms of Use',
+      routerLink: '/authed/our-policies',
+      queryParams: { tab: 'terms' },
+    },
+    { label: 'Child Safety', href: 'https://supermeapp.com/child-safety' },
+    {
+      label: 'Refund & Cancellation',
+      routerLink: '/authed/our-policies',
+      queryParams: { tab: 'refund' },
+    },
+  ];
+
+  constructor(private readonly authService: AuthService) {}
+
+  ngOnInit(): void {
+    this.isParent = this.authService.isParentUser();
   }
 }

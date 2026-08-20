@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { NavController, RefresherCustomEvent } from '@ionic/angular';
-import { buttonStyles } from "../core/components/superme-button/button.types";
+import { buttonStyles } from '../core/components/superme-button/button.types';
 import { AuthService } from '../core/services/auth.service';
 import { RefreshService } from '../core/services/refresh.service';
 import { OnboardingStateService } from '../core/services/onboarding-state.service';
@@ -9,9 +10,14 @@ import { OnboardingStateService } from '../core/services/onboarding-state.servic
   selector: 'app-authenticated',
   templateUrl: './authenticated.component.html',
   styleUrls: ['./authenticated.component.scss'],
-  standalone: false
+  standalone: false,
 })
 export class AuthenticatedComponent implements OnInit {
+  /**
+   * The Figma website chrome belongs to the browser build only. Native
+   * Android/iOS builds keep their existing mobile header and bottom tabs.
+   */
+  public readonly isWebBrowser = !Capacitor.isNativePlatform();
   public currentActive: any = 'habits';
   buttonStylesArray: buttonStyles[] = [
     'lavendar',
@@ -34,7 +40,7 @@ export class AuthenticatedComponent implements OnInit {
     private authService: AuthService,
     private refreshService: RefreshService,
     private onboardingState: OnboardingStateService,
-    private navCtrl: NavController
+    private navCtrl: NavController,
   ) {}
 
   ngOnInit(): void {
@@ -48,12 +54,12 @@ export class AuthenticatedComponent implements OnInit {
         if (resume) {
           void this.navCtrl.navigateRoot(resume.url, {
             queryParams: resume.queryParams,
-            animated: false
+            animated: false,
           });
         } else if (this.onboardingState.getOnboardingStep(user) === 6) {
           this.onboardingState.clearRegistrationDraft();
         }
-      }
+      },
     });
   }
 
@@ -72,7 +78,7 @@ export class AuthenticatedComponent implements OnInit {
       await this.refreshService.triggerRefresh();
 
       // Brief delay so the spinner is visible
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 600));
     } catch (error) {
       console.error('[Authenticated] Error during global refresh:', error);
     } finally {

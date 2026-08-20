@@ -1,10 +1,10 @@
-@use 'sass:map';
-@use './theme/signup-details-figma';
-@use './theme/signup-role-figma';
-@use './theme/family-code-figma';
-@use './theme/signup-managed-child-figma';
-@use './theme/child-learning-figma';
-@use './theme/child-planner-figma';
+@use "sass:map";
+@use "./theme/signup-details-figma";
+@use "./theme/signup-role-figma";
+@use "./theme/family-code-figma";
+@use "./theme/signup-managed-child-figma";
+@use "./theme/child-learning-figma";
+@use "./theme/child-planner-figma";
 @import "@ionic/angular/css/core.css";
 
 @import "@ionic/angular/css/normalize.css";
@@ -16,30 +16,30 @@
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
 
 // SVG Icon System - Store all icon paths in one place
 $svg-icons: (
-  back: '/assets/icons/back.svg',
-  menu: '/assets/icons/menu.svg',
-  close: '/assets/icons/close.svg',
-  delete: '/assets/icons/delete.svg',
-  share: '/assets/icons/share.svg',
-  resize_grip: '/assets/icons/resize-grip.svg',
-  edit: '/assets/icons/edit.svg',
-  heart: '/assets/icons/heart.svg',
-  search: '/assets/icons/search.svg'
+  back: "/assets/icons/back.svg",
+  menu: "/assets/icons/menu.svg",
+  close: "/assets/icons/close.svg",
+  delete: "/assets/icons/delete.svg",
+  share: "/assets/icons/share.svg",
+  resize_grip: "/assets/icons/resize-grip.svg",
+  edit: "/assets/icons/edit.svg",
+  heart: "/assets/icons/heart.svg",
+  search: "/assets/icons/search.svg",
 );
 
 // Function to get icon URL by type
-@function icon-url($name){
+@function icon-url($name) {
   $path: map.get($svg-icons, $name);
 
-@if $path ==null {
-  @error "Unknown icon `#{$name}`. Add it to $svg-icons map in global.scss";
-}
+  @if $path ==null {
+    @error "Unknown icon `#{$name}`. Add it to $svg-icons map in global.scss";
+  }
 
-@return url(#{$path});
+  @return url(#{$path});
 }
 
 // Mixin to apply SVG icon as background or mask
@@ -56,9 +56,7 @@ $svg-icons: (
 
   @if $color ==null {
     background: icon-url($name) no-repeat center/contain;
-  }
-
-  @else {
+  } @else {
     -webkit-mask: url(#{$path}) no-repeat center/contain;
     mask: url(#{$path}) no-repeat center/contain;
     background-color: $color;
@@ -73,8 +71,8 @@ $svg-icons: (
 
 :root {
   --error_color: #bb2124;
-  --font-heading: 'Fredoka', sans-serif;
-  --font-sans: 'Nunito', sans-serif;
+  --font-heading: "Fredoka", sans-serif;
+  --font-sans: "Nunito", sans-serif;
   /* Visual footer height used across app to reserve space for fixed footer */
   --footer-visual-height: 80px;
 
@@ -82,10 +80,10 @@ $svg-icons: (
   // Fallback 0px for devices/browsers that don't support env().
   // On Android (setOverlaysWebView=false) these evaluate to 0.
   // On iOS (viewport-fit=cover) these return the real notch/gesture values.
-  --sat: env(safe-area-inset-top,    0px);
+  --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
-  --sal: env(safe-area-inset-left,   0px);
-  --sar: env(safe-area-inset-right,  0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
 }
 
 // Android's WebView is already positioned below the status bar natively
@@ -165,29 +163,41 @@ label {
 .safe-area {
   // padding-top:    var(--sat) !important;
   padding-bottom: var(--sab) !important;
-  padding-left:   var(--sal) !important;
-  padding-right:  var(--sar) !important;
+  padding-left: var(--sal) !important;
+  padding-right: var(--sar) !important;
 }
 
 // Individual sides
-.safe-top    { padding-top:    var(--sat) !important; }
-.safe-bottom { padding-bottom: var(--sab) !important; }
-.safe-left   { padding-left:   var(--sal) !important; }
-.safe-right  { padding-right:  var(--sar) !important; }
+.safe-top {
+  padding-top: var(--sat) !important;
+}
+.safe-bottom {
+  padding-bottom: var(--sab) !important;
+}
+.safe-left {
+  padding-left: var(--sal) !important;
+}
+.safe-right {
+  padding-right: var(--sar) !important;
+}
 
 // Horizontal + vertical pairs
 .safe-x {
-  padding-left:  var(--sal) !important;
+  padding-left: var(--sal) !important;
   padding-right: var(--sar) !important;
 }
 .safe-y {
-  padding-top:    var(--sat) !important;
+  padding-top: var(--sat) !important;
   padding-bottom: var(--sab) !important;
 }
 
 // Margin equivalents (for cases where padding can't be used)
-.safe-margin-top    { margin-top:    var(--sat) !important; }
-.safe-margin-bottom { margin-bottom: var(--sab) !important; }
+.safe-margin-top {
+  margin-top: var(--sat) !important;
+}
+.safe-margin-bottom {
+  margin-bottom: var(--sab) !important;
+}
 
 // Min-height that always fills the safe viewport (useful for full-screen pages)
 .safe-full-height {
@@ -197,10 +207,10 @@ label {
 // Fixed-positioned element that is automatically safe-area aware
 // Usage: add .fixed-safe to any position:fixed element
 .fixed-safe {
-  padding-top:    var(--sat);
+  padding-top: var(--sat);
   padding-bottom: var(--sab);
-  padding-left:   var(--sal);
-  padding-right:  var(--sar);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
 }
 
 // Header that never hides behind the status bar
@@ -214,11 +224,11 @@ label {
 }
 
 :root {
-  --footer_text: #6B656A;
+  --footer_text: #6b656a;
 }
 
 .card {
-  background: #FDFDFD;
+  background: #fdfdfd;
   box-shadow: 0px 0px 8px 2px rgba(107, 101, 106, 0.15);
   border-radius: 32px;
 }
@@ -255,17 +265,17 @@ label {
 }
 
 .toggler div.active {
-  color: #8B8DCB;
+  color: #8b8dcb;
 }
 
 .toggler div.active:before {
   position: absolute;
-  content: '';
+  content: "";
   width: 60%;
   height: 2px;
   left: 20%;
   bottom: 0;
-  background: #8B8DCB;
+  background: #8b8dcb;
 }
 
 .toggler div:not(:last-child) {
@@ -305,7 +315,7 @@ label {
     transition: color 0.3s ease;
 
     &:hover {
-      color: #EE6621;
+      color: #ee6621;
     }
   }
 
@@ -365,9 +375,7 @@ label {
 //   }
 // }
 
-
 .superme-instructions {
-
   &__item {
     display: flex;
     align-items: flex-start;
@@ -383,8 +391,8 @@ label {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: #FAD2AE;
-    color: #772817; 
+    background: #fad2ae;
+    color: #772817;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -433,7 +441,7 @@ label {
   &__progress {
     width: 100%;
     height: 4px;
-    background: #FAD2AE;
+    background: #fad2ae;
     border-radius: 20px;
     overflow: hidden;
 
@@ -457,15 +465,15 @@ label {
 }
 
 .bg-superme-primary {
-  background: #FFE9D6;
+  background: #ffe9d6;
 }
 
 .bg-superme-secondary {
-  background: #FDEAD7;
+  background: #fdead7;
 }
 
 .bg-superme-accent {
-  background: #FAD2AE;
+  background: #fad2ae;
 }
 
 /* Give every routed page a solid background so it blocks the page behind it
@@ -494,25 +502,33 @@ ion-content {
   // ── Ionic CSS-variable padding (pierces shadow DOM) ──────────────────
   // These are the ONLY reliable way to push content inside ion-content's
   // internal scroll container. Regular padding on the host is ignored.
-  --padding-top:    var(--sat);  // clears status bar / notch / Dynamic Island
-  --padding-start:  var(--sal);  // clears left notch in landscape (0px in portrait)
-  --padding-end:    var(--sar);  // clears right notch in landscape
+  --padding-top: var(--sat); // clears status bar / notch / Dynamic Island
+  --padding-start: var(
+    --sal
+  ); // clears left notch in landscape (0px in portrait)
+  --padding-end: var(--sar); // clears right notch in landscape
   // --padding-bottom intentionally omitted; superme-page-container handles
   // footer + gesture-bar clearance per-page.
 
-  >* {
+  > * {
     margin-top: 0 !important;
   }
 
-  .container>*:first-child,
-  .signup-container>*:first-child,
-  .superme-page-container>*:first-child {
+  .container > *:first-child,
+  .signup-container > *:first-child,
+  .superme-page-container > *:first-child {
     margin-top: 0 !important;
   }
 
-  &.bg-superme-primary  { --background: #FFE9D6; }
-  &.bg-superme-secondary { --background: #FDEAD7; }
-  &.bg-superme-accent   { --background: #FAD2AE; }
+  &.bg-superme-primary {
+    --background: #ffe9d6;
+  }
+  &.bg-superme-secondary {
+    --background: #fdead7;
+  }
+  &.bg-superme-accent {
+    --background: #fad2ae;
+  }
 
   .superme-page-container {
     // min-height fills visible safe area (top + bottom already inset above)
@@ -523,7 +539,7 @@ ion-content {
     padding-top: 0 !important;
     padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab));
 
-    >* {
+    > * {
       margin-top: 0 !important;
     }
 
@@ -539,7 +555,6 @@ ion-content {
 }
 
 @media (max-width: 768px) {
-
   .bg-superme-primary,
   .bg-superme-secondary,
   .bg-superme-accent {
@@ -561,7 +576,6 @@ ion-content {
 // Landscape on notch/punch-hole devices: side insets (--sal/--sar) are
 // handled by ion-content's --padding-start/--padding-end set above.
 @media (orientation: landscape) and (max-height: 500px) {
-
   .bg-superme-primary,
   .bg-superme-secondary,
   .bg-superme-accent {
@@ -569,7 +583,6 @@ ion-content {
   }
 
   ion-content {
-
     &.bg-superme-primary,
     &.bg-superme-secondary,
     &.bg-superme-accent {
@@ -589,11 +602,10 @@ ion-content {
 }
 
 .text-superme-accent {
-  color: #EE6621;
+  color: #ee6621;
 }
 
 body.reel-expanded {
-
   footer,
   ion-tab-bar,
   ion-tabs,
@@ -640,11 +652,11 @@ body.barcode-scanner-active {
   ion-content {
     background: transparent !important;
     --background: transparent !important;
-    
+
     &::part(background) {
       background: transparent !important;
     }
-    
+
     &::part(scroll) {
       background: transparent !important;
     }
@@ -762,12 +774,19 @@ body.barcode-scanner-active {
   height: 9px;
   aspect-ratio: 4/3;
   object-fit: contain;
-  color: #2D6830;
+  color: #2d6830;
 }
 
 .mb-toast__text {
   text-align: center;
-  font-family: Nunito, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-family:
+    Nunito,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial;
   font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
@@ -778,22 +797,22 @@ body.barcode-scanner-active {
 
 /* Variants only change color tokens */
 .mb-toast--success {
-  --mb-toast-border: 1px solid #4CAF50;
-  --mb-toast-bg: #C8EAC9;
-  --mb-toast-text: #2D6830;
+  --mb-toast-border: 1px solid #4caf50;
+  --mb-toast-bg: #c8eac9;
+  --mb-toast-text: #2d6830;
 }
 
 .mb-toast--error {
-  --mb-toast-border: 1px solid #BB2124;
-  --mb-toast-bg: #FDCBCC;
-  --mb-toast-text: #BB2124;
+  --mb-toast-border: 1px solid #bb2124;
+  --mb-toast-bg: #fdcbcc;
+  --mb-toast-text: #bb2124;
 }
 // .role-selector  .role-selection-info .ng-tns-c2933442544-0{
 
 // }
-.role-selector  .role-selection-info{
- display:grid;
- grid-template-columns: 2fr 1fr;
+.role-selector .role-selection-info {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
 }
 .role-selection-info {
   display: flex;
@@ -803,8 +822,12 @@ body.barcode-scanner-active {
 /* ── Skeleton shimmer system ─────────────────────────────────────────────── */
 /* Shared keyframe for both app-img component and bg-skeleton directive.      */
 @keyframes sk-shimmer-anim {
-  0%   { background-position: -400px 0; }
-  100% { background-position: calc(400px + 100%) 0; }
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: calc(400px + 100%) 0;
+  }
 }
 
 /* Applied by BgSkeletonDirective to background-image elements while loading. */
@@ -813,17 +836,17 @@ body.barcode-scanner-active {
   position: relative;
 }
 .bg-sk-loading::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   background: linear-gradient(
     90deg,
-    #EDEBE9 0%,
-    #EDEBE9 25%,
-    #F8F5F4 50%,
-    #EDEBE9 75%,
-    #EDEBE9 100%
+    #edebe9 0%,
+    #edebe9 25%,
+    #f8f5f4 50%,
+    #edebe9 75%,
+    #edebe9 100%
   );
   background-size: 400px 100%;
   animation: sk-shimmer-anim 1.5s ease-in-out infinite;
@@ -837,8 +860,8 @@ body.barcode-scanner-active {
 
 .role-selection-info img {
   flex: 0 0 40%;
-      max-width: 37% !important;
-    margin-top: 50px;
+  max-width: 37% !important;
+  margin-top: 50px;
 }
 .role-selector .row {
   display: flex;
@@ -854,20 +877,20 @@ body.barcode-scanner-active {
   max-width: 55%;
 }
 .role-selector .row > div:first-child .role-selector img {
-    
-    margin-top: 40px;
+  margin-top: 40px;
 }
 .role-selector img {
-    width: 99% !important;
-    height: auto;
-    margin-top: 56px;
+  width: 99% !important;
+  height: auto;
+  margin-top: 56px;
 }
 .role-selector .self-role {
   display: flex;
   align-items: center;
 }
-.signup-container[_ngcontent-ng-c2224025112]   .role-selector[_ngcontent-ng-c2224025112]:nth-child(2) {
-    padding: 0px!important;
+.signup-container[_ngcontent-ng-c2224025112]
+  .role-selector[_ngcontent-ng-c2224025112]:nth-child(2) {
+  padding: 0px !important;
 }
 .role-selector .text-role {
   flex: 0 0 60%;
@@ -883,8 +906,8 @@ body.barcode-scanner-active {
   width: 100%;
   height: auto;
 }
-.child-role-image img{
-      width: 46% !important;
+.child-role-image img {
+  width: 46% !important;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -892,31 +915,80 @@ body.barcode-scanner-active {
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── Responsive text utilities ─────────────────────────────────────────────────
-.text-2xs  { font-size: var(--text-2xs)  !important; }
-.text-xs   { font-size: var(--text-xs)   !important; }
-.text-sm   { font-size: var(--text-sm)   !important; }
-.text-base { font-size: var(--text-base) !important; }
-.text-md   { font-size: var(--text-md)   !important; }
-.text-lg   { font-size: var(--text-lg)   !important; }
-.text-xl   { font-size: var(--text-xl)   !important; }
-.text-2xl  { font-size: var(--text-2xl)  !important; }
-.text-3xl  { font-size: var(--text-3xl)  !important; }
+.text-2xs {
+  font-size: var(--text-2xs) !important;
+}
+.text-xs {
+  font-size: var(--text-xs) !important;
+}
+.text-sm {
+  font-size: var(--text-sm) !important;
+}
+.text-base {
+  font-size: var(--text-base) !important;
+}
+.text-md {
+  font-size: var(--text-md) !important;
+}
+.text-lg {
+  font-size: var(--text-lg) !important;
+}
+.text-xl {
+  font-size: var(--text-xl) !important;
+}
+.text-2xl {
+  font-size: var(--text-2xl) !important;
+}
+.text-3xl {
+  font-size: var(--text-3xl) !important;
+}
 
 // ── Responsive flex / grid helpers ───────────────────────────────────────────
-.flex-wrap   { display: flex; flex-wrap: wrap; }
-.flex-col    { display: flex; flex-direction: column; }
-.flex-row    { display: flex; flex-direction: row; }
-.flex-1      { flex: 1; }
-.flex-shrink-0 { flex-shrink: 0; }
-.items-center  { align-items: center; }
-.justify-between { justify-content: space-between; }
-.justify-center  { justify-content: center; }
-.gap-1  { gap: var(--space-1); }
-.gap-2  { gap: var(--space-2); }
-.gap-3  { gap: var(--space-3); }
-.gap-4  { gap: var(--space-4); }
-.gap-5  { gap: var(--space-5); }
-.gap-6  { gap: var(--space-6); }
+.flex-wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+.flex-1 {
+  flex: 1;
+}
+.flex-shrink-0 {
+  flex-shrink: 0;
+}
+.items-center {
+  align-items: center;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.justify-center {
+  justify-content: center;
+}
+.gap-1 {
+  gap: var(--space-1);
+}
+.gap-2 {
+  gap: var(--space-2);
+}
+.gap-3 {
+  gap: var(--space-3);
+}
+.gap-4 {
+  gap: var(--space-4);
+}
+.gap-5 {
+  gap: var(--space-5);
+}
+.gap-6 {
+  gap: var(--space-6);
+}
 
 // ── Responsive images ─────────────────────────────────────────────────────────
 img {
@@ -951,18 +1023,23 @@ img {
 
 // ── Visibility helpers ────────────────────────────────────────────────────────
 @media (max-width: 768px) {
-  .hide-mobile  { display: none !important; }
+  .hide-mobile {
+    display: none !important;
+  }
 }
 @media (min-width: 769px) {
-  .hide-tablet  { display: none !important; }
+  .hide-tablet {
+    display: none !important;
+  }
 }
 @media (min-width: 1025px) {
-  .hide-desktop { display: none !important; }
+  .hide-desktop {
+    display: none !important;
+  }
 }
 
 // ── Tablet & desktop layout improvements ─────────────────────────────────────
 @media (min-width: 769px) {
-
   // Center the whole app on wide screens with a max-width constraint
   ion-router-outlet,
   .ion-page {
@@ -1064,6 +1141,34 @@ body.authed-shell-active {
   }
 }
 
+// Browser builds use the responsive Figma website header/footer. Keep the
+// fixed Ionic bottom tab bar exclusively for native Android/iOS builds so the
+// two navigation systems never overlap on a narrow browser viewport.
+app-authenticated .authed-shell--web app-footer {
+  display: none !important;
+}
+
+// The authenticated shell reserves space above the nested router outlet for
+// the website header. Ionic's global `.ion-page` rule otherwise keeps each
+// child page at 100vh, making it extend below the viewport by the header
+// height. That missing height prevents the final footer/legal rows from ever
+// reaching the visible scroll area. Size routed pages to the remaining outlet
+// instead, while leaving native shells unchanged.
+app-authenticated
+  .authed-shell--web
+  .authed-shell__outlet
+  > ion-router-outlet
+  > .ion-page {
+  height: 100% !important;
+  min-height: 0 !important;
+
+  // Global mobile safe-area styling gives every ion-content a 100dvh height.
+  // In the website shell it must instead fill this already-reduced page.
+  > ion-content {
+    height: 100% !important;
+  }
+}
+
 // Some authenticated pages (eg. the user dashboard's web/tablet layout) build
 // their own wide container internally instead of the default readable-width
 // page above — same escape-hatch pattern as body.onboarding-active, but for
@@ -1100,32 +1205,64 @@ body.dashboard-web-view {
 }
 
 // ── Global heading fluid sizing ───────────────────────────────────────────────
-h1 { font-size: var(--text-3xl); }
-h2 { font-size: var(--text-2xl); }
-h3 { font-size: var(--text-xl); }
-h4 { font-size: var(--text-lg); }
-h5 { font-size: var(--text-md); }
-h6 { font-size: var(--text-base); }
+h1 {
+  font-size: var(--text-3xl);
+}
+h2 {
+  font-size: var(--text-2xl);
+}
+h3 {
+  font-size: var(--text-xl);
+}
+h4 {
+  font-size: var(--text-lg);
+}
+h5 {
+  font-size: var(--text-md);
+}
+h6 {
+  font-size: var(--text-base);
+}
 
 // Apply heading sizes only to non-Ionic headings inside .superme-page-container
 // (Ionic sets its own type scale via CSS vars)
 .superme-page-container {
-  h1 { font-size: var(--text-3xl); }
-  h2 { font-size: var(--text-2xl); }
-  h3 { font-size: var(--text-xl);  }
-  h4 { font-size: var(--text-lg);  }
-  h5 { font-size: var(--text-md);  }
-  h6 { font-size: var(--text-base);}
-  p  { font-size: var(--text-base); line-height: 1.55; }
+  h1 {
+    font-size: var(--text-3xl);
+  }
+  h2 {
+    font-size: var(--text-2xl);
+  }
+  h3 {
+    font-size: var(--text-xl);
+  }
+  h4 {
+    font-size: var(--text-lg);
+  }
+  h5 {
+    font-size: var(--text-md);
+  }
+  h6 {
+    font-size: var(--text-base);
+  }
+  p {
+    font-size: var(--text-base);
+    line-height: 1.55;
+  }
 }
 
 // ── Touch-friendly interactive elements ───────────────────────────────────────
-button, a, [role="button"], [role="tab"] {
+button,
+a,
+[role="button"],
+[role="tab"] {
   -webkit-tap-highlight-color: transparent;
 }
 
 // ── Input responsiveness ──────────────────────────────────────────────────────
-input, textarea, select {
+input,
+textarea,
+select {
   font-size: max(16px, 1em); // prevents iOS auto-zoom on focus
   max-width: 100%;
   box-sizing: border-box;
