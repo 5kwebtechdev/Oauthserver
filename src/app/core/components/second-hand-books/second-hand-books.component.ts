@@ -782,9 +782,9 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
 
   listingStatusBadge(listing: BookListing): string {
     const status = String(listing.status ?? '').trim().toUpperCase();
-    if (status === 'SOLD') return 'assets/figma/second-hand-books/status-sold-badge.png';
+    if (status === 'SOLD') return 'assets/figma/second-hand-books/status-sold-badge.webp';
     if (status === 'PENDING' || status === 'UNDER_REVIEW' || status === 'REJECTED') {
-      return 'assets/figma/second-hand-books/status-under-review-badge.png';
+      return 'assets/figma/second-hand-books/status-under-review-badge.webp';
     }
     return '';
   }

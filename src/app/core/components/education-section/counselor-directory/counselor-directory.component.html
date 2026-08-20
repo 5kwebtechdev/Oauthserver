@@ -27,14 +27,14 @@
           <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="">
           <p>Find trusted <strong>{{ directoryTitle }}</strong><br>around you.</p>
         </div>
-        <img *ngIf="isPandaPet" src="assets/figma/child-learning/header-pet.png" class="counselor-mascot" alt="" aria-hidden="true">
+        <img *ngIf="isPandaPet" src="assets/figma/child-learning/header-pet.webp" class="counselor-mascot" alt="" aria-hidden="true">
         <superme-pet *ngIf="!isPandaPet" class="counselor-mascot" mood="happy" [size]="120"></superme-pet>
       </div>
     </header>
 
     <main class="counselor-main">
       <button type="button" class="counselor-refer" (click)="referCounselor()">
-        <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+        <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
         <span class="counselor-refer__copy">
             <strong>Know a {{ singularTitle }}?</strong>
           <small>Refer them to get listed on Eduhub.</small>
@@ -81,13 +81,13 @@
         </div>
 
         <div class="counselor-state counselor-state--error" *ngIf="!isLoading && errorMessage">
-          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
           <h3>Couldn’t load counselors</h3><p>{{ errorMessage }}</p>
           <button type="button" (click)="loadCounselors()">Retry</button>
         </div>
 
         <div class="counselor-state" *ngIf="!isLoading && !errorMessage && !visibleCounselors.length">
-          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
           <h3>{{ searchQuery ? 'No matching ' + directoryTitle.toLowerCase() : 'No ' + directoryTitle.toLowerCase() + ' found' }}</h3>
           <p *ngIf="searchQuery">Try another name, specialization, or location.</p>
           <p *ngIf="!searchQuery && counselors.length">Try changing your filters.</p>
@@ -106,7 +106,7 @@
                   <div class="counselor-card__headline">
                     <div class="counselor-card__identity">
                       <div class="counselor-card__name"><h3>{{ getName(counselor) }}</h3>
-                        <img *ngIf="isVerified(counselor)" src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified"></div>
+                        <img *ngIf="isVerified(counselor)" src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified"></div>
                       <p class="counselor-card__specialization">{{ getSpecializationLabel(counselor) }}</p>
                       <p class="counselor-card__stats"><span><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true">{{ getAvailability(counselor) }}</span><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">{{ getExperience(counselor) }}</span></p>
                     </div>

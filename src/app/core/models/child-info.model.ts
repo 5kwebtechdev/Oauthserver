@@ -56,7 +56,7 @@ export function mapVibeToChildInfo(d: any, avatarUrl: string): ChildInfo {
   return {
     id,
     name: d.userName || 'Child',
-    avatarUrl: avatarUrl || 'assets/figma/avatars/below-11-male-1.png',
+    avatarUrl: avatarUrl || 'assets/figma/avatars/below-11-male-1.webp',
     relationship: d.relationship || 'Child',
     age: Number.isFinite(parsedAge) && parsedAge >= 0 ? Math.floor(parsedAge) : undefined,
     dateOfBirth: dateOfBirth || undefined,

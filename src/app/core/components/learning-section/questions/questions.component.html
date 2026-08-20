@@ -103,14 +103,14 @@
                     [disabled]="isHintLoading || hintLimitReached || totalCoins < coinsPerHint"
                     [attr.aria-pressed]="showHint"
                     (click)="toggleHint()">
-                    <img class="quiz-hint-illustration" src="assets/figma/quiz-question/raw-1.png" alt="" aria-hidden="true" />
+                    <img class="quiz-hint-illustration" src="assets/figma/quiz-question/raw-1.webp" alt="" aria-hidden="true" />
                     <span class="quiz-hint-copy">
                         <strong>{{ isHintLoading ? 'Getting your hint...' : 'Need a hint?' }}</strong>
                         <span>Get a helpful clue to answer this question</span>
                     </span>
                     <span class="quiz-hint-meta">
                         <span class="quiz-hint-cost">
-                            <img src="assets/figma/quiz-question/raw-5.png" alt="" aria-hidden="true" />
+                            <img src="assets/figma/quiz-question/raw-5.webp" alt="" aria-hidden="true" />
                             {{ coinsPerHint }}
                         </span>
                         <span>{{ hintLimitReached ? 'Hint limit reached' : 'Hints left: ' + (maxHints - hintsUsed) + '/' + maxHints }}</span>

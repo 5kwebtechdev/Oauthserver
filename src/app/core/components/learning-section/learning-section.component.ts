@@ -17,7 +17,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
       <header class="content-header">
         <div class="content-title">
           <h2>
-            <img [src]="headerIcon || 'assets/figma/child-home/learning-header.png'" class="content-title-icon"
+            <img [src]="headerIcon || 'assets/figma/child-home/learning-header.webp'" class="content-title-icon"
               aria-hidden="true" role="presentation" />
             {{ title || 'Start Curious, Play, Conquer!' }}
           </h2>

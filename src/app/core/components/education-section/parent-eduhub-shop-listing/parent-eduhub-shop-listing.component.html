@@ -29,7 +29,7 @@
           <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="" aria-hidden="true">
           <p>Find trusted <strong>{{ pageTitle.toLowerCase() }}</strong> around you.</p>
         </div>
-        <img *ngIf="isPandaPet" class="directory-pet" src="assets/figma/child-learning/header-pet.png" alt="" aria-hidden="true">
+        <img *ngIf="isPandaPet" class="directory-pet" src="assets/figma/child-learning/header-pet.webp" alt="" aria-hidden="true">
         <superme-pet *ngIf="!isPandaPet" class="directory-pet" mood="happy" [size]="120"></superme-pet>
       </div>
     </header>
@@ -37,7 +37,7 @@
     <main class="directory-main">
       <button type="button" class="refer-card" (click)="referForListing()">
         <span class="refer-card__icon" aria-hidden="true">
-          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="">
         </span>
         <span class="refer-card__copy">
           <strong>Know a {{ singularPageTitle }}?</strong>
@@ -79,14 +79,14 @@
         </div>
 
         <div class="directory-state directory-state--error" *ngIf="!loading && loadError">
-          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
           <h3>Couldn’t load listings</h3>
           <p>{{ loadError }}</p>
           <button type="button" (click)="retry()">Retry</button>
         </div>
 
         <div class="directory-state" *ngIf="!loading && !loadError && !visibleListings.length">
-          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
           <h3>{{ searchQuery ? 'No matching listings' : 'No listings available yet' }}</h3>
           <p *ngIf="searchQuery">Try another name or location.</p>
           <p *ngIf="!searchQuery">New {{ pageTitle.toLowerCase() }} will appear here when they are added.</p>
@@ -107,7 +107,7 @@
                     <div class="listing-card__identity">
                       <div class="listing-card__name">
                         <h3>{{ item.name }}</h3>
-                        <img *ngIf="item.verified" src="assets/figma/parent-eduhub-inner/verified.svg"
+                        <img *ngIf="item.verified" src="assets/figma/parent-eduhub-inner/verified.webp"
                           alt="Verified" title="Verified">
                       </div>
 
@@ -159,7 +159,7 @@
                       <img class="listing-action__unlock-icon" src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
                       <span>Unlock</span>
                       <span class="listing-action__coins">
-                        <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
+                        <img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">
                         {{ item.unlockCost }}
                       </span>
                     </ng-template>
@@ -187,7 +187,7 @@
         <img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true">
       </button>
 
-      <img class="unlock-sheet__illustration" src="assets/figma/contact-unlock/sheet-illustration.png"
+      <img class="unlock-sheet__illustration" src="assets/figma/contact-unlock/sheet-illustration.webp"
         alt="" aria-hidden="true">
       <div class="unlock-sheet__heading">
         <h2 id="unlock-sheet-title">Unlock contact Details?</h2>
@@ -195,13 +195,13 @@
       </div>
 
       <div class="unlock-sheet__balance">
-        <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
+        <img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">
         <p><strong>{{ unlockItem.unlockCost }} coins will be deducted</strong>
           <span>from your SuperMeApp coin balance.</span>
         </p>
         <div>
           <span>Your balance</span>
-          <strong><img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">{{ coinBalance }}</strong>
+          <strong><img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">{{ coinBalance }}</strong>
         </div>
       </div>
 
@@ -222,7 +222,7 @@
           <img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
           <span>Unlock Now</span>
           <span class="sheet-primary-action__coins">
-            <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
+            <img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">
             {{ unlockItem.unlockCost }}
           </span>
         </ng-container>

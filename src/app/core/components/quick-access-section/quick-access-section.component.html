@@ -5,7 +5,7 @@
     [class.is-checking]="checkingJournalAvailability"
     (click)="openJournal($event)" (keydown.enter)="openJournal($event)"
     [attr.aria-busy]="checkingJournalAvailability">
-    <img class="qa-hero-icon" src="assets/figma/child-home/quick-journal.png" alt="" aria-hidden="true">
+    <img class="qa-hero-icon" src="assets/figma/child-home/quick-journal.webp" alt="" aria-hidden="true">
     <span class="qa-hero-copy">
       <span class="qa-hero-kicker">Your Journal</span>
       <span class="qa-hero-title">How was your day?</span>
@@ -16,16 +16,16 @@
 
   <div class="qa-shortcuts" [class.qa-shortcuts--with-journal]="journalAvailable === false">
     <a class="qa-shortcut-card qa-shortcut-notes" [routerLink]="['/authed/notes']">
-      <img src="assets/figma/child-home/quick-notes.png" alt="" class="qa-shortcut-icon">
+      <img src="assets/figma/child-home/quick-notes.webp" alt="" class="qa-shortcut-icon">
       <span class="qa-shortcut-label">Notes</span>
     </a>
     <a class="qa-shortcut-card qa-shortcut-calendar" [routerLink]="['/authed/activity-calendar']">
-      <img src="assets/figma/child-home/quick-calendar.png" alt="" class="qa-shortcut-icon">
+      <img src="assets/figma/child-home/quick-calendar.webp" alt="" class="qa-shortcut-icon">
       <span class="qa-shortcut-label">Calendar</span>
     </a>
     <a *ngIf="journalAvailable === false" class="qa-shortcut-card qa-shortcut-journal"
       [routerLink]="['/authed/journal-output']">
-      <img src="assets/figma/child-home/quick-journal.png" alt="" class="qa-shortcut-icon">
+      <img src="assets/figma/child-home/quick-journal.webp" alt="" class="qa-shortcut-icon">
       <span class="qa-shortcut-label">Journal</span>
     </a>
   </div>
