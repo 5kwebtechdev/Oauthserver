@@ -9,6 +9,7 @@
 
 .eduhub-events-content {
   --background: #fff;
+  --padding-top: 0px;
   --padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
 }
 
@@ -573,6 +574,10 @@ button {
 
 .quick-action--favourite.is-selected .quick-action__heart {
   background: #e53935;
+  // favorite.svg is an outline heart (a hollow ring); swap to a solid
+  // silhouette so "liked" reads as a fully filled heart, not just a red ring.
+  mask: url('/assets/figma/parent-eduhub-inner/favorite-filled.svg') center / contain no-repeat;
+  -webkit-mask: url('/assets/figma/parent-eduhub-inner/favorite-filled.svg') center / contain no-repeat;
 }
 
 .quick-action--share {

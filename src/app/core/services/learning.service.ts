@@ -590,7 +590,11 @@ export class LearningService {
             image: normalizedChallenge.thumbnailImageUrl || 'assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg',
             coins: normalizedChallenge.coins,
             trophy: normalizedChallenge.trophies,
-            difficulty: normalizedChallenge.difficultyDisplay || normalizedChallenge.difficulty,
+            // The API's difficultyDisplay is a pre-formatted label (e.g. "Easy")
+            // — lowercase it at the source rather than relying on the badge's
+            // CSS text-transform, since that pre-formatted casing was leaking
+            // through in some renders.
+            difficulty: String(normalizedChallenge.difficultyDisplay || normalizedChallenge.difficulty || '').toLowerCase(),
             buttonText: timeText ? `Finish in ${timeText}` : buttonLabel,
             type: isQuiz ? 'quiz' : 'puzzle',
             // Preserve backend category for use by UI (e.g. superme-badge)

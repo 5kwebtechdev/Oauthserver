@@ -387,6 +387,12 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     return this.isParentItemAssigned(item) ? 'View' : 'Assign';
   }
 
+  /** The "easy" green badge styling should also cover Beginner-level items. */
+  isBeginnerDifficulty(difficulty: string): boolean {
+    const normalized = (difficulty || '').toLowerCase();
+    return normalized === 'easy' || normalized === 'beginner';
+  }
+
   getParentItemDetail(item: LearningCardData): string {
     const raw = item.rawData as any;
     if (item.type === 'masterclass') {

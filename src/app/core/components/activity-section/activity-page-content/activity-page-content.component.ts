@@ -344,9 +344,19 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     selectChildCalendarTab(tab: 'all' | 'habit' | 'task' | 'planner'): void {
         this.childCalendarTab = tab;
         this.currentMainTab = tab === 'task' ? 'tasks' : 'habits';
+
+        // Always pull the latest data for whatever this tab shows instead of
+        // trusting a possibly-stale earlier fetch.
+        if (tab === 'all' || tab === 'habit') {
+            this.loadHabits(true);
+        }
         if (tab === 'all' || tab === 'task') {
             this.loadTasksForSelectedDate(this.selectedDate, true);
         }
+        if (tab === 'all' || tab === 'planner') {
+            this.loadChildCalendarData();
+        }
+
         this.applyFilters();
     }
 
@@ -459,11 +469,28 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         if (this.childCalendarTab === 'all' || this.childCalendarTab === 'task') {
             this.childTaskItems.forEach(item => items.push({ item, type: 'task' }));
         }
-        return this.sortArrayByUpcoming(items.map(entry => ({
+        // The status filter (Pending/Ongoing/Completed/Skipped) only appears
+        // for the single-type Habit/Task views, so it only narrows those.
+        const scoped = this.showsChildStatusFilters
+            ? items.filter(entry => this.matchesChildStatus(entry.item))
+            : items;
+        return this.sortArrayByUpcoming(scoped.map(entry => ({
             ...entry,
             startTimeStamp: entry.item.startTimeStamp || this.getTimestampFromTime(entry.item.startTime),
             endTimeStamp: entry.item.endTimeStamp || this.getTimestampFromTime(entry.item.endTime)
         }))) as Array<{ item: any; type: 'habit' | 'task' }>;
+    }
+
+    /** Status filters only make sense while looking at one type at a time. */
+    get showsChildStatusFilters(): boolean {
+        return this.childCalendarTab === 'habit' || this.childCalendarTab === 'task';
+    }
+
+    get childStatusCounts(): { pending: number; ongoing: number; completed: number; skipped: number } {
+        const source: any[] = this.childCalendarTab === 'task' ? this.childTaskItems : this.childHabitItems;
+        const counts = { pending: 0, ongoing: 0, completed: 0, skipped: 0 };
+        source.forEach(item => { counts[this.normalizedItemStatus(item)]++; });
+        return counts;
     }
 
     get showsPlannerEvents(): boolean {

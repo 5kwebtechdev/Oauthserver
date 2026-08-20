@@ -384,7 +384,7 @@
                   </span>
                   <span class="child-learning-item__body">
                     <span *ngIf="item.difficulty" class="child-learning-item__difficulty"
-                      [class.is-easy]="item.difficulty.toLowerCase() === 'easy'">{{ item.difficulty }}</span>
+                      [class.is-easy]="isBeginnerDifficulty(item.difficulty)">{{ item.difficulty }}</span>
                     <strong>{{ item.title }}</strong>
                     <span *ngIf="getParentItemDetail(item) as detail" class="child-learning-item__detail">{{ detail }}</span>
                     <span class="child-learning-item__rewards">

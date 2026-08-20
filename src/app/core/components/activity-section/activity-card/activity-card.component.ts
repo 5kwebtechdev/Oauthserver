@@ -2531,8 +2531,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   get plannerTabIcon(): string {
+    // glance-planner.svg renders white-on-transparent (meant for a colored
+    // active pill) and disappears against the inactive white tab background.
+    // calendar.svg is the same teal artwork already used consistently for
+    // this tab elsewhere in the app.
     return this.usesPlannerExperience
-      ? 'assets/figma/child-home/glance-planner.svg'
+      ? 'assets/figma/child-planner/calendar.svg'
       : 'assets/figma/child-home/glance-timetable.png';
   }
 

@@ -485,6 +485,14 @@
         &.is-active {
             background: var(--tab-active, var(--tab-color));
             color: #fff;
+
+            // Each tab's icon is drawn in roughly the same hue as its own
+            // active background (e.g. Task's icon and its active fill are
+            // both orange), so it can disappear into it. Forcing the icon to
+            // white keeps it visible against every tab's active color.
+            img {
+                filter: brightness(0) invert(1);
+            }
         }
     }
 
@@ -492,15 +500,6 @@
     .tab-habit { --tab-color: var(--child-purple); }
     .tab-task { --tab-color: var(--child-orange-dark); }
     .tab-planner { --tab-color: var(--child-aqua-dark); --tab-active: var(--child-aqua); }
-
-    // Use uniformly-sized icon art for all tabs. The original Habit asset is
-    // a tall illustration and was rendered as a broken/misaligned image in
-    // the compact tab button.
-    .tab-habit img,
-    .tab-task img {
-        height: 20px;
-        width: 20px;
-    }
 }
 
 .child-status-filters {

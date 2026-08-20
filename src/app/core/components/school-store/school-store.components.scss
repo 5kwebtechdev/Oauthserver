@@ -1,3 +1,15 @@
+// Ionic's real scrolling element lives in ion-content's shadow DOM. Relying
+// only on the inner .school-store-content padding can leave the last row
+// (the footer badges) clipped behind the fixed app-footer on iOS — give the
+// actual scroll part the same reserved space explicitly.
+.school-store-ion-content {
+  --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 16px);
+
+  &::part(scroll) {
+    padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 16px);
+  }
+}
+
 .school-store-content{
      display: flex;
 flex-direction: column;
