@@ -5,6 +5,24 @@ import { authGuard } from './core/authe-guard/authe-guard';
 import { OurPoliciesComponent } from './core/components/user-profile/our-policies/our-policies.component';
 
 const routes: Routes = [
+  // Stable public entry points used by the separate SuperMe marketing site.
+  // Keep these redirects at the root so the website does not need to know the
+  // Ionic app's internal `/home/*` route structure.
+  {
+    path: 'login',
+    redirectTo: 'home/login',
+    pathMatch: 'full'
+  },
+  {
+    path: 'signup',
+    redirectTo: 'home/sign-up',
+    pathMatch: 'full'
+  },
+  {
+    path: 'sign-up',
+    redirectTo: 'home/sign-up',
+    pathMatch: 'full'
+  },
   {
     path: 'home',
     loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
@@ -20,7 +38,8 @@ const routes: Routes = [
   },
   {
     path: 'learning-description',
-    loadComponent: () => import('./core/components/learning-section/learning-description/learning-description.component').then(m => m.LearningDescriptionComponent)
+    redirectTo: 'authed/content',
+    pathMatch: 'full'
   },
   {
     path: 'result-page',

@@ -527,7 +527,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       void this.router.navigate(['/authed/content/article', item.id], extras);
       return;
     }
-    void this.router.navigate(['/authed/content/description', item.id], extras);
+    void this.router.navigate(['/authed/content/questions', item.id], extras);
   }
 
   openChildLearningItem(item: LearningCardData): void {
@@ -540,7 +540,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       void this.router.navigate(['/authed/content/article', item.id], extras);
       return;
     }
-    void this.router.navigate(['/authed/content/description', item.id], extras);
+    void this.router.navigate(['/authed/content/questions', item.id], extras);
   }
 
   getChildTrophyCount(item: LearningCardData): number {
