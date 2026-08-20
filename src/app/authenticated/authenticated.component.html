@@ -1,5 +1,5 @@
-<div class="authed-shell">
-  <web-nav></web-nav>
+<div class="authed-shell" [class.authed-shell--web]="isWebBrowser">
+  <web-nav *ngIf="isWebBrowser"></web-nav>
   <div class="authed-shell__outlet">
     <ion-router-outlet></ion-router-outlet>
   </div>

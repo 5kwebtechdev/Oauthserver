@@ -1,20 +1,15 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
 import { Subject, takeUntil } from 'rxjs';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 import { AuthService } from '../../../services/auth.service';
 import { UserService } from '../../../services/user.service';
 import { ChildSelfImageService } from '../../../services/child-self-image.service';
-import { ParentImageService } from '../../../services/parent-image.service';
-import { ProfileStoreService } from '../../../services/profile-store.service';
-import { ChildInfo } from '../../../models/child-info.model';
 
 interface WebNavLink {
   label: string;
-  link?: string;
-  href?: string;
+  link: string;
 }
 
 interface WebNavItem {
@@ -23,113 +18,129 @@ interface WebNavItem {
   children?: WebNavLink[];
 }
 
-const CHILD_NAV_ITEMS: WebNavItem[] = [
+const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
   {
     label: 'Learning',
     children: [
       { label: 'Content Library', link: '/authed/content' },
       { label: 'Academy', link: '/authed/academy' },
-      { label: 'Education Hub', link: '/authed/education' }
-    ]
+      { label: 'Education Hub', link: '/authed/education' },
+    ],
   },
   {
-    label: 'Calendar',
+    label: 'Quick Tools',
     children: [
       { label: 'Timetable', link: '/authed/activity-timeline' },
-      { label: 'Calendar View', link: '/authed/activity-calendar' }
-    ]
+      { label: 'Calendar View', link: '/authed/activity-calendar' },
+      { label: 'Notes', link: '/authed/notes' },
+      { label: 'Journal', link: '/authed/journal-input' },
+    ],
   },
-  { label: 'Notes', link: '/authed/notes' }
+  {
+    label: 'EduHub',
+    children: [
+      { label: 'EduHub Home', link: '/authed/education' },
+      { label: 'Tutors', link: '/authed/tutors' },
+      { label: 'Academies', link: '/authed/academies' },
+      { label: 'Events', link: '/authed/education/events' },
+    ],
+  },
+  {
+    label: 'Shop',
+    children: [
+      { label: 'School Store', link: '/authed/school-store' },
+      { label: 'Second-hand Books', link: '/authed/second-hand-books' },
+      { label: 'My Orders', link: '/authed/school-store/my-orders' },
+    ],
+  },
+  { label: 'Insights', link: '/authed/analytics' },
 ];
 
-// Parent accounts get no primary nav links in the web header — just the
-// child selector / coins / profile on the right (see web-nav.component.html).
-const PARENT_NAV_ITEMS: WebNavItem[] = [];
+const PARENT_NAV_ITEMS: WebNavItem[] = [
+  {
+    label: 'Parenting',
+    children: [
+      { label: 'Parent Dashboard', link: '/authed/parent-account' },
+      { label: 'Child Learning', link: '/authed/parent-learning' },
+      { label: 'Insights', link: '/authed/analytics' },
+    ],
+  },
+  {
+    label: 'Shop',
+    children: [
+      { label: 'School Store', link: '/authed/school-store' },
+      { label: 'Second-hand Books', link: '/authed/second-hand-books' },
+      { label: 'My Orders', link: '/authed/school-store/my-orders' },
+    ],
+  },
+  {
+    label: 'EduHub',
+    children: [
+      { label: 'EduHub Home', link: '/authed/education' },
+      { label: 'Tutors', link: '/authed/tutors' },
+      { label: 'Academies', link: '/authed/academies' },
+      { label: 'Events', link: '/authed/education/events' },
+    ],
+  },
+];
 
 @Component({
   selector: 'web-nav',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule, SkeletonImageComponent],
+  imports: [CommonModule, RouterModule, SkeletonImageComponent],
   templateUrl: './web-nav.component.html',
-  styleUrls: ['./web-nav.component.scss']
+  styleUrls: ['./web-nav.component.scss'],
 })
 export class WebNavComponent implements OnInit, OnDestroy {
-  isParent = false;
-  navItems: WebNavItem[] = CHILD_NAV_ITEMS;
+  readonly navigationAssetRoot = 'assets/Navigation/figma-logged-in';
+  readonly logoSrc = `${this.navigationAssetRoot}/superme-logo.png`;
+  readonly chevronSrc = `${this.navigationAssetRoot}/chevron.svg`;
+  readonly notificationSrc = `${this.navigationAssetRoot}/notification.svg`;
+  readonly coinSrc = `${this.navigationAssetRoot}/coin.png`;
 
+  isParent = false;
+  navItems: WebNavItem[] = CHILD_SELF_NAV_ITEMS;
   userName = '';
   userAvatarUrl: string | null = null;
   avatarImageName: string | null = null;
-
   coins = 0;
-  streaks = 0;
-  trophies = 0;
-  badges = 0;
-
-  // Parent-only
-  parentAvatarStyle: Record<string, string> = {};
-  parentInitial = 'P';
-  children: ChildInfo[] = [];
-  selectedChild: ChildInfo | null = null;
-
   openMenu: string | null = null;
 
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    private router: Router,
-    private authService: AuthService,
-    private userService: UserService,
-    private childSelfImageService: ChildSelfImageService,
-    private parentImageService: ParentImageService,
-    private profileStore: ProfileStoreService
+    readonly router: Router,
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+    private readonly childSelfImageService: ChildSelfImageService,
   ) {}
 
   ngOnInit(): void {
     this.isParent = this.authService.isParentUser();
-    this.navItems = this.isParent ? PARENT_NAV_ITEMS : CHILD_NAV_ITEMS;
+    this.navItems = this.isParent ? PARENT_NAV_ITEMS : CHILD_SELF_NAV_ITEMS;
 
     this.authService.userData$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(userData => {
-        if (userData) {
-          this.userName = userData.name || '';
-          this.parentInitial = this.userName.charAt(0).toUpperCase() || 'P';
-          if (this.isParent) {
-            this.parentAvatarStyle = this.parentImageService.getAvatarStyle(
-              this.parentInitial,
-              String(userData.gender || '').toLowerCase() === 'female',
-              48
-            );
-          }
-          const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
-          this.userAvatarUrl = resolved.url || null;
-          this.avatarImageName = resolved.alt || null;
-        }
+      .subscribe((userData) => {
+        if (!userData) return;
+        this.userName = String(userData.name || '').trim();
+        const resolved =
+          this.childSelfImageService.resolveAvatarFromUser(userData);
+        this.userAvatarUrl = resolved.url || null;
+        this.avatarImageName = resolved.alt || null;
+        const profileCoins = Number(
+          (userData as any).coins ?? (userData as any).coinBalance,
+        );
+        if (Number.isFinite(profileCoins)) this.coins = profileCoins;
       });
 
-    if (this.isParent) {
-      this.profileStore.children$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(children => (this.children = children));
-      this.profileStore.selectedChild$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(child => (this.selectedChild = child));
-    } else {
-      this.userService.stats$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(stats => {
-          if (stats) {
-            this.coins = stats.coins;
-            this.streaks = stats.streaks;
-            this.trophies = stats.days;
-            this.badges = stats.badges;
-          }
-        });
-      // Ensure stats are populated even if the current page never fetches
-      // them itself (UserService dedupes against any in-flight request).
-      this.userService.refreshStats().subscribe();
-    }
+    this.userService.stats$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((stats) => {
+        if (stats && Number.isFinite(Number(stats.coins)))
+          this.coins = Number(stats.coins);
+      });
+    this.userService.refreshStats().subscribe({ error: () => undefined });
   }
 
   ngOnDestroy(): void {
@@ -138,19 +149,13 @@ export class WebNavComponent implements OnInit, OnDestroy {
   }
 
   get userInitial(): string {
-    return (this.userName || '').trim().charAt(0).toUpperCase();
+    return (this.userName || (this.isParent ? 'Parent' : 'User'))
+      .charAt(0)
+      .toUpperCase();
   }
 
-  get selectedChildAvatarUrl(): string {
-    return this.selectedChild?.avatarUrl || 'assets/figma/avatars/below-11-male-1.webp';
-  }
-
-  get selectedChildName(): string {
-    return this.selectedChild?.name || this.children[0]?.name || 'Child';
-  }
-
-  get selectedChildCoins(): number {
-    return this.selectedChild?.coins ?? 0;
+  get dashboardLink(): string {
+    return this.isParent ? '/authed/parent-account' : '/authed/user-dashboard';
   }
 
   openMenuOn(label: string): void {
@@ -158,6 +163,7 @@ export class WebNavComponent implements OnInit, OnDestroy {
   }
 
   toggleMenu(label: string, event: Event): void {
+    event.preventDefault();
     event.stopPropagation();
     this.openMenu = this.openMenu === label ? null : label;
   }
@@ -166,17 +172,34 @@ export class WebNavComponent implements OnInit, OnDestroy {
     this.openMenu = null;
   }
 
-  selectChild(child: ChildInfo): void {
-    this.profileStore.select(child);
+  isNavActive(item: WebNavItem): boolean {
+    const path = this.router.url.split(/[?#]/)[0];
+    if (item.link)
+      return path === item.link || path.startsWith(`${item.link}/`);
+    return Boolean(
+      item.children?.some(
+        (child) => path === child.link || path.startsWith(`${child.link}/`),
+      ),
+    );
+  }
+
+  goToNotifications(): void {
     this.closeMenu();
+    void this.router.navigate(['/authed/notifications']);
   }
 
   goToCoins(): void {
-    this.router.navigate(['/authed/coin']);
+    this.closeMenu();
+    void this.router.navigate(['/authed/coin']);
   }
 
   @HostListener('document:click')
   onDocumentClick(): void {
+    this.closeMenu();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
     this.closeMenu();
   }
 }
