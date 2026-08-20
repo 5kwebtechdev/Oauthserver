@@ -5,6 +5,25 @@
     flex-shrink: 0;
 }
 
+// The speech bubble has no width cap, so in a space-between flex row it can
+// greedily take the available width and squeeze the pet next to it down to
+// almost nothing. Give the bubble room to shrink and keep the pet at a
+// fixed, always-visible size, matching the panda image's treatment above.
+.panda-message {
+    align-items: flex-end;
+    gap: 12px;
+
+    app-speech-bubble {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    superme-pet {
+        display: block;
+        flex-shrink: 0;
+    }
+}
+
 // ── Keyframe animations ──────────────────────────────────────────────────────
 
 @keyframes coinIconPop {

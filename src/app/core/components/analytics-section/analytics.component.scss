@@ -6,6 +6,11 @@
 
 .analytics-content {
   --background: transparent;
+  // ion-content's own `fullscreen` safe-area handling would otherwise stack
+  // on top of `.analytics-header`'s manual env(safe-area-inset-top) padding
+  // below — doubling the gap under the iOS status bar/notch. The header
+  // stays in full control of the top inset instead.
+  --padding-top: 0px;
   --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 40px);
 
   // Ionic owns the real scrolling element in its shadow DOM. Applying the

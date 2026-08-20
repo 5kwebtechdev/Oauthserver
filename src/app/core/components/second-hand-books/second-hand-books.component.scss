@@ -31,7 +31,11 @@
 
 .books-hero {
   position: relative;
-  min-height: 213px;
+  // The toolbar below grows taller by the top safe-area inset (notch/status
+  // bar) via its own padding. Without adding that same amount here, the
+  // hero's fixed height doesn't grow with it, so the bottom-anchored speech
+  // bubble creeps up underneath the now-taller toolbar on iOS.
+  min-height: calc(213px + var(--sat, env(safe-area-inset-top, 0px)));
   overflow: hidden;
   border-radius: 0 0 24px 24px;
 }

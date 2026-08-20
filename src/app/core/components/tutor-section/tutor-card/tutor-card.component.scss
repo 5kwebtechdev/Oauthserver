@@ -325,8 +325,10 @@
     height: 16px;
     content: '';
     background: #1432A8;
-    mask: url('/assets/figma/eduhub-home/favorite.svg') center / contain no-repeat;
-    -webkit-mask: url('/assets/figma/eduhub-home/favorite.svg') center / contain no-repeat;
+    // favorite.svg is an outline heart (a hollow ring); swap to a solid
+    // silhouette so "liked" reads as a fully filled heart, not just a ring.
+    mask: url('/assets/figma/parent-eduhub-inner/favorite-filled.svg') center / contain no-repeat;
+    -webkit-mask: url('/assets/figma/parent-eduhub-inner/favorite-filled.svg') center / contain no-repeat;
   }
 }
 

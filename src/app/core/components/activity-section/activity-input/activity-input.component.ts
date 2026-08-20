@@ -201,7 +201,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   readonly childActivityTabs: ReadonlyArray<ActivityTabOption> = [
     { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.svg' },
     { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.svg' },
-    { key: 'planner', label: 'Planner', icon: 'assets/figma/child-planner/schedule.svg' }
+    // schedule.svg is a white-on-transparent asset meant for a colored active
+    // pill — it disappears against the white inactive tab background.
+    // calendar.svg is the same teal (#3E5A60) used for this tab's active state,
+    // so it stays visible in both states, matching Habit/Task.
+    { key: 'planner', label: 'Planner', icon: 'assets/figma/child-planner/calendar.svg' }
   ];
 
   readonly plannerColors = ['#0D47A1', '#B71C1C', '#880E4F', '#1B5E20', '#4A148C'];

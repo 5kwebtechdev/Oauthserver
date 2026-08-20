@@ -84,17 +84,32 @@
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'habit'" class="tab-habit"
                     (click)="selectChildCalendarTab('habit')">
-                    <img src="assets/figma/planner-daily/tab-habit.png" alt="" /><span>Habit</span>
+                    <img src="assets/icons/Habit.svg" alt="" /><span>Habit</span>
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'task'" class="tab-task"
                     (click)="selectChildCalendarTab('task')">
-                    <img src="assets/figma/planner-daily/tab-task.png" alt="" /><span>Task</span>
+                    <img src="assets/icons/Task.svg" alt="" /><span>Task</span>
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'planner'" class="tab-planner"
                     (click)="selectChildCalendarTab('planner')">
-                    <img src="assets/figma/planner-daily/tab-planner.png" alt="" /><span>Planner</span>
+                    <img src="assets/figma/child-planner/calendar.svg" alt="" /><span>Planner</span>
                 </button>
             </nav>
+
+            <div class="child-status-filters" *ngIf="showsChildStatusFilters" role="tablist" aria-label="Activity status">
+                <button type="button" class="status-pending" [class.is-active]="childStatusFilter === 'pending'"
+                    role="tab" [attr.aria-selected]="childStatusFilter === 'pending'"
+                    (click)="selectChildStatusFilter('pending')">Pending ({{ childStatusCounts.pending }})</button>
+                <button type="button" class="status-ongoing" [class.is-active]="childStatusFilter === 'ongoing'"
+                    role="tab" [attr.aria-selected]="childStatusFilter === 'ongoing'"
+                    (click)="selectChildStatusFilter('ongoing')">Ongoing ({{ childStatusCounts.ongoing }})</button>
+                <button type="button" class="status-completed" [class.is-active]="childStatusFilter === 'completed'"
+                    role="tab" [attr.aria-selected]="childStatusFilter === 'completed'"
+                    (click)="selectChildStatusFilter('completed')">Completed ({{ childStatusCounts.completed }})</button>
+                <button type="button" class="status-skipped" [class.is-active]="childStatusFilter === 'skipped'"
+                    role="tab" [attr.aria-selected]="childStatusFilter === 'skipped'"
+                    (click)="selectChildStatusFilter('skipped')">Skipped ({{ childStatusCounts.skipped }})</button>
+            </div>
 
             <div class="child-activity-list" *ngIf="!loading && !plannerLoading; else childActivityLoading">
                 <!-- Events remain above every selected-day activity, matching the Planner design. -->

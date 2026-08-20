@@ -898,6 +898,16 @@ h4 {
     background: var(--glance-tab-active);
     color: #FFFFFF;
     box-shadow: none;
+
+    // Each tab's icon is drawn in roughly the same hue as its own active
+    // background (Task's icon and its active fill are both orange, etc.),
+    // so it can disappear into it once active. Forcing it white keeps it
+    // visible against every tab's active color. (background must stay
+    // unset here — these PNG icons have large transparent margins, and a
+    // white background would fill that margin into a solid white box.)
+    .glance-tab-icon {
+      filter: brightness(0) invert(1);
+    }
   }
 }
 
@@ -905,6 +915,20 @@ h4 {
   width: 16px;
   height: 16px;
   object-fit: contain;
+}
+
+// glance-all.svg renders white-on-transparent (meant for a colored active
+// pill) and disappears against the inactive white tab background. Recolor
+// it via mask instead of relying on the raw asset's own color.
+.glance-tab-icon--all {
+  display: block;
+  background: #A92557;
+  mask: url('/assets/figma/child-home/glance-all.svg') center / contain no-repeat;
+  -webkit-mask: url('/assets/figma/child-home/glance-all.svg') center / contain no-repeat;
+}
+
+.glance-tab.active .glance-tab-icon--all {
+  background: #FFFFFF;
 }
 
 .habit-wrapper {

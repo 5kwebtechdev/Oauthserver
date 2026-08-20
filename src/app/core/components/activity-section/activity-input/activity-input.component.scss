@@ -285,6 +285,34 @@ $theme-colors-dark: (
   }
 }
 
+// The compact child/self/parent Habit-Task-Planner flow (.child-planner-tabs)
+// wants every active tab fully colored with a white label/icon (this is what
+// theme/child-planner-figma.scss defines) — not the paler/mismatched tints
+// above, which are the older parent-flow 4-tab styling and were winning the
+// cascade due to a specificity tie with the global theme file. Scoped here,
+// with one extra selector level, so it reliably wins regardless of
+// stylesheet injection order, and so Habit/Task/Planner render consistently.
+.child-planner-tabs {
+  .tab-habits.active {
+    background: #8b8dcb;
+    color: #fff;
+  }
+
+  .tab-tasks.active {
+    background: #e04d16;
+    color: #fff;
+  }
+
+  .tab-planner.active {
+    background: #89b3b6;
+    color: #fff;
+  }
+
+  .activity-tab.active .activity-tab-icon {
+    filter: brightness(0) invert(1);
+  }
+}
+
 .form-card {
   padding: 0;
   display: flex;
