@@ -331,25 +331,25 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                 'HABIT FORMATION',
                 this.completionRate,
                 'habit',
-                'assets/figma/parent-home/foundation-habit.png'
+                'assets/figma/parent-home/foundation-habit.webp'
             ),
             this.buildFoundation(
                 'TASK MANAGEMENT',
                 taskRate,
                 'task',
-                'assets/figma/parent-home/foundation-task.png'
+                'assets/figma/parent-home/foundation-task.webp'
             ),
             this.buildFoundation(
                 'TIME MANAGEMENT',
                 this.consistencyRate,
                 'time',
-                'assets/figma/parent-home/foundation-time.png'
+                'assets/figma/parent-home/foundation-time.webp'
             ),
             this.buildFoundation(
                 'LEARNING',
                 this.appScore,
                 'learning',
-                'assets/figma/parent-home/foundation-learning.png'
+                'assets/figma/parent-home/foundation-learning.webp'
             )
         ];
     }
@@ -461,6 +461,29 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         // Subscribe to store children list
         this.profileStore.children$.pipe(takeUntil(this.destroy$)).subscribe(list => {
             this.children = list;
+        });
+
+        // Keep the cached Parent Home in sync with a confirmed removal from
+        // My Family, even before the family read model finishes refreshing.
+        this.authService.familyMemberRemoved$.pipe(takeUntil(this.destroy$)).subscribe(memberId => {
+            const remainingChildren = this.authService.excludeRemovedFamilyMembers(
+                this.profileStore.getChildrenSync()
+            );
+            this.profileStore.setChildren(remainingChildren);
+            this.clearPendingManagedChildIfMatches(memberId);
+        });
+
+        // This component is often cached while the parent completes the
+        // Add Child wizard. Update its store immediately from the confirmed
+        // registration snapshot rather than waiting for a route refresh.
+        this.authService.familyChildCreated$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+            const createdChild = this.getPendingManagedChild();
+            if (!createdChild) return;
+            const currentChildren = this.profileStore.getChildrenSync();
+            if (currentChildren.some(child => String(child.id) === String(createdChild.id))) return;
+            this.profileStore.setChildren([...currentChildren, createdChild]);
+            this.childrenLoadState = 'loaded';
+            this.statsUpdatedAt = new Date();
         });
 
         // Subscribe to selected child changes. selectionChanged$ (not
@@ -647,7 +670,17 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         const pendingChild = this.getPendingManagedChild();
         if (!pendingChild) return children;
 
-        const alreadyReturned = children.some(child => String(child.id) === String(pendingChild.id));
+        const isTemporaryPendingChild = String(pendingChild.id).startsWith('pending:');
+        const pendingName = String(pendingChild.name || '').trim().toLowerCase();
+        const alreadyReturned = children.some(child =>
+            String(child.id) === String(pendingChild.id)
+            // The create response may not yet include an id. When the family
+            // endpoint later returns the real record, replace the temporary
+            // entry by matching its confirmed display name.
+            || (isTemporaryPendingChild
+                && !!pendingName
+                && String(child.name || '').trim().toLowerCase() === pendingName)
+        );
         if (alreadyReturned) {
             try { sessionStorage.removeItem(ParentAccountComponent.MANAGED_CHILD_SNAPSHOT_KEY); } catch {}
             return children;
@@ -684,6 +717,20 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         } catch (error) {
             console.warn('[ParentAccount] Unable to read created child snapshot', error);
             return null;
+        }
+    }
+
+    private clearPendingManagedChildIfMatches(memberId: string | number): void {
+        try {
+            const raw = sessionStorage.getItem(ParentAccountComponent.MANAGED_CHILD_SNAPSHOT_KEY);
+            if (!raw) return;
+            const snapshot = JSON.parse(raw);
+            const snapshotId = snapshot?.id ?? snapshot?.userId ?? snapshot?.memberId;
+            if (String(snapshotId) === String(memberId)) {
+                sessionStorage.removeItem(ParentAccountComponent.MANAGED_CHILD_SNAPSHOT_KEY);
+            }
+        } catch {
+            // A missing or malformed temporary snapshot must not block removal.
         }
     }
 

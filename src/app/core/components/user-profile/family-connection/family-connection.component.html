@@ -75,11 +75,18 @@
                     <section class="family-con-detail" aria-label="Family details" *ngIf="creator">
                         <div class="f-head">
                             <div class="family-avatar">
-                                <div class="initial-avatar-circle"
-                                     [ngStyle]="parentImageService.getAvatarStyle(getInitial(creator.name), isFemale(creator), 80)"
-                                     aria-hidden="true">
-                                    {{ getInitial(creator.name) }}
-                                </div>
+                                <ng-container *ngIf="getMemberAvatar(creator) as creatorAvatar; else creatorPlaceholder">
+                                    <img *ngIf="creatorAvatar.url; else creatorPlaceholder"
+                                        [src]="creatorAvatar.url"
+                                        [alt]="creatorAvatar.alt || (creator.name + ' avatar')" />
+                                </ng-container>
+                                <ng-template #creatorPlaceholder>
+                                    <div class="initial-avatar-circle"
+                                        [ngStyle]="parentImageService.getAvatarStyle(getInitial(creator.name), isFemale(creator), 80)"
+                                        aria-hidden="true">
+                                        {{ getInitial(creator.name) }}
+                                    </div>
+                                </ng-template>
                             </div>
 
                             <div class="f-head">

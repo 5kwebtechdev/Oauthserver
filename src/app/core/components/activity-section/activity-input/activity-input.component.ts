@@ -192,8 +192,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   originUrl: string | null = null;
 
   readonly activityTabs: ReadonlyArray<ActivityTabOption> = [
-    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.svg' },
-    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.svg' },
+    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.webp' },
+    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.webp' },
     { key: 'timetable', label: 'Time Table', icon: 'assets/figma/child-planner/calendar.svg' },
     { key: 'events', label: 'Event', icon: 'assets/figma/activity-event/event-type.svg' }
   ];

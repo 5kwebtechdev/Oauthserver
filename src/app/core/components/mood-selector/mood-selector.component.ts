@@ -47,15 +47,15 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
 
   // Mood to asset mapping (backend mood -> asset path)
   private readonly moodAssetMap: Record<string, string> = {
-    'HAPPY': 'assets/figma/child-home/moods/happy.svg',
-    'VERY HAPPY': 'assets/figma/child-home/moods/happy.svg',
-    'EXCITED': 'assets/figma/child-home/moods/excited.svg',
-    'NERVOUS': 'assets/figma/child-home/moods/anxious.svg',
-    'ANXIOUS': 'assets/figma/child-home/moods/anxious.svg',
-    'SAD': 'assets/figma/child-home/moods/sad.svg',
-    'UPSET': 'assets/figma/child-home/moods/frustrated.svg',
-    'FRUSTRATED': 'assets/figma/child-home/moods/frustrated.svg',
-    'NEUTRAL': 'assets/figma/child-home/moods/Calm.svg'
+    'HAPPY': 'assets/figma/child-home/moods/happy.webp',
+    'VERY HAPPY': 'assets/figma/child-home/moods/happy.webp',
+    'EXCITED': 'assets/figma/child-home/moods/excited.webp',
+    'NERVOUS': 'assets/figma/child-home/moods/anxious.webp',
+    'ANXIOUS': 'assets/figma/child-home/moods/anxious.webp',
+    'SAD': 'assets/figma/child-home/moods/sad.webp',
+    'UPSET': 'assets/figma/child-home/moods/frustrated.webp',
+    'FRUSTRATED': 'assets/figma/child-home/moods/frustrated.webp',
+    'NEUTRAL': 'assets/figma/child-home/moods/Calm.webp'
   };
 
   private readonly moodLabelMap: Record<string, string> = {
@@ -72,12 +72,12 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
 
   // Popup options - Neutral is NOT shown in popup, only as default
   popupOptions: PopupMoodOption[] = [
-    { src: 'assets/figma/child-home/moods/happy.svg', label: 'Happy', vibe: 'HAPPY', art: 'happy' },
-    { src: 'assets/figma/child-home/moods/excited.svg', label: 'Excited', vibe: 'EXCITED', art: 'excited' },
-    { src: 'assets/figma/child-home/moods/anxious.svg', label: 'Anxious', vibe: 'NERVOUS', art: 'anxious' },
-    { src: 'assets/figma/child-home/moods/sad.svg', label: 'Sad', vibe: 'SAD', art: 'sad' },
-    { src: 'assets/figma/child-home/moods/frustrated.svg', label: 'Frustrated', vibe: 'UPSET', art: 'frustrated' },
-    { src: 'assets/figma/child-home/moods/Calm.svg', label: 'Calm', vibe: 'NEUTRAL', art: 'calm' }
+    { src: 'assets/figma/child-home/moods/happy.webp', label: 'Happy', vibe: 'HAPPY', art: 'happy' },
+    { src: 'assets/figma/child-home/moods/excited.webp', label: 'Excited', vibe: 'EXCITED', art: 'excited' },
+    { src: 'assets/figma/child-home/moods/anxious.webp', label: 'Anxious', vibe: 'NERVOUS', art: 'anxious' },
+    { src: 'assets/figma/child-home/moods/sad.webp', label: 'Sad', vibe: 'SAD', art: 'sad' },
+    { src: 'assets/figma/child-home/moods/frustrated.webp', label: 'Frustrated', vibe: 'UPSET', art: 'frustrated' },
+    { src: 'assets/figma/child-home/moods/Calm.webp', label: 'Calm', vibe: 'NEUTRAL', art: 'calm' }
   ];
 
   ngOnInit() {

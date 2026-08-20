@@ -46,7 +46,7 @@ describe('AvatarService', () => {
   it('uses stable local assets and retains a safe mapping for old avatar names', () => {
     expect(service.getAllAvatars().length).toBe(60);
     expect(service.getAvatarAsset('14-15-male-3.png')?.value)
-      .toBe('assets/figma/avatars/14-15-male-3.png');
+      .toBe('assets/figma/avatars/14-15-male-3.webp');
 
     spyOn(service, 'calculateAge').and.returnValue(16);
     const legacy = service.getAvatarForUser({ avatarImageName: 'Avatar 8', gender: 'male' });

@@ -72,7 +72,7 @@
             <strong>{{ relatedQuiz.title }}</strong>
             <span class="learning-details-related__meta">
               <span>
-                <img src="assets/figma/learning-details/coin.png" alt="" aria-hidden="true">
+                <img src="assets/figma/learning-details/coin.webp" alt="" aria-hidden="true">
                 {{ relatedQuiz.coins || 0 }}
               </span>
               <span *ngIf="getRelatedDuration() as duration">
@@ -93,7 +93,7 @@
             <img src="assets/figma/learning-details/thumb-up.svg" alt="" aria-hidden="true">
             <span>{{ isArticleRead ? 'Already Read' : 'Read This' }}</span>
             <span class="learning-details-action__reward" *ngIf="articleCoins > 0">
-              <img src="assets/figma/learning-details/coin.png" alt="" aria-hidden="true">
+              <img src="assets/figma/learning-details/coin.webp" alt="" aria-hidden="true">
               {{ articleCoins }}
             </span>
           </ng-container>

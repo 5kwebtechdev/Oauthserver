@@ -23,7 +23,7 @@
         <div class="event-detail-image" [class.event-detail-image--empty]="!image">
           <img *ngIf="image" class="event-detail-image__photo" [src]="image" [alt]="displayName" (error)="onImageError()">
           <img *ngIf="item.verified" class="event-detail-image__verified"
-            src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified">
+            src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified">
         </div>
         <div class="event-detail-intro__copy">
           <h1>{{ displayName }}</h1>
@@ -48,7 +48,7 @@
         </div>
 
         <div class="event-detail-row" *ngIf="feeLabel">
-          <img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/coin.webp" alt="" aria-hidden="true">
           <div>
             <span>Fees</span>
             <strong [class.is-free]="feeLabel === 'FREE'">{{ feeLabel }}</strong>
@@ -64,7 +64,7 @@
         </div>
 
         <div class="event-detail-row" *ngIf="organizer">
-          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
           <div>
             <span>Organizer</span>
             <strong>{{ organizer }}</strong>
@@ -72,7 +72,7 @@
         </div>
 
         <div class="event-detail-row event-detail-row--about" *ngIf="description">
-          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
           <div>
             <span>About</span>
             <p>{{ description }}</p>
@@ -91,7 +91,7 @@
 
       <section class="contact-lock-card" *ngIf="!item.unlocked">
         <div class="contact-lock-card__summary">
-          <img src="assets/figma/contact-unlock/card-illustration.png" alt="" aria-hidden="true">
+          <img src="assets/figma/contact-unlock/card-illustration.webp" alt="" aria-hidden="true">
           <div class="contact-lock-card__copy">
             <h2>Unlock contact details</h2>
             <p>Contact information and the exact address are protected by the organizer.</p>
@@ -103,7 +103,7 @@
             <img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
             <span>Unlock Now</span>
             <span class="contact-lock-card__coins" *ngIf="unlockCost as cost">
-              <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
+              <img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">
               <span>{{ cost }}</span>
             </span>
           </ng-container>
@@ -113,7 +113,7 @@
 
     <ng-template #unavailable>
       <main class="event-detail-unavailable">
-        <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+        <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
         <h1>Listing unavailable</h1>
         <p>{{ errorMessage }}</p>
         <button type="button" (click)="goBack()">Back to {{ title }}</button>

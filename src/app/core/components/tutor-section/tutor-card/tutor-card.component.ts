@@ -70,21 +70,21 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   listingCount = 0;
   isLoading = false;
 
-  readonly listingVerifiedAsset = 'assets/figma/eduhub-home/listing-verified.png';
-  readonly profileVerifiedAsset = 'assets/figma/eduhub-home/profile-verified.png';
+  readonly listingVerifiedAsset = 'assets/figma/eduhub-home/listing-verified.webp';
+  readonly profileVerifiedAsset = 'assets/figma/eduhub-home/profile-verified.webp';
   readonly favoriteAsset = 'assets/figma/eduhub-home/favorite.svg';
   readonly onlineModeAsset = 'assets/figma/eduhub-home/online-mode.svg';
 
   readonly categories: EduHubCategory[] = [
-    { key: 'tutors', label: 'Tutors', image: 'assets/figma/eduhub-home/category-tutors.png', route: '/authed/tutors' },
-    { key: 'academies', label: 'Academies', image: 'assets/figma/eduhub-home/category-academies.png', route: '/authed/academies' },
-    { key: 'workshops', label: 'Workshops', image: 'assets/figma/eduhub-home/category-workshops.png', route: '/authed/education' },
-    { key: 'events', label: 'Events', image: 'assets/figma/eduhub-home/category-events.png', route: '/authed/education' },
-    { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/eduhub-home/category-stationery.png', route: '/authed/school-store' },
-    { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/eduhub-home/category-book-stores.png', route: '/authed/school-store' },
-    { key: 'counselors', label: 'Counselors', image: 'assets/figma/eduhub-home/category-counselors.png', route: '/authed/counselors' },
-    { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/eduhub-home/category-second-hand-books.png', route: '/authed/second-hand-books' },
-    { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/eduhub-home/category-sports-shops.png', route: '/authed/school-store' }
+    { key: 'tutors', label: 'Tutors', image: 'assets/figma/eduhub-home/category-tutors.webp', route: '/authed/tutors' },
+    { key: 'academies', label: 'Academies', image: 'assets/figma/eduhub-home/category-academies.webp', route: '/authed/academies' },
+    { key: 'workshops', label: 'Workshops', image: 'assets/figma/eduhub-home/category-workshops.webp', route: '/authed/education' },
+    { key: 'events', label: 'Events', image: 'assets/figma/eduhub-home/category-events.webp', route: '/authed/education' },
+    { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/eduhub-home/category-stationery.webp', route: '/authed/school-store' },
+    { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/eduhub-home/category-book-stores.webp', route: '/authed/school-store' },
+    { key: 'counselors', label: 'Counselors', image: 'assets/figma/eduhub-home/category-counselors.webp', route: '/authed/counselors' },
+    { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/eduhub-home/category-second-hand-books.webp', route: '/authed/second-hand-books' },
+    { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/eduhub-home/category-sports-shops.webp', route: '/authed/school-store' }
   ];
 
   selectedCategoryKey: CategoryKey = 'tutors';

@@ -1560,7 +1560,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           );
         }
         this.managedChildRegistrationComplete = true;
-        this.persistManagedChildSnapshot(registrationResponse);
+        this.persistManagedChildSnapshot(registrationResponse, payload);
       }
 
       await firstValueFrom(this.authService.shareLoginCredentials({
@@ -1666,26 +1666,42 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    * registration response so Parent Home can show the child immediately.
    * No credential, token, or password is stored here.
    */
-  private persistManagedChildSnapshot(response: any): void {
+  private persistManagedChildSnapshot(response: any, payload: any): void {
     const child = response?.user ?? response?.data?.user ?? response?.data ?? response;
-    const id = child?.id ?? child?.userId ?? child?.memberId;
-    if (id === null || id === undefined || !String(id).trim()) return;
+    const email = String(child?.email || payload?.email || '').trim().toLowerCase();
+    const responseId = child?.id ?? child?.userId ?? child?.memberId;
+    // Some valid register responses only contain { onboardingStep: 6 }. Use
+    // a temporary email-based id so Parent Home can render the just-created
+    // child immediately, then remove this entry when the family read model
+    // returns the child's real id.
+    const id = responseId !== null && responseId !== undefined && String(responseId).trim()
+      ? responseId
+      : email
+        ? `pending:${email}`
+        : null;
+    if (!id) return;
 
     try {
-      sessionStorage.setItem(SignupComponent.MANAGED_CHILD_SNAPSHOT_KEY, JSON.stringify({
+      const snapshot = {
         id,
         userId: id,
         parentUserId: this.authService.getUserId(),
-        name: String(child?.name || child?.userName || '').trim(),
-        userName: String(child?.userName || child?.name || '').trim(),
+        email,
+        name: String(child?.name || child?.userName || payload?.name || payload?.username || '').trim(),
+        userName: String(child?.userName || child?.name || payload?.username || payload?.name || '').trim(),
         relationship: 'CHILD',
         avatar: child?.avatar,
-        avatarImageName: child?.avatarImageName || child?.avatar?.avatarImageName,
-        gender: child?.gender,
-        dateOfBirth: child?.dateOfBirth,
+        avatarImageName: child?.avatarImageName || child?.avatar?.avatarImageName || payload?.avatarImageName,
+        gender: child?.gender || payload?.gender,
+        dateOfBirth: child?.dateOfBirth || payload?.dateOfBirth,
         age: child?.age,
         coins: child?.coins ?? 0
-      }));
+      };
+      sessionStorage.setItem(SignupComponent.MANAGED_CHILD_SNAPSHOT_KEY, JSON.stringify(snapshot));
+      // Parent Home can remain cached underneath the signup route. Notify it
+      // now so the child is visible immediately on return, not only after a
+      // subsequent lifecycle refresh.
+      this.authService.notifyFamilyChildCreated(snapshot);
     } catch (error) {
       console.warn('[Signup] Unable to persist created child snapshot', error);
     }

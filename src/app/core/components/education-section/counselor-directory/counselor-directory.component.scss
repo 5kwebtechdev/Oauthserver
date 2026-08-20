@@ -2,7 +2,7 @@
 .counselor-directory-content { --background: #fff; --padding-top: 0px; --padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
 .counselor-directory-page { min-height: 100%; overflow-x: clip; background: #fff; }
 button { font: inherit; -webkit-tap-highlight-color: transparent; }
-.counselor-hero { position: relative; min-height: calc(240px + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); overflow: hidden; background: #c8cbff url('/assets/figma/counselors/hero-background.png') center bottom / 100% 100% no-repeat; }
+.counselor-hero { position: relative; min-height: calc(240px + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); overflow: hidden; background: #c8cbff url('/assets/figma/counselors/hero-background.webp') center bottom / 100% 100% no-repeat; }
 .counselor-toolbar { position: relative; z-index: 3; display: flex; width: 100%; max-width: 520px; min-height: 66px; align-items: center; justify-content: space-between; margin: auto; padding: 8px 16px; box-sizing: border-box; }
 .counselor-toolbar__title { display: flex; min-width: 0; align-items: center; gap: 4px; h1 { max-width: calc(100vw - 144px); margin: 0; overflow: hidden; color: var(--text); font-family: var(--font-heading, Fredoka, sans-serif); font-size: 20px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; } }
 .toolbar-button { display: grid; width: 48px; height: 48px; place-items: center; padding: 0; border: 0; background: transparent; img { width: 100%; height: 100%; } }

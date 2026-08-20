@@ -81,7 +81,7 @@
                 <strong [attr.title]="child.name">{{ child.name }}</strong>
                 <span class="switcher-child__stats">
                   <span>
-                    <img src="assets/icons/parent-home-streak.svg" alt="" aria-hidden="true">
+                    <img src="assets/icons/parent-home-streak.webp" alt="" aria-hidden="true">
                     {{ child.streak ?? 0 }}
                   </span>
                   <span>
@@ -209,7 +209,7 @@
           </section>
 
           <button *ngIf="performanceLoading || hasPerformanceData" class="ai-insight" type="button" (click)="openInsights()">
-            <img src="assets/figma/parent-home/ai-insight.png" alt="" aria-hidden="true">
+            <img src="assets/figma/parent-home/ai-insight.webp" alt="" aria-hidden="true">
             <span>
               <span><strong>AI Insight :</strong> {{ aiInsight }}</span>
               <u>View full insights</u>
@@ -268,7 +268,7 @@
         <learning-section
           title="Parenting"
           subtitle="Practical insights and quizzes for your parenting journey"
-          headerIcon="assets/figma/parent-home/parent-learning-blogs.png"
+          headerIcon="assets/figma/parent-home/parent-learning-blogs.webp"
           contentMode="parenting"
           source="/authed/parent-account"
           [parentLearningViewAll]="true">
@@ -280,7 +280,7 @@
       <section class="parent-message" aria-labelledby="parent-message-title">
         <h2 id="parent-message-title">Send a message to {{ selectedChildName }}!</h2>
         <div class="parent-message__card">
-          <img class="parent-message__icon" src="assets/figma/parent-home/message.png" alt=""
+          <img class="parent-message__icon" src="assets/figma/parent-home/message.webp" alt=""
             aria-hidden="true">
           <div class="parent-message__content">
             <div>
@@ -345,7 +345,7 @@
 
       <section class="no-child-family-card" aria-labelledby="no-child-family-title">
         <div class="no-child-family-card__visual" aria-hidden="true">
-          <img src="assets/figma/parent-home/no-child-family.png" alt="">
+          <img src="assets/figma/parent-home/no-child-family.webp" alt="">
         </div>
         <div class="no-child-family-card__content">
           <h1 id="no-child-family-title">

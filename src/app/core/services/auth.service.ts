@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, timer, of, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, timer, of, firstValueFrom } from 'rxjs';
 import { tap, map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
@@ -116,6 +116,18 @@ export class AuthService {
   // This is the primary source of truth for user profile data across the app
   private userDataSubject = new BehaviorSubject<any>(this.loadUserDataFromStorage());
   public userData$ = this.userDataSubject.asObservable();
+
+  // Emits after the backend confirms a family member was removed, allowing
+  // cached profile/dashboard pages to drop the member immediately.
+  private familyMemberRemovedSubject = new Subject<string>();
+  public familyMemberRemoved$ = this.familyMemberRemovedSubject.asObservable();
+  // A family details read can lag behind a successful removal for a short
+  // time. Keep the confirmed removals in memory so a stale response cannot
+  // put that member back into Profile/Home during the same session.
+  private readonly removedFamilyMemberIds = new Set<string>();
+  private readonly REMOVED_FAMILY_MEMBERS_KEY = 'superme_removed_family_member_ids';
+  private familyChildCreatedSubject = new Subject<any>();
+  public familyChildCreated$ = this.familyChildCreatedSubject.asObservable();
 
   // Session timeout configuration
   // Sessions persist until manual logout for both web and mobile platforms
@@ -374,14 +386,31 @@ export class AuthService {
 
   /** Preserve the authenticated parent while they create a child on this device. */
   beginManagedChildParentSession(): boolean {
-    const token = this.getToken();
-    const userId = Number(this.getUserId());
-    const user = this.getUserData();
-    if (!token || !Number.isSafeInteger(userId) || userId <= 0 || String(user?.relationship || '').toUpperCase() !== 'PARENT') {
+    // Read the raw values as a fallback: a recently-created parent can enter
+    // family setup before the normal activity timestamp has been refreshed.
+    const currentSession = this.getUserSession();
+    const token = this.getToken()
+      || currentSession?.token
+      || localStorage.getItem(this.TOKEN_KEY);
+    const userId = Number(
+      this.getUserId()
+      || currentSession?.userId
+      || localStorage.getItem(this.USER_ID_KEY)
+    );
+    const storedUser = this.getUserData() || this.loadUserDataFromStorage();
+    if (!token || !Number.isSafeInteger(userId) || userId <= 0) {
       return false;
     }
 
-    this.managedChildParentSession = { token, userId, user: { ...user } };
+    // This method is invoked only from the Parent's Add Child action. Some
+    // older family responses omit `relationship`, so preserve a parent role
+    // for the guard instead of rejecting a valid authenticated parent.
+    const user = {
+      ...(storedUser || {}),
+      id: storedUser?.id ?? userId,
+      relationship: storedUser?.relationship || 'PARENT'
+    };
+    this.managedChildParentSession = { token, userId, user };
     return true;
   }
 
@@ -723,6 +752,8 @@ export class AuthService {
       this.isAuthenticatedSubject.next(false);
       this.currentUserSubject.next(null);
       this.userDataSubject.next(null);
+      this.removedFamilyMemberIds.clear();
+      sessionStorage.removeItem(this.REMOVED_FAMILY_MEMBERS_KEY);
     } catch (error) {
       console.warn('[AuthService] A logout-state subscriber failed:', error);
     }
@@ -936,6 +967,78 @@ export class AuthService {
       console.log('[AuthService] User data set and broadcasted');
     } catch (error) {
       console.error('[AuthService] Error setting user data:', error);
+    }
+  }
+
+  notifyFamilyMemberRemoved(member: string | number | { id?: string | number; userId?: string | number; memberId?: string | number }): void {
+    const identities = this.getFamilyMemberIdentityValues(member);
+    if (!identities.length) return;
+    identities.forEach(id => this.removedFamilyMemberIds.add(id));
+    this.persistRemovedFamilyMemberIds();
+    const normalizedId = identities[0];
+
+    const currentUser = this.getUserData();
+    if (currentUser && Array.isArray(currentUser.familyMembers)) {
+      this.setUserData({
+        ...currentUser,
+        familyMembers: this.excludeRemovedFamilyMembers(currentUser.familyMembers)
+      });
+    }
+    this.familyMemberRemovedSubject.next(normalizedId);
+  }
+
+  /** Returns false for members that were successfully removed this session. */
+  isFamilyMemberCurrent(member: any): boolean {
+    this.restoreRemovedFamilyMemberIds();
+    const identities = this.getFamilyMemberIdentityValues(member);
+    return !identities.some(id => this.removedFamilyMemberIds.has(id));
+  }
+
+  /** Protects views from delayed family read-model responses after removal. */
+  excludeRemovedFamilyMembers<T>(members: T[] | null | undefined): T[] {
+    return Array.isArray(members)
+      ? members.filter(member => this.isFamilyMemberCurrent(member))
+      : [];
+  }
+
+  private getFamilyMemberIdentityValues(member: any): string[] {
+    const source = member && typeof member === 'object'
+      ? [member.userId, member.memberId, member.id]
+      : [member];
+    return Array.from(new Set(source
+      .map(value => String(value ?? '').trim())
+      .filter(Boolean)));
+  }
+
+  private restoreRemovedFamilyMemberIds(): void {
+    try {
+      const raw = sessionStorage.getItem(this.REMOVED_FAMILY_MEMBERS_KEY);
+      const values = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(values)) {
+        values.forEach(value => {
+          const normalized = String(value ?? '').trim();
+          if (normalized) this.removedFamilyMemberIds.add(normalized);
+        });
+      }
+    } catch {
+      // A malformed non-critical cache must never affect family rendering.
+    }
+  }
+
+  private persistRemovedFamilyMemberIds(): void {
+    try {
+      sessionStorage.setItem(
+        this.REMOVED_FAMILY_MEMBERS_KEY,
+        JSON.stringify(Array.from(this.removedFamilyMemberIds))
+      );
+    } catch {
+      // The in-memory set still protects the currently rendered screens.
+    }
+  }
+
+  notifyFamilyChildCreated(child: any): void {
+    if (child && typeof child === 'object') {
+      this.familyChildCreatedSubject.next(child);
     }
   }
 

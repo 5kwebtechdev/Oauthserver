@@ -55,7 +55,9 @@ const AVATARS: AvatarDefinition[] = AVATAR_GROUPS.reduce((avatars, group) => {
         key,
         label: group.figmaLabel(gender, index),
         imageName: `${key}.png`,
-        value: `assets/figma/avatars/${key}.png`,
+        // The backend-facing imageName remains PNG-compatible, while the
+        // bundled display file uses lossless WebP to reduce install size.
+        value: `assets/figma/avatars/${key}.webp`,
         ageGroup: group.ageGroup,
         gender,
         index
@@ -183,7 +185,7 @@ export class AvatarService {
     return String(value || '')
       .trim()
       .toLowerCase()
-      .replace(/\.png$/i, '')
+      .replace(/\.(?:png|webp)$/i, '')
       .replace(/[^a-z0-9]/g, '');
   }
 

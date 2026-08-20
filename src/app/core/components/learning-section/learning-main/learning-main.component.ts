@@ -55,10 +55,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   categoryContentError = false;
 
   categoryTabs: { id: LearningCategoryTab; label: string; icon: string; parentIcon: string; ariaLabel: string }[] = [
-    { id: 'puzzles', label: 'Puzzles', icon: 'assets/Icons-Neutral/Icon-Content-Puzzle.png', parentIcon: 'assets/figma/parent-child-learning/tab-puzzles.png', ariaLabel: 'Open Puzzles' },
-    { id: 'quizzes', label: 'Quizzes', icon: 'assets/Icons-Neutral/Icon-Content-Quiz.png', parentIcon: 'assets/figma/parent-child-learning/tab-quizzes.png', ariaLabel: 'Open Quizzes' },
-    { id: 'articles', label: 'Articles', icon: 'assets/Icons-Neutral/Icon-Content-Articles.png', parentIcon: 'assets/figma/parent-child-learning/tab-articles.png', ariaLabel: 'Open Articles' },
-    { id: 'masterclass', label: 'Master Class', icon: 'assets/Icons-Neutral/Icon-Content-ForYou.png', parentIcon: 'assets/figma/parent-child-learning/tab-masterclass.png', ariaLabel: 'Open Master Class' }
+    { id: 'puzzles', label: 'Puzzles', icon: 'assets/Icons-Neutral/Icon-Content-Puzzle.png', parentIcon: 'assets/figma/parent-child-learning/tab-puzzles.webp', ariaLabel: 'Open Puzzles' },
+    { id: 'quizzes', label: 'Quizzes', icon: 'assets/Icons-Neutral/Icon-Content-Quiz.png', parentIcon: 'assets/figma/parent-child-learning/tab-quizzes.webp', ariaLabel: 'Open Quizzes' },
+    { id: 'articles', label: 'Articles', icon: 'assets/Icons-Neutral/Icon-Content-Articles.png', parentIcon: 'assets/figma/parent-child-learning/tab-articles.webp', ariaLabel: 'Open Articles' },
+    { id: 'masterclass', label: 'Master Class', icon: 'assets/Icons-Neutral/Icon-Content-ForYou.png', parentIcon: 'assets/figma/parent-child-learning/tab-masterclass.webp', ariaLabel: 'Open Master Class' }
   ];
 
   categoryItems: Record<LearningCategoryTab, LearningCategorySummary[]> = {
@@ -891,7 +891,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   getCategoryFallbackImage(): string {
     if (this.parentView || this.childView) {
       return this.parentCategoryTabs.find(tab => tab.id === this.selectedCategory)?.parentIcon
-        || 'assets/figma/parent-child-learning/tab-quizzes.png';
+        || 'assets/figma/parent-child-learning/tab-quizzes.webp';
     }
     switch (this.selectedCategory) {
       case 'quizzes':
