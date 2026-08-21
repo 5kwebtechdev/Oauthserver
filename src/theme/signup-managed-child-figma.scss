@@ -262,4 +262,21 @@
     padding-right: 32px;
     padding-left: 32px;
   }
+
+  .managed-child-success__hero,
+  .managed-child-success__body {
+    max-width: 520px;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767.98px) {
+  .managed-child-success {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  .managed-child-success__hero,
+  .managed-child-success__body {
+    max-width: 420px;
+  }
 }

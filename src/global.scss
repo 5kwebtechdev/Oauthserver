@@ -1191,6 +1191,20 @@ body.dashboard-web-view {
   }
 }
 
+// Family onboarding uses its own 420/600/720/960px responsive containers.
+// Release the generic routed-page cap on web so those internal containers and
+// their action buttons cannot be clipped at the old 768px page boundary.
+@media (min-width: 769px) {
+  body.family-onboard-web-view {
+    ion-router-outlet,
+    .ion-page {
+      max-width: none !important;
+      margin-inline: 0 !important;
+      padding-inline: 0 !important;
+    }
+  }
+}
+
 @media (min-width: 1025px) {
   ion-router-outlet,
   .ion-page {

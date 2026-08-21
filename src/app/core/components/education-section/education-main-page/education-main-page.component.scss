@@ -382,6 +382,40 @@ ion-content {
     }
 }
 
+@media (min-width: 480px) and (max-width: 767.98px) {
+    .parent-eduhub-page {
+        max-width: 600px;
+    }
+
+    .parent-eduhub-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        padding-inline: 24px;
+    }
+
+    .parent-eduhub-header,
+    .parent-eduhub-section__header {
+        padding-inline: 24px;
+    }
+}
+
+@media (min-width: 768px) {
+    .parent-eduhub-page {
+        max-width: 960px;
+    }
+
+    .parent-eduhub-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        padding-inline: 32px;
+    }
+
+    .parent-eduhub-header,
+    .parent-eduhub-section__header {
+        padding-inline: 32px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .parent-eduhub-card,
     .parent-eduhub-card-skeleton {

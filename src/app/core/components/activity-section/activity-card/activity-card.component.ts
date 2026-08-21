@@ -1588,6 +1588,17 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     // If in recent mode and recent habits or tasks change, update the display
     if (this.mode === 'recent' && (changes['recentHabits'] || changes['recentTasks'] || changes['recentTimetables'])) {
       this.updateRecentDisplay();
+
+      // The Home dashboard passes flat calendar entries through
+      // `recentTimetables`, while the intended Planner card needs the grouped
+      // month response. Refresh that grouped response whenever the parent
+      // receives new planner data; otherwise the component keeps its initial
+      // empty result and temporarily renders the generic fallback card until a
+      // full browser refresh.
+      if (changes['recentTimetables'] && !changes['recentTimetables'].firstChange) {
+        this.loadGlancePlannerCards(true);
+      }
+
       // Trigger change detection to update button states
       this.cdr.detectChanges();
       // Re-setup auto-reload timers with new data
@@ -1961,6 +1972,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   public glancePlannerRaw: any[] = [];
   public glancePlannerLoading = false;
   public glancePlannerLoaded = false;
+  private glancePlannerReloadPending = false;
   private readonly glancePlannerExpansion = new Map<string, boolean>();
 
   get glancePlannerCards(): Array<{ id: string; source: any; color: string; entries: any[] }> {
@@ -1986,7 +1998,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   loadGlancePlannerCards(force = false): void {
-    if (this.glancePlannerLoading) return;
+    if (this.glancePlannerLoading) {
+      // A save can complete while the initial grouped request is still in
+      // flight. Remember the forced refresh and run it after that request
+      // settles so its older response cannot leave the UI stale.
+      this.glancePlannerReloadPending = this.glancePlannerReloadPending || force;
+      return;
+    }
     if (this.glancePlannerLoaded && !force) return;
 
     const today = new Date();
@@ -1997,19 +2015,25 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       next: (response: any) => {
         const allEvents = Array.isArray(response?.events) ? response.events : [];
         this.glancePlannerRaw = allEvents.filter((item: any) => this.isGlancePlannerSchedule(item));
-        this.glancePlannerLoading = false;
-        this.glancePlannerLoaded = true;
-        this.refreshTimetableEmptyState();
-        this.cdr.detectChanges();
+        this.finishGlancePlannerLoad();
       },
       error: () => {
         this.glancePlannerRaw = [];
-        this.glancePlannerLoading = false;
-        this.glancePlannerLoaded = true;
-        this.refreshTimetableEmptyState();
-        this.cdr.detectChanges();
+        this.finishGlancePlannerLoad();
       }
     });
+  }
+
+  private finishGlancePlannerLoad(): void {
+    this.glancePlannerLoading = false;
+    this.glancePlannerLoaded = true;
+    this.refreshTimetableEmptyState();
+    this.cdr.detectChanges();
+
+    if (this.glancePlannerReloadPending) {
+      this.glancePlannerReloadPending = false;
+      this.loadGlancePlannerCards(true);
+    }
   }
 
   /** Re-checks the active Planner/All tab once grouped planner cards resolve asynchronously. */

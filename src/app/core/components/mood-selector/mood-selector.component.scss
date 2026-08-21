@@ -148,19 +148,16 @@
 }
 
 .mood-option-art--frustrated {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
 }
 
 .mood-option-art--calm {
-  // Keep Calm in the exact same layout box as every other mood. A larger box
-  // made it appear higher than the other icons on the shared baseline.
   width: 42px;
   height: 42px;
 
-  // The exported Calm SVG contains more transparent viewBox padding than the
-  // other assets. Scale its artwork, not its layout box, to match their
-  // visible icon size and preserve the shared baseline.
+  // Calm has more transparent viewBox padding than the other exported mood
+  // artwork. Scale only its visible art while retaining the common layout box.
   img {
     transform: scale(1.28);
     transform-origin: center;
@@ -493,8 +490,8 @@
   }
 
   .mood-option-art--frustrated {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
   }
 
   .mood-option-art--calm {
@@ -504,6 +501,7 @@
     img {
       transform: scale(1.28);
     }
+
   }
 
   .mood-option-label {

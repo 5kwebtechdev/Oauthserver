@@ -944,7 +944,7 @@ ion-content.create-family-content {
 
 .superme-page-container.create-family-page {
   display: block;
-  width: 100%;
+  width: min(100%, 100vw);
   max-width: none;
   min-height: 100dvh;
   padding: 0 !important;
@@ -953,7 +953,8 @@ ion-content.create-family-content {
 }
 
 .create-family-screen {
-  width: 100%;
+  width: min(100%, 100vw);
+  max-width: 100vw;
   min-height: 100dvh;
   overflow-x: clip;
   color: #282527;
@@ -1944,6 +1945,271 @@ ion-content.family-success-content {
   }
 }
 
+// Shared intermediate/tablet sizing. Informational areas may grow with the
+// viewport, while code-entry and primary-action forms stay easy to scan.
+@media (min-width: 480px) and (max-width: 767.98px) {
+  .parent-family-choice__hero-row {
+    width: min(100%, 600px);
+    margin-right: auto;
+    margin-left: auto;
+    padding-inline: 24px;
+  }
+
+  .parent-family-choice__hero-copy {
+    width: min(44%, 230px);
+
+    > p {
+      width: 100%;
+      font-size: 11px;
+    }
+  }
+
+  .parent-family-choice__hero-image {
+    right: 12px;
+    width: min(46vw, 276px);
+    height: auto;
+    aspect-ratio: 242 / 135;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .parent-family-choice__options,
+  .create-family-faqs {
+    width: min(100% - 48px, 560px);
+    max-width: 560px;
+  }
+
+  .parent-family-option {
+    min-height: 220px;
+    aspect-ratio: auto;
+  }
+
+  .parent-family-option__copy,
+  .parent-family-option--join .parent-family-option__copy {
+    width: min(48%, 240px);
+  }
+
+  .parent-family-option__description,
+  .parent-family-option--join .parent-family-option__description {
+    width: 100%;
+    font-size: 11px;
+  }
+
+  .create-family-how {
+    width: min(calc(100% - 48px), 600px);
+    padding-inline: 24px;
+  }
+
+  .create-family-hero__row {
+    width: min(100%, 600px);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .create-family-hero__copy {
+    width: min(44%, 230px);
+    margin-left: 24px;
+
+    > p {
+      width: 100%;
+      font-size: 11px;
+    }
+  }
+
+  .create-family-hero__image {
+    right: 24px;
+    width: min(46vw, 276px);
+    height: auto;
+    aspect-ratio: 242 / 135;
+
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .create-family-entry,
+  .parent-join-family-entry {
+    width: min(100% - 48px, 420px);
+  }
+
+  .family-success-section {
+    width: min(100%, 600px);
+  }
+}
+
+@media (min-width: 768px) {
+  .parent-family-choice__hero {
+    min-height: 240px;
+  }
+
+  .parent-family-choice__hero-row {
+    width: min(100%, 960px);
+    min-height: 172px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-inline: 32px;
+  }
+
+  .parent-family-choice__hero-copy {
+    width: min(36%, 300px);
+
+    h1 {
+      font-size: clamp(27px, 2.4vw, 34px);
+    }
+
+    > p {
+      width: min(100%, 260px);
+      font-size: 12px;
+    }
+  }
+
+  .parent-family-choice__progress-copy,
+  .parent-family-choice__progress {
+    width: min(100%, 220px);
+  }
+
+  .parent-family-choice__hero-image {
+    right: 32px;
+    width: min(34vw, 340px);
+    height: auto;
+    aspect-ratio: 242 / 135;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .parent-family-choice__options {
+    display: grid;
+    width: min(100% - 64px, 960px);
+    max-width: 960px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+  }
+
+  .parent-family-option {
+    min-height: 250px;
+    aspect-ratio: auto;
+    border-radius: 28px;
+  }
+
+  .parent-family-option__copy,
+  .parent-family-option--join .parent-family-option__copy {
+    top: 22px;
+    left: 22px;
+    width: min(47%, 210px);
+  }
+
+  .parent-family-option__title {
+    font-size: clamp(25px, 2.2vw, 30px);
+  }
+
+  .parent-family-option__description,
+  .parent-family-option--join .parent-family-option__description {
+    width: 100%;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .parent-family-option__image {
+    border-radius: 26px;
+
+    img {
+      right: -15%;
+      width: 78%;
+    }
+  }
+
+  .parent-family-option--join .parent-family-option__image img {
+    right: -13%;
+    width: 74%;
+  }
+
+  .create-family-faqs {
+    width: min(100% - 64px, 720px);
+    max-width: 720px;
+  }
+
+  .create-family-how {
+    width: min(calc(100% - 64px), 960px);
+    padding: 16px 32px;
+  }
+
+  .create-family-back {
+    margin-left: max(32px, calc((100% - 960px) / 2 + 32px));
+  }
+
+  .create-family-hero {
+    min-height: 240px;
+  }
+
+  .create-family-hero__row {
+    width: min(100%, 960px);
+    min-height: 172px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .create-family-hero__copy {
+    width: min(36%, 300px);
+    margin-left: 32px;
+
+    h1 {
+      font-size: clamp(27px, 2.4vw, 34px);
+    }
+
+    > p {
+      width: min(100%, 260px);
+      font-size: 12px;
+    }
+  }
+
+  .create-family-hero__image {
+    right: 32px;
+    width: min(34vw, 340px);
+    height: auto;
+    aspect-ratio: 242 / 135;
+
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .create-family-step {
+    min-height: 156px;
+  }
+
+  .create-family-step > img {
+    width: 64px;
+    height: 64px;
+    flex-basis: 64px;
+  }
+
+  .create-family-step p {
+    font-size: 11px;
+  }
+
+  .create-family-entry,
+  .parent-join-family-entry {
+    width: min(100% - 64px, 420px);
+  }
+
+  .family-success-section {
+    width: min(100%, 720px);
+  }
+}
+
 .create-child-account-banner {
   position: relative;
   display: flex;
@@ -2307,5 +2573,321 @@ ion-content.family-success-content {
     padding-left: 12px;
     column-gap: 8px;
     font-size: 15px;
+  }
+}
+
+// Family-created success screen: keep the compact mobile composition while
+// giving the complete page (including its lower actions and FAQs) a readable,
+// centred layout on intermediate and web widths.
+@media (min-width: 480px) {
+  .superme-page-container.family-success-page {
+    width: min(100%, 100vw);
+    max-width: 100vw;
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+
+  .family-success-section {
+    width: min(100%, 600px);
+    min-height: 100dvh;
+    padding: calc(env(safe-area-inset-top, 0px) + 40px) 24px
+      calc(env(safe-area-inset-bottom, 0px) + 40px);
+    overflow: visible;
+  }
+
+  .family-success-hero,
+  .family-success-body {
+    width: 100%;
+    max-width: 552px;
+    margin-inline: auto;
+  }
+
+  .family-success-title {
+    margin-top: 12px;
+
+    h1 {
+      font-size: clamp(27px, 4.5vw, 32px);
+    }
+
+    p {
+      width: min(100%, 430px);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+  }
+
+  .family-success-body {
+    gap: 28px;
+    margin-top: 36px;
+  }
+
+  .family-success-card-heading {
+    h2 {
+      font-size: 18px;
+    }
+
+    p {
+      font-size: 14px;
+    }
+  }
+
+  .family-success-privacy p,
+  .family-success-qr p,
+  .family-success-share-copy p {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .family-success-privacy p {
+    width: min(100%, 360px);
+  }
+
+  .family-success-qr h3 {
+    font-size: 15px;
+  }
+
+  .family-success-share-copy {
+    flex: 1;
+
+    p {
+      width: min(100%, 330px);
+    }
+  }
+
+  .create-child-account-banner__tip p {
+    font-size: 12px;
+  }
+
+  .family-success-done {
+    width: min(100%, 420px);
+    margin-inline: auto;
+  }
+
+  .family-success-faqs {
+    width: min(100%, 552px);
+    margin-inline: auto;
+
+    > h2 {
+      font-size: 20px;
+    }
+  }
+
+  .family-success-faq > button {
+    min-height: 56px;
+    padding: 16px;
+    font-size: 14px;
+  }
+
+  .family-success-faq > p {
+    padding: 0 16px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 768px) {
+  .family-success-section {
+    width: min(100%, 960px);
+    padding: calc(env(safe-area-inset-top, 0px) + 48px) 32px
+      calc(env(safe-area-inset-bottom, 0px) + 56px);
+  }
+
+  .family-success-hero,
+  .family-success-body {
+    max-width: 720px;
+  }
+
+  .family-success-confetti--top {
+    top: -48px;
+    width: min(430px, calc(100vw - 96px));
+  }
+
+  .family-success-check {
+    width: 80px;
+    height: 80px;
+
+    img {
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  .family-success-title {
+    gap: 10px;
+
+    h1 {
+      font-size: clamp(30px, 3vw, 36px);
+    }
+
+    p {
+      font-size: 14px;
+    }
+  }
+
+  .family-success-body {
+    gap: 32px;
+    margin-top: 40px;
+  }
+
+  .family-success-card {
+    gap: 28px;
+    padding-bottom: 24px;
+    border-radius: 28px;
+  }
+
+  .family-success-code-block {
+    gap: 20px;
+    padding: 24px 24px 0;
+  }
+
+  .family-success-card-heading {
+    gap: 12px;
+
+    &__icon {
+      flex-basis: 48px;
+      width: 48px;
+      height: 48px;
+
+      img {
+        width: 28px;
+        height: 28px;
+      }
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+
+    p {
+      font-size: 15px;
+    }
+  }
+
+  .family-success-code {
+    min-height: 72px;
+
+    span {
+      font-size: clamp(28px, 3vw, 34px);
+      letter-spacing: 0.16em;
+    }
+
+    img {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .family-success-privacy {
+    padding-inline: 24px;
+
+    p {
+      width: min(100%, 440px);
+      font-size: 13px;
+    }
+  }
+
+  .family-success-divider {
+    grid-template-columns: minmax(0, 210px) auto minmax(0, 210px);
+    padding-inline: 24px;
+  }
+
+  .family-success-qr {
+    justify-content: center;
+    padding-inline: 40px;
+    gap: 24px;
+
+    &__code {
+      flex-basis: 128px;
+      width: 128px;
+      height: 128px;
+    }
+
+    h3 {
+      font-size: 17px;
+    }
+
+    p {
+      max-width: 360px;
+      font-size: 13px;
+    }
+
+    ::ng-deep .family-success-qr-canvas,
+    ::ng-deep .family-success-qr-canvas canvas {
+      width: 128px !important;
+      height: 128px !important;
+    }
+  }
+
+  .family-success-share-card {
+    width: calc(100% - 48px);
+    min-height: 76px;
+    margin-inline: 24px;
+    padding: 12px;
+
+    > button {
+      min-width: 92px;
+      height: 44px;
+      font-size: 14px;
+    }
+  }
+
+  .family-success-share-copy {
+    gap: 12px;
+
+    > span {
+      flex-basis: 52px;
+      width: 52px;
+      height: 52px;
+    }
+
+    p {
+      width: min(100%, 430px);
+      font-size: 13px;
+    }
+  }
+
+  .create-child-account-banner {
+    padding: 22px 20px 18px;
+  }
+
+  .create-child-account-banner__content {
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 30%);
+    gap: 14px 20px;
+  }
+
+  .create-child-account-banner__copy h2 {
+    font-size: 30px;
+  }
+
+  .create-child-account-banner__subtitle {
+    max-width: 360px;
+    font-size: 14px;
+  }
+
+  .create-child-account-banner__tip {
+    min-height: 64px;
+    padding: 12px 14px;
+
+    p {
+      font-size: 13px;
+    }
+  }
+
+  .create-child-account-banner__child {
+    max-width: 180px;
+    max-height: 190px;
+  }
+
+  .create-child-account-banner__action,
+  .family-success-done {
+    width: min(100%, 420px);
+    margin-inline: auto;
+  }
+
+  .family-success-faqs {
+    width: min(100%, 720px);
+  }
+
+  .family-success-faq {
+    border-radius: 10px;
   }
 }

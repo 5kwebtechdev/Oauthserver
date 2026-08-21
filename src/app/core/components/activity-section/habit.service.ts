@@ -206,9 +206,12 @@ export class HabitService {
     if (index !== -1) {
       currentHabits[index] = updatedHabit;
       this.habitsSubject.next([...currentHabits]);
-      // Notify subscribers that a habit was updated so lists can refresh
-      try { this.dataChangedSubject.next({ type: dataType, action: 'updated' }); } catch (e) { /* ignore */ }
     }
+
+    // Calendar/dashboard cards can be populated directly from the day API and
+    // therefore may not exist in this local subject yet. The server mutation
+    // still succeeded, so always notify consumers to fetch the latest state.
+    this.dataChangedSubject.next({ type: dataType, action: 'updated' });
   }
 
   deleteHabit(id: string): void {
@@ -250,13 +253,14 @@ export class HabitService {
     const currentHabits = this.habitsSubject.value;
     const idx = currentHabits.findIndex(h => h.id === id);
     if (idx !== -1) {
-      const updated = { ...currentHabits[idx], status: 'completed' } as Habit;
       // Update internal list to remove it from active view (completed moves to completed lists)
       const newList = currentHabits.filter(h => h.id !== id);
       this.habitsSubject.next(newList);
-      // Notify subscribers that data has changed
-      this.dataChangedSubject.next({ type: 'habit', action: 'updated' });
     }
+
+    // Keep dashboard/calendar refresh behaviour consistent with tasks even
+    // when this habit was loaded outside the local habits subject.
+    this.dataChangedSubject.next({ type: 'habit', action: 'updated' });
   }
 
   letsGoHabit(id: string): void {
