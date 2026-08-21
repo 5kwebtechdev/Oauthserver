@@ -76,7 +76,8 @@ font-weight: 600;
 
 .disclaimer-text {
     display: flex;
-    width: 361px;
+    width: 100%;
+    max-width: 361px;
     justify-content: center;
     align-items: flex-start;
     gap: 2px;
@@ -91,7 +92,9 @@ font-weight: 600;
     font-weight: 600;
     line-height: 130%;
     /* 16.9px */
-    width: 342px;
+    width: 100%;
+    max-width: 342px;
+    min-width: 0;
     flex-shrink: 0;
 }
 

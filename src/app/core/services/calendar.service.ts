@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of, catchError, forkJoin } from 'rxjs';
+import { Observable, map, of, catchError } from 'rxjs';
 import { CalendarResponse, TimelineEvent } from '../models/calendar.model';
 import { environment } from 'src/environments/environment';
-import { EventApi, EventDto } from '../api/event.api';
-import { AuthService } from './auth.service';
 
 @Injectable({
     providedIn: 'root'
@@ -12,15 +10,10 @@ import { AuthService } from './auth.service';
 export class CalendarService {
     private readonly apiUrl = `${environment.apiUrl}/calendar`;
 
-    constructor(
-        private http: HttpClient,
-        private eventApi: EventApi,
-        private authService: AuthService
-    ) { }
+    constructor(private http: HttpClient) { }
 
     getUserCalendar(date: string | Date, viewType: 'day' | 'week' | 'month' = 'day', forceReload: boolean = false): Observable<CalendarResponse> {
-        const includePersonalEvents = this.authService.getUserRelationship() === 'CHILD';
-        return this.getCalendar(date, viewType, includePersonalEvents);
+        return this.getCalendar(date, viewType);
     }
 
     /**
@@ -29,13 +22,12 @@ export class CalendarService {
      * the Planner list, otherwise they appear as extra/duplicate planner cards.
      */
     getUserPlannerCalendar(date: string | Date, viewType: 'day' | 'week' | 'month' = 'day'): Observable<CalendarResponse> {
-        return this.getCalendar(date, viewType, false);
+        return this.getCalendar(date, viewType);
     }
 
     private getCalendar(
         date: string | Date,
         viewType: 'day' | 'week' | 'month',
-        includePersonalEvents: boolean,
         includeExpiredCalendarEvents: boolean = false
     ): Observable<CalendarResponse> {
         const dateStr = this.formatDateToYYYYMMDD(date);
@@ -44,15 +36,11 @@ export class CalendarService {
             catchError(() => of({ ...this.emptyCalendarResponse(), loadError: true }))
         );
 
-        // Personal events use their existing endpoint while Planner schedules
-        // come from /calendar/user-calendar. The profile-selector interceptor
-        // scopes this request to a selected child when a parent is viewing one.
-        const plannerEvents$ = includePersonalEvents
-            ? this.eventApi.getEvents().pipe(catchError(() => of([] as EventDto[])))
-            : of([] as EventDto[]);
-
-        return forkJoin({ calendar: calendar$, plannerEvents: plannerEvents$ }).pipe(
-            map(({ calendar, plannerEvents }) => ({
+        // Planner entries are already returned by /calendar/user-calendar.
+        // Do not merge /events/all here: that endpoint belongs to a separate
+        // flow and caused duplicate planner cards and an unnecessary request.
+        return calendar$.pipe(
+            map(calendar => ({
                 ...calendar,
                 // The calendar API marks finished records with `expired: true`.
                 // Exclude them before any screen builds its All/Habit/Task/Planner
@@ -60,12 +48,9 @@ export class CalendarService {
                 // older responses and is treated as active.
                 habits: this.excludeExpired(calendar.habits),
                 tasks: this.excludeExpired(calendar.tasks),
-                events: [
-                    ...(includeExpiredCalendarEvents ? (calendar.events || []) : this.excludeExpired(calendar.events)),
-                    ...plannerEvents
-                        .filter(event => this.eventOccursInView(event, dateStr, viewType))
-                        .map(event => this.toCalendarEvent(event))
-                ]
+                events: includeExpiredCalendarEvents
+                    ? (calendar.events || [])
+                    : this.excludeExpired(calendar.events)
             }))
         );
     }
@@ -101,82 +86,6 @@ export class CalendarService {
         };
     }
 
-    private eventOccursInView(event: EventDto, targetDate: string, viewType: 'day' | 'week' | 'month'): boolean {
-        const eventDate = String(event?.eventDate || '').slice(0, 10);
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) return false;
-
-        if (viewType === 'month') {
-            const targetMonth = targetDate.slice(0, 7);
-            if (event.recurrence === 'ONE_TIME') return eventDate.slice(0, 7) === targetMonth;
-            if (eventDate > `${targetMonth}-31`) return false;
-            if (event.recurrence === 'YEARLY') return eventDate.slice(5, 7) === targetDate.slice(5, 7);
-            return true;
-        }
-
-        if (viewType === 'week') {
-            const { start, end } = this.getWeekRange(targetDate);
-            if (event.recurrence === 'ONE_TIME') return eventDate >= start && eventDate <= end;
-            if (eventDate > end) return false;
-            // Recurring events can't be range-matched by date string alone —
-            // keep them visible for the week and let daily filtering downstream
-            // (e.g. the day-of-week/anniversary check) narrow it further.
-            return true;
-        }
-
-        if (event.recurrence === 'ONE_TIME') return eventDate === targetDate;
-        if (eventDate > targetDate) return false;
-        if (event.recurrence === 'YEARLY') return eventDate.slice(5) === targetDate.slice(5);
-        return eventDate.slice(8) === targetDate.slice(8);
-    }
-
-    /** Monday–Sunday week (ISO week) containing `targetDate` (YYYY-MM-DD). */
-    private getWeekRange(targetDate: string): { start: string; end: string } {
-        const [year, month, day] = targetDate.split('-').map(Number);
-        const date = new Date(year, month - 1, day);
-        const isoDayIndex = (date.getDay() + 6) % 7; // Monday = 0 ... Sunday = 6
-
-        const monday = new Date(date);
-        monday.setDate(date.getDate() - isoDayIndex);
-        const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
-
-        return { start: this.formatDateToYYYYMMDD(monday), end: this.formatDateToYYYYMMDD(sunday) };
-    }
-
-    private toCalendarEvent(event: EventDto): CalendarResponse['events'][number] {
-        const eventDate = String(event.eventDate).slice(0, 10);
-        const reminderOffset = event.reminderMinutesBefore === 15
-            ? 'MINUTES_15'
-            : event.reminderMinutesBefore === 30
-                ? 'MINUTES_30'
-                : event.reminderMinutesBefore === 45
-                    ? 'MINUTES_45'
-                    : null;
-
-        return {
-            id: event.id,
-            title: event.name,
-            description: event.note || '',
-            startDate: eventDate,
-            endDate: eventDate,
-            startTime: event.startTime || '00:00:00',
-            endTime: event.endTime || '23:59:59',
-            type: 'EVENT',
-            completed: event.completed,
-            family: null,
-            createdAt: event.createdAt,
-            updatedAt: event.updatedAt,
-            tags: event.eventType ? [event.eventType] : [],
-            daysOfWeek: [],
-            priority: event.highPriority ? 'HIGH' : 'MEDIUM',
-            everyday: false,
-            reminderOffset,
-            eventType: event.eventType,
-            recurrence: event.recurrence,
-            allDay: event.allDay
-        };
-    }
-
     /**
      * Convenience wrapper to fetch month view
      */
@@ -193,7 +102,7 @@ export class CalendarService {
         // It must show every event returned by user-calendar, including entries
         // whose time has already passed (`expired: true`). Habits and Tasks
         // remain filtered by `excludeExpired` inside getCalendar.
-        return this.getCalendar(date, 'week', false, true);
+        return this.getCalendar(date, 'week', true);
     }
 
     transformToTimelineEvents(response: CalendarResponse): TimelineEvent[] {

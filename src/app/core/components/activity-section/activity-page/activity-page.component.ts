@@ -78,6 +78,7 @@ import { RefreshService } from '../../../services/refresh.service';
 })
 export class ActivityPageComponent implements OnInit, OnDestroy {
   @ViewChild('habitContent') habitContent!: ActivityPageContentComponent;
+  private hasEnteredActivityPage = false;
 
   constructor(
     private router: Router,
@@ -96,6 +97,16 @@ export class ActivityPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.refreshService.unregisterRefreshHandler('ActivityPage');
+  }
+
+  ionViewDidEnter(): void {
+    // The activity page is cached by Ionic. Refresh it when returning from the
+    // add/edit planner flow so newly-created planner entries appear without a
+    // manual page refresh. Its first load remains owned by the child component.
+    if (this.hasEnteredActivityPage && this.habitContent) {
+      void this.habitContent.refresh();
+    }
+    this.hasEnteredActivityPage = true;
   }
 
   onAddHabit(): void {

@@ -940,3 +940,43 @@
 .signup-container.profile-layout .profile-step.profile-step--figma .details-avatar-grid .single-avatar.active img {
   border-color: #7341a7 !important;
 }
+
+// Let the details page use intermediate/tablet space without stretching the
+// actual form controls beyond a comfortable form width.
+@media (min-width: 480px) and (max-width: 767.98px) {
+  .profile-step--figma .details-back-row,
+  .profile-step--figma .details-header-content {
+    width: min(100%, 600px);
+  }
+
+  .profile-step--figma .details-header-content {
+    padding-inline: 48px;
+  }
+
+  .signup-container.profile-layout .profile-step--figma > .profile,
+  .signup-container.profile-layout .profile-step--figma > .details-referral-section,
+  .signup-container.profile-layout .profile-step--figma > .profile-button-wrapper,
+  .signup-container.profile-layout .profile-step--figma > .error-message {
+    width: min(100% - 48px, 420px);
+    max-width: 420px;
+  }
+}
+
+@media (min-width: 768px) {
+  .profile-step--figma .details-back-row,
+  .profile-step--figma .details-header-content {
+    width: min(100%, 720px);
+  }
+
+  .profile-step--figma .details-header-content {
+    padding-inline: 64px;
+  }
+
+  .signup-container.profile-layout .profile-step--figma > .profile,
+  .signup-container.profile-layout .profile-step--figma > .details-referral-section,
+  .signup-container.profile-layout .profile-step--figma > .profile-button-wrapper,
+  .signup-container.profile-layout .profile-step--figma > .error-message {
+    width: min(100% - 64px, 420px);
+    max-width: 420px;
+  }
+}

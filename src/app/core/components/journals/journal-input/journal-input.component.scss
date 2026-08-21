@@ -30,7 +30,8 @@
   font-size: 20px;
   font-style: normal;
   font-weight: 500;
-  width: 361px;
+  width: 100%;
+  max-width: 361px;
   line-height: 140%;
   /* 28px */
 }
@@ -316,7 +317,8 @@
 
 .post-button {
   display: flex;
-  width: 361px;
+  width: 100%;
+  max-width: 361px;
   padding: 10px 12px;
   justify-content: center;
   align-items: center;

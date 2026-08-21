@@ -1,4 +1,4 @@
-<ion-content #content [scrollY]="step !== 5 || isParentWelcomeScreen"
+<ion-content #content [scrollY]="true"
   [class.auth-static-content]="step === 0.1 || step === 0.2"
   [class.password-scroll-content]="step === 0.3"
   [class.password-keyboard-open]="step === 0.3 && isPasswordKeyboardOpen"
@@ -16,7 +16,7 @@
     [hideBack]="true">
   </superme-navigator>
   <div class="signup-container"
-    [ngClass]="{'step-5-container': step === 5, 'pet-layout': step === 4, 'profile-layout': step === 2, 'role-layout': step === 1, 'signup-entry-layout': step === 0.1, 'otp-layout': step === 0.2, 'password-layout': step === 0.3, 'managed-child-flow': isManagedChildSignup, 'managed-child-success-layout': step === 6 && isManagedChildSignup}">
+    [ngClass]="{'step-5-container': step === 5, 'shared-welcome-layout': step === 5 && !isParentWelcomeScreen, 'pet-layout': step === 4, 'profile-layout': step === 2, 'role-layout': step === 1, 'signup-entry-layout': step === 0.1, 'otp-layout': step === 0.2, 'password-layout': step === 0.3, 'managed-child-flow': isManagedChildSignup, 'managed-child-success-layout': step === 6 && isManagedChildSignup}">
     <h4 class="step-text" *ngIf="step !== 2 && step !== 3 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 5 && !(step === 6 && isManagedChildSignup)">
       Step {{step}} of 4
       <span>{{stepDesciption[step-1]}}</span>
@@ -669,6 +669,7 @@
       </div>
 
       <swiper-container class="pet-carousel" slides-per-view="1.28" centered-slides="true" space-between="12"
+        [breakpoints]="petCarouselBreakpoints"
         grab-cursor="true" (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl>
         <swiper-slide *ngFor="let pet of pets; let i = index">
           <article class="pet-card" [class.pet-card--active]="currentSlideIndex === i"
@@ -774,7 +775,7 @@
       </section>
 
       <ng-template #sharedWelcomeScreen>
-        <div [@slideIn] class="welcome-page d-flex flex-column align-items-center justify-content-center gap-3" style="min-height: 90dvh; margin-top: 10dvh;">
+        <div [@slideIn] class="welcome-page d-flex flex-column align-items-center justify-content-center gap-3">
           <img src="assets/Images-Transparent/SuperMeLogoFinal3.png" alt="Onboarding pet" class="onboarding-image" />
 
           <div class="welcome-content d-flex flex-column justify-content-center align-items-center gap-2">

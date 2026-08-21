@@ -170,6 +170,11 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        // Family onboarding owns its responsive content widths. Opt this route
+        // out of the generic narrow desktop Ionic page cap so wider cards are
+        // not rendered past (and clipped by) the routed page boundary.
+        document.body.classList.add('family-onboard-web-view');
+
         // Detect viewMode from current route URL if not set as @Input
         const currentUrl = this.router.url;
         if (currentUrl.includes('instructions-for-parent')) {
@@ -268,6 +273,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        document.body.classList.remove('family-onboard-web-view');
         this.releaseChildBackHandling();
         // Clear any pending timeouts
         if (this.codeCheckTimeout) {
@@ -280,10 +286,12 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     }
 
     ionViewDidEnter(): void {
+        document.body.classList.add('family-onboard-web-view');
         this.configureChildBackHandling();
     }
 
     ionViewWillLeave(): void {
+        document.body.classList.remove('family-onboard-web-view');
         this.releaseChildBackHandling();
     }
 

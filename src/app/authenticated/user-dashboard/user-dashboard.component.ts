@@ -170,6 +170,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   // Subject for cleanup
   private destroy$ = new Subject<void>();
   private refreshScheduled$ = new Subject<void>();
+  private hasEnteredDashboard = false;
   private homeTimeChangeTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly homePeriodBackgrounds = [
     '/assets/Images-Thumbnails/HeaderV2.png',
@@ -510,6 +511,16 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.syncHomeTimePeriod();
     this.refreshWeekStreakDays();
     this.maybeShowDailyStreakPopup();
+
+    // Ionic keeps the dashboard component alive while the planner form is
+    // pushed on top of it. Reload the day when this cached view becomes active
+    // again so a newly-created planner and its count are visible immediately.
+    // The initial entry is already loaded by ngOnInit, so avoid a duplicate
+    // request on first render.
+    if (this.hasEnteredDashboard) {
+      this.loadRecentHabitsAndTasks(true);
+    }
+    this.hasEnteredDashboard = true;
   }
 
   private startHomeTimeSync(): void {

@@ -1394,6 +1394,79 @@ swiper-slide.swiper-slide-active .pet-card {
   .pet-step-next { height: 52px; min-height: 52px; margin-top: 16px; font-size: 18px; }
 }
 
+@media (min-width: 480px) and (max-width: 767.98px) {
+  .pet-step {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  .pet-step-header,
+  .pet-step-progress,
+  .pet-carousel {
+    width: min(100%, 600px);
+    margin-right: auto;
+    margin-left: auto;
+    box-sizing: border-box;
+  }
+
+  .pet-carousel {
+    overflow: hidden;
+  }
+
+  .pet-card {
+    height: clamp(320px, 50dvh, 460px);
+  }
+
+  .pet-step-next,
+  .pet-step-error {
+    width: 100%;
+    max-width: 420px;
+  }
+}
+
+@media (min-width: 768px) {
+  .pet-step {
+    padding-right: 32px;
+    padding-left: 32px;
+  }
+
+  .pet-step-header,
+  .pet-step-progress,
+  .pet-carousel {
+    width: min(100%, 960px);
+    margin-right: auto;
+    margin-left: auto;
+    box-sizing: border-box;
+  }
+
+  .pet-carousel {
+    overflow: hidden;
+  }
+
+  .pet-card {
+    height: clamp(340px, 52dvh, 480px);
+    border-radius: 28px;
+  }
+
+  .pet-card-copy {
+    padding: 24px 28px 0;
+  }
+
+  .pet-card-art {
+    max-height: 280px;
+  }
+
+  .pet-step-next,
+  .pet-step-error {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .pet-step-next {
+    margin-top: 24px;
+  }
+}
+
 .age-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -2786,22 +2859,29 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .welcome-page {
+  display: flex;
+  width: min(100%, 420px);
+  min-height: calc(100dvh - 48px);
+  margin-inline: auto;
+  padding: max(24px, env(safe-area-inset-top, 0px)) 0
+    max(32px, env(safe-area-inset-bottom, 0px));
   flex-direction: column;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0 16px;
-    width: 100%;
- 
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .welcome-content {
+  width: 100%;
   text-align: center;
 }
-.onboarding-image{
-  width: 250px;
-height: 130px;
-aspect-ratio: 25/16;
+
+.onboarding-image {
+  width: clamp(180px, 52vw, 250px);
+  height: auto;
+  max-height: 130px;
+  aspect-ratio: 25 / 13;
+  object-fit: contain;
 }
 
 .superpower-title {
@@ -2827,6 +2907,10 @@ aspect-ratio: 25/16;
 .step-5-container {
   background: #ffffff !important;
   margin-bottom: 24px;
+}
+
+.step-5-container.shared-welcome-layout {
+  margin-bottom: 0;
 }
 
 // "Unlock My Potential" — purple-to-near-black gradient pill, matches the
@@ -3104,6 +3188,7 @@ ion-content.details-content.referral-keyboard-open {
   flex-direction: column;
   gap: 12px;
   width: 100%;
+  max-width: 100%;
 }
 
 .superpower-card {
@@ -3151,6 +3236,88 @@ ion-content.details-content.referral-keyboard-open {
   &--crush { color: #EE6621; }
   &--own { color: #2AA37A; }
   &--unlock { color: #CC2B7D; }
+}
+
+@media (min-width: 480px) and (max-width: 767.98px) {
+  .signup-container.step-5-container.shared-welcome-layout {
+    width: min(100%, 600px);
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  .welcome-page {
+    width: min(100%, 560px);
+    min-height: calc(100dvh - 48px);
+    padding-block: 32px;
+  }
+
+  .welcome-content,
+  .superpower-list {
+    width: min(100%, 520px);
+  }
+
+  .welcome-cta-btn {
+    width: 100% !important;
+    max-width: 420px;
+  }
+}
+
+@media (min-width: 768px) {
+  .signup-container.step-5-container.shared-welcome-layout {
+    width: min(100%, 960px);
+    min-height: 100dvh;
+    padding: 0 32px;
+  }
+
+  .welcome-page {
+    width: min(100%, 720px);
+    min-height: 100dvh;
+    padding-block: clamp(24px, 4dvh, 48px);
+    justify-content: center;
+  }
+
+  .onboarding-image {
+    width: clamp(190px, 18vw, 240px);
+    max-height: 120px;
+  }
+
+  .welcome-content,
+  .superpower-list {
+    width: min(100%, 640px);
+  }
+
+  .superpower-card {
+    min-height: 56px;
+    padding: 10px 18px;
+  }
+
+  .welcome-cta-btn {
+    width: 100% !important;
+    max-width: 420px;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 700px) {
+  .welcome-page {
+    min-height: auto;
+    padding-block: 20px;
+    justify-content: flex-start;
+    gap: 10px !important;
+  }
+
+  .onboarding-image {
+    width: 180px;
+    max-height: 96px;
+  }
+
+  .superpower-list {
+    gap: 8px;
+  }
+
+  .superpower-card {
+    min-height: 50px;
+    padding-block: 8px;
+  }
 }
 
 // ── Redesigned step 0.1 (initial signup) ──

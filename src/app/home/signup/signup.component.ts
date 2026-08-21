@@ -217,6 +217,22 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   // now") so the UI can clearly show which pet is actually selected.
   public selectedPetIndex: number | null = null;
 
+  // Keep the phone carousel's neighbouring-card preview, but show complete
+  // cards once there is enough tablet/web space. Swiper applies these values
+  // without creating separate role- or platform-specific templates.
+  public readonly petCarouselBreakpoints = {
+    480: {
+      slidesPerView: 1.45,
+      centeredSlides: true,
+      spaceBetween: 16
+    },
+    768: {
+      slidesPerView: 2,
+      centeredSlides: false,
+      spaceBetween: 20
+    }
+  };
+
   images = [
     'https://picsum.photos/id/1011/600/400',
     'https://picsum.photos/id/1015/600/400',

@@ -613,6 +613,115 @@
   }
 }
 
+@media (min-width: 480px) and (max-width: 767.98px) {
+  .family-code-hero__row {
+    width: min(calc(100% - 48px), 600px);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .family-code-hero__copy {
+    margin-left: 0;
+  }
+
+  .family-code-hero__image {
+    right: 0;
+  }
+
+  .family-code-how {
+    width: min(calc(100% - 48px), 600px);
+    padding-inline: 24px;
+  }
+
+  .family-code-entry {
+    width: min(100% - 48px, 420px);
+    max-width: 420px;
+  }
+
+  .family-code-action-card,
+  .family-code-faqs {
+    width: min(100% - 48px, 560px);
+    max-width: 560px;
+  }
+
+  .family-code-how .family-code-step p {
+    font-size: 9px;
+  }
+}
+
+@media (min-width: 768px) {
+  .family-code-hero__row {
+    width: min(calc(100% - 64px), 720px);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .family-code-hero__copy {
+    width: 240px;
+    margin-left: 0;
+  }
+
+  .family-code-hero__copy > p {
+    width: 220px;
+    font-size: 13px;
+  }
+
+  .family-code-hero__image {
+    right: 0;
+  }
+
+  .family-code-how {
+    width: min(calc(100% - 64px), 960px);
+    padding: 16px 24px;
+  }
+
+  .family-code-how__heading {
+    height: 24px;
+  }
+
+  .family-code-how .family-code-how__heading h2 {
+    font-size: 16px;
+  }
+
+  .family-code-steps {
+    min-width: 0;
+  }
+
+  .family-code-entry {
+    width: min(100% - 64px, 420px);
+    max-width: 420px;
+  }
+
+  .family-code-action-card,
+  .family-code-faqs {
+    width: min(100% - 64px, 720px);
+    max-width: 720px;
+  }
+
+  .family-code-action-card {
+    min-height: 88px;
+    padding: 12px;
+  }
+
+  .family-code-action-card__copy p {
+    width: 100%;
+  }
+
+  .family-code-step {
+    min-height: 148px;
+  }
+
+  .family-code-step__art {
+    width: 64px;
+    height: 64px;
+  }
+
+  .family-code-how .family-code-step p {
+    font-size: 12px;
+    line-height: 1.25;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .family-code-back,
   .family-code-faq > button img {
