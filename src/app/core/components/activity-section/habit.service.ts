@@ -73,8 +73,8 @@ export class HabitService {
     );
   }
 
-  loadTodayHabits(): Observable<any> {
-    return this.habitApi.getTodayHabits().pipe(
+  loadTodayHabits(force: boolean = false): Observable<any> {
+    return this.habitApi.getTodayHabits(force).pipe(
       tap(response => {
         if (response) {
           const habits = this.mapApiResponseToHabits(response);

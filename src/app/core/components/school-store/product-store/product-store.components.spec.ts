@@ -47,12 +47,75 @@ describe('ProductStoreComponent category filtering', () => {
     expect(requests[0].params.has('subCategory')).toBeFalse();
   });
 
+  it('requests and appends the next product page without clearing existing cards', () => {
+    component.products = [{
+      id: '1',
+      title: 'Existing product',
+      price: '₹100',
+      mrp: '₹120',
+      img: 'existing.png',
+    }];
+    component.productsPage = 0;
+    component.productsTotalPages = 2;
+    component.productsRequestCompleted = true;
+    const complete = jasmine.createSpy('complete');
+
+    component.loadMoreProducts({ target: { complete } });
+
+    expect(requests.length).toBe(1);
+    expect(requests[0].params.get('page')).toBe('1');
+    expect(component.products[0].id).toBe('1');
+    expect(component.productsLoadingMore).toBeFalse();
+    expect(complete).toHaveBeenCalled();
+  });
+
+  it('shows All first and selects it when the horizontal categories load', () => {
+    (component as any).http = {
+      get: () => of([
+        { name: 'Craft & Hobbies', imageUrl: null },
+        { name: 'Exam Essentials', imageUrl: null },
+      ]),
+    };
+
+    component.loadSubCategoryLevel(0, []);
+
+    expect(component.primarySubCategoryLevel?.options[0]).toEqual({
+      id: component.allSubCategoryId,
+      label: 'All',
+      imageUrl: null,
+    });
+    expect(component.primarySubCategoryLevel?.selected).toBe(component.allSubCategoryId);
+    expect(component.activeProductSubCategory).toBeNull();
+  });
+
+  it('clears subcategory filtering when All is selected from the horizontal row', () => {
+    const allOption = { id: component.allSubCategoryId, label: 'All', imageUrl: null };
+    component.activeProductSubCategory = 'Craft & Hobbies';
+    component.subCategoryLevels = [
+      {
+        options: [allOption, { id: 'Craft & Hobbies', label: 'Craft & Hobbies', imageUrl: null }],
+        selected: 'Craft & Hobbies',
+      },
+      {
+        options: [{ id: 'Adhesives', label: 'Adhesives', imageUrl: null }],
+        selected: 'Adhesives',
+      },
+    ];
+
+    component.selectSubCategoryAt(0, allOption);
+
+    expect(component.subCategoryLevels.length).toBe(1);
+    expect(component.primarySubCategoryLevel?.selected).toBe(component.allSubCategoryId);
+    expect(component.activeProductSubCategory).toBeNull();
+    expect(requests.length).toBe(1);
+    expect(requests[0].params.has('subCategory')).toBeFalse();
+  });
+
   it('filters products only after a left-rail subcategory is selected', () => {
-    const allOption = { id: component.allSubCategoryId, label: 'All Products', imageUrl: null };
     const notebookOption = { id: 'Notebooks', label: 'Notebooks', imageUrl: null };
     component.subCategoryLevels = [
       { options: [{ id: 'Students', label: 'Students', imageUrl: null }], selected: 'Students' },
-      { options: [allOption, notebookOption], selected: component.allSubCategoryId },
+      { options: [notebookOption], selected: '' },
     ];
 
     component.selectSubCategoryAt(1, notebookOption);
@@ -62,18 +125,18 @@ describe('ProductStoreComponent category filtering', () => {
     expect(requests[0].params.get('subCategory')).toBe('Notebooks');
   });
 
-  it('removes the subcategory parameter when All Products is selected', () => {
-    const allOption = { id: component.allSubCategoryId, label: 'All Products', imageUrl: null };
+  it('removes the subcategory parameter when subcategories are reset', () => {
     const notebookOption = { id: 'Notebooks', label: 'Notebooks', imageUrl: null };
     component.activeProductSubCategory = 'Notebooks';
     component.subCategoryLevels = [
       { options: [{ id: 'Students', label: 'Students', imageUrl: null }], selected: 'Students' },
-      { options: [allOption, notebookOption], selected: 'Notebooks' },
+      { options: [notebookOption], selected: 'Notebooks' },
     ];
 
-    component.selectSubCategoryAt(1, allOption);
+    component.resetSubCategories();
 
     expect(component.activeProductSubCategory).toBeNull();
+    expect(component.railSubCategoryLevel?.selected).toBe('');
     expect(requests.length).toBe(1);
     expect(requests[0].params.has('subCategory')).toBeFalse();
   });

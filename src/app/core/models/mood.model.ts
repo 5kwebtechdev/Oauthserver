@@ -20,6 +20,8 @@ export interface VibesDisplayResponse {
   relationship: string;
   mood: string;
   audience: string;
+  /** How many times the user has set their mood today (server is authoritative; daily cap is 2). */
+  moodSetCountToday?: number;
   title: string;
   description: string;
   emptyStateDescription: string;

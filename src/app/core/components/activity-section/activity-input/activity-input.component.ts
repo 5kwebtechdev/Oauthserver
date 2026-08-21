@@ -199,8 +199,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   ];
 
   readonly childActivityTabs: ReadonlyArray<ActivityTabOption> = [
-    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.svg' },
-    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.svg' },
+    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.webp' },
+    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.webp' },
     // schedule.svg is a white-on-transparent asset meant for a colored active
     // pill — it disappears against the white inactive tab background.
     // calendar.svg is the same teal (#3E5A60) used for this tab's active state,

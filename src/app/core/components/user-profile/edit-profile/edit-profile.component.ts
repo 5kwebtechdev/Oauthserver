@@ -292,10 +292,21 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       }
 
       if (avatarIdentifier) {
-        const avatar = this.avatarService.getAvatarAsset(avatarIdentifier);
-        if (avatar && this.isAvatarValidForCurrentUser(avatar)) {
-          this.avatarSelected = avatar.key;
-          console.log('[EditProfile] Avatar selected by image name:', avatar.key);
+        // Resolve legacy and current identifiers through the same role/age
+        // mapping used by signup. This also maps an older standard Parent
+        // avatar onto the matching dedicated Parent artwork.
+        const avatar = this.avatarService.getAvatarForUser({
+          ...userData,
+          relationship: this.accountType || relationship,
+          dateOfBirth: userData.dateOfBirth || userData.dob,
+          gender: this.gender || userData.gender,
+          avatarImageName: avatarIdentifier
+        });
+        const allowedAvatar = this.getEquivalentAllowedAvatar(avatar);
+        if (allowedAvatar) {
+          this.avatarSelected = allowedAvatar.key;
+          this.avatarImageName = allowedAvatar.imageName;
+          console.log('[EditProfile] Avatar selected by image name:', allowedAvatar.key);
         }
       }
     }
@@ -966,7 +977,11 @@ export class EditProfileComponent implements OnInit, OnDestroy {
    */
   get avatarsFiltered(): AvatarDefinition[] {
     const selectedGender = this.gender || this.normalizeProfileGender(this.currentUserData?.gender);
-    return this.avatarService.getAvatarsForUser(this.profileForm.get('dob')?.value, selectedGender);
+    return this.avatarService.getAvatarsForUser(
+      this.profileForm.get('dob')?.value,
+      selectedGender,
+      this.getAvatarRelationship()
+    );
   }
 
   selectGender(gender: ProfileGender): void {
@@ -1007,14 +1022,42 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   private ensureAvatarSelectionIsValid(): void {
     if (!this.avatarSelected) return;
-    if (!this.avatarsFiltered.some(avatar => avatar.key === this.avatarSelected)) {
+    const currentAvatar = this.avatarService.getAvatarAsset(this.avatarSelected);
+    const allowedAvatar = this.getEquivalentAllowedAvatar(currentAvatar);
+    if (!allowedAvatar) {
       this.avatarSelected = null;
       this.avatarImageName = null;
+      return;
     }
+
+    // When DOB or gender changes, retain the same avatar position but switch
+    // to the artwork belonging to the new age/gender/role group.
+    this.avatarSelected = allowedAvatar.key;
+    this.avatarImageName = allowedAvatar.imageName;
   }
 
-  private isAvatarValidForCurrentUser(avatar: AvatarDefinition): boolean {
-    return this.avatarsFiltered.some(option => option.key === avatar.key);
+  private getEquivalentAllowedAvatar(avatar: AvatarDefinition | null): AvatarDefinition | null {
+    const options = this.avatarsFiltered;
+    if (!options.length) return null;
+    if (!avatar) return options[0];
+
+    return options.find(option => option.key === avatar.key)
+      || options.find(option => option.gender === avatar.gender && option.index === avatar.index)
+      || options.find(option => option.index === avatar.index)
+      || options[0];
+  }
+
+  private getAvatarRelationship(): 'child' | 'parent' | 'self' | undefined {
+    if (this.accountType) return this.accountType;
+
+    const relationship = this.currentUserData?.relationship
+      || this.currentUserData?.relationshipType
+      || this.coreAuthService.getUserData()?.relationship
+      || this.coreAuthService.getUserData()?.relationshipType;
+    const normalized = String(relationship || '').trim().toLowerCase();
+    return normalized === 'child' || normalized === 'parent' || normalized === 'self'
+      ? normalized
+      : undefined;
   }
 
   /**

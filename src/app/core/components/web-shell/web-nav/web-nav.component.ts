@@ -93,7 +93,10 @@ const PARENT_NAV_ITEMS: WebNavItem[] = [
 })
 export class WebNavComponent implements OnInit, OnDestroy {
   readonly navigationAssetRoot = 'assets/Navigation/figma-logged-in';
-  readonly logoSrc = `${this.navigationAssetRoot}/superme-logo.png`;
+  // This wordmark has a tightly cropped transparent canvas. The previous
+  // square asset contained substantial empty space, so the logo looked tiny
+  // even though its image element was already 48px tall.
+  readonly logoSrc = 'assets/Images-Transparent/SuperMeLogoFinal3.png';
   readonly chevronSrc = `${this.navigationAssetRoot}/chevron.svg`;
   readonly notificationSrc = `${this.navigationAssetRoot}/notification.svg`;
   readonly coinSrc = `${this.navigationAssetRoot}/coin.png`;

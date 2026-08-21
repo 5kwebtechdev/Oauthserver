@@ -482,13 +482,24 @@
             width: 20px;
         }
 
+        // The "All" tab uses a vector icon instead of the raster tab-*.webp
+        // artwork: those are large multi-tile illustrations meant for a big
+        // presentation context and turn into an unreadable smudge at this
+        // tab-icon size. ion-icon paints in currentColor, so it automatically
+        // follows --tab-color / the active-state color below with no extra
+        // filter needed.
+        ion-icon {
+            flex: 0 0 auto;
+            font-size: 20px;
+        }
+
         &.is-active {
             background: var(--tab-active, var(--tab-color));
             color: #fff;
 
-            // Each tab's icon is drawn in roughly the same hue as its own
-            // active background (e.g. Task's icon and its active fill are
-            // both orange), so it can disappear into it. Forcing the icon to
+            // Each raster tab icon is drawn in roughly the same hue as its
+            // own active background (e.g. Task's icon and its active fill
+            // are both orange), so it can disappear into it. Forcing it to
             // white keeps it visible against every tab's active color.
             img {
                 filter: brightness(0) invert(1);
@@ -874,6 +885,7 @@
     .child-activity-header { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
     .child-category-tabs button { font-size: 14px; gap: 2px; }
     .child-category-tabs button img { height: 18px; width: 18px; }
+    .child-category-tabs button ion-icon { font-size: 18px; }
     .child-category-tabs .tab-habit img { width: 21px; }
     .child-status-filters button { font-size: 11px; }
     .child-pulse-item p { font-size: 10px; }

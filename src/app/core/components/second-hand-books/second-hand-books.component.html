@@ -160,20 +160,22 @@
       </ng-container>
 
       <ng-container *ngSwitchCase="'my-listings'">
-        <header class="listings-toolbar">
-          <button type="button" class="listings-toolbar__back" aria-label="Back" (click)="goBack()">
-            <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
-          </button>
-          <h1>My listings</h1>
-        </header>
+        <div class="my-listings-header">
+          <header class="listings-toolbar">
+            <button type="button" class="listings-toolbar__back" aria-label="Back" (click)="goBack()">
+              <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+            </button>
+            <h1>My listings</h1>
+          </header>
 
-        <nav class="listing-status-tabs" *ngIf="listingsLoading || listings.length" aria-label="Listing status">
-          <button *ngFor="let tab of myListingTabs; trackBy: trackByListingTab" type="button"
-            [class.is-selected]="selectedListingFilter === tab.value"
-            (click)="selectListingFilter(tab.value)">
-            {{ tab.label }}: {{ tab.count }}
-          </button>
-        </nav>
+          <nav class="listing-status-tabs" *ngIf="listingsLoading || listings.length" aria-label="Listing status">
+            <button *ngFor="let tab of myListingTabs; trackBy: trackByListingTab" type="button"
+              [class.is-selected]="selectedListingFilter === tab.value"
+              (click)="selectListingFilter(tab.value)">
+              {{ tab.label }}: {{ tab.count }}
+            </button>
+          </nav>
+        </div>
 
         <main class="my-listings-main" aria-live="polite">
           <section class="listing-grid listing-grid--skeleton" *ngIf="listingsLoading" aria-label="Loading your listings">
@@ -399,7 +401,7 @@
           <ng-template #buyerView>
             <section class="buyer-form" aria-labelledby="buyer-heading">
               <header class="buyer-form__heading"><h2 id="buyer-heading">You’re a buyer!</h2><p>Select your preferences below, and search to find the right book.</p></header>
-              <div class="buyer-form__section"><span class="buyer-form__label">Book Type <b aria-hidden="true">*</b></span><div class="book-type-grid"><button *ngFor="let type of bookTypes; trackBy: trackByBookType" type="button" class="book-type-option" [class.is-selected]="buyer.bookType === type.value" (click)="selectBookType(type.value)"><img class="book-type-option__icon" [src]="type.icon" alt="" aria-hidden="true"><span>{{ type.label }}</span></button></div></div>
+              <div class="buyer-form__section"><div class="buyer-form__label-row"><span class="buyer-form__label">Book Type <b aria-hidden="true">*</b></span><button type="button" class="buyer-reset-button" [disabled]="!hasBuyerFilters" (click)="resetBuyerFilters()">Reset filters</button></div><div class="book-type-grid"><button *ngFor="let type of bookTypes; trackBy: trackByBookType" type="button" class="book-type-option" [class.is-selected]="buyer.bookType === type.value" (click)="selectBookType(type.value)"><img class="book-type-option__icon" [src]="type.icon" alt="" aria-hidden="true"><span>{{ type.label }}</span></button></div></div>
               <div class="buyer-filters"><label *ngFor="let field of selectFields; trackBy: trackByPreferenceField" class="buyer-field" [class.buyer-field--wide]="field.fullWidth"><span>{{ field.label }} <b aria-hidden="true">*</b></span><superme-dropdown [(ngModel)]="buyer[field.key]" (ngModelChange)="onBuyerPreferenceChanged(field.key)" valueMode="value" width="full-width" [label]="field.placeholder" [ariaLabel]="'Select ' + field.label" [options]="field.options" [searchable]="true" [chevronAsset]="dropdownChevronAsset" [searchIconAsset]="dropdownSearchAsset" variant="second-hand-books"></superme-dropdown></label></div>
               <label class="buyer-field buyer-field--full"><span>Book Title <b aria-hidden="true">*</b></span><input type="text" [(ngModel)]="buyer.title" placeholder="eg. Mathematics Class 12 NCERT" autocomplete="off"></label>
               <label class="buyer-field buyer-field--full"><span>Author / Publisher <b aria-hidden="true">*</b></span><input type="text" [(ngModel)]="buyer.author" placeholder="eg. R.D Sharma" autocomplete="off"></label>

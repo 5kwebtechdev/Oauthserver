@@ -24,6 +24,14 @@
         You’re in a <strong>{{ activeLabel | uppercase }}</strong> space right now!
       </p>
     </div>
+
+    <div class="mood-complete-popover" *ngIf="blockedTooltipVisible" role="status">
+      <span class="mood-complete-popover__icon" aria-hidden="true">✓</span>
+      <span class="mood-complete-popover__copy">
+        <strong>Today’s check-in is complete!</strong>
+        <span>Come back tomorrow for your next one 🌙</span>
+      </span>
+    </div>
   </ng-container>
 
   <ng-container *ngIf="!isParent && showMoodPicker">

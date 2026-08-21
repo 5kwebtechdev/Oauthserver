@@ -210,6 +210,11 @@ button {
   align-items: start;
   gap: var(--catalog-gap);
   padding-right: var(--catalog-gap);
+
+  &--full {
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline: var(--catalog-gap);
+  }
 }
 
 .subcategory-rail {

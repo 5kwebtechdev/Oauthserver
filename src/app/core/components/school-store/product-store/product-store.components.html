@@ -53,17 +53,16 @@
                 <button class="school-info-change" (click)="changeSchool()">Change</button>
             </div>
 
-            <div class="store-catalog-layout">
+            <div class="store-catalog-layout"
+                [class.store-catalog-layout--full]="!railSubCategoryLevel && !subCategoriesLoading && !subCategoriesError">
                 <aside *ngIf="railSubCategoryLevel as railLevel" class="subcategory-rail"
                     aria-label="Product types">
                     <button *ngFor="let category of railLevel.options" type="button" class="rail-category"
                         [class.rail-category--selected]="railLevel.selected === category.id"
                         [attr.aria-pressed]="railLevel.selected === category.id"
                         (click)="selectSubCategoryAt(1, category)">
-                        <span class="rail-category__visual"
-                            [class.rail-category__visual--all]="category.id === allSubCategoryId">
+                        <span class="rail-category__visual">
                             <img *ngIf="category.imageUrl" [src]="category.imageUrl" [alt]="category.label">
-                            <span *ngIf="category.id === allSubCategoryId" aria-hidden="true">All</span>
                         </span>
                         <span>{{ category.label }}</span>
                     </button>
@@ -175,6 +174,14 @@
                             </ng-template>
                         </ng-container>
                     </div>
+
+                    <ion-infinite-scroll threshold="120px"
+                        [disabled]="!hasMoreProducts || productsLoading || productsLoadingMore"
+                        (ionInfinite)="loadMoreProducts($event)">
+                        <ion-infinite-scroll-content loadingSpinner="crescent"
+                            loadingText="Loading more products...">
+                        </ion-infinite-scroll-content>
+                    </ion-infinite-scroll>
                 </section>
             </div>
         </div>

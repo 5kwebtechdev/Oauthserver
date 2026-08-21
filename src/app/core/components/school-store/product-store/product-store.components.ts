@@ -268,20 +268,18 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
             imageUrl: s.imageUrl || null
           }));
           const options = levelIndex > 0
-            ? [{ id: this.allSubCategoryId, label: 'All Products', imageUrl: null }, ...apiOptions]
-            : apiOptions;
+            ? apiOptions
+            : [{ id: this.allSubCategoryId, label: 'All', imageUrl: null }, ...apiOptions];
           this.subCategoryLevels.push({
             options,
-            selected: levelIndex > 0 ? this.allSubCategoryId : options[0].id
+            selected: levelIndex > 0 ? '' : this.allSubCategoryId
           });
 
           if (levelIndex === 0 && this.selectedCategory != null) {
-            // The first top tab stays selected visually. It filters products
-            // only after the user explicitly taps a top-level category.
-            // Start with the rail's All Products state: do not send a
-            // subcategory filter until the user explicitly chooses one.
+            // Start on the explicit All tab and keep the subcategory query
+            // empty so the complete product catalog is shown.
             this.activeProductSubCategory = null;
-            this.loadSubCategoryLevel(1, [apiOptions[0].id]);
+            this.subCategoriesLoading = false;
             this.cdr.detectChanges();
             return;
           }
@@ -308,6 +306,15 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
     this.subCategoryLevels = this.subCategoryLevels.slice(0, levelIndex + 1);
 
     if (levelIndex === 0 && this.selectedCategory != null) {
+      if (option.id === this.allSubCategoryId) {
+        this.activeProductSubCategory = null;
+        this.subCategoriesLoading = false;
+        this.subCategoriesError = false;
+        this.loadProducts();
+        this.cdr.detectChanges();
+        return;
+      }
+
       // A top tab now filters the product list to that top-level sub-category;
       // the rail underneath narrows it further once the user taps an item there.
       this.activeProductSubCategory = option.id;
@@ -315,11 +322,7 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
       const path = [option.id];
       this.loadSubCategoryLevel(levelIndex + 1, path);
     } else {
-      // "All Products" in the rail clears only the rail-level narrowing —
-      // It intentionally clears the subcategory query for the full catalog.
-      this.activeProductSubCategory = option.id === this.allSubCategoryId
-        ? null
-        : option.id;
+      this.activeProductSubCategory = option.id;
       this.loadProducts();
     }
 
@@ -330,9 +333,7 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
   resetSubCategories(): void {
     this.activeProductSubCategory = null;
     const railLevel = this.railSubCategoryLevel;
-    if (railLevel?.options.some(option => option.id === this.allSubCategoryId)) {
-      railLevel.selected = this.allSubCategoryId;
-    }
+    if (railLevel) railLevel.selected = '';
     this.clearProductFilters();
     this.loadProducts();
     this.cdr.detectChanges();
@@ -341,12 +342,19 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
   // product list for cards, loaded from the store products API
   products: Product[] = [];
   productsLoading = false;
+  productsLoadingMore = false;
   productsRequestCompleted = false;
   productsError = false;
   productsPage = 0;
   productsTotalPages = 0;
   private readonly productsPageSize = 20;
   private productsRequestId = 0;
+
+  get hasMoreProducts(): boolean {
+    return this.productsRequestCompleted
+      && this.productsTotalPages > 0
+      && this.productsPage + 1 < this.productsTotalPages;
+  }
 
   showFilters = false;
   activeFilter: 'brand' | 'pageCount' = 'brand';
@@ -447,20 +455,29 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
     return `₹${Number.isInteger(value) ? value : value.toFixed(2)}`;
   }
 
-  loadProducts(page: number = 0): void {
+  loadProducts(page: number = 0, infiniteScrollEvent?: any): void {
     if (this.selectedCategory == null) {
       this.products = [];
       this.productsRequestCompleted = false;
+      infiniteScrollEvent?.target?.complete?.();
       return;
     }
+    const isLoadingMore = page > 0;
     const requestId = ++this.productsRequestId;
-    this.productsLoading = true;
-    this.productsRequestCompleted = false;
-    this.productsError = false;
-    // Do not leave cards from the previous category visible while the next
-    // category request is loading. The skeleton state is the only content
-    // shown until the response for the active category arrives.
-    this.products = [];
+    if (isLoadingMore) {
+      this.productsLoadingMore = true;
+    } else {
+      this.productsLoading = true;
+      this.productsLoadingMore = false;
+      this.productsRequestCompleted = false;
+      this.productsError = false;
+      // Do not leave cards from the previous category visible while the next
+      // category request is loading. The skeleton state is the only content
+      // shown until the response for the active category arrives.
+      this.products = [];
+      this.productsPage = 0;
+      this.productsTotalPages = 0;
+    }
     const token = this.authService.getToken();
     const headers = new HttpHeaders({
       'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
@@ -480,7 +497,10 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
     }
     this.http.get<ProductPage>(`${environment.apiUrl}/store/products`, { headers, params }).subscribe({
       next: (res) => {
-        if (requestId !== this.productsRequestId) return;
+        if (requestId !== this.productsRequestId) {
+          infiniteScrollEvent?.target?.complete?.();
+          return;
+        }
         const content = Array.isArray(res?.content) ? res.content : [];
         const mapped: Product[] = content.map(p => ({
           id: String(p.id),
@@ -495,22 +515,50 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
           brand: p.brandName || p.tag || undefined,
           pageCount: p.pageCount ? String(p.pageCount) : undefined
         }));
-        this.products = page === 0 ? mapped : [...this.products, ...mapped];
+        if (page === 0) {
+          this.products = mapped;
+        } else {
+          const loadedIds = new Set(this.products.map(product => product.id));
+          this.products = [
+            ...this.products,
+            ...mapped.filter(product => !loadedIds.has(product.id))
+          ];
+        }
         this.productsPage = res?.number ?? page;
         this.productsTotalPages = res?.totalPages ?? 0;
         this.productsLoading = false;
+        this.productsLoadingMore = false;
         this.productsRequestCompleted = true;
+        infiniteScrollEvent?.target?.complete?.();
         this.cdr.detectChanges();
       },
       error: () => {
-        if (requestId !== this.productsRequestId) return;
+        if (requestId !== this.productsRequestId) {
+          infiniteScrollEvent?.target?.complete?.();
+          return;
+        }
         this.productsLoading = false;
+        this.productsLoadingMore = false;
         this.productsRequestCompleted = true;
-        this.productsError = true;
-        if (page === 0) this.products = [];
+        if (page === 0) {
+          this.productsError = true;
+          this.products = [];
+        } else {
+          this.toastService.error('Unable to load more products. Please try again.');
+        }
+        infiniteScrollEvent?.target?.complete?.();
         this.cdr.detectChanges();
       }
     });
+  }
+
+  loadMoreProducts(event: any): void {
+    if (this.productsLoading || this.productsLoadingMore || !this.hasMoreProducts) {
+      event?.target?.complete?.();
+      return;
+    }
+
+    this.loadProducts(this.productsPage + 1, event);
   }
 
   retryProducts(): void {

@@ -4,8 +4,7 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { HttpClientModule } from '@angular/common/http';
 import {
   StreakRestoreApi,
-  EligibleItem,
-  StreakRestoreEligibility
+  StreakStatus
 } from '../../api/streak-restore.api';
 import { CustomToastService } from '../../services/custom-toast.service';
 
@@ -20,9 +19,9 @@ export class StreakRestoreModalComponent implements OnInit {
   @Input() restoreToStreak: number = 0;
   @Input() restoreCost: number = 5;
   @Input() userCoins: number = 0;
+  @Input() userId!: number;
 
-  eligibility: StreakRestoreEligibility | null = null;
-  selectedItem: EligibleItem | null = null;
+  streakStatus: StreakStatus | null = null;
   isLoading = true;
   isRestoring = false;
   notEnoughCoins = false;
@@ -37,24 +36,32 @@ export class StreakRestoreModalComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadEligibility();
+    this.loadStreakStatus();
   }
 
-  loadEligibility(): void {
+  loadStreakStatus(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    this.streakRestoreApi.getRestoreEligibility().subscribe({
+    if (!Number.isFinite(this.userId) || this.userId <= 0) {
+      this.isLoading = false;
+      this.notEligible = true;
+      this.notEligibleMessage = 'Unable to identify the user for streak restore.';
+      return;
+    }
+
+    this.streakRestoreApi.getStreakStatus(this.userId).subscribe({
       next: (data) => {
         this.isLoading = false;
-        if (!data.canRestore || data.eligibleItems.length === 0) {
+        if (!data.canRestore) {
           this.notEligible = true;
-          this.notEligibleMessage = !data.canRestore
-            ? "The restore window for yesterday's streak has already closed."
-            : "There's nothing from yesterday left to restore.";
+          this.notEligibleMessage = "The restore window for your login streak has already closed.";
           return;
         }
-        this.eligibility = data;
-        this.notEnoughCoins = data.userCoins < data.restoreCost;
+        this.streakStatus = data;
+        this.restoreToStreak = data.restoreToStreak ?? this.restoreToStreak;
+        this.restoreCost = data.restoreCost ?? this.restoreCost;
+        this.userCoins = Number(data.coins ?? this.userCoins);
+        this.notEnoughCoins = this.userCoins < this.restoreCost;
       },
       error: () => {
         this.isLoading = false;
@@ -64,31 +71,29 @@ export class StreakRestoreModalComponent implements OnInit {
     });
   }
 
-  selectItem(item: EligibleItem): void {
-    if (this.notEnoughCoins) return;
-    this.selectedItem = this.selectedItem?.id === item.id ? null : item;
-  }
-
   get canRestore(): boolean {
-    return !!this.selectedItem && !this.notEnoughCoins && !this.isRestoring;
+    return !!this.streakStatus?.canRestore && !this.notEnoughCoins && !this.isRestoring;
   }
 
   restore(): void {
-    if (!this.canRestore || !this.selectedItem) return;
+    if (!this.canRestore) return;
 
     this.isRestoring = true;
     this.errorMessage = '';
 
-    this.streakRestoreApi.postRestoreStreak(this.selectedItem.id, this.selectedItem.type).subscribe({
+    this.streakRestoreApi.postRestoreStreak(this.userId).subscribe({
       next: (result) => {
         this.isRestoring = false;
-        this.dismiss({ success: true, userCoins: result.userCoins });
+        const remainingCoins = result.coins
+          ?? result.userCoins
+          ?? Math.max(0, this.userCoins - this.restoreCost);
+        this.dismiss({ success: true, userCoins: remainingCoins });
       },
       error: (err) => {
         this.isRestoring = false;
         console.error('[StreakRestore][DEBUG] restore failed. status=', err?.status, 'error=', err?.error, 'full=', err);
         const msg: string = err?.error?.message || (typeof err?.error === 'string' ? err.error : '') || '';
-        if (msg.toLowerCase().includes('not enough coins')) {
+        if (msg.toLowerCase().includes('not enough coins') || msg.toLowerCase().includes('insufficient coins')) {
           this.errorMessage = "You don't have enough coins";
         } else if (msg.toLowerCase().includes('window expired') || msg.toLowerCase().includes('restore window')) {
           this.toastService.error('Too late! The restore window has closed.');
@@ -96,7 +101,7 @@ export class StreakRestoreModalComponent implements OnInit {
         } else if (msg.toLowerCase().includes('no streak available')) {
           this.dismiss(null);
         } else if (msg.toLowerCase().includes('not found') || msg.toLowerCase().includes('already restored')) {
-          this.errorMessage = 'This item could not be restored, please try another';
+          this.errorMessage = 'This login streak has already been restored or is no longer available.';
         } else if (err?.status === 401 || err?.status === 403) {
           this.errorMessage = 'Your session expired. Please log out and back in, then try again.';
         } else if (err?.status === 0) {

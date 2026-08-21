@@ -17,7 +17,13 @@
 .child-learning-hero {
 	position: relative;
 	width: 100%;
-	height: 236px;
+	/* .child-learning-hero__top below pads itself down by
+	 * env(safe-area-inset-top) on iOS (status bar / Dynamic Island). Growing
+	 * the hero by that same amount keeps everything below it — the speech
+	 * bubble, the pet — at the same relative position instead of the header
+	 * row growing into them. Android/web report 0 here, so this is a no-op
+	 * there. */
+	height: calc(236px + env(safe-area-inset-top, 0px));
 	overflow: hidden;
 	border-radius: 0 0 0 0;
 }
@@ -178,7 +184,10 @@
 .child-learning-bubble {
 	position: absolute;
 	z-index: 2;
-	top: 100px;
+	/* Shifts down together with .child-learning-hero__top's own
+	 * safe-area-inset-top padding above, so the bubble never rides up under
+	 * the "Learnings" title/coins row on iOS. */
+	top: calc(100px + env(safe-area-inset-top, 0px));
 	left: 24px;
 	width: 245px;
 	height: 83px;
@@ -192,7 +201,7 @@
 }
 
 .child-learning-bubble--detail {
-	top: 116px;
+	top: calc(116px + env(safe-area-inset-top, 0px));
 	height: 62px;
 }
 

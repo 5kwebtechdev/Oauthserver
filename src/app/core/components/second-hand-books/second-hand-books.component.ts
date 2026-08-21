@@ -237,6 +237,22 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
     return requiredSelections && Boolean(this.buyer.title.trim()) && Boolean(this.buyer.author.trim());
   }
 
+  get hasBuyerFilters(): boolean {
+    return [
+      this.buyer.classLevel,
+      this.buyer.board,
+      this.buyer.subject,
+      this.buyer.degree,
+      this.buyer.stream,
+      this.buyer.year,
+      this.buyer.exam,
+      this.buyer.genre,
+      this.buyer.language,
+      this.buyer.title,
+      this.buyer.author
+    ].some(value => Boolean(value.trim()));
+  }
+
   get sellerCities(): string[] {
     return this.seller.state ? (INDIA_STATES[this.seller.state] ?? []) : [];
   }
@@ -434,6 +450,13 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
 
   onBuyerPreferenceChanged(key: keyof BuyerPreferences): void {
     if (key === 'degree') this.buyer.subject = '';
+  }
+
+  resetBuyerFilters(): void {
+    this.clearBuyerCategorySelections();
+    this.buyer.title = '';
+    this.buyer.author = '';
+    this.savePreferences();
   }
 
   goBack(): void {

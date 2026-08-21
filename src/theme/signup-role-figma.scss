@@ -158,6 +158,46 @@
   height: 162px;
 }
 
+// Between the phone cap (393px) and the 3-column breakpoint (768px), the
+// container was staying pinned at the phone width, leaving large empty
+// margins on mid-size tablets, small laptops, and split-screen windows.
+// Widen the container and scale the still-stacked cards up to match,
+// instead of leaving that whole width range looking like a stretched phone.
+@media (min-width: 480px) and (max-width: 767.98px) {
+  ion-content .signup-container.role-layout {
+    width: min(100%, 600px);
+    padding: 56px 40px 40px;
+  }
+
+  .signup-role-card {
+    height: 200px;
+    padding: 24px;
+  }
+
+  .signup-role-card__copy {
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .signup-role-card__copy strong {
+    font-size: 38px;
+  }
+
+  .signup-role-card > img {
+    width: 210px;
+    height: 191px;
+  }
+
+  .signup-role-card--child > img {
+    width: 209px;
+  }
+
+  .signup-role-card--parent > img {
+    width: 211px;
+    height: 192px;
+  }
+}
+
 // Web/tablet viewports have room to lay the three role cards out
 // side by side instead of stacking them full-width (which stretched
 // each card into a short wide strip with a cramped image). The whole

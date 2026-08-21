@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthApi } from './auth.api';
@@ -7,32 +7,23 @@ import { AuthApi } from './auth.api';
 export interface StreakStatus {
   currentStreak: number;
   highestStreak: number;
-  canRestoreStreak: boolean;
-  restoreDeadline: string | null;
+  canRestore: boolean;
+  missedDays: number;
+  lastMissedStreakDate: string | null;
   restoreToStreak: number | null;
   restoreCost: number;
-}
-
-export interface EligibleItem {
-  id: number;
-  name: string;
-  type: 'HABIT' | 'TASK';
-}
-
-export interface StreakRestoreEligibility {
-  canRestore: boolean;
-  missedDate: string | null;
-  restoreCost: number;
-  userCoins: number;
-  eligibleItems: EligibleItem[];
+  coins: number;
 }
 
 export interface StreakRestoreResult {
-  canRestore: boolean;
-  missedDate: string | null;
-  restoreCost: number;
-  userCoins: number;
-  eligibleItems: EligibleItem[];
+  currentStreak?: number;
+  highestStreak?: number;
+  canRestore?: boolean;
+  restoreToStreak?: number | null;
+  restoreCost?: number;
+  coins?: number;
+  userCoins?: number;
+  message?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -56,19 +47,20 @@ export class StreakRestoreApi {
     return headers;
   }
 
-  getStreakStatus(): Observable<StreakStatus> {
-    return this.http.get<StreakStatus>(`${this.base}/auth/streak-status`, { headers: this.headers() });
+  getStreakStatus(userId: number): Observable<StreakStatus> {
+    const params = new HttpParams().set('userId', String(userId));
+    return this.http.get<StreakStatus>(`${this.base}/login-streak/status`, {
+      headers: this.headers(),
+      params
+    });
   }
 
-  getRestoreEligibility(): Observable<StreakRestoreEligibility> {
-    return this.http.get<StreakRestoreEligibility>(`${this.base}/auth/streak-restore/eligible`, { headers: this.headers() });
-  }
-
-  postRestoreStreak(itemId: number, itemType: 'HABIT' | 'TASK'): Observable<StreakRestoreResult> {
+  postRestoreStreak(userId: number): Observable<StreakRestoreResult> {
+    const params = new HttpParams().set('userId', String(userId));
     return this.http.post<StreakRestoreResult>(
-      `${this.base}/auth/restore-streak`,
-      { itemId, itemType },
-      { headers: this.headers() }
+      `${this.base}/login-streak/restore`,
+      null,
+      { headers: this.headers(), params }
     );
   }
 }

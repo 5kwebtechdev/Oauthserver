@@ -22,6 +22,7 @@ import { Habit } from '../habit.types';
 import { Subscription } from 'rxjs';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
+import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
 
@@ -243,6 +244,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   private _intervalId: any;
   private userProfileSubscription?: Subscription;
+  private childSelectionSubscription?: Subscription;
 
   constructor(
     private habitCardService: HabitCardService,
@@ -258,7 +260,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private buttonLogic: HabitButtonLogicService,
-    private autoAbortService: AutoAbortService
+    private autoAbortService: AutoAbortService,
+    private profileSelectorService: ProfileSelectorService
   ) {
     this.habitCardService.lastToggled$.subscribe((data: any) => {
       if (!data) return;
@@ -1029,6 +1032,27 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       this.loadGlancePlannerCards();
     }
 
+    // A parent's selected child can settle (or change) asynchronously after
+    // this component's own initial load has already fired — the profile
+    // selector interceptor only knows the child that is selected *at request
+    // time*, so an initial request racing ahead of that selection quietly
+    // fetches the parent's own (usually empty) calendar instead. Re-fetch
+    // whenever the selected child actually changes so this card never gets
+    // stuck showing another user's data.
+    if (this.mode === 'list') {
+      this.childSelectionSubscription = this.profileSelectorService.childChanged$.subscribe(() => {
+        this.habits = [];
+        this.tasks = [];
+        this.timetables = [];
+        // force=true bypasses HabitApi's date-keyed cache, which otherwise
+        // has no notion of "which user" and would keep serving whichever
+        // account's response was cached first for today's date.
+        this.loadHabits(true);
+        this.loadTodayTasks();
+        this.loadGlancePlannerCards();
+      });
+    }
+
     // If in recent mode, check if we have recent habits/tasks (excluding completed ones)
     if (this.mode === 'recent') {
       this.hasHabits = this.filteredRecentHabits.length > 0;
@@ -1070,7 +1094,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       } else if (this.currentActive === 'timetable') {
         this.isEmpty = !this.hasTimetables && !this.hasGlancePlannerCards;
       } else {
-        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
+        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables && !this.hasGlancePlannerCards;
       }
       this.showContent = !this.isEmpty;
 
@@ -1087,8 +1111,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     this.userProfileSubscription = this.userService.userProfile$.subscribe(profile => {
       if (this.isParentOverride === undefined) {
         const profileIsParent = !!(profile && (profile.relationship || '').toString().toUpperCase() === 'PARENT');
-        const authIsParent = !!this.authService && this.authService.isParentUser && this.authService.isParentUser();
-        this.isParent = profileIsParent || authIsParent;
+        const authenticatedRelationship = this.authService?.getUserRelationship?.();
+        // The authenticated session is authoritative. A stale parent profile
+        // must not hide activity actions after a Child/Self user logs in.
+        this.isParent = authenticatedRelationship
+          ? authenticatedRelationship === 'PARENT'
+          : profileIsParent;
       } else {
         this.isParent = !!this.isParentOverride;
       }
@@ -1109,8 +1137,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       }
 
       if (this.isParentOverride === undefined) {
-        if (signupRole && signupRole.toString().toUpperCase() === 'PARENT') {
-          this.isParent = true;
+        const authenticatedRelationship = this.authService?.getUserRelationship?.();
+        if (authenticatedRelationship) {
+          this.isParent = authenticatedRelationship === 'PARENT';
+          this.cdr.detectChanges();
+        } else if (signupRole) {
+          // Signup storage is only a fallback before an authenticated profile
+          // exists; it must never override an active Child/Self session.
+          this.isParent = signupRole.toString().toUpperCase() === 'PARENT';
           this.cdr.detectChanges();
         }
       } else {
@@ -1121,9 +1155,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       // Also check AuthService if available (authoritative logged-in role stored under user_data)
       try {
         if (this.isParentOverride === undefined) {
-          const authParent = this.authService && this.authService.isParentUser && this.authService.isParentUser();
-          if (authParent) {
-            this.isParent = true;
+          const authenticatedRelationship = this.authService?.getUserRelationship?.();
+          if (authenticatedRelationship) {
+            this.isParent = authenticatedRelationship === 'PARENT';
             this.cdr.detectChanges();
           }
         } else {
@@ -1379,6 +1413,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     if (this.userProfileSubscription) {
       this.userProfileSubscription.unsubscribe();
     }
+
+    if (this.childSelectionSubscription) {
+      this.childSelectionSubscription.unsubscribe();
+    }
     // Clear start bubble timer if present
     if (this.startBubbleTimer) {
       clearTimeout(this.startBubbleTimer);
@@ -1602,7 +1640,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       } else if (this.currentActive === 'timetable') {
         this.isEmpty = !this.hasTimetables && !this.hasGlancePlannerCards;
       } else {
-        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
+        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables && !this.hasGlancePlannerCards;
       }
 
       this.showContent = !this.isEmpty;
@@ -1617,10 +1655,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   /**
    * Load habits from the API
    */
-  loadHabits() {
+  loadHabits(force: boolean = false) {
     // Get all habits using the service
     // this.habitService.loadHabitsBySearch({}).subscribe({
-    this.habitService.loadTodayHabits().subscribe({
+    this.habitService.loadTodayHabits(force).subscribe({
       next: () => {
         // Only today's activities show on Home. Sort by proximity to current time (recency relative to now)
         const now = Date.now();
@@ -1813,7 +1851,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         const rawTimetables = Array.isArray(resp?.events)
           ? resp.events.filter((item: any) => item?.expired !== true)
           : [];
-        this.totalTimetablesLoaded = rawTimetables.length;
+        const plannerTotalForToday = Number(resp?.totalPlannerForTheday);
+        this.totalTimetablesLoaded = Number.isFinite(plannerTotalForToday)
+          ? Math.max(0, plannerTotalForToday)
+          : rawTimetables.length;
         this.timetables = rawTimetables
           .map((item: any) => {
             const isRecurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
@@ -1971,10 +2012,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     });
   }
 
-  /** Re-checks the timetable tab's empty state once planner cards resolve async, since `isEmpty` is a plain snapshot, not reactive. */
+  /** Re-checks the active Planner/All tab once grouped planner cards resolve asynchronously. */
   private refreshTimetableEmptyState(): void {
-    if (this.currentActive !== 'timetable') return;
-    this.isEmpty = !this.hasTimetables && !this.hasGlancePlannerCards;
+    if (this.currentActive !== 'timetable' && this.currentActive !== 'all') return;
+    this.isEmpty = this.currentActive === 'timetable'
+      ? !this.hasTimetables && !this.hasGlancePlannerCards
+      : !this.hasHabits && !this.hasTasks && !this.hasTimetables && !this.hasGlancePlannerCards;
     this.showContent = !this.isEmpty;
   }
 
@@ -2165,7 +2208,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         this.isEmpty = !this.hasTimetables && !this.hasGlancePlannerCards;
         break;
       default:
-        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
+        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables && !this.hasGlancePlannerCards;
     }
 
     this.showContent = !this.isEmpty;
@@ -2231,7 +2274,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       } else if (this.currentActive === 'timetable') {
         this.isEmpty = !this.hasTimetables && !this.hasGlancePlannerCards;
       } else {
-        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
+        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables && !this.hasGlancePlannerCards;
       }
 
       this.showContent = !this.isEmpty;
@@ -2471,7 +2514,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   get combinedAndSortedItems(): any[] {
     // For list mode, combine habits and tasks
     if (this.mode === 'list') {
-      const combined = [...(this.habits || []), ...(this.tasks || []), ...(this.timetables || [])];
+      // Grouped planner schedules are rendered by the same planner-card
+      // template used on the Planner tab. Do not render their flat calendar
+      // entries again in All, otherwise the same planner appears twice and
+      // with the generic Habit/Task card layout.
+      const timetableItems = this.hasGlancePlannerCards ? [] : (this.timetables || []);
+      const combined = [...(this.habits || []), ...(this.tasks || []), ...timetableItems];
       return combined.sort((a, b) => {
         // Sort by start time: closest to current time first
         const aStart = a.startTimeStamp || 0;
@@ -2482,7 +2530,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
     // For recent mode, combine recent habits, tasks and timetable entries
     if (this.mode === 'recent') {
-      const combined = [...(this.recentHabits || []), ...(this.recentTasks || []), ...(this.recentTimetables || [])];
+      const timetableItems = this.hasGlancePlannerCards ? [] : (this.recentTimetables || []);
+      const combined = [...(this.recentHabits || []), ...(this.recentTasks || []), ...timetableItems];
       return combined.sort((a, b) => {
         // Sort by start time: closest to current time first
         const aStart = a.startTimeStamp || 0;

@@ -158,11 +158,11 @@
 	.categories {
 		display: flex;
 		align-items: stretch;
-		padding: 6px max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right));
+		padding: 6px max(8px, env(safe-area-inset-left)) 0 max(8px, env(safe-area-inset-right));
 		width: 100%;
 		max-width: 100%;
 		box-sizing: border-box;
-		overflow-x: auto;
+		overflow-x: hidden;
 		overflow-y: hidden;
 		overscroll-behavior-x: contain;
 		scroll-snap-type: x proximity;
@@ -180,10 +180,10 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		width: auto;
+		width: 0;
 		height: 80px;
-		min-width: 82px;
-		flex: 0 0 82px;
+		min-width: 0;
+		flex: 1 1 0;
 		scroll-snap-align: center;
 		text-decoration: none;
 		color: #282527;
@@ -236,7 +236,7 @@
 		}
 
 		.category {
-			width: auto;
+			width: 0;
 			height: 72px;
 		}
 
@@ -252,9 +252,9 @@
 
 	.sep {
 		display: inline-block;
-		width: 2px;
+		width: 1px;
 		height: 42px;
-		flex: 0 0 2px;
+		flex: 0 0 1px;
 		align-self: center;
 		background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='42' viewBox='0 0 2 42' fill='none'><path d='M1 1L1 41' stroke='%236B656A' stroke-linecap='round'/></svg>") center/contain no-repeat;
 	}
@@ -1058,8 +1058,13 @@
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	min-height: calc(173px + var(--sat, 0px));
-	padding-top: calc(var(--sat, 0px) + 8px);
+	min-height: calc(181px + var(--sat, 0px));
+	// 8px alone reads as "stuck to the status bar" once --sat is 0 (Android
+	// already sits below the status bar natively, so it gets none of the iOS
+	// safe-area padding here) — a bit more breathing room keeps the header
+	// from looking cramped on every platform, while iOS still adds its own
+	// safe-area inset on top via --sat.
+	padding-top: calc(var(--sat, 0px) + 20px);
 	overflow: hidden;
 	background: linear-gradient(96.9deg, #e1527c 0.13%, #cf3359 99.87%);
 	color: #fff;
@@ -1067,13 +1072,13 @@
 
 .parent-learning-hero--detail {
 	gap: 16px;
-	min-height: calc(185px + var(--sat, 0px));
+	min-height: calc(193px + var(--sat, 0px));
 }
 
 // The bottom-navigation root is not a drill-down page. Removing the empty
 // navigation row keeps the hero balanced when there is no Back action.
 .parent-learning-hero--root {
-	min-height: calc(125px + var(--sat, 0px));
+	min-height: calc(133px + var(--sat, 0px));
 }
 
 .parent-learning-hero__nav {
@@ -1620,7 +1625,9 @@
 	font-size: 10px;
 	font-weight: 600;
 	line-height: 1.4;
-	text-transform: lowercase;
+	// Difficulty is stored/lowercased at the source (e.g. "easy"); capitalize
+	// here so only the first letter reads uppercase ("Easy"), not the whole word.
+	text-transform: capitalize;
 }
 
 .parent-learning-card-item--course .parent-learning-card-item__difficulty {
@@ -1633,7 +1640,9 @@
 	background: #edf8ee;
 	color: #287d32;
 	font-size: 11px;
-	text-transform: lowercase;
+	// Difficulty is stored/lowercased at the source (e.g. "easy"); capitalize
+	// here so only the first letter reads uppercase ("Easy"), not the whole word.
+	text-transform: capitalize;
 }
 
 .parent-learning-card-item__heading-row {

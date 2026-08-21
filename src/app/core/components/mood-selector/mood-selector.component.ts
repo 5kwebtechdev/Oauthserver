@@ -143,6 +143,16 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
         this.vibes = Array.isArray(res) ? res : [];
 
         const vibe = this.activeVibe;
+
+        // The server's own count is authoritative — a locally-tracked count
+        // can drift (new device, cleared storage, mood changed elsewhere)
+        // and would otherwise let a user believe they still have a mood
+        // check-in left (or not) when the backend disagrees. Persistence of
+        // this value happens below, once savedMoodKey is also up to date.
+        if (vibe && typeof vibe.moodSetCountToday === 'number') {
+          this.setsToday = this.toDailyCount(vibe.moodSetCountToday);
+        }
+
         if (vibe && vibe.mood) {
           const moodUpper = vibe.mood.toUpperCase();
           const isDefaultNeutral = moodUpper === 'NEUTRAL' && this.setsToday === 0 && !this.savedMoodKey;
