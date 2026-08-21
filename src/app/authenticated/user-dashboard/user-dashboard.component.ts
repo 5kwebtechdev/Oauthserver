@@ -693,6 +693,15 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           setTimeout(() => this.recentTasks = [...this.recentTasks], 0);
         }
 
+        // The API count represents all planner schedules for the selected day.
+        // It can differ from `events.length` because the events array may
+        // contain expanded timetable entries or only the currently visible
+        // records. Use the authoritative count for the Home subtitle.
+        const plannerTotalForToday = Number(resp?.totalPlannerForTheday);
+        this.totalTimetables = Number.isFinite(plannerTotalForToday)
+          ? Math.max(0, plannerTotalForToday)
+          : (Array.isArray(resp?.events) ? resp.events.length : 0);
+
         // Process timetable entries (calendar events — no completion tracking/rewards, just scheduled blocks)
         if (Array.isArray(resp.events)) {
           const today = new Date();
@@ -741,7 +750,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           .slice(0, 4);
 
           this.recentTimetables = timetableData;
-          this.totalTimetables = resp.events.length;
           setTimeout(() => this.recentTimetables = [...this.recentTimetables], 0);
         }
 
@@ -1075,16 +1083,25 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   private checkStreakRestore(): void {
-    this.streakRestoreApi.getStreakStatus().subscribe({
+    const user = this.authService.getUserData();
+    const userId = Number(user?.id ?? user?.userId ?? this.authService.getUserId());
+    if (!Number.isFinite(userId) || userId <= 0) {
+      this.canRestoreStreak = false;
+      this.streakStatusResolved = true;
+      return;
+    }
+
+    this.streakRestoreApi.getStreakStatus(userId).subscribe({
       next: (status: StreakStatus) => {
         this.refreshWeekStreakDays(status.currentStreak);
-        this.canRestoreStreak = status.canRestoreStreak;
+        this.canRestoreStreak = status.canRestore;
         this.dailyStreakEligible = Number(status.currentStreak) > 0;
         this.streakStatusResolved = true;
-        this.streakContinuityConfirmed = Number(status.currentStreak) > 0 && !status.canRestoreStreak;
+        this.streakContinuityConfirmed = Number(status.currentStreak) > 0 && !status.canRestore;
         this.restoreToStreak = status.restoreToStreak;
         this.restoreCost = status.restoreCost ?? 5;
-        if (status.canRestoreStreak && !this.streakPopupShown) {
+        this.userCoins = Number(status.coins ?? this.userCoins);
+        if (status.canRestore && !this.streakPopupShown) {
           this.streakPopupShown = true;
           setTimeout(() => this.openStreakRestoreModal(), 800);
         }
@@ -1102,12 +1119,17 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   async openStreakRestoreModal(): Promise<void> {
+    const user = this.authService.getUserData();
+    const userId = Number(user?.id ?? user?.userId ?? this.authService.getUserId());
+    if (!Number.isFinite(userId) || userId <= 0) return;
+
     const modal = await this.modalCtrl.create({
       component: StreakRestoreModalComponent,
       componentProps: {
         restoreToStreak: this.restoreToStreak ?? 0,
         restoreCost: this.restoreCost,
-        userCoins: this.userCoins
+        userCoins: this.userCoins,
+        userId
       },
       cssClass: 'streak-restore-modal'
     });
@@ -1122,8 +1144,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       this.checkStreakRestore();
       this.loadUserStats();
     } else if (data?.notEligible) {
-      // The dedicated eligibility check disagreed with the dashboard's
-      // streak-status flag — trust it and stop offering a restore that
+      // The modal's latest status check disagreed with the dashboard's
+      // earlier status response — trust it and stop offering a restore that
       // would just reopen to the same "not eligible" dead end.
       this.canRestoreStreak = false;
     }

@@ -4090,6 +4090,17 @@ ion-content.details-content.referral-keyboard-open {
     .signup-entry-subtitle {
       font-size: 17px;
     }
+
+    // The email field/button/social button inherited the full 650px shell
+    // width, which made the submit button balloon into an oversized pill on
+    // web. A typical auth form reads better capped narrower than the hero
+    // text column and centered within it.
+    .signup-entry-form,
+    .signup-entry-social {
+      width: 100%;
+      max-width: 420px;
+      margin-inline: auto;
+    }
   }
 }
 

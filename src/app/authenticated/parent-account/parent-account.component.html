@@ -151,19 +151,31 @@
         </div>
 
         <div class="mood-balance" [class.mood-balance--loading]="moodBalanceLoading">
-          <div class="mood-balance__bar" role="img" aria-label="Mood balance for the last seven days">
-            <span *ngFor="let segment of moodBalance"
-              [style.flex-basis.%]="segment.value"
-              [style.background]="segment.color"
-              [class.mood-balance__segment--empty]="segment.value === 0">
-              <b *ngIf="segment.value > 0">{{ segment.value }}%</b>
-            </span>
-          </div>
-          <div class="mood-balance__legend">
-            <span *ngFor="let segment of moodBalance">
-              <i [style.background]="segment.color"></i>{{ segment.label }}
-            </span>
-          </div>
+          <ng-container *ngIf="moodBalanceLoading || hasMoodBalanceData; else moodBalanceEmpty">
+            <div class="mood-balance__bar" role="img" aria-label="Mood balance for the last seven days">
+              <span *ngFor="let segment of moodBalance"
+                [style.flex-basis.%]="segment.value"
+                [style.background]="segment.color"
+                [class.mood-balance__segment--empty]="segment.value === 0">
+                <b *ngIf="segment.value > 0">{{ segment.value }}%</b>
+              </span>
+            </div>
+            <div class="mood-balance__legend">
+              <span *ngFor="let segment of moodBalance">
+                <i [style.background]="segment.color"></i>{{ segment.label }}
+              </span>
+            </div>
+          </ng-container>
+
+          <ng-template #moodBalanceEmpty>
+            <div class="mood-balance__empty">
+              <span class="mood-balance__empty-icon" aria-hidden="true">
+                <ion-icon name="happy-outline"></ion-icon>
+              </span>
+              <strong>No mood check-ins yet</strong>
+              <p>{{ selectedChildName }}'s mood balance will show up here once they check in.</p>
+            </div>
+          </ng-template>
         </div>
       </section>
 

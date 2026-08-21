@@ -16,7 +16,7 @@
   <!-- ── Loading ── -->
   <div class="restore-loading" *ngIf="isLoading">
     <ion-spinner name="crescent" color="primary"></ion-spinner>
-    <p>Loading eligible items…</p>
+    <p>Checking your login streak…</p>
   </div>
 
   <!-- ── Not eligible ── -->
@@ -25,12 +25,12 @@
   </div>
 
   <!-- ── Content ── -->
-  <ng-container *ngIf="!isLoading && !notEligible && eligibility">
+  <ng-container *ngIf="!isLoading && !notEligible && streakStatus">
 
     <!-- Coin balance -->
     <div class="coin-balance" [class.coin-balance--low]="notEnoughCoins">
       <img src="assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="coin-bal-icon" />
-      <span>{{ eligibility.userCoins }} coins available</span>
+      <span>{{ userCoins }} coins available</span>
     </div>
 
     <!-- Not enough coins -->
@@ -38,26 +38,9 @@
       😔 You don't have enough coins to restore your streak right now.
     </div>
 
-    <!-- Eligible items list -->
-    <ng-container *ngIf="!notEnoughCoins">
-      <p class="pick-label">Pick one activity from yesterday:</p>
-      <div class="items-list">
-        <button
-          *ngFor="let item of eligibility.eligibleItems"
-          class="item-row"
-          [class.item-row--selected]="selectedItem?.id === item.id"
-          (click)="selectItem(item)"
-          type="button">
-          <span class="item-radio">
-            <span class="item-radio-dot" *ngIf="selectedItem?.id === item.id"></span>
-          </span>
-          <span class="item-name">{{ item.name }}</span>
-          <span class="item-badge" [class.item-badge--habit]="item.type === 'HABIT'" [class.item-badge--task]="item.type === 'TASK'">
-            {{ item.type === 'HABIT' ? 'H' : 'T' }}
-          </span>
-        </button>
-      </div>
-    </ng-container>
+    <p class="pick-label" *ngIf="!notEnoughCoins">
+      Restore your login streak to {{ restoreToStreak }} days and keep your momentum going.
+    </p>
 
     <!-- Error message -->
     <p class="restore-error" *ngIf="errorMessage">{{ errorMessage }}</p>
@@ -79,7 +62,7 @@
       <ng-container *ngIf="!isRestoring">
         Restore
         <img src="assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="restore-coin-img" />
-        {{ eligibility?.restoreCost ?? restoreCost }}
+        {{ restoreCost }}
       </ng-container>
     </button>
   </div>

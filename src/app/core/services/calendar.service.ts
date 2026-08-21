@@ -24,15 +24,20 @@ export class CalendarService {
     }
 
     /**
-     * The Figma Planner is available to Child, Self, and parent-selected-child
-     * contexts. It is the only view that needs personal events merged for all
-     * of those contexts; legacy calendar consumers retain their old behavior.
+     * Planner screens must use only `/calendar/user-calendar`. Personal events
+     * from `/events/all` belong to a separate flow and must not be merged into
+     * the Planner list, otherwise they appear as extra/duplicate planner cards.
      */
     getUserPlannerCalendar(date: string | Date, viewType: 'day' | 'week' | 'month' = 'day'): Observable<CalendarResponse> {
-        return this.getCalendar(date, viewType, true);
+        return this.getCalendar(date, viewType, false);
     }
 
-    private getCalendar(date: string | Date, viewType: 'day' | 'week' | 'month', includePersonalEvents: boolean): Observable<CalendarResponse> {
+    private getCalendar(
+        date: string | Date,
+        viewType: 'day' | 'week' | 'month',
+        includePersonalEvents: boolean,
+        includeExpiredCalendarEvents: boolean = false
+    ): Observable<CalendarResponse> {
         const dateStr = this.formatDateToYYYYMMDD(date);
         const url = `${this.apiUrl}/user-calendar?date=${dateStr}&viewType=${viewType}`;
         const calendar$ = this.http.get<CalendarResponse>(url).pipe(
@@ -56,7 +61,7 @@ export class CalendarService {
                 habits: this.excludeExpired(calendar.habits),
                 tasks: this.excludeExpired(calendar.tasks),
                 events: [
-                    ...this.excludeExpired(calendar.events),
+                    ...(includeExpiredCalendarEvents ? (calendar.events || []) : this.excludeExpired(calendar.events)),
                     ...plannerEvents
                         .filter(event => this.eventOccursInView(event, dateStr, viewType))
                         .map(event => this.toCalendarEvent(event))
@@ -184,7 +189,11 @@ export class CalendarService {
     }
 
     getUserPlannerCalendarWeek(date: string): Observable<CalendarResponse> {
-        return this.getUserPlannerCalendar(date, 'week');
+        // The full Planner page is a schedule history for the selected week.
+        // It must show every event returned by user-calendar, including entries
+        // whose time has already passed (`expired: true`). Habits and Tasks
+        // remain filtered by `excludeExpired` inside getCalendar.
+        return this.getCalendar(date, 'week', false, true);
     }
 
     transformToTimelineEvents(response: CalendarResponse): TimelineEvent[] {

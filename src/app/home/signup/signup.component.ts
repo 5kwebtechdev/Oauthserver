@@ -189,7 +189,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   ]
 
   public get avatars(): AvatarDefinition[] {
-    return this.avatarService.getAvatarsForUser(this.profileForm?.get('dob')?.value, this.gender);
+    return this.avatarService.getAvatarsForUser(
+      this.profileForm?.get('dob')?.value,
+      this.gender,
+      this.currentRole
+    );
   }
 
   @ViewChild('swiperEl', { static: false }) swiperEl?: ElementRef;
@@ -1489,9 +1493,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   returnToParentApp(): void {
     try {
-      // This legacy flag can survive an interrupted older onboarding flow.
-      // A parent who has just created a child must always return to Parent
-      // Home, never be sent through the parent welcome/login flow again.
+      // Parent Home Add Child does not use the deferred onboarding welcome.
+      // Clear any interrupted older onboarding flag before returning home.
       sessionStorage.removeItem(SignupComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY);
     } catch (error) {
       console.warn('[Signup] Unable to clear deferred parent welcome state', error);
@@ -1508,12 +1511,69 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.authService.restoreManagedChildParentSession();
     this.clearManagedChildSignupState();
     this.loadingService.forceHide();
+
+    // Refresh only after the preserved Parent session has been restored. The
+    // child registration request must never leave this screen displaying the
+    // child's onboarding/welcome flow or refreshing data as the child.
+    this.authService.refreshUserData().subscribe({
+      error: () => {
+        // Parent Home performs its own refresh when the route becomes active.
+      }
+    });
+
     // Do not resolve this through getDashboardRoute(): transient onboarding
     // state can make it fall back to Login. This completion belongs only to
     // an already authenticated parent, so its destination is explicit.
     void this.navCtrl.navigateRoot('/authed/parent-account', {
       animated: false
     });
+  }
+
+  private returnToParentWelcomeAfterManagedChild(): void {
+    try {
+      sessionStorage.setItem(SignupComponent.MANAGED_CHILD_REFRESH_KEY, 'true');
+      sessionStorage.setItem('family_connected_ack', 'Parent');
+    } catch (error) {
+      console.warn('[Signup] Unable to prepare Parent welcome after child creation', error);
+    }
+
+    this.authService.restoreManagedChildParentSession();
+    this.clearManagedChildSignupState();
+
+    // clearManagedChildSignupState removes the temporary Child role. Restore
+    // only the Parent presentation state required by the deferred welcome.
+    try {
+      sessionStorage.setItem('signup_role', 'parent');
+    } catch (error) {
+      console.warn('[Signup] Unable to restore Parent welcome role', error);
+    }
+
+    this.loadingService.forceHide();
+    this.authService.refreshUserData().subscribe({
+      error: () => {
+        // Parent Home refreshes the profile again after Unlock is tapped.
+      }
+    });
+    void this.navCtrl.navigateRoot('/home/sign-up', {
+      queryParams: { step: 5, role: 'parent' },
+      animated: false
+    });
+  }
+
+  private shouldShowParentWelcomeAfterManagedChild(): boolean {
+    try {
+      return sessionStorage.getItem(SignupComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  private clearDeferredParentWelcomeState(): void {
+    try {
+      sessionStorage.removeItem(SignupComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY);
+    } catch (error) {
+      console.warn('[Signup] Unable to clear deferred Parent welcome state', error);
+    }
   }
 
   private cancelManagedChildSignup(): void {
@@ -1569,22 +1629,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         message: 'Your parent has created your SuperMe account. Use these credentials to log in.'
       }));
 
-      this.managedChildSuccessEmail = payload.email;
-      try {
-        sessionStorage.setItem(
-          SignupComponent.MANAGED_CHILD_SUCCESS_EMAIL_KEY,
-          this.managedChildSuccessEmail
-        );
-      } catch (error) {
-        console.warn('[Signup] Unable to persist managed child success email', error);
+      // A child created from the initial Parent onboarding must finish at the
+      // deferred Parent welcome/Unlock screen. Add Child actions started from
+      // Parent Home continue to return directly to Parent Home.
+      if (this.shouldShowParentWelcomeAfterManagedChild()) {
+        this.returnToParentWelcomeAfterManagedChild();
+      } else {
+        this.returnToParentApp();
       }
-
-      this.authService.refreshUserData().subscribe({
-        error: () => {
-          // The Parent screen can refresh again when it is opened.
-        }
-      });
-      this.navigateToSignupStep(6);
     } catch (error: any) {
       this.errorMessage = error?.error?.message
         || error?.message
@@ -3776,6 +3828,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (this.beginManagedChildSignupAfterParentUnlock()) {
         return;
       }
+      this.clearDeferredParentWelcomeState();
       const resume = this.onboardingState.isOnboardingComplete(finalizedUserData)
         ? null
         : this.onboardingState.getResumeNavigation(this.authService.getUserData());
@@ -3821,6 +3874,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (this.beginManagedChildSignupAfterParentUnlock()) {
         return;
       }
+      this.clearDeferredParentWelcomeState();
       this.registrationInProgress = false;
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
@@ -3852,6 +3906,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         if (this.beginManagedChildSignupAfterParentUnlock()) {
           return;
         }
+        this.clearDeferredParentWelcomeState();
         this.requestPasswordSavePrompt(credentials);
         this.signupCredentialState.clear();
         this.registrationInProgress = false;
@@ -4028,7 +4083,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   private getAvatarUrlFromSelection(avatarSelection: unknown, gender?: string): string {
     return this.getAvatarDefinition(avatarSelection)?.value
-      || this.avatarService.getFallbackAvatar(this.profileForm.get('dob')?.value, gender || this.gender).value;
+      || this.avatarService.getFallbackAvatar(
+        this.profileForm.get('dob')?.value,
+        gender || this.gender,
+        this.currentRole
+      ).value;
   }
 
   /**
@@ -4261,6 +4320,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   private refreshIncompleteAuthenticatedOnboarding(): void {
     if (!this.authService.isLoggedIn()) return;
+    // The Parent remains authenticated while creating a managed Child. Do not
+    // let the Parent's unfinished onboarding refresh replace the requested
+    // child email/password route with the Parent Unlock screen. This refresh
+    // is only for the active account's own onboarding journey.
+    if (
+      this.isManagedChildSignup
+      || sessionStorage.getItem(SignupComponent.MANAGED_CHILD_SIGNUP_KEY) === 'true'
+    ) {
+      return;
+    }
     if (this.isEditingPendingChildOnboarding && this.step === 2) return;
 
     const localResume = this.onboardingState.getResumeNavigation(this.authService.getUserData());
@@ -4269,6 +4338,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.subscription.add(
       this.authService.refreshUserData().subscribe({
         next: () => {
+          // This request may have started on the Parent signup page before
+          // navigation to managed Child signup. Ignore a late Parent response
+          // so it cannot replace child step 0.1 with the Unlock screen.
+          if (
+            this.managedChildSignup
+            || sessionStorage.getItem(SignupComponent.MANAGED_CHILD_SIGNUP_KEY) === 'true'
+          ) {
+            return;
+          }
           const freshUser = this.authService.getUserData() as RegistrationDraftData | null;
           const freshStep = this.onboardingState.getOnboardingStep(freshUser);
           if (this.onboardingState.isOnboardingComplete(freshUser)) {

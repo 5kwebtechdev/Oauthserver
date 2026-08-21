@@ -917,18 +917,18 @@ h4 {
   object-fit: contain;
 }
 
-// glance-all.svg renders white-on-transparent (meant for a colored active
-// pill) and disappears against the inactive white tab background. Recolor
-// it via mask instead of relying on the raw asset's own color.
+// glance-all.svg is a large multi-tile illustration (three separate icon
+// tiles) meant for a big presentation context — it turns into an unreadable
+// smudge at this tab-icon size. A simple 4-dot grid glyph reads clearly
+// instead, and paints in currentColor so it automatically follows
+// --glance-tab-active / the active-state color with no mask needed.
 .glance-tab-icon--all {
   display: block;
-  background: #A92557;
-  mask: url('/assets/figma/child-home/glance-all.svg') center / contain no-repeat;
-  -webkit-mask: url('/assets/figma/child-home/glance-all.svg') center / contain no-repeat;
+  color: #A92557;
 }
 
 .glance-tab.active .glance-tab-icon--all {
-  background: #FFFFFF;
+  color: #FFFFFF;
 }
 
 .habit-wrapper {

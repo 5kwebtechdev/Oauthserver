@@ -44,12 +44,95 @@ describe('AvatarService', () => {
   });
 
   it('uses stable local assets and retains a safe mapping for old avatar names', () => {
-    expect(service.getAllAvatars().length).toBe(60);
+    expect(service.getAllAvatars().length).toBe(72);
     expect(service.getAvatarAsset('14-15-male-3.png')?.value)
       .toBe('assets/figma/avatars/14-15-male-3.webp');
 
     spyOn(service, 'calculateAge').and.returnValue(16);
     const legacy = service.getAvatarForUser({ avatarImageName: 'Avatar 8', gender: 'male' });
     expect(legacy.key).toBe('16-17-male-2');
+  });
+
+  it('uses the dedicated gender-wise avatar set for parent signup', () => {
+    const maleAvatars = service.getAvatarsForUser('1985-01-01', 'male', 'parent');
+    const femaleAvatars = service.getAvatarsForUser('1985-01-01', 'female', 'PARENT');
+
+    expect(maleAvatars.length).toBe(6);
+    expect(maleAvatars.every(avatar => avatar.audience === 'parent' && avatar.gender === 'male')).toBeTrue();
+    expect(maleAvatars[0].imageName).toBe('Parent1.png');
+    expect(femaleAvatars.length).toBe(6);
+    expect(femaleAvatars.every(avatar => avatar.audience === 'parent' && avatar.gender === 'female')).toBeTrue();
+    expect(femaleAvatars[0].imageName).toBe('Parent1F.png');
+  });
+
+  it('remaps an existing standard avatar to the matching parent artwork', () => {
+    const avatar = service.getAvatarForUser({
+      relationship: 'PARENT',
+      gender: 'male',
+      avatarName: '18-plus-male-3'
+    });
+
+    expect(avatar.key).toBe('parent-male-3');
+    expect(avatar.value).toBe('assets/figma/avatars/parents/Parent3.png');
+  });
+
+  it('uses the final Below 11 images for child and self signup', () => {
+    spyOn(service, 'calculateAge').and.returnValue(8);
+
+    const childMale = service.getAvatarsForUser('ignored-by-spy', 'male', 'child');
+    const selfFemale = service.getAvatarsForUser('ignored-by-spy', 'female', 'self');
+
+    expect(childMale.length).toBe(6);
+    expect(childMale[0].value).toBe('assets/figma/avatars/below-11-final/Below11-1.png');
+    expect(selfFemale.length).toBe(6);
+    expect(selfFemale[0].value).toBe('assets/figma/avatars/below-11-final/Below11-1F.png');
+  });
+
+  it('uses the final 18+ images for child and self roles', () => {
+    spyOn(service, 'calculateAge').and.returnValue(24);
+
+    const selfMale = service.getAvatarsForUser('ignored-by-spy', 'male', 'self');
+    const childFemale = service.getAvatarsForUser('ignored-by-spy', 'female', 'child');
+
+    expect(selfMale.length).toBe(6);
+    expect(selfMale[0].value).toBe('assets/figma/avatars/18-plus-final/18plus-1.png');
+    expect(childFemale.length).toBe(6);
+    expect(childFemale[0].value).toBe('assets/figma/avatars/18-plus-final/18plus-1F.png');
+  });
+
+  it('uses the final age 16-17 images for both genders', () => {
+    spyOn(service, 'calculateAge').and.returnValue(16);
+
+    const maleAvatars = service.getAvatarsForUser('ignored-by-spy', 'male', 'self');
+    const femaleAvatars = service.getAvatarsForUser('ignored-by-spy', 'female', 'child');
+
+    expect(maleAvatars.length).toBe(6);
+    expect(maleAvatars[0].value).toBe('assets/figma/avatars/16-17-final/16-17-1.png');
+    expect(femaleAvatars.length).toBe(6);
+    expect(femaleAvatars[0].value).toBe('assets/figma/avatars/16-17-final/16-17-1F.png');
+  });
+
+  it('uses the final age 14-15 images for both genders', () => {
+    spyOn(service, 'calculateAge').and.returnValue(14);
+
+    const maleAvatars = service.getAvatarsForUser('ignored-by-spy', 'male', 'child');
+    const femaleAvatars = service.getAvatarsForUser('ignored-by-spy', 'female', 'self');
+
+    expect(maleAvatars.length).toBe(6);
+    expect(maleAvatars[0].value).toBe('assets/figma/avatars/14-15-final/14-15-1.png');
+    expect(femaleAvatars.length).toBe(6);
+    expect(femaleAvatars[0].value).toBe('assets/figma/avatars/14-15-final/14-15-1F.png');
+  });
+
+  it('uses the final age 11-13 images for both genders', () => {
+    spyOn(service, 'calculateAge').and.returnValue(12);
+
+    const maleAvatars = service.getAvatarsForUser('ignored-by-spy', 'male', 'self');
+    const femaleAvatars = service.getAvatarsForUser('ignored-by-spy', 'female', 'child');
+
+    expect(maleAvatars.length).toBe(6);
+    expect(maleAvatars[0].value).toBe('assets/figma/avatars/11-13-final/11-13-1.png');
+    expect(femaleAvatars.length).toBe(6);
+    expect(femaleAvatars[0].value).toBe('assets/figma/avatars/11-13-final/11-13-1F.png');
   });
 });

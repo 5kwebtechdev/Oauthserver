@@ -22,7 +22,6 @@ import { Subscription } from 'rxjs';
 import { NavigationService } from '../../core/services/navigation.service';
 import { Share } from '@capacitor/share';
 import { Clipboard } from '@capacitor/clipboard';
-import { AvatarService } from '../../core/services/avatar.service';
 
 type ViewMode = 'instructions-parent' | 'join-family-child' | 'join-family-parent';
 type FamilyMode = 'create' | 'join';
@@ -143,7 +142,6 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         private credentialSaverService: CredentialSaverService,
         private signupCredentialState: SignupCredentialStateService,
         private onboardingState: OnboardingStateService,
-        private avatarService: AvatarService,
         private platform: Platform,
         private navigation: NavigationService,
         @Optional() private routerOutlet?: IonRouterOutlet
@@ -221,14 +219,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                     if (this.isValidCode(savedFamilyCode)) {
                         this.checkFamilyCodeValidity(savedFamilyCode, 'child');
                     }
-                } else if (
-                    this.viewMode === 'join-family-parent'
-                    && this.selectedMode === 'join'
-                    && !this.joinFamilyForm.get('familyCode')?.value
-                ) {
-                    // A saved/stale family code is only a resume value for the
-                    // Join flow. It must never override an explicit
-                    // `mode=create` route after a refresh.
+                } else if (this.viewMode === 'join-family-parent' && !this.joinFamilyForm.get('familyCode')?.value) {
+                    this.selectedMode = 'join';
                     this.joinFamilyForm.patchValue({ familyCode: savedFamilyCode });
                     if (this.isValidCode(savedFamilyCode)) {
                         this.checkFamilyCodeValidity(savedFamilyCode, 'parent');
@@ -691,26 +683,20 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Child chooses not to link to a family right now. Preserve that choice,
-     * then continue the remaining onboarding (Pet and activation) instead of
-     * dropping an authenticated social user directly onto the dashboard.
+     * Child chooses not to link to a family right now. Marks the skip so
+     * AuthService.isPendingChild() stops bouncing them back to this screen,
+     * and sends them straight to their dashboard. They can still link a
+     * family later from their profile.
      */
     skipForNow(): void {
-      try { localStorage.setItem('familyLinkSkipped', 'true'); } catch (e) { }
-      try {
-            sessionStorage.setItem(FamilyOnboardComponent.CHILD_POST_FAMILY_WELCOME_KEY, 'true');
+        try { localStorage.setItem('familyLinkSkipped', 'true'); } catch (e) { }
+        try {
+            sessionStorage.removeItem(FamilyOnboardComponent.CHILD_POST_FAMILY_WELCOME_KEY);
             sessionStorage.removeItem(FamilyOnboardComponent.MANAGED_CHILD_SIGNUP_KEY);
             sessionStorage.removeItem(FamilyOnboardComponent.MANAGED_CHILD_FAMILY_CODE_KEY);
-      } catch (e) {}
-        this.onboardingState.updateRegistrationDraft({
-            relationship: 'SELF',
-            asChild: true,
-            familyCode: null,
-            familyLinkSkipped: true,
-            onboardingStep: 5
-        }, 5);
-        this.authService.updateUserData({ asChild: true });
-        this.navigateWithoutHistory('/home/sign-up', { step: 4, role: 'child' });
+        } catch (e) {}
+        const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+        this.navigateWithoutHistory(route);
     }
 
     /**
@@ -738,7 +724,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
         // Google OAuth signup: backend creates the family via oauth2-login (familyName param).
         // Do NOT pre-create the family here — it would create a duplicate.
-        if (this.isSocialOnboarding()) {
+        if (sessionStorage.getItem('signup_via_oauth') === 'true'
+            || sessionStorage.getItem('signup_via_google') === 'true') {
             sessionStorage.setItem('familyCreator', 'true');
             sessionStorage.removeItem('familyCode');
             this.completeGoogleParentSignup();
@@ -796,7 +783,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         try { sessionStorage.removeItem('familyCreator'); } catch (e) { }
 
         // Google OAuth signup: no password available — use oauth2-login instead
-        if (this.isSocialOnboarding()) {
+        if (sessionStorage.getItem('signup_via_oauth') === 'true'
+            || sessionStorage.getItem('signup_via_google') === 'true') {
             this.completeGoogleParentSignup();
             return;
         }
@@ -960,19 +948,10 @@ Thank you!`;
 
         if (this.pendingOAuthFamilyCompletion) {
             this.pendingOAuthFamilyCompletion = false;
-            // Do NOT clear the OAuth provider tokens here. The parent still has
-            // to go through the "Unlock My Journey" step (signup.component.ts),
-            // which — for a resumed session with no provider proof — falls back
-            // to a different, Google-profile-specific completion endpoint that
-            // 404s for Apple accounts ("Resource not found"). Keeping the tokens
-            // around until Unlock actually succeeds keeps that step on the same
-            // working oauth2-login endpoint already used here for family
-            // creation. signup.component.ts clears the session itself once
-            // Unlock succeeds (see clearGoogleSignupSession()).
             if (this.beginManagedChildSignup()) {
                 return;
             }
-            this.navigateWithoutHistory('/home/sign-up', { step: 5 });
+            this.core.triggerToasrt('Your parent session is still being prepared. Please tap Create Child Account again.');
             return;
         }
 
@@ -1000,37 +979,32 @@ Thank you!`;
     }
 
     /**
-     * Start the managed Child signup on the same device with this family's
-     * code ready for linking. A newly registered parent must complete their
-     * pending parent registration first, then the same handler opens the
-     * child wizard without showing the parent Welcome screen.
+     * Complete the parent account first, then start the existing Child signup
+     * wizard on the same device with this family's code ready for linking.
      */
     startChildAccountCreation(): void {
         if (this.isLoading) return;
 
-    const familyCode = (this.familyCode || '').trim().toUpperCase();
-    if (!familyCode) {
-      this.core.triggerToasrt('Family code is not available yet. Please try again.');
-      return;
-    }
+        const familyCode = (this.familyCode || '').trim().toUpperCase();
+        if (!familyCode) {
+            this.core.triggerToasrt('Family code is not available yet. Please try again.');
+            return;
+        }
 
-    try {
+        try {
             sessionStorage.setItem(FamilyOnboardComponent.CREATE_CHILD_AFTER_FAMILY_KEY, 'true');
             sessionStorage.setItem(FamilyOnboardComponent.MANAGED_CHILD_FAMILY_CODE_KEY, familyCode);
-            // This is an existing parent's "Add child" action, not their
-            // initial onboarding completion. Never defer the parent Unlock
-            // screen for this path.
-            sessionStorage.removeItem(FamilyOnboardComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY);
+            sessionStorage.setItem(FamilyOnboardComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY, 'true');
         } catch (error) {
             console.warn('[FamilyOnboard] Unable to prepare child account creation', error);
         }
 
-        // A newly registered parent reaches this family-success screen before
-        // their final session has been established. Complete that existing
-        // parent registration first; completeFamilySuccess() sees the flag
-        // above and immediately opens the child wizard (never the Welcome
-        // screen). This leaves a real parent session available for the final
-        // "Go back to my app" action.
+        // When the Parent session already exists, enter the managed Child
+        // wizard immediately. No Parent completion/welcome route is needed.
+        if (this.authService.isLoggedIn() && this.beginManagedChildSignup()) {
+            return;
+        }
+
         this.completeFamilySuccess();
     }
 
@@ -1105,6 +1079,13 @@ Thank you!`;
                                 password: loginCredentials.password,
                                 mode: loginCredentials.email ? 'email' : 'phone'
                             }).finally(() => {
+                                // The Create Child Account action must win over
+                                // the normal Parent onboarding resume route.
+                                // That resume route is the Unlock screen and
+                                // would otherwise appear before child signup.
+                                if (this.shouldStartManagedChildSignup() && this.beginManagedChildSignup()) {
+                                    return;
+                                }
                                 const resume = this.onboardingState.getResumeNavigation(loginResponse.user);
                                 if (resume) {
                                     this.navigateWithoutHistory(resume.url, resume.queryParams);
@@ -1112,9 +1093,6 @@ Thank you!`;
                                 }
                                 this.clearSignupSession();
                                 this.signupCredentialState.clear();
-                                if (this.beginManagedChildSignup()) {
-                                    return;
-                                }
                                 const route = this.authService.getDashboardRoute() || '/authed/parent-account';
                                 this.navigateWithoutHistory(route);
                             });
@@ -1152,7 +1130,8 @@ Thank you!`;
         if (this.isLoading) return;
 
         // Google OAuth signup: no password — use oauth2-login instead
-        if (this.isSocialOnboarding()) {
+        if (sessionStorage.getItem('signup_via_oauth') === 'true'
+            || sessionStorage.getItem('signup_via_google') === 'true') {
             this.completeGoogleParentSignup();
             return;
         }
@@ -1180,10 +1159,16 @@ Thank you!`;
                 familyName: sessionStorage.getItem('familyName') || this.createdFamilyName || '',
                 unlockPotential: false
             };
-            const selectedAvatar = this.avatarService.getAvatarAsset(profile.avatar)
-                || this.avatarService.getFallbackAvatar(profile.dob, profile.gender);
-            payload.avatarName = selectedAvatar.key;
-            payload.avatarImageName = selectedAvatar.imageName;
+            // Parents aren't shown the avatar picker during signup, so
+            // profile.avatar is almost never a real 1-12 pick — fall back to
+            // a sensible default so the dashboard always has a real picture
+            // instead of showing just their name's initial forever.
+            const parsedAvatarKey = Number(profile.avatar);
+            const avatarKey = (Number.isInteger(parsedAvatarKey) && parsedAvatarKey >= 1 && parsedAvatarKey <= 12)
+                ? parsedAvatarKey
+                : this.resolveParentAvatarKey(profile);
+            payload.avatarName = `avatar_${avatarKey}`;
+            payload.avatarImageName = `avatars/avatar${avatarKey}.png`;
             // Optional — omit entirely rather than defaulting to a value the
             // user never actually chose (toApiGender() always resolves to a
             // real enum, which would falsely look like an explicit choice).
@@ -1316,17 +1301,10 @@ Thank you!`;
         const profileStr = sessionStorage.getItem('signup_profile');
         let profile: any = {};
         try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) {}
-        const persistedDraft = this.onboardingState.getRegistrationState()?.savedData || {};
 
-        const provider   = (
-            sessionStorage.getItem('oauth_signup_provider')
-            || persistedDraft.authProvider
-            || 'google'
-        ) as 'google' | 'apple';
-        const email      = sessionStorage.getItem('google_signup_email') || persistedDraft.email || '';
-        const providerId = sessionStorage.getItem('google_signup_provider_id')
-            || persistedDraft.socialProviderId
-            || '';
+        const provider   = (sessionStorage.getItem('oauth_signup_provider') || 'google') as 'google' | 'apple';
+        const email      = sessionStorage.getItem('google_signup_email') || '';
+        const providerId = sessionStorage.getItem('google_signup_provider_id') || '';
         const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
         const idToken    = sessionStorage.getItem('oauth_signup_id_token') || '';
         const accessToken = sessionStorage.getItem('oauth_signup_access_token') || '';
@@ -1343,30 +1321,26 @@ Thank you!`;
             provider,
             providerId,
             email,
-            name:         profile.name || sessionStorage.getItem('google_signup_name') || persistedDraft.name || '',
+            name:         profile.name || sessionStorage.getItem('google_signup_name') || '',
             avatarUrl,
             role:         'PARENT',              // backend uses "role", not "relationship"
-            referralCode: sessionStorage.getItem('referralCode') || persistedDraft['referralCode'] || null
+            referralCode: sessionStorage.getItem('referralCode') || null
         };
-        const profileGender = profile.gender || persistedDraft.gender;
-        if (profileGender) {
-            googlePayload.gender = toApiGender(profileGender);
+        if (profile.gender) {
+            googlePayload.gender = toApiGender(profile.gender);
         }
-        const selectedAvatar = this.avatarService.getAvatarAsset(
-            profile.avatar
-            || persistedDraft.avatarImageName
-            || persistedDraft.avatarName
-        );
-        if (selectedAvatar) {
-            googlePayload.avatarName = selectedAvatar.key;
-            googlePayload.avatarImageName = selectedAvatar.imageName;
-        }
-        const profilePhone = String(profile.phone || persistedDraft.phone || '').trim();
-        if (profilePhone) {
-            const countryCode = sessionStorage.getItem('countryCode') || '+91';
-            googlePayload.phone = profilePhone.startsWith('+')
-                ? profilePhone
-                : `${countryCode}${profilePhone}`;
+        const parsedAvatarKey = Number(profile.avatar);
+        if (Number.isInteger(parsedAvatarKey) && parsedAvatarKey >= 1 && parsedAvatarKey <= 12) {
+            googlePayload.avatarName = `avatar_${parsedAvatarKey}`;
+            googlePayload.avatarImageName = `avatars/avatar${parsedAvatarKey}.png`;
+        } else if (!avatarUrl) {
+            // No preset avatar chosen and no real Google/Apple photo either
+            // (e.g. Apple never provides one, or photo access was denied) —
+            // assign a default so the dashboard has a real picture instead
+            // of falling back to just their name's initial.
+            const fallbackKey = this.resolveParentAvatarKey(profile);
+            googlePayload.avatarName = `avatar_${fallbackKey}`;
+            googlePayload.avatarImageName = `avatars/avatar${fallbackKey}.png`;
         }
 
         if (idToken) {
@@ -1399,9 +1373,8 @@ Thank you!`;
             googlePayload.familyCode = familyCode;
         }
 
-        const profileDob = profile.dob || persistedDraft.dateOfBirth || persistedDraft['dob'];
-        if (profileDob) {
-            const dobDate = new Date(profileDob);
+        if (profile.dob) {
+            const dobDate = new Date(profile.dob);
             if (!isNaN(dobDate.getTime())) {
                 googlePayload.dob = dobDate.toISOString().split('T')[0];
             }
@@ -1420,18 +1393,7 @@ Thank you!`;
         }
 
         this.isLoading = true;
-        const hasProviderProof = !!(
-            idToken
-            || accessToken
-            || serverAuthCode
-            || identityToken
-            || authorizationCode
-        );
-        const onboardingRequest = hasProviderProof
-            ? this.authService.googleOAuthLogin(googlePayload)
-            : this.authService.completeGoogleOnboarding(googlePayload);
-
-        onboardingRequest.subscribe({
+        this.authService.googleOAuthLogin(googlePayload).subscribe({
             next: (response) => {
                 this.isLoading = false;
                 const userId = response.user?.id;
@@ -1441,48 +1403,6 @@ Thank you!`;
                         false
                     );
                 }
-                const responseStep = Number(
-                    response?.savedData?.onboardingStep
-                    ?? response?.user?.onboardingStep
-                    ?? response?.onboardingStep
-                    ?? response?.nextStep
-                );
-                // Family setup is the final role-specific stage before the
-                // shared activation screen. Persist step 6 so an app restart
-                // resumes Welcome rather than reopening Create/Join Family.
-                const resolvedStep = Math.max(
-                    Number.isInteger(responseStep) && responseStep >= 1 && responseStep <= 7
-                        ? responseStep
-                        : 0,
-                    6
-                );
-                this.authService.updateUserData({
-                    ...(response?.user || {}),
-                    onboardingStep: resolvedStep
-                });
-                this.onboardingState.saveRegistrationDraft({
-                    ...persistedDraft,
-                    ...(response?.savedData || {}),
-                    ...(response?.user || {}),
-                    relationship: 'PARENT',
-                    selectedSignupRole: 'parent',
-                    authProvider: provider,
-                    socialProviderId: providerId,
-                    socialOnboarding: true,
-                    socialDetailsCompleted: true,
-                    socialRolePending: false,
-                    familyCode: response?.familyCode
-                        || response?.family?.familyCode
-                        || response?.user?.family?.familyCode
-                        || familyCode
-                        || null,
-                    familyName: response?.familyName
-                        || response?.family?.familyName
-                        || response?.user?.family?.familyName
-                        || familyName
-                        || null,
-                    onboardingStep: resolvedStep
-                }, resolvedStep, 'EMAIL');
                 this.onboardingState.markExistingUser();
                 try { sessionStorage.setItem('family_connected_ack', 'Parent'); } catch (e) {}
                 if (isCreator && this.showFamilyCreationSuccess(response)) {
@@ -1543,6 +1463,18 @@ Thank you!`;
         return familyCode ? familyCode.trim().toUpperCase() : '';
     }
 
+    /**
+     * Parents never see the avatar picker during signup, so pick a sensible
+     * default preset avatar (1-6 female, 7-12 male, otherwise any of the 12)
+     * rather than leaving them with no picture at all.
+     */
+    private resolveParentAvatarKey(profile: any): number {
+        const gender = String(profile?.gender || '').trim().toLowerCase();
+        if (gender === 'female') return Math.floor(Math.random() * 6) + 1;
+        if (gender === 'male') return Math.floor(Math.random() * 6) + 7;
+        return Math.floor(Math.random() * 12) + 1;
+    }
+
     private clearOAuthSignupSession(): void {
         [
             'signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
@@ -1558,18 +1490,6 @@ Thank you!`;
         ].forEach(key => {
             try { sessionStorage.removeItem(key); } catch (e) {}
         });
-    }
-
-    private isSocialOnboarding(): boolean {
-        try {
-            if (
-                sessionStorage.getItem('signup_via_oauth') === 'true'
-                || sessionStorage.getItem('signup_via_google') === 'true'
-            ) {
-                return true;
-            }
-        } catch {}
-        return this.onboardingState.isSocialOnboarding();
     }
 
     private clearSignupSession(): void {
@@ -1590,6 +1510,16 @@ Thank you!`;
     }
 
     private navigateToParentWelcome(): void {
+        // Central safeguard: while Create Child Account is pending, no caller
+        // may replace the Child credential flow with Parent step 5.
+        if (this.shouldStartManagedChildSignup()) {
+            if (this.beginManagedChildSignup()) {
+                return;
+            }
+            this.core.triggerToasrt('Your parent session is still being prepared. Please tap Create Child Account again.');
+            return;
+        }
+
         try {
             const draft = this.onboardingState.getRegistrationState()?.savedData || {};
             const existingCredentials = this.signupCredentialState.getPendingLogin();
@@ -1694,10 +1624,12 @@ Thank you!`;
             return false;
         }
 
-        // At this point fresh parents have completed their registration and
-        // existing parents already have an active session. Preserve it before
-        // leaving the parent/family screen for the child wizard.
-        this.authService.beginManagedChildParentSession();
+        // Preserve the authenticated Parent before clearing the temporary
+        // onboarding data. The child wizard must be able to return to this
+        // Parent after child registration completes.
+        if (!this.authService.beginManagedChildParentSession()) {
+            return false;
+        }
 
         this.onboardingState.clearRegistrationDraft();
         this.signupCredentialState.clear();

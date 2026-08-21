@@ -80,15 +80,15 @@
             <nav class="child-category-tabs" aria-label="Activity categories">
                 <button type="button" [class.is-active]="childCalendarTab === 'all'" class="tab-all"
                     (click)="selectChildCalendarTab('all')">
-                    <img src="assets/figma/planner-daily/tab-all.webp" alt="" /><span>All</span>
+                    <ion-icon name="apps-outline" aria-hidden="true"></ion-icon><span>All</span>
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'habit'" class="tab-habit"
                     (click)="selectChildCalendarTab('habit')">
-                    <img src="assets/icons/Habit.svg" alt="" /><span>Habit</span>
+                    <img src="assets/icons/Habit.webp" alt="" /><span>Habit</span>
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'task'" class="tab-task"
                     (click)="selectChildCalendarTab('task')">
-                    <img src="assets/icons/Task.svg" alt="" /><span>Task</span>
+                    <img src="assets/icons/Task.webp" alt="" /><span>Task</span>
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'planner'" class="tab-planner"
                     (click)="selectChildCalendarTab('planner')">

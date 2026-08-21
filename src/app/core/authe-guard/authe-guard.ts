@@ -148,6 +148,15 @@ export const guestGuard: CanActivateFn = (
         return true;
     }
 
+    // After a Parent creates a child during initial onboarding, allow the
+    // one-time deferred Parent welcome/Unlock screen before Parent Home.
+    const isManagedChildParentWelcome = sessionStorage.getItem('managed_child_parent_welcome_pending') === 'true'
+        && state.url.includes('/sign-up')
+        && route.queryParamMap.get('step') === '5';
+    if (isManagedChildParentWelcome) {
+        return true;
+    }
+
     // A newly registered child is already authenticated after linking their
     // family. Allow only the remaining Pet and welcome onboarding steps.
     const isPostFamilyOnboarding = sessionStorage.getItem('show_child_welcome_after_family') === 'true'

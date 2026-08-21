@@ -24,6 +24,7 @@ import { AcademySectionComponent } from '../../core/components/academy-section/a
 import { TutorCardComponent } from '../../core/components/tutor-section/tutor-card/tutor-card.component';
 import { ParentAnalyticsService, ParentAnalyticsBand, ParentAnalyticsResponseDto } from '../../core/services/parent-analytics.service';
 import { CustomToastService } from '../../core/services/custom-toast.service';
+import { REGISTRATION_ONBOARDING_STATE_KEY } from '../../core/services/onboarding-state.service';
 
 type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
 
@@ -113,6 +114,11 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public statsUpdatedAt = new Date();
     public moodBalanceLoading = false;
     public moodBalance: MoodBalanceSegment[] = this.createEmptyMoodBalance();
+
+    /** False when every segment is 0 (no mood check-ins in the last 7 days). */
+    get hasMoodBalanceData(): boolean {
+        return this.moodBalance.some(segment => segment.value > 0);
+    }
     // True while performanceMetrics is being refreshed for the currently
     // selected child — the template shows an animated skeleton instead of
     // the (possibly stale, previous child's) numbers while this is true.
@@ -250,36 +256,28 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public selectedChild: ChildInfo | null = null;
     public childrenLoadState: 'idle' | 'loading' | 'loaded' | 'error' = 'idle';
     public coParent: FamilySwitcherParent | null = null;
-    public familyCapacity = 4;
-    private linkedFamilyMemberCount = 1;
+    private static readonly MAX_CHILDREN = 2;
 
     get selectedChildName(): string {
         return this.selectedChild?.name || 'your child';
     }
 
-    get availableFamilySlots(): number {
-        return Math.max(0, this.familyCapacity - this.linkedFamilyMemberCount);
-    }
-
+    // Child and co-parent limits are independent of each other — reaching
+    // one never blocks the other — so each is derived straight from the
+    // family members actually loaded (this.children / this.coParent)
+    // rather than a server-reported capacity number that could drift out
+    // of sync with what's actually shown.
     get emptyChildSlotNumbers(): number[] {
-        const reservedCoParentSlot = this.coParent ? 0 : 1;
-        const childSlotCount = Math.min(
-            2,
-            Math.max(0, this.availableFamilySlots - reservedCoParentSlot)
-        );
-        return Array.from({ length: childSlotCount }, (_, index) => index + 1);
+        const remaining = Math.max(0, ParentAccountComponent.MAX_CHILDREN - this.children.length);
+        return Array.from({ length: remaining }, (_, index) => index + 1);
     }
 
     get showInviteCoParentAction(): boolean {
-        return !this.coParent && this.availableFamilySlots > 0;
+        return !this.coParent;
     }
 
     get showAddChildAction(): boolean {
-        if (this.availableFamilySlots <= 0) return false;
-
-        // With one slot left, reserve it for a missing co-parent. When a
-        // co-parent already exists, that slot can be used for another child.
-        return !!this.coParent || this.availableFamilySlots >= 2;
+        return this.children.length < ParentAccountComponent.MAX_CHILDREN;
     }
 
     get greetingPeriod(): string {
@@ -448,7 +446,13 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                 this.currentProfile = profile;
                 this.parentName = profile.name || 'Parent';
                 this.userName = this.parentName;
-                this.userAvatarUrl = this.userService.getUserAvatarUrl();
+                // Parent Home is role-specific. Force the Parent audience here
+                // so older cached profiles that do not contain `relationship`
+                // cannot fall back to the general Self/Child avatar artwork.
+                this.userAvatarUrl = this.childSelfImage.resolveAvatarFromUser({
+                    ...profile,
+                    relationship: 'PARENT'
+                }).url || '';
                 this.parentInitial = profile.name?.charAt(0) || 'U';
                 this.parentAvatarStyle = this.parentImageService.getAvatarStyle(
                     this.parentInitial,
@@ -594,7 +598,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             String(parent?.gender || '').toLowerCase() === 'female',
             54
         );
-        this.userAvatarUrl = this.childSelfImage.resolveAvatarFromUser(parent).url
+        this.userAvatarUrl = this.childSelfImage.resolveAvatarFromUser({
+            ...parent,
+            relationship: 'PARENT'
+        }).url
             || this.userService.getUserAvatarUrl()
             || '';
     }
@@ -774,36 +781,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                     .toUpperCase() || 'P'
             }
             : null;
-
-        const capacityCandidates = [
-            status?.maxMembers,
-            status?.maxFamilyMembers,
-            status?.memberLimit,
-            status?.family?.maxMembers,
-            status?.family?.maxFamilyMembers,
-            status?.family?.memberLimit,
-            status?.data?.maxMembers,
-            status?.data?.family?.maxMembers
-        ];
-        const reportedCapacity = capacityCandidates
-            .map(value => Number(value))
-            .find(value => Number.isFinite(value) && value > 0);
-        this.familyCapacity = reportedCapacity || 4;
-
-        const childCount = members.filter(member => this.isChildMember(member)).length;
-        const inferredCount = Math.max(members.length, childCount + 1 + (this.coParent ? 1 : 0));
-        const countCandidates = [
-            status?.memberCount,
-            status?.totalMembers,
-            status?.family?.memberCount,
-            status?.family?.totalMembers,
-            status?.data?.memberCount,
-            status?.data?.family?.memberCount
-        ];
-        const reportedCount = countCandidates
-            .map(value => Number(value))
-            .find(value => Number.isFinite(value) && value > 0);
-        this.linkedFamilyMemberCount = Math.max(1, inferredCount, reportedCount || 0);
     }
 
     private extractFamilyMembers(status: any): any[] {
@@ -931,7 +908,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.parentInitial = this.parentName.charAt(0) || 'P';
         const isFemale = (this.currentProfile?.gender || '').toLowerCase() === 'female';
         this.parentAvatarStyle = this.parentImageService.getAvatarStyle(this.parentInitial, isFemale, 54);
-        this.userAvatarUrl = this.userService.getUserAvatarUrl() || '';
+        this.userAvatarUrl = this.childSelfImage.resolveAvatarFromUser({
+            ...(this.currentProfile || {}),
+            relationship: 'PARENT'
+        }).url || '';
     }
 
     // Toggle popup
@@ -1243,7 +1223,16 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             return;
         }
 
+        // The child must begin with an empty registration form. A Parent's
+        // previous onboarding draft can include their email, name, avatar and
+        // other personal data; SignupComponent restores that draft on init
+        // unless we clear it before entering the managed-child flow.
+        this.clearParentSignupDraftForChild();
+
         try {
+            // Add Child from Parent Home returns directly to this screen; only
+            // the initial onboarding CTA defers the Parent welcome screen.
+            sessionStorage.removeItem('managed_child_parent_welcome_pending');
             sessionStorage.setItem('managed_child_signup', 'true');
             sessionStorage.setItem('managed_child_family_code', this.familyCode);
             sessionStorage.setItem('signup_role', 'child');
@@ -1255,6 +1244,32 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.router.navigate(['/home/sign-up'], {
             queryParams: { step: 0.1, role: 'child', managedChild: true }
         });
+    }
+
+    private clearParentSignupDraftForChild(): void {
+        try {
+            localStorage.removeItem(REGISTRATION_ONBOARDING_STATE_KEY);
+            [
+                'signup_profile',
+                'signup_role',
+                'signup_avatar',
+                'signup_pet',
+                'requestedIdentifier',
+                'loginMode',
+                'countryCode',
+                'referralCode',
+                'referralCodeLocked',
+                'signup_via_oauth',
+                'signup_via_google',
+                'oauth_signup_provider',
+                'google_signup_email',
+                'google_signup_name',
+                'google_signup_avatar',
+                'google_signup_provider_id'
+            ].forEach(key => sessionStorage.removeItem(key));
+        } catch (error) {
+            console.warn('[ParentAccount] Unable to clear Parent signup draft before adding a child', error);
+        }
     }
 
     inviteCoParent(): void {

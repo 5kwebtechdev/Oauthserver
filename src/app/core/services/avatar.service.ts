@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 export type AvatarAgeGroup = 'BELOW_11' | 'AGE_11_13' | 'AGE_14_15' | 'AGE_16_17' | 'AGE_18_PLUS';
 export type AvatarGender = 'male' | 'female';
+export type AvatarAudience = 'parent' | 'standard';
 
 export interface AvatarDefinition {
   /** Stable value kept in the existing avatarName API field. */
@@ -14,6 +15,7 @@ export interface AvatarDefinition {
   ageGroup: AvatarAgeGroup;
   gender: AvatarGender;
   index: number;
+  audience: AvatarAudience;
 }
 
 interface AvatarGroupDefinition {
@@ -47,6 +49,29 @@ const AVATAR_GROUPS: AvatarGroupDefinition[] = [
   }
 ];
 
+function getStandardAvatarValue(
+  group: AvatarGroupDefinition,
+  gender: AvatarGender,
+  index: number,
+  key: string
+): string {
+  const genderSuffix = gender === 'female' ? 'F' : '';
+  switch (group.ageGroup) {
+    case 'BELOW_11':
+      return `assets/figma/avatars/below-11-final/Below11-${index}${genderSuffix}.png`;
+    case 'AGE_11_13':
+      return `assets/figma/avatars/11-13-final/11-13-${index}${genderSuffix}.png`;
+    case 'AGE_14_15':
+      return `assets/figma/avatars/14-15-final/14-15-${index}${genderSuffix}.png`;
+    case 'AGE_16_17':
+      return `assets/figma/avatars/16-17-final/16-17-${index}${genderSuffix}.png`;
+    case 'AGE_18_PLUS':
+      return `assets/figma/avatars/18-plus-final/18plus-${index}${genderSuffix}.png`;
+    default:
+      return `assets/figma/avatars/${key}.webp`;
+  }
+}
+
 const AVATARS: AvatarDefinition[] = AVATAR_GROUPS.reduce((avatars, group) => {
   (['male', 'female'] as AvatarGender[]).forEach(gender => {
     for (let index = 1; index <= 6; index++) {
@@ -55,17 +80,38 @@ const AVATARS: AvatarDefinition[] = AVATAR_GROUPS.reduce((avatars, group) => {
         key,
         label: group.figmaLabel(gender, index),
         imageName: `${key}.png`,
-        // The backend-facing imageName remains PNG-compatible, while the
-        // bundled display file uses lossless WebP to reduce install size.
-        value: `assets/figma/avatars/${key}.webp`,
+        // Keep the existing backend-facing imageName stable while using the
+        // latest bundled artwork for each age group as it becomes available.
+        value: getStandardAvatarValue(group, gender, index, key),
         ageGroup: group.ageGroup,
         gender,
-        index
+        index,
+        audience: 'standard'
       });
     }
   });
   return avatars;
 }, [] as AvatarDefinition[]);
+
+const PARENT_AVATARS: AvatarDefinition[] = (['male', 'female'] as AvatarGender[])
+  .reduce((avatars, gender) => {
+    for (let index = 1; index <= 6; index++) {
+      const filename = gender === 'female' ? `Parent${index}F.png` : `Parent${index}.png`;
+      avatars.push({
+        key: `parent-${gender}-${index}`,
+        label: `Parent ${gender} avatar ${index}`,
+        imageName: filename,
+        value: `assets/figma/avatars/parents/${filename}`,
+        ageGroup: 'AGE_18_PLUS',
+        gender,
+        index,
+        audience: 'parent'
+      });
+    }
+    return avatars;
+  }, [] as AvatarDefinition[]);
+
+const ALL_AVATARS: AvatarDefinition[] = [...AVATARS, ...PARENT_AVATARS];
 
 @Injectable({ providedIn: 'root' })
 export class AvatarService {
@@ -101,17 +147,19 @@ export class AvatarService {
    * If one of these optional details is unavailable, the current safe adult
    * group is used and both genders remain selectable instead of breaking UI.
    */
-  getAvatarsForUser(dateOfBirth: unknown, gender: unknown): AvatarDefinition[] {
+  getAvatarsForUser(dateOfBirth: unknown, gender: unknown, relationship?: unknown): AvatarDefinition[] {
+    const isParent = String(relationship || '').trim().toUpperCase() === 'PARENT';
     const ageGroup = this.getAgeGroup(dateOfBirth) || 'AGE_18_PLUS';
     const normalizedGender = this.normalizeGender(gender);
-    return AVATARS.filter(avatar => avatar.ageGroup === ageGroup
+    const candidates = isParent ? PARENT_AVATARS : AVATARS;
+    return candidates.filter(avatar => (isParent || avatar.ageGroup === ageGroup)
       && (!normalizedGender || avatar.gender === normalizedGender));
   }
 
   getAvatarAsset(avatarImageName: unknown): AvatarDefinition | null {
     const normalized = this.normalizeAvatarIdentifier(avatarImageName);
     if (!normalized) return null;
-    return AVATARS.find(avatar =>
+    return ALL_AVATARS.find(avatar =>
       normalized === this.normalizeAvatarIdentifier(avatar.key)
       || normalized === this.normalizeAvatarIdentifier(avatar.imageName)
       || normalized === this.normalizeAvatarIdentifier(avatar.label)
@@ -120,22 +168,27 @@ export class AvatarService {
 
   /** Resolve a current Figma avatar, preserving old saved avatar values safely. */
   getAvatarForUser(user: any): AvatarDefinition {
+    const isParent = this.isParent(user?.relationship || user?.role);
     const direct = this.getAvatarAsset(this.extractAvatarIdentifier(user));
-    if (direct) return direct;
+    if (direct) return isParent ? this.toParentAvatar(direct, user?.gender) : direct;
 
     const legacy = this.getLegacyAvatar(user);
-    if (legacy) return legacy;
+    if (legacy) return isParent ? this.toParentAvatar(legacy, user?.gender) : legacy;
 
-    return this.getFallbackAvatar(user?.dateOfBirth || user?.dob, user?.gender);
+    return this.getFallbackAvatar(
+      user?.dateOfBirth || user?.dob,
+      user?.gender,
+      user?.relationship || user?.role
+    );
   }
 
-  getFallbackAvatar(dateOfBirth: unknown, gender: unknown): AvatarDefinition {
-    const options = this.getAvatarsForUser(dateOfBirth, gender);
+  getFallbackAvatar(dateOfBirth: unknown, gender: unknown, relationship?: unknown): AvatarDefinition {
+    const options = this.getAvatarsForUser(dateOfBirth, gender, relationship);
     return options[0] || AVATARS.find(avatar => avatar.key === '18-plus-male-1')!;
   }
 
   getAllAvatars(): readonly AvatarDefinition[] {
-    return AVATARS;
+    return ALL_AVATARS;
   }
 
   private getLegacyAvatar(user: any): AvatarDefinition | null {
@@ -165,6 +218,23 @@ export class AvatarService {
     if (!gender || !index || index < 1 || index > 6) return null;
     const group = this.getAgeGroup(user?.dateOfBirth || user?.dob) || 'AGE_18_PLUS';
     return AVATARS.find(avatar => avatar.ageGroup === group && avatar.gender === gender && avatar.index === index) || null;
+  }
+
+  /**
+   * Existing Parent accounts can still contain an older standard/adult avatar
+   * identifier. Keep their chosen gender and position while moving them onto
+   * the dedicated Parent artwork instead of continuing to render the old set.
+   */
+  private toParentAvatar(avatar: AvatarDefinition, fallbackGender: unknown): AvatarDefinition {
+    if (avatar.audience === 'parent') return avatar;
+    const gender = this.normalizeGender(avatar.gender) || this.normalizeGender(fallbackGender) || 'male';
+    return PARENT_AVATARS.find(candidate => candidate.gender === gender && candidate.index === avatar.index)
+      || PARENT_AVATARS.find(candidate => candidate.gender === gender)
+      || PARENT_AVATARS[0];
+  }
+
+  private isParent(relationship: unknown): boolean {
+    return String(relationship || '').trim().toUpperCase() === 'PARENT';
   }
 
   private extractAvatarIdentifier(user: any): string {
