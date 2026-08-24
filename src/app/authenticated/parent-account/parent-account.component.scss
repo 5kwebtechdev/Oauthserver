@@ -1253,7 +1253,16 @@ button {
   box-shadow: 0 0 2px rgba(172, 36, 86, 0.15);
 
   &--rewards {
-    background: #fff8fa;
+    border: 0;
+    background: #fcf3f6;
+    box-shadow: 0 0 2px 1px rgba(240, 165, 188, 0.5);
+  }
+
+  &--parenting {
+    gap: 0;
+    border: 0;
+    background: #ebe6f5;
+    box-shadow: 0 0 2px 1px rgba(175, 151, 216, 0.5);
   }
 
   learning-section,
@@ -1265,12 +1274,6 @@ button {
 
   ::ng-deep learning-section .content-title-icon {
     object-fit: contain;
-  }
-}
-
-.parent-learning-card--rewards {
-  ::ng-deep learning-section .content-title h2 {
-    font-size: 16px;
   }
 }
 

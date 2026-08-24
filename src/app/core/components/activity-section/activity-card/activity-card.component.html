@@ -15,6 +15,34 @@
   </div>
 </ng-template>
 
+<!-- Current-month events shown above the day summary in the Home design. -->
+<ng-template #upcomingEvents>
+  <section class="glance-upcoming" aria-labelledby="glance-upcoming-title">
+    <div class="glance-upcoming__header">
+      <div class="glance-upcoming__title">
+        <img src="assets/figma/home-glance/upcoming-events.webp" alt="" aria-hidden="true">
+        <h3 id="glance-upcoming-title">Upcoming Events</h3>
+      </div>
+      <button type="button" class="glance-outline-button" (click)="openUpcomingEvents()">View all</button>
+    </div>
+
+    <div class="glance-upcoming__list" role="list" *ngIf="glanceUpcomingEvents.length > 0">
+      <button type="button" class="glance-event-card" role="listitem"
+        *ngFor="let event of glanceUpcomingEvents; trackBy: trackGlanceUpcomingEvent"
+        (click)="openUpcomingEvents()">
+        <img [src]="getGlanceUpcomingEventIcon(event)" alt="" aria-hidden="true">
+        <span>
+          <strong>{{ getGlancePlannerTitle(event) }}</strong>
+          <em>{{ getGlanceUpcomingEventCountdown(event) }}</em>
+        </span>
+      </button>
+    </div>
+    <div class="glance-upcoming__empty" *ngIf="!glancePlannerLoading && glanceUpcomingEvents.length === 0">
+      No upcoming events this month
+    </div>
+  </section>
+</ng-template>
+
 <!-- Planner tab: grouped schedule cards with expand/collapse, shared by List and Recent modes -->
 <ng-template #plannerCards>
   <section class="glance-planner-cards"
@@ -29,10 +57,13 @@
         </span>
         <span class="glance-planner-card__actions">
           <em>{{ card.entries.length }} today</em>
-          <svg class="glance-planner-card__chevron" [class.is-collapsed]="!isGlancePlannerExpanded(card, i)"
-            viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <img class="glance-planner-card__chevron"
+            [class.is-expanded]="isGlancePlannerExpanded(card, i)"
+            [class.is-collapsed]="!isGlancePlannerExpanded(card, i)"
+            [src]="isGlancePlannerExpanded(card, i)
+              ? 'assets/figma/home-glance/chevron-expanded.svg'
+              : 'assets/figma/home-glance/chevron-collapsed.svg'"
+            alt="" aria-hidden="true">
         </span>
       </button>
       <p>{{ getGlancePlannerDateRange(card.source) }}</p>
@@ -50,6 +81,7 @@
 
 <div *ngIf="mode === 'list'" class="d-flex flex-column gap-2 glance-card"
   [ngClass]="'glance-card--' + currentActive">
+  <ng-container *ngTemplateOutlet="upcomingEvents"></ng-container>
   <div class="day-at-glance-container">
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
@@ -58,22 +90,17 @@
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <svg class="glance-tab-icon glance-tab-icon--all" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor" />
-            <rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor" />
-            <rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor" />
-            <rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor" />
-          </svg>
+          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-all.webp" alt="" aria-hidden="true">
           <span>All</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <img class="glance-tab-icon" src="assets/icons/Habit.svg" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-habit.webp" alt="" aria-hidden="true">
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <img class="glance-tab-icon" src="assets/icons/Task.svg" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-task.webp" alt="" aria-hidden="true">
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
@@ -132,10 +159,10 @@
     </empty-state>
 
     <!-- Timetable-specific: no time table entries for today -->
-    <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables"
+    <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables && !hasGlancePlannerCards && !glancePlannerLoading"
       imageSrc="/assets/Images-Transparent/Image-Calendar-Blank.png"
       imageAlt="No planner entries illustration"
-      leadText="No time table entries for today"
+      leadText="No planner entries for today"
       subText="Nothing scheduled yet. Add a time block to plan out your day."
       buttonText="">
     </empty-state>
@@ -226,6 +253,7 @@
 <!-- Recent Mode -->
 <div *ngIf="mode === 'recent'" class="d-flex flex-column gap-2 glance-card"
   [ngClass]="'glance-card--' + currentActive">
+  <ng-container *ngTemplateOutlet="upcomingEvents"></ng-container>
   <div class="day-at-glance-container">
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
@@ -234,22 +262,17 @@
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <svg class="glance-tab-icon glance-tab-icon--all" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor" />
-            <rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor" />
-            <rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor" />
-            <rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor" />
-          </svg>
+          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-all.webp" alt="" aria-hidden="true">
           <span>All</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <img class="glance-tab-icon" src="assets/icons/Habit.svg" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-habit.webp" alt="" aria-hidden="true">
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <img class="glance-tab-icon" src="assets/icons/Task.svg" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-task.webp" alt="" aria-hidden="true">
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
@@ -307,10 +330,10 @@
     </empty-state>
 
     <!-- Timetable-specific: no time table entries for today -->
-    <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables"
+    <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables && !hasGlancePlannerCards && !glancePlannerLoading"
       imageSrc="/assets/Images-Transparent/Image-Calendar-Blank.png"
       imageAlt="No planner entries illustration"
-      leadText="No time table entries for today"
+      leadText="No planner entries for today"
       subText="Nothing scheduled yet. Add a time block to plan out your day."
       buttonText="">
     </empty-state>
