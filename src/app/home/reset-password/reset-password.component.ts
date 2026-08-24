@@ -75,6 +75,13 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // ion-router-outlet is capped to a centered readable column on tablet/
+    // desktop by default (see global.scss); this page builds its own wide
+    // web background, so it needs the same full-bleed outlet reset HomePage
+    // uses (body.onboarding-active) or that column cap leaves white gutters
+    // regardless of this page's own CSS.
+    document.body.classList.add('onboarding-active');
+
     const savedIdentifier = sessionStorage.getItem('requestedIdentifier');
     if (savedIdentifier) this.requestedIdentifier = savedIdentifier;
 
@@ -104,6 +111,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    document.body.classList.remove('onboarding-active');
     this.clearOtpTimer();
   }
 

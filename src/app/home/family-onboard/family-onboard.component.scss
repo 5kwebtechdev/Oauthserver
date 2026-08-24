@@ -1,3 +1,22 @@
+// global.scss caps every routed page (`ion-router-outlet, .ion-page`) at
+// --container-md (768px) by default and re-centers it with margin-inline:auto.
+// Every screen in this component already builds its own wide desktop layout
+// (hero rows, "how it works" cards, etc. capped at up to 960px and centered
+// via their own margin:auto) — nested inside that already-narrower,
+// already-centered 768px host, those elements' own `100%`/centering math
+// resolves against the wrong box, which is what produced the shifted/
+// cut-off layout reported on the join-family, create-family, and
+// family-success screens. Opting this host out (same pattern already used by
+// login/user-dashboard/parent-account) lets this component's own per-section
+// width caps be the only ones in play.
+@media (min-width: 768px) {
+  :host(.ion-page) {
+    max-width: none !important;
+    margin-inline: 0 !important;
+    padding-inline: 0 !important;
+  }
+}
+
 // ============ REUSABLE / SHARED STYLES ============
 .superme-page-container {
   padding: 16px!important;

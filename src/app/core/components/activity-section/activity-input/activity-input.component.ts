@@ -66,7 +66,7 @@ interface EventChoice {
   selector: 'activity-input',
   templateUrl: './activity-input.component.html',
   styleUrls: ['./activity-input.component.scss'],
-  imports: [CommonModule, IonicModule, FormsModule, SupermeButtonComponent, SupermeInputsModule, SupermeSelectorsComponent, SupermeTagsComponent, SupermeNavigatorComponent, SupermeToggleComponent, SupermePopupComponent]
+  imports: [CommonModule, IonicModule, FormsModule, SupermeButtonComponent, SupermeInputsModule, SupermeTagsComponent, SupermeNavigatorComponent, SupermeToggleComponent, SupermePopupComponent]
 })
 export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEnter {
   private static readonly TIME_REGEX = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?$/i;
@@ -192,20 +192,16 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   originUrl: string | null = null;
 
   readonly activityTabs: ReadonlyArray<ActivityTabOption> = [
-    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.svg' },
-    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.svg' },
-    { key: 'timetable', label: 'Time Table', icon: 'assets/figma/child-planner/calendar.svg' },
-    { key: 'events', label: 'Event', icon: 'assets/figma/activity-event/event-type.svg' }
+    { key: 'habits', label: 'Habit', icon: 'leaf-outline' },
+    { key: 'tasks', label: 'Task', icon: 'checkbox-outline' },
+    { key: 'timetable', label: 'Time Table', icon: 'calendar-outline' },
+    { key: 'events', label: 'Event', icon: 'calendar-number-outline' }
   ];
 
   readonly childActivityTabs: ReadonlyArray<ActivityTabOption> = [
-    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.svg' },
-    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.svg' },
-    // schedule.svg is a white-on-transparent asset meant for a colored active
-    // pill — it disappears against the white inactive tab background.
-    // calendar.svg is the same teal (#3E5A60) used for this tab's active state,
-    // so it stays visible in both states, matching Habit/Task.
-    { key: 'planner', label: 'Planner', icon: 'assets/figma/child-planner/calendar.svg' }
+    { key: 'habits', label: 'Habit', icon: 'leaf-outline' },
+    { key: 'tasks', label: 'Task', icon: 'checkbox-outline' },
+    { key: 'planner', label: 'Planner', icon: 'calendar-outline' }
   ];
 
   readonly plannerColors = ['#0D47A1', '#B71C1C', '#880E4F', '#1B5E20', '#4A148C'];
@@ -1049,7 +1045,6 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     // Additional required fields checked by submit validations
     if (!this.selectedTags || this.selectedTags.length === 0) return false;
     if (!this.priority) return false;
-    if (!this.notes?.trim()) return false;
 
     return this.everyday || (this.selectedDays && this.selectedDays.size > 0);
   }
@@ -1798,7 +1793,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       date: !this.startDate || !this.endDate || (this.startDate instanceof Date && this.endDate instanceof Date && this.startDate > this.endDate),
       startAfterEnd: !!(this._startDate && this._endDate && this._startDate > this._endDate),
       priority: !this.priority,
-      notes: !this.notes?.trim(),
+      notes: false,
       eventType: false
     } as any;
   }
@@ -2444,7 +2439,6 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     if (this.showStartAfterEnd) msgs.push('End date must be after the start date');
     if (this.showDateError) msgs.push('Add start and end date');
     if (this.showPriorityError) msgs.push('Select priority');
-    if (this.showNotesError) msgs.push('Add notes');
     return msgs;
   }
 

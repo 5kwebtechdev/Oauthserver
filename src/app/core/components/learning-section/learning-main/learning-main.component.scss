@@ -1255,16 +1255,16 @@
 }
 
 .parent-learning-tab {
-	width: auto;
+	width: 0;
 	height: 62px;
-	min-width: max-content;
-	flex: 0 0 auto;
+	min-width: 0;
+	flex: 1 1 0;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	gap: 2px;
-	padding: 8px 12px;
+	padding: 8px 6px;
 	border: 0;
 	border-radius: 8px;
 	background: transparent;

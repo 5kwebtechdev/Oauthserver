@@ -216,6 +216,32 @@
   ion-content .signup-container.role-layout {
     width: min(100%, 960px);
     padding: 48px 32px 40px;
+    // ion-content paints its own solid white --background layer, and this
+    // container also set a solid white background on top of that (see its
+    // base rule) — both need to change or the page reads as flat white
+    // outside the cards (same brand wash as login.component.scss / the
+    // other signup steps). The `ion-content` ancestor prefix is required
+    // here (see comment above) or this loses to that base rule's own
+    // background:#fff on specificity.
+    background:
+      radial-gradient(45vw 45vh at 6% 6%, rgba(139, 141, 203, 0.24), transparent 65%),
+      radial-gradient(48vw 48vh at 95% 10%, rgba(246, 172, 114, 0.2), transparent 65%),
+      radial-gradient(48vw 48vh at 8% 95%, rgba(137, 179, 182, 0.22), transparent 65%),
+      radial-gradient(48vw 48vh at 94% 92%, rgba(225, 82, 124, 0.22), transparent 65%),
+      linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%);
+  }
+
+  ion-content.bg-white {
+    --background: linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%) !important;
+  }
+
+  // .role-step (nested inside .signup-container in signup.component.scss)
+  // also sets its own solid white background there — compiled with Angular's
+  // scoping attribute on both compound-selector parts, its specificity beats
+  // this rule even with the .signup-container.role-layout prefix, so this
+  // needs !important rather than another specificity escalation.
+  .signup-container.role-layout .role-step--figma {
+    background: transparent !important;
   }
 
   .signup-container.role-layout .role-hero--figma .role-hero__title {
@@ -316,8 +342,16 @@
     line-height: 1.1;
   }
 
+  // These percentages resize against the card's own clamp()-driven height,
+  // which shrinks more aggressively on short screens (like iPhone SE) than
+  // the fixed-px crop these percentages were originally tuned for — the
+  // resulting box no longer matches the source photos' aspect ratio, so
+  // object-fit:cover was cropping off the top of each character's head/hair.
+  // Biasing the crop toward the top keeps faces in frame instead.
   .signup-role-card > img {
-    width: 49.03%;
-    height: 98.17%;
+    right: 0;
+    width: 52%;
+    height: 100%;
+    object-position: center 15%;
   }
 }

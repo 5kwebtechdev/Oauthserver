@@ -247,10 +247,12 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   async referCounselor(): Promise<void> {
+    const listingType = this.singularTitle.trim().toLowerCase() || 'listing';
+    const article = /^[aeiou]/i.test(listingType) ? 'an' : 'a';
     try {
       await Share.share({
         title: 'Refer for listing',
-        text: 'Know a counselor? Refer them to get listed on SuperMe EduHub.',
+        text: `Know ${article} ${listingType}? Refer them to get listed on SuperMe EduHub.`,
         url: 'https://supermeapp.com'
       });
     } catch (error) {

@@ -6,7 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { Share } from '@capacitor/share';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
+import { SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
@@ -34,7 +34,6 @@ interface HelpfulnessOption {
     RouterModule,
     IonicModule,
     HttpClientModule,
-    SupermePopupComponent,
     AdBannerComponent
   ],
   providers: [LearningService]

@@ -545,6 +545,22 @@
   }
 }
 
+// The bottom "OR / manual entry" panel was only ever inset by a fixed 20px on
+// each side (width: calc(100% - 40px); left: 20px) — fine on a phone, but on
+// wider tablet/web viewports it stretches into a near-edge-to-edge bar, unlike
+// every other capped/centered card in this app. Cap and center it here instead,
+// same as the auth-card treatment used elsewhere, while leaving the base
+// mobile rule (and the scanner viewport itself) untouched.
+@media (min-width: 768px) {
+  .qr-scanner {
+    .divider-section {
+      left: 50%;
+      width: min(calc(100% - 64px), 460px);
+      transform: translateX(-50%);
+    }
+  }
+}
+
 @media (max-width: 360px) {
   .qr-scanner {
     .scanner-viewport {

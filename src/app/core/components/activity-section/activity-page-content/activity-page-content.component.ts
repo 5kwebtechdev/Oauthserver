@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ActivityCardComponent } from '../activity-card/activity-card.component';
 import { SupermeBadgeComponent } from '../../superme-badge/superme-badge.component';
 import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
@@ -18,6 +18,7 @@ import { Habit } from '../habit.types';
 import { CalendarService } from '../../../services/calendar.service';
 import { CalendarResponse } from '../../../models/calendar.model';
 import { Observable, Subscription, filter, skip, take } from 'rxjs';
+import { LongPressDirective } from '../../../directives/gestureControlDirective';
 
 interface PlannerScheduleCard {
     id: string;
@@ -31,7 +32,7 @@ interface PlannerScheduleCard {
     selector: 'activity-page-content',
     templateUrl: './activity-page-content.component.html',
     styleUrls: ['./activity-page-content.component.scss'],
-    imports: [CommonModule, IonicModule, ActivityCardComponent, SupermeInputsModule, SupermeBadgeComponent, EmptyStateComponent, AdBannerComponent]
+    imports: [CommonModule, IonicModule, ActivityCardComponent, SupermeInputsModule, SupermeBadgeComponent, EmptyStateComponent, AdBannerComponent, LongPressDirective]
 })
 
 export class ActivityPageContentComponent implements OnInit, OnDestroy {
@@ -99,6 +100,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         private taskApi: TaskApi,
         private calendarService: CalendarService,
         private route: ActivatedRoute,
+        private router: Router,
         private profileSelector: ProfileSelectorService,
         private authService: AuthService,
         private petAgeService: PetAgeService,
@@ -1267,14 +1269,24 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
     }
 
-    /**
-     * Handle long press on a habit/task card
-     * Navigation is already handled by activity-card component
-     */
-    onCardLongPress(habit: any): void {
-        // Long press navigation is handled by activity-card component
-        // This handler can be used for parent-level logic if needed
-        console.log('[HabitPageContent] Card long-pressed:', habit?.title);
+    /** Open the full action/detail screen from the compact calendar cards. */
+    onCardLongPress(habit: any, entryType?: 'habit' | 'task'): void {
+        const itemId = Number(habit?.id ?? habit?.habitId ?? habit?.taskId);
+        if (!Number.isFinite(itemId) || itemId <= 0) return;
+
+        const activityType = entryType === 'task' || String(habit?.type || '').toLowerCase().includes('task')
+            ? 'tasks'
+            : 'habits';
+
+        this.router.navigate(['/authed/activity-detail', itemId], {
+            state: {
+                habit: { ...habit, type: activityType },
+                type: activityType,
+                fromLongPress: true,
+                selectedDate: this.getSelectedDateString()
+            },
+            queryParams: { type: activityType }
+        }).catch(error => console.error('[HabitPageContent] Unable to open activity detail:', error));
     }
 
     /**

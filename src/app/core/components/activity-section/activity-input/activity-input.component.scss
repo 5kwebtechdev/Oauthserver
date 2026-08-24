@@ -257,6 +257,8 @@ $theme-colors-dark: (
     width: 16px;
     height: 16px;
     flex: 0 0 16px;
+    font-size: 16px;
+    color: currentColor;
   }
 
   &.active {
@@ -309,7 +311,8 @@ $theme-colors-dark: (
   }
 
   .activity-tab.active .activity-tab-icon {
-    filter: brightness(0) invert(1);
+    color: #fff;
+    filter: none;
   }
 }
 

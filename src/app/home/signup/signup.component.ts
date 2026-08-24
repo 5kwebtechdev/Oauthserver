@@ -325,6 +325,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // ion-router-outlet is capped to a centered readable column on tablet/
+    // desktop by default (see global.scss); this component's steps each
+    // build their own wide web background, so they need the same
+    // full-bleed outlet reset HomePage uses (body.onboarding-active) or
+    // that column cap leaves white gutters regardless of this page's own CSS.
+    document.body.classList.add('onboarding-active');
+
     // Safety: ensure any stuck loaders from navigation are cleared immediately
     this.loadingService.forceHide();
 
@@ -2650,6 +2657,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    document.body.classList.remove('onboarding-active');
     void this.keyboardShowListener?.remove();
     void this.keyboardHideListener?.remove();
     window.visualViewport?.removeEventListener('resize', this.visualViewportResizeHandler);

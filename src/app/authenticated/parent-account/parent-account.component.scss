@@ -1881,6 +1881,7 @@ button {
   .today-plan ::ng-deep .glance-card {
     border-radius: 32px;
   }
+
 }
 
 // ── Web / tablet chrome swap ─────────────────────────────────────────────
@@ -2240,4 +2241,41 @@ button {
   .message-composer-sheet {
     animation: none !important;
   }
+}
+
+// Keep family profiles in one responsive row. The switcher used to behave like
+// a carousel because every item had a fixed minimum width and the rail scrolled.
+.child-switcher__rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  overflow-x: visible;
+}
+
+.child-switcher__rail > .switcher-child,
+.child-switcher__rail > .switcher-action,
+.child-switcher__rail > .switcher-co-parent {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  flex: none;
+}
+
+.child-switcher__rail .switcher-child--selected-single,
+.child-switcher__rail .switcher-child--selected-multiple,
+.child-switcher__rail--multiple .switcher-action,
+.child-switcher__rail--multiple .switcher-co-parent {
+  width: 100%;
+  min-width: 0;
+  flex: none;
+}
+
+.child-switcher__rail .switcher-child,
+.child-switcher__rail .switcher-child--selected-single,
+.child-switcher__rail .switcher-child--selected-multiple {
+  padding-inline: 5px;
+}
+
+.child-switcher__rail .switcher-action--invite {
+  margin-left: 0;
 }

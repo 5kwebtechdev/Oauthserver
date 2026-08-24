@@ -138,13 +138,22 @@ export class AppComponent implements OnInit, OnDestroy {
         // iOS: background colour is inherited from the page behind the status bar.
         // setBackgroundColor has no effect on iOS — the peach background of ion-content
         // already shows through because UIViewControllerBasedStatusBarAppearance = true.
-        this.authSessionCleanup.initializeGoogleAuth();
         // Initialize FCM: registers permission, gets token, attaches listeners.
         // The service guards against duplicate listener setup internally.
         this.pushNotifications.initialize().catch(err =>
           console.warn('[AppComponent] Push notification init failed:', err)
         );
       }
+
+      // GoogleAuth is a Capacitor plugin with its own web implementation (loads
+      // Google's platform.js and initializes gapi.auth2), so it must run on web
+      // too — not just inside the native-only branch above. Doing this eagerly
+      // at startup (rather than lazily on the first "Continue with Google"
+      // click) matters specifically on web: browsers only allow a popup opened
+      // synchronously within a user gesture, and if the script/gapi init were
+      // still loading when the user clicks, the account-picker popup would get
+      // silently blocked.
+      this.authSessionCleanup.initializeGoogleAuth();
     });
 
     // Track app open for pet age progression
