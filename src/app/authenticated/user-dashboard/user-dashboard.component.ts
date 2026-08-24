@@ -605,6 +605,13 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
               id: item.id || '',
               title: item.title || '',
               notes: item.description || '',
+              // Preserve the backend calendar classification so personal
+              // events can render in Upcoming Events instead of as Planner.
+              originalCalendarType: item.type || item.eventType || '',
+              eventType: item.eventType || '',
+              eventDate: item.eventDate || item.startDate || '',
+              recurrence: item.recurrence || '',
+              allDay: item.allDay === true,
               startDate: item.startDate ? new Date(item.startDate) : new Date(),
               endDate: item.endDate ? new Date(item.endDate) : new Date(),
               startTime: item.startTime || '07:00:00',

@@ -791,39 +791,40 @@ h4 {
   display: block;
 }
 
-// Compact Child Home treatment from Figma node 23113:12658.
+// Upcoming Events / Today at a Glance treatment from Figma node 23937:51247.
 .glance-card {
   gap: 16px !important;
   padding: 16px;
-  border-radius: 0;
-  background: #EEF0FB;
-  box-shadow: none;
+  border-radius: 24px;
+  background: #EAF2F3;
+  box-shadow: 0 0 2px 1px rgba(83, 124, 129, .18);
   --glance-tab-active: #A92557;
   transition: background-color 180ms ease;
+  overflow: hidden;
 }
 
 .glance-card--all {
   --glance-tab-active: #A92557;
-  background: #FFF3F7;
+  background: #EAF2F3;
 }
 
 .glance-card--habits {
   --glance-tab-active: #8B8DCB;
-  background: #F3F2FF;
+  background: #EAF2F3;
 }
 
 .glance-card--tasks {
   --glance-tab-active: #E95B2A;
-  background: #FFF4EE;
+  background: #EAF2F3;
 }
 
 .glance-card--timetable {
-  --glance-tab-active: #4F8589;
-  background: #EFF8F8;
+  --glance-tab-active: #89B3B6;
+  background: #EAF2F3;
 }
 
 .day-at-glance-container {
-  gap: 24px;
+  gap: 16px;
 }
 
 .glance-heading-block {
@@ -841,8 +842,8 @@ h4 {
 
 .glance-card ::ng-deep .superme-card-header__tagline .tag {
   color: #6B656A;
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 .glance-done-pill {
@@ -890,7 +891,7 @@ h4 {
   padding: 8px 4px;
   border-radius: 8px;
   color: #6B656A;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
 
   &.active {
@@ -912,9 +913,15 @@ h4 {
 }
 
 .glance-tab-icon {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
+}
+
+// The exported Planner artwork is white for its selected teal pill. Tint it
+// teal only while it is inactive so it remains visible on the white tab.
+.glance-card:not(.glance-card--timetable) .glance-tab:nth-child(4) .glance-tab-icon {
+  filter: brightness(0) saturate(100%) invert(45%) sepia(15%) saturate(720%) hue-rotate(137deg) brightness(94%) contrast(86%);
 }
 
 // glance-all.svg is a large multi-tile illustration (three separate icon
@@ -941,13 +948,13 @@ h4 {
 
 .text-view-all,
 .add-new-pill {
-  min-height: 22px;
-  padding: 4px 16px;
+  min-height: 38px;
+  padding: 8px 16px;
   border: 2px solid #8B8DCB;
-  border-radius: 16px;
+  border-radius: 24px;
   background: #FFFFFF;
   color: #432477;
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.4;
 }
@@ -957,6 +964,149 @@ h4 {
   background:
     linear-gradient(#FFFFFF, #FFFFFF) padding-box,
     linear-gradient(135deg, #8B8DCB, #E1527C, #F2A33B) border-box;
+}
+
+// ── Upcoming events carousel ────────────────────────────────────────────────
+.glance-upcoming {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+}
+
+.glance-upcoming__header,
+.glance-upcoming__title {
+  align-items: center;
+  display: flex;
+}
+
+.glance-upcoming__header {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.glance-upcoming__title {
+  gap: 4px;
+  min-width: 0;
+
+  img {
+    flex: 0 0 auto;
+    height: 24px;
+    object-fit: contain;
+    width: 25px;
+  }
+
+  h3 {
+    color: #282527;
+    font-family: var(--font-sans);
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+  }
+}
+
+.glance-outline-button {
+  appearance: none;
+  background: #FFFFFF;
+  border: 2px solid #8B8DCB;
+  border-radius: 24px;
+  color: #432477;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  min-height: 38px;
+  padding: 8px 16px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.glance-upcoming__list {
+  display: flex;
+  gap: 8px;
+  margin-inline: -1px;
+  overflow-x: auto;
+  padding: 1px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.glance-upcoming__empty {
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 0 2px .5px rgba(83, 124, 129, .5);
+  color: #6B656A;
+  display: flex;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  justify-content: center;
+  min-height: 54px;
+  padding: 8px 16px;
+  text-align: center;
+  width: 100%;
+}
+
+.glance-event-card {
+  align-items: center;
+  appearance: none;
+  background: #FFFFFF;
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 0 2px .5px rgba(83, 124, 129, .5);
+  color: #282527;
+  cursor: pointer;
+  display: flex;
+  flex: 0 0 min(192.5px, 54vw);
+  gap: 8px;
+  min-height: 54px;
+  padding: 8px;
+  scroll-snap-align: start;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+
+  > img {
+    flex: 0 0 auto;
+    height: 38px;
+    object-fit: contain;
+    width: 38px;
+  }
+
+  > span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  strong,
+  em {
+    font-family: var(--font-sans);
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: #282527;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  em {
+    color: #6B656A;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 600;
+  }
 }
 
 @media (max-width: 360px) {
@@ -971,9 +1121,12 @@ h4 {
   }
 
   .glance-tab-icon {
-    width: 12px;
-    height: 12px;
+    width: 17px;
+    height: 17px;
   }
+
+  .glance-tab { font-size: 13px; }
+  .glance-event-card { flex-basis: min(176px, 68vw); }
 }
 
 // ── Planner tab: grouped schedule cards ─────────────────────────────────────
@@ -991,7 +1144,7 @@ h4 {
   border-radius: 16px;
   box-shadow: 0 0 2px 2px rgba(107, 101, 106, .1);
   overflow: hidden;
-  padding: 8px 12px 12px 16px;
+  padding: 8px 12px 12px 24px;
 }
 
 .glance-planner-card__header {
@@ -1032,7 +1185,7 @@ h4 {
   }
 
   strong {
-    color: #282527;
+    color: #3E5A60;
     font-size: 17px;
     font-weight: 700;
     line-height: 1.3;
@@ -1047,33 +1200,39 @@ h4 {
   gap: 6px;
 
   em {
-    background: #e8f2f2;
+    background: #EAF2F3;
+    border: 1px solid #3E5A60;
     border-radius: 16px;
-    color: #3e5a60;
+    color: #3E5A60;
     font-size: 13px;
     font-style: normal;
     font-weight: 700;
     line-height: 18px;
-    padding: 2px 8px;
+    padding: 5px 16px;
     white-space: nowrap;
   }
 }
 
 .glance-planner-card__chevron {
   height: 24px;
-  width: 24px;
-  color: #282527;
-  transform: rotate(180deg);
   transition: transform 180ms ease;
+  width: 24px;
+  object-fit: contain;
+
+  // Figma exports a left-facing chevron and rotates it in the component.
+  // Expanded points up; collapsed points down.
+  &.is-expanded {
+    transform: rotate(90deg);
+  }
 
   &.is-collapsed {
-    transform: rotate(0deg);
+    transform: rotate(-90deg);
   }
 }
 
 .glance-planner-card > p {
-  color: #6b656a;
-  font-size: 13px;
+  color: #537C81;
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
   margin: 0 0 8px 20px;
@@ -1091,7 +1250,8 @@ h4 {
   display: grid;
   gap: 8px;
   grid-template-columns: minmax(72px, .9fr) minmax(0, 1fr) auto;
-  min-height: 30px;
+  border-top: 1px solid #D9D6D8;
+  min-height: 48px;
   transition: opacity 180ms ease, color 180ms ease;
 
   time,
@@ -1103,11 +1263,11 @@ h4 {
   }
 
   time {
-    color: #6b656a;
+    color: #537C81;
   }
 
   strong {
-    color: #282527;
+    color: #537C81;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1115,12 +1275,12 @@ h4 {
   }
 
   em {
-    background: #e8f2f2;
+    background: #EAF2F3;
     border-radius: 16px;
     color: #3e5a60;
-    font-size: 12px;
+    font-size: 13px;
     font-style: normal;
-    padding: 2px 8px;
+    padding: 5px 16px;
     white-space: nowrap;
   }
 

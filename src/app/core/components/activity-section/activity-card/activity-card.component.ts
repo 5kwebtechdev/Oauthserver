@@ -19,12 +19,13 @@ import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { AutoAbortService } from '../auto-abort.service';
 import { CoerceBoolean } from "../../../coerceBoolean.decorator";
 import { Habit } from '../habit.types';
-import { Subscription } from 'rxjs';
+import { catchError, forkJoin, of, skip, Subscription } from 'rxjs';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
+import { EventApi } from '../../../api/event.api';
 
 @Component({
   selector: 'activity-card',
@@ -251,6 +252,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     private habitApi: HabitApi,
     private taskApi: TaskApi,
     private calendarService: CalendarService,
+    private eventApi: EventApi,
     private habitService: HabitService,
     private modalCtrl: ModalController,
     private router: Router,
@@ -989,6 +991,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   ngOnInit() {
 
+    // The Home Figma opens this section on Planner. Keep the full activity
+    // page/list flow unchanged while making the dashboard's first view match.
+    if ((this.mode === 'recent' || this.mode === 'list') && this.currentActive === 'all') {
+      this.currentActive = 'timetable';
+    }
+
     // If habit is provided, set properties from it
     if (this.habit) {
       // Calculate timestamps from date+time if not present
@@ -1039,17 +1047,29 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     // fetches the parent's own (usually empty) calendar instead. Re-fetch
     // whenever the selected child actually changes so this card never gets
     // stuck showing another user's data.
-    if (this.mode === 'list') {
-      this.childSelectionSubscription = this.profileSelectorService.childChanged$.subscribe(() => {
-        this.habits = [];
-        this.tasks = [];
-        this.timetables = [];
-        // force=true bypasses HabitApi's date-keyed cache, which otherwise
-        // has no notion of "which user" and would keep serving whichever
-        // account's response was cached first for today's date.
-        this.loadHabits(true);
-        this.loadTodayTasks();
-        this.loadGlancePlannerCards();
+    const watchesChildSelection = (this.mode === 'list' || this.mode === 'recent')
+      && (this.isParentOverride ?? this.authService.isParentUser());
+    if (watchesChildSelection) {
+      // Skip the BehaviorSubject's current value: the initial request above
+      // already uses that context through ProfileSelectorInterceptor.
+      this.childSelectionSubscription = this.profileSelectorService.childChanged$.pipe(skip(1)).subscribe(() => {
+        // The list screen owns these collections. The recent dashboard receives
+        // habits/tasks from its parent, but both modes own the event/planner feed.
+        if (this.mode === 'list') {
+          this.habits = [];
+          this.tasks = [];
+          this.timetables = [];
+          // force=true bypasses HabitApi's date-keyed cache, which otherwise
+          // has no notion of "which user" and would keep serving whichever
+          // account's response was cached first for today's date.
+          this.loadHabits(true);
+          this.loadTodayTasks();
+        }
+        // Clear the prior profile immediately so Child A's cards are never
+        // visible while Child B's requests are in flight.
+        this.glancePlannerRaw = [];
+        this.glanceUpcomingEventRaw = [];
+        this.loadGlancePlannerCards(true);
       });
     }
 
@@ -1877,7 +1897,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
             return {
               ...item,
               type: 'timetable',
-              title: item.title || item.name || 'Time Table',
+              title: item.title || item.name || 'Planner',
               notes: item.description || item.notes || '',
               startTimeStamp: timestamps.startTimeStamp,
               endTimeStamp: timestamps.endTimeStamp,
@@ -1970,6 +1990,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   // by schedule rather than the flat per-entry list `timetables`/`recentTimetables`
   // use elsewhere in this component.
   public glancePlannerRaw: any[] = [];
+  public glanceUpcomingEventRaw: any[] = [];
   public glancePlannerLoading = false;
   public glancePlannerLoaded = false;
   private glancePlannerReloadPending = false;
@@ -1997,6 +2018,24 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     return this.glancePlannerCards.length > 0;
   }
 
+  /** Upcoming personal events for the current month, resolved without demo data. */
+  get glanceUpcomingEvents(): any[] {
+    const today = this.glanceStartOfDay(new Date());
+    const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    monthEnd.setHours(23, 59, 59, 999);
+
+    return this.glanceUpcomingEventRaw
+      .map(event => {
+        const occurrence = this.getGlanceUpcomingEventOccurrence(event, today);
+        return occurrence ? { ...event, __glanceEventDate: occurrence } : null;
+      })
+      .filter((event: any) => {
+        const occurrence = event?.__glanceEventDate as Date | undefined;
+        return !!occurrence && occurrence >= today && occurrence <= monthEnd;
+      })
+      .sort((left, right) => left.__glanceEventDate.getTime() - right.__glanceEventDate.getTime());
+  }
+
   loadGlancePlannerCards(force = false): void {
     if (this.glancePlannerLoading) {
       // A save can complete while the initial grouped request is still in
@@ -2011,14 +2050,22 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     this.glancePlannerLoading = true;
-    this.calendarService.getUserPlannerCalendarMonth(formatted).subscribe({
-      next: (response: any) => {
-        const allEvents = Array.isArray(response?.events) ? response.events : [];
-        this.glancePlannerRaw = allEvents.filter((item: any) => this.isGlancePlannerSchedule(item));
+    // Planner schedules and personal events intentionally use separate backend
+    // endpoints. Keep them separate here too, then render them in one Figma card.
+    forkJoin({
+      calendar: this.calendarService.getUserPlannerCalendarMonth(formatted),
+      events: this.eventApi.getEvents().pipe(catchError(() => of([])))
+    }).subscribe({
+      next: ({ calendar, events }: { calendar: any; events: any[] }) => {
+        const calendarEvents = Array.isArray(calendar?.events) ? calendar.events : [];
+        const personalCalendarEvents = calendarEvents.filter((item: any) => !this.isGlancePlannerSchedule(item));
+        this.glancePlannerRaw = calendarEvents.filter((item: any) => this.isGlancePlannerSchedule(item));
+        this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents(personalCalendarEvents, events);
         this.finishGlancePlannerLoad();
       },
       error: () => {
         this.glancePlannerRaw = [];
+        this.glanceUpcomingEventRaw = [];
         this.finishGlancePlannerLoad();
       }
     });
@@ -2061,8 +2108,38 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     return entry?.id ?? entry?.activityId ?? `${entry?.name ?? entry?.title ?? 'entry'}-${entry?.startTime ?? index}`;
   }
 
+  trackGlanceUpcomingEvent(index: number, event: any): string | number {
+    return event?.id ?? `${event?.name ?? event?.title ?? 'event'}-${event?.eventDate ?? event?.startDate ?? index}`;
+  }
+
   getGlancePlannerTitle(source: any): string {
-    return source?.title || source?.name || 'Time Table';
+    return source?.title || source?.name || 'Planner';
+  }
+
+  getGlanceUpcomingEventIcon(event: any): string {
+    const description = `${event?.eventType || ''} ${event?.title || ''} ${event?.name || ''}`.toLowerCase();
+    return description.includes('exam') || description.includes('test')
+      ? 'assets/figma/home-glance/event-exam.svg'
+      : 'assets/figma/home-glance/event-birthday.svg';
+  }
+
+  getGlanceUpcomingEventCountdown(event: any): string {
+    const occurrence = event?.__glanceEventDate instanceof Date
+      ? event.__glanceEventDate
+      : this.getGlanceUpcomingEventOccurrence(event, this.glanceStartOfDay(new Date()));
+    if (!occurrence) return 'This month';
+
+    const today = this.glanceStartOfDay(new Date());
+    const days = Math.round((this.glanceStartOfDay(occurrence).getTime() - today.getTime()) / 86400000);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'In 1 Day';
+    return days > 1 ? `In ${days} Days` : new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit', month: 'short'
+    }).format(occurrence);
+  }
+
+  async openUpcomingEvents(): Promise<void> {
+    await this.router.navigate(['/authed/activity-page']);
   }
 
   getGlancePlannerDateRange(source: any): string {
@@ -2107,18 +2184,50 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   private isGlancePlannerSchedule(item: any): boolean {
-    const type = String(item?.type || item?.eventType || '').toUpperCase();
+    const type = String(item?.originalCalendarType || item?.type || item?.eventType || '').toUpperCase();
     // 'EVENT' entries are personal calendar events (birthdays, appointments) merged
     // in from a separate endpoint — everything else in this feed is a timetable/
     // planner schedule, even a simple single time-block without a colorCode/
     // activities array (e.g. one created via the plain, non-multi-entry form).
-    if (type === 'EVENT') return false;
+    if (type === 'EVENT' || item?.eventDate || item?.recurrence || item?.allDay === true) return false;
     return Array.isArray(item?.activities)
       || Boolean(item?.colorCode || item?.color_code)
       || type.includes('TIMETABLE')
       || type.includes('PLANNER')
       || type.includes('SCHEDULE')
       || Boolean(item?.startTime && item?.endTime);
+  }
+
+  private getGlanceUpcomingEventOccurrence(event: any, referenceDate: Date): Date | null {
+    const original = this.getGlanceLocalDate(event?.eventDate || event?.startDate || event?.start_date);
+    if (!original) return null;
+
+    const recurrence = String(event?.recurrence || '').toUpperCase();
+    const year = referenceDate.getFullYear();
+    const month = referenceDate.getMonth();
+    if (recurrence === 'YEARLY') {
+      if (original.getMonth() !== month) return null;
+      return new Date(year, month, Math.min(original.getDate(), new Date(year, month + 1, 0).getDate()));
+    }
+    if (recurrence === 'MONTHLY') {
+      return new Date(year, month, Math.min(original.getDate(), new Date(year, month + 1, 0).getDate()));
+    }
+    return this.glanceStartOfDay(original);
+  }
+
+  private mergeGlanceUpcomingEvents(calendarEvents: any[], personalEvents: any[]): any[] {
+    const merged = [...(calendarEvents || []), ...(personalEvents || [])];
+    const unique = new Map<string, any>();
+    merged.forEach((event, index) => {
+      const key = String(event?.id ?? [
+        event?.name ?? event?.title ?? 'event',
+        event?.eventDate ?? event?.startDate ?? '',
+        event?.startTime ?? '',
+        index
+      ].join('|'));
+      if (!unique.has(key)) unique.set(key, event);
+    });
+    return Array.from(unique.values());
   }
 
   private glancePlannerOccursOnDate(item: any, date: Date): boolean {
@@ -2528,7 +2637,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     if (!this.recentTimetables) return [];
     return this.recentTimetables.filter(item => {
       const status = (item.status || '').toLowerCase();
-      return status !== 'completed' && status !== 'skipped';
+      return status !== 'completed' && status !== 'skipped' && this.isGlancePlannerSchedule(item);
     });
   }
 
@@ -2554,7 +2663,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
     // For recent mode, combine recent habits, tasks and timetable entries
     if (this.mode === 'recent') {
-      const timetableItems = this.hasGlancePlannerCards ? [] : (this.recentTimetables || []);
+      const timetableItems = this.hasGlancePlannerCards ? [] : this.filteredRecentTimetables;
       const combined = [...(this.recentHabits || []), ...(this.recentTasks || []), ...timetableItems];
       return combined.sort((a, b) => {
         // Sort by start time: closest to current time first
@@ -2593,24 +2702,18 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     return this.currentActive === 'tasks' && !!this.hasHabits && !this.hasTasks;
   }
 
-  /** "Today at a Glance" header subtitle, e.g. "5 Habits • 3 Tasks • 1 Time Table" */
+  /** "Today at a Glance" header subtitle, e.g. "5 Habits • 3 Tasks • 1 Planner" */
   /** "Planner" label/icon is used for every role now, matching the Child/Self experience. */
   get usesPlannerExperience(): boolean {
     return true;
   }
 
   get plannerTabLabel(): string {
-    return this.usesPlannerExperience ? 'Planner' : 'Time Table';
+    return 'Planner';
   }
 
   get plannerTabIcon(): string {
-    // glance-planner.svg renders white-on-transparent (meant for a colored
-    // active pill) and disappears against the inactive white tab background.
-    // calendar.svg is the same teal artwork already used consistently for
-    // this tab elsewhere in the app.
-    return this.usesPlannerExperience
-      ? 'assets/figma/child-planner/calendar.svg'
-      : 'assets/figma/child-home/glance-timetable.png';
+    return 'assets/figma/home-glance/tab-planner.webp';
   }
 
   get viewActionLabel(): string {
