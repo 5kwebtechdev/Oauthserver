@@ -76,7 +76,7 @@ export class DashboardWebFooterComponent implements OnInit {
   ];
 
   readonly companySection: FooterSection = {
-    title: 'COMPANY',
+    title: 'ABOUT SUPERMEAPP',
     links: [
       { label: 'About Us', href: 'https://supermeapp.com/about' },
       { label: 'Meet the team', href: 'https://supermeapp.com/about' },
@@ -93,25 +93,6 @@ export class DashboardWebFooterComponent implements OnInit {
 
   readonly footerSections: FooterSection[] = [
     {
-      title: 'LEARNING',
-      links: [
-        { label: 'Quiz', routerLink: '/authed/content', queryParams: { type: 'QUIZ' } },
-        { label: 'Puzzles', routerLink: '/authed/content', queryParams: { type: 'PUZZLE' } },
-        { label: 'Articles', routerLink: '/authed/content', queryParams: { type: 'ARTICLE' } },
-        { label: 'MasterClass', routerLink: '/authed/content', queryParams: { type: 'MASTERCLASS' } },
-      ],
-    },
-    {
-      title: 'QUICK LINKS',
-      links: [
-        { label: 'Notes', routerLink: '/authed/notes' },
-        { label: 'EduHub', routerLink: '/authed/education' },
-        { label: 'Find a Tutor', routerLink: '/authed/tutors' },
-        { label: 'Become a Tutor', href: 'https://supermeapp.com/become-a-tutor' },
-        { label: 'Submit an ad/event', href: 'https://supermeapp.com/submit-an-ad' },
-      ],
-    },
-    {
       title: 'SHOP',
       links: [
         { label: 'School Uniforms', routerLink: '/authed/school-store' },
@@ -122,52 +103,40 @@ export class DashboardWebFooterComponent implements OnInit {
       ],
     },
     {
-      title: 'GET LISTED',
-      links: [
-        {
-          label: 'Become a Tutor',
-          href: 'https://supermeapp.com/become-a-tutor',
-        },
-        {
-          label: 'List your Business',
-          href: 'https://supermeapp.com/submit-an-ad',
-        },
-        {
-          label: 'Advertise your Event/Workshop',
-          href: 'https://supermeapp.com/submit-an-ad',
-        },
-        {
-          label: 'Advertise with Us',
-          href: 'https://supermeapp.com/submit-an-ad',
-        },
-      ],
-    },
-    {
       title: 'EDUHUB',
       links: [
         { label: 'Find a Tutor', routerLink: '/authed/tutors' },
         { label: 'Find an Academy', routerLink: '/authed/academies' },
-        { label: 'Find a Stationery Shop', routerLink: '/authed/education' },
-        { label: 'Find a Book Store', routerLink: '/authed/education' },
-        {
-          label: 'Find a Second-hand Book',
-          routerLink: '/authed/second-hand-books',
-        },
-        { label: 'Find a Sports Shop', routerLink: '/authed/education' },
-        {
-          label: 'Find a Counselor',
-          routerLink: '/authed/education/counselors',
-        },
+        { label: 'Find a Stationery Shop', routerLink: '/authed/education/shops', queryParams: { label: 'Stationery' } },
+        { label: 'Find a Book Store', routerLink: '/authed/education/shops', queryParams: { label: 'Book Store' } },
+        { label: 'Find a Second-hand Book', routerLink: '/authed/second-hand-books' },
+        { label: 'Find a Sports Shop', routerLink: '/authed/education/shops', queryParams: { label: 'Sports' } },
+        { label: 'Find a Counselor', routerLink: '/authed/counselors' },
         { label: 'Find an Event', routerLink: '/authed/education/events' },
         { label: 'Find a Workshop', routerLink: '/authed/education/workshops' },
+      ],
+    },
+    {
+      title: 'GET LISTED',
+      links: [
+        { label: 'Become a Tutor', href: 'https://supermeapp.com/become-a-tutor' },
+        { label: 'List your Business', href: 'https://supermeapp.com/submit-an-ad' },
+        { label: 'Advertise your Event/Workshop', href: 'https://supermeapp.com/submit-an-ad' },
+        { label: 'Advertise with Us', href: 'https://supermeapp.com/submit-an-ad' },
+      ],
+    },
+    {
+      title: 'APPS',
+      links: [
+        { label: 'SuperMeApp for Desktop', href: 'https://app.supermeapp.com/login' },
+        { label: 'SuperMeApp for Android', href: 'https://play.google.com/store/apps/details?id=io.ionic.starter' },
+        { label: 'SuperMeApp for iOS', href: 'https://apps.apple.com' },
       ],
     },
   ];
 
   get visibleFooterSections(): FooterSection[] {
-    return this.isParent
-      ? this.footerSections.filter((section) => !['LEARNING', 'QUICK LINKS'].includes(section.title))
-      : this.footerSections.filter((section) => ['LEARNING', 'QUICK LINKS', 'SHOP'].includes(section.title));
+    return this.footerSections;
   }
 
   readonly trustFeatures: TrustFeature[] = [

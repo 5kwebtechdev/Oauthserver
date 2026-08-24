@@ -10,6 +10,7 @@ import { ChildSelfImageService } from '../../../services/child-self-image.servic
 interface WebNavLink {
   label: string;
   link: string;
+  queryParams?: Record<string, string>;
 }
 
 interface WebNavItem {
@@ -22,35 +23,43 @@ const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
   {
     label: 'Learning',
     children: [
-      { label: 'Content Library', link: '/authed/content' },
-      { label: 'Academy', link: '/authed/academy' },
-      { label: 'Education Hub', link: '/authed/education' },
+      { label: 'Quiz', link: '/authed/content', queryParams: { type: 'QUIZ' } },
+      { label: 'Puzzle', link: '/authed/content', queryParams: { type: 'PUZZLE' } },
+      { label: 'Article', link: '/authed/content', queryParams: { type: 'ARTICLE' } },
+      { label: 'Master Class', link: '/authed/content', queryParams: { type: 'MASTERCLASS' } },
+      { label: 'Reels', link: '/authed/reels' },
     ],
   },
   {
     label: 'Quick Tools',
     children: [
-      { label: 'Timetable', link: '/authed/activity-timeline' },
-      { label: 'Calendar View', link: '/authed/activity-calendar' },
-      { label: 'Notes', link: '/authed/notes' },
       { label: 'Journal', link: '/authed/journal-input' },
+      { label: 'Notes', link: '/authed/notes' },
+      { label: 'Calendar', link: '/authed/activity-calendar' },
     ],
   },
   {
-    label: 'EduHub',
+    label: 'EduHub Listings',
     children: [
-      { label: 'EduHub Home', link: '/authed/education' },
-      { label: 'Tutors', link: '/authed/tutors' },
-      { label: 'Academies', link: '/authed/academies' },
+      { label: 'Tutor', link: '/authed/tutors' },
+      { label: 'Academy', link: '/authed/academies' },
+      { label: 'Stationery Shop', link: '/authed/education/shops', queryParams: { label: 'Stationery' } },
+      { label: 'Book Store', link: '/authed/education/shops', queryParams: { label: 'Book Store' } },
+      { label: 'Second-hand Book', link: '/authed/second-hand-books' },
+      { label: 'Sports Shop', link: '/authed/education/shops', queryParams: { label: 'Sports' } },
+      { label: 'Counselors', link: '/authed/counselors' },
       { label: 'Events', link: '/authed/education/events' },
+      { label: 'Workshops', link: '/authed/education/workshops' },
     ],
   },
   {
     label: 'Shop',
     children: [
-      { label: 'School Store', link: '/authed/school-store' },
-      { label: 'Second-hand Books', link: '/authed/second-hand-books' },
-      { label: 'My Orders', link: '/authed/school-store/my-orders' },
+      { label: 'School Uniforms', link: '/authed/school-store', queryParams: { category: 'School Uniforms' } },
+      { label: 'Textbook', link: '/authed/school-store', queryParams: { category: 'Textbook' } },
+      { label: 'Stationery', link: '/authed/school-store', queryParams: { category: 'Stationery' } },
+      { label: 'Entrance Exam Books', link: '/authed/school-store', queryParams: { category: 'Entrance Exam Books' } },
+      { label: 'General Books', link: '/authed/school-store', queryParams: { category: 'General Books' } },
     ],
   },
   { label: 'Insights', link: '/authed/analytics' },
@@ -60,26 +69,32 @@ const PARENT_NAV_ITEMS: WebNavItem[] = [
   {
     label: 'Parenting',
     children: [
-      { label: 'Parent Dashboard', link: '/authed/parent-account' },
-      { label: 'Child Learning', link: '/authed/parent-learning' },
-      { label: 'Insights', link: '/authed/analytics' },
+      { label: 'Blogs', link: '/authed/content', queryParams: { type: 'ARTICLE' } },
+      { label: 'Quizzes', link: '/authed/content', queryParams: { type: 'QUIZ' } },
     ],
   },
   {
     label: 'Shop',
     children: [
-      { label: 'School Store', link: '/authed/school-store' },
-      { label: 'Second-hand Books', link: '/authed/second-hand-books' },
-      { label: 'My Orders', link: '/authed/school-store/my-orders' },
+      { label: 'School Uniforms', link: '/authed/school-store', queryParams: { category: 'School Uniforms' } },
+      { label: 'Textbook', link: '/authed/school-store', queryParams: { category: 'Textbook' } },
+      { label: 'Stationery', link: '/authed/school-store', queryParams: { category: 'Stationery' } },
+      { label: 'Entrance Exam Books', link: '/authed/school-store', queryParams: { category: 'Entrance Exam Books' } },
+      { label: 'General Books', link: '/authed/school-store', queryParams: { category: 'General Books' } },
     ],
   },
   {
-    label: 'EduHub',
+    label: 'EduHub Listings',
     children: [
-      { label: 'EduHub Home', link: '/authed/education' },
-      { label: 'Tutors', link: '/authed/tutors' },
-      { label: 'Academies', link: '/authed/academies' },
+      { label: 'Tutor', link: '/authed/tutors' },
+      { label: 'Academy', link: '/authed/academies' },
+      { label: 'Stationery Shop', link: '/authed/education/shops', queryParams: { label: 'Stationery' } },
+      { label: 'Book Store', link: '/authed/education/shops', queryParams: { label: 'Book Store' } },
+      { label: 'Second-hand Book', link: '/authed/second-hand-books' },
+      { label: 'Sports Shop', link: '/authed/education/shops', queryParams: { label: 'Sports' } },
+      { label: 'Counselors', link: '/authed/counselors' },
       { label: 'Events', link: '/authed/education/events' },
+      { label: 'Workshops', link: '/authed/education/workshops' },
     ],
   },
 ];
@@ -100,10 +115,6 @@ export class WebNavComponent implements OnInit, OnDestroy {
   readonly chevronSrc = `${this.navigationAssetRoot}/chevron.svg`;
   readonly notificationSrc = `${this.navigationAssetRoot}/notification.svg`;
   readonly coinSrc = `${this.navigationAssetRoot}/coin.png`;
-  readonly streakSrc = 'assets/Icons-Neutral/Icon-Streak.png';
-  readonly badgeSrc = 'assets/Icons-Neutral/Icon-Badge.png';
-  readonly leaderboardSrc = 'assets/Icons-Neutral/Icon-Trophy.png';
-  readonly calendarSrc = 'assets/Icons-Neutral/Icon-Calendar.png';
 
   isParent = false;
   navItems: WebNavItem[] = CHILD_SELF_NAV_ITEMS;
@@ -111,8 +122,6 @@ export class WebNavComponent implements OnInit, OnDestroy {
   userAvatarUrl: string | null = null;
   avatarImageName: string | null = null;
   coins = 0;
-  streaks = 0;
-  badges = 0;
   openMenu: string | null = null;
 
   private readonly destroy$ = new Subject<void>();
@@ -149,10 +158,6 @@ export class WebNavComponent implements OnInit, OnDestroy {
         if (!stats) return;
         if (Number.isFinite(Number(stats.coins)))
           this.coins = Number(stats.coins);
-        if (Number.isFinite(Number(stats.streaks)))
-          this.streaks = Number(stats.streaks);
-        if (Number.isFinite(Number(stats.badges)))
-          this.badges = Number(stats.badges);
       });
     this.userService.refreshStats().subscribe({ error: () => undefined });
   }
@@ -207,27 +212,6 @@ export class WebNavComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/authed/coin']);
   }
 
-  goToStreaks(): void {
-    this.closeMenu();
-    void this.router.navigate(['/authed/streaks']);
-  }
-
-  goToBadges(): void {
-    this.closeMenu();
-    void this.router.navigate(['/authed/badges']);
-  }
-
-  goToLeaderboard(): void {
-    this.closeMenu();
-    void this.router.navigate(['/authed/streaks'], {
-      queryParams: { view: 'leaderboard' },
-    });
-  }
-
-  goToCalendar(): void {
-    this.closeMenu();
-    void this.router.navigate(['/authed/activity-calendar']);
-  }
 
   @HostListener('document:click')
   onDocumentClick(): void {

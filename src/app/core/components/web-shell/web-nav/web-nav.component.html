@@ -56,6 +56,7 @@
                 class="web-header__dropdown-link"
                 role="menuitem"
                 [routerLink]="child.link"
+                [queryParams]="child.queryParams || null"
                 (click)="closeMenu()"
               >
                 {{ child.label }}
@@ -69,26 +70,6 @@
     <div class="web-header__actions">
       <button
         type="button"
-        class="web-header__icon-button"
-        aria-label="Open notifications"
-        (click)="goToNotifications()"
-      >
-        <img [src]="notificationSrc" alt="" />
-      </button>
-
-      <button
-        *ngIf="!isParent"
-        type="button"
-        class="web-header__quick-action"
-        aria-label="View streaks"
-        (click)="goToStreaks()"
-      >
-        <img [src]="streakSrc" alt="" />
-        <span>{{ streaks | number }}</span>
-      </button>
-
-      <button
-        type="button"
         class="web-header__coin-button"
         aria-label="View coins"
         (click)="goToCoins()"
@@ -100,34 +81,11 @@
       <button
         *ngIf="!isParent"
         type="button"
-        class="web-header__quick-action"
-        aria-label="View badges"
-        (click)="goToBadges()"
+        class="web-header__icon-button"
+        aria-label="Open notifications"
+        (click)="goToNotifications()"
       >
-        <img [src]="badgeSrc" alt="" />
-        <span>{{ badges | number }}</span>
-      </button>
-
-      <button
-        *ngIf="!isParent"
-        type="button"
-        class="web-header__quick-action web-header__quick-action--icon-only"
-        aria-label="Open leaderboard"
-        title="Leaderboard"
-        (click)="goToLeaderboard()"
-      >
-        <img [src]="leaderboardSrc" alt="" />
-      </button>
-
-      <button
-        *ngIf="!isParent"
-        type="button"
-        class="web-header__quick-action web-header__quick-action--icon-only"
-        aria-label="Open calendar"
-        title="Calendar"
-        (click)="goToCalendar()"
-      >
-        <img [src]="calendarSrc" alt="" />
+        <img [src]="notificationSrc" alt="" />
       </button>
 
       <a

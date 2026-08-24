@@ -5,6 +5,13 @@
   role="contentinfo"
 >
   <div class="dashboard-footer__inner">
+    <section class="footer-hero" aria-label="SuperMeApp access">
+      <div>
+        <h2>Access Anywhere. Anytime.</h2>
+        <p>Your growth journey stays with you across desktop, Android and iOS.</p>
+      </div>
+      <a [routerLink]="isParent ? '/authed/parent-account' : '/authed/user-dashboard'">Explore SuperMeApp</a>
+    </section>
     <div class="footer-directory">
       <section class="footer-brand" aria-label="SuperMeApp">
         <a
@@ -136,8 +143,7 @@
         </ng-container>
       </nav>
       <p>
-        Copyright © {{ currentYear }} Evolved Wellness Pvt Ltd. All rights
-        reserved
+        Copyright © {{ currentYear }} SuperMe App. All rights reserved.
       </p>
     </div>
   </div>
