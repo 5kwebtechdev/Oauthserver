@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AuthApi } from './auth.api';
@@ -37,6 +37,7 @@ export interface EventDto extends EventPayload {
 @Injectable({ providedIn: 'root' })
 export class EventApi {
   private readonly base = environment.apiUrl || '';
+  private readonly cachedEvents = new Map<number, EventDto>();
 
   constructor(private readonly http: HttpClient, private readonly authApi: AuthApi) {}
 
@@ -61,7 +62,17 @@ export class EventApi {
   }
 
   getEvents(): Observable<EventDto[]> {
-    return this.http.get<EventDto[]>(`${this.base}/events/all`, { headers: this.headers() });
+    return this.http.get<EventDto[]>(`${this.base}/events/all`, { headers: this.headers() }).pipe(
+      tap(events => {
+        this.cachedEvents.clear();
+        (events || []).forEach(event => this.cachedEvents.set(Number(event.id), event));
+      })
+    );
+  }
+
+  getCachedEvent(id: string | number | null | undefined): EventDto | null {
+    if (id === null || id === undefined) return null;
+    return this.cachedEvents.get(Number(id)) || null;
   }
 
   getEvent(id: string | number): Observable<EventDto> {

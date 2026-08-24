@@ -430,6 +430,7 @@
           <div class="planner-entry-title-row">
             <span class="planner-entry-number">{{ i + 1 }}</span>
             <input [(ngModel)]="entry.name" maxlength="40" placeholder="Subject/Label"
+              (ngModelChange)="onPlannerEntryChanged()"
               [attr.aria-label]="'Time table entry ' + (i + 1) + ' label'">
             <button type="button" class="planner-entry-remove" (click)="removePlannerEntry(i)"
               [attr.aria-label]="'Remove time table entry ' + (i + 1)">
@@ -456,7 +457,8 @@
               <span class="planner-picker-copy">
                 <strong>Start Time</strong>
                 <superme-timepicker #plannerStartTimeCtrl label="Start Time" placeholder=""
-                  [(ngModel)]="entry.startTime"></superme-timepicker>
+                  [(ngModel)]="entry.startTime"
+                  (ngModelChange)="onPlannerEntryChanged()"></superme-timepicker>
               </span>
               <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
             </div>
@@ -472,7 +474,8 @@
                 <strong>End Time</strong>
                 <superme-timepicker #plannerEndTimeCtrl label="End Time" placeholder=""
                   [seedTime]="entry.startTime" [quickDurations]="[15, 30, 45, 60]"
-                  [(ngModel)]="entry.endTime"></superme-timepicker>
+                  [(ngModel)]="entry.endTime"
+                  (ngModelChange)="onPlannerEntryChanged()"></superme-timepicker>
               </span>
               <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
             </div>

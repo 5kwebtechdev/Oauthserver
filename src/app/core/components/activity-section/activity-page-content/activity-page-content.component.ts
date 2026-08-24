@@ -17,6 +17,7 @@ import { CustomToastService, Toast } from '../../../services/custom-toast.servic
 import { Habit } from '../habit.types';
 import { CalendarService } from '../../../services/calendar.service';
 import { CalendarResponse } from '../../../models/calendar.model';
+import { EventApi } from '../../../api/event.api';
 import { Observable, Subscription, filter, skip, take } from 'rxjs';
 import { LongPressDirective } from '../../../directives/gestureControlDirective';
 
@@ -99,6 +100,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         private buttonLogic: HabitButtonLogicService,
         private taskApi: TaskApi,
         private calendarService: CalendarService,
+        private eventApi: EventApi,
         private route: ActivatedRoute,
         private router: Router,
         private profileSelector: ProfileSelectorService,
@@ -559,6 +561,18 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         if (difference === 1) return 'Tomorrow';
         if (difference > 1) return `In ${difference} days`;
         return new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(eventDay);
+    }
+
+    getChildEventIcon(event: any): string {
+        // Keep View All consistent with the event cards on Home. Some calendar
+        // responses omit eventType, so reuse the already-loaded Home event
+        // metadata by id without issuing another /events/all request here.
+        const cachedEvent = this.eventApi.getCachedEvent(event?.id);
+        const description = `${event?.eventType || event?.event_type || cachedEvent?.eventType || ''} ${event?.title || cachedEvent?.name || ''} ${event?.name || cachedEvent?.name || ''}`
+            .toLowerCase();
+        return description.includes('exam') || description.includes('test')
+            ? 'assets/figma/home-glance/event-exam.svg'
+            : 'assets/figma/home-glance/event-birthday.svg';
     }
 
     private matchesChildStatus(item: any): boolean {

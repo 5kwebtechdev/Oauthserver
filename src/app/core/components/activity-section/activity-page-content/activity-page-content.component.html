@@ -116,7 +116,7 @@
                 <ng-container *ngIf="showsPlannerEvents">
                     <button type="button" class="child-event-card" *ngFor="let event of childEventItems"
                         (click)="onCardTap(event)">
-                        <img src="assets/figma/planner-daily/event-cake.svg" alt="" />
+                        <img [src]="getChildEventIcon(event)" alt="" />
                         <span>
                             <strong>{{ getChildItemTitle(event) }}</strong>
                             <em>{{ getChildEventSubtitle(event) }}</em>
