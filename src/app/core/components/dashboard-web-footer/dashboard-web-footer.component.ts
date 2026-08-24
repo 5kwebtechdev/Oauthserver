@@ -93,6 +93,25 @@ export class DashboardWebFooterComponent implements OnInit {
 
   readonly footerSections: FooterSection[] = [
     {
+      title: 'LEARNING',
+      links: [
+        { label: 'Quiz', routerLink: '/authed/content', queryParams: { type: 'QUIZ' } },
+        { label: 'Puzzles', routerLink: '/authed/content', queryParams: { type: 'PUZZLE' } },
+        { label: 'Articles', routerLink: '/authed/content', queryParams: { type: 'ARTICLE' } },
+        { label: 'MasterClass', routerLink: '/authed/content', queryParams: { type: 'MASTERCLASS' } },
+      ],
+    },
+    {
+      title: 'QUICK LINKS',
+      links: [
+        { label: 'Notes', routerLink: '/authed/notes' },
+        { label: 'EduHub', routerLink: '/authed/education' },
+        { label: 'Find a Tutor', routerLink: '/authed/tutors' },
+        { label: 'Become a Tutor', href: 'https://supermeapp.com/become-a-tutor' },
+        { label: 'Submit an ad/event', href: 'https://supermeapp.com/submit-an-ad' },
+      ],
+    },
+    {
       title: 'SHOP',
       links: [
         { label: 'School Uniforms', routerLink: '/authed/school-store' },
@@ -144,6 +163,12 @@ export class DashboardWebFooterComponent implements OnInit {
       ],
     },
   ];
+
+  get visibleFooterSections(): FooterSection[] {
+    return this.isParent
+      ? this.footerSections.filter((section) => !['LEARNING', 'QUICK LINKS'].includes(section.title))
+      : this.footerSections.filter((section) => ['LEARNING', 'QUICK LINKS', 'SHOP'].includes(section.title));
+  }
 
   readonly trustFeatures: TrustFeature[] = [
     {

@@ -86,7 +86,7 @@
         ></ng-container>
       </div>
 
-      <ng-container *ngFor="let section of footerSections">
+      <ng-container *ngFor="let section of visibleFooterSections">
         <ng-container
           *ngTemplateOutlet="footerSection; context: { $implicit: section }"
         ></ng-container>

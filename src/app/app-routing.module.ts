@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthenticatedModule } from "./authenticated/authenticated.module";
-import { authGuard } from './core/authe-guard/authe-guard';
+import { authGuard, guestGuard } from './core/authe-guard/authe-guard';
 import { OurPoliciesComponent } from './core/components/user-profile/our-policies/our-policies.component';
 
 const routes: Routes = [
@@ -10,8 +10,9 @@ const routes: Routes = [
   // Ionic app's internal `/home/*` route structure.
   {
     path: 'login',
-    redirectTo: 'home/login',
-    pathMatch: 'full'
+    loadComponent: () =>
+      import('./home/login/login.component').then((m) => m.LoginComponent),
+    canActivate: [guestGuard],
   },
   {
     path: 'signup',

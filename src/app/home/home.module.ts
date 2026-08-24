@@ -36,11 +36,11 @@ import { AuthBackButtonComponent } from "../core/components/auth-back-button/aut
     ResetPasswordComponent,
     SocialMediaComponent,
     AuthBackButtonComponent,
+    LoginComponent,
     QRCodeComponent
   ],
   declarations: [
     HomePage,
-    LoginComponent,
     SignupComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]

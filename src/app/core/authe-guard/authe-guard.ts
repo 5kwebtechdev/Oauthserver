@@ -38,7 +38,7 @@ export const startupGuard: CanActivateFn = () => {
     }
 
     if (onboardingState.hasCompletedRoleSelection()) {
-        return router.parseUrl('/home/login');
+        return router.parseUrl('/login');
     }
 
     if (onboardingState.hasSeenSplash()) {
@@ -110,7 +110,7 @@ export const authGuard: CanActivateFn = (
         console.warn('[AuthGuard] Access denied. Redirecting to login.');
 
         // Redirect to login with return URL
-        router.navigate(['/home/login'], {
+        router.navigate(['/login'], {
             queryParams: { returnUrl: state.url }
         });
 

@@ -735,7 +735,7 @@ export class AuthService {
     // Remove the authenticated Ionic view stack immediately. External/native
     // sign-out can finish in parallel without leaving old user content visible.
     const navigation = redirectToLogin
-      ? this.navCtrl.navigateRoot('/home/login', { animated: false })
+      ? this.navCtrl.navigateRoot('/login', { animated: false })
       : Promise.resolve(true);
 
     await Promise.all([

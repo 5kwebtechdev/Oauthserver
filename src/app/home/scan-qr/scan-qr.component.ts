@@ -246,7 +246,7 @@ export class ScanQrComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.router.navigate(['/home/login'], {
+    this.router.navigate(['/login'], {
       queryParams: {
         role: this.userRole,
         familyCode: code
