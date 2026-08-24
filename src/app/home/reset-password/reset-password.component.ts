@@ -155,12 +155,12 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
       this.step--;
       this.navCtrl.navigateBack(['/home/reset-password'], { queryParams: { step: this.step, mode: this.mode } });
     } else {
-      this.navCtrl.navigateBack(['/home/login']);
+      this.navCtrl.navigateBack(['/login']);
     }
   }
 
   goToLogin(): void {
-    this.navCtrl.navigateRoot(['/home/login']);
+    this.navCtrl.navigateRoot(['/login']);
   }
 
   // ── Form flow ───────────────────────────────────────────────────────────────

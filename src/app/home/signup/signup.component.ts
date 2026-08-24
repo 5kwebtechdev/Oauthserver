@@ -1097,7 +1097,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
             if (Number(effectiveStep) >= 7) {
               this.onboardingState.clearRegistrationDraft();
               this.core.triggerToasrt('Your account is already set up. Please log in to continue.');
-              this.navigateReplacing('/home/login');
+              this.navigateReplacing('/login');
               return;
             }
             const resume = this.onboardingState.getResumeNavigation(restoredDraft);
@@ -1495,7 +1495,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       } else if (this.signupCredentialState.getPassword()) {
         this.navigateToSignupStep(0.3);
       } else {
-        this.navigateReplacing('/home/login');
+        this.navigateReplacing('/login');
       }
     } else if (this.step > 1) {
       const savedRole = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
@@ -3102,7 +3102,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               this.core.triggerToasrt('Account created. Please login to continue.');
               setTimeout(() => {
                 this.loadingService.forceHide();
-                this.navigateReplacing('/home/login');
+                this.navigateReplacing('/login');
               }, 50);
             }
           });
@@ -3110,7 +3110,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           // No credentials available - redirect to login
           setTimeout(() => {
             this.loadingService.forceHide();
-            this.navigateReplacing('/home/login');
+            this.navigateReplacing('/login');
           }, 50);
         }
       },
@@ -3650,7 +3650,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           const credentials = this.signupCredentialState.getPendingLogin();
           if (!credentials?.password || (!credentials.email && !credentials.phone)) {
             this.loadingService.forceHide();
-            this.navigateReplacing('/home/login');
+            this.navigateReplacing('/login');
             return;
           }
 
@@ -3680,7 +3680,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               this.registrationInProgress = false;
               this.loadingService.forceHide();
               this.core.triggerToasrt('Account created. Please login to link your family.');
-              this.navigateReplacing('/home/login');
+              this.navigateReplacing('/login');
             }
           });
           return;
@@ -4527,7 +4527,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.registrationInProgress = false;
       this.loadingService.forceHide();
       this.onboardingState.clearRegistrationDraft();
-      this.navigateReplacing('/home/login');
+      this.navigateReplacing('/login');
       return;
     }
 
@@ -4550,7 +4550,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.registrationInProgress = false;
         this.loadingService.forceHide();
         this.onboardingState.clearRegistrationDraft();
-        this.navigateReplacing('/home/login');
+        this.navigateReplacing('/login');
       }
     });
   }

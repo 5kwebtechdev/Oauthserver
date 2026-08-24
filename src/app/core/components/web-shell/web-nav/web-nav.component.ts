@@ -100,6 +100,10 @@ export class WebNavComponent implements OnInit, OnDestroy {
   readonly chevronSrc = `${this.navigationAssetRoot}/chevron.svg`;
   readonly notificationSrc = `${this.navigationAssetRoot}/notification.svg`;
   readonly coinSrc = `${this.navigationAssetRoot}/coin.png`;
+  readonly streakSrc = 'assets/Icons-Neutral/Icon-Streak.png';
+  readonly badgeSrc = 'assets/Icons-Neutral/Icon-Badge.png';
+  readonly leaderboardSrc = 'assets/Icons-Neutral/Icon-Trophy.png';
+  readonly calendarSrc = 'assets/Icons-Neutral/Icon-Calendar.png';
 
   isParent = false;
   navItems: WebNavItem[] = CHILD_SELF_NAV_ITEMS;
@@ -107,6 +111,8 @@ export class WebNavComponent implements OnInit, OnDestroy {
   userAvatarUrl: string | null = null;
   avatarImageName: string | null = null;
   coins = 0;
+  streaks = 0;
+  badges = 0;
   openMenu: string | null = null;
 
   private readonly destroy$ = new Subject<void>();
@@ -140,8 +146,13 @@ export class WebNavComponent implements OnInit, OnDestroy {
     this.userService.stats$
       .pipe(takeUntil(this.destroy$))
       .subscribe((stats) => {
-        if (stats && Number.isFinite(Number(stats.coins)))
+        if (!stats) return;
+        if (Number.isFinite(Number(stats.coins)))
           this.coins = Number(stats.coins);
+        if (Number.isFinite(Number(stats.streaks)))
+          this.streaks = Number(stats.streaks);
+        if (Number.isFinite(Number(stats.badges)))
+          this.badges = Number(stats.badges);
       });
     this.userService.refreshStats().subscribe({ error: () => undefined });
   }
@@ -194,6 +205,28 @@ export class WebNavComponent implements OnInit, OnDestroy {
   goToCoins(): void {
     this.closeMenu();
     void this.router.navigate(['/authed/coin']);
+  }
+
+  goToStreaks(): void {
+    this.closeMenu();
+    void this.router.navigate(['/authed/streaks']);
+  }
+
+  goToBadges(): void {
+    this.closeMenu();
+    void this.router.navigate(['/authed/badges']);
+  }
+
+  goToLeaderboard(): void {
+    this.closeMenu();
+    void this.router.navigate(['/authed/streaks'], {
+      queryParams: { view: 'leaderboard' },
+    });
+  }
+
+  goToCalendar(): void {
+    this.closeMenu();
+    void this.router.navigate(['/authed/activity-calendar']);
   }
 
   @HostListener('document:click')

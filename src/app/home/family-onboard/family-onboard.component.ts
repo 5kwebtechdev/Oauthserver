@@ -1107,11 +1107,11 @@ Thank you!`;
                         },
                         error: (loginErr) => {
                             console.error('Auto-login failed', loginErr);
-                            this.navigateWithoutHistory('/home/login');
+                            this.navigateWithoutHistory('/login');
                         }
                     });
                 } else {
-                    this.navigateWithoutHistory('/home/login');
+                    this.navigateWithoutHistory('/login');
                 }
             } else {
                 if (this.beginManagedChildSignup()) {
@@ -1584,7 +1584,7 @@ Thank you!`;
         if (!password || (!payload.email && !payload.phone)) {
             this.onboardingState.clearRegistrationDraft();
             this.clearSignupSession();
-            this.navigateWithoutHistory('/home/login');
+            this.navigateWithoutHistory('/login');
             return;
         }
 
@@ -1609,7 +1609,7 @@ Thank you!`;
             error: () => {
                 this.onboardingState.clearRegistrationDraft();
                 this.clearSignupSession();
-                this.navigateWithoutHistory('/home/login');
+                this.navigateWithoutHistory('/login');
             }
         });
     }
@@ -1663,7 +1663,7 @@ Thank you!`;
 
     private redirectToLogin(): void {
         this.signupCredentialState.clear();
-        this.navigateWithoutHistory('/home/login', { role: this.userRole });
+        this.navigateWithoutHistory('/login', { role: this.userRole });
     }
 
     /**

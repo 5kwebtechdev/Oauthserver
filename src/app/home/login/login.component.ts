@@ -1,18 +1,29 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { ReactiveFormsModule } from '@angular/forms';
 import { AuthService, LoginCredentials } from "../../core/services/auth.service";
 import { ChildSelfImageService } from '../../core/services/child-self-image.service';
 import { UserService } from '../../core/services/user.service';
 import { ActivatedRoute } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { IonicModule, NavController } from '@ionic/angular';
 import { CredentialSaverService, SavedCredentials } from '../../core/services/credential-saver.service';
 import { OnboardingStateService } from '../../core/services/onboarding-state.service';
+import { SocialMediaComponent } from '../../core/components/social-media/social-media.component';
+import { AuthBackButtonComponent } from '../../core/components/auth-back-button/auth-back-button.component';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    CommonModule,
+    IonicModule,
+    ReactiveFormsModule,
+    SocialMediaComponent,
+    AuthBackButtonComponent,
+  ],
 })
 export class LoginComponent implements OnInit, OnDestroy {
   public signInForm: FormGroup;

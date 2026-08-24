@@ -28,6 +28,10 @@ button {
   font-family: var(--font-sans, "Nunito", sans-serif);
 }
 
+.web-header:not(.web-header--parent) {
+  width: min(100%, 1200px);
+}
+
 .web-header__inner {
   display: flex;
   width: min(100%, 793px);
@@ -37,6 +41,10 @@ button {
   align-items: center;
   justify-content: flex-start;
   gap: 16px;
+}
+
+.web-header:not(.web-header--parent) .web-header__inner {
+  width: min(calc(100% - 32px), 1180px);
 }
 
 .web-header__left {
@@ -193,8 +201,14 @@ button {
   gap: 8px;
 }
 
+.web-header:not(.web-header--parent) .web-header__actions {
+  width: 484px;
+  min-width: 484px;
+}
+
 .web-header__icon-button,
-.web-header__coin-button {
+.web-header__coin-button,
+.web-header__quick-action {
   display: inline-flex;
   height: 36px;
   padding: 0;
@@ -211,10 +225,41 @@ button {
 }
 
 .web-header__icon-button:hover,
-.web-header__coin-button:hover {
+.web-header__coin-button:hover,
+.web-header__quick-action:hover {
   border-color: #90214d;
   box-shadow: 0 3px 9px rgb(67 36 119 / 14%);
   transform: translateY(-1px);
+}
+
+.web-header__quick-action {
+  width: 68px;
+  flex: 0 0 68px;
+  gap: 3px;
+  border-radius: 18px;
+}
+
+.web-header__quick-action img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.web-header__quick-action span {
+  max-width: 30px;
+  overflow: hidden;
+  color: #432477;
+  font-family: var(--font-heading, "Fredoka", sans-serif);
+  font-size: 15px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.web-header__quick-action--icon-only {
+  width: 40px;
+  flex-basis: 40px;
+  border-radius: 50%;
 }
 
 .web-header__icon-button {
@@ -417,11 +462,30 @@ button {
   }
 }
 
+@media (min-width: 769px) and (max-width: 1120px) {
+  .web-header:not(.web-header--parent) .web-header__quick-action {
+    display: none;
+  }
+
+  .web-header:not(.web-header--parent) .web-header__actions {
+    width: 229px;
+    min-width: 229px;
+  }
+
+  .web-header:not(.web-header--parent) .web-header__inner {
+    width: min(calc(100% - 16px), 800px);
+  }
+}
+
 // Responsive logged-in website header. The Figma source is an 800px frame;
 // on phone-sized web viewports it becomes two compact rows while preserving
 // the same role-aware destinations and account controls. This component is
 // in normal shell flow, so it never covers the dashboard content.
 @media (max-width: 768px) {
+  .web-header__quick-action {
+    display: none;
+  }
+
   .web-header {
     width: 100%;
     min-height: 112px;

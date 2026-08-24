@@ -1380,38 +1380,38 @@ export class RoleSelectComponent implements OnDestroy {
   async goToParentAccount(): Promise<void> {
     if (!this.familyCreated) return;
     this.isSubmitting = true;
-    console.log('🚪 Logging out and redirecting to /home/login...');
+    console.log('🚪 Logging out and redirecting to /login...');
 
     try {
       if (this.authService && typeof this.authService.logout === 'function') {
-        // Let AuthService perform logout and redirect to /home/login
+        // Let AuthService perform logout and redirect to /login
         try {
           await this.authService.logout();
         } catch (e) {
           console.warn('AuthService.logout threw an error, falling back to client logout:', e);
           localStorage.clear();
           sessionStorage.clear();
-          this.router.navigate(['/home/login'], { replaceUrl: true }).catch(err => {
+          this.router.navigate(['/login'], { replaceUrl: true }).catch(err => {
             console.error('Navigation error:', err);
-            window.location.href = '/home/login';
+            window.location.href = '/login';
           });
         }
       } else {
-        // Fallback: clear storage and navigate to /home/login
+        // Fallback: clear storage and navigate to /login
         localStorage.clear();
         sessionStorage.clear();
-        this.router.navigate(['/home/login'], { replaceUrl: true }).catch(err => {
+        this.router.navigate(['/login'], { replaceUrl: true }).catch(err => {
           console.error('Navigation error:', err);
-          window.location.href = '/home/login';
+          window.location.href = '/login';
         });
       }
     } catch (e) {
       console.error('Unexpected error during logout redirect:', e);
       localStorage.clear();
       sessionStorage.clear();
-      this.router.navigate(['/home/login'], { replaceUrl: true }).catch(err => {
+      this.router.navigate(['/login'], { replaceUrl: true }).catch(err => {
         console.error('Navigation error:', err);
-        window.location.href = '/home/login';
+        window.location.href = '/login';
       });
     } finally {
       this.isSubmitting = false;
