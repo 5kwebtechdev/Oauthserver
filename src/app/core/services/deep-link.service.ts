@@ -106,6 +106,14 @@ export class DeepLinkService {
       return `${path}${query}`;
     }
 
+    if (path === '/join-family') {
+      return `/home/join-family${query}`;
+    }
+
+    if (path === '/join-family2') {
+      return `/home/join-family2${query}`;
+    }
+
     if (path === '/academy') {
       return `/authed/academy${query}`;
     }

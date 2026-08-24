@@ -185,9 +185,17 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     console.log('LoginComponent initialized');
     void this.suggestSavedCredentials();
+
+    // ion-router-outlet is capped to a centered readable column on tablet/
+    // desktop by default (see global.scss); this page builds its own wide
+    // web background, so it needs the same full-bleed outlet reset HomePage
+    // uses (body.onboarding-active) or that column cap leaves white gutters
+    // down both sides of this page's background regardless of its own CSS.
+    document.body.classList.add('onboarding-active');
   }
 
   ngOnDestroy(): void {
+    document.body.classList.remove('onboarding-active');
   }
 
   focusPassword(): void {

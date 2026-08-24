@@ -11,6 +11,37 @@ p,h1,h2,h3,h4,h5,h6, ul {
   overflow-x: clip;
 }
 
+// Opt out of global.scss's 768px .ion-page cap (see parent-account.component.scss).
+@media (min-width: 768px) {
+  :host(.ion-page) {
+    max-width: none !important;
+    margin-inline: 0 !important;
+    padding-inline: 0 !important;
+  }
+
+  // ion-content paints its own solid white --background layer, and each
+  // step's .signup-container.*-layout also sets a solid white background of
+  // its own on top of that — both need to change or the page still reads as
+  // flat white outside the card (same brand wash as login.component.scss).
+  ion-content.bg-white {
+    --background: linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%) !important;
+  }
+
+  // !important: each step's own background:#fff base rule is declared much
+  // later in this same file (same selector specificity), so without it that
+  // later rule would silently win the cascade over this one.
+  .signup-container.signup-entry-layout,
+  .signup-container.otp-layout,
+  .signup-container.password-layout {
+    background:
+      radial-gradient(45vw 45vh at 6% 6%, rgba(139, 141, 203, 0.24), transparent 65%),
+      radial-gradient(48vw 48vh at 95% 10%, rgba(246, 172, 114, 0.2), transparent 65%),
+      radial-gradient(48vw 48vh at 8% 95%, rgba(137, 179, 182, 0.22), transparent 65%),
+      radial-gradient(48vw 48vh at 94% 92%, rgba(225, 82, 124, 0.22), transparent 65%),
+      linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%) !important;
+  }
+}
+
 ion-content {
   width: 100%;
   max-width: 100%;
@@ -718,6 +749,31 @@ superme-navigator.signup-navigator {
   @keyframes roleSheetSlideUp {
     from { transform: translateY(100%); }
     to { transform: translateY(0); }
+  }
+
+  // On tablet/desktop the mobile bottom-sheet treatment (edge-to-edge,
+  // pinned to the viewport bottom) reads as a stray mobile leftover
+  // stretched across a wide screen — matches this app's other modal
+  // (.age-modal), which is a centered dialog on every screen size.
+  @media (min-width: 768px) {
+    .role-info-sheet {
+      left: 50%;
+      right: auto;
+      bottom: auto;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(90vw, 460px);
+      max-height: min(80vh, 560px);
+      overflow-y: auto;
+      border-radius: 24px;
+      box-shadow: 0 20px 56px rgba(32, 20, 63, 0.28);
+      animation: roleSheetPopIn 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+  }
+
+  @keyframes roleSheetPopIn {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   }
 
   .profile-step {
@@ -3858,15 +3914,38 @@ ion-content.details-content.referral-keyboard-open {
     left: max(32px, env(safe-area-inset-left, 0px));
   }
 
+  // On a tall desktop viewport, the mobile top-anchored layout (a fixed
+  // ~104px top padding) left the card sitting near the top edge with a
+  // large dead area of empty page below it. Centering the step vertically
+  // in the viewport (the back button stays put — it's absolutely
+  // positioned, so it's unaffected by this flex parent) reads as an
+  // intentional web layout instead of a stretched mobile screen.
+  .signup-container.otp-layout .otp-step {
+    display: flex;
+    min-height: 100dvh;
+    align-items: center;
+    justify-content: center;
+  }
+
   .signup-container.otp-layout .otp-shell {
     width: 650px;
     max-width: calc(100% - 96px);
-    padding-top: calc(env(safe-area-inset-top, 0px) + 104px);
+    padding-top: calc(env(safe-area-inset-top, 0px) + 24px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
   }
 
   .signup-container.otp-layout .otp-hero__text,
   .signup-container.otp-layout .otp-hero__destination {
     font-size: 17px;
+  }
+
+  // The OTP cell row already self-limits to ~500px (4 cells, 112px max
+  // each), but the verify button below it was stretching to the full
+  // 650px shell width, reading much wider than the boxes it sits under.
+  .signup-container.otp-layout .otp-card {
+    width: 100%;
+    max-width: 420px;
+    margin-inline: auto;
   }
 }
 
@@ -4244,10 +4323,25 @@ ion-content.details-content.referral-keyboard-open {
       left: max(32px, env(safe-area-inset-left, 0px));
     }
 
+    // Center the step vertically in the viewport instead of leaving it
+    // top-anchored with a large empty area below on tall desktop screens
+    // (matches the same treatment applied to the OTP and password steps).
+    .signup-step-initial {
+      display: flex;
+      min-height: 100dvh;
+      align-items: center;
+      justify-content: center;
+    }
+
     .signup-entry-shell {
       width: 650px;
       max-width: calc(100% - 96px);
-      padding-top: calc(env(safe-area-inset-top, 0px) + 104px);
+      // The base rule's min-height:100% would otherwise stretch the shell to
+      // fill the flex parent above, defeating the centering — it only needs
+      // to be as tall as its own content on desktop.
+      min-height: auto;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 24px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
     }
 
     .signup-entry-title {
@@ -4628,14 +4722,37 @@ ion-content.password-keyboard-open {
       left: max(32px, env(safe-area-inset-left, 0px));
     }
 
+    // Center the step vertically in the viewport instead of leaving it
+    // top-anchored with a large empty area below on tall desktop screens
+    // (matches the same treatment applied to the OTP and email-entry steps).
+    .pwd-step {
+      display: flex;
+      min-height: 100dvh;
+      align-items: center;
+      justify-content: center;
+    }
+
     .pwd-shell {
       width: 650px;
       max-width: calc(100% - 96px);
-      padding-top: calc(env(safe-area-inset-top, 0px) + 104px);
+      // Same reasoning as signup-entry-shell above — don't let the base
+      // min-height:100% stretch it to fill the centered flex parent.
+      min-height: auto;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 24px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
     }
 
     .pwd-hero__title {
       font-size: 28px;
+    }
+
+    // .pwd-form (and its submit button) inherited the full 650px shell
+    // width, ballooning the "Next" button — cap it to a normal form width
+    // like the other signup steps' desktop treatment.
+    .pwd-form {
+      width: 100%;
+      max-width: 420px;
+      margin-inline: auto;
     }
   }
 }

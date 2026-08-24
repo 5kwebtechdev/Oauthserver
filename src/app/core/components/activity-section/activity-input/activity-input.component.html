@@ -281,7 +281,7 @@
           [ngClass]="'tab-' + tab.key" [class.active]="isActivityTabSelected(tab.key)"
           role="tab" [attr.aria-selected]="isActivityTabSelected(tab.key)" (click)="selectActivityTab(tab.key)">
           <span class="activity-tab-icon-frame" [ngClass]="'activity-tab-icon-frame--' + tab.key" aria-hidden="true">
-            <img [src]="tab.icon" alt="" class="activity-tab-icon">
+            <ion-icon [name]="tab.icon" class="activity-tab-icon"></ion-icon>
           </span>
           <span>{{ tab.label }}</span>
         </button>
@@ -328,7 +328,7 @@
       <ng-container *ngTemplateOutlet="reminderSection"></ng-container>
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
       <!-- coinSection removed -->
-      <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: true, placeholder: 'Add a note to this habit (optional)'}"></ng-container>
+      <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: false, placeholder: 'Add a note to this habit (optional)'}"></ng-container>
       <ng-container
         *ngTemplateOutlet="submitSection; context: {btnType: 'lavendar', btnTypeFaded: 'lavender-light', itemType: 'Habit'}"></ng-container>
     </div>
@@ -346,7 +346,7 @@
       <ng-container *ngTemplateOutlet="reminderSection"></ng-container>
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
       <!-- coinSection removed -->
-      <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: true, placeholder: 'Add a note to this task (optional)'}"></ng-container>
+      <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: false, placeholder: 'Add a note to this task (optional)'}"></ng-container>
       <ng-container
         *ngTemplateOutlet="submitSection; context: {btnType: 'orange', btnTypeFaded: 'orange-light', itemType: 'Task'}"></ng-container>
     </div>

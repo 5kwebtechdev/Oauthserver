@@ -25,6 +25,9 @@ import { TutorCardComponent } from '../../core/components/tutor-section/tutor-ca
 import { ParentAnalyticsService, ParentAnalyticsBand, ParentAnalyticsResponseDto } from '../../core/services/parent-analytics.service';
 import { CustomToastService } from '../../core/services/custom-toast.service';
 import { REGISTRATION_ONBOARDING_STATE_KEY } from '../../core/services/onboarding-state.service';
+import { Share } from '@capacitor/share';
+import { Clipboard } from '@capacitor/clipboard';
+import { environment } from '../../../environments/environment';
 
 type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
 
@@ -1213,6 +1216,90 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.router.navigate(['/authed/coin']);
     }
 
+    /**
+     * Opens the native iOS/Android share sheet with the current family's
+     * invitation details. Web keeps a graceful share/copy fallback.
+     */
+    async shareFamilyCodeWithCoParent(): Promise<void> {
+        const session = this.authService.getUserData();
+        const familyCode = (
+            this.familyCode
+            || this.extractFamilyCode(session?.user)
+            || this.extractFamilyCode(session)
+        ).trim().toUpperCase();
+
+        if (!familyCode) {
+            this.toastService.error('Family code is not available yet. Please try again.');
+            return;
+        }
+
+        this.familyCode = familyCode;
+        const publicWebUrl = String(environment.publicWebUrl || 'https://supermeapp.com').replace(/\/+$/, '');
+        const inviteParams = new URLSearchParams({
+            role: 'parent',
+            mode: 'join',
+            scannedCode: familyCode
+        });
+        const inviteLink = `${publicWebUrl}/join-family2?${inviteParams.toString()}`;
+        const configuredStoreUrl = this.platform.is('ios')
+            ? environment.firebase.remoteConfig.defaults.ios_store_url
+            : environment.firebase.remoteConfig.defaults.android_store_url;
+        const downloadLink = String(configuredStoreUrl || publicWebUrl).trim();
+        const text = [
+            'Hi! 👋',
+            '',
+            "Join our SuperMe Family so we can work together to support our child's growth, learning, habits and daily achievements.",
+            '',
+            `Family Invite Code: ${familyCode}`,
+            `Join here: ${inviteLink}`,
+            '',
+            "Once you join, you'll be able to:",
+            '✨ Track progress and milestones',
+            '🏆 Celebrate streaks and achievements',
+            '📚 Assign learning activities and quizzes',
+            '💜 Stay connected and support our child together',
+            '',
+            `Download Link: ${downloadLink}`
+        ].join('\n');
+
+        try {
+            const canShare = await Share.canShare();
+            if (canShare.value) {
+                await Share.share({
+                    title: 'Join our SuperMe Family',
+                    text,
+                    dialogTitle: 'Share family code with co-parent'
+                });
+                return;
+            }
+        } catch (error) {
+            if (this.isShareCancellation(error)) return;
+            console.warn('[ParentAccount] Native family share unavailable:', error);
+        }
+
+        if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+            try {
+                await navigator.share({ title: 'Join our SuperMe Family', text });
+                return;
+            } catch (error) {
+                if (this.isShareCancellation(error)) return;
+            }
+        }
+
+        try {
+            await Clipboard.write({ string: text });
+            this.toastService.success('Family invite copied. You can share it with your co-parent.');
+        } catch (error) {
+            console.warn('[ParentAccount] Unable to copy family invitation:', error);
+            this.toastService.error('Unable to share the family invite. Please try again.');
+        }
+    }
+
+    private isShareCancellation(error: unknown): boolean {
+        const message = String((error as any)?.message || error || '').toLowerCase();
+        return message.includes('cancel') || message.includes('dismiss') || message.includes('abort');
+    }
+
     openInsights(): void {
         this.router.navigate(['/authed/analytics']);
     }
@@ -1270,12 +1357,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         } catch (error) {
             console.warn('[ParentAccount] Unable to clear Parent signup draft before adding a child', error);
         }
-    }
-
-    inviteCoParent(): void {
-        this.router.navigate(['/authed/family-connection'], {
-            queryParams: { invite: 'parent' }
-        });
     }
 
     openMessageComposer(template?: 'celebrate' | 'encourage'): void {

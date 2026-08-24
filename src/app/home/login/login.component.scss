@@ -670,6 +670,20 @@ button {
   white-space: nowrap;
 }
 
+// Between the phone cap (393px) and the desktop card treatment (768px+
+// below), the shell had no rule of its own and stayed pinned at 393px —
+// a narrow phone-width card floating in a sea of empty space on mid-size
+// tablets/small laptops. A modest widen (this is a single auth card, not
+// a multi-column layout, so it doesn't need the full 600px some other
+// pages use at this breakpoint) keeps it looking intentional instead of
+// like a phone screen opened inside a bigger viewport.
+@media (min-width: 480px) and (max-width: 767.98px) {
+  .login-shell {
+    width: min(100%, 440px);
+    padding-top: clamp(64px, 10dvh, 96px);
+  }
+}
+
 @media (min-width: 768px) {
   // This page's own host takes over centering below instead of relying on
   // global.scss's generic `.ion-page` readable-width cap (which centers the
@@ -680,12 +694,29 @@ button {
     margin-inline: 0 !important;
   }
 
+  // ion-content paints its own solid white background layer (--background)
+  // behind everything, independent of .login-page's own CSS background —
+  // both need to change, or the outer edges keep showing ion-content's
+  // white through any gap.
   .login-content {
     width: 100%;
+    --background: linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%);
   }
 
   .login-page {
     width: 100%;
+    min-height: 100dvh;
+    // Corner-to-corner brand wash (same accent colors as .login-accent's
+    // gradient bar), sized in vw/vh so it scales to fill any monitor width
+    // instead of fixed-px blobs that only reached the middle of very wide
+    // screens and left the far edges reading as plain white.
+    background:
+      radial-gradient(45vw 45vh at 6% 6%, rgba(139, 141, 203, 0.28), transparent 65%),
+      radial-gradient(48vw 48vh at 95% 10%, rgba(246, 172, 114, 0.24), transparent 65%),
+      radial-gradient(55vw 55vh at 50% 48%, rgba(139, 141, 203, 0.22), transparent 60%),
+      radial-gradient(48vw 48vh at 8% 95%, rgba(137, 179, 182, 0.26), transparent 65%),
+      radial-gradient(48vw 48vh at 94% 92%, rgba(225, 82, 124, 0.26), transparent 65%),
+      linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%);
   }
 
   // The back button only makes sense as a mobile navigation affordance —
@@ -712,10 +743,14 @@ button {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 393px;
+    width: min(90vw, 440px);
     margin: 0;
     padding-top: 0;
     padding-bottom: 0;
+  }
+
+  .login-card {
+    box-shadow: 0 12px 40px rgba(67, 36, 119, 0.1), 0 0 2px 2px rgba(107, 101, 106, 0.1);
   }
 
   .country-modal {

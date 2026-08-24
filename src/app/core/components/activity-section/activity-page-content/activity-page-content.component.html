@@ -125,7 +125,8 @@
                 </ng-container>
 
                 <button type="button" class="child-activity-card" *ngFor="let entry of childVisibleItems"
-                    [ngClass]="'child-activity-card--' + entry.type" (click)="onCardTap(entry.item)">
+                    [ngClass]="'child-activity-card--' + entry.type" long-press [delay]="700"
+                    (tap)="onCardTap(entry.item)" (press)="onCardLongPress(entry.item, entry.type)">
                     <div class="child-card-copy">
                         <strong>{{ getChildItemTitle(entry.item) }}</strong>
                         <span>{{ getChildItemTime(entry.item) }}</span>

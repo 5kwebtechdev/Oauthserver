@@ -2,6 +2,7 @@ import { Component, Input, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonicModule, Platform, LoadingController, ToastController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { getApps, getApp } from 'firebase/app';
 import { getAuth, signInWithCredential, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
@@ -79,10 +80,30 @@ export class SocialMediaComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Include iPad — platform.is('ios') may not catch iPadOS in some Capacitor versions
-    this.isIos = this.platform.is('ios')
-      || this.platform.is('ipad')
-      || this.appleSignIn.isDevelopmentMockActive();
+    this.isIos = this.detectAppleDevice() || this.appleSignIn.isDevelopmentMockActive();
+  }
+
+  /**
+   * Ionic's platform.is('ios') is tuned for detecting a mobile OS context and
+   * can false-positive on desktop web (e.g. a narrow browser window, or
+   * Chrome DevTools' device toolbar leaving a spoofed iOS user agent active)
+   * — showing the Apple button to non-Apple web visitors who can't actually
+   * use it. On native builds platform.is() is reliable (the binary only ever
+   * runs on the OS it was built for), so only web needs the stricter check.
+   */
+  private detectAppleDevice(): boolean {
+    if (Capacitor.isNativePlatform()) {
+      return this.platform.is('ios') || this.platform.is('ipad');
+    }
+
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    const isIphoneOrIpad = /iPad|iPhone|iPod/.test(ua);
+    // iPadOS masks its user agent as "Macintosh" — real Macs report the same
+    // UA, so touch support is what actually distinguishes an iPad from a Mac.
+    const isIpadMasked = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+    const isMac = /Macintosh/.test(ua) && navigator.maxTouchPoints <= 1;
+    return isIphoneOrIpad || isIpadMasked || isMac;
   }
 
   open(link: { name: string; url?: string }) {
@@ -105,18 +126,14 @@ export class SocialMediaComponent implements OnInit {
   }
 
   private async signInWithGoogle(): Promise<void> {
-    const isNative = this.platform.is('capacitor') || this.platform.is('android');
-
-    if (!isNative) {
-      const toast = await this.toastCtrl.create({
-        message: 'Google sign-in is only available in the mobile app.',
-        duration: 2500,
-        position: 'bottom'
-      });
-      await toast.present();
-      return;
-    }
-
+    // GoogleAuth is a Capacitor plugin with its own web implementation (see
+    // node_modules/@codetrix-studio/capacitor-google-auth/.../web.js) — it's
+    // auto-selected by Capacitor's plugin bridge on web/browser the same way
+    // the native Android/iOS implementation is auto-selected there, so the
+    // exact same signIn()/buildGoogleOAuthProfile()/loginWithOAuthProfile()
+    // flow below already works unmodified on both. No platform branch needed
+    // here anymore — GoogleAuth.initialize() is also called unconditionally
+    // now in AppComponent.ngOnInit (see auth-session-cleanup.service.ts).
     if (this.isSocialLoginInProgress) return;
     this.isSocialLoginInProgress = true;
 
@@ -565,6 +582,8 @@ export class SocialMediaComponent implements OnInit {
         userMessage = 'Google sign-in failed because the current app build is not authorized correctly (code 12500). Please verify the Google OAuth setup.';
       } else if (lowerMessage.includes('access token')) {
         userMessage = 'Google sign-in could not retrieve the access token correctly. Please try again.';
+      } else if (err?.error === 'popup_blocked_by_browser' || lowerMessage.includes('popup')) {
+        userMessage = 'Your browser blocked the Google sign-in popup. Please allow popups for this site and try again.';
       } else if (code) {
         userMessage = `Google sign-in failed (code ${code}). ${message}`;
       } else if (message === 'Something went wrong') {

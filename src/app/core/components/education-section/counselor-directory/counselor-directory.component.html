@@ -111,13 +111,13 @@
                       <p class="counselor-card__stats"><span><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true">{{ getAvailability(counselor) }}</span><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">{{ getExperience(counselor) }}</span></p>
                     </div>
                     <div class="counselor-card__actions">
-                      <button type="button" class="counselor-action counselor-action--heart" [class.is-liked]="isLiked(counselor)" [attr.aria-label]="isLiked(counselor) ? 'Unlike counselor' : 'Like counselor'" (click)="toggleLike(counselor)"><span aria-hidden="true"></span></button>
-                      <button type="button" class="counselor-action counselor-action--share" aria-label="Share counselor" (click)="shareCounselor(counselor)"><img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true"></button>
+                      <button type="button" class="counselor-action counselor-action--heart" [class.is-liked]="isLiked(counselor)" [attr.aria-label]="isLiked(counselor) ? 'Unlike ' + singularTitle.toLowerCase() : 'Like ' + singularTitle.toLowerCase()" (click)="toggleLike(counselor)"><span aria-hidden="true"></span></button>
+                      <button type="button" class="counselor-action counselor-action--share" [attr.aria-label]="'Share ' + singularTitle.toLowerCase()" (click)="shareCounselor(counselor)"><img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true"></button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="counselor-card__footer"><span>{{ getFee(counselor) }}</span><button type="button" (click)="openProfile(counselor)">Check Full Profile</button></div>
+              <div class="counselor-card__footer"><span>{{ getFee(counselor) }}</span><button type="button" (click)="openProfile(counselor)">Check Profile</button></div>
             </article>
             <ad-banner *ngIf="index === 2" class="counselor-ad" [screen]="eduAdScreen" variant="eduhub-inner" aria-label="Featured EduHub offers"></ad-banner>
           </ng-container>

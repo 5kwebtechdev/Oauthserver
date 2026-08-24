@@ -12,7 +12,12 @@ const config: CapacitorConfig = {
     ]
   },
   android: {
-    allowMixedContent: true
+    allowMixedContent: true,
+    // Android 15+ enforces edge-to-edge rendering, so the legacy StatusBar
+    // overlay flag alone cannot keep the WebView below the system bars.
+    // Capacitor applies the device's real WindowInsets to its WebView in auto
+    // mode. This setting is Android-only and leaves iOS/Web safe areas intact.
+    adjustMarginsForEdgeToEdge: 'auto'
   },
   plugins: {
     GoogleAuth: GOOGLE_AUTH_CAPACITOR_CONFIG,

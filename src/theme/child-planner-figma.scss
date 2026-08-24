@@ -27,6 +27,14 @@
 			object-fit: contain;
 			filter: none;
 		}
+
+		ion-icon {
+			display: block;
+			width: 20px;
+			height: 20px;
+			font-size: 20px;
+			color: currentColor;
+		}
 	}
 
 	.child-planner-tabs {
@@ -54,8 +62,8 @@
 			color: #fff;
 
 			.activity-tab-icon {
-				/* The active state uses the white version of the tab artwork. */
-				filter: brightness(0) invert(1);
+				color: #fff;
+				filter: none;
 			}
 		}
 
