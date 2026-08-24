@@ -876,7 +876,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   getCategoryImage(item: LearningCategorySummary): string {
-    return item.thumbnailUrl || item.image || this.getCategoryFallbackImage();
+    // Category thumbnails are intended for tiny previews. These cards render
+    // at 40-48 CSS pixels and need more source pixels on high-density phones,
+    // so prefer the full category artwork whenever the API provides it.
+    return item.image || item.thumbnailUrl || this.getCategoryFallbackImage();
   }
 
   isPhotographicCategoryImage(item: LearningCategorySummary): boolean {

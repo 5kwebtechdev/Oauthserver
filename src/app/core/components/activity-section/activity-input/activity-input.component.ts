@@ -79,6 +79,19 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   private static readonly FULL_WEEK = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
   private static readonly PRIORITY_MAP: Record<string, 'low' | 'medium' | 'high'> = { '1': 'low', '2': 'medium', '3': 'high' };
 
+  private getCurrentWeekdayCode(): string {
+    return ActivityInputComponent.DAY_NUM_TO_CODE[new Date().getDay()] || 'M';
+  }
+
+  private createEmptyPlannerEntry(): PlannerEntry {
+    return {
+      name: '',
+      startTime: '',
+      endTime: '',
+      days: [this.getCurrentWeekdayCode()]
+    };
+  }
+
   /**
    * iOS webviews before randomUUID support still need a local id while the
    * activity is being saved. Keep the UUID shape so local Habit types and
@@ -362,8 +375,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   // coin selector removed for parent accounts
 
   activities: PlannerEntry[] = [
-    { name: '', startTime: '', endTime: '', days: ['S'] },
-    { name: '', startTime: '', endTime: '', days: ['S'] }
+    this.createEmptyPlannerEntry(),
+    this.createEmptyPlannerEntry()
   ];
 
   private plannerModeDrafts: Record<PlannerMode, PlannerModeDraft> = {
@@ -656,14 +669,26 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     entry.days = entry.days.includes(day)
       ? entry.days.filter(value => value !== day)
       : [...entry.days, day];
+    this.onPlannerEntryChanged();
   }
 
   removePlannerEntry(index: number): void {
     if (this.activities.length === 1) {
-      this.activities[0] = { name: '', startTime: '', endTime: '', days: ['S'] };
+      this.activities[0] = this.createEmptyPlannerEntry();
+      this.onPlannerEntryChanged();
       return;
     }
     this.activities.splice(index, 1);
+    this.onPlannerEntryChanged();
+  }
+
+  onPlannerEntryChanged(): void {
+    this.serverErrorMessage = '';
+    if (!this.attemptedSubmit) return;
+
+    const validations = this.computeValidations();
+    Object.assign(this.errors, validations);
+    try { this.cd.detectChanges(); } catch (e) { /* view updates naturally */ }
   }
 
   selectEventType(key: string): void {
@@ -996,8 +1021,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.customEventTypeName = '';
     this.eventTypeErrorMessage = '';
     this.activities = [
-      { name: '', startTime: '', endTime: '', days: ['S'] },
-      { name: '', startTime: '', endTime: '', days: ['S'] }
+      this.createEmptyPlannerEntry(),
+      this.createEmptyPlannerEntry()
     ];
     this.resetPlannerModeDrafts();
     this.selectedPlannerColor = this.plannerColors[0];
@@ -1062,7 +1087,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       const shortCode = this.weekdays.find(code => code.toUpperCase() === key);
       return match || shortCode || '';
     }).filter(Boolean);
-    return normalized.length ? Array.from(new Set(normalized)) : ['S'];
+    return normalized.length ? Array.from(new Set(normalized)) : [this.getCurrentWeekdayCode()];
   }
 
   private isPlannerEntryComplete(entry: PlannerEntry): boolean {
@@ -2246,7 +2271,10 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   }
 
   selectPriority(p: 'low' | 'medium' | 'high') { this.priority = p; this.clearPriorityError(); }
-  addActivity() { this.activities.push({ name: '', startTime: '', endTime: '', days: ['S'] }); }
+  addActivity() {
+    this.activities.push(this.createEmptyPlannerEntry());
+    this.onPlannerEntryChanged();
+  }
 
   onTagsChange(payload: any) {
     // Normalize payload to an array to support singleSelection emitting a single value

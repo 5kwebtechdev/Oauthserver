@@ -9,7 +9,8 @@
         </span>
       </div>
     </superme-card-header>
-    <div class="glance-progress-track" *ngIf="totalHabitsLoaded > 0 || totalTasksLoaded > 0">
+    <div class="glance-progress-track" role="progressbar" aria-label="Today's completion progress"
+      aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="overallCompletionRate">
       <div class="glance-progress-fill" [style.width.%]="overallCompletionRate"></div>
     </div>
   </div>
@@ -17,7 +18,8 @@
 
 <!-- Current-month events shown above the day summary in the Home design. -->
 <ng-template #upcomingEvents>
-  <section class="glance-upcoming" aria-labelledby="glance-upcoming-title">
+  <section class="glance-upcoming" aria-labelledby="glance-upcoming-title"
+    *ngIf="glanceUpcomingEvents.length > 0">
     <div class="glance-upcoming__header">
       <div class="glance-upcoming__title">
         <img src="assets/figma/home-glance/upcoming-events.webp" alt="" aria-hidden="true">
@@ -26,7 +28,7 @@
       <button type="button" class="glance-outline-button" (click)="openUpcomingEvents()">View all</button>
     </div>
 
-    <div class="glance-upcoming__list" role="list" *ngIf="glanceUpcomingEvents.length > 0">
+    <div class="glance-upcoming__list" role="list">
       <button type="button" class="glance-event-card" role="listitem"
         *ngFor="let event of glanceUpcomingEvents; trackBy: trackGlanceUpcomingEvent"
         (click)="openUpcomingEvents()">
@@ -36,9 +38,6 @@
           <em>{{ getGlanceUpcomingEventCountdown(event) }}</em>
         </span>
       </button>
-    </div>
-    <div class="glance-upcoming__empty" *ngIf="!glancePlannerLoading && glanceUpcomingEvents.length === 0">
-      No upcoming events this month
     </div>
   </section>
 </ng-template>
