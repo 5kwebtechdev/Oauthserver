@@ -990,11 +990,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   ngOnInit() {
-
-    // The Home Figma opens this section on Planner. Keep the full activity
-    // page/list flow unchanged while making the dashboard's first view match.
-    if ((this.mode === 'recent' || this.mode === 'list') && this.currentActive === 'all') {
-      this.currentActive = 'timetable';
+    // Every new dashboard/list instance starts from the complete overview.
+    // Tab changes remain local to the current session, but a logout/login (or
+    // a fresh component instance) must not reopen the previously active type.
+    if (this.mode === 'recent' || this.mode === 'list') {
+      this.currentActive = 'all';
     }
 
     // If habit is provided, set properties from it
