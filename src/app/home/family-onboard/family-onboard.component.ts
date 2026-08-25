@@ -956,10 +956,25 @@ Thank you!`;
 
         if (this.pendingOAuthFamilyCompletion) {
             this.pendingOAuthFamilyCompletion = false;
-            if (this.beginManagedChildSignup()) {
+
+            // Create Child Account explicitly sets the handoff flag. The Done
+            // button does not, so it must continue the authenticated Parent's
+            // own onboarding instead of treating a missing child handoff as
+            // an error (most visible after native Sign in with Apple).
+            if (this.shouldStartManagedChildSignup()) {
+                if (this.beginManagedChildSignup()) {
+                    return;
+                }
+                this.pendingOAuthFamilyCompletion = true;
+                this.core.triggerToasrt('Your parent session is still being prepared. Please try again.');
                 return;
             }
-            this.core.triggerToasrt('Your parent session is still being prepared. Please tap Create Child Account again.');
+
+            this.onboardingState.clearRegistrationDraft();
+            this.onboardingState.markExistingUser();
+            this.clearOAuthSignupSession();
+            try { sessionStorage.setItem('family_connected_ack', 'Parent'); } catch (e) {}
+            this.navigateWithoutHistory('/home/sign-up', { step: 5, role: 'parent' });
             return;
         }
 
@@ -1642,6 +1657,7 @@ Thank you!`;
         this.onboardingState.clearRegistrationDraft();
         this.signupCredentialState.clear();
         this.clearSignupSession();
+        this.clearParentOAuthDraftForManagedChild();
 
         try {
             sessionStorage.removeItem(FamilyOnboardComponent.CREATE_CHILD_AFTER_FAMILY_KEY);
@@ -1659,6 +1675,36 @@ Thank you!`;
             managedChild: true
         });
         return true;
+    }
+
+    /**
+     * Apple keeps its signup identity in session storage after the Parent is
+     * authenticated. Remove only that temporary OAuth onboarding identity so
+     * a newly-created Child starts with a blank email form. The authenticated
+     * Parent session itself is preserved by beginManagedChildParentSession().
+     */
+    private clearParentOAuthDraftForManagedChild(): void {
+        try {
+            [
+                'signup_via_oauth',
+                'signup_via_google',
+                'oauth_signup_provider',
+                'google_signup_email',
+                'google_signup_name',
+                'google_signup_avatar',
+                'google_signup_provider_id',
+                'oauth_signup_id_token',
+                'oauth_signup_access_token',
+                'oauth_signup_server_auth_code',
+                'oauth_signup_identity_token',
+                'oauth_signup_authorization_code',
+                'oauth_signup_raw_nonce',
+                'oauth_signup_client_id',
+                'oauth_signup_is_development_mock'
+            ].forEach(key => sessionStorage.removeItem(key));
+        } catch (error) {
+            console.warn('[FamilyOnboard] Unable to clear Parent OAuth child-signup draft', error);
+        }
     }
 
     private redirectToLogin(): void {

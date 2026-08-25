@@ -17,6 +17,8 @@ export interface UserStats {
 export interface UserProfile {
   userId?: number;
   name: string;
+  username?: string;
+  userName?: string;
   email?: string;
   phone?: string;
   age?: number;

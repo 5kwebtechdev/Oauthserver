@@ -388,7 +388,6 @@
             <ng-container *ngIf="oauthAccountName">
               <h4 class="profile-field-heading">
                 <span class="profile-field-title">Full Name</span>
-                <span class="profile-field-hint">Provided by {{ oauthProviderLabel }}</span>
               </h4>
               <div class="input-group">
                 <input type="text" [value]="oauthAccountName" readonly aria-readonly="true" autocomplete="name" />
@@ -397,7 +396,6 @@
             <ng-container *ngIf="oauthAccountEmail">
               <h4 class="profile-field-heading">
                 <span class="profile-field-title">Email Address</span>
-                <span class="profile-field-hint">Provided by {{ oauthProviderLabel }}</span>
               </h4>
               <div class="input-group">
                 <input type="email" [value]="oauthAccountEmail" readonly aria-readonly="true" autocomplete="email" />

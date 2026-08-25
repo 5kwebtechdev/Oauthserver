@@ -189,11 +189,15 @@
       <superme-button
         class="page-cta"
         [type]="addToCartSuccess ? 'green' : 'magenta'"
-        [text]="addingToCart ? 'Adding…' : addToCartSuccess ? '✓ Added to Bag' : 'Add To Bag'"
+        [text]="addingToCart ? 'Adding…' : addToCartSuccess ? 'View Bag' : 'Add To Bag'"
         large
         [disabled]="addingToCart"
-        (click)="addToCart()">
+        (click)="handlePurchaseAction()">
       </superme-button>
+    </div>
+    <div *ngIf="addToCartSuccess" class="cart-success-msg" role="status" aria-live="polite">
+      <span aria-hidden="true">✓</span>
+      Item added to your bag. Tap <strong>View Bag</strong> to review it.
     </div>
     <!-- error / size-missing feedback -->
     <div *ngIf="addToCartError" class="cart-error-msg" role="alert">

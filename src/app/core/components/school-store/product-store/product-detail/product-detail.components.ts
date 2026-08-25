@@ -413,11 +413,23 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
 
   handleRightAction(event: { index: number, action: any }): void {
     if (event.action?.type === 'cart') {
-      const queryParams: Record<string, string> = {};
-      if (this.schoolId != null) queryParams['schoolId'] = String(this.schoolId);
-      if (this.classId != null) queryParams['classId'] = String(this.classId);
-      this.router.navigate(['/authed/cart'], { queryParams });
+      this.openBag();
     }
+  }
+
+  handlePurchaseAction(): void {
+    if (this.addToCartSuccess) {
+      this.openBag();
+      return;
+    }
+    this.addToCart();
+  }
+
+  openBag(): void {
+    const queryParams: Record<string, string> = {};
+    if (this.schoolId != null) queryParams['schoolId'] = String(this.schoolId);
+    if (this.classId != null) queryParams['classId'] = String(this.classId);
+    void this.router.navigate(['/authed/cart'], { queryParams });
   }
 
   addToCart(): void {
@@ -459,11 +471,6 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
         this.cartService.increment(this.quantity || 1);
         this.cartCount = this.cartService.count;
         this.cdr.detectChanges();
-        // Reset success state after 3 seconds
-        setTimeout(() => {
-          this.addToCartSuccess = false;
-          this.cdr.detectChanges();
-        }, 3000);
       },
       error: (err) => {
         this.addingToCart = false;
