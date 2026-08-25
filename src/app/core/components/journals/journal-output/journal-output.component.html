@@ -1,57 +1,84 @@
-<ion-content fullscreen>
-  <superme-card-header class="output-back-navigator" [title]="'Your Journal, Your Journey'"
-    [subtitleLeft]="'Track moods'" [subtitleMiddle]="'Save'" [subtitleRight]="'Feel Better'" [showBackArrow]="true"
-    (backClick)="goBack()">
-  </superme-card-header>
-  <div class="journal-output-container d-flex flex-column align-items-center">
-    <div class="month-navigator" role="group" aria-label="Month navigator">
-      <button class="month-prev" type="button" aria-label="Previous month" (click)="prevMonth()">‹</button>
-      <div class="month-label">{{ monthLabel }}</div>
-      <button *ngIf="!isAtLatestMonth" class="month-next" type="button" aria-label="Next month" (click)="nextMonth()">›</button>
-    </div>
-
-
-    <div *ngIf="!filteredEntries || filteredEntries.length === 0" class="empty">
-      <!-- <p>No journal entries yet. Try adding one!</p> -->
-      <div class="journal-empty__body">
-        <img class="journal-empty__illustration" src="assets/Images-Transparent/Image-Journal-Blank.png"
-          alt="Panda with kids illustration">
-
-        <div class="journal-empty__texts">
-          <ng-container *ngIf="isAtLatestMonth; else previousEmpty">
-            <p class="lead">We are waiting to hear about your day!</p>
-            <p class="sub">Post your journal to keep your story alive</p>
-          </ng-container>
-          <ng-template #previousEmpty>
-            <p class="lead">No journal entries for this month</p>
-            <p class="sub">There are no posts for the selected month.</p>
-          </ng-template>
-        </div>
-
-        <superme-button *ngIf="isAtLatestMonth && !hasEntryForToday" class="journal-empty__post" type="magenta" large text="Post now"
-          style="display:block; width:100%" (click)="openJournalInput()" aria-label="Post now"></superme-button>
+<ion-content class="journal-page" [fullscreen]="true">
+  <main class="journal-shell">
+    <header class="journal-header">
+      <button type="button" class="journal-header__back" aria-label="Go back" (click)="goBack()">
+        <img src="assets/figma/journal/back.svg" alt="" aria-hidden="true" />
+      </button>
+      <div class="journal-header__copy">
+        <h1>Your Journal, Your Journey</h1>
+        <p><span>Track Moods</span><i></i><span>Save</span><i></i><span>Feel Better</span></p>
       </div>
-    </div>
-    <!-- Use reusable post card component for each entry -->
-    <div class="entries" *ngIf="filteredEntries && filteredEntries.length">
-      <ng-container *ngFor="let entry of filteredEntries; trackBy: trackById">
-        <journal-post-card [entry]="entry"></journal-post-card>
-      </ng-container>
-    </div>
-  </div>
+    </header>
 
-  <!-- Fixed Add Button -->
-  <div *ngIf="isAtLatestMonth && filteredEntries && filteredEntries.length && !hasEntryForToday" class="add-button-fixed" (click)="onAddClick()">
-    <superme-button type="add"></superme-button>
-  </div>
-  
-  <!-- Image viewer overlay -->
-    <div class="image-viewer-backdrop" *ngIf="viewerOpen" (click)="closeImageViewer()">
-    <button class="image-viewer-close" (click)="closeImageViewer()" aria-label="Close image viewer">
-      <img src="assets/app-assets/cancel-cross.svg" alt="Close image viewer">
-    </button>
-    <div class="image-viewer-content" (click)="$event.stopPropagation()">
-      <img [src]="viewerSrc" alt="attachment preview" />
-    </div>
-  </div>
+    <section class="journal-stats" aria-label="Journal streaks">
+      <article class="journal-stat">
+        <img src="assets/figma/journal/current-streak.png" alt="" />
+        <span>CURRENT<br />STREAK</span>
+        <strong>{{ currentStreak }}</strong>
+      </article>
+      <article class="journal-stat">
+        <img src="assets/figma/journal/best-streak.png" alt="" />
+        <span>BEST<br />STREAK</span>
+        <strong>{{ bestStreak }}</strong>
+      </article>
+    </section>
+
+    <section class="mood-history" aria-labelledby="mood-history-title">
+      <h2 id="mood-history-title">Mood- Last 30 days</h2>
+      <div class="mood-history__grid" aria-label="Mood history for the last 30 days">
+        <span *ngFor="let day of moodDays; trackBy: trackMoodDay"
+          [class]="'mood-history__day mood-history__day--' + day.tone"
+          [attr.aria-label]="day.label"></span>
+      </div>
+      <div class="mood-history__legend" aria-label="Mood legend">
+        <span class="great">Great</span><i></i>
+        <span class="okay">Okay</span><i></i>
+        <span class="low">Low</span><i></i>
+        <span class="none">No Entry</span>
+      </div>
+    </section>
+
+    <section class="journal-entries">
+      <div class="journal-entries__heading">
+        <h2>Your Entries</h2>
+        <div class="journal-month" role="group" aria-label="Journal month">
+          <button type="button" aria-label="Previous month" (click)="prevMonth()">
+            <img src="assets/figma/journal/chevron-left.svg" alt="" />
+          </button>
+          <span>{{ monthLabel }}</span>
+          <button type="button" aria-label="Next month" [disabled]="isAtLatestMonth" (click)="nextMonth()">
+            <img src="assets/figma/journal/chevron-right.svg" alt="" />
+          </button>
+        </div>
+      </div>
+
+      <div class="journal-state journal-state--loading" *ngIf="loading" aria-live="polite">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Loading your journal...</p>
+      </div>
+
+      <div class="journal-state journal-state--error" *ngIf="!loading && errorMessage">
+        <p>{{ errorMessage }}</p>
+        <button type="button" (click)="retry()">Retry</button>
+      </div>
+
+      <div class="journal-empty" *ngIf="!loading && !errorMessage && filteredEntries.length === 0">
+        <img src="assets/figma/journal/empty-journal.png" alt="Purple journal with growing leaves" />
+        <div>
+          <h3>No entries yet</h3>
+          <p>This is your space to reflect, express, and grow. Start your journey today.</p>
+        </div>
+      </div>
+
+      <div class="entries" *ngIf="!loading && !errorMessage && filteredEntries.length > 0">
+        <journal-post-card *ngFor="let entry of filteredEntries; trackBy: trackById" [entry]="entry">
+        </journal-post-card>
+      </div>
+    </section>
+  </main>
+
+  <button *ngIf="isAtLatestMonth && !hasEntryForToday" type="button" class="journal-add"
+    aria-label="Add journal entry" (click)="onAddClick()">
+    <img src="assets/figma/journal/add.svg" alt="" aria-hidden="true" />
+  </button>
 </ion-content>

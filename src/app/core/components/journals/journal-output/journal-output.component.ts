@@ -1,14 +1,12 @@
-import { Component, Input, OnInit, HostListener } from '@angular/core';
-import { ViewWillEnter } from '@ionic/angular';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
-import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
-import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
-import { JournalPostCardComponent } from '../journal-post-card/journal-post-card.component';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Component, Input, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
+import { JournalPostCardComponent } from '../journal-post-card/journal-post-card.component';
+
 export interface JournalOutputEntry {
   id?: string | number;
   date?: string | Date;
@@ -19,308 +17,272 @@ export interface JournalOutputEntry {
   images?: string[];
 }
 
+type MoodTone = 'great' | 'okay' | 'low' | 'none';
+
+interface MoodDay {
+  key: string;
+  tone: MoodTone;
+  label: string;
+}
+
 @Component({
   selector: 'app-journal-output',
   standalone: true,
-  imports: [CommonModule, IonicModule, SupermeCardHeaderComponent, SupermeButtonComponent, JournalPostCardComponent],
+  imports: [CommonModule, IonicModule, JournalPostCardComponent],
   templateUrl: './journal-output.component.html',
-  styleUrls: ['./journal-output.component.scss']
+  styleUrls: ['./journal-output.component.scss'],
 })
 export class JournalOutputComponent implements OnInit, ViewWillEnter {
-  // Image viewer state
-  public viewerOpen: boolean = false;
-  public viewerSrc: string | null = null;
   @Input() entries: JournalOutputEntry[] = [];
 
-  constructor(private router: Router, private http: HttpClient, private authApi: AuthApi) { }
+  currentMonthDate = new Date();
+  monthLabel = '';
+  loading = false;
+  errorMessage = '';
 
-  // Month navigator state
-  public currentMonthDate: Date = new Date();
-  public monthLabel: string = '';
-
-  ionViewWillEnter(): void {
-    const now = this.currentMonthDate || new Date();
-    this.loadEntriesFromApi(now.getMonth() + 1, now.getFullYear());
-  }
+  constructor(
+    private readonly router: Router,
+    private readonly http: HttpClient,
+    private readonly authApi: AuthApi,
+  ) {}
 
   ngOnInit(): void {
-    // If no entries were provided as an @Input(), try to read from navigation state
-    const navState = (history && (history as any).state) ? (history as any).state : null;
-    if ((!this.entries || this.entries.length === 0) && navState && navState.entries) {
-      this.entries = navState.entries as JournalOutputEntry[];
+    const navEntries = history?.state?.entries as JournalOutputEntry[] | undefined;
+    if ((!this.entries || this.entries.length === 0) && Array.isArray(navEntries)) {
+      this.entries = this.normalizeEntries(navEntries);
     }
-
-    // Normalize dates to Date objects for easier formatting and ensure `images` exists
-    this.entries = (this.entries || []).map(e => {
-      const normalizedDate = e.date ? new Date(e.date) : undefined;
-      let images: string[] = [];
-      const src = (e as any).attachments ?? (e as any).attachmentUrls ?? (e as any).attachmentUrl ?? (e as any).images;
-      if (Array.isArray(src)) images = (src as any[]).filter(Boolean);
-      else if (typeof src === 'string' && src) images = [src];
-      return { ...e, date: normalizedDate, images } as JournalOutputEntry;
-    });
-
-    // If entries still empty, fetch from backend API for the current month
-    if (!this.entries || this.entries.length === 0) {
-      const now = this.currentMonthDate || new Date();
-      this.loadEntriesFromApi(now.getMonth() + 1, now.getFullYear());
-    }
-
-    // initialize month label (will show current month/year)
     this.updateMonthLabel();
   }
 
-  /** Open the image viewer overlay for the selected image */
-  openImageViewer(src: string): void {
-    if (!src) return;
-    this.viewerSrc = src;
-    this.viewerOpen = true;
+  ionViewWillEnter(): void {
+    this.loadEntriesFromApi(
+      this.currentMonthDate.getMonth() + 1,
+      this.currentMonthDate.getFullYear(),
+    );
   }
 
-  /** Close the image viewer overlay */
-  closeImageViewer(): void {
-    this.viewerOpen = false;
-    this.viewerSrc = null;
+  get filteredEntries(): JournalOutputEntry[] {
+    const month = this.currentMonthDate.getMonth();
+    const year = this.currentMonthDate.getFullYear();
+    return (this.entries || [])
+      .filter((entry) => {
+        const date = this.entryDate(entry);
+        return !!date && date.getMonth() === month && date.getFullYear() === year;
+      })
+      .slice()
+      .sort((a, b) => (this.entryDate(b)?.getTime() || 0) - (this.entryDate(a)?.getTime() || 0));
   }
 
-  @HostListener('document:keydown.escape')
-  onEscapeKey() {
-    if (this.viewerOpen) this.closeImageViewer();
+  get moodDays(): MoodDay[] {
+    const byDate = new Map<string, JournalOutputEntry>();
+    for (const entry of this.entries || []) {
+      const date = this.entryDate(entry);
+      if (date) byDate.set(this.dateKey(date), entry);
+    }
+
+    const result: MoodDay[] = [];
+    const end = new Date();
+    end.setHours(12, 0, 0, 0);
+    for (let offset = 29; offset >= 0; offset -= 1) {
+      const date = new Date(end);
+      date.setDate(end.getDate() - offset);
+      const entry = byDate.get(this.dateKey(date));
+      result.push({
+        key: this.dateKey(date),
+        tone: entry ? this.moodTone(entry.mood) : 'none',
+        label: `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}: ${entry?.mood || 'No entry'}`,
+      });
+    }
+    return result;
+  }
+
+  get currentStreak(): number {
+    const dates = this.entryDateSet;
+    const cursor = new Date();
+    cursor.setHours(12, 0, 0, 0);
+    if (!dates.has(this.dateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+
+    let streak = 0;
+    while (dates.has(this.dateKey(cursor))) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  }
+
+  get bestStreak(): number {
+    const dates = Array.from(this.entryDateSet).sort();
+    let best = 0;
+    let current = 0;
+    let previous: Date | null = null;
+
+    for (const key of dates) {
+      const date = new Date(`${key}T12:00:00`);
+      const difference = previous ? Math.round((date.getTime() - previous.getTime()) / 86400000) : 0;
+      current = previous && difference === 1 ? current + 1 : 1;
+      best = Math.max(best, current);
+      previous = date;
+    }
+    return best;
+  }
+
+  get isAtLatestMonth(): boolean {
+    const now = new Date();
+    return this.currentMonthDate.getMonth() === now.getMonth()
+      && this.currentMonthDate.getFullYear() === now.getFullYear();
+  }
+
+  get hasEntryForToday(): boolean {
+    const today = this.dateKey(new Date());
+    return (this.entries || []).some((entry) => {
+      const date = this.entryDate(entry);
+      return !!date && this.dateKey(date) === today;
+    });
+  }
+
+  prevMonth(): void {
+    const date = new Date(this.currentMonthDate);
+    date.setDate(1);
+    date.setMonth(date.getMonth() - 1);
+    this.selectMonth(date);
+  }
+
+  nextMonth(): void {
+    if (this.isAtLatestMonth) return;
+    const date = new Date(this.currentMonthDate);
+    date.setDate(1);
+    date.setMonth(date.getMonth() + 1);
+    this.selectMonth(date);
+  }
+
+  retry(): void {
+    this.loadEntriesFromApi(
+      this.currentMonthDate.getMonth() + 1,
+      this.currentMonthDate.getFullYear(),
+    );
+  }
+
+  trackById(index: number, item: JournalOutputEntry): string | number {
+    return item.id ?? index;
+  }
+
+  trackMoodDay(_: number, item: MoodDay): string {
+    return item.key;
+  }
+
+  onAddClick(): void {
+    if (!this.hasEntryForToday) void this.router.navigate(['/authed/journal-input']);
+  }
+
+  goBack(): void {
+    void this.router.navigate(['/authed/user-dashboard']);
+  }
+
+  private get entryDateSet(): Set<string> {
+    const dates = new Set<string>();
+    for (const entry of this.entries || []) {
+      const date = this.entryDate(entry);
+      if (date) dates.add(this.dateKey(date));
+    }
+    return dates;
+  }
+
+  private selectMonth(date: Date): void {
+    this.currentMonthDate = date;
+    this.updateMonthLabel();
+    this.loadEntriesFromApi(date.getMonth() + 1, date.getFullYear());
   }
 
   private updateMonthLabel(): void {
-    const d = this.currentMonthDate || new Date();
-    // Format like: April, 2025
-    this.monthLabel = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    const month = this.currentMonthDate.toLocaleString('en-US', { month: 'long' });
+    this.monthLabel = `${month},${this.currentMonthDate.getFullYear()}`;
   }
 
-  public prevMonth(): void {
-    const d = new Date(this.currentMonthDate);
-    d.setMonth(d.getMonth() - 1);
-    this.currentMonthDate = d;
-    this.updateMonthLabel();
-    // Load entries for selected month from backend
-    this.loadEntriesFromApi(this.currentMonthDate.getMonth() + 1, this.currentMonthDate.getFullYear());
-  }
-
-  public nextMonth(): void {
-    const d = new Date(this.currentMonthDate);
-    d.setMonth(d.getMonth() + 1);
-    this.currentMonthDate = d;
-    this.updateMonthLabel();
-    // Load entries for selected month from backend
-    this.loadEntriesFromApi(this.currentMonthDate.getMonth() + 1, this.currentMonthDate.getFullYear());
-  }
-
-  /** Return true when the currently selected month is the same as the real current month/year */
-  get isAtLatestMonth(): boolean {
-    try {
-      const now = new Date();
-      const sel = this.currentMonthDate || new Date();
-      return sel.getMonth() === now.getMonth() && sel.getFullYear() === now.getFullYear();
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /** Return entries that fall within the currently selected month/year */
-  get filteredEntries(): JournalOutputEntry[] {
-    if (!this.entries || !this.entries.length) return [];
-    const month = (this.currentMonthDate || new Date()).getMonth();
-    const year = (this.currentMonthDate || new Date()).getFullYear();
-    const list = this.entries.filter(e => {
-      if (!e || !e.date) return false;
-      const d = e.date instanceof Date ? e.date : new Date(e.date as any);
-      return d.getMonth() === month && d.getFullYear() === year;
-    });
-    // Sort by date descending so most recent entries appear first
-    return list.sort((a, b) => {
-      const da = a.date instanceof Date ? a.date.getTime() : new Date(a.date as any).getTime();
-      const db = b.date instanceof Date ? b.date.getTime() : new Date(b.date as any).getTime();
-      return db - da;
-    });
-  }
-
-  private loadEntriesFromApi(month?: number, year?: number): void {
-    let url = `${environment.apiUrl}/journal/entries`;
-    // If month/year provided, call the MONTH view on the API
-    if (typeof month === 'number' && typeof year === 'number') {
-      // API expects month as 1-12
-      url = `${url}?type=MONTH&month=${month}&year=${year}`;
-    }
-
+  private loadEntriesFromApi(month: number, year: number): void {
+    const url = `${environment.apiUrl}/journal/entries?type=MONTH&month=${month}&year=${year}`;
     const token = this.authApi.getToken();
     let headers = new HttpHeaders();
-    if (token) {
-      headers = headers.set('Authorization', token.startsWith('Bearer ') ? token : `Bearer ${token}`);
-    }
+    if (token) headers = headers.set('Authorization', token.startsWith('Bearer ') ? token : `Bearer ${token}`);
 
-    this.http.get<any[]>(url, { headers, observe: 'response' }).subscribe({
-      next: (resp) => {
-        if (resp.status === 204 || !resp.body) {
-          this.entries = [];
-          return;
-        }
-        const res = resp.body;
-        if (!Array.isArray(res)) {
-          console.warn('Unexpected journal entries response, expected array', res);
-          return;
-        }
-        // Map backend shape to JournalOutputEntry
-        this.entries = res.map(item => {
-          // backend returns creationDate and creationTime (e.g. "2025-09-28" and "19:03:45.244")
-          let dateVal: Date | undefined = undefined;
-          try {
-            if (item.creationDate && item.creationTime) {
-              dateVal = new Date(`${item.creationDate}T${item.creationTime}`);
-            } else if (item.creationDate) {
-              dateVal = new Date(item.creationDate);
-            } else if (item.date) {
-              dateVal = new Date(item.date);
-            }
-          } catch (e) {
-            dateVal = undefined;
-          }
-
-          const tags: string[] = [];
-          // hobbies may be a comma-separated string in the API
-          if (item.hobbies && typeof item.hobbies === 'string') {
-            item.hobbies.split(',').forEach((t: string) => {
-              const s = t.trim();
-              if (s) {
-                const titled = `Hobbies: ${s}`;
-                if (tags.indexOf(titled) === -1) tags.push(titled);
-              }
-            });
-          }
-          // also include other short fields as tags if present
-          ['sleep', 'health', 'food', 'social', 'school', 'emotions'].forEach((k: string) => {
-            if (item[k]) {
-              const val = String(item[k]).trim();
-              const titled = `${k.charAt(0).toUpperCase() + k.slice(1)}: ${val}`;
-              if (val && tags.indexOf(titled) === -1) tags.push(titled);
-            }
-          });
-
-          const images: string[] = [];
-          const toAbsUrl = (u: any): string => {
-            if (!u) return '';
-            const raw = typeof u === 'string' ? u : (u.url || u.uri || u.src || u.fileUrl || '');
-            if (!raw) return '';
-            if (raw.startsWith('https://')) return raw;
-            if (raw.startsWith('http://')) return raw.replace('http://', 'https://');
-            return raw.startsWith('/') ? `https://api.supermeapp.com${raw}` : `https://api.supermeapp.com/${raw}`;
-          };
-          const urlArrayField = item.attachments ?? item.files ?? item.attachmentUrls ?? item.imageUrls ?? item.images ?? item.mediaUrls;
-          if (Array.isArray(urlArrayField)) {
-            images.push(...urlArrayField.map(toAbsUrl).filter(Boolean));
-          } else {
-            const singleUrl = item.attachmentUrl ?? item.fileUrl ?? item.imageUrl ?? item.mediaUrl;
-            const abs = toAbsUrl(singleUrl);
-            if (abs) images.push(abs);
-          }
-
-          return {
-            id: item.id,
-            date: dateVal,
-            text: item.notes || item.text || '',
-            mood: item.emotions || item.mood || '',
-            emoji: undefined,
-            tags,
-            images
-          } as JournalOutputEntry;
-        });
+    this.loading = true;
+    this.errorMessage = '';
+    this.http.get<unknown>(url, { headers, observe: 'response' }).subscribe({
+      next: (response) => {
+        this.entries = Array.isArray(response.body) ? this.mapApiEntries(response.body) : [];
+        this.loading = false;
       },
-      error: (err) => {
-        console.error('Failed to load journal entries', err);
-      }
+      error: (error) => {
+        console.error('Failed to load journal entries', error);
+        this.entries = [];
+        this.errorMessage = 'We could not load your journal. Please try again.';
+        this.loading = false;
+      },
     });
   }
 
-  trackById(index: number, item: JournalOutputEntry) {
-    return item?.id ?? index;
-  }
+  private mapApiEntries(items: any[]): JournalOutputEntry[] {
+    return items.map((item) => {
+      const date = item.creationDate && item.creationTime
+        ? new Date(`${item.creationDate}T${item.creationTime}`)
+        : new Date(item.creationDate || item.date || '');
+      const tags: string[] = [];
 
-  formatHeaderDate(date?: string | Date): string {
-    if (!date) return '';
-    const d = date instanceof Date ? date : new Date(date);
-    const now = new Date();
-    const isToday = d.toDateString() === now.toDateString();
-    if (isToday) return `Today, ${d.toLocaleString('en-US', { month: 'long', day: 'numeric' })}`;
-    return d.toLocaleString('en-US', { weekday: undefined, month: 'long', day: 'numeric' });
-  }
-
-  formatTime(date?: string | Date): string {
-    if (!date) return '';
-    const d = date instanceof Date ? date : new Date(date);
-    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  }
-
-  joinTags(tags?: string[]): string[] {
-    return tags || [];
-  }
-
-  /** Return tags for display excluding the entry's mood/emotion (to avoid duplication) */
-  getFilteredTags(entry: JournalOutputEntry): string[] {
-    const tags = Array.isArray(entry?.tags) ? entry.tags.map(t => String(t).trim()).filter(Boolean) : [];
-    const mood = (entry?.mood || '').trim().toLowerCase();
-    if (!mood) return tags;
-    return tags.filter(t => String(t).toLowerCase() !== mood);
-  }
-
-
-  getEmotion(entry: JournalOutputEntry): { label: string; image: string } | null {
-    const mood = (entry.mood || '').toLowerCase();
-    if (!mood) return null;
-
-    const emotionMap: { [k: string]: { label: string; image: string } } = {
-      happy: { label: 'Happy', image: 'assets/Images-Thumbnails/Image-Journal-Emotions1.jpg' },
-      excited: { label: 'Excited', image: 'assets/Images-Thumbnails/Image-Journal-Emotions2.jpg' },
-      angry: { label: 'Angry', image: 'assets/Images-Thumbnails/Image-Journal-Emotions3.jpg' },
-      sad: { label: 'Sad', image: 'assets/Images-Thumbnails/Image-Journal-Emotions4.jpg' }
-    };
-
-    return emotionMap[mood] || null;
-  }
-
-  /**
-   * Navigate to the journal input page when the floating + button is clicked.
-   */
-  openJournalInput(): void {
-    // Prevent opening input if there's already a journal for today
-    if (this.hasEntryForToday) return;
-    this.router.navigate(['/authed/journal-input']).catch(() => { /* ignore navigation errors */ });
-  }
-
-  /**
-   * Handler used by the fixed add button in the template.
-   */
-  onAddClick(): void {
-    if (this.hasEntryForToday) return;
-    this.openJournalInput();
-  }
-
-  /** Return true when there is already a journal entry for today's date */
-  get hasEntryForToday(): boolean {
-    try {
-      if (!this.entries || !this.entries.length) return false;
-      const todayStr = new Date().toDateString();
-      return this.entries.some(e => {
-        if (!e || !e.date) return false;
-        const d = e.date instanceof Date ? e.date : new Date(e.date as any);
-        return d.toDateString() === todayStr;
+      ['sleep', 'health', 'hobbies', 'social', 'school', 'growth'].forEach((key) => {
+        if (!item[key]) return;
+        String(item[key]).split(',').map((part) => part.trim()).filter(Boolean).forEach((part) => {
+          tags.push(`${key.charAt(0).toUpperCase()}${key.slice(1)}: ${part}`);
+        });
       });
-    } catch (e) {
-      return false;
-    }
+
+      const imageSource = item.attachments ?? item.files ?? item.attachmentUrls
+        ?? item.imageUrls ?? item.images ?? item.mediaUrls ?? item.attachmentUrl
+        ?? item.fileUrl ?? item.imageUrl ?? item.mediaUrl;
+      const rawImages = Array.isArray(imageSource) ? imageSource : imageSource ? [imageSource] : [];
+
+      return {
+        id: item.id,
+        date: Number.isNaN(date.getTime()) ? undefined : date,
+        text: item.notes || item.text || '',
+        mood: item.emotions || item.mood || '',
+        tags,
+        images: rawImages.map((image) => this.absoluteImageUrl(image)).filter(Boolean),
+      };
+    });
   }
 
-  /**
-   * Navigate back when the back arrow is clicked
-   */
-  goBack(): void {
-    this.router.navigate(['/authed/user-dashboard']).catch(() => { /* ignore navigation errors */ });
+  private normalizeEntries(entries: JournalOutputEntry[]): JournalOutputEntry[] {
+    return entries.map((entry) => ({
+      ...entry,
+      date: entry.date ? new Date(entry.date) : undefined,
+      images: Array.isArray(entry.images) ? entry.images : [],
+    }));
   }
 
+  private entryDate(entry: JournalOutputEntry): Date | null {
+    if (!entry?.date) return null;
+    const date = entry.date instanceof Date ? entry.date : new Date(entry.date);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  private dateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private moodTone(mood?: string): MoodTone {
+    const value = (mood || '').trim().toLowerCase();
+    if (['happy', 'excited', 'calm', 'great', 'good', 'joyful'].includes(value)) return 'great';
+    if (['sad', 'anxious', 'frustrated', 'frustated', 'angry', 'low', 'unwell', 'bad', 'upset'].includes(value)) return 'low';
+    return 'okay';
+  }
+
+  private absoluteImageUrl(value: any): string {
+    const raw = typeof value === 'string' ? value : value?.url || value?.uri || value?.src || value?.fileUrl || '';
+    if (!raw) return '';
+    if (raw.startsWith('https://')) return raw;
+    if (raw.startsWith('http://')) return raw.replace('http://', 'https://');
+    return raw.startsWith('/') ? `https://api.supermeapp.com${raw}` : `https://api.supermeapp.com/${raw}`;
+  }
 }
-
