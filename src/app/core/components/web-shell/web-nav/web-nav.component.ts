@@ -141,7 +141,7 @@ export class WebNavComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((userData) => {
         if (!userData) return;
-        this.userName = String(userData.name || '').trim();
+        this.userName = this.resolveProfileUsername(userData);
         const resolved =
           this.childSelfImageService.resolveAvatarFromUser(userData);
         this.userAvatarUrl = resolved.url || null;
@@ -171,6 +171,10 @@ export class WebNavComponent implements OnInit, OnDestroy {
     return (this.userName || (this.isParent ? 'Parent' : 'User'))
       .charAt(0)
       .toUpperCase();
+  }
+
+  private resolveProfileUsername(user: any): string {
+    return String(user?.username ?? user?.userName ?? user?.name ?? '').trim();
   }
 
   get dashboardLink(): string {

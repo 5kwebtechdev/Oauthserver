@@ -597,7 +597,14 @@ export class AuthService {
     if (Object.prototype.hasOwnProperty.call(requestProfile, 'gender')) {
       requestProfile.gender = toApiGender(requestProfile.gender);
     }
-    return this.http.post<AuthResponse>(url, requestProfile);
+    // OAuth login is an account-level, public authentication exchange. Do not
+    // let a previously selected child add `forUserId`, or let a stale session
+    // token be attached while logging in again from the web view.
+    const headers = new HttpHeaders({
+      'X-Skip-Authorization': 'true',
+      'X-Skip-Profile-Selector': 'true'
+    });
+    return this.http.post<AuthResponse>(url, requestProfile, { headers });
   }
 
   completeGoogleOnboarding(payload: any): Observable<any> {

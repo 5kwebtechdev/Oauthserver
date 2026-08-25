@@ -5,6 +5,24 @@ import { environment } from '../../../environments/environment';
 import { Challenge, Article, LearningCardData, LearningCategorySummary } from '../models/learning.models';
 import { AuthService } from '../../../package/api/auth.service';
 
+export interface ChallengeAssignmentResponse {
+    challengeId: number;
+    challengeName: string;
+    assignedBy: number;
+    assignedToChild: number[];
+    extraCoinsByParent?: number;
+    assignedAt: string;
+}
+
+export interface ArticleAssignmentResponse {
+    articleId: number;
+    articleTitle: string;
+    assignedBy: number;
+    assignedToChild: number[];
+    extraCoinsByParent?: number;
+    assignedAt: string;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -62,6 +80,36 @@ export class LearningService {
         } catch {
             return null;
         }
+    }
+
+    /**
+     * Assign a quiz/puzzle challenge to one or more children (parent-only).
+     */
+    assignChallenge(
+        challengeId: number,
+        childIds: number[],
+        extraCoinsByParent: number,
+    ): Observable<ChallengeAssignmentResponse> {
+        return this.http.post<ChallengeAssignmentResponse>(
+            `${this.apiUrl}/challenges/assign`,
+            { challengeId, childIds, extraCoinsByParent },
+            { headers: this.getHeaders() },
+        );
+    }
+
+    /**
+     * Assign an article to one or more children (parent-only).
+     */
+    assignArticle(
+        articleId: number,
+        childIds: number[],
+        extraCoinsByParent: number,
+    ): Observable<ArticleAssignmentResponse> {
+        return this.http.post<ArticleAssignmentResponse>(
+            `${this.apiUrl}/articles/assign`,
+            { articleId, childIds, extraCoinsByParent },
+            { headers: this.getHeaders() },
+        );
     }
 
     /**
