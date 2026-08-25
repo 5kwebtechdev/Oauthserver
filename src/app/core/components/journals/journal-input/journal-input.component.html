@@ -1,106 +1,114 @@
-<ion-content>
-  <superme-card-header [title]="'Your Journal, Your Journey'" [subtitleLeft]="'Track moods'" [subtitleMiddle]="'Save'"
-    [subtitleRight]="'Feel Better'" [showBackArrow]="true" (backClick)="goBack()">
-  </superme-card-header>
+<ion-content class="journal-compose" [fullscreen]="true">
+  <main class="journal-compose__shell">
+    <header class="compose-header">
+      <button type="button" aria-label="Go back" (click)="goBack()">
+        <img src="assets/figma/journal/back.svg" alt="" aria-hidden="true" />
+      </button>
+      <h1>What have you been up to?</h1>
+    </header>
 
+    <section
+      *ngFor="let section of sections; trackBy: trackBySection"
+      class="journal-question"
+      [attr.data-section]="section.key"
+      [class.journal-question--error]="section.key === 'emotions' && emotionError"
+    >
+      <h2>
+        <img [src]="section.icon" alt="" aria-hidden="true" />
+        <span>{{ section.title }}</span>
+      </h2>
 
-<div class="journal-input-container">
-    <div class="timeline">
-
-      <!-- Dynamic sections -->
-      <div class="section" *ngFor="let section of sections; trackBy: trackBySection">
-        <h2 [class.section-title-error]="
-            section.key === 'emotions' && emotionError
-          ">
-          {{ section.title }}
-        </h2>
-
-        <div class="options">
-          <div class="option" tabindex="0" role="button" *ngFor="let option of section.options; let i = index"
-            [attr.aria-pressed]="isSelected(section.key, i)" (click)="selectOption(section.key, i)"
-            (keydown.enter)="selectOption(section.key, i)" [class.selected]="isSelected(section.key, i)">
-            <div class="j-img">
-              <img [src]="option.image" [alt]="option.label" />
-            </div>
-
-            <span>{{ option.label }}</span>
-
-            <span class="check" *ngIf="isSelected(section.key, i)">
-              ✔
+      <div class="journal-options" [style.--option-columns]="section.columns">
+        <button
+          *ngFor="let option of section.options; let index = index; trackBy: trackByOption"
+          type="button"
+          class="journal-option"
+          [class.journal-option--selected]="isSelected(section.key, index)"
+          [attr.aria-pressed]="isSelected(section.key, index)"
+          (click)="selectOption(section.key, index)"
+        >
+          <span class="journal-option__image">
+            <img [src]="option.image" [alt]="option.label" />
+            <span class="journal-option__check" *ngIf="isSelected(section.key, index)">
+              <img src="assets/figma/journal/check.svg" alt="Selected" />
             </span>
-          </div>
-        </div>
+          </span>
+          <span class="journal-option__label">{{ option.label }}</span>
+        </button>
       </div>
 
-      <!-- Notes Section -->
-      <div class="section">
-        <h2>A Quick Note</h2>
+      <p class="journal-question__error" *ngIf="section.key === 'emotions' && emotionError">
+        {{ emotionError }}
+      </p>
+    </section>
 
-        <div class="note-area">
-          <textarea placeholder="Your notes goes here..." [(ngModel)]="text" name="journalNotes" maxlength="160"
-            (input)="onNotesInput()" (input)="autoExpandTextarea($event)"></textarea>
-        </div>
+    <section class="journal-extra" aria-labelledby="journal-extra-title">
+      <h2 id="journal-extra-title">Add a little more</h2>
 
-        <div class="char-counter">
-          {{ notesCharCount }}/{{ noteMaxLength }}
-        </div>
-      </div>
+      <label class="journal-note">
+        <span class="journal-extra__icon">
+          <img src="assets/figma/journal/note.svg" alt="" aria-hidden="true" />
+        </span>
+        <span class="journal-note__copy">
+          <strong>A quick note</strong>
+          <span>Add a note to your journal</span>
+        </span>
+        <textarea
+          [(ngModel)]="text"
+          name="journalNotes"
+          [maxlength]="noteMaxLength"
+          aria-label="Add a note to your journal"
+          rows="3"
+          (input)="onNotesInput()"
+        ></textarea>
+        <small>{{ notesCharCount }}/{{ noteMaxLength }}</small>
+      </label>
 
-      <!-- Pin a Moment -->
-      <div class="section">
-        <h2>Pin a Moment</h2>
+      <div class="journal-photo">
+        <div class="journal-photo__items">
+          <button
+            *ngFor="let image of uploadedImages; let index = index"
+            type="button"
+            class="journal-photo__preview"
+            [attr.aria-label]="'Replace photo ' + (index + 1)"
+            (click)="triggerFileInput(index)"
+          >
+            <img [src]="image.previewUrl" [alt]="'Journal moment ' + (index + 1)" />
+            <span class="journal-photo__remove" role="button" tabindex="0"
+              [attr.aria-label]="'Remove photo ' + (index + 1)"
+              (click)="$event.stopPropagation(); removeImage(index)"
+              (keydown.enter)="$event.stopPropagation(); removeImage(index)">
+              <img src="assets/icons/cancel-cross.svg" alt="" aria-hidden="true" />
+            </span>
+          </button>
 
-        <!-- Uploaded Images -->
-        <div class="image-upload-section d-flex align-items-center gap-2">
-
-          <div *ngFor="let img of uploadedImages; let i = index" class="image-slot">
-            <div class="image-preview-container">
-              <img [src]="img.previewUrl" alt="Uploaded image" class="image-preview" />
-
-              <button class="remove-image-btn" (click)="removeImage(i)" type="button">
-                ✕
-              </button>
-            </div>
-          </div>
-
-          <!-- Add more (max 3 images) — always show one + button -->
-          <button *ngIf="uploadedImages.length > 0 && uploadedImages.length < 3"
-            class="upload-slot-btn" (click)="triggerFileInput(uploadedImages.length)" type="button">
-            +
+          <button *ngIf="canAddMoreImages" type="button" class="journal-photo__picker"
+            (click)="triggerNativeFilePicker()">
+            <span class="journal-extra__icon">
+              <img src="assets/figma/journal/attach.svg" alt="" aria-hidden="true" />
+            </span>
+            <span class="journal-photo__copy">
+              <strong>Pin a Moment</strong>
+              <span>Choose from gallery</span>
+            </span>
           </button>
         </div>
-
-        <!-- Error -->
-        <div class="image-error" *ngIf="imageUploadError">
-          {{ imageUploadError }}
-        </div>
-
-        <!-- Empty State -->
-        <div *ngIf="uploadedImages.length === 0">
-          <label class="pin-moment" for="journalFileInput" role="button" tabindex="0"
-            (keydown.enter)="triggerNativeFilePicker()">
-            <div class="pin-inner">
-              <img class="pin-icon" src="assets/icons/attachment-small.svg" alt="Attach" width="18" height="18" />
-              <span class="pin-text">Choose item here</span>
-            </div>
-          </label>
-        </div>
+        <p class="journal-photo__error" *ngIf="imageUploadError">{{ imageUploadError }}</p>
       </div>
-    </div>
+    </section>
 
-    <!-- Emotion Error -->
-    <div *ngIf="emotionError" class="field-error">
-      {{ emotionError }}
-    </div>
+    <button type="button" class="journal-save" [disabled]="!isPostEnabled" (click)="submit()">
+      <ion-spinner *ngIf="submitting" name="crescent"></ion-spinner>
+      <ng-container *ngIf="!submitting">
+        <img class="journal-save__check" src="assets/figma/journal/check.svg" alt="" aria-hidden="true" />
+        <span>Save Journal</span>
+        <span class="journal-save__reward">
+          <img src="assets/figma/journal/coin.png" alt="Coin" />
+          <strong>+5</strong>
+        </span>
+      </ng-container>
+    </button>
+  </main>
 
-    <!-- Post Button -->
-    <div class="post-button-container" (click)="onPostAttempt($event)">
-      <superme-button type="magenta" size="full" text="Post" [disabled]="!isPostEnabled">
-      </superme-button>
-    </div>
-  </div>
-
-  <!-- Hidden file input -->
-  <input #fileInput id="journalFileInput" type="file" accept="image/*" (change)="onFileSelected($event)"
-    style="display: none" />
+  <input #fileInput type="file" accept="image/*" hidden (change)="onFileSelected($event)" />
 </ion-content>

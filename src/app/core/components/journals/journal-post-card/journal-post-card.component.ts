@@ -89,10 +89,14 @@ export class JournalPostCardComponent implements OnInit {
     if (!mood) return null;
 
     const emotionMap: { [k: string]: { label: string; image: string } } = {
-      happy: { label: 'Happy', image: 'assets/Images-Thumbnails/Image-Journal-Emotions1.jpg' },
-      excited: { label: 'Excited', image: 'assets/Images-Thumbnails/Image-Journal-Emotions2.jpg' },
-      angry: { label: 'Angry', image: 'assets/Images-Thumbnails/Image-Journal-Emotions3.jpg' },
-      sad: { label: 'Sad', image: 'assets/Images-Thumbnails/Image-Journal-Emotions4.jpg' }
+      happy: { label: 'Happy', image: 'assets/figma/journal/mood-happy.png' },
+      excited: { label: 'Excited', image: 'assets/figma/journal/mood-excited.png' },
+      calm: { label: 'Calm', image: 'assets/figma/journal/mood-calm.png' },
+      sad: { label: 'Sad', image: 'assets/figma/journal/mood-sad.png' },
+      anxious: { label: 'Anxious', image: 'assets/figma/journal/mood-anxious.png' },
+      frustrated: { label: 'Frustrated', image: 'assets/figma/journal/mood-frustrated.png' },
+      frustated: { label: 'Frustated', image: 'assets/figma/journal/mood-frustrated.png' },
+      angry: { label: 'Angry', image: 'assets/figma/journal/mood-frustrated.png' }
     };
 
     return emotionMap[mood] || null;
