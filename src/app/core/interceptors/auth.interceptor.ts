@@ -22,6 +22,16 @@ export class AuthInterceptor implements HttpInterceptor {
   ) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    // Public authentication exchanges (OAuth, login, OTP, etc.) must not
+    // inherit a token from a previous app session. This is especially
+    // important on web, where the Google account picker can complete while an
+    // old localStorage token is still being cleared.
+    if (request.headers.get('X-Skip-Authorization') === 'true') {
+      return next.handle(request.clone({
+        headers: request.headers.delete('X-Skip-Authorization')
+      }));
+    }
+
     // Skip adding auth header if the request already has one (from API services)
     const skipAuthHandler = request.headers.get('X-Skip-Auth-Handler') === 'true';
     const requestSessionToken = this.readSessionValue('auth_token');

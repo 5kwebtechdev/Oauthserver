@@ -447,12 +447,93 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
 
     if (!this.isParentItemAssigned(item) && this.getParentItemStatus(item) !== 'completed') {
-      // Quiz, puzzle, and article assignment is not available yet. Keep the
-      // CTA inert without showing a temporary implementation message.
+      if (item.type === 'quiz' || item.type === 'puzzle') {
+        this.assignChallengeToSelectedChild(item);
+      } else if (item.type === 'article') {
+        this.assignArticleToSelectedChild(item);
+      }
       return;
     }
 
     this.openParentLearningItem(item);
+  }
+
+  private assignChallengeToSelectedChild(item: LearningCardData): void {
+    const challengeId = Number(item.id);
+    const childId = Number(this.selectedChildId);
+    if (!Number.isFinite(challengeId) || challengeId <= 0 || !Number.isFinite(childId) || childId <= 0) {
+      this.toastService.error('Select a child before assigning this challenge.');
+      return;
+    }
+    if (this.isParentCourseAssigning(item)) return;
+
+    const extraCoinsByParent = this.getParentAssignmentCoins(item);
+    this.assigningCourseIds.add(String(item.id));
+    this.learningService.assignChallenge(challengeId, [childId], extraCoinsByParent)
+      .pipe(takeUntil(this.destroy$), takeUntil(this.childRequestCancel$))
+      .subscribe({
+        next: response => {
+          this.categoryContentItems = this.categoryContentItems.map(content =>
+            String(content.id) === String(item.id)
+              ? {
+                  ...content,
+                  rawData: {
+                    ...(content.rawData as Record<string, unknown>),
+                    assignedToChild: true,
+                    assignedAt: response.assignedAt,
+                    extraCoinsByParent: response.extraCoinsByParent ?? extraCoinsByParent,
+                  },
+                }
+              : content,
+          );
+          const childName = String(this.selectedChild?.name || 'your child').trim();
+          this.toastService.success(`${response.challengeName || item.title} assigned to ${childName}.`);
+        },
+        error: error => {
+          const message = String(error?.error?.message || error?.message || 'Unable to assign this challenge. Please try again.');
+          this.toastService.error(message);
+        },
+      })
+      .add(() => this.assigningCourseIds.delete(String(item.id)));
+  }
+
+  private assignArticleToSelectedChild(item: LearningCardData): void {
+    const articleId = Number(item.id);
+    const childId = Number(this.selectedChildId);
+    if (!Number.isFinite(articleId) || articleId <= 0 || !Number.isFinite(childId) || childId <= 0) {
+      this.toastService.error('Select a child before assigning this article.');
+      return;
+    }
+    if (this.isParentCourseAssigning(item)) return;
+
+    const extraCoinsByParent = this.getParentAssignmentCoins(item);
+    this.assigningCourseIds.add(String(item.id));
+    this.learningService.assignArticle(articleId, [childId], extraCoinsByParent)
+      .pipe(takeUntil(this.destroy$), takeUntil(this.childRequestCancel$))
+      .subscribe({
+        next: response => {
+          this.categoryContentItems = this.categoryContentItems.map(content =>
+            String(content.id) === String(item.id)
+              ? {
+                  ...content,
+                  rawData: {
+                    ...(content.rawData as Record<string, unknown>),
+                    assignedToChild: true,
+                    assignedAt: response.assignedAt,
+                    extraCoinsByParent: response.extraCoinsByParent ?? extraCoinsByParent,
+                  },
+                }
+              : content,
+          );
+          const childName = String(this.selectedChild?.name || 'your child').trim();
+          this.toastService.success(`${response.articleTitle || item.title} assigned to ${childName}.`);
+        },
+        error: error => {
+          const message = String(error?.error?.message || error?.message || 'Unable to assign this article. Please try again.');
+          this.toastService.error(message);
+        },
+      })
+      .add(() => this.assigningCourseIds.delete(String(item.id)));
   }
 
   private assignCourseToSelectedChild(item: LearningCardData): void {

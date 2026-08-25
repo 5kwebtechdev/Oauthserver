@@ -5,12 +5,20 @@ import { IonicModule, Platform, LoadingController, ToastController } from '@ioni
 import { Capacitor } from '@capacitor/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { getApps, getApp } from 'firebase/app';
-import { getAuth, signInWithCredential, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
+import {
+  getAuth,
+  signInWithCredential,
+  signInWithPopup,
+  GoogleAuthProvider,
+  OAuthProvider,
+  UserCredential
+} from 'firebase/auth';
 import { timeout } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
 import { CrashlyticsService } from '../../services/crashlytics.service';
+import { FirebaseRuntimeService } from '../../services/firebase-runtime.service';
 import { OnboardingStateService } from '../../services/onboarding-state.service';
 import {
   AppleAuthorizationCredential,
@@ -74,6 +82,7 @@ export class SocialMediaComponent implements OnInit {
     private analytics: AnalyticsService,
     private authSessionCleanup: AuthSessionCleanupService,
     private crashlytics: CrashlyticsService,
+    private firebaseRuntime: FirebaseRuntimeService,
     private onboardingState: OnboardingStateService,
     private appleSignIn: AppleSignInService,
     private ngZone: NgZone
@@ -126,16 +135,18 @@ export class SocialMediaComponent implements OnInit {
   }
 
   private async signInWithGoogle(): Promise<void> {
-    // GoogleAuth is a Capacitor plugin with its own web implementation (see
-    // node_modules/@codetrix-studio/capacitor-google-auth/.../web.js) — it's
-    // auto-selected by Capacitor's plugin bridge on web/browser the same way
-    // the native Android/iOS implementation is auto-selected there, so the
-    // exact same signIn()/buildGoogleOAuthProfile()/loginWithOAuthProfile()
-    // flow below already works unmodified on both. No platform branch needed
-    // here anymore — GoogleAuth.initialize() is also called unconditionally
-    // now in AppComponent.ngOnInit (see auth-session-cleanup.service.ts).
     if (this.isSocialLoginInProgress) return;
     this.isSocialLoginInProgress = true;
+
+    // The Capacitor plugin's browser implementation still uses the deprecated
+    // `gapi.auth2` API, which can return `server_error` after account selection
+    // in current browsers. Firebase Auth uses Google Identity Services and is
+    // already configured for this app. Start its popup immediately inside the
+    // click gesture so browser popup blockers cannot intercept it.
+    if (!Capacitor.isNativePlatform()) {
+      await this.signInWithGoogleWeb();
+      return;
+    }
 
     const loading = await this.loadingCtrl.create({ message: 'Signing in with Google...' });
     await loading.present();
@@ -187,6 +198,76 @@ export class SocialMediaComponent implements OnInit {
         await toast.present();
       }
     }
+  }
+
+  private async signInWithGoogleWeb(): Promise<void> {
+    let loading: HTMLIonLoadingElement | null = null;
+
+    try {
+      this.firebaseRuntime.initialize();
+      if (!getApps().length) {
+        throw new Error('Google sign-in is not initialized. Please refresh the page and try again.');
+      }
+
+      const provider = new GoogleAuthProvider();
+      provider.addScope('profile');
+      provider.addScope('email');
+      provider.setCustomParameters({ prompt: 'select_account' });
+
+      // Calling signInWithPopup before the first await preserves the browser's
+      // user-activation context and reliably opens the account picker.
+      const signInPromise = signInWithPopup(getAuth(getApp()), provider);
+      loading = await this.loadingCtrl.create({ message: 'Signing in with Google...' });
+      await loading.present();
+
+      const result = await signInPromise;
+      const googleProfile = await this.buildWebGoogleOAuthProfile(result);
+      this.storeOAuthSignupSession('google', googleProfile);
+      this.loginWithOAuthProfile(
+        this.withSelectedSignupRole(googleProfile),
+        loading,
+        'google'
+      );
+    } catch (err: any) {
+      await this.finishSocialLogin(loading);
+      const normalizedError = this.normalizeGoogleSignInError(err);
+      console.error('[SocialMedia] Web Google signIn error:', normalizedError.debugDetails, err);
+      this.crashlytics.recordException(err, {
+        provider: 'google',
+        platform: 'web',
+        stage: 'signIn',
+        code: normalizedError.code || ''
+      });
+
+      if (!normalizedError.cancelled) {
+        await this.presentToast(normalizedError.userMessage);
+      }
+    }
+  }
+
+  private async buildWebGoogleOAuthProfile(result: UserCredential): Promise<GoogleOAuthProfile> {
+    const user = result.user;
+    const oauthCredential = GoogleAuthProvider.credentialFromResult(result);
+    const idToken = String(oauthCredential?.idToken || await user.getIdToken()).trim();
+    const accessToken = String(oauthCredential?.accessToken || '').trim();
+    const providerId = String(user.providerData[0]?.uid || user.uid || '').trim();
+    const email = String(user.email || '').trim();
+    const name = String(user.displayName || email).trim();
+    const avatarUrl = String(user.photoURL || '').trim();
+
+    if (!providerId || !email || !idToken) {
+      throw new Error('Google sign-in did not return the required account details.');
+    }
+
+    return {
+      provider: 'google',
+      providerId,
+      email,
+      name,
+      avatarUrl,
+      idToken,
+      ...(accessToken ? { accessToken } : {})
+    };
   }
 
   private async signInWithApple(): Promise<void> {
