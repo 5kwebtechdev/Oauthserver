@@ -125,14 +125,6 @@ export class DashboardWebFooterComponent implements OnInit {
         { label: 'Advertise with Us', href: 'https://supermeapp.com/submit-an-ad' },
       ],
     },
-    {
-      title: 'APPS',
-      links: [
-        { label: 'SuperMeApp for Desktop', href: 'https://app.supermeapp.com/login' },
-        { label: 'SuperMeApp for Android', href: 'https://play.google.com/store/apps/details?id=io.ionic.starter' },
-        { label: 'SuperMeApp for iOS', href: 'https://apps.apple.com' },
-      ],
-    },
   ];
 
   get visibleFooterSections(): FooterSection[] {

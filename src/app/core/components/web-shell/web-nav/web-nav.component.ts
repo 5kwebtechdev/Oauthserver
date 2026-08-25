@@ -152,6 +152,17 @@ export class WebNavComponent implements OnInit, OnDestroy {
         if (Number.isFinite(profileCoins)) this.coins = profileCoins;
       });
 
+    // Keep the persistent website header in sync with the profile screen and
+    // edit-profile flow. In the current API model, `avatarName` is the public
+    // app username shown on My Profile, while `name` is the user's full name.
+    this.userService.userProfile$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((profile) => {
+        if (!profile) return;
+        const profileUsername = this.resolveProfileUsername(profile);
+        if (profileUsername) this.userName = profileUsername;
+      });
+
     this.userService.stats$
       .pipe(takeUntil(this.destroy$))
       .subscribe((stats) => {
@@ -174,7 +185,14 @@ export class WebNavComponent implements OnInit, OnDestroy {
   }
 
   private resolveProfileUsername(user: any): string {
-    return String(user?.username ?? user?.userName ?? user?.name ?? '').trim();
+    return String(
+      user?.username ??
+      user?.userName ??
+      user?.avatarName ??
+      user?.avatar?.avatarName ??
+      user?.name ??
+      '',
+    ).trim();
   }
 
   get dashboardLink(): string {

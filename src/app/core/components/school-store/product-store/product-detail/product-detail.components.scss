@@ -445,7 +445,8 @@ superme-button.page-cta .button,
 }
 
 /* Cart error / size-missing message */
-.cart-error-msg {
+.cart-error-msg,
+.cart-success-msg {
   position: fixed;
   left: 16px;
   right: 16px;
@@ -462,6 +463,16 @@ superme-button.page-cta .button,
   text-align: center;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   animation: fadeInUp 0.2s ease-out;
+}
+
+.cart-success-msg {
+  border: 1px solid #b9dfc2;
+  background: #edf8f0;
+  color: #26743a;
+}
+
+.cart-success-msg span {
+  margin-right: 4px;
 }
 
 @keyframes fadeInUp {

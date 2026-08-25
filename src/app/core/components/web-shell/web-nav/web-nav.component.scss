@@ -629,3 +629,92 @@ button {
     font-size: 10px;
   }
 }
+
+// Logged-in web navigation must size links from their actual labels. The old
+// fixed nth-child widths made longer labels such as "EduHub Listings" render
+// over the neighbouring Shop link and squeezed the account controls. Keep the
+// mobile two-row layout above unchanged and use a fluid single row on web.
+@media (min-width: 769px) {
+  .web-header,
+  .web-header--parent {
+    width: min(calc(100% - 32px), 1200px);
+  }
+
+  .web-header__inner,
+  .web-header--parent .web-header__inner,
+  .web-header:not(.web-header--parent) .web-header__inner {
+    width: min(100%, 1180px);
+    padding-inline: 12px;
+    justify-content: space-between;
+    gap: clamp(12px, 2vw, 28px);
+  }
+
+  .web-header__left,
+  .web-header--parent .web-header__left {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: clamp(12px, 1.8vw, 24px);
+  }
+
+  .web-header__nav,
+  .web-header--parent .web-header__nav {
+    width: auto;
+    min-width: 0;
+    flex: 0 1 auto;
+    gap: clamp(8px, 1.5vw, 24px);
+  }
+
+  .web-header__nav-item,
+  .web-header__nav-item:nth-child(n),
+  .web-header--parent .web-header__nav-item:nth-child(n) {
+    width: auto;
+    min-width: max-content;
+    flex: 0 0 auto;
+  }
+
+  .web-header__nav-link {
+    width: auto;
+    padding-inline: 2px;
+  }
+
+  .web-header__actions,
+  .web-header--parent .web-header__actions,
+  .web-header:not(.web-header--parent) .web-header__actions {
+    width: auto;
+    min-width: max-content;
+    flex: 0 0 auto;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 920px) {
+  .web-header__inner,
+  .web-header--parent .web-header__inner,
+  .web-header:not(.web-header--parent) .web-header__inner {
+    gap: 8px;
+  }
+
+  .web-header__left,
+  .web-header--parent .web-header__left {
+    gap: 8px;
+  }
+
+  .web-header__nav,
+  .web-header--parent .web-header__nav {
+    gap: 4px;
+  }
+
+  .web-header__nav-link {
+    font-size: 13px;
+  }
+
+  .web-header__profile {
+    width: 56px;
+    flex-basis: 56px;
+  }
+
+  .web-header__profile-name {
+    width: 56px;
+    font-size: 12px;
+  }
+}

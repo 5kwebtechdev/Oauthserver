@@ -74,6 +74,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   public get isOAuthSignup(): boolean {
     try {
+      // A managed Child is creating a separate account while the Parent stays
+      // authenticated underneath. Never inherit the Parent's Apple/Google
+      // onboarding flags or identity into the Child credential screens.
+      if (
+        this.managedChildSignup
+        || sessionStorage.getItem(SignupComponent.MANAGED_CHILD_SIGNUP_KEY) === 'true'
+      ) {
+        return false;
+      }
       if (
         sessionStorage.getItem('signup_via_oauth') === 'true'
         || sessionStorage.getItem('signup_via_google') === 'true'
@@ -95,10 +104,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // Fall through to the persisted provider below.
     }
     return this.onboardingState?.getSocialProvider() === 'apple';
-  }
-
-  public get oauthProviderLabel(): string {
-    return this.isAppleOAuthSignup ? 'Apple' : 'Google';
   }
 
   public get oauthAccountName(): string {
