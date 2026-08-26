@@ -165,10 +165,32 @@ gap: 24px;
 	display: block;
 }
 
-/* On wider screens allow more columns to fit automatically */
-@media (min-width: 740px) {
+// auto-fit stretches columns to fill whatever width it's given — with an
+// uncapped container and a category count that doesn't divide evenly per
+// row, the trailing card ends up alone with a large empty gap beside it
+// (looked especially broken with 6 categories: 5 then 1). Capping the
+// container AND switching to a fixed per-breakpoint column count keeps
+// row-wrapping predictable instead of depending on exactly how many
+// categories the API happens to return.
+@media (min-width: 480px) and (max-width: 767.98px) {
+    .school-store-content {
+        max-width: 600px;
+        margin-inline: auto;
+    }
+
     .store-cards {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .school-store-content {
+        max-width: 960px;
+        margin-inline: auto;
+    }
+
+    .store-cards {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
