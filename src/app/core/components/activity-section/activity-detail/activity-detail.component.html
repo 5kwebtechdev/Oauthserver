@@ -67,12 +67,37 @@
     </section>
 
     <section class="progress-section">
-      <div class="progress-title"><img src="assets/Icons-Neutral/Icon-Trophy.png" alt="" /><h2>Your activity’s progress</h2></div>
+      <div class="progress-title">
+        <div class="figma-progress-title-icon" aria-hidden="true">
+          <img src="assets/app-assets/activity-detail/figma-progress-achievement.png" alt="" />
+        </div>
+        <h2>Your activity’s progress</h2>
+      </div>
       <div class="stats-card">
-        <div class="stat-item"><img src="assets/Icons-Neutral/Icon-Streak.png" alt="" /><span>Current<br />Streak</span><strong>{{ coinStats.userStreaks }}</strong><small>days</small></div>
-        <div class="stat-item"><img src="assets/Icons-Neutral/Icons-Coins.png" alt="" /><span>Coins<br />Earned</span><strong>{{ coinStats.userCoins }}</strong><small>overall</small></div>
-        <div class="stat-item"><img src="assets/Icons-Neutral/Icon-BestStreak.png" alt="" /><span>Highest<br />Streak</span><strong>{{ coinStats.totalStreaks }}</strong><small>days</small></div>
-        <div class="stat-item"><img src="assets/Icons-Neutral/Icon-SuccessRate.png" alt="" /><span>Completion<br />Rate</span><strong>{{ coinStats.successPercentage }}%</strong><small>overall</small></div>
+        <div class="stat-item">
+          <div class="figma-stat-icon figma-streak-icon" aria-hidden="true">
+            <img src="assets/app-assets/activity-detail/figma-progress-streak.png" alt="" />
+          </div>
+          <span>Current<br />Streak</span><strong>{{ coinStats.userStreaks }}</strong><small>days</small>
+        </div>
+        <div class="stat-item">
+          <div class="figma-stat-icon figma-coin-icon" aria-hidden="true">
+            <img src="assets/app-assets/activity-detail/figma-progress-coins.png" alt="" />
+          </div>
+          <span>Coins<br />Earned</span><strong>{{ coinStats.userCoins }}</strong><small>overall</small>
+        </div>
+        <div class="stat-item">
+          <div class="figma-stat-icon figma-highest-streak-icon" aria-hidden="true">
+            <img src="assets/app-assets/activity-detail/figma-progress-highest-streak.png" alt="" />
+          </div>
+          <span>Highest<br />Streak</span><strong>{{ coinStats.totalStreaks }}</strong><small>days</small>
+        </div>
+        <div class="stat-item">
+          <div class="figma-stat-icon figma-completion-icon" aria-hidden="true">
+            <img src="assets/app-assets/activity-detail/figma-progress-completion.png" alt="" />
+          </div>
+          <span>Completion<br />Rate</span><strong>{{ coinStats.successPercentage }}%</strong><small>overall</small>
+        </div>
       </div>
     </section>
 

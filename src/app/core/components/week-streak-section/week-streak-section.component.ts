@@ -16,6 +16,15 @@ export interface DayStreak {
   styleUrls: ['./week-streak-section.component.scss']
 })
 export class WeekStreakSectionComponent {
-  @Input() title = "Current Week's Streak";
+  @Input() title = 'Last 7-Day Streak';
   @Input() days: DayStreak[] = [];
+  @Input() rewardCoins = 10;
+
+  get completedDays(): number {
+    return this.days.filter(day => day.status === 'completed').length;
+  }
+
+  get remainingDays(): number {
+    return Math.max(0, 7 - this.completedDays);
+  }
 }

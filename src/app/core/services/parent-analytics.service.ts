@@ -29,7 +29,15 @@ export interface ParentAnalyticsResponseDto {
 export interface InsightsResponseDto {
   habits: { thisWeek: number; thisMonth: number };
   tasks: { thisWeek: number; thisMonth: number };
-  knowledgeGained: { quizzes: number; puzzles: number; articles: number; lessons: number };
+  knowledgeGained: {
+    quizzes: number | { thisWeek: number; thisMonth: number };
+    puzzles: number | { thisWeek: number; thisMonth: number };
+    articles: number | { thisWeek: number; thisMonth: number };
+    lessons: number | { thisWeek: number; thisMonth: number };
+  };
+  /** Aggregate-only journal counts are safe for a parent to view. */
+  journal?: { thisWeek: number; thisMonth: number };
+  timeManagement?: { thisWeek: number; thisMonth: number };
   achievements: { badges: number; trophies: number; streaks: number; coins: number };
 }
 

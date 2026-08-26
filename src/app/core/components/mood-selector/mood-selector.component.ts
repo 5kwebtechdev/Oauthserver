@@ -76,7 +76,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
     { src: 'assets/figma/child-home/moods/excited.svg', label: 'Excited', vibe: 'EXCITED', art: 'excited' },
     { src: 'assets/figma/child-home/moods/anxious.svg', label: 'Anxious', vibe: 'NERVOUS', art: 'anxious' },
     { src: 'assets/figma/child-home/moods/sad.svg', label: 'Sad', vibe: 'SAD', art: 'sad' },
-    { src: 'assets/figma/child-home/moods/frustrated.svg', label: 'Frustrated', vibe: 'UPSET', art: 'frustrated' },
+    { src: 'assets/figma/child-home/moods/frustrated.svg', label: 'Frustated', vibe: 'UPSET', art: 'frustrated' },
     { src: 'assets/figma/child-home/moods/Calm.svg', label: 'Calm', vibe: 'NEUTRAL', art: 'calm' }
   ];
 
@@ -244,9 +244,8 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
    * when the card is reopened without changing the server-side selection flow.
    */
   isMoodSelected(option: { src: string }): boolean {
-    return this.popupSelection
-      ? this.popupSelection === option.src
-      : this.displayAssetSrc === option.src;
+    if (this.popupSelection) return this.popupSelection === option.src;
+    return this.hasSavedMood && this.displayAssetSrc === option.src;
   }
 
   // Big preview circle: shows the tapped option, falling back to today's current/neutral mood

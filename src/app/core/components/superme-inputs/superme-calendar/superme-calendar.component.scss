@@ -360,6 +360,20 @@
           background: transparent;
 
           ion-icon { color: #282527; font-size: 20px; }
+
+          .detail-nav-icon {
+            display: block;
+            width: 16px;
+            height: 16px;
+          }
+
+          &.nav-arrow-previous {
+            margin-left: -8px;
+
+            .detail-nav-icon { transform: rotate(180deg); }
+          }
+
+          &.nav-arrow-next { margin-right: -8px; }
         }
 
         .month-text {
