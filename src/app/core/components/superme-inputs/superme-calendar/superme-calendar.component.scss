@@ -335,4 +335,114 @@
       button.mood-active { padding: 8px; }
     }
   }
+
+  &.activity-detail-style {
+    padding: 8px 12px 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(107, 101, 106, 0.12);
+    background: #fff;
+    box-shadow: 0 0 2px 0.5px rgba(107, 101, 106, 0.12);
+
+    .calendar-header {
+      min-height: 28px;
+      padding: 0;
+      margin: 0 0 8px;
+      border: 0;
+
+      .month-navigation {
+        width: 100%;
+        justify-content: space-between;
+
+        .nav-arrow {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: transparent;
+
+          ion-icon { color: #282527; font-size: 20px; }
+        }
+
+        .month-text {
+          min-width: 0;
+          color: #282527;
+          font-size: 15px;
+          font-weight: 600;
+        }
+      }
+    }
+
+    .calendar-grid {
+      grid-auto-rows: 42px;
+      gap: 0 3px;
+      margin-top: 0;
+
+      .day {
+        height: 22px;
+        color: #6b656a;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      button {
+        min-width: 0;
+        height: 42px;
+        padding: 2px 0 8px;
+        overflow: visible;
+
+        p {
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          color: #a19ca0;
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        &.today { background: transparent; }
+        &.today p { color: #282527; }
+
+        .status-dot {
+          position: absolute;
+          inset: auto auto 0 50%;
+          width: 11px;
+          height: 9px;
+          transform: translateX(-50%);
+          border-radius: 0;
+          background: transparent;
+          color: #524f84;
+          font-size: 11px;
+          line-height: 8px;
+          text-align: center;
+
+          img { width: 100%; height: 100%; object-fit: contain; }
+
+          &.status-completed,
+          &.status-skipped { background: transparent; }
+          &.status-completed { color: #2d6830; }
+          &.status-skipped { color: #bb2124; }
+        }
+
+        &.status-completed-day p {
+          color: #fff;
+          background: #4caf50;
+        }
+
+        &.status-skipped-day p {
+          color: #fff;
+          background: #c8222a;
+        }
+
+        &.status-pending-day p {
+          color: #524f84;
+        }
+
+        &:not(.currentMonth) p { color: #d9d6d8; }
+      }
+    }
+  }
 }

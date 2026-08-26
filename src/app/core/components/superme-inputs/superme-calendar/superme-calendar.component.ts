@@ -20,6 +20,8 @@ export class SupermeCalendarComponent implements OnChanges {
   @Input() useArrowNavigation: boolean = false; // New input to control navigation style
   @Input() dateActivities: { [key: string]: { timetable?: boolean, task?: boolean, habit?: boolean } } = {}; // Activity data for each date
   @Input() useCalendarMainStyle: boolean = false; // New input for activity-calendar specific styling
+  @Input() useActivityDetailStyle: boolean = false;
+  @Input() activityDetailTheme: 'habit' | 'task' = 'habit';
   @Input() moodData: { [key: string]: any } = {}; // Mood data keyed by date (YYYY-MM-DD)
   @Input() statusData: { [key: string]: 'COMPLETED' | 'SKIPPED' | 'PENDING' } = {}; // Status data for habit detail calendar
   @Input() allowDateSelection: boolean = true; // When false, clicking dates won't select them (read-only view)
