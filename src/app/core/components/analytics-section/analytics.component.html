@@ -1,14 +1,32 @@
 <ion-content fullscreen class="analytics-content">
-  <main class="analytics-page" [attr.aria-busy]="isLoading">
-    <header class="analytics-header">
-      <button type="button" class="analytics-back" aria-label="Go back" (click)="goBack()">
-        <img src="assets/figma/child-activity/back.svg" alt="" aria-hidden="true" />
-      </button>
-      <div class="analytics-heading">
-        <h1>Insights</h1>
-        <p>See how far you have come</p>
+  <main class="analytics-page" [class.analytics-page--parent]="isParentView" [attr.aria-busy]="isLoading">
+    <header *ngIf="isParentView; else standardHeader" class="analytics-header analytics-header--parent">
+      <div class="analytics-header__identity">
+        <button type="button" class="analytics-back analytics-back--parent" aria-label="Go back" (click)="goBack()">
+          <img src="assets/figma/parent-insights/back.svg" alt="" aria-hidden="true" />
+        </button>
+        <div class="analytics-heading analytics-heading--parent">
+          <h1>Insights</h1>
+          <p>Child's progress so far</p>
+        </div>
+      </div>
+      <div class="report-status" aria-label="Weekly report availability">
+        <button type="button" class="report-button" disabled>Download Report</button>
+        <p><img src="assets/figma/parent-insights/lock.svg" alt="" aria-hidden="true" /> Unlocks in <strong>{{ reportUnlockDays }} days</strong></p>
       </div>
     </header>
+
+    <ng-template #standardHeader>
+      <header class="analytics-header">
+        <button type="button" class="analytics-back" aria-label="Go back" (click)="goBack()">
+          <img src="assets/figma/child-activity/back.svg" alt="" aria-hidden="true" />
+        </button>
+        <div class="analytics-heading">
+          <h1>Insights</h1>
+          <p>See how far you have come</p>
+        </div>
+      </header>
+    </ng-template>
 
     <section *ngIf="isLoading" class="insights-skeleton" aria-label="Loading Insights">
       <div *ngFor="let section of skeletonSections" class="insights-skeleton__section">
@@ -36,34 +54,108 @@
       <button type="button" class="state-button" (click)="retry()">Retry</button>
     </section>
 
-    <div *ngIf="!isLoading && !hasError && !isEmpty" class="insights-sections">
-      <section *ngFor="let section of sections; trackBy: trackSection" class="insights-section" [attr.aria-labelledby]="section.id + '-title'">
-        <h2 [id]="section.id + '-title'">{{ section.title }}</h2>
-        <div class="insights-grid">
-          <article
-            *ngFor="let metric of section.metrics; trackBy: trackMetric"
-            class="insight-card"
-            [ngClass]="'insight-card--' + metric.tone"
-            [attr.aria-label]="metric.label + ': ' + displayValue(metric.value) + '. ' + metric.description"
-          >
-            <div class="insight-card__top">
-              <span class="insight-card__visual" aria-hidden="true">
-                <img [src]="metric.icon" alt="" />
-              </span>
-              <div class="insight-card__value-block">
-                <p class="insight-card__label">{{ metric.label }}</p>
-                <strong class="insight-card__value">{{ displayValue(metric.value) }}</strong>
+    <ng-container *ngIf="!isLoading && !hasError && !isEmpty">
+      <div *ngIf="isParentView; else standardInsights" class="parent-insights-sections">
+        <ng-container *ngFor="let section of sections; trackBy: trackSection">
+          <section class="parent-insights-section" [attr.aria-labelledby]="'parent-' + section.id + '-title'">
+            <h2 [id]="'parent-' + section.id + '-title'">
+              <span class="parent-section-icon" [ngClass]="'parent-section-icon--' + section.id" aria-hidden="true"></span>
+              {{ section.title }}
+            </h2>
+            <div class="parent-insights-card" [ngClass]="'parent-insights-card--' + section.id">
+              <div class="parent-metrics-grid">
+                <article
+                  *ngFor="let metric of section.metrics; trackBy: trackMetric"
+                  class="parent-metric"
+                  [class.parent-metric--period]="section.id === 'knowledge'"
+                  [attr.aria-label]="metric.label + ': ' + displayValue(metric.value)"
+                >
+                  <span class="parent-metric__visual" [ngClass]="metric.iconVariant ? 'parent-metric__visual--' + metric.iconVariant : ''" aria-hidden="true">
+                    <img [src]="metric.icon" alt="" />
+                  </span>
+                  <div class="parent-metric__content">
+                    <p class="parent-metric__label">{{ metric.label }}</p>
+                    <ng-container *ngIf="section.id === 'knowledge'; else standardMetricValue">
+                      <div class="parent-period-values">
+                        <p><span>Week</span><strong>{{ displayValue(metric.weekValue ?? null) }}</strong></p>
+                        <p><span>Month</span><strong>{{ displayValue(metric.monthValue ?? null) }}</strong></p>
+                      </div>
+                    </ng-container>
+                    <ng-template #standardMetricValue>
+                      <strong class="parent-metric__value">
+                        {{ displayValue(metric.value) }}<small *ngIf="metric.unit"> {{ metric.unit }}</small>
+                      </strong>
+                      <p class="parent-metric__description">{{ metric.description }}</p>
+                    </ng-template>
+                  </div>
+                </article>
               </div>
+              <aside *ngIf="showAiInsight(section)" class="parent-ai-insight">
+                <span class="parent-ai-insight__icon" aria-hidden="true"><img src="assets/figma/parent-insights/ai-insight.png" alt="" /></span>
+                <p><strong>AI Insight :</strong> {{ aiInsight(section) }}</p>
+              </aside>
             </div>
-            <p class="insight-card__description">{{ metric.description }}</p>
-          </article>
+          </section>
+
+          <section *ngIf="section.id === 'tasks'" class="parent-mood-section" aria-labelledby="parent-mood-title">
+            <h2 id="parent-mood-title"><span class="parent-section-icon parent-section-icon--mood" aria-hidden="true"></span>Mood Balance</h2>
+            <div class="parent-mood-bar" role="img" aria-label="Mood balance over the last seven days">
+              <span
+                *ngFor="let segment of moodBalance"
+                [style.width.%]="segment.value"
+                [style.background]="segment.color"
+                [attr.aria-label]="segment.label + ': ' + segment.value + '%'"
+              >{{ segment.value > 0 ? segment.value + '%' : '' }}</span>
+            </div>
+            <div class="parent-mood-legend">
+              <span *ngFor="let segment of moodBalance" [style.color]="segment.color">{{ segment.label }}</span>
+            </div>
+          </section>
+        </ng-container>
+
+        <section class="activity-breakdown" aria-labelledby="activity-breakdown-title">
+          <h2 id="activity-breakdown-title">
+            <span class="parent-section-icon parent-section-icon--breakdown" aria-hidden="true"></span>
+            Activities Breakdown (Last 30 days)
+          </h2>
+          <div class="activity-breakdown__content">
+            <div class="activity-chart" [style.background]="activityChartBackground" aria-hidden="true">
+              <span *ngFor="let segment of activityBreakdown; let index = index" [ngClass]="'activity-chart__label--' + index">{{ segment.value }}%</span>
+            </div>
+            <div class="activity-legend">
+              <p *ngFor="let segment of activityBreakdown"><i [style.background]="segment.color"></i>{{ segment.label }}</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <ng-template #standardInsights>
+        <div class="insights-sections">
+          <section *ngFor="let section of sections; trackBy: trackSection" class="insights-section" [attr.aria-labelledby]="section.id + '-title'">
+            <h2 [id]="section.id + '-title'">{{ section.title }}</h2>
+            <div class="insights-grid">
+              <article
+                *ngFor="let metric of section.metrics; trackBy: trackMetric"
+                class="insight-card"
+                [ngClass]="'insight-card--' + metric.tone"
+                [attr.aria-label]="metric.label + ': ' + displayValue(metric.value) + '. ' + metric.description"
+              >
+                <div class="insight-card__top">
+                  <span class="insight-card__visual" aria-hidden="true"><img [src]="metric.icon" alt="" /></span>
+                  <div class="insight-card__value-block">
+                    <p class="insight-card__label">{{ metric.label }}</p>
+                    <strong class="insight-card__value">{{ displayValue(metric.value) }}</strong>
+                  </div>
+                </div>
+                <p class="insight-card__description">{{ metric.description }}</p>
+              </article>
+            </div>
+          </section>
         </div>
-      </section>
-    </div>
+      </ng-template>
+    </ng-container>
   </main>
 
-  <!-- Keeps the final Insights cards above the fixed bottom navigation. -->
   <div class="analytics-bottom-spacer" aria-hidden="true"></div>
-
   <app-footer></app-footer>
 </ion-content>

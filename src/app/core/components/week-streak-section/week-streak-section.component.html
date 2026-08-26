@@ -1,4 +1,4 @@
-<div class="week-streak-card" role="group" aria-label="Current week's streak">
+<div class="week-streak-card" role="group" aria-label="Last 7-day streak">
   <span class="week-streak-title">{{ title }}</span>
 
   <div class="week-streak-row">
@@ -11,13 +11,20 @@
             src="assets/figma/child-home/week-streak-fire.webp"
             alt="">
         </span>
-        <span *ngIf="day.status === 'missed'" class="week-streak-rest" aria-hidden="true">😴</span>
-        <img *ngIf="day.status === 'pending'"
-          class="week-streak-check"
-          src="assets/figma/child-home/week-streak-check.svg"
-          alt=""
-          aria-hidden="true">
+        <span *ngIf="day.status === 'missed'" class="week-streak-fire-crop week-streak-fire-crop--missed" aria-hidden="true">
+          <img
+            class="week-streak-fire"
+            src="assets/figma/child-home/week-streak-fire.webp"
+            alt="">
+        </span>
       </span>
     </div>
+  </div>
+
+  <div class="week-streak-summary" aria-live="polite">
+    <span class="week-streak-summary__completed">{{ completedDays }}/7 days completed</span>
+    <span class="week-streak-summary__reward">
+      {{ remainingDays }} more {{ remainingDays === 1 ? 'day' : 'days' }} to earn {{ rewardCoins }} coins
+    </span>
   </div>
 </div>

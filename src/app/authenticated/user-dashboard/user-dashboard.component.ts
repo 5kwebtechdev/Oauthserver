@@ -896,37 +896,34 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     return (this.userName || '').trim().charAt(0).toUpperCase();
   }
 
-  /**
-   * Build the visible week from the API-backed current streak count.
-   * Future days remain pending instead of displaying invented completion data.
-   */
+  /** Build the rolling seven-day Figma streak, ending with Today. */
   private refreshWeekStreakDays(streakLength: number = this.userStreaks): void {
-    const labels = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
+    const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thurs', 'Fri', 'Sat'];
     const today = new Date();
-    const todayIndex = today.getDay();
-    this.currentStreakDayIndex = todayIndex;
+    this.currentStreakDayIndex = 6;
     const safeStreak = Math.max(0, Number(streakLength) || 0);
-    const completedFrom = Math.max(0, todayIndex - safeStreak + 1);
+    const completedFrom = Math.max(0, 7 - safeStreak);
     const accountCreatedAt = this.getAccountCreatedAt();
 
-    this.weekStreakDays = labels.map((label, index) => {
+    this.weekStreakDays = Array.from({ length: 7 }, (_, index) => {
       let status: DayStreak['status'];
       const dayDate = new Date(today);
       dayDate.setHours(0, 0, 0, 0);
-      dayDate.setDate(today.getDate() - (todayIndex - index));
+      dayDate.setDate(today.getDate() - (6 - index));
 
       if (accountCreatedAt && dayDate < accountCreatedAt) {
         status = 'neutral';
-      } else if (index > todayIndex) {
-        status = 'pending';
       } else if (safeStreak > 0 && index >= completedFrom) {
         status = 'completed';
-      } else if (index === todayIndex) {
+      } else if (index === 6) {
         status = 'pending';
       } else {
         status = 'missed';
       }
-      return { label, status };
+      return {
+        label: index === 6 ? 'Today' : weekdayLabels[dayDate.getDay()],
+        status
+      };
     });
   }
 

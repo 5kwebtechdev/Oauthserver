@@ -10,12 +10,11 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  min-height: 170px;
-  padding: 14px 16px 16px;
+  padding: 8px;
   background: #ffffff;
-  border: 1px solid rgba(111, 90, 170, 0.12);
-  border-radius: 18px;
-  box-shadow: 0 4px 18px rgba(52, 33, 91, 0.08);
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
 }
 
 .mood-card--saved {
@@ -26,27 +25,56 @@
 // Reserve a small header lane for the information control so it never sits
 // over the final mood option on narrow screens.
 .mood-card--picker {
-  // The selected Calm art and its checkmark reach above the emoji row. Keep
-  // a dedicated header lane so they cannot collide with the information icon.
-  padding-top: 46px;
-  padding-inline: clamp(8px, 3.5vw, 16px);
-}
-
-.mood-card-header {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  width: 100%;
-  margin-bottom: 10px;
+  gap: 0;
+  min-height: 186px;
 }
 
-.mood-card-title {
-  color: #282527;
-  font-family: var(--font-heading);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.35;
-  text-align: center;
+.mood-card-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.mood-card-heading__copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+
+  h2,
+  p {
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  h2 {
+    color: #282527;
+    font-family: var(--font-heading, 'Fredoka', sans-serif);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  p {
+    color: #6b656a;
+    font-family: var(--font-sans, 'Nunito', sans-serif);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: normal;
+  }
+}
+
+.mood-card-heading__art {
+  display: block;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
 }
 
 .mood-card-preview {
@@ -87,11 +115,10 @@
 .mood-card-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  column-gap: clamp(1px, 1vw, 7px);
-  row-gap: 6px;
+  column-gap: 0;
   align-items: start;
   width: 100%;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }
 
 .mood-option {
@@ -99,8 +126,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
+  justify-content: center;
+  gap: 0;
   min-width: 0;
   padding: 0;
   border: 0;
@@ -121,21 +148,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 54px;
-  height: 54px;
-  border: 1.5px solid transparent;
-  border-radius: 16px;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 29px;
   background: transparent;
   box-sizing: border-box;
-  transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  transition: transform 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
 }
 
 .mood-option-art {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 50px;
+  height: 40px;
   line-height: 0;
   transition: transform 140ms ease;
 
@@ -148,18 +175,18 @@
 }
 
 .mood-option-art--frustrated {
-  width: 42px;
-  height: 42px;
+  width: 50px;
+  height: 43px;
 }
 
 .mood-option-art--calm {
-  width: 42px;
-  height: 42px;
+  width: 65px;
+  height: 56px;
 
   // Calm has more transparent viewBox padding than the other exported mood
   // artwork. Scale only its visible art while retaining the common layout box.
   img {
-    transform: scale(1.28);
+    transform: none;
     transform-origin: center;
   }
 }
@@ -167,37 +194,21 @@
 .mood-option-label {
   display: block;
   max-width: 100%;
-  min-height: 12px;
   color: #282527;
-  font-family: var(--font-sans);
-  font-size: clamp(7.5px, 2.45vw, 11px);
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 13px;
   font-weight: 600;
-  line-height: 1.1;
+  line-height: normal;
   text-align: center;
-  letter-spacing: -0.12px;
   white-space: nowrap;
 }
 
 .mood-option.selected {
   .mood-option-avatar {
-    border-color: #d8cdfb;
-    background: linear-gradient(180deg, #ffffff 0%, #f4f1ff 100%);
-    box-shadow: 0 4px 12px rgba(117, 83, 214, 0.14);
-    transform: translateY(-3px) scale(1.12);
+    background: #f4f1ff;
+    box-shadow: 0 0 0 2px #d8cdfb;
+    transform: translateY(-2px);
     animation: selected-mood-pop 320ms cubic-bezier(.2, .9, .25, 1.35) both;
-
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-right: 5px solid transparent;
-      border-left: 5px solid transparent;
-      border-top: 6px solid #d8cdfb;
-      transform: translateX(-50%);
-    }
   }
 
   .mood-option-label {
@@ -206,14 +217,14 @@
   }
 
   .mood-option-art {
-    transform: scale(1.2);
+    transform: scale(1.04);
   }
 }
 
 .mood-option-selected-mark {
   position: absolute;
-  top: -4px;
-  right: max(0px, calc(50% - 25px));
+  top: -2px;
+  right: max(0px, calc(50% - 23px));
   z-index: 2;
   display: grid;
   width: 16px;
@@ -230,31 +241,25 @@
 }
 
 .mood-picker-actions {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  column-gap: 8px;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
 }
 
 .mood-card-cta {
-  grid-column: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 112px;
-  min-width: 112px;
-  min-height: 38px;
-  height: 38px;
+  min-height: 37px;
   margin: 0;
   padding: 8px 16px;
-  border: 2px solid transparent;
+  border: 2px solid #8b8dcb;
   border-radius: 12px;
-  background:
-    linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #8b8dcb 0%, #f6ac72 25%, #89b3b6 75.5%, #e1527c 100%) border-box;
+  background: #ffffff;
   color: #432477;
-  font-family: var(--font-sans);
+  font-family: var(--font-sans, 'Nunito', sans-serif);
   font-size: 13px;
   font-weight: 700;
   line-height: 1.4;
@@ -272,53 +277,22 @@
 }
 
 .mood-set-count {
-  grid-column: 3;
-  justify-self: start;
-  color: #5e5961;
-  font-family: var(--font-sans);
-  font-size: 12px;
+  color: #6b656a;
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 13px;
   font-weight: 600;
-  line-height: 1;
-}
-
-.mood-limit-info {
-  position: absolute;
-  top: 11px;
-  right: 14px;
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: 1.5px solid #6a6270;
-  border-radius: 50%;
-  background: #fff;
-  color: #5d5760;
-  font-family: serif;
-  font-size: 11px;
-  font-weight: 700;
-  font-style: italic;
-  line-height: 1;
+  line-height: normal;
 }
 
 @keyframes selected-mood-pop {
   from { transform: translateY(0) scale(1); }
-  65% { transform: translateY(-4px) scale(1.18); }
-  to { transform: translateY(-3px) scale(1.12); }
+  65% { transform: translateY(-3px) scale(1.04); }
+  to { transform: translateY(-2px) scale(1); }
 }
 
 @keyframes selected-mark-in {
   from { opacity: 0; transform: scale(.5); }
   to { opacity: 1; transform: scale(1); }
-}
-
-.mood-limit-message {
-  width: 100%;
-  margin: 9px 0 0;
-  color: #5e5961;
-  font-family: var(--font-sans);
-  font-size: 11px;
-  text-align: center;
 }
 
 .saved-mood {
@@ -470,42 +444,44 @@
 }
 
 @media (max-width: 360px) {
-  .mood-card {
-    padding-inline: 12px;
+  .mood-card-heading__copy {
+    h2 {
+      font-size: 14px;
+    }
+
+    p {
+      font-size: 12px;
+    }
   }
 
-  .mood-card-grid {
-    column-gap: 2px;
+  .mood-card-heading__art {
+    flex-basis: 40px;
+    width: 40px;
+    height: 40px;
   }
 
   .mood-option-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
+    width: 44px;
+    height: 44px;
   }
 
   .mood-option-art {
-    width: 38px;
-    height: 38px;
+    width: 46px;
+    height: 37px;
   }
 
   .mood-option-art--frustrated {
-    width: 38px;
-    height: 38px;
+    width: 46px;
+    height: 40px;
   }
 
   .mood-option-art--calm {
-    width: 38px;
-    height: 38px;
-
-    img {
-      transform: scale(1.28);
-    }
-
+    width: 57px;
+    height: 49px;
   }
 
   .mood-option-label {
-    font-size: 8px;
+    font-size: 11px;
   }
 
   .saved-mood-message {

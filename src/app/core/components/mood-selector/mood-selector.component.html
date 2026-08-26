@@ -35,6 +35,18 @@
   </ng-container>
 
   <ng-container *ngIf="!isParent && showMoodPicker">
+    <div class="mood-card-heading">
+      <div class="mood-card-heading__copy">
+        <h2>How are you feeling?</h2>
+        <p>This helps us personalize your day.</p>
+      </div>
+      <img
+        class="mood-card-heading__art"
+        src="assets/figma/child-home/mood-personalize-cloud.png"
+        alt=""
+        aria-hidden="true">
+    </div>
+
     <div class="mood-card-grid" aria-label="Choose your mood">
       <button
         *ngFor="let p of popupOptions; trackBy: trackByMood"
@@ -60,8 +72,6 @@
     <div class="mood-picker-actions">
       <button type="button" class="mood-card-cta" [disabled]="!popupSelection" (click)="setVibe()">Set the Vibe</button>
       <span class="mood-set-count">{{ moodSetsLabel }}</span>
-      <button type="button" class="mood-limit-info" aria-label="Mood setting limit information" [attr.aria-expanded]="limitInfoVisible" (click)="toggleLimitInfo()">i</button>
     </div>
-    <p *ngIf="limitInfoVisible" class="mood-limit-message" role="status">You can set your mood up to twice each day.</p>
   </ng-container>
 </div>

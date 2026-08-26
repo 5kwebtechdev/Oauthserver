@@ -1,7 +1,9 @@
 :host {
   --detail-accent: #524f84;
+  --detail-dark: #45456a;
   --detail-soft: #e8ecf7;
-  --detail-icon-soft: #eef1fa;
+  --detail-icon-soft: #e8ecf7;
+  --detail-shadow: rgba(69, 69, 106, 0.5);
   display: block;
 }
 
@@ -21,9 +23,11 @@ button { font: inherit; }
   color: #282527;
 
   &.task-theme {
-    --detail-accent: #e9470c;
-    --detail-soft: #ffead5;
-    --detail-icon-soft: #fff0e2;
+    --detail-accent: #e04d16;
+    --detail-dark: #772817;
+    --detail-soft: #fdead7;
+    --detail-icon-soft: #fdead7;
+    --detail-shadow: rgba(119, 40, 23, 0.5);
   }
 }
 
@@ -54,7 +58,7 @@ button { font: inherit; }
   img { width: 100%; height: 100%; object-fit: contain; }
 }
 
-.toolbar-back { width: 48px; height: 48px; margin-left: -8px; }
+.toolbar-back { width: 48px; height: 48px; }
 .toolbar-actions { display: flex; align-items: center; gap: 12px; }
 .toolbar-action { width: 40px; height: 40px; border-radius: 50%; }
 
@@ -105,7 +109,12 @@ button { font: inherit; }
   &.priority-low { color: #2d6830; background: #e9f6ea; box-shadow: 0 0 2px 0.5px rgba(76, 175, 80, .5); }
 }
 
-.category-pill { color: var(--detail-accent); background: var(--detail-icon-soft); font-weight: 700; }
+.category-pill {
+  color: var(--detail-dark);
+  background: var(--detail-icon-soft);
+  font-weight: 700;
+  box-shadow: 0 0 2px 0.5px var(--detail-shadow);
+}
 
 .activity-info-card {
   display: flex;
@@ -158,18 +167,29 @@ button { font: inherit; }
 
 .progress-section { padding: 8px 16px 0; background: #fff; }
 .progress-title { min-height: 34px; display: flex; align-items: center; gap: 8px; }
-.progress-title img { width: 28px; height: 28px; object-fit: contain; }
 .progress-title h2 { margin: 0; font-family: var(--font-heading); font-size: 15px; font-weight: 500; line-height: 1.4; }
+
+.figma-progress-title-icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 24px;
+
+  img {
+    display: block;
+    width: 32px;
+    height: 32px;
+  }
+}
 
 .stats-card {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 8px;
-  padding: 4px 0;
-  border: 1px solid rgba(82, 79, 132, .2);
+  margin-top: 16px;
+  padding: 0;
+  border: 0;
   border-radius: 16px;
   background: var(--detail-soft);
-  box-shadow: 0 0 2px .5px rgba(82, 79, 132, .2);
+  box-shadow: 0 0 2px .5px var(--detail-shadow);
 }
 
 .stat-item {
@@ -178,14 +198,37 @@ button { font: inherit; }
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 0 3px 4px;
+  padding: 4px 3px;
   border-right: 1px solid rgba(107, 101, 106, .18);
 
   &:last-child { border-right: 0; }
-  img { width: 40px; height: 40px; object-fit: contain; }
-  span { min-height: 40px; color: #6b656a; font-size: 13px; font-weight: 600; line-height: 20px; }
+  span { min-height: 40px; color: #6b656a; font-size: 15px; font-weight: 600; line-height: normal; }
   strong { color: var(--detail-accent); font-size: 20px; font-weight: 700; line-height: 24px; }
   small { color: #6b656a; font-size: 13px; font-weight: 600; line-height: 18px; }
+}
+
+.figma-stat-icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+  }
+}
+
+.figma-highest-streak-icon {
+  width: 35px;
+  flex-basis: 35px;
+}
+
+.figma-completion-icon {
+  width: 37px;
+  flex-basis: 37px;
 }
 
 .calendar-section { padding: 12px 16px max(16px, env(safe-area-inset-bottom)); }

@@ -1562,25 +1562,6 @@ footer {
     margin-inline: 0;
   }
 
-  // Scoped to the dashboard's own "Today's Mood" card wrapper (not
-  // mood-selector's other instance in the overlay picker, which stays inside
-  // a narrow fixed-width popup regardless of viewport) — ::ng-deep pierces
-  // MoodSelectorComponent's encapsulated styles for this instance only.
-  .mood-selector {
-    ::ng-deep .mood-option-avatar {
-      width: 72px;
-      height: 72px;
-    }
-
-    ::ng-deep .mood-option-art {
-      width: 56px;
-      height: 56px;
-    }
-
-    ::ng-deep .mood-option-label {
-      font-size: 15px;
-    }
-  }
 }
 
 

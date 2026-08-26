@@ -3,12 +3,16 @@
   <div class="calendar-header">
     <!-- Navigation with arrows for activity-calendar, month picker for other uses -->
     <div *ngIf="useArrowNavigation" class="month-navigation">
-      <button class="nav-arrow" (click)="previousMonth()">
-        <ion-icon name="chevron-back-outline"></ion-icon>
+      <button class="nav-arrow nav-arrow-previous" type="button" aria-label="Previous month" (click)="previousMonth()">
+        <img *ngIf="useActivityDetailStyle" class="detail-nav-icon"
+          [src]="'assets/app-assets/activity-detail/calendar-prev-' + activityDetailTheme + '.svg'" alt="" />
+        <ion-icon *ngIf="!useActivityDetailStyle" name="chevron-back-outline"></ion-icon>
       </button>
       <span class="month-text">{{ currentMonth | date: 'MMMM yyyy' }}</span>
-      <button class="nav-arrow" (click)="nextMonth()">
-        <ion-icon name="chevron-forward-outline"></ion-icon>
+      <button class="nav-arrow nav-arrow-next" type="button" aria-label="Next month" (click)="nextMonth()">
+        <img *ngIf="useActivityDetailStyle" class="detail-nav-icon"
+          [src]="'assets/app-assets/activity-detail/calendar-next-' + activityDetailTheme + '.svg'" alt="" />
+        <ion-icon *ngIf="!useActivityDetailStyle" name="chevron-forward-outline"></ion-icon>
       </button>
     </div>
 
