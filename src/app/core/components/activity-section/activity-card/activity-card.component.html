@@ -152,6 +152,8 @@
 
     <!-- Habit-specific: habits existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'habits' && !hasHabits && totalHabitsLoaded > 0 && habitCompletionRate < 100"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No habits available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
       buttonText="">
@@ -168,6 +170,8 @@
 
     <!-- Pending state for All tab: items existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'all' && isEmpty && (totalHabitsLoaded > 0 || totalTasksLoaded > 0 || totalTimetablesLoaded > 0) && !isAllLoadedContentCompleted"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No activities available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
       buttonText="">
@@ -323,6 +327,8 @@
     </empty-state>
     <!-- Habit-specific: habits existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'habits' && !hasHabits && totalHabitsLoaded > 0 && habitCompletionRate < 100"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No habits available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
       buttonText="">
@@ -339,6 +345,8 @@
 
     <!-- Pending state for All tab: items existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'all' && isEmpty && (totalHabitsLoaded > 0 || totalTasksLoaded > 0 || totalTimetablesLoaded > 0) && !isAllLoadedContentCompleted"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No activities available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
       buttonText="">

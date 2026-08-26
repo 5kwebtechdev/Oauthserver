@@ -585,15 +585,34 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
     private formatChildTime(value: any): string {
         if (value === null || value === undefined || value === '') return '';
+
         if (typeof value === 'number') {
             const date = new Date(this.normalizeTimestamp(value));
-            return isNaN(date.getTime()) ? '' : new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(date);
+            return isNaN(date.getTime())
+                ? ''
+                : `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
         }
-        const match = String(value).match(/(\d{1,2}):(\d{2})/);
-        if (!match) return String(value);
-        const date = new Date(this.selectedDate);
-        date.setHours(Number(match[1]), Number(match[2]), 0, 0);
-        return new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(date);
+
+        const rawValue = String(value).trim();
+        const timeMatch = rawValue.match(/^(\d{1,2}):(\d{2})(?::\d{2}(?:\.\d+)?)?\s*([ap]m)?$/i);
+        if (timeMatch) {
+            let hours = Number(timeMatch[1]);
+            const minutes = Number(timeMatch[2]);
+            const meridiem = timeMatch[3]?.toLowerCase();
+
+            if (meridiem === 'am' && hours === 12) hours = 0;
+            if (meridiem === 'pm' && hours !== 12) hours += 12;
+
+            if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            }
+        }
+
+        const numericTimestamp = /^\d{10,13}$/.test(rawValue) ? Number(rawValue) : NaN;
+        const date = new Date(Number.isNaN(numericTimestamp) ? rawValue : this.normalizeTimestamp(numericTimestamp));
+        return isNaN(date.getTime())
+            ? rawValue
+            : `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     }
 
     private getTimestampFromTime(value: any): number {

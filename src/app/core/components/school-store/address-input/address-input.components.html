@@ -22,9 +22,9 @@
                         <span class="addr-hint addr-hint--error" *ngIf="!pincodeError && pincodeLookupError">{{ pincodeLookupError }}</span>
                     </div>
                     <div class="addr-field addr-field--lg">
-                        <label class="addr-label" for="city">City <span class="addr-required">*</span></label>
+                        <label class="addr-label" for="city">District / City <span class="addr-required">*</span></label>
                         <input id="city" class="addr-input" formControlName="city" type="text"
-                            placeholder="Mumbai"
+                            placeholder="District / City"
                             [class.addr-input--invalid]="cityCtrl.invalid && (cityCtrl.touched || cityCtrl.dirty)">
                         <span class="addr-error" *ngIf="cityError">{{ cityError }}</span>
                     </div>

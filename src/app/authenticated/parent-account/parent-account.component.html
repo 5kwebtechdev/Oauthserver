@@ -272,6 +272,7 @@
           headerIcon="assets/icons/child-home-coin-figma.png"
           [rewardMode]="true"
           [forUserId]="selectedChild?.id ?? null"
+          (rewardSelected)="assignLearningReward($event)"
           source="/authed/parent-account">
         </learning-section>
       </section>
