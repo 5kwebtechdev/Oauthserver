@@ -53,9 +53,15 @@ export class LoadingService {
         this._pending.set(id, record);
 
         record.showTimer = setTimeout(() => {
-            // timer fired - actually show
-            record.shown = true;
-            this._pending.delete(id);
+            // Keep the token registered after it becomes visible. Previously
+            // it was deleted here, so hide(token) could not identify the
+            // request and merely decremented a shared counter. With several
+            // concurrent requests that allowed one request (or a duplicate
+            // hide) to release another request's loader.
+            const current = this._pending.get(id);
+            if (!current) return;
+            current.showTimer = undefined;
+            current.shown = true;
             this._activeCount++;
             // when first becomes visible, record timestamp and minVisible
             if (this._activeCount === 1) {
@@ -78,34 +84,48 @@ export class LoadingService {
         try {
             console.debug('[LoadingService] hide() called', { token, pendingBefore: this._pending.size, activeCountBefore: this._activeCount });
         } catch (e) { }
-        // If token maps to a pending show that hasn't fired, cancel it and return
-        if (token && this._pending.has(token)) {
-            const rec = this._pending.get(token)!;
-            if (rec.showTimer) {
-                clearTimeout(rec.showTimer);
-            }
+        if (token) {
+            const rec = this._pending.get(token);
+            // A completed token may be hidden again by an RxJS error/finalize
+            // chain. Treat that as a no-op instead of decrementing another
+            // active request.
+            if (!rec) return;
+
+            if (rec.showTimer) clearTimeout(rec.showTimer);
             this._pending.delete(token);
-            // if there was a pending message and no other active/pending, clear message
-            if (this._pending.size === 0 && this._activeCount === 0) {
-                this._message$.next(undefined);
-            }
-            try { console.debug('[LoadingService] hide() -> cancelled pending show', { token, pendingAfter: this._pending.size, activeCount: this._activeCount }); } catch (e) { }
+            if (rec.shown && this._activeCount > 0) this._activeCount--;
+
+            this._hideWhenIdle();
+            try { console.debug('[LoadingService] hide() -> released token', { token, pendingAfter: this._pending.size, activeCount: this._activeCount }); } catch (e) { }
             return;
         }
 
-        // Otherwise, decrement active count
-        if (this._activeCount > 0) {
+        // Backward compatibility for older callers that did not retain the
+        // token returned by show(): release one tracked request, preferring a
+        // visible one over a still-delayed one.
+        const tracked = Array.from(this._pending.entries());
+        const fallback = tracked.find(([, rec]) => rec.shown) ?? tracked[0];
+        if (fallback) {
+            const [id, rec] = fallback;
+            if (rec.showTimer) clearTimeout(rec.showTimer);
+            this._pending.delete(id);
+            if (rec.shown && this._activeCount > 0) this._activeCount--;
+        } else if (this._activeCount > 0) {
             this._activeCount--;
         }
 
-        if (this._activeCount === 0) {
-            const elapsed = Date.now() - this._showStart;
-            const remaining = Math.max(0, this._currentMinVisible - elapsed);
-            if (remaining > 0) {
-                setTimeout(() => this._finalizeHide(), remaining);
-            } else {
-                this._finalizeHide();
-            }
+        this._hideWhenIdle();
+    }
+
+    private _hideWhenIdle(): void {
+        if (this._activeCount !== 0 || this._pending.size !== 0) return;
+
+        const elapsed = Date.now() - this._showStart;
+        const remaining = Math.max(0, this._currentMinVisible - elapsed);
+        if (remaining > 0) {
+            setTimeout(() => this._finalizeHide(), remaining);
+        } else {
+            this._finalizeHide();
         }
     }
 

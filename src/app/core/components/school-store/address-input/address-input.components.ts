@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -9,14 +9,15 @@ import { AddressService } from '../../../services/address.service';
 import { Address, AddressPayload } from '../../../api/address.api';
 import { CustomToastService } from '../../../services/custom-toast.service';
 
-interface PincodeLookupPlace {
-    'place name'?: string;
-    state?: string;
+interface PostalPincodePostOffice {
+    District?: string;
+    State?: string;
 }
 
-interface PincodeLookupResponse {
-    'post code'?: string;
-    places?: PincodeLookupPlace[] | null;
+interface PostalPincodeResponse {
+    Message?: string;
+    Status?: string;
+    PostOffice?: PostalPincodePostOffice[] | null;
 }
 
 @Component({
@@ -174,49 +175,65 @@ export class AddressInputComponent implements OnInit {
         }
     }
 
-    /**
-     * India-wide postal code -> city/state lookup via zippopotam.us's free,
-     * public India endpoint. api.postalpincode.in (the more commonly cited
-     * India Post mirror) returns the right data but sends no CORS headers at
-     * all, so it fails silently from any web browser despite working fine
-     * from curl/native apps — confirmed by inspecting its response headers
-     * directly. zippopotam.us sends `access-control-allow-origin: *` and
-     * returns equivalent place/state data, so it actually works from web.
-     * No backend endpoint exists for this yet. City/State stay plain
-     * editable text inputs, so a wrong or missing match never blocks the
-     * user from typing them manually.
-     */
+    /** Resolve an Indian pincode through the same Postal Pincode API everywhere. */
     private lookupPincode(pincode: string): void {
         const requestId = ++this.pincodeLookupRequestId;
         this.pincodeLookupLoading = true;
         this.pincodeLookupError = null;
 
-        this.http.get<PincodeLookupResponse>(`https://api.zippopotam.us/in/${pincode}`)
+        // This is a public third-party request, not a SuperMe API request.
+        // Without these internal headers the global interceptors attach the
+        // app's Bearer token and global loader. Both headers are removed by
+        // their respective interceptors before the request is sent.
+        const lookupHeaders = new HttpHeaders({
+            'X-Skip-Authorization': 'true',
+            'x-skip-loading': 'true'
+        });
+
+        this.http.get<PostalPincodeResponse[]>(
+            `https://api.postalpincode.in/pincode/${encodeURIComponent(pincode)}`,
+            { headers: lookupHeaders }
+        )
             .subscribe({
                 next: (response) => {
-                    if (requestId !== this.pincodeLookupRequestId) return;
-                    this.pincodeLookupLoading = false;
+                    const result = Array.isArray(response) ? response[0] : null;
+                    const postOffice = result?.PostOffice?.[0];
+                    const district = postOffice?.District?.trim();
+                    const state = postOffice?.State?.trim();
 
-                    const place = response?.places?.[0];
-                    const city = place?.['place name']?.trim();
-                    const state = place?.state?.trim();
-
-                    if (city && state) {
-                        this.addressForm.patchValue({ city, state });
+                    if (result?.Status?.toLowerCase() === 'success' && district && state) {
+                        this.completePincodeLookup(requestId, district, state);
                     } else {
-                        this.pincodeLookupError = 'Couldn’t find a location for this pincode. Please enter city and state manually.';
+                        this.failPincodeLookup(requestId, 'This pincode wasn’t recognized. Please enter district and state manually.');
                     }
-                    this.cdr.markForCheck();
                 },
                 error: (err) => {
-                    if (requestId !== this.pincodeLookupRequestId) return;
-                    this.pincodeLookupLoading = false;
-                    this.pincodeLookupError = err?.status === 404
-                        ? 'This pincode wasn’t recognized. Please enter city and state manually.'
-                        : 'Couldn’t look up this pincode right now. Please enter city and state manually.';
-                    this.cdr.markForCheck();
+                    this.failPincodeLookup(
+                        requestId,
+                        err?.status === 404
+                            ? 'This pincode wasn’t recognized. Please enter district and state manually.'
+                            : 'Couldn’t look up this pincode right now. Please enter district and state manually.'
+                    );
                 }
             });
+    }
+
+    private completePincodeLookup(requestId: number, district: string, state: string): void {
+        if (requestId !== this.pincodeLookupRequestId) return;
+        this.pincodeLookupLoading = false;
+        this.pincodeLookupError = null;
+        this.addressForm.patchValue({
+            city: district.trim(),
+            state: state.trim()
+        });
+        this.cdr.detectChanges();
+    }
+
+    private failPincodeLookup(requestId: number, message: string): void {
+        if (requestId !== this.pincodeLookupRequestId) return;
+        this.pincodeLookupLoading = false;
+        this.pincodeLookupError = message;
+        this.cdr.detectChanges();
     }
 
     onPhoneInput(event: Event): void {

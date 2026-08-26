@@ -684,6 +684,49 @@ button {
     width: auto;
     min-width: max-content;
     flex: 0 0 auto;
+    gap: clamp(8px, 1vw, 14px);
+  }
+
+  // Desktop has enough horizontal room to show account information in full.
+  // Keep these controls content-sized instead of clipping balances/usernames
+  // to the fixed mobile/Figma frame widths.
+  .web-header__brand {
+    width: 68px;
+    height: 56px;
+    flex-basis: 68px;
+  }
+
+  .web-header__logo {
+    width: 78px;
+    max-height: 54px;
+  }
+
+  .web-header__coin-button {
+    width: auto;
+    min-width: 88px;
+    flex: 0 0 auto;
+    padding-inline: 9px 12px;
+    gap: 4px;
+  }
+
+  .web-header__coin-button span {
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .web-header__profile {
+    width: max-content;
+    min-width: 96px;
+    max-width: 220px;
+    flex: 0 0 auto;
+  }
+
+  .web-header__profile-name {
+    width: auto;
+    max-width: 220px;
+    overflow: visible;
+    text-overflow: clip;
   }
 }
 
@@ -708,13 +751,22 @@ button {
     font-size: 13px;
   }
 
+  .web-header__brand {
+    width: 54px;
+    flex-basis: 54px;
+  }
+
+  .web-header__logo {
+    width: 62px;
+  }
+
   .web-header__profile {
-    width: 56px;
-    flex-basis: 56px;
+    min-width: 72px;
+    max-width: 132px;
   }
 
   .web-header__profile-name {
-    width: 56px;
+    max-width: 132px;
     font-size: 12px;
   }
 }

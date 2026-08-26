@@ -29,9 +29,6 @@ export class LoadingInterceptor implements HttpInterceptor {
             // Add timeout to prevent stuck loaders on Android
             timeout(this.REQUEST_TIMEOUT),
             catchError((error) => {
-                // Always hide loader on error
-                this.loading.hide(token);
-
                 // Handle timeout errors
                 if (error instanceof TimeoutError) {
                     console.error('[LoadingInterceptor] Request timed out:', req.url);

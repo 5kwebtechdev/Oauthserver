@@ -28,6 +28,7 @@ import { REGISTRATION_ONBOARDING_STATE_KEY } from '../../core/services/onboardin
 import { Share } from '@capacitor/share';
 import { Clipboard } from '@capacitor/clipboard';
 import { environment } from '../../../environments/environment';
+import { LearningService } from '../../core/services/learning.service';
 
 type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
 
@@ -92,6 +93,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     private messageComposerTrigger?: HTMLElement;
     private activeMessageTemplate?: 'celebrate' | 'encourage';
     private managedChildRefreshTimers: ReturnType<typeof setTimeout>[] = [];
+    private readonly assigningLearningItems = new Set<string>();
     
     public userName: string = 'User';
     public parentName: string = 'Parent';
@@ -386,8 +388,73 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         private familyService: FamilyService,
         private platform: Platform,
         private parentAnalyticsService: ParentAnalyticsService,
-        private toastService: CustomToastService
+        private toastService: CustomToastService,
+        private learningService: LearningService
     ) { }
+
+    assignLearningReward(event: { item?: any; coins?: number } | null): void {
+        const childId = Number(this.selectedChild?.id);
+        if (!Number.isFinite(childId) || childId <= 0) {
+            this.toastService.error('No child found. Add or select a child before assigning content.');
+            return;
+        }
+        const childName = String(this.selectedChild?.name || 'your child').trim();
+
+        const item = event?.item;
+        const raw = item?.rawData ?? item;
+        const type = String(item?.type || raw?.category || '').trim().toLowerCase();
+        const isArticle = type === 'article';
+        const contentId = Number(
+            isArticle
+                ? (item?.id ?? raw?.articleId ?? raw?.id)
+                : (item?.id ?? raw?.challengeId ?? raw?.id)
+        );
+
+        if (!item || !Number.isFinite(contentId) || contentId <= 0) {
+            this.toastService.error('Unable to identify this learning content. Please try again.');
+            return;
+        }
+
+        const extraCoinsByParent = Math.max(0, Math.round(Number(event?.coins) || 20));
+        const assignmentKey = `${isArticle ? 'article' : 'challenge'}:${contentId}:${childId}`;
+        if (this.assigningLearningItems.has(assignmentKey)) return;
+
+        this.assigningLearningItems.add(assignmentKey);
+        const request$: Observable<any> = isArticle
+            ? this.learningService.assignArticle(contentId, [childId], extraCoinsByParent)
+            : this.learningService.assignChallenge(contentId, [childId], extraCoinsByParent);
+
+        request$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response: any) => {
+                    const assignment = response as any;
+                    item.rawData = {
+                        ...(raw && typeof raw === 'object' ? raw : {}),
+                        assignedToChild: true,
+                        assignedAt: assignment?.assignedAt,
+                        extraCoinsByParent: assignment?.extraCoinsByParent ?? extraCoinsByParent
+                    };
+
+                    const contentName = String(
+                        assignment?.challengeName
+                        || assignment?.articleTitle
+                        || item?.title
+                        || 'Learning content'
+                    ).trim();
+                    this.toastService.success(`${contentName} assigned to ${childName}.`);
+                },
+                error: (error: any) => {
+                    const message = String(
+                        error?.error?.message
+                        || error?.message
+                        || 'Unable to assign this content. Please try again.'
+                    );
+                    this.toastService.error(message);
+                }
+            })
+            .add(() => this.assigningLearningItems.delete(assignmentKey));
+    }
 
     async openNotes() {
         this.router.navigate(['/authed/notes']);
