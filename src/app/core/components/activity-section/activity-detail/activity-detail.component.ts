@@ -13,14 +13,8 @@ import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { AutoAbortService } from '../auto-abort.service';
 import { BadgePopupService } from '../../../services/badge-popup.service';
 import { PetAgeService } from '../../../services/pet-age.service';
-import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
-import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
-import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
-import { SupermeCoinsStatsComponent } from '../../superme-coins-stats/superme-coins-stats.component';
 import { SupermeCalendarComponent } from '../../superme-inputs/superme-calendar/superme-calendar.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
-import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
-import { SupermeBadgeComponent } from '../../superme-badge/superme-badge.component';
 import { SupermePopupComponent, SupermePopupConfig, SupermePopupCTA } from '../../superme-popup/superme-popup.component';
 
 type ActivityType = 'habits' | 'tasks' | 'timetable';
@@ -31,9 +25,8 @@ type ActivityType = 'habits' | 'tasks' | 'timetable';
   templateUrl: './activity-detail.component.html',
   styleUrls: ['./activity-detail.component.scss'],
   imports: [
-    CommonModule, IonicModule, SupermeNavigatorComponent, SupermeSpeechBubbleComponent,
-    SupermePetComponent, SupermeCoinsStatsComponent, SupermeCalendarComponent,
-    SupermeButtonComponent, SupermeInputsModule, SupermeBadgeComponent, SupermePopupComponent
+    CommonModule, IonicModule, SupermeCalendarComponent,
+    SupermeButtonComponent, SupermePopupComponent
   ]
 })
 export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
@@ -66,6 +59,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   public completePopupConfig: SupermePopupConfig = {};
   public showAbortPopup: boolean = false;
   public abortPopupConfig: SupermePopupConfig = {};
+  public showDeletePopup: boolean = false;
+  public deletePopupConfig: SupermePopupConfig = {};
 
   constructor(
     private router: Router,
@@ -455,7 +450,48 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     return filtered.length ? filtered.map(d => abbr[d]).join(', ') : '—';
   }
 
+  get activityDateRange(): string {
+    if (!this.habit?.startDate) return '—';
+    const start = this.formatActivityDate(this.habit.startDate);
+    const end = this.habit.endDate ? this.formatActivityDate(this.habit.endDate) : start;
+    return start === end ? start : `${start} - ${end}`;
+  }
+
+  get activityTimeRange(): string {
+    const start = this.formatActivityTime(this.habit?.startTime);
+    const end = this.formatActivityTime(this.habit?.endTime);
+    if (!start && !end) return '—';
+    return start && end ? `${start}-${end}` : (start || end);
+  }
+
+  detailIcon(name: 'back' | 'delete' | 'edit' | 'priority' | 'category' | 'date' | 'repeat' | 'notes'): string {
+    const theme = this.habit?.type === 'tasks' ? 'task' : 'habit';
+    return `assets/app-assets/activity-detail/${name}-${theme}.svg`;
+  }
+
+  private formatActivityDate(value: Date | string): string {
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return '—';
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric'
+    }).format(date).replace(',', '');
+  }
+
+  private formatActivityTime(value?: string): string {
+    if (!value) return '';
+    const match = String(value).match(/^(\d{1,2}):(\d{2})/);
+    return match ? `${match[1].padStart(2, '0')}.${match[2]}` : String(value);
+  }
+
   // === Navigation & Editing ===
+
+  onBack(): void {
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    this.router.navigate(['/authed/activity-page']).catch(() => {});
+  }
 
   onEdit() {
     if (!this.habit) {
@@ -499,6 +535,45 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
       return isCreator;
     } catch { return false; }
+  }
+
+  openDeletePopup(): void {
+    if (!this.habit || !this.canEdit()) return;
+    this.deletePopupConfig = {
+      image: 'assets/Images-Transparent/Image-Input-Delete.png',
+      imageAlt: 'Delete activity',
+      heading: 'Delete this activity?',
+      subtitle: 'This will remove every instance of this activity in the selected date range.',
+      primaryCTA: { text: 'Cancel', buttonStyle: 'white-black', buttonMedium: true },
+      secondaryCTA: { text: 'Delete', buttonStyle: 'red', buttonMedium: true },
+      showCloseButton: false,
+      backdrop: true,
+      ctaDirection: 'row'
+    };
+    this.showDeletePopup = true;
+  }
+
+  closeDeletePopup(): void {
+    this.showDeletePopup = false;
+  }
+
+  confirmDelete(): void {
+    if (!this.habit || !this.canEdit()) return;
+    const id = String(this.habit.id);
+    const isTask = this.habit.type === 'tasks';
+    const api$ = isTask ? this.taskApi.deleteTask(id) : this.habitApi.deleteHabit(id);
+
+    api$.subscribe({
+      next: () => {
+        if (isTask) this.habitService.notifyTaskDeleted();
+        else this.habitService.deleteHabit(id);
+        this.closeDeletePopup();
+        this.router.navigate(['/authed/activity-page'], {
+          state: { type: this.habit?.type || 'habits' }
+        }).catch(() => {});
+      },
+      error: (err) => console.error('Failed to delete activity', err)
+    });
   }
 
   // === Routine Helpers ===

@@ -1,4 +1,5 @@
-<div class="superme-calendar" [class.calendar-main-style]="useCalendarMainStyle">
+<div class="superme-calendar" [class.calendar-main-style]="useCalendarMainStyle"
+  [class.activity-detail-style]="useActivityDetailStyle">
   <div class="calendar-header">
     <!-- Navigation with arrows for activity-calendar, month picker for other uses -->
     <div *ngIf="useArrowNavigation" class="month-navigation">
@@ -37,6 +38,9 @@
       [class.isEndDate]="isEndOfRange(date)" [class.currentMonth]="isDateinCurrentMonth(date)"
       [class.selected]="allowDateSelection && (isSameDay(date, startDate) || isSameDay(date, endDate))" [class.in-range]="allowDateSelection && isInRange(date)"
       [class.mood-active]="moodOn && useCalendarMainStyle" [class.mood-inactive]="!moodOn && useCalendarMainStyle"
+      [class.status-completed-day]="!showMoodToggle && getStatusForDate(date) === 'COMPLETED'"
+      [class.status-skipped-day]="!showMoodToggle && getStatusForDate(date) === 'SKIPPED'"
+      [class.status-pending-day]="!showMoodToggle && getStatusForDate(date) === 'PENDING'"
       [class.today]="isToday(date)"
       (click)="handleDateClick(date)">
       <p>{{ date.getDate() }}</p>
@@ -65,6 +69,8 @@
       <div *ngIf="!showMoodToggle && hasStatusData(date)" class="status-dot"
         [class.status-completed]="getStatusForDate(date) === 'COMPLETED'"
         [class.status-skipped]="getStatusForDate(date) === 'SKIPPED'">
+        <img *ngIf="useActivityDetailStyle && getStatusForDate(date) !== 'PENDING'" aria-hidden="true" alt=""
+          [src]="'assets/app-assets/activity-detail/' + (getStatusForDate(date) === 'COMPLETED' ? 'check-' : 'close-') + activityDetailTheme + '.svg'" />
       </div>
     </button>
   </div>
