@@ -11,11 +11,15 @@
                 <div class="addr-row">
                     <div class="addr-field addr-field--sm">
                         <label class="addr-label" for="pincode">Pincode <span class="addr-required">*</span></label>
-                        <input id="pincode" class="addr-input" formControlName="postalCode" type="text"
-                            placeholder="600071" inputmode="numeric" pattern="[0-9]*" maxlength="6"
-                            [class.addr-input--invalid]="pincodeControl.invalid && (pincodeControl.touched || pincodeControl.dirty)"
-                            (input)="onPincodeInput($event)">
+                        <div class="addr-input-wrap">
+                            <input id="pincode" class="addr-input" formControlName="postalCode" type="text"
+                                placeholder="600071" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+                                [class.addr-input--invalid]="pincodeControl.invalid && (pincodeControl.touched || pincodeControl.dirty)"
+                                (input)="onPincodeInput($event)">
+                            <span class="addr-input-spinner" *ngIf="pincodeLookupLoading" aria-hidden="true"></span>
+                        </div>
                         <span class="addr-error" *ngIf="pincodeError">{{ pincodeError }}</span>
+                        <span class="addr-hint addr-hint--error" *ngIf="!pincodeError && pincodeLookupError">{{ pincodeLookupError }}</span>
                     </div>
                     <div class="addr-field addr-field--lg">
                         <label class="addr-label" for="city">City <span class="addr-required">*</span></label>

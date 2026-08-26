@@ -201,6 +201,26 @@
   }
 }
 
+// 81% of even a capped desktop container (e.g. 960px) is still a ~750px
+// card — fine as a mobile "single-card peek" carousel, but oversized once
+// there's real desktop width to work with. Cap it to a normal promotional
+// banner size instead of letting it dominate the page.
+@media (min-width: 480px) and (max-width: 767.98px) {
+  .adb--eduhub-parent .adb__card {
+    min-width: 0;
+    width: min(100%, 420px);
+    flex-basis: min(100%, 420px);
+  }
+}
+
+@media (min-width: 768px) {
+  .adb--eduhub-parent .adb__card {
+    min-width: 0;
+    width: min(100%, 480px);
+    flex-basis: min(100%, 480px);
+  }
+}
+
 // A single banner must use the whole content width. The former 81% carousel
 // width is useful only when there is another card to preview; with one result
 // it leaves a distracting empty area and looks broken on narrow devices.

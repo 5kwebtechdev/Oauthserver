@@ -17,6 +17,31 @@
 	/* leave room for header/navigation; tweak if your header height differs */
 	min-height: calc(100dvh - 120px);
 	width: 100%;
+	box-sizing: border-box;
+}
+
+// This is a full-bleed ion-content (no routed-page width cap applies here),
+// so on tablet/desktop the "Write your first note" button (width:100% inline
+// on <superme-button>) was stretching edge-to-edge across the whole browser
+// window. Capping and centering the container itself scales everything
+// inside it — image, text, and button — together.
+@media (min-width: 480px) and (max-width: 767.98px) {
+	.empty-notes-container {
+		max-width: 480px;
+		margin-inline: auto;
+	}
+}
+
+@media (min-width: 768px) {
+	.empty-notes-container {
+		max-width: 420px;
+		margin-inline: auto;
+	}
+
+	.note-container {
+		max-width: 720px;
+		margin-inline: auto;
+	}
 }
 
 .empty-notes-content {

@@ -251,8 +251,22 @@
   border-radius: 16px;
   box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
   transform: translateX(-50%);
+}
 
-
+// The mobile placement anchors to the trigger button's on-click position via
+// inline left/top (see the component's [ngStyle] binding) — on web, where
+// this can sit inside a taller scrollable page, a scroll after opening
+// leaves the fixed popup visually detached from the button since only the
+// button moves with the page. Centering on screen sidesteps that fragility
+// entirely instead of chasing the scroll-timing cause. !important is
+// required to beat the inline left/top styles.
+@media (min-width: 768px) {
+  .tag-input-inner {
+    left: 50% !important;
+    top: 50% !important;
+    width: min(90vw, 320px);
+    transform: translate(-50%, -50%);
+  }
 }
 
 .tag-edit-inner,

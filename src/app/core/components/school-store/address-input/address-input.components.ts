@@ -1,12 +1,23 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { HttpClient } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AddressService } from '../../../services/address.service';
 import { Address, AddressPayload } from '../../../api/address.api';
 import { CustomToastService } from '../../../services/custom-toast.service';
+
+interface PincodeLookupPlace {
+    'place name'?: string;
+    state?: string;
+}
+
+interface PincodeLookupResponse {
+    'post code'?: string;
+    places?: PincodeLookupPlace[] | null;
+}
 
 @Component({
     selector: 'address-input',
@@ -21,9 +32,14 @@ export class AddressInputComponent implements OnInit {
     addressId: number | null = null;
     saving = false;
 
+    pincodeLookupLoading = false;
+    pincodeLookupError: string | null = null;
+    private pincodeLookupRequestId = 0;
+
     constructor(
         private cdr: ChangeDetectorRef,
         private fb: FormBuilder,
+        private http: HttpClient,
         private router: Router,
         private route: ActivatedRoute,
         private addressService: AddressService,
@@ -144,6 +160,63 @@ export class AddressInputComponent implements OnInit {
         if (!input) return;
         const cleaned = (input.value || '').replace(/\D/g, '').slice(0, 6);
         this.postalCodeCtrl.setValue(cleaned, { emitEvent: false });
+
+        // Invalidate any in-flight lookup as soon as the user edits the
+        // pincode again — its response would otherwise land after further
+        // typing and clobber whatever the user has since typed into
+        // city/state.
+        this.pincodeLookupRequestId++;
+        this.pincodeLookupLoading = false;
+        this.pincodeLookupError = null;
+
+        if (cleaned.length === 6) {
+            this.lookupPincode(cleaned);
+        }
+    }
+
+    /**
+     * India-wide postal code -> city/state lookup via zippopotam.us's free,
+     * public India endpoint. api.postalpincode.in (the more commonly cited
+     * India Post mirror) returns the right data but sends no CORS headers at
+     * all, so it fails silently from any web browser despite working fine
+     * from curl/native apps — confirmed by inspecting its response headers
+     * directly. zippopotam.us sends `access-control-allow-origin: *` and
+     * returns equivalent place/state data, so it actually works from web.
+     * No backend endpoint exists for this yet. City/State stay plain
+     * editable text inputs, so a wrong or missing match never blocks the
+     * user from typing them manually.
+     */
+    private lookupPincode(pincode: string): void {
+        const requestId = ++this.pincodeLookupRequestId;
+        this.pincodeLookupLoading = true;
+        this.pincodeLookupError = null;
+
+        this.http.get<PincodeLookupResponse>(`https://api.zippopotam.us/in/${pincode}`)
+            .subscribe({
+                next: (response) => {
+                    if (requestId !== this.pincodeLookupRequestId) return;
+                    this.pincodeLookupLoading = false;
+
+                    const place = response?.places?.[0];
+                    const city = place?.['place name']?.trim();
+                    const state = place?.state?.trim();
+
+                    if (city && state) {
+                        this.addressForm.patchValue({ city, state });
+                    } else {
+                        this.pincodeLookupError = 'Couldn’t find a location for this pincode. Please enter city and state manually.';
+                    }
+                    this.cdr.markForCheck();
+                },
+                error: (err) => {
+                    if (requestId !== this.pincodeLookupRequestId) return;
+                    this.pincodeLookupLoading = false;
+                    this.pincodeLookupError = err?.status === 404
+                        ? 'This pincode wasn’t recognized. Please enter city and state manually.'
+                        : 'Couldn’t look up this pincode right now. Please enter city and state manually.';
+                    this.cdr.markForCheck();
+                }
+            });
     }
 
     onPhoneInput(event: Event): void {
