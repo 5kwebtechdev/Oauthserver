@@ -26,6 +26,8 @@ export interface ReelPreviewItem {
   styleUrls: ['./reel-preview.component.scss']
 })
 export class ReelPreviewSectionComponent implements OnInit {
+  private readonly fallbackThumbnailUrl = 'assets/figma/reels/reel-volcano.png';
+
   @Input() title = 'Made by Kids, for Kids!';
   @Input() subtitle = 'Watch reels • Create • Get Inspired';
   @Input() maxItems = 6;
@@ -47,7 +49,9 @@ export class ReelPreviewSectionComponent implements OnInit {
   }
 
   onThumbnailError(item: ReelPreviewItem): void {
-    item.thumbnailUrl = undefined;
+    item.thumbnailUrl = item.thumbnailUrl === this.fallbackThumbnailUrl
+      ? undefined
+      : this.fallbackThumbnailUrl;
   }
 
   private loadReels(): void {
@@ -90,10 +94,28 @@ export class ReelPreviewSectionComponent implements OnInit {
 
     return rows
       .map((raw: any, index: number): ReelPreviewItem => {
-        const videoId = String(raw?.videoId ?? raw?.youtubeVideoId ?? '').trim() || undefined;
-        const thumbnailUrl = String(
-          raw?.thumbnailUrl ?? raw?.thumbnail ?? raw?.imageUrl ?? raw?.image ?? ''
-        ).trim() || (videoId ? `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg` : undefined);
+        const videoSource = this.firstText(
+          raw?.videoId,
+          raw?.youtubeVideoId,
+          raw?.videoUrl,
+          raw?.reelUrl,
+          raw?.url
+        );
+        const youtubeVideoId = this.extractYoutubeVideoId(videoSource);
+        const videoId = youtubeVideoId || videoSource;
+        const suppliedThumbnail = this.firstText(
+          raw?.thumbnailUrl,
+          raw?.thumbnail,
+          raw?.thumbnailImageUrl,
+          raw?.coverUrl,
+          raw?.posterUrl,
+          raw?.imageUrl,
+          raw?.image
+        );
+        const thumbnailUrl = this.normalizeMediaUrl(suppliedThumbnail)
+          || (youtubeVideoId
+            ? `https://i.ytimg.com/vi/${encodeURIComponent(youtubeVideoId)}/hqdefault.jpg`
+            : this.fallbackThumbnailUrl);
 
         return {
           id: raw?.id ?? videoId ?? index,
@@ -113,6 +135,39 @@ export class ReelPreviewSectionComponent implements OnInit {
   private firstText(...values: unknown[]): string | undefined {
     const match = values.find(value => typeof value === 'string' && value.trim().length);
     return typeof match === 'string' ? match.trim() : undefined;
+  }
+
+  private extractYoutubeVideoId(value?: string): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    const trimmed = value.trim();
+    if (/^[A-Za-z0-9_-]{11}$/.test(trimmed)) {
+      return trimmed;
+    }
+
+    const match = trimmed.match(
+      /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i
+    );
+    return match?.[1];
+  }
+
+  private normalizeMediaUrl(value?: string): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    const trimmed = value.trim();
+    if (/^(?:https?:|data:|blob:)/i.test(trimmed) || trimmed.startsWith('assets/')) {
+      return trimmed;
+    }
+
+    try {
+      return new URL(trimmed, `${environment.apiUrl.replace(/\/$/, '')}/`).toString();
+    } catch {
+      return undefined;
+    }
   }
 
   private toOptionalNumber(value: unknown): number | undefined {

@@ -1,242 +1,152 @@
-import { Component, AfterViewInit, ViewChildren, QueryList, ElementRef, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { RouterModule, Router } from '@angular/router';
+import { Router } from '@angular/router';
 
-import { ReelsExpandComponent } from 'src/app/core/components/reel-section/reel-expand/reels-expand.component';
-import { BookmarkReelsComponent } from 'src/app/core/components/reel-section/bookmark-reels/bookmark-reels.component';
-import { UploadReelComponent } from 'src/app/core/components/reel-section/upload-reel/upload-reel.component';
-import { SupermeButtonComponent } from 'src/app/core/components/superme-button/superme-button.component';
-import { SupermeCardHeaderComponent } from 'src/app/core/components/superme-navigator/superme-card-header/superme-card-header.component';
-import { ViewAllComponent } from 'src/app/core/components/superme-navigator/view-all/view-all.component';
-import { ReelsCardComponent } from 'src/app/core/components/reel-section/reels-card/reels-card.component';
+import { ReelsExpandComponent } from '../reel-expand/reels-expand.component';
+
+interface ReelCategory {
+  label: string;
+  icon: string;
+}
+
+interface ReelItem {
+  id: number;
+  category: string;
+  author: string;
+  title: string;
+  duration: string;
+  likes: string;
+  tags: string;
+  image: string;
+  avatar: string;
+  video: string;
+  aiGenerated?: boolean;
+  saved: boolean;
+  liked: boolean;
+}
 
 @Component({
   selector: 'reel-category',
   templateUrl: './reel-category.component.html',
   styleUrls: ['./reel-category.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, SupermeButtonComponent, SupermeCardHeaderComponent, ViewAllComponent, ReelsCardComponent]
+  imports: [CommonModule, IonicModule, ReelsExpandComponent]
 })
-export class ReelCategoryComponent implements AfterViewInit {
-  public slides = [
-    {
-      id: 1,
-      category: 'Science Wonders',
-      author: 'SparkleKid',
-      title: 'Epic Volcano Eruption Experiment!',
-      duration: '20 sec',
-      likes: '10K',
-      tags: '#FunScience #DIYExperiment',
-      image: 'assets/images/reel-1-placeholder.png',
-      video: '',
-      isPlaying: false,
-      saved: false
-    },
-    {
-      id: 2,
-      category: 'Science Wonders',
-      author: 'LabLearner',
-      title: 'Grow a Crystal at Home',
-      duration: '30 sec',
-      likes: '8.2K',
-      tags: '#ScienceAtHome #Crystals',
-      image: 'assets/images/reel-1-placeholder.png',
-      video: '',
-      isPlaying: false,
-      saved: false
-    },
-    {
-      id: 3,
-      category: 'Science Wonders',
-      author: 'CurioKid',
-      title: 'Magnet Tricks You Can Try',
-      duration: '25 sec',
-      likes: '6K',
-      tags: '#Magnets #FunFacts',
-      image: 'assets/images/reel-1-placeholder.png',
-      video: '',
-      isPlaying: false,
-      saved: false
-    },
-
-    // Creative Arts
-    {
-      id: 4,
-      category: 'Creative Arts',
-      author: 'ArtWhiz',
-      title: 'Painting a Sunset with My Fingers!',
-      duration: '60 sec',
-      likes: '1K',
-      tags: '#LittleArtist #MessyFun',
-      image: 'assets/images/reel-1-placeholder.png',
-      video: '',
-      isPlaying: false,
-      saved: false
-    },
-    {
-      id: 5,
-      category: 'Creative Arts',
-      author: 'DoodleStar',
-      title: 'Turn Scribbles into Characters',
-      duration: '40 sec',
-      likes: '4.5K',
-      tags: '#Drawing #KidsArt',
-      image: 'assets/images/reel-1-placeholder.png',
-      video: '',
-      isPlaying: false,
-      saved: false
-    },
-    {
-      id: 6,
-      category: 'Creative Arts',
-      author: 'CraftyBee',
-      title: 'Easy Paper Crafts for Rainy Days',
-      duration: '35 sec',
-      likes: '3.2K',
-      tags: '#Crafts #DIY',
-      image: 'assets/images/reel-1-placeholder.png',
-      video: '',
-      isPlaying: false,
-      saved: false
-    },
-
-    // Comedy & Fun
-    {
-      id: 7,
-      category: 'Comedy & Fun',
-      author: 'FunnyBones',
-      title: 'Silly Dance Moves to Try',
-      duration: '15 sec',
-      likes: '12K',
-      tags: '#Dance #Silly',
-      image: 'assets/images/reel-1-placeholder.png',
-      video: '',
-      isPlaying: false,
-      saved: false
-    },
-    {
-      id: 8,
-      category: 'Comedy & Fun',
-      author: 'GiggleGang',
-      title: 'Tiny Pranks (Nice Ones!)',
-      duration: '22 sec',
-      likes: '5K',
-      tags: '#Pranks #GoodVibes',
-      image: 'assets/images/reel-1-placeholder.png',
-      video: '',
-      isPlaying: false,
-      saved: false
-    },
-    {
-      id: 9,
-      category: 'Comedy & Fun',
-      author: 'SmileSquad',
-      title: 'Funny Face Challenge',
-      duration: '18 sec',
-      likes: '9K',
-      tags: '#Faces #Challenge',
-      image: 'assets/images/reel-1-placeholder.png',
-      video: '',
-      isPlaying: false,
-      saved: false
-    }
+export class ReelCategoryComponent {
+  readonly categories: ReelCategory[] = [
+    { label: 'Education', icon: 'assets/figma/reels/categories/education.png' },
+    { label: 'How-to', icon: 'assets/figma/reels/categories/how-to.png' },
+    { label: 'Arts & Creativity', icon: 'assets/figma/reels/categories/arts-creativity.png' },
+    { label: 'Entertainment', icon: 'assets/figma/reels/categories/entertainment.png' },
+    { label: 'Fitness', icon: 'assets/figma/reels/categories/fitness.png' },
+    { label: 'Animals & Nature', icon: 'assets/figma/reels/categories/animals-nature.png' },
+    { label: 'Food', icon: 'assets/figma/reels/categories/food.png' },
+    { label: 'STEM', icon: 'assets/figma/reels/categories/stem.png' },
+    { label: 'Motivational', icon: 'assets/figma/reels/categories/motivational.png' },
+    { label: 'Gaming', icon: 'assets/figma/reels/categories/gaming.png' },
+    { label: 'People & Vlogs', icon: 'assets/figma/reels/categories/people-vlogs.png' },
+    { label: 'Productivity', icon: 'assets/figma/reels/categories/productivity.png' }
   ];
 
-  @ViewChildren('reelItem', { read: ElementRef }) reels!: QueryList<ElementRef>;
-  @ViewChild('player', { read: ElementRef }) playerRef!: ElementRef;
+  readonly slides: ReelItem[] = [
+    this.createReel(1, 'Education', 'Username', 'Epic Volcano Eruption Experiment!', '20 sec', '10K', true),
+    this.createReel(2, 'How-to', 'LabLearner', 'Grow a Crystal at Home', '30 sec', '8.2K'),
+    this.createReel(3, 'STEM', 'CurioKid', 'Magnet Tricks You Can Try', '25 sec', '6K'),
+    this.createReel(4, 'Arts & Creativity', 'ArtWhiz', 'Painting a Sunset with My Fingers!', '60 sec', '1K'),
+    this.createReel(5, 'Productivity', 'DoodleStar', 'Turn Scribbles into Characters', '40 sec', '4.5K'),
+    this.createReel(6, 'Entertainment', 'CraftyBee', 'Easy Paper Crafts for Rainy Days', '35 sec', '3.2K'),
+    this.createReel(7, 'Fitness', 'FunnyBones', 'Silly Dance Moves to Try', '15 sec', '12K'),
+    this.createReel(8, 'Animals & Nature', 'GiggleGang', 'Tiny Pranks (Nice Ones!)', '22 sec', '5K')
+  ];
 
-  constructor(private router: Router) { }
+  selectedCategory = 'All';
+  searchTerm = '';
 
-  // UI helpers
+  constructor(private readonly router: Router) {}
 
-  ngAfterViewInit(): void {
-    // minimal initialization to keep component safe for compilation
-    if (this.reels && this.reels.length) {
-      // placeholder for future player setup
-    }
+  get filteredSlides(): ReelItem[] {
+    const query = this.searchTerm.trim().toLowerCase();
+    return this.slides.filter(reel => {
+      const matchesCategory = this.selectedCategory === 'All' || reel.category === this.selectedCategory;
+      const matchesSearch = !query || [reel.title, reel.author, reel.category, reel.tags]
+        .some(value => value.toLowerCase().includes(query));
+      return matchesCategory && matchesSearch;
+    });
   }
 
-  // Navigation / UI helpers used by the template
-  public goBack(): void {
+  goBack(): void {
     window.history.back();
   }
 
-  public goToBookmarks(): void {
-    // Attach a query param to indicate this came from "My Reels" so the bookmark page can adjust title
-    this.router.navigate(['/authed/bookmark-reels'], { queryParams: { source: 'my-reels' } });
-  }
-
-  /**
-   * Navigate to bookmark page without marking source. This is used by the header
-   * bookmark button so the bookmark page will show the default "Bookmarked Reels" title.
-   */
-  public openBookmarks(): void {
+  openBookmarks(): void {
     this.router.navigate(['/authed/bookmark-reels']);
   }
 
-  public get slidesByCategory(): Record<string, any[]> {
-    const map: Record<string, any[]> = {};
-    for (const s of this.slides) {
-      const cat = s.category || 'Uncategorized';
-      if (!map[cat]) map[cat] = [];
-      map[cat].push(s);
-    }
-    return map;
+  goToMyReels(): void {
+    this.router.navigate(['/authed/bookmark-reels'], { queryParams: { source: 'my-reels' } });
   }
 
-  // categories used by the template
-  public get categories(): string[] {
-    return Object.keys(this.slidesByCategory);
-  }
-
-
-  public openReel(reel: any, event?: Event): void {
-    event?.stopPropagation();
-    // navigate to expand view (adjust route as needed)
-    this.router.navigate(['/reel-expand', reel.id]);
-  }
-
-  public toggleSave(reel: any, event?: Event): void {
-    event?.stopPropagation();
-    reel.saved = !reel.saved;
-  }
-
-  public playReel(reel: any, event?: Event): void {
-    event?.stopPropagation();
-    // simple play flag - replace with real player logic as needed
-    reel.isPlaying = true;
-  }
-
-  public stopReel(reel: any, event?: Event): void {
-    event?.stopPropagation();
-    reel.isPlaying = false;
-  }
-
-  public playAll(category: string): void {
-    const list = this.slidesByCategory[category] || [];
-    for (const s of list) {
-      s.isPlaying = true;
-    }
-    // also dispatch a global event for other parts of the app to respond to
-    try {
-      const ev = new CustomEvent('openReelPlayAll', { detail: { category, slides: list } });
-      window.dispatchEvent(ev);
-    } catch (e) {
-      // ignore in environments where CustomEvent may be restricted
-    }
-  }
-
-  public openUpload(): void {
-    // Navigate to authenticated upload-reel page
+  openUpload(): void {
     this.router.navigate(['/authed/upload-reel']);
   }
 
-  /** Handler for the "View all" action in the header. Navigates to a reels listing.
-   * Assumption: route for listing reels is '/authed/reels'. Adjust if different. */
-  public onViewAll(): void {
-    // navigate to a reels listing or category view
-    this.router.navigate(['/authed/reels']);
+  selectCategory(category: string): void {
+    this.selectedCategory = category;
+  }
+
+  onSearch(event: Event): void {
+    this.searchTerm = (event.target as HTMLInputElement).value;
+  }
+
+  openReel(reel: ReelItem, event?: Event): void {
+    event?.stopPropagation();
+    window.dispatchEvent(new CustomEvent('openReelExpanded', { detail: reel }));
+  }
+
+  toggleSave(reel: ReelItem, event: Event): void {
+    event.stopPropagation();
+    reel.saved = !reel.saved;
+  }
+
+  onCardKeydown(event: KeyboardEvent, reel: ReelItem): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.openReel(reel, event);
+    }
+  }
+
+  trackCategory(_index: number, category: ReelCategory): string {
+    return category.label;
+  }
+
+  trackReel(_index: number, reel: ReelItem): number {
+    return reel.id;
+  }
+
+  private createReel(
+    id: number,
+    category: string,
+    author: string,
+    title: string,
+    duration: string,
+    likes: string,
+    aiGenerated = false
+  ): ReelItem {
+    return {
+      id,
+      category,
+      author,
+      title,
+      duration,
+      likes,
+      tags: '#FunScience #DIYExperiment....',
+      image: 'assets/figma/reels/reel-volcano.png',
+      avatar: 'assets/figma/reels/avatar.png',
+      video: '',
+      aiGenerated,
+      saved: false,
+      liked: false
+    };
   }
 }
-

@@ -19,7 +19,7 @@
     <ng-template #standardHeader>
       <header class="analytics-header">
         <button type="button" class="analytics-back" aria-label="Go back" (click)="goBack()">
-          <img src="assets/figma/child-activity/back.svg" alt="" aria-hidden="true" />
+          <img src="assets/figma/child-self-insights/back.svg" alt="" aria-hidden="true" />
         </button>
         <div class="analytics-heading">
           <h1>Insights</h1>
@@ -130,27 +130,78 @@
       </div>
 
       <ng-template #standardInsights>
-        <div class="insights-sections">
-          <section *ngFor="let section of sections; trackBy: trackSection" class="insights-section" [attr.aria-labelledby]="section.id + '-title'">
-            <h2 [id]="section.id + '-title'">{{ section.title }}</h2>
-            <div class="insights-grid">
-              <article
-                *ngFor="let metric of section.metrics; trackBy: trackMetric"
-                class="insight-card"
-                [ngClass]="'insight-card--' + metric.tone"
-                [attr.aria-label]="metric.label + ': ' + displayValue(metric.value) + '. ' + metric.description"
-              >
-                <div class="insight-card__top">
-                  <span class="insight-card__visual" aria-hidden="true"><img [src]="metric.icon" alt="" /></span>
-                  <div class="insight-card__value-block">
-                    <p class="insight-card__label">{{ metric.label }}</p>
-                    <strong class="insight-card__value">{{ displayValue(metric.value) }}</strong>
-                  </div>
+        <div class="child-insights-sections">
+          <ng-container *ngFor="let section of sections; trackBy: trackSection">
+            <section
+              class="child-insights-section"
+              [ngClass]="'child-insights-section--' + section.id"
+              [attr.aria-labelledby]="'child-' + section.id + '-title'"
+            >
+              <h2 [id]="'child-' + section.id + '-title'">
+                <span class="child-section-icon" [ngClass]="'child-section-icon--' + section.id" aria-hidden="true"></span>
+                {{ section.title }}
+              </h2>
+
+              <div *ngIf="section.id === 'journal'; else childMetricCards" class="child-journal-card">
+                <article
+                  *ngFor="let metric of section.metrics; trackBy: trackMetric"
+                  class="child-journal-metric"
+                  [attr.aria-label]="metric.label + ': ' + displayChildValue(metric.value) + ' entries'"
+                >
+                  <p>{{ metric.label }}</p>
+                  <strong>{{ displayChildValue(metric.value) }} <small>{{ metric.unit }}</small></strong>
+                </article>
+              </div>
+
+              <ng-template #childMetricCards>
+                <div
+                  class="child-insights-grid"
+                  [class.child-insights-grid--achievements]="section.id === 'achievements'"
+                >
+                  <article
+                    *ngFor="let metric of section.metrics; trackBy: trackMetric"
+                    class="child-insight-card"
+                    [ngClass]="['child-insight-card--' + metric.tone, section.id === 'achievements' ? 'child-insight-card--achievement-cell' : '']"
+                    [attr.aria-label]="metric.label + ': ' + displayChildValue(metric.value) + '. ' + metric.description"
+                  >
+                    <span
+                      class="child-metric-visual"
+                      [ngClass]="metric.iconVariant ? 'child-metric-visual--' + metric.iconVariant : ''"
+                      aria-hidden="true"
+                    >
+                      <img [src]="metric.icon" alt="" />
+                    </span>
+                    <div class="child-metric-content">
+                      <p class="child-metric-label">{{ metric.label }}</p>
+                      <strong class="child-metric-value">{{ displayChildValue(metric.value) }}</strong>
+                      <p class="child-metric-description">{{ metric.description }}</p>
+                    </div>
+                  </article>
                 </div>
-                <p class="insight-card__description">{{ metric.description }}</p>
+              </ng-template>
+            </section>
+
+            <section *ngIf="section.id === 'tasks'" class="child-mood-section" aria-labelledby="child-mood-title">
+              <h2 id="child-mood-title">
+                <span class="child-section-icon child-section-icon--mood" aria-hidden="true"></span>
+                Mood Balance
+              </h2>
+              <article class="child-mood-card">
+                <span class="child-mood-visual" aria-hidden="true">
+                  <img
+                    [src]="primaryMood.icon"
+                    [class.child-mood-visual__image--standard]="primaryMood.label !== 'Excited'"
+                    alt=""
+                  />
+                </span>
+                <div class="child-mood-content">
+                  <p>MOSTLY FEELING</p>
+                  <strong>{{ primaryMood.label }}</strong>
+                  <small>Your most common mood this month.</small>
+                </div>
               </article>
-            </div>
-          </section>
+            </section>
+          </ng-container>
         </div>
       </ng-template>
     </ng-container>
