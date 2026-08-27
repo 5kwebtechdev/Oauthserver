@@ -8,7 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { ParentAnalyticsService, InsightsResponseDto } from '../../services/parent-analytics.service';
 import { ProfileStoreService } from '../../services/profile-store.service';
 import { ChildInfo } from '../../models/child-info.model';
-import { MoodTransition } from '../../models/mood.model';
+import { MOOD_EMOJI_MAP, MoodTransition } from '../../models/mood.model';
 import { FooterComponent } from '../footer/footer.component';
 import { environment } from '../../../../environments/environment';
 import { MoodService } from '../../services/mood.service';
@@ -59,6 +59,11 @@ interface ActivityBreakdownSegment {
   color: string;
 }
 
+interface PrimaryMood {
+  label: string;
+  icon: string;
+}
+
 /**
  * The same Figma layout is intentionally used for a signed-in child and a
  * SELF user. The data context is still explicit so parent-selected child data
@@ -84,6 +89,10 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   readonly reportUnlockDays = 6;
   moodBalance: MoodBalanceSegment[] = this.emptyMoodBalance();
   activityBreakdown: ActivityBreakdownSegment[] = this.emptyActivityBreakdown();
+  primaryMood: PrimaryMood = {
+    label: 'No data',
+    icon: 'assets/Images-Transparent/Mood-emoji-neutral-home.png',
+  };
 
   private readonly destroy$ = new Subject<void>();
   private requestVersion = 0;
@@ -140,6 +149,11 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   displayValue(value: number | null): string {
     if (value === null || !Number.isFinite(value)) return '—';
     return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(value);
+  }
+
+  displayChildValue(value: number | null): string {
+    if (value === null || !Number.isFinite(value)) return '—';
+    return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0, useGrouping: false }).format(value);
   }
 
   get activityChartBackground(): string {
@@ -242,7 +256,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     forkJoin({
       insights: this.parentAnalyticsService.getInsights(userId).pipe(catchError(() => of(null))),
       journal: context.canReadJournal ? this.getJournalEntries() : of(null),
-      moods: context.isParentView ? this.getRecentMoodTransitions(userId) : of([] as MoodTransition[]),
+      moods: this.getRecentMoodTransitions(userId),
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -257,6 +271,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
 
           this.sections = this.buildSections(response.insights, response.journal, context);
           this.moodBalance = this.buildMoodBalance(response.moods);
+          this.primaryMood = this.buildPrimaryMood(response.moods);
           this.activityBreakdown = this.buildActivityBreakdown(response.insights);
         },
         error: () => {
@@ -277,26 +292,26 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
         id: 'habits',
         title: 'Habits',
         metrics: [
-          this.metric('habits-week', 'This week', this.asNumber(insights.habits?.thisWeek), 'Habits progress in the last 7 days', 'assets/figma/insights/habits-week.webp', 'habit'),
-          this.metric('habits-month', 'This month', this.asNumber(insights.habits?.thisMonth), 'Growing stronger over 30 days', 'assets/figma/insights/habits-month.webp', 'habit'),
+          this.metric('habits-week', 'This week', this.asNumber(insights.habits?.thisWeek), 'Progress in the last 7 days', 'assets/figma/parent-insights/metrics-sprite.png', 'habit', 'habit-week'),
+          this.metric('habits-month', 'This month', this.asNumber(insights.habits?.thisMonth), 'Growth over 30 days', 'assets/figma/parent-insights/metrics-sprite.png', 'habit', 'habit-month'),
         ],
       },
       {
         id: 'tasks',
         title: 'Tasks',
         metrics: [
-          this.metric('tasks-week', 'This week', this.asNumber(insights.tasks?.thisWeek), 'Tasks progress in the last 7 days', 'assets/figma/insights/tasks-week.webp', 'task'),
-          this.metric('tasks-month', 'This month', this.asNumber(insights.tasks?.thisMonth), 'Growing stronger over 30 days', 'assets/figma/insights/tasks-month.webp', 'task'),
+          this.metric('tasks-week', 'This week', this.asNumber(insights.tasks?.thisWeek), 'Progress in the last 7 days', 'assets/figma/parent-insights/metrics-sprite.png', 'task', 'task-week'),
+          this.metric('tasks-month', 'This month', this.asNumber(insights.tasks?.thisMonth), 'Growth over 30 days', 'assets/figma/parent-insights/metrics-sprite.png', 'task', 'task-month'),
         ],
       },
       {
         id: 'knowledge',
-        title: 'Knowledge gained',
+        title: 'Knowledge Gained',
         metrics: [
-          this.metric('quizzes', 'Quizzes', this.asNumber(insights.knowledgeGained?.quizzes), 'Quizzes conquered so far', 'assets/figma/insights/knowledge-quizzes.webp', 'knowledge'),
-          this.metric('puzzles', 'Puzzles', this.asNumber(insights.knowledgeGained?.puzzles), 'Puzzles cracked since you started', 'assets/figma/insights/knowledge-puzzles.webp', 'knowledge'),
-          this.metric('articles', 'Articles', this.asNumber(insights.knowledgeGained?.articles), 'Ideas absorbed since you joined', 'assets/figma/insights/knowledge-articles.webp', 'knowledge'),
-          this.metric('lessons', 'Lessons', this.asNumber(insights.knowledgeGained?.lessons), 'Lessons progress since you started', 'assets/figma/insights/knowledge-lessons.webp', 'knowledge'),
+          this.metric('quizzes', 'Quizzes', this.periodValues(insights.knowledgeGained?.quizzes).month, 'Quizzes conquered so far', 'assets/figma/parent-insights/quiz.png', 'knowledge', 'quiz'),
+          this.metric('puzzles', 'Puzzles', this.periodValues(insights.knowledgeGained?.puzzles).month, 'Puzzles cracked since you started', 'assets/figma/parent-insights/puzzle.png', 'knowledge', 'puzzle'),
+          this.metric('articles', 'Articles', this.periodValues(insights.knowledgeGained?.articles).month, 'Ideas absorbed since you joined', 'assets/figma/parent-insights/article.png', 'knowledge', 'article'),
+          this.metric('lessons', 'Lessons', this.periodValues(insights.knowledgeGained?.lessons).month, 'Lessons progress since you started', 'assets/figma/parent-insights/lesson.png', 'knowledge', 'lesson'),
         ],
       },
     ];
@@ -306,8 +321,8 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
         id: 'journal',
         title: 'Journal',
         metrics: [
-          this.metric('journal-week', 'This week', this.countJournalDays(journal, 'week'), 'Days you showed up this week', 'assets/figma/insights/journal-week.webp', 'journal'),
-          this.metric('journal-month', 'This month', this.countJournalDays(journal, 'month'), 'Days you showed up this month', 'assets/figma/insights/journal-month.webp', 'journal'),
+          this.metric('journal-week', 'This week', this.countJournalDays(journal, 'week'), '', '', 'journal', undefined, undefined, undefined, 'Entries'),
+          this.metric('journal-month', 'This month', this.countJournalDays(journal, 'month'), '', '', 'journal', undefined, undefined, undefined, 'Entries'),
         ],
       });
     }
@@ -316,10 +331,10 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
       id: 'achievements',
       title: 'Achievements',
       metrics: [
-        this.metric('badges', 'Badges', this.asNumber(insights.achievements?.badges), 'Badges earned in the last 30 days', 'assets/figma/insights/achievement-badges.webp', 'achievement'),
-        this.metric('trophies', 'Trophies', this.asNumber(insights.achievements?.trophies), 'Trophies unlocked this month', 'assets/figma/insights/achievement-trophies.webp', 'achievement'),
-        this.metric('streaks', 'Streaks', this.asNumber(insights.achievements?.streaks), 'Your longest streak this month', 'assets/figma/insights/achievement-streaks.webp', 'achievement'),
-        this.metric('coins', 'Coins', this.asNumber(insights.achievements?.coins), 'Coins collected this month', 'assets/figma/insights/achievement-coins.webp', 'achievement'),
+        this.metric('badges', 'Badges', this.asNumber(insights.achievements?.badges), 'Badges earned in the last 30 days', 'assets/figma/parent-insights/badge.png', 'achievement', 'badge'),
+        this.metric('streaks', 'Streak', this.asNumber(insights.achievements?.streaks), 'Your longest streak this month', 'assets/figma/parent-insights/streak.png', 'achievement', 'streak'),
+        this.metric('trophies', 'Trophies', this.asNumber(insights.achievements?.trophies), 'Trophies unlocked this month', 'assets/figma/parent-insights/trophy.png', 'achievement', 'trophy'),
+        this.metric('coins', 'Coins', this.asNumber(insights.achievements?.coins), 'Coins collected this month', 'assets/figma/parent-insights/coin.png', 'achievement', 'coin'),
       ],
     });
 
@@ -444,6 +459,29 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
       { id: 'difficult', label: 'Difficult Moments', value: percentages[2], color: '#c41f32' },
       { id: 'no-data', label: 'No Data', value: percentages[3], color: '#a6a3a5' },
     ];
+  }
+
+  private buildPrimaryMood(transitions: MoodTransition[]): PrimaryMood {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const counts = new Map<string, number>();
+
+    transitions.forEach(transition => {
+      const date = new Date(transition.date);
+      if (Number.isNaN(date.getTime()) || date < monthStart || date > now) return;
+      const mood = String(transition.toMood || '').trim().replace(/[_-]+/g, ' ');
+      if (!mood) return;
+      const label = mood.replace(/\b\w/g, character => character.toUpperCase());
+      counts.set(label, (counts.get(label) || 0) + 1);
+    });
+
+    const label = [...counts.entries()]
+      .sort((first, second) => second[1] - first[1])[0]?.[0] || 'No data';
+    const icon = label === 'Excited'
+      ? 'assets/figma/child-self-insights/excited.png'
+      : MOOD_EMOJI_MAP[label] || 'assets/Images-Transparent/Mood-emoji-neutral-home.png';
+
+    return { label, icon };
   }
 
   private buildActivityBreakdown(insights: InsightsResponseDto): ActivityBreakdownSegment[] {

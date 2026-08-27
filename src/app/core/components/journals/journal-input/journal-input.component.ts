@@ -72,10 +72,10 @@ export class JournalInputComponent implements OnInit, OnDestroy {
       icon: 'assets/figma/journal/bedtime.svg',
       columns: 4,
       options: [
-        { label: 'Deep', image: 'assets/Images-Thumbnails/Image-Journal-Sleep1.jpg' },
-        { label: 'Moderate', image: 'assets/Images-Thumbnails/Image-Journal-Sleep3.jpg' },
-        { label: 'Disturbed', image: 'assets/Images-Thumbnails/Image-Journal-Sleep2.jpg' },
-        { label: 'Awake', image: 'assets/Images-Thumbnails/Image-Journal-Sleep4.jpg' },
+        { label: 'Deep', image: 'assets/figma/journal/sleep-deep-figma.png' },
+        { label: 'Moderate', image: 'assets/figma/journal/sleep-moderate-figma.png' },
+        { label: 'Disturbed', image: 'assets/figma/journal/sleep-disturbed-figma.png' },
+        { label: 'Awake', image: 'assets/figma/journal/sleep-awake-figma.png' },
       ],
     },
     {
