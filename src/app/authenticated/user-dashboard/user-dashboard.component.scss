@@ -1534,6 +1534,19 @@ footer {
     display: none !important;
   }
 
+  // The persistent web navigation replaces only the compact mobile greeting
+  // row. Keep the selected-pet callout visible on web, using the same hero,
+  // message and live stats as mobile.
+  .user-profile-section {
+    height: auto;
+    padding-top: 32px;
+    border-radius: 0;
+  }
+
+  .dasboard-wrapper {
+    justify-content: flex-start;
+  }
+
   ion-content {
     --padding-bottom: var(--sab, 0px);
   }

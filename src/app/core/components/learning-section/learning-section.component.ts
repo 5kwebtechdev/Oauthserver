@@ -80,11 +80,17 @@ import { AuthService } from 'src/app/core/services/auth.service';
             </div>
           </div>
           <button *ngIf="rewardMode" type="button" class="reward-assign"
-            [attr.aria-label]="'Assign ' + getRewardCoins(item) + ' coins to ' + (item?.title || 'learning activity')"
+            [class.reward-assign--assigned]="isRewardAssigned(item)"
+            [disabled]="isRewardAssigned(item)"
+            [attr.aria-label]="isRewardAssigned(item)
+              ? (item?.title || 'Learning activity') + ' is already assigned'
+              : 'Assign ' + getRewardCoins(item) + ' coins to ' + (item?.title || 'learning activity')"
             (click)="onRewardClick($event, item, i)">
-            <span>Assign</span>
-            <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
-            <strong>{{ getRewardCoins(item) }}</strong>
+            <span>{{ isRewardAssigned(item) ? 'Already Assigned' : 'Assign' }}</span>
+            <ng-container *ngIf="!isRewardAssigned(item)">
+              <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
+              <strong>{{ getRewardCoins(item) }}</strong>
+            </ng-container>
           </button>
         </div>
       </div>
@@ -408,6 +414,14 @@ import { AuthService } from 'src/app/core/services/auth.service';
 
         &:active {
           background: #fff2f7;
+        }
+
+        &--assigned,
+        &:disabled {
+          background: #f3edf6;
+          color: #6b656a;
+          cursor: default;
+          opacity: 1;
         }
       }
 
@@ -1268,7 +1282,14 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
 
   onRewardClick(event: Event, item: any, index: number): void {
     event.stopPropagation();
+    if (this.isRewardAssigned(item)) return;
     this.rewardSelected.emit({ item, index, coins: this.getRewardCoins(item) });
+  }
+
+  isRewardAssigned(item: any): boolean {
+    const raw = item?.rawData ?? item;
+    const value = raw?.alreadyAssignedToThisUser ?? item?.alreadyAssignedToThisUser;
+    return value === true || value === 1 || String(value).trim().toLowerCase() === 'true';
   }
 
   onViewAllClick(): void {
@@ -1363,14 +1384,20 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
   private loadLatestFromService() {
     const requestId = ++this.loadRequestId;
     this.isLoading = true;
-    const scopedUserId = this.contentMode === 'parenting' ? null : this.forUserId;
+    // Parenting content belongs to the signed-in parent, even while Parent
+    // Home is displaying a selected child's dashboard. Supplying the parent ID
+    // explicitly prevents the global profile selector from substituting the
+    // selected child's forUserId.
+    const scopedUserId = this.contentMode === 'parenting'
+      ? this.authService.getUserId()
+      : this.forUserId;
     const requests: Observable<any[]> = this.contentMode === 'parenting'
       ? forkJoin([
-          this.learningService.fetchArticleCards(true).pipe(
+          this.learningService.fetchArticleCards(true, scopedUserId).pipe(
             tap(items => this.parentingBlogCount = items.length),
             map(items => this.pickLatest(items))
           ),
-          this.learningService.fetchQuizCards(true).pipe(map(items => this.pickLatest(items)))
+          this.learningService.fetchQuizCards(true, scopedUserId).pipe(map(items => this.pickLatest(items)))
         ])
       : forkJoin([
           this.learningService.fetchQuizCards(true, scopedUserId).pipe(map(items => this.pickLatest(items))),

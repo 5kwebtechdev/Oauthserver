@@ -33,7 +33,7 @@
               class="web-header__nav-link web-header__nav-link--toggle"
               [class.active]="isNavActive(item)"
               [attr.aria-expanded]="openMenu === item.label"
-              (click)="toggleMenu(item.label, $event)"
+              (click)="openPrimaryNav(item, $event)"
             >
               <span>{{ item.label }}</span>
               <img

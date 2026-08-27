@@ -141,8 +141,12 @@ export class LearningService {
     /**
      * Fetch a specific challenge by ID
      */
-    fetchChallengeById(id: number): Observable<Challenge | null> {
-        return this.http.get<Challenge>(`${this.apiUrl}/challenges/${id}`, { headers: this.getHeaders() })
+    fetchChallengeById(id: number, forUserId?: string | number | null): Observable<Challenge | null> {
+        let params = new HttpParams();
+        if (forUserId != null && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
+        return this.http.get<Challenge>(`${this.apiUrl}/challenges/${id}`, { headers: this.getHeaders(), params })
             .pipe(
                 map(challenge => challenge ? this.normalizeChallenge(challenge) : null),
                 catchError(error => {
@@ -159,14 +163,17 @@ export class LearningService {
         questionAnswers: { [key: string]: string },
         timeTaken: number,
         skippedQuestions: number[]
-    }): Observable<any> {
+    }, forUserId?: string | number | null): Observable<any> {
         const url = `${this.apiUrl}/challenges/${challengeId}/submit-all`;
+        const requestPayload = forUserId != null && String(forUserId).trim()
+            ? { ...payload, forUserId: String(forUserId) }
+            : payload;
 
         console.log('Submitting challenge to URL:', url);
-        console.log('Full payload:', payload);
-        console.log('JSON payload:', JSON.stringify(payload, null, 2));
+        console.log('Full payload:', requestPayload);
+        console.log('JSON payload:', JSON.stringify(requestPayload, null, 2));
 
-        return this.http.post<any>(url, payload, { headers: this.getHeaders() })
+        return this.http.post<any>(url, requestPayload, { headers: this.getHeaders() })
             .pipe(
                 tap(response => {
                     console.log('Challenge submission response:', response);
@@ -260,8 +267,12 @@ export class LearningService {
     /**
      * Fetch a specific article by ID
      */
-    fetchArticleById(id: number): Observable<Article | null> {
-        return this.http.get<Article>(`${this.apiUrl}/articles/${id}`, { headers: this.getHeaders() })
+    fetchArticleById(id: number, forUserId?: string | number | null): Observable<Article | null> {
+        let params = new HttpParams();
+        if (forUserId != null && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
+        return this.http.get<Article>(`${this.apiUrl}/articles/${id}`, { headers: this.getHeaders(), params })
             .pipe(
                 map(article => article ? this.normalizeArticle(article) : null),
                 catchError(error => {
@@ -837,9 +848,13 @@ export class LearningService {
      * @param challengeId The ID of the challenge
      * @returns Observable with the API response
      */
-    useHint(questionId: number): Observable<any> {
+    useHint(questionId: number, forUserId?: string | number | null): Observable<any> {
         const url = `${this.apiUrl}/challenges/hint/${questionId}/use`;
-        return this.http.get<any>(url, { headers: this.getHeaders() })
+        let params = new HttpParams();
+        if (forUserId != null && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
+        return this.http.get<any>(url, { headers: this.getHeaders(), params })
             .pipe(
                 tap(response => {
                     console.log('Hint used successfully:', response);
@@ -854,11 +869,18 @@ export class LearningService {
     /**
      * Mark an article as complete/read for the current user
      */
-    markArticleComplete(articleId: number, feedback?: 'VERY_HELPFUL' | 'HELPFUL' | 'NOT_HELPFUL'): Observable<any> {
+    markArticleComplete(
+        articleId: number,
+        feedback?: 'VERY_HELPFUL' | 'HELPFUL' | 'NOT_HELPFUL',
+        forUserId?: string | number | null
+    ): Observable<any> {
         const url = `${this.apiUrl}/articles/${articleId}/complete`;
         const params = feedback ? new HttpParams().set('feedback', feedback) : undefined;
+        const body = forUserId != null && String(forUserId).trim()
+            ? { forUserId: String(forUserId) }
+            : {};
         console.log('Marking article complete at:', url);
-        return this.http.post<any>(url, {}, { headers: this.getHeaders(), params })
+        return this.http.post<any>(url, body, { headers: this.getHeaders(), params })
             .pipe(
                 tap(response => {
                     console.log('Article marked complete:', response);

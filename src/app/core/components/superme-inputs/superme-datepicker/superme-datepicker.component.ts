@@ -1,9 +1,10 @@
 import {
-  Component, forwardRef, Input, ElementRef, HostListener
+  Component, forwardRef, Input, ElementRef, HostListener, ViewChild, OnDestroy
 } from '@angular/core';
 import {
   ControlValueAccessor, NG_VALUE_ACCESSOR
 } from '@angular/forms';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -19,7 +20,8 @@ import {
   ],
   standalone: false
 })
-export class SupermeDatepickerComponent implements ControlValueAccessor {
+export class SupermeDatepickerComponent implements ControlValueAccessor, OnDestroy {
+  @ViewChild('datepickerWrapper') datepickerWrapper?: ElementRef<HTMLElement>;
   @Input() type: 'date' | 'range' = 'date';
   @Input() placeholder: string = '';
   @Input() minDate: Date | null = null;
@@ -44,12 +46,19 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
 
   private onChange = (_: any) => { };
   private onTouched = () => { };
+  private overlayPortalTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private eRef: ElementRef) { }
 
   toggleCalendar() {
     const wasOpen = this.isOpen;
-    this.isOpen = !this.isOpen;
+    if (wasOpen) {
+      this.restoreBrowserOverlay();
+      this.isOpen = false;
+      return;
+    }
+
+    this.isOpen = true;
 
     if (!wasOpen && this.isOpen) {
       // When opening, set currentMonth to show the appropriate month.
@@ -70,6 +79,44 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
         const target = this.computeRangeDate(r);
         return this.startDate && this.isSameDay(this.startDate, target);
       })?.label ?? null;
+
+      this.portalBrowserOverlay();
+    }
+  }
+
+  /**
+   * Desktop routed pages are intentionally width-capped and overflow-clipped.
+   * A fixed overlay nested inside that layout can therefore be clipped to the
+   * page column. Portal the browser overlay to body while it is open so it is
+   * positioned against the viewport; native Android/iOS keep their existing
+   * bottom-sheet DOM and safe-area behaviour.
+   */
+  private portalBrowserOverlay(): void {
+    if (Capacitor.isNativePlatform() || typeof document === 'undefined') return;
+
+    if (this.overlayPortalTimer) clearTimeout(this.overlayPortalTimer);
+    this.overlayPortalTimer = setTimeout(() => {
+      // Move the wrapper rather than only the overlay. Component styles are
+      // scoped through `.datepicker-wrapper`, so keeping that ancestor also
+      // preserves the complete calendar styling after it leaves the routed
+      // page's clipped layout.
+      const wrapper = this.datepickerWrapper?.nativeElement;
+      if (this.isOpen && wrapper && wrapper.parentElement !== document.body) {
+        document.body.appendChild(wrapper);
+      }
+      this.overlayPortalTimer = null;
+    });
+  }
+
+  private restoreBrowserOverlay(): void {
+    if (this.overlayPortalTimer) {
+      clearTimeout(this.overlayPortalTimer);
+      this.overlayPortalTimer = null;
+    }
+
+    const wrapper = this.datepickerWrapper?.nativeElement;
+    if (wrapper?.parentElement === document.body) {
+      this.eRef.nativeElement.appendChild(wrapper);
     }
   }
 
@@ -128,6 +175,7 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
     // removing the overlay, otherwise the same mobile click reaches that card
     // and immediately opens the calendar again.
     event?.stopPropagation();
+    this.restoreBrowserOverlay();
     this.isOpen = false;
     if (this.type === 'date') {
       // Only emit when a date is actually selected (prevents accidental defaulting
@@ -164,8 +212,13 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
 
   cancelSelection(event?: Event) {
     event?.stopPropagation();
+    this.restoreBrowserOverlay();
     this.isOpen = false;
     this.onTouched();
+  }
+
+  ngOnDestroy(): void {
+    this.restoreBrowserOverlay();
   }
 
   writeValue(value: any): void {

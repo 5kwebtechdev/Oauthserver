@@ -12,7 +12,7 @@ import { LearningService } from 'src/app/core/services/learning.service';
 import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
 import { AuthService } from 'src/app/core/services/auth.service';
-import { Article, LearningCardData } from 'src/app/core/models/learning.models';
+import { Article, Challenge, LearningCardData } from 'src/app/core/models/learning.models';
 import { environment } from 'src/environments/environment';
 
 type HelpfulnessValue = 'very-helpful' | 'helpful' | 'not-helpful';
@@ -40,7 +40,7 @@ interface HelpfulnessOption {
 })
 export class ArticlePageComponent implements OnInit, OnDestroy {
   article: Article | null = null;
-  relatedQuiz: LearningCardData | null = null;
+  relatedChallenges: LearningCardData[] = [];
   primaryArticleContent = '';
   secondaryArticleContent = '';
   isLoading = true;
@@ -82,6 +82,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   private justUnlockedTimeout: any;
   private readonly destroy$ = new Subject<void>();
   private readonly returnUrl: string;
+  private readonly profileUserId: string | number | null;
 
   // Popup state and config
   showMarkPopup = false;
@@ -117,6 +118,9 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     const navigationState = this.router.getCurrentNavigation()?.extras.state || history.state;
     const source = String(navigationState?.['source'] || '');
     this.returnUrl = source.startsWith('/authed/') ? source : '/authed/content';
+    this.profileUserId = navigationState?.['ownProfile'] === true
+      ? navigationState?.['forUserId'] ?? this.authService.getUserId()
+      : null;
   }
 
   get isArticleRead(): boolean {
@@ -239,7 +243,11 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     if (!this.article || this.isArticleRead || this.isMarking) return;
     this.isMarking = true;
     this.actionError = '';
-    this.learningService.markArticleComplete(this.article.id, this.toArticleFeedback(this.selectedHelpfulness))
+    this.learningService.markArticleComplete(
+      this.article.id,
+      this.toArticleFeedback(this.selectedHelpfulness),
+      this.profileUserId
+    )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
       next: (res) => {
@@ -265,7 +273,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     console.log('Article ID from route:', articleId);
 
     if (articleId) {
-      this.learningService.fetchArticleById(Number(articleId))
+      this.learningService.fetchArticleById(Number(articleId), this.profileUserId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
         next: (article) => {
@@ -275,7 +283,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
           if (article) {
             this.prepareArticleContent(article.content);
             this.initializeHelpfulness(article);
-            this.loadRelatedQuiz(article);
+            this.loadRelatedChallenges(article);
             this.updatePopupRewardCopy();
             this.startReadingTimer();
           }
@@ -327,7 +335,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
     this.isSubmittingFeedback = true;
     this.isMarking = true;
-    this.learningService.markArticleComplete(this.article.id, this.toArticleFeedback(value))
+    this.learningService.markArticleComplete(this.article.id, this.toArticleFeedback(value), this.profileUserId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -371,28 +379,31 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     return `superme_article_helpfulness_${userId}_${articleId}`;
   }
 
-  openRelatedQuiz(): void {
-    if (!this.relatedQuiz) return;
-    void this.router.navigate(['/authed/content/questions', this.relatedQuiz.id], {
-      state: { source: this.router.url }
+  openRelatedChallenge(relatedChallenge: LearningCardData): void {
+    if (!relatedChallenge?.id) return;
+    void this.router.navigate(['/authed/content/questions', relatedChallenge.id], {
+      state: {
+        source: this.router.url,
+        ...(this.profileUserId != null
+          ? { forUserId: this.profileUserId, ownProfile: true }
+          : {})
+      }
     });
   }
 
-  getRelatedDifficulty(): string {
-    if (!this.relatedQuiz) return '';
-    const raw = this.relatedQuiz.rawData as any;
+  getRelatedDifficulty(relatedChallenge: LearningCardData): string {
+    const raw = relatedChallenge.rawData as any;
     return String(
-      this.relatedQuiz.difficulty
+      relatedChallenge.difficulty
       || raw?.difficultyDisplay
       || raw?.difficulty
       || ''
     );
   }
 
-  getRelatedDuration(): string {
-    if (!this.relatedQuiz) return '';
-    const raw = this.relatedQuiz.rawData as any;
-    const value = this.relatedQuiz.timeDuration
+  getRelatedDuration(relatedChallenge: LearningCardData): string {
+    const raw = relatedChallenge.rawData as any;
+    const value = relatedChallenge.timeDuration
       || raw?.estimatedTimeMinutes
       || raw?.timeDuration;
 
@@ -401,9 +412,13 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     return text && !/min|hour|sec/i.test(text) ? `${text} min` : text;
   }
 
-  hasRelatedImage(): boolean {
-    const image = String(this.relatedQuiz?.image || '').trim();
+  hasRelatedImage(relatedChallenge: LearningCardData): boolean {
+    const image = String(relatedChallenge?.image || '').trim();
     return !!image && !image.includes('Flux_Dev_a_surreal');
+  }
+
+  trackRelatedChallenge(index: number, relatedChallenge: LearningCardData): number | string {
+    return relatedChallenge.id || index;
   }
 
   hideBrokenImage(event: Event): void {
@@ -507,24 +522,15 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     } catch { /* Storage can be unavailable in restricted browser modes. */ }
   }
 
-  private loadRelatedQuiz(article: Article): void {
-    this.learningService.fetchQuizCards()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(items => {
-        const articleTerms = [
-          ...((article.tags || []).map(tag => String(tag).toLowerCase())),
-          String((article as any)?.topic || '').toLowerCase()
-        ].filter(Boolean);
+  private loadRelatedChallenges(article: Article): void {
+    const relatedChallenges = Array.isArray(article.relatedChallenges)
+      ? article.relatedChallenges
+      : [];
 
-        this.relatedQuiz = items.find(item => {
-          const raw = item.rawData as any;
-          const quizText = [item.title, item.subType, raw?.topic, raw?.categoryDisplay]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase();
-          return articleTerms.some(term => quizText.includes(term));
-        }) || items[0] || null;
-      });
+    this.relatedChallenges = relatedChallenges
+      .filter((challenge): challenge is Challenge => !!challenge && typeof challenge === 'object')
+      .map(challenge => this.learningService.transformChallengeToCard(challenge as Challenge))
+      .filter(challenge => Number.isFinite(Number(challenge.id)) && Number(challenge.id) > 0);
   }
 
   private updatePopupRewardCopy(): void {

@@ -109,6 +109,7 @@ export interface Article {
     updatedAt: string;
     publishedAt: string | null;
     alreadyRead?: boolean;
+    relatedChallenges?: Challenge[];
 }
 
 /**

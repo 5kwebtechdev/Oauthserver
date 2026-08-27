@@ -22,6 +22,7 @@ interface WebNavItem {
 const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
   {
     label: 'Learning',
+    link: '/authed/content',
     children: [
       { label: 'Quiz', link: '/authed/content', queryParams: { type: 'QUIZ' } },
       { label: 'Puzzle', link: '/authed/content', queryParams: { type: 'PUZZLE' } },
@@ -32,6 +33,7 @@ const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
   },
   {
     label: 'Quick Tools',
+    link: '/authed/activity-page',
     children: [
       { label: 'Journal', link: '/authed/journal-input' },
       { label: 'Notes', link: '/authed/notes' },
@@ -40,6 +42,7 @@ const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
   },
   {
     label: 'EduHub Listings',
+    link: '/authed/education',
     children: [
       { label: 'Tutor', link: '/authed/tutors' },
       { label: 'Academy', link: '/authed/academies' },
@@ -54,6 +57,7 @@ const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
   },
   {
     label: 'Shop',
+    link: '/authed/school-store',
     children: [
       { label: 'School Uniforms', link: '/authed/school-store', queryParams: { category: 'School Uniforms' } },
       { label: 'Textbook', link: '/authed/school-store', queryParams: { category: 'Textbook' } },
@@ -68,6 +72,7 @@ const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
 const PARENT_NAV_ITEMS: WebNavItem[] = [
   {
     label: 'Parenting',
+    link: '/authed/parent-learning',
     children: [
       { label: 'Blogs', link: '/authed/content', queryParams: { type: 'ARTICLE' } },
       { label: 'Quizzes', link: '/authed/content', queryParams: { type: 'QUIZ' } },
@@ -75,6 +80,7 @@ const PARENT_NAV_ITEMS: WebNavItem[] = [
   },
   {
     label: 'Shop',
+    link: '/authed/school-store',
     children: [
       { label: 'School Uniforms', link: '/authed/school-store', queryParams: { category: 'School Uniforms' } },
       { label: 'Textbook', link: '/authed/school-store', queryParams: { category: 'Textbook' } },
@@ -85,6 +91,7 @@ const PARENT_NAV_ITEMS: WebNavItem[] = [
   },
   {
     label: 'EduHub Listings',
+    link: '/authed/education',
     children: [
       { label: 'Tutor', link: '/authed/tutors' },
       { label: 'Academy', link: '/authed/academies' },
@@ -209,19 +216,34 @@ export class WebNavComponent implements OnInit, OnDestroy {
     this.openMenu = this.openMenu === label ? null : label;
   }
 
+  openPrimaryNav(item: WebNavItem, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!item.link) {
+      this.toggleMenu(item.label, event);
+      return;
+    }
+
+    this.closeMenu();
+    void this.router.navigateByUrl(item.link);
+  }
+
   closeMenu(): void {
     this.openMenu = null;
   }
 
   isNavActive(item: WebNavItem): boolean {
     const path = this.router.url.split(/[?#]/)[0];
-    if (item.link)
-      return path === item.link || path.startsWith(`${item.link}/`);
-    return Boolean(
+    const directMatch = Boolean(
+      item.link && (path === item.link || path.startsWith(`${item.link}/`)),
+    );
+    const childMatch = Boolean(
       item.children?.some(
         (child) => path === child.link || path.startsWith(`${child.link}/`),
       ),
     );
+    return directMatch || childMatch;
   }
 
   goToNotifications(): void {

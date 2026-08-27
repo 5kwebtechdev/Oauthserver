@@ -1,4 +1,4 @@
-<div class="datepicker-wrapper">
+<div #datepickerWrapper class="datepicker-wrapper">
   <input type="text" [attr.placeholder]="placeholder"
     [value]="startDate ? (type === 'range' && endDate ? formatDisplayDate(startDate) + ' - ' + formatDisplayDate(endDate) : formatDisplayDate(startDate)) : ''"
     (click)="openCalendar($event)" readonly />
