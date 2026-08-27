@@ -170,9 +170,9 @@
                               src="assets/figma/parent-child-learning/coin.webp" alt="Bonus coins">{{ bonus }}</span>
                         </ng-container>
                       </div>
-                      <button *ngIf="!isParentItemAssigned(item) || getParentItemStatus(item) === 'completed' || item.type === 'masterclass'"
-                        type="button" (click)="onParentLearningAction(item)"
-                        [disabled]="isParentCourseAssigning(item) || (item.type === 'masterclass' && isParentItemAssigned(item))"
+                      <button type="button" (click)="onParentLearningAction(item)"
+                        [class.parent-learning-card-item__action--assigned]="isParentItemAssigned(item) && getParentItemStatus(item) !== 'completed'"
+                        [disabled]="isParentCourseAssigning(item) || (isParentItemAssigned(item) && getParentItemStatus(item) !== 'completed')"
                         [attr.aria-busy]="isParentCourseAssigning(item)">
                         {{ isParentCourseAssigning(item) ? 'Assigning...' : getParentActionLabel(item) }}
                         <ng-container *ngIf="getParentItemStatus(item) === 'pending' && !isParentItemAssigned(item)">

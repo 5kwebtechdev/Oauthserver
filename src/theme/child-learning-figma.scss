@@ -305,7 +305,8 @@
 
 .child-learning-tabs {
 	width: calc(100% - 32px);
-	height: 66px;
+	height: 74px;
+	min-height: 74px;
 	display: flex;
 	margin: 0 16px;
 	padding: 2px;
@@ -325,14 +326,15 @@
 .child-learning-tab {
 	width: 0;
 	min-width: 0;
-	height: 62px;
+	height: 70px;
 	flex: 1 1 0;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 2px;
-	padding: 8px 6px;
+	gap: 4px;
+	padding: 5px 6px;
+	box-sizing: border-box;
 	border: 0;
 	border-radius: 8px;
 	background: transparent;
@@ -344,7 +346,12 @@
 	appearance: none;
 	cursor: pointer;
 
-	> span:last-child { white-space: nowrap; }
+	> span:last-child {
+		display: block;
+		min-height: 18px;
+		line-height: 18px;
+		white-space: nowrap;
+	}
 }
 
 .child-learning-tab--active {
@@ -353,16 +360,22 @@
 }
 
 .child-learning-tab__icon {
-	width: 34px;
-	height: 24px;
+	width: 42px;
+	height: 32px;
+	flex: 0 0 32px;
 	display: grid;
 	place-items: center;
 	overflow: hidden;
+	line-height: 0;
 
 	img {
 		width: 100%;
 		height: 100%;
+		max-width: none;
+		max-height: none;
+		display: block;
 		object-fit: contain;
+		object-position: center;
 	}
 }
 
@@ -904,7 +917,9 @@
 	}
 
 	.child-learning-tab__icon {
-		width: 30px;
+		width: 34px;
+		height: 26px;
+		flex-basis: 26px;
 	}
 
 	.child-category-grid {

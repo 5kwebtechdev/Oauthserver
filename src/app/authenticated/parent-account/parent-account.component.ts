@@ -402,6 +402,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
         const item = event?.item;
         const raw = item?.rawData ?? item;
+        const alreadyAssigned = raw?.alreadyAssignedToThisUser === true
+            || raw?.alreadyAssignedToThisUser === 1
+            || String(raw?.alreadyAssignedToThisUser).trim().toLowerCase() === 'true';
+        if (alreadyAssigned) return;
         const type = String(item?.type || raw?.category || '').trim().toLowerCase();
         const isArticle = type === 'article';
         const contentId = Number(
@@ -431,6 +435,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                     const assignment = response as any;
                     item.rawData = {
                         ...(raw && typeof raw === 'object' ? raw : {}),
+                        alreadyAssignedToThisUser: true,
                         assignedToChild: true,
                         assignedAt: assignment?.assignedAt,
                         extraCoinsByParent: assignment?.extraCoinsByParent ?? extraCoinsByParent

@@ -383,10 +383,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   getParentActionLabel(item: LearningCardData): string {
-    if (item.type === 'masterclass' && this.isParentItemAssigned(item)) return 'Assigned';
     const status = this.getParentItemStatus(item);
     if (status === 'completed') return 'View';
-    return this.isParentItemAssigned(item) ? 'View' : 'Assign';
+    return this.isParentItemAssigned(item) ? 'Already Assigned' : 'Assign';
   }
 
   /** The "easy" green badge styling should also cover Beginner-level items. */
@@ -430,7 +429,14 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   isParentItemAssigned(item: LearningCardData): boolean {
     const raw = item.rawData as any;
     const status = String(raw?.userLearningStatus || raw?.assignmentStatus || '').toUpperCase();
-    return raw?.assignedToChild === true || raw?.assigned === true || !!raw?.assignedAt || status === 'ASSIGNED';
+    const alreadyAssignedToThisUser = raw?.alreadyAssignedToThisUser === true
+      || raw?.alreadyAssignedToThisUser === 1
+      || String(raw?.alreadyAssignedToThisUser).trim().toLowerCase() === 'true';
+    return alreadyAssignedToThisUser
+      || raw?.assignedToChild === true
+      || raw?.assigned === true
+      || !!raw?.assignedAt
+      || status === 'ASSIGNED';
   }
 
   isParentCourseAssigning(item: LearningCardData): boolean {
@@ -465,7 +471,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       this.toastService.error('Select a child before assigning this challenge.');
       return;
     }
-    if (this.isParentCourseAssigning(item)) return;
+    if (this.isParentCourseAssigning(item) || this.isParentItemAssigned(item)) return;
 
     const extraCoinsByParent = this.getParentAssignmentCoins(item);
     this.assigningCourseIds.add(String(item.id));
@@ -479,6 +485,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
                   ...content,
                   rawData: {
                     ...(content.rawData as Record<string, unknown>),
+                    alreadyAssignedToThisUser: true,
                     assignedToChild: true,
                     assignedAt: response.assignedAt,
                     extraCoinsByParent: response.extraCoinsByParent ?? extraCoinsByParent,
@@ -504,7 +511,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       this.toastService.error('Select a child before assigning this article.');
       return;
     }
-    if (this.isParentCourseAssigning(item)) return;
+    if (this.isParentCourseAssigning(item) || this.isParentItemAssigned(item)) return;
 
     const extraCoinsByParent = this.getParentAssignmentCoins(item);
     this.assigningCourseIds.add(String(item.id));
@@ -518,6 +525,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
                   ...content,
                   rawData: {
                     ...(content.rawData as Record<string, unknown>),
+                    alreadyAssignedToThisUser: true,
                     assignedToChild: true,
                     assignedAt: response.assignedAt,
                     extraCoinsByParent: response.extraCoinsByParent ?? extraCoinsByParent,

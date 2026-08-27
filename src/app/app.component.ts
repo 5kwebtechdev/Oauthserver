@@ -36,9 +36,14 @@ import { AuthService as CoreAuthService } from './core/services/auth.service';
   standalone: false,
 })
 export class AppComponent implements OnInit, OnDestroy {
-  loading = false;
   toast$: Observable<Toast | null>;
-  private _navToken?: string;
+  /**
+   * A router can start a redirect before the navigation it replaces emits
+   * NavigationCancel. Keep one loader token per navigation id so a late
+   * cancel/end event can never release (or overwrite) another navigation's
+   * token and leave the old one active forever.
+   */
+  private readonly navigationLoaderTokens = new Map<number, string>();
   private badgeSubscription = new Subscription();
   private badgeSocketSubscribed = false;
   private activeBadgeToken: string | null = null;
@@ -202,17 +207,11 @@ export class AppComponent implements OnInit, OnDestroy {
         const skipNavigationLoader = routePath === '/home/reset-password';
 
         if (skipNavigationLoader) {
-          if (this._navToken) {
-            this.loadingService.hide(this._navToken);
-            this._navToken = undefined;
-          }
-          this.loading = false;
           return;
         }
 
-        // start nav loader (returns token)
-        this._navToken = this.loadingService.show(undefined, { delayMs: 80, minVisibleMs: 120 });
-        this.loading = true;
+        const token = this.loadingService.show(undefined, { delayMs: 80, minVisibleMs: 120 });
+        this.navigationLoaderTokens.set(event.id, token);
       }
       if (event instanceof NavigationEnd) {
         const screen = event.urlAfterRedirects.split('?')[0];
@@ -222,16 +221,11 @@ export class AppComponent implements OnInit, OnDestroy {
         this.ensureBadgeNotificationsActive(event.urlAfterRedirects);
       }
       if (event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError) {
-        // hide nav loader immediately
-        if (this._navToken) {
-          this.loadingService.hide(this._navToken);
-          this._navToken = undefined;
+        const token = this.navigationLoaderTokens.get(event.id);
+        if (token) {
+          this.loadingService.hide(token);
+          this.navigationLoaderTokens.delete(event.id);
         }
-
-        // Wait a bit longer to respect minVisibleMs, then hide the loading indicator
-        setTimeout(() => {
-          this.loading = false;
-        }, 150);
 
         // Extra safety: if navigation failed, ensure loader is reset
         if (event instanceof NavigationError) {
@@ -259,6 +253,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.navigationLoaderTokens.forEach(token => this.loadingService.hide(token));
+    this.navigationLoaderTokens.clear();
     this.badgeSubscription.unsubscribe();
     this.badgeSocketService.disconnect();
     window.removeEventListener('family-monitoring-changed', this.monitoringStateListener);

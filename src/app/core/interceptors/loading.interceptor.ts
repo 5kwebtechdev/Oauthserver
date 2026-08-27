@@ -12,20 +12,32 @@ export class LoadingInterceptor implements HttpInterceptor {
     constructor(private loading: LoadingService) { }
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        const skip = req.headers.has('x-skip-loading') || req.headers.has('X-Skip-Loading');
+        const explicitSkip = req.headers.has('x-skip-loading');
+        const explicitShow = req.headers.has('x-show-loading');
+        const passiveRequest = req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS';
+        const skip = explicitSkip || (passiveRequest && !explicitShow);
+
+        // Loader-control headers are internal UI hints. Always remove them
+        // before forwarding the request so they cannot cause a CORS preflight.
+        const cleanRequest = req.clone({
+            headers: req.headers
+                .delete('x-skip-loading')
+                .delete('x-show-loading')
+        });
+
         if (skip) {
-            // This header is only an instruction for the app. Do not forward it
-            // to the API, where it can trigger an unnecessary CORS preflight.
-            return next.handle(req.clone({
-                headers: req.headers.delete('x-skip-loading')
-            }));
+            // GET/HEAD calls are passive screen data and background refreshes.
+            // Navigation already has its own loader, so showing another global
+            // blocking overlay here made cached Home views restart the spinner
+            // on scroll, focus and back navigation.
+            return next.handle(cleanRequest);
         }
 
         const message = req.headers.get('x-loading-message') ?? undefined;
 
         const token = this.loading.show(message, { delayMs: 120, minVisibleMs: 200 });
 
-        return next.handle(req).pipe(
+        return next.handle(cleanRequest).pipe(
             // Add timeout to prevent stuck loaders on Android
             timeout(this.REQUEST_TIMEOUT),
             catchError((error) => {

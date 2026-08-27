@@ -8,7 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import { FooterComponent } from '../../footer/footer.component';
 import { LearningCardData } from '../../../models/learning.models';
 import { LearningService } from '../../../services/learning.service';
-import { ProfileStoreService } from '../../../services/profile-store.service';
+import { AuthService } from '../../../services/auth.service';
 
 type ParentLearningCategory = 'blogs' | 'quizzes';
 
@@ -61,18 +61,20 @@ export class ParentLearningListingComponent implements OnInit, OnDestroy {
   };
   private readonly loadedCategories = new Set<ParentLearningCategory>();
   private readonly destroy$ = new Subject<void>();
-  private selectedChildId: string | number | null = null;
+  private parentUserId: string | number | null = null;
 
   constructor(
     private readonly learningService: LearningService,
-    private readonly profileStore: ProfileStoreService,
+    private readonly authService: AuthService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly location: Location
   ) {}
 
   ngOnInit(): void {
-    this.selectedChildId = this.profileStore.getSelectedChildSync()?.id ?? null;
+    // This page is the parent's own learning area. A child can remain selected
+    // on Parent Home, but that dashboard state must never scope these requests.
+    this.parentUserId = this.authService.getUserId();
     this.selectedCategory = this.resolveInitialCategory();
     this.persistCategory(this.selectedCategory);
     this.loadSelectedCategory();
@@ -213,7 +215,8 @@ export class ParentLearningListingComponent implements OnInit, OnDestroy {
     const extras = {
       state: {
         source,
-        selectedChildId: this.selectedChildId,
+        forUserId: this.parentUserId,
+        ownProfile: true,
         category: this.selectedCategory
       }
     };
@@ -276,8 +279,8 @@ export class ParentLearningListingComponent implements OnInit, OnDestroy {
 
   private getCategoryRequest(category: ParentLearningCategory): Observable<LearningCardData[]> {
     return category === 'blogs'
-      ? this.learningService.fetchArticleCards(false)
-      : this.learningService.fetchQuizCards(false);
+      ? this.learningService.fetchArticleCards(false, this.parentUserId)
+      : this.learningService.fetchQuizCards(false, this.parentUserId);
   }
 
   private resolveInitialCategory(): ParentLearningCategory {

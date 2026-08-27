@@ -57,25 +57,26 @@
         *ngIf="secondaryArticleContent" [innerHTML]="secondaryArticleContent">
       </section>
 
-      <section class="learning-details-related" *ngIf="relatedQuiz">
+      <section class="learning-details-related" *ngIf="relatedChallenges.length">
         <h2>Since you read this, try these</h2>
-        <button type="button" class="learning-details-related__card" (click)="openRelatedQuiz()"
-          [attr.aria-label]="'Open ' + relatedQuiz.title">
+        <button *ngFor="let relatedChallenge of relatedChallenges; trackBy: trackRelatedChallenge"
+          type="button" class="learning-details-related__card" (click)="openRelatedChallenge(relatedChallenge)"
+          [attr.aria-label]="'Open ' + relatedChallenge.title">
           <span class="learning-details-related__image">
-            <img *ngIf="hasRelatedImage()" [src]="relatedQuiz.image" [alt]="relatedQuiz.title"
+            <img *ngIf="hasRelatedImage(relatedChallenge)" [src]="relatedChallenge.image" [alt]="relatedChallenge.title"
               (error)="hideBrokenImage($event)">
           </span>
           <span class="learning-details-related__body">
-            <small class="learning-details-related__difficulty" *ngIf="getRelatedDifficulty() as difficulty">
+            <small class="learning-details-related__difficulty" *ngIf="getRelatedDifficulty(relatedChallenge) as difficulty">
               {{ difficulty }}
             </small>
-            <strong>{{ relatedQuiz.title }}</strong>
+            <strong>{{ relatedChallenge.title }}</strong>
             <span class="learning-details-related__meta">
               <span>
                 <img src="assets/figma/learning-details/coin.webp" alt="" aria-hidden="true">
-                {{ relatedQuiz.coins || 0 }}
+                {{ relatedChallenge.coins || 0 }}
               </span>
-              <span *ngIf="getRelatedDuration() as duration">
+              <span *ngIf="getRelatedDuration(relatedChallenge) as duration">
                 <img src="assets/figma/learning-details/schedule.svg" alt="" aria-hidden="true">
                 {{ duration }}
               </span>

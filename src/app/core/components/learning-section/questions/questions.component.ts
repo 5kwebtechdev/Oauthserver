@@ -179,6 +179,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     // Submission state
     isSubmitting = false;
     private returnUrl = '/authed/content';
+    private profileUserId: string | number | null = null;
 
     constructor(
         private router: Router,
@@ -194,7 +195,10 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         const stateChallenge: Challenge | undefined =
             nav?.extras?.state?.['challenge'] ?? (history as any)?.state?.['challenge'];
         const source = nav?.extras?.state?.['source'] ?? (history as any)?.state?.['source'];
-        if (typeof source === 'string' && source.startsWith('/authed/content')) {
+        const ownProfile = nav?.extras?.state?.['ownProfile'] ?? (history as any)?.state?.['ownProfile'];
+        const stateUserId = nav?.extras?.state?.['forUserId'] ?? (history as any)?.state?.['forUserId'];
+        this.profileUserId = ownProfile === true && stateUserId != null ? stateUserId : null;
+        if (typeof source === 'string' && source.startsWith('/authed/')) {
             this.returnUrl = source;
         }
 
@@ -217,7 +221,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         }
 
         // Fallback: fetch from API (e.g. direct URL navigation or missing state)
-        this.learningService.fetchChallengeById(challengeId).subscribe({
+        this.learningService.fetchChallengeById(challengeId, this.profileUserId).subscribe({
             next: (challenge) => {
                 if (!challenge) {
                     this.router.navigate(['/authed/content']);
@@ -688,7 +692,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         console.log('JSON payload:', JSON.stringify(payload, null, 2));
 
         // Use the learning service to submit with the new format
-        this.learningService.submitChallengeNewFormat(this.challenge.challengeId, payload).subscribe({
+        this.learningService.submitChallengeNewFormat(this.challenge.challengeId, payload, this.profileUserId).subscribe({
             next: (response) => {
                 console.log('Submission successful:', response);
                 this.petAgeService.recordActivity(this.challenge?.category === 'QUIZ' ? 'quizzes' : 'puzzles');
@@ -785,7 +789,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
         this.isHintLoading = true;
 
-        this.learningService.useHint(currentQuestion.id).subscribe({
+        this.learningService.useHint(currentQuestion.id, this.profileUserId).subscribe({
             next: (response) => {
                 this.isHintLoading = false;
                 this.hintErrorText = '';
@@ -828,7 +832,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         // truly restarts (useful when questions are randomized server-side).
         const challengeId = this.challenge?.challengeId;
         if (challengeId) {
-            this.learningService.fetchChallengeById(challengeId).subscribe({
+            this.learningService.fetchChallengeById(challengeId, this.profileUserId).subscribe({
                 next: (challenge) => {
                     this.challenge = challenge;
                     // Reinitialize quiz state from fresh challenge data
