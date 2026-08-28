@@ -98,6 +98,14 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public userDays: number = 0;
   public userBadges: number = 0;
   public homeTimePeriod: HomeTimePeriod = 'morning';
+
+  public get greetingPeriod(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
+
   // currently selected mood
   public selectedMood: string | null = null;
   // Pet message and mood
@@ -446,7 +454,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(profile => {
         if (profile) {
-          if (!this.userName) {
+          const profileUsername = profile.username ?? profile.userName ?? profile.avatarName;
+          if (String(profileUsername || '').trim()) {
+            this.userName = String(profileUsername).trim();
+          } else if (!this.userName) {
             this.userName = this.resolveGreetingUsername(profile);
           }
           if (!this.userAvatarUrl && profile.avatarUrl) {
@@ -1093,7 +1104,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
    * fallback until the profile is refreshed.
    */
   private resolveGreetingUsername(user: any): string {
-    const username = user?.username ?? user?.userName;
+    const username = user?.username
+      ?? user?.userName
+      ?? user?.avatarName
+      ?? user?.avatar?.avatarName;
     return String(username || user?.name || '').trim();
   }
 

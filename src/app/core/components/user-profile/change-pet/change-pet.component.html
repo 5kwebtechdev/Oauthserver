@@ -2,9 +2,10 @@
   <superme-navigator heading="Change your pet" backIcon="arrowSvg"></superme-navigator>
 
   <div class="change-pet-container">
-    <swiper-container slides-per-view="1.2" centered-slides="true" space-between="10" grab-cursor="true"
+    <swiper-container class="change-pet-carousel" slides-per-view="1.12" centered-slides="true" space-between="14"
+      grab-cursor="true" [breakpoints]="swiperBreakpoints"
       [attr.initial-slide]="selectedIndex"
-      (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl [style]="{padding: '0 0 24px 0', height: '67vh'}">
+      (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl>
       <swiper-slide *ngFor="let pet of pets; let i = index">
         <div class="pet-card d-flex flex-column" [class.pet-card--current]="isCurrentPet(i)">
           <span class="pet-card__current-badge" *ngIf="isCurrentPet(i)">
@@ -14,7 +15,7 @@
           <h4>{{pet.displayName}}</h4>
           <p>{{pet.text[0]}}</p>
           <p>{{pet.text[1]}}</p>
-          <img [src]="pet.image" alt="" />
+          <img [src]="pet.image" [alt]="pet.displayName" />
         </div>
       </swiper-slide>
     </swiper-container>
