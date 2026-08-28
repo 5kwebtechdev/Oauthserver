@@ -22,6 +22,10 @@ export class ChangePetComponent implements AfterViewInit, OnInit, OnDestroy {
   pets: any[] = [];
   currentIndex = 0;
   selectedIndex = 0;
+  readonly swiperBreakpoints = {
+    480: { slidesPerView: 1.45, spaceBetween: 16 },
+    768: { slidesPerView: 2.15, spaceBetween: 20 },
+  };
   private resizeObserver?: ResizeObserver;
 
   constructor(private modalCtrl: ModalController, private petAgeService: PetAgeService) { }

@@ -66,6 +66,15 @@ button {
   text-decoration: none;
 }
 
+.web-header__brand-label {
+  display: none;
+  color: #282527;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .web-header__logo {
   display: block;
   width: 64px;
@@ -657,6 +666,16 @@ button {
     gap: clamp(12px, 1.8vw, 24px);
   }
 
+  .web-header__brand {
+    width: auto;
+    flex-basis: auto;
+    gap: 8px;
+  }
+
+  .web-header__brand-label {
+    display: inline-block;
+  }
+
   .web-header__nav,
   .web-header--parent .web-header__nav {
     width: auto;
@@ -691,9 +710,9 @@ button {
   // Keep these controls content-sized instead of clipping balances/usernames
   // to the fixed mobile/Figma frame widths.
   .web-header__brand {
-    width: 68px;
+    width: auto;
     height: 56px;
-    flex-basis: 68px;
+    flex-basis: auto;
   }
 
   .web-header__logo {
@@ -752,8 +771,8 @@ button {
   }
 
   .web-header__brand {
-    width: 54px;
-    flex-basis: 54px;
+    width: auto;
+    flex-basis: auto;
   }
 
   .web-header__logo {

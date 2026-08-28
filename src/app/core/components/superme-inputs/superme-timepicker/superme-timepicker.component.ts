@@ -1,10 +1,14 @@
 import {
   Component,
+  Inject,
   forwardRef,
   Input,
   ViewChild,
   ElementRef,
+  OnDestroy,
 } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Capacitor } from '@capacitor/core';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -26,7 +30,7 @@ type WheelField = 'hour' | 'minute' | 'period';
   ],
   standalone: false,
 })
-export class SupermeTimepickerComponent implements ControlValueAccessor {
+export class SupermeTimepickerComponent implements ControlValueAccessor, OnDestroy {
   @Input() disabled = false;
   @Input() placeholder: string = 'Time';
   // Label shown in the popup title as "Set {label}" (e.g. "Start Time").
@@ -41,6 +45,7 @@ export class SupermeTimepickerComponent implements ControlValueAccessor {
   @Input() quickDurations: number[] | null = null;
 
   @ViewChild('popup') popupRef!: ElementRef;
+  @ViewChild('overlay') overlayRef?: ElementRef<HTMLDivElement>;
   @ViewChild('hourWheel') hourWheelRef?: ElementRef<HTMLDivElement>;
   @ViewChild('minuteWheel') minuteWheelRef?: ElementRef<HTMLDivElement>;
   @ViewChild('periodWheel') periodWheelRef?: ElementRef<HTMLDivElement>;
@@ -62,6 +67,8 @@ export class SupermeTimepickerComponent implements ControlValueAccessor {
 
   onChange: any = () => {};
   onTouched: any = () => {};
+
+  constructor(@Inject(DOCUMENT) private readonly document: Document) {}
 
   get timeString(): string {
     const h = this.selectedHour.toString().padStart(2, '0');
@@ -137,7 +144,22 @@ export class SupermeTimepickerComponent implements ControlValueAccessor {
     this.onTouched();
 
     // Wait for the popup to render (it's behind *ngIf) before measuring/scrolling.
-    setTimeout(() => this.scrollWheelsToCurrentValues(), 0);
+    // On desktop web the activity page sits inside Ionic's scroll/layout tree.
+    // A fixed descendant can therefore use that scroller as its containing block,
+    // placing the bottom of the sheet below the visible browser viewport. Mount the
+    // web overlay at document level so it is genuinely viewport-fixed. Native iOS
+    // and Android retain their existing sheet/safe-area behaviour.
+    setTimeout(() => {
+      this.mountWebOverlayAtDocumentRoot();
+      this.scrollWheelsToCurrentValues();
+    }, 0);
+  }
+
+  ngOnDestroy(): void {
+    const overlay = this.overlayRef?.nativeElement;
+    if (overlay?.parentNode === this.document.body) {
+      overlay.remove();
+    }
   }
 
   cancel() {
@@ -154,6 +176,15 @@ export class SupermeTimepickerComponent implements ControlValueAccessor {
   // so the resulting synthetic 'scroll' events don't get mistaken for a real
   // user pick and commit a spurious onChange before the user has touched anything.
   private isProgrammaticScroll = false;
+
+  private mountWebOverlayAtDocumentRoot(): void {
+    if (Capacitor.getPlatform() !== 'web') return;
+
+    const overlay = this.overlayRef?.nativeElement;
+    if (overlay && overlay.parentNode !== this.document.body) {
+      this.document.body.appendChild(overlay);
+    }
+  }
 
   private scrollWheelsToCurrentValues() {
     this.isProgrammaticScroll = true;

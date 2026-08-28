@@ -1073,6 +1073,7 @@ ion-content {
   }
 
   .user-avatar {
+    --avatar-size: 100%;
     width: 48px;
     height: 48px;
 
@@ -1080,9 +1081,26 @@ ion-content {
       display: grid;
       place-items: center;
       overflow: hidden;
+      padding: 0;
       border: 2px solid #8B8DCB;
       border-radius: 50%;
       background: #FFFFFF;
+      box-sizing: border-box;
+    }
+
+    app-img {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border: 0;
+      border-radius: 50%;
+      background: #EAF7F2;
+      box-sizing: border-box;
+    }
+
+    ::ng-deep app-img .sk-img {
+      object-position: center;
+      transform: none;
     }
   }
 
@@ -1106,6 +1124,10 @@ ion-content {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .user-name--web {
+    display: none;
   }
 
   .user-subtitle {
@@ -1530,8 +1552,72 @@ footer {
     padding-inline: 0 !important;
   }
 
-  .mobile-chrome {
+  app-footer.mobile-chrome {
     display: none !important;
+  }
+
+  // Keep the identity/greeting row visible for Self and Child on web, matching
+  // the Parent home. The persistent navbar provides navigation, but it does
+  // not replace this role-specific welcome context.
+  .profile-content.mobile-chrome {
+    display: block;
+    width: 100%;
+
+    .profile-header {
+      min-height: 64px;
+      padding-inline: 16px;
+    }
+
+    .user-avatar {
+      width: 64px;
+      height: 64px;
+      flex: 0 0 64px;
+    }
+
+    .user-name--mobile {
+      display: none;
+    }
+
+    .user-name--web {
+      display: block;
+      max-width: min(52vw, 520px);
+      color: #282527 !important;
+      font-family: var(--font-heading);
+      font-size: 17px;
+      font-weight: 600 !important;
+      line-height: normal;
+    }
+
+    .user-subtitle {
+      color: #6b656a;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .header-tools .bell-tool {
+      width: 48px;
+      height: 48px;
+
+      .notification-tool-icon {
+        width: 28px;
+        height: 28px;
+      }
+    }
+
+    .header-tools .coin-pill {
+      min-width: 84px;
+      min-height: 48px;
+      padding-inline: 14px;
+
+      .coin-pill-icon {
+        width: 40px;
+        height: 40px;
+      }
+
+      span {
+        font-size: 18px;
+      }
+    }
   }
 
   // The persistent web navigation replaces only the compact mobile greeting

@@ -319,7 +319,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
   async onChangePet() {
     const modal = await this.modalCtrl.create({
       component: ChangePetComponent,
-      componentProps: { currentPetType: this.petAgeService.getCurrentPetType() }
+      componentProps: { currentPetType: this.petAgeService.getCurrentPetType() },
+      cssClass: 'change-pet-modal'
     });
     await modal.present();
     const { data } = await modal.onWillDismiss();

@@ -7,6 +7,7 @@
         aria-label="SuperMe App home"
       >
         <img class="web-header__logo" [src]="logoSrc" alt="SuperMeApp" />
+        <span class="web-header__brand-label">Home</span>
       </a>
 
       <nav class="web-header__nav" aria-label="Primary navigation">
@@ -67,51 +68,5 @@
       </nav>
     </div>
 
-    <div class="web-header__actions">
-      <button
-        type="button"
-        class="web-header__coin-button"
-        aria-label="View coins"
-        (click)="goToCoins()"
-      >
-        <img [src]="coinSrc" alt="" />
-        <span>{{ coins | number }}</span>
-      </button>
-
-      <button
-        *ngIf="!isParent"
-        type="button"
-        class="web-header__icon-button"
-        aria-label="Open notifications"
-        (click)="goToNotifications()"
-      >
-        <img [src]="notificationSrc" alt="" />
-      </button>
-
-      <a
-        class="web-header__profile"
-        routerLink="/authed/user-profile"
-        aria-label="Open profile"
-      >
-        <span class="web-header__avatar">
-          <app-img
-            *ngIf="userAvatarUrl; else avatarInitial"
-            [src]="userAvatarUrl"
-            [alt]="avatarImageName ? avatarImageName : userName + ' avatar'"
-            [circle]="true"
-            objectFit="cover"
-          >
-          </app-img>
-          <ng-template #avatarInitial>
-            <span class="web-header__avatar-initial" aria-hidden="true">{{
-              userInitial
-            }}</span>
-          </ng-template>
-        </span>
-        <span class="web-header__profile-name">{{
-          userName || (isParent ? "Parent" : "User")
-        }}</span>
-      </a>
-    </div>
   </div>
 </header>
