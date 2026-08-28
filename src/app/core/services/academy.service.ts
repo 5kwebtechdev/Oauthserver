@@ -248,9 +248,11 @@ export class AcademyService {
     );
   }
 
-  getCategories(): Observable<AcademyCategory[]> {
+  getCategories(ageOverride?: number | null): Observable<AcademyCategory[]> {
     let params = new HttpParams();
-    const age = this.authService.getCurrentUserAge();
+    const age = ageOverride === undefined
+      ? this.authService.getCurrentUserAge()
+      : ageOverride;
     if (age !== null) {
       params = params.set('age', String(age));
     }

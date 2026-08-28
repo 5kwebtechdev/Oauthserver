@@ -8,6 +8,7 @@ import {
 import { Observable } from 'rxjs';
 import { take, switchMap } from 'rxjs/operators';
 import { ProfileSelectorService } from "../services/profile-selector-service";
+import { ChildInfo } from '../models/child-info.model';
 
 @Injectable()
 export class ProfileSelectorInterceptor implements HttpInterceptor {
@@ -20,6 +21,47 @@ export class ProfileSelectorInterceptor implements HttpInterceptor {
     return id && id.toLowerCase() !== 'nan' && id.toLowerCase() !== 'null'
       ? id
       : null;
+  }
+
+  /**
+   * Keep profile-scoped requests internally consistent. A legacy caller may
+   * already have added the authenticated parent's age before this interceptor
+   * adds/recognises the selected child's forUserId. In that case always
+   * replace it with the selected child's age (preferably derived from DOB).
+   */
+  private applySelectedChildAge(
+    req: HttpRequest<any>,
+    requestUserId: string | null,
+  ): HttpRequest<any> {
+    const child = this.profileSelector.getSelectedChild();
+    const childId = this.validUserId(child?.id);
+    if (!childId || !requestUserId || childId !== requestUserId) return req;
+
+    const age = this.getChildAge(child);
+    const params = age === null
+      ? req.params.delete('age')
+      : req.params.set('age', String(age));
+    return req.clone({ params });
+  }
+
+  private getChildAge(child: ChildInfo | null): number | null {
+    const dateOfBirth = String(child?.dateOfBirth || '').trim();
+    if (dateOfBirth) {
+      const birthDate = new Date(dateOfBirth);
+      if (!Number.isNaN(birthDate.getTime())) {
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDifference = today.getMonth() - birthDate.getMonth();
+        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) age--;
+        if (age >= 0) return age;
+      }
+    }
+
+    const rawAge = child?.age;
+    const age = rawAge === null || rawAge === undefined || String(rawAge).trim() === ''
+      ? Number.NaN
+      : Number(rawAge);
+    return Number.isFinite(age) && age >= 0 ? Math.floor(age) : null;
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -52,7 +94,7 @@ export class ProfileSelectorInterceptor implements HttpInterceptor {
         // checkout for the authenticated parent) must not be overwritten by
         // the child currently selected in the parent dashboard.
         if (explicitUserId) {
-          return next.handle(req);
+          return next.handle(this.applySelectedChildAge(req, explicitUserId));
         }
 
         // If no valid child id selected, forward request unchanged
@@ -71,7 +113,10 @@ export class ProfileSelectorInterceptor implements HttpInterceptor {
         } else {
           // For GET, DELETE, and other methods, add to params
           const newParams = req.params.set('forUserId', idStr as string);
-          const modifiedReq = req.clone({ params: newParams });
+          const modifiedReq = this.applySelectedChildAge(
+            req.clone({ params: newParams }),
+            idStr,
+          );
           return next.handle(modifiedReq);
         }
       })

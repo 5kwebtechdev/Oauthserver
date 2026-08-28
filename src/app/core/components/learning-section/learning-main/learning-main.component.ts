@@ -152,6 +152,15 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     return this.selectedChildId !== null && this.selectedChildId !== undefined;
   }
 
+  /** User context used by every request rendered on this Learning screen. */
+  get learningProfileUserId(): string | number | null {
+    return this.parentView ? this.selectedChildId : this.authService.getUserId();
+  }
+
+  get learningProfileAge(): number | null {
+    return this.parentView ? this.getSelectedChildAge() : this.authService.getCurrentUserAge();
+  }
+
   get parentStatusOptions(): Array<{ id: ParentLearningStatus; label: string; count: number }> {
     return [
       { id: 'pending', label: 'Pending', count: this.getParentStatusCount('pending') },
@@ -252,8 +261,11 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       .pipe(takeUntil(this.destroy$))
       .subscribe(child => {
         const nextId = child?.id ?? null;
+        const previousAge = this.getSelectedChildAge();
+        const nextAge = this.calculateChildAge(child);
         const changed = !this.parentSelectionInitialized
-          || String(nextId ?? '') !== String(this.selectedChildId ?? '');
+          || String(nextId ?? '') !== String(this.selectedChildId ?? '')
+          || nextAge !== previousAge;
 
         this.selectedChild = child;
         this.selectedChildId = nextId;
@@ -591,7 +603,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     const requestChildId = this.selectedChildId;
     if (!categoryName || requestChildId === null || requestChildId === undefined) return;
 
-    this.academyService.getCoursesByCategory(categoryName, null, requestChildId)
+    this.academyService.getCoursesByCategory(categoryName, this.getSelectedChildAge(), requestChildId)
       .pipe(takeUntil(this.destroy$), takeUntil(this.childRequestCancel$))
       .subscribe({
         next: courses => {
@@ -720,14 +732,20 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   private getCategoryRequest(tab: LearningCategoryTab): Observable<LearningCategorySummary[]> {
     switch (tab) {
       case 'quizzes':
-        return this.learningService.fetchChallengeCategorySummary('QUIZ', !this.parentView, this.selectedChildId);
+        return this.learningService.fetchChallengeCategorySummary(
+          'QUIZ', !this.parentView, this.learningProfileUserId, this.learningProfileAge
+        );
       case 'articles':
-        return this.learningService.fetchArticleCategories(!this.parentView, this.selectedChildId);
+        return this.learningService.fetchArticleCategories(
+          !this.parentView, this.learningProfileUserId, this.learningProfileAge
+        );
       case 'masterclass':
         return this.fetchMasterClassCategories();
       case 'puzzles':
       default:
-        return this.learningService.fetchChallengeCategorySummary('PUZZLE', !this.parentView, this.selectedChildId);
+        return this.learningService.fetchChallengeCategorySummary(
+          'PUZZLE', !this.parentView, this.learningProfileUserId, this.learningProfileAge
+        );
     }
   }
 
@@ -737,7 +755,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
    * challenge categories endpoint.
    */
   private fetchMasterClassCategories(): Observable<LearningCategorySummary[]> {
-    return this.academyService.getCategories().pipe(
+    return this.academyService.getCategories(this.learningProfileAge).pipe(
       map((categories: AcademyCategory[]) => (categories || [])
         .filter(category => (category.status || 'ACTIVE').toUpperCase() === 'ACTIVE')
         .map(category => this.mapAcademyCategoryToSummary(category))),
@@ -1049,9 +1067,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       : this.selectedCategory === 'masterclass' && this.childView
         ? this.authService.getUserId()
         : null;
-    const requestAge = this.selectedCategory === 'masterclass' && !this.parentView
-      ? this.authService.getCurrentUserAge()
-      : null;
+    const requestAge = this.parentView
+      ? this.getSelectedChildAge()
+      : this.authService.getCurrentUserAge();
 
     let request: Observable<LearningCardData[]>;
     if (this.selectedCategory === 'masterclass') {
@@ -1078,7 +1096,8 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
         categoryName,
         this.getSelectedChallengeType(),
         !this.parentView,
-        requestChildId
+        requestChildId,
+        requestAge
       );
     }
 
@@ -1098,12 +1117,19 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   private getSelectedChildAge(): number | null {
-    const directAge = Number(this.selectedChild?.age);
+    return this.calculateChildAge(this.selectedChild);
+  }
+
+  private calculateChildAge(child: ChildInfo | null | undefined): number | null {
+    const rawAge = child?.age;
+    const directAge = rawAge === null || rawAge === undefined || String(rawAge).trim() === ''
+      ? Number.NaN
+      : Number(rawAge);
     if (Number.isFinite(directAge) && directAge >= 0) {
       return Math.floor(directAge);
     }
 
-    const dateOfBirth = String(this.selectedChild?.dateOfBirth || '').trim();
+    const dateOfBirth = String(child?.dateOfBirth || '').trim();
     if (!dateOfBirth) return null;
 
     const birthDate = new Date(dateOfBirth);
