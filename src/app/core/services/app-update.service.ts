@@ -5,6 +5,7 @@ import { Capacitor } from '@capacitor/core';
 import { RemoteConfigService } from './remote-config.service';
 import { PlayStoreUpdateInfo, PlayStoreUpdateService } from './play-store-update.service';
 import { InstalledAppInfoService } from './installed-app-info.service';
+import { APP_STORE_URL } from '../constants/external-links';
 
 export type MobileAppPlatform = 'android' | 'ios';
 export type AppUpdateBlockReason = 'update-required' | 'verification-failed' | null;
@@ -38,7 +39,7 @@ interface CachedUpdateRequirement {
 @Injectable({ providedIn: 'root' })
 export class AppUpdateService {
   private readonly playStoreUrl = 'https://play.google.com/store/apps/details?id=com.superme.app';
-  private readonly appStoreUrl = '';
+  private readonly appStoreUrl = APP_STORE_URL;
   private readonly androidPackageId = 'com.superme.app';
   private readonly updateRequirementCacheKey = 'superme.mandatoryUpdate.v1';
   private readonly remoteConfigTimeoutMs = 5000;
