@@ -154,7 +154,7 @@ describe('AppUpdateService', () => {
     expect(result.updateRequired).toBeFalse();
   });
 
-  it('does not lock iOS users out when the App Store listing is not configured', async () => {
+  it('uses the live App Store listing when the remote URL is blank', async () => {
     spyOn(Capacitor, 'isNativePlatform').and.returnValue(true);
     spyOn(Capacitor, 'getPlatform').and.returnValue('ios');
     installedAppInfo.getInfo.and.resolveTo({ id: 'com.supermeapp.app', name: 'SuperMe', build: '4', version: '1.0.1' });
@@ -167,8 +167,8 @@ describe('AppUpdateService', () => {
 
     const result = await service.checkForUpdate();
 
-    expect(result.updateRequired).toBeFalse();
-    expect(result.storeUrl).toBe('');
+    expect(result.updateRequired).toBeTrue();
+    expect(result.storeUrl).toBe('https://apps.apple.com/us/app/supermeapp/id6781971277');
   });
 
   it('keeps a detected mandatory update locked when a later Play check fails', async () => {

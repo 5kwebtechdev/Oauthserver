@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { Capacitor } from '@capacitor/core';
+import { APP_STORE_URL } from '../../constants/external-links';
 
 interface FooterLink {
   label: string;
@@ -44,6 +45,7 @@ export class DashboardWebFooterComponent implements OnInit {
 
   readonly googlePlayUrl =
     'https://play.google.com/store/apps/details?id=io.ionic.starter';
+  readonly appleStoreUrl = APP_STORE_URL;
   readonly websiteUrl = 'https://supermeapp.com';
   isParent = false;
 
