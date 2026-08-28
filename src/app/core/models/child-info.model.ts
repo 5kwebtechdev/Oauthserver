@@ -36,8 +36,13 @@ export interface ChildInfo {
  * Maps API VibesDisplayResponse to ChildInfo
  */
 export function mapVibeToChildInfo(d: any, avatarUrl: string): ChildInfo {
+  // Family and vibe endpoints do not always return the child fields at the
+  // same level. Normalise the actual child profile first so callers never
+  // have to fall back to the signed-in parent's age.
+  const profile = d?.user ?? d?.profile ?? d?.member ?? d;
   // Extract id from common fields returned by API. Preserve string ids like 'child000'
-  const rawId = d?.userId ?? d?.id ?? d?.assignedTo ?? d?.memberId ?? null;
+  const rawId = d?.userId ?? d?.id ?? d?.assignedTo ?? d?.memberId
+    ?? profile?.userId ?? profile?.id ?? profile?.memberId ?? null;
   let id: string | number | null = null;
   if (rawId !== undefined && rawId !== null) {
     // Normalize numeric-like strings to their string form but avoid 'NaN'
@@ -51,14 +56,30 @@ export function mapVibeToChildInfo(d: any, avatarUrl: string): ChildInfo {
   } else {
     id = null;
   }
-  const parsedAge = Number(d?.age);
-  const dateOfBirth = String(d?.dateOfBirth || d?.dob || '').trim();
+  const rawAge = d?.age ?? d?.childAge ?? profile?.age ?? profile?.childAge;
+  const parsedAge = rawAge === null || rawAge === undefined || String(rawAge).trim() === ''
+    ? Number.NaN
+    : Number(rawAge);
+  const dateOfBirth = String(
+    d?.dateOfBirth
+    ?? d?.dob
+    ?? d?.birthDate
+    ?? profile?.dateOfBirth
+    ?? profile?.dob
+    ?? profile?.birthDate
+    ?? ''
+  ).trim();
+  const ageFromDateOfBirth = calculateAgeFromDateOfBirth(dateOfBirth);
   return {
     id,
-    name: d.userName || 'Child',
+    name: d?.userName || d?.name || profile?.userName || profile?.name || 'Child',
     avatarUrl: avatarUrl || 'assets/figma/avatars/below-11-male-1.webp',
-    relationship: d.relationship || 'Child',
-    age: Number.isFinite(parsedAge) && parsedAge >= 0 ? Math.floor(parsedAge) : undefined,
+    relationship: d?.relationship || profile?.relationship || 'Child',
+    // DOB belongs to the actual member and is more reliable than the age on
+    // aggregate vibe responses, which has previously carried the viewer's
+    // (parent's) age for a selected child row.
+    age: ageFromDateOfBirth
+      ?? (Number.isFinite(parsedAge) && parsedAge >= 0 ? Math.floor(parsedAge) : undefined),
     dateOfBirth: dateOfBirth || undefined,
     mood: d.mood || null,
     coins: d.coins ?? 0,
@@ -79,4 +100,16 @@ export function mapVibeToChildInfo(d: any, avatarUrl: string): ChildInfo {
     emptyStateDescription: d.emptyStateDescription || '',
     completedStateDescription: d.completedStateDescription || ''
   };
+}
+
+function calculateAgeFromDateOfBirth(value: string): number | undefined {
+  if (!value) return undefined;
+  const birthDate = new Date(value);
+  if (Number.isNaN(birthDate.getTime())) return undefined;
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) age--;
+  return age >= 0 ? age : undefined;
 }

@@ -1176,6 +1176,7 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
   @Input() rewardMode: boolean = false;
   @Input() contentMode: 'learning' | 'parenting' = 'learning';
   @Input() forUserId: string | number | null = null;
+  @Input() age: number | null | undefined = undefined;
   /** Opens the dedicated learning listing only for Child or Self accounts. */
   @Input() childSelfLearningViewAll: boolean = false;
   /** Opens the Figma Parenting listing only for Parent accounts. */
@@ -1231,7 +1232,7 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!this.initialized) return;
-    if (changes['forUserId'] || changes['contentMode']) {
+    if (changes['forUserId'] || changes['age'] || changes['contentMode']) {
       this.items = [];
       if (this.contentMode !== 'parenting') this.parentingBlogCount = 0;
       this.loadLatestFromService();
@@ -1391,18 +1392,19 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
     const scopedUserId = this.contentMode === 'parenting'
       ? this.authService.getUserId()
       : this.forUserId;
+    const scopedAge = this.contentMode === 'parenting' ? undefined : this.age;
     const requests: Observable<any[]> = this.contentMode === 'parenting'
       ? forkJoin([
-          this.learningService.fetchArticleCards(true, scopedUserId).pipe(
+          this.learningService.fetchArticleCards(true, scopedUserId, undefined, true).pipe(
             tap(items => this.parentingBlogCount = items.length),
             map(items => this.pickLatest(items))
           ),
-          this.learningService.fetchQuizCards(true, scopedUserId).pipe(map(items => this.pickLatest(items)))
+          this.learningService.fetchQuizCards(true, scopedUserId, undefined, true).pipe(map(items => this.pickLatest(items)))
         ])
       : forkJoin([
-          this.learningService.fetchQuizCards(true, scopedUserId).pipe(map(items => this.pickLatest(items))),
-          this.learningService.fetchPuzzleCards(true, scopedUserId).pipe(map(items => this.pickLatest(items))),
-          this.learningService.fetchArticleCards(true, scopedUserId).pipe(map(items => this.pickLatest(items)))
+          this.learningService.fetchQuizCards(true, scopedUserId, scopedAge).pipe(map(items => this.pickLatest(items))),
+          this.learningService.fetchPuzzleCards(true, scopedUserId, scopedAge).pipe(map(items => this.pickLatest(items))),
+          this.learningService.fetchArticleCards(true, scopedUserId, scopedAge).pipe(map(items => this.pickLatest(items)))
         ]);
 
     requests

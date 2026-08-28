@@ -971,9 +971,38 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         return familyChildren.map(child => {
             const stats = vibeChildren.find(item => String(item.id) === String(child.id));
             return stats
-                ? { ...child, ...stats, name: stats.name || child.name, avatarUrl: stats.avatarUrl || child.avatarUrl }
+                ? {
+                    ...child,
+                    ...stats,
+                    // The family endpoint is authoritative for identity data.
+                    // Vibe snapshots frequently omit age/DOB and must not erase
+                    // them, otherwise Learning can accidentally use parent age.
+                    age: child.age ?? stats.age,
+                    dateOfBirth: child.dateOfBirth || stats.dateOfBirth,
+                    name: stats.name || child.name,
+                    avatarUrl: stats.avatarUrl || child.avatarUrl
+                }
                 : child;
         });
+    }
+
+    get selectedChildAge(): number | null {
+        const rawAge = this.selectedChild?.age;
+        const directAge = rawAge === null || rawAge === undefined || String(rawAge).trim() === ''
+            ? Number.NaN
+            : Number(rawAge);
+        if (Number.isFinite(directAge) && directAge >= 0) return Math.floor(directAge);
+
+        const dateOfBirth = String(this.selectedChild?.dateOfBirth || '').trim();
+        if (!dateOfBirth) return null;
+        const birthDate = new Date(dateOfBirth);
+        if (Number.isNaN(birthDate.getTime())) return null;
+
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDifference = today.getMonth() - birthDate.getMonth();
+        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) age--;
+        return age >= 0 ? age : null;
     }
 
     /** Use parent display when no children */

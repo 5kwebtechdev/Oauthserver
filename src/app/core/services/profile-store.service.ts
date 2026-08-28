@@ -28,9 +28,19 @@ export class ProfileStoreService {
     shareReplay(1)
   );
 
-  /** Emits only on actual selection changes (skips duplicate emissions) */
+  /**
+   * Emits when the selected child or that child's age context changes.
+   *
+   * Family data can arrive after the lighter dashboard/vibe snapshot. If we
+   * compare only the id, subscribers keep the first snapshot (which may not
+   * contain DOB/age) and learning requests can be built with the wrong age.
+   */
   readonly selectionChanged$: Observable<ChildInfo | null> = this.selectedChild$.pipe(
-    distinctUntilChanged((a, b) => String(a?.id) === String(b?.id))
+    distinctUntilChanged((a, b) =>
+      String(a?.id ?? '') === String(b?.id ?? '')
+      && String(a?.age ?? '') === String(b?.age ?? '')
+      && String(a?.dateOfBirth ?? '') === String(b?.dateOfBirth ?? '')
+    )
   );
 
   constructor() {

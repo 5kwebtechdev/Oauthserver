@@ -71,6 +71,9 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() fallbackScreen?: AdScreen;
   /** Optional Figma layout used by screens with a dedicated ad treatment. */
   @Input() variant: 'default' | 'article-details' | 'eduhub-parent' | 'eduhub-inner' | 'parent-learning' | 'lesson' = 'default';
+  /** Optional profile context; parent Learning passes the selected child. */
+  @Input() age: number | null | undefined = undefined;
+  @Input() forUserId: string | number | null | undefined = undefined;
 
   @ViewChild('scrollTrack') scrollTrackRef?: ElementRef<HTMLElement>;
 
@@ -95,7 +98,9 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['screen'] && !changes['screen'].firstChange) {
+    const requestContextChanged = ['screen', 'age', 'forUserId']
+      .some(key => changes[key] && !changes[key].firstChange);
+    if (requestContextChanged) {
       this.loadAds();
       return;
     }
@@ -122,17 +127,22 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     const token = this.authService.getToken();
     if (!token) return;
 
-    const age = this.authService.getCurrentUserAge();
-    if (!age) return;
+    const age = this.age === undefined
+      ? this.authService.getCurrentUserAge()
+      : this.age;
+    if (age === null || !Number.isFinite(Number(age)) || Number(age) < 0) return;
 
     const headers = new HttpHeaders({
       'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
       'x-skip-loading': '1'
     });
 
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('age', String(age))
       .set('screen', screen);
+    if (this.forUserId !== null && this.forUserId !== undefined && String(this.forUserId).trim()) {
+      params = params.set('forUserId', String(this.forUserId));
+    }
 
     this.http.get<AdItem[]>(`${environment.apiUrl}/ads/age`, { headers, params }).subscribe({
       next: (ads) => {

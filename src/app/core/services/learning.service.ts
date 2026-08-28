@@ -82,6 +82,16 @@ export class LearningService {
         }
     }
 
+    /** Resolve age without mixing a selected child's ID with the parent's age. */
+    private resolveRequestAge(ageOverride?: number | null): number | null {
+        if (ageOverride === null) return null;
+        if (ageOverride !== undefined) {
+            const age = Number(ageOverride);
+            return Number.isFinite(age) && age >= 0 ? Math.floor(age) : null;
+        }
+        return this.getUserAge();
+    }
+
     /**
      * Assign a quiz/puzzle challenge to one or more children (parent-only).
      */
@@ -231,14 +241,19 @@ export class LearningService {
      */
     fetchArticles(
         recoverWithEmpty = true,
-        forUserId?: string | number | null
+        forUserId?: string | number | null,
+        ageOverride?: number | null,
+        specificForParent = false
     ): Observable<Article[]> {
         this.articlesLoading$.next(true);
-        const age = this.getUserAge();
+        const age = this.resolveRequestAge(ageOverride);
         let params = new HttpParams();
         if (age != null) params = params.set('age', String(age));
         if (forUserId != null && String(forUserId).trim()) {
             params = params.set('forUserId', String(forUserId));
+        }
+        if (specificForParent) {
+            params = params.set('specificForParent', 'true');
         }
         return this.http.get<Article[] | Record<string, Article[]>>(`${this.apiUrl}/articles`, { headers: this.getHeaders(), params })
             .pipe(
@@ -287,13 +302,18 @@ export class LearningService {
      */
     fetchQuizCards(
         recoverWithEmpty = true,
-        forUserId?: string | number | null
+        forUserId?: string | number | null,
+        ageOverride?: number | null,
+        specificForParent = false
     ): Observable<LearningCardData[]> {
-        const age = this.getUserAge();
+        const age = this.resolveRequestAge(ageOverride);
         let params = new HttpParams();
         if (age != null) params = params.set('age', String(age));
         if (forUserId != null && String(forUserId).trim()) {
             params = params.set('forUserId', String(forUserId));
+        }
+        if (specificForParent) {
+            params = params.set('specificForParent', 'true');
         }
         return this.http.get<Challenge[] | Record<string, Challenge[]>>(`${this.apiUrl}/challenges/quizzes`, { headers: this.getHeaders(), params }).pipe(
             // Defensive against the same wrapped-response shape found on
@@ -313,9 +333,10 @@ export class LearningService {
      */
     fetchPuzzleCards(
         recoverWithEmpty = true,
-        forUserId?: string | number | null
+        forUserId?: string | number | null,
+        ageOverride?: number | null
     ): Observable<LearningCardData[]> {
-        const age = this.getUserAge();
+        const age = this.resolveRequestAge(ageOverride);
         let params = new HttpParams();
         if (age != null) params = params.set('age', String(age));
         if (forUserId != null && String(forUserId).trim()) {
@@ -333,9 +354,11 @@ export class LearningService {
      */
     fetchArticleCards(
         recoverWithEmpty = true,
-        forUserId?: string | number | null
+        forUserId?: string | number | null,
+        ageOverride?: number | null,
+        specificForParent = false
     ): Observable<LearningCardData[]> {
-        return this.fetchArticles(recoverWithEmpty, forUserId).pipe(
+        return this.fetchArticles(recoverWithEmpty, forUserId, ageOverride, specificForParent).pipe(
             map(articles => articles.map(a => this.transformArticleToCard(a)))
         );
     }
@@ -346,12 +369,13 @@ export class LearningService {
     fetchChallengeCategorySummary(
         challengeType: 'QUIZ' | 'PUZZLE',
         recoverWithEmpty = true,
-        forUserId?: string | number | null
+        forUserId?: string | number | null,
+        ageOverride?: number | null
     ): Observable<LearningCategorySummary[]> {
         const url = `${this.apiUrl}/challenges/categories/summary?challengeType=${challengeType}`;
         const type = challengeType === 'QUIZ' ? 'quiz' : 'puzzle';
         let params = new HttpParams();
-        const age = this.getUserAge();
+        const age = this.resolveRequestAge(ageOverride);
         if (age != null) {
             params = params.set('age', String(age));
         }
@@ -390,10 +414,11 @@ export class LearningService {
      */
     fetchArticleCategories(
         recoverWithEmpty = true,
-        forUserId?: string | number | null
+        forUserId?: string | number | null,
+        ageOverride?: number | null
     ): Observable<LearningCategorySummary[]> {
         let params = new HttpParams();
-        const age = this.getUserAge();
+        const age = this.resolveRequestAge(ageOverride);
         if (age != null) {
             params = params.set('age', String(age));
         }
@@ -424,10 +449,11 @@ export class LearningService {
         categoryName: string,
         challengeType?: Challenge['category'],
         recoverWithEmpty = true,
-        forUserId?: string | number | null
+        forUserId?: string | number | null,
+        ageOverride?: number | null
     ): Observable<LearningCardData[]> {
         let params = new HttpParams().set('category', categoryName);
-        const age = this.getUserAge();
+        const age = this.resolveRequestAge(ageOverride);
         if (age != null) {
             params = params.set('age', String(age));
         }

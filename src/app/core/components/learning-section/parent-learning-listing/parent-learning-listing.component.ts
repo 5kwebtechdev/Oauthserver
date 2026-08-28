@@ -279,8 +279,8 @@ export class ParentLearningListingComponent implements OnInit, OnDestroy {
 
   private getCategoryRequest(category: ParentLearningCategory): Observable<LearningCardData[]> {
     return category === 'blogs'
-      ? this.learningService.fetchArticleCards(false, this.parentUserId)
-      : this.learningService.fetchQuizCards(false, this.parentUserId);
+      ? this.learningService.fetchArticleCards(false, this.parentUserId, undefined, true)
+      : this.learningService.fetchQuizCards(false, this.parentUserId, undefined, true);
   }
 
   private resolveInitialCategory(): ParentLearningCategory {

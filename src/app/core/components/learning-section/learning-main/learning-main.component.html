@@ -63,7 +63,8 @@
 
             <ng-container *ngIf="!activeTabLoading && !tabErrors[selectedCategory]">
               <ad-banner class="parent-learning-ad parent-learning-ad--categories" screen="LEARNING"
-                variant="parent-learning"></ad-banner>
+                variant="parent-learning" [age]="learningProfileAge"
+                [forUserId]="learningProfileUserId"></ad-banner>
 
               <div *ngIf="visibleCategoryCards.length === 0" class="parent-screen-state">
                 <img *ngIf="currentPetCuriousImage" [src]="currentPetCuriousImage" [alt]="currentPetCuriousAlt">
@@ -183,7 +184,8 @@
                   </div>
                 </article>
                 <ad-banner *ngIf="i === 2" class="parent-learning-ad" screen="LEARNING"
-                  variant="parent-learning"></ad-banner>
+                  variant="parent-learning" [age]="learningProfileAge"
+                  [forUserId]="learningProfileUserId"></ad-banner>
               </ng-container>
             </div>
 
@@ -305,7 +307,8 @@
 
               <ad-banner *ngIf="selectedCategory !== 'masterclass'"
                 class="child-learning-ad child-learning-ad--categories" screen="LEARNING" fallbackScreen="HOME"
-                variant="parent-learning"></ad-banner>
+                variant="parent-learning" [age]="learningProfileAge"
+                [forUserId]="learningProfileUserId"></ad-banner>
 
               <div *ngIf="visibleCategoryCards.length" class="child-category-grid">
                 <button *ngFor="let category of visibleCategoryCards" type="button" class="child-category-card"
@@ -405,7 +408,8 @@
                 </button>
                 <ad-banner *ngIf="i === 2" class="child-learning-ad"
                   [screen]="selectedCategory === 'articles' ? 'ARTICLES' : 'LEARNING'"
-                  variant="parent-learning"></ad-banner>
+                  variant="parent-learning" [age]="learningProfileAge"
+                  [forUserId]="learningProfileUserId"></ad-banner>
               </ng-container>
             </div>
 
