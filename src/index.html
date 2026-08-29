@@ -19,6 +19,145 @@
 
   <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
 
+  <script>
+    // The mobile builds already provide their own native launch screen. Keep this
+    // instant web loader limited to browser visits such as /app/login and signup.
+    try {
+      var capacitor = window.Capacitor;
+      var isNativeShell = window.location.protocol === 'capacitor:' ||
+        !!(capacitor && typeof capacitor.isNativePlatform === 'function' && capacitor.isNativePlatform());
+      if (isNativeShell) document.documentElement.classList.add('superme-native-shell');
+    } catch (_) {}
+  </script>
+
+  <style>
+    #superme-web-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483647;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(255, 205, 221, .82), transparent 34%),
+        radial-gradient(circle at 84% 24%, rgba(195, 224, 255, .82), transparent 36%),
+        linear-gradient(145deg, #fff8f4 0%, #f1edff 52%, #fff1f6 100%);
+      opacity: 1;
+      visibility: visible;
+      transition: opacity .38s ease, visibility .38s ease;
+      font-family: Fredoka, "Arial Rounded MT Bold", Arial, sans-serif;
+    }
+
+    #superme-web-loader.superme-web-loader--leaving {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .superme-native-shell #superme-web-loader { display: none !important; }
+
+    .superme-loader-orb {
+      position: absolute;
+      width: 19rem;
+      height: 19rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .58);
+      box-shadow: 0 22px 70px rgba(82, 40, 137, .16);
+      animation: superme-orb-pulse 2.1s ease-in-out infinite;
+    }
+
+    .superme-loader-card {
+      position: relative;
+      width: min(88vw, 390px);
+      padding: 34px 28px 26px;
+      text-align: center;
+    }
+
+    .superme-loader-logo {
+      width: 156px;
+      height: auto;
+      filter: drop-shadow(0 9px 12px rgba(80, 44, 132, .15));
+      animation: superme-logo-float 1.7s ease-in-out infinite;
+    }
+
+    .superme-loader-panda {
+      position: absolute;
+      right: -6px;
+      top: 4px;
+      width: 62px;
+      height: auto;
+      transform-origin: 50% 100%;
+      animation: superme-panda-wave 1.25s ease-in-out infinite alternate;
+    }
+
+    .superme-loader-title {
+      margin: 22px 0 6px;
+      color: #33294a;
+      font-size: clamp(21px, 5vw, 28px);
+      font-weight: 650;
+      line-height: 1.2;
+    }
+
+    .superme-loader-copy {
+      margin: 0;
+      color: #736b7c;
+      font-size: 15px;
+    }
+
+    .superme-loader-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .superme-loader-dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: superme-dot-bounce 1s ease-in-out infinite;
+    }
+
+    .superme-loader-dots span:nth-child(1) { background: #7b3fbb; }
+    .superme-loader-dots span:nth-child(2) { background: #e93f76; animation-delay: .13s; }
+    .superme-loader-dots span:nth-child(3) { background: #ff8b36; animation-delay: .26s; }
+
+    .superme-loader-star {
+      position: absolute;
+      color: #f5b51b;
+      font-size: 24px;
+      animation: superme-star-twinkle 1.4s ease-in-out infinite alternate;
+    }
+
+    .superme-loader-star--one { left: 2%; top: 27%; }
+    .superme-loader-star--two { right: 4%; bottom: 25%; animation-delay: .35s; }
+
+    @keyframes superme-logo-float {
+      0%, 100% { transform: translateY(0) rotate(-1deg); }
+      50% { transform: translateY(-9px) rotate(1deg); }
+    }
+    @keyframes superme-panda-wave {
+      from { transform: rotate(-5deg) translateY(2px); }
+      to { transform: rotate(7deg) translateY(-3px); }
+    }
+    @keyframes superme-orb-pulse {
+      0%, 100% { transform: scale(.96); opacity: .75; }
+      50% { transform: scale(1.04); opacity: 1; }
+    }
+    @keyframes superme-dot-bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-8px); }
+    }
+    @keyframes superme-star-twinkle {
+      from { transform: scale(.72) rotate(-8deg); opacity: .45; }
+      to { transform: scale(1.15) rotate(8deg); opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #superme-web-loader * { animation: none !important; }
+    }
+  </style>
+
   <!-- add to homescreen for ios -->
   <meta name="mobile-web-app-capable" content="yes" />
   <!-- "default" = light status bar text on iOS; matches StatusBar.Style.Light set in app.component.ts -->
@@ -30,6 +169,18 @@
 </head>
 
 <body>
+  <div id="superme-web-loader" role="status" aria-live="polite" aria-label="SuperMeApp is loading">
+    <div class="superme-loader-orb" aria-hidden="true"></div>
+    <span class="superme-loader-star superme-loader-star--one" aria-hidden="true">✦</span>
+    <span class="superme-loader-star superme-loader-star--two" aria-hidden="true">✦</span>
+    <div class="superme-loader-card">
+      <img class="superme-loader-panda" src="assets/Images-Pet/Panda-Age1-Happy.png" alt="" aria-hidden="true" />
+      <img class="superme-loader-logo" src="assets/Images-Transparent/SuperMeLogoFinal3.png" alt="SuperMeApp" />
+      <p class="superme-loader-title">Getting your SuperMe space ready!</p>
+      <p class="superme-loader-copy">A little magic is loading&hellip;</p>
+      <div class="superme-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+  </div>
   <app-root></app-root>
 </body>
 <script>

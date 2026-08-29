@@ -14,5 +14,33 @@ try {
   console.warn('Swiper register skipped or failed:', e);
 }
 
+const startupLoader = document.getElementById('superme-web-loader');
+const loaderStartedAt = performance.now();
+
+const hideStartupLoader = () => {
+  if (!startupLoader) return;
+
+  const capacitor = (window as any).Capacitor;
+  const isNativeShell = window.location.protocol === 'capacitor:' ||
+    !!(capacitor?.isNativePlatform?.());
+
+  if (isNativeShell) {
+    startupLoader.remove();
+    return;
+  }
+
+  // Avoid a distracting flash on fast devices while still handing control to
+  // Angular quickly. The loader is removed after its short fade transition.
+  const remaining = Math.max(0, 650 - (performance.now() - loaderStartedAt));
+  window.setTimeout(() => {
+    startupLoader.classList.add('superme-web-loader--leaving');
+    window.setTimeout(() => startupLoader.remove(), 420);
+  }, remaining);
+};
+
 platformBrowserDynamic().bootstrapModule(AppModule)
-  .catch(err => console.log(err));
+  .then(hideStartupLoader)
+  .catch(err => {
+    hideStartupLoader();
+    console.log(err);
+  });

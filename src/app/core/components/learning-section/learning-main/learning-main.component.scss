@@ -1951,3 +1951,233 @@
 		padding-inline: 9px;
 	}
 }
+
+/*
+ * Desktop/tablet web presentation for the SELF learning experience.
+ * Capacitor shells intentionally keep the compact mobile-first layout above.
+ */
+@media (min-width: 768px) {
+	:host-context(html:not(.plt-capacitor)) {
+		ion-content:has(.content-page) {
+			--background: linear-gradient(135deg, #f7f4ff 0%, #fff8f2 46%, #f2fbfc 100%);
+		}
+
+		.content-page {
+			width: min(calc(100% - 48px), 1180px);
+			min-height: calc(100vh - 96px);
+			margin: 26px auto 44px;
+			padding: 24px;
+			border: 1px solid rgba(91, 55, 143, 0.09);
+			border-radius: 32px;
+			background: rgba(255, 255, 255, 0.86);
+			box-shadow: 0 22px 60px rgba(65, 42, 87, 0.1);
+			backdrop-filter: blur(12px);
+		}
+
+		.content-page .content-main {
+			margin: 0;
+		}
+
+		.content-page .content-main .card {
+			min-height: 286px;
+			border-radius: 26px;
+			background-position: center;
+			box-shadow: 0 18px 38px rgba(178, 71, 96, 0.2);
+			isolation: isolate;
+			overflow: hidden;
+		}
+
+		.content-page .content-main .card::after {
+			position: absolute;
+			inset: 0;
+			z-index: 0;
+			background: linear-gradient(90deg, rgba(79, 35, 126, 0.16), transparent 52%, rgba(255, 255, 255, 0.08));
+			content: '';
+			pointer-events: none;
+		}
+
+		.content-page .content-main .card .card-content {
+			z-index: 2;
+			padding: 28px 32px 12px;
+		}
+
+		.content-page .content-main .card .card-title {
+			max-width: 560px;
+			margin: 0;
+			font-size: clamp(24px, 2.5vw, 34px);
+			font-weight: 600;
+			line-height: 1.2;
+			text-shadow: 0 2px 10px rgba(75, 30, 55, 0.18);
+		}
+
+		.content-page .content-main .card .search-row {
+			z-index: 2;
+			width: min(62%, 650px);
+			padding: 18px 0 0 32px;
+		}
+
+		.content-page .content-main .card .search-row .search-input {
+			min-height: 54px;
+			padding: 12px 16px;
+			border-radius: 16px;
+			box-shadow: 0 12px 30px rgba(53, 36, 71, 0.14);
+		}
+
+		.content-page .content-main .card .search-row .search-input input {
+			font-size: 14px;
+		}
+
+		.content-page .content-main .card .cheer-replacement {
+			right: 32px;
+			bottom: 16px;
+			z-index: 2;
+		}
+
+		.content-page .digital-pet {
+			width: 152px;
+			height: 170px;
+			filter: drop-shadow(0 14px 14px rgba(65, 42, 87, 0.2));
+			animation: learning-pet-float 3.8s ease-in-out infinite;
+		}
+
+		.content-page .categories {
+			width: min(760px, 76%);
+			margin: -24px auto 0;
+			padding: 10px 16px;
+			position: relative;
+			z-index: 4;
+			border: 1px solid rgba(107, 101, 106, 0.12);
+			border-radius: 20px;
+			background: rgba(255, 255, 255, 0.96);
+			box-shadow: 0 12px 28px rgba(65, 42, 87, 0.12);
+		}
+
+		.content-page .category {
+			height: 92px;
+			border-radius: 14px;
+			transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+		}
+
+		.content-page .category:hover,
+		.content-page .category:focus-visible {
+			background: #faf4fc;
+			box-shadow: 0 7px 18px rgba(144, 33, 77, 0.1);
+			transform: translateY(-4px);
+			outline: none;
+		}
+
+		.content-page .category.selected {
+			border-bottom-color: #ac2456;
+			background: linear-gradient(145deg, #fff7fa, #f7f1ff);
+			transform: translateY(-3px);
+		}
+
+		.content-page .category .icon {
+			width: 52px;
+			height: 52px;
+		}
+
+		.content-page .category .label {
+			font-size: 13px;
+		}
+
+		.content-page .learning-content {
+			padding: 38px 8px 56px;
+		}
+
+		.content-page .selected-category-header {
+			margin: 0 0 24px;
+			padding: 16px 20px;
+			border-radius: 18px;
+			background: linear-gradient(100deg, #f8f2ff, #fff5f0);
+		}
+
+		.content-page .selected-category-heading h2 {
+			font-size: 26px;
+		}
+
+		.content-page .selected-category-heading p {
+			font-size: 14px;
+		}
+
+		.content-page .category-cards-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 22px;
+		}
+
+		.content-page .learning-category-card {
+			min-height: 244px;
+			padding: 18px;
+			border: 1px solid rgba(225, 82, 124, 0.16);
+			border-bottom: 3px solid #e1527c;
+			border-radius: 20px;
+			box-shadow: 0 10px 24px rgba(71, 49, 77, 0.08);
+			transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+		}
+
+		.content-page .learning-category-card:hover,
+		.content-page .learning-category-card:focus-visible {
+			border-color: rgba(172, 36, 86, 0.34);
+			box-shadow: 0 18px 34px rgba(116, 48, 80, 0.15);
+			transform: translateY(-6px);
+			outline: none;
+		}
+
+		.content-page .category-card-title {
+			font-family: var(--font-heading);
+			font-size: 18px;
+			font-weight: 500;
+		}
+
+		.content-page .category-card-count {
+			font-size: 13px;
+		}
+
+		.content-page .category-card-media {
+			border-radius: 12px;
+		}
+
+		.content-page .cards-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 22px;
+		}
+	}
+}
+
+@media (min-width: 768px) and (max-width: 980px) {
+	:host-context(html:not(.plt-capacitor)) {
+		.content-page {
+			width: calc(100% - 32px);
+			padding: 18px;
+		}
+
+		.content-page .content-main .card .search-row {
+			width: 70%;
+		}
+
+		.content-page .categories {
+			width: 86%;
+		}
+
+		.content-page .category-cards-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:host-context(html:not(.plt-capacitor)) .content-page .digital-pet {
+		animation: none;
+	}
+}
+
+@keyframes learning-pet-float {
+	0%,
+	100% {
+		transform: translateY(0) rotate(-1deg);
+	}
+
+	50% {
+		transform: translateY(-9px) rotate(1deg);
+	}
+}

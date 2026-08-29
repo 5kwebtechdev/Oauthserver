@@ -89,7 +89,12 @@ export class SocialMediaComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.isIos = this.detectAppleDevice() || this.appleSignIn.isDevelopmentMockActive();
+    // Apple sign-in belongs to the native iOS application only. The same
+    // shared component is rendered by login, signup, and password recovery,
+    // so gating it here removes the button consistently from every web flow
+    // without changing the native iOS experience.
+    this.isIos = Capacitor.isNativePlatform()
+      && (this.detectAppleDevice() || this.appleSignIn.isDevelopmentMockActive());
   }
 
   /**

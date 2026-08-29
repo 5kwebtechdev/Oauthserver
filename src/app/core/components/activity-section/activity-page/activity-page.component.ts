@@ -67,6 +67,28 @@ import { RefreshService } from '../../../services/refresh.service';
 
     .child-activity-add:active { transform: scale(.96); }
     .child-activity-add img { height: 24px; width: 24px; }
+
+    @media (min-width: 768px) {
+      :host-context(html:not(.plt-capacitor)) ion-content.planner-activity-page {
+        --background: linear-gradient(135deg, #f5f1ff 0%, #fff8f1 47%, #eefafb 100%);
+      }
+
+      :host-context(html:not(.plt-capacitor)) .child-activity-add {
+        right: max(32px, calc((100vw - 1180px) / 2 + 30px));
+        bottom: 34px;
+        border-radius: 22px;
+        box-shadow: inset -1px -1px 2px #ebe6f5, 0 14px 30px rgba(67, 36, 119, .28);
+        transition: transform 180ms ease, box-shadow 180ms ease;
+      }
+
+      :host-context(html:not(.plt-capacitor)) .child-activity-add:hover,
+      :host-context(html:not(.plt-capacitor)) .child-activity-add:focus-visible {
+        box-shadow: inset -1px -1px 2px #ebe6f5, 0 18px 34px rgba(67, 36, 119, .36);
+        transform: translateY(-4px) rotate(3deg);
+        outline: 3px solid rgba(115, 65, 167, .18);
+        outline-offset: 3px;
+      }
+    }
   `],
   imports: [
     CommonModule,

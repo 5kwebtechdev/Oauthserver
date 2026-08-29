@@ -40,6 +40,14 @@ p,h1,h2,h3,h4,h5,h6, ul {
       radial-gradient(48vw 48vh at 94% 92%, rgba(225, 82, 124, 0.22), transparent 65%),
       linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%) !important;
   }
+
+  // The password step has its own full-page white paint layer. Keep the
+  // form controls white, but let the shared Login/Signup brand wash remain
+  // visible behind the complete Step 3 screen on web.
+  .signup-container.password-layout .pwd-step {
+    min-height: 100dvh;
+    background: transparent !important;
+  }
 }
 
 ion-content {
@@ -1520,6 +1528,180 @@ swiper-slide.swiper-slide-active .pet-card {
 
   .pet-step-next {
     margin-top: 24px;
+  }
+}
+
+/* Web-only pet selection experience.
+ * Capacitor adds `.plt-capacitor` to <html>, so the Android/iOS onboarding
+ * keeps its existing compact carousel while browser users get this wider,
+ * themed presentation. */
+@media (min-width: 768px) {
+  :host-context(html:not(.plt-capacitor)) ion-content.pet-selection-content {
+    --background:
+      radial-gradient(44vw 48vh at 4% 5%, rgba(139, 141, 203, 0.25), transparent 68%),
+      radial-gradient(44vw 48vh at 96% 7%, rgba(246, 172, 114, 0.21), transparent 68%),
+      radial-gradient(46vw 50vh at 8% 96%, rgba(137, 179, 182, 0.22), transparent 68%),
+      radial-gradient(46vw 50vh at 94% 94%, rgba(225, 82, 124, 0.2), transparent 68%),
+      linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 66%, #fbdfe7 100%) !important;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .signup-container.pet-layout {
+    min-height: 100dvh;
+    padding: clamp(24px, 3.2vw, 48px) clamp(24px, 4vw, 64px) !important;
+    background: transparent !important;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-step {
+    width: min(100%, 1240px);
+    min-height: auto;
+    margin: auto;
+    padding: 32px clamp(28px, 4vw, 58px) 40px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 34px;
+    background: rgba(255, 255, 255, 0.84);
+    box-shadow: 0 24px 64px rgba(67, 36, 119, 0.14);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-step-header {
+    margin-top: 0;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-step-header p {
+    font-size: 17px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-step-header h1 {
+    margin-top: 8px;
+    font-size: clamp(32px, 3.2vw, 44px);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-step-progress,
+  :host-context(html:not(.plt-capacitor)) .pet-carousel {
+    width: min(100%, 1080px);
+    max-width: 1080px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-step-progress {
+    height: 6px;
+    margin-top: 22px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-carousel {
+    margin-top: 28px;
+    padding: 4px 4px 12px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-card {
+    height: clamp(390px, 48vh, 510px);
+    border: 2px solid rgba(115, 65, 167, 0.08);
+    border-radius: 30px;
+    background:
+      radial-gradient(circle at 76% 76%, rgba(137, 179, 182, 0.2), transparent 34%),
+      linear-gradient(145deg, #f7f2fa 0%, #fceddf 48%, #edf7f7 100%);
+    box-shadow: 0 10px 28px rgba(67, 36, 119, 0.08);
+    opacity: 0.92;
+    transform: scale(0.985);
+    transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 240ms ease, border-color 240ms ease, filter 240ms ease;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-card:hover {
+    border-color: rgba(115, 65, 167, 0.34);
+    box-shadow: 0 18px 38px rgba(67, 36, 119, 0.16);
+    filter: saturate(1.05);
+    transform: translateY(-6px) scale(1);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-card--selected {
+    border-color: #7341a7;
+    box-shadow: 0 18px 42px rgba(115, 65, 167, 0.22),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.76);
+    transform: translateY(-4px) scale(1);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-card-check {
+    top: 18px;
+    right: 18px;
+    width: 38px;
+    height: 38px;
+    font-size: 17px;
+    box-shadow: 0 6px 14px rgba(67, 36, 119, 0.24);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-card-copy {
+    padding: 30px 34px 0;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-card-copy h2 {
+    font-size: clamp(23px, 2vw, 30px);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-card-copy ul {
+    font-size: clamp(14px, 1.25vw, 17px);
+    line-height: 1.55;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-card-figure {
+    padding-bottom: 20px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-card-art {
+    max-width: 82%;
+    max-height: 300px;
+    transform-origin: center bottom;
+    animation: pet-gentle-float 3.4s ease-in-out infinite;
+  }
+
+  :host-context(html:not(.plt-capacitor)) swiper-slide:nth-child(even) .pet-card-art {
+    animation-delay: -1.2s;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-step-next {
+    width: min(100%, 520px);
+    height: 62px;
+    min-height: 62px;
+    margin-top: 28px;
+    border-radius: 18px;
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 920px) {
+  :host-context(html:not(.plt-capacitor)) .signup-container.pet-layout {
+    padding: 22px !important;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-step {
+    padding: 30px 24px 34px;
+    border-radius: 28px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-card {
+    height: clamp(360px, 48vh, 450px);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .pet-card-copy {
+    padding: 24px 24px 0;
+  }
+}
+
+@keyframes pet-gentle-float {
+  0%, 100% {
+    transform: translateY(0) rotate(-0.5deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host-context(html:not(.plt-capacitor)) .pet-card,
+  :host-context(html:not(.plt-capacitor)) .pet-card-art {
+    animation: none;
+    transition: none;
   }
 }
 
@@ -3376,6 +3558,142 @@ ion-content.details-content.referral-keyboard-open {
   }
 }
 
+/* Web-only final unlock screen. Native Android/iOS keep the compact final
+ * onboarding composition; the browser uses the available canvas instead of
+ * presenting a narrow white strip. */
+@media (min-width: 768px) {
+  :host-context(html:not(.plt-capacitor)) .signup-container.step-5-container.shared-welcome-layout {
+    width: 100%;
+    max-width: none;
+    min-height: 100dvh;
+    margin: 0;
+    padding: clamp(24px, 3.5vw, 52px) clamp(24px, 5vw, 76px) !important;
+    background:
+      radial-gradient(44vw 48vh at 4% 5%, rgba(139, 141, 203, 0.25), transparent 68%),
+      radial-gradient(44vw 48vh at 96% 7%, rgba(246, 172, 114, 0.21), transparent 68%),
+      radial-gradient(46vw 50vh at 8% 96%, rgba(137, 179, 182, 0.22), transparent 68%),
+      radial-gradient(46vw 50vh at 94% 94%, rgba(225, 82, 124, 0.2), transparent 68%),
+      linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 66%, #fbdfe7 100%) !important;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .welcome-page {
+    width: min(100%, 760px);
+    min-height: auto;
+    margin: auto;
+    padding: clamp(28px, 3vw, 40px) clamp(26px, 3.5vw, 44px);
+    gap: 16px !important;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    border-radius: 34px;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: 0 24px 64px rgba(67, 36, 119, 0.14);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .onboarding-image {
+    width: clamp(190px, 18vw, 250px);
+    max-height: 128px;
+    filter: drop-shadow(0 10px 16px rgba(67, 36, 119, 0.12));
+    animation: unlock-logo-float 3.8s ease-in-out infinite;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .welcome-content {
+    width: min(100%, 680px);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .superpower-title {
+    font-family: var(--font-heading, 'Fredoka', sans-serif);
+    font-size: clamp(26px, 2.4vw, 34px);
+    color: #282527;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .superpower-subtitle {
+    margin-top: 8px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .superpower-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(100%, 680px);
+    gap: 12px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .superpower-card {
+    min-height: 68px;
+    padding: 12px 16px;
+    border-color: rgba(115, 65, 167, 0.1);
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(67, 36, 119, 0.07);
+    transition: transform 200ms ease, box-shadow 200ms ease,
+      border-color 200ms ease;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .superpower-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(115, 65, 167, 0.28);
+    box-shadow: 0 14px 28px rgba(67, 36, 119, 0.13);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .superpower-card p {
+    font-size: 15px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .superpower-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .welcome-cta-btn {
+    width: min(100%, 430px) !important;
+    margin-top: 4px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .welcome-cta-btn ::ng-deep .button {
+    min-height: 54px;
+    border-radius: 18px;
+    box-shadow: 0 12px 24px rgba(31, 19, 48, 0.25), inset -2px -2px 2px #fff;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .welcome-cta-btn ::ng-deep .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px rgba(31, 19, 48, 0.3), inset -2px -2px 2px #fff;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 920px) {
+  :host-context(html:not(.plt-capacitor)) .signup-container.step-5-container.shared-welcome-layout {
+    padding: 22px !important;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .welcome-page {
+    padding: 36px 28px;
+    border-radius: 28px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .superpower-list {
+    grid-template-columns: 1fr;
+    width: min(100%, 600px);
+  }
+}
+
+@keyframes unlock-logo-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-7px) scale(1.015); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .onboarding-image,
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .superpower-card,
+  :host-context(html:not(.plt-capacitor)) .shared-welcome-layout .welcome-cta-btn ::ng-deep .button {
+    animation: none;
+    transition: none;
+  }
+}
+
 // ── Redesigned step 0.1 (initial signup) ──
 .signup-step-initial {
   width: 100%;
@@ -4002,6 +4320,42 @@ ion-content.details-content.referral-keyboard-open {
   .signup-container.otp-layout .otp-cell,
   .signup-container.otp-layout .otp-verify-btn {
     transition: none;
+  }
+}
+
+// Web-only signup backdrop, matching the login screen. This final cascade
+// override is intentionally desktop-scoped so native Android/iOS remains
+// exactly as it is, and late step-specific white rules cannot win over it.
+@media (min-width: 768px) {
+  ion-content.auth-static-content.bg-white {
+    --background: linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%) !important;
+
+    &::part(background) {
+      background:
+        radial-gradient(45vw 45vh at 6% 6%, rgba(139, 141, 203, 0.28), transparent 65%),
+        radial-gradient(48vw 48vh at 95% 10%, rgba(246, 172, 114, 0.24), transparent 65%),
+        radial-gradient(55vw 55vh at 50% 48%, rgba(139, 141, 203, 0.18), transparent 60%),
+        radial-gradient(48vw 48vh at 8% 95%, rgba(137, 179, 182, 0.26), transparent 65%),
+        radial-gradient(48vw 48vh at 94% 92%, rgba(225, 82, 124, 0.26), transparent 65%),
+        linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%) !important;
+      background-size: cover !important;
+      background-position: center !important;
+    }
+  }
+
+  .signup-container.signup-entry-layout,
+  .signup-container.signup-entry-layout .signup-step-initial,
+  .signup-container.otp-layout,
+  .signup-container.otp-layout .otp-step {
+    background:
+      radial-gradient(45vw 45vh at 6% 6%, rgba(139, 141, 203, 0.28), transparent 65%),
+      radial-gradient(48vw 48vh at 95% 10%, rgba(246, 172, 114, 0.24), transparent 65%),
+      radial-gradient(55vw 55vh at 50% 48%, rgba(139, 141, 203, 0.18), transparent 60%),
+      radial-gradient(48vw 48vh at 8% 95%, rgba(137, 179, 182, 0.26), transparent 65%),
+      radial-gradient(48vw 48vh at 94% 92%, rgba(225, 82, 124, 0.26), transparent 65%),
+      linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%) !important;
+    background-size: cover !important;
+    background-position: center !important;
   }
 }
 

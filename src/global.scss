@@ -1092,10 +1092,49 @@ body.onboarding-active {
     max-width: 100vw !important;
     margin-left: calc(50% - 50vw) !important;
     margin-right: calc(50% - 50vw) !important;
+    padding-inline: 0 !important;
   }
 
   app-home.ion-page {
     width: 100vw !important;
+    max-width: none !important;
+    margin-inline: 0 !important;
+    padding-inline: 0 !important;
+  }
+}
+
+// The browser login route sits inside Ionic's outer app page and router
+// outlet. Both receive the shared readable-width cap on desktop, so widening
+// only the login component still leaves white gutters. Release every shell
+// layer while this route is active; native apps never receive this body class.
+body.login-web-full-bleed {
+  width: 100%;
+  min-width: 100%;
+  overflow-x: hidden;
+
+  ion-app.ion-page,
+  ion-router-outlet,
+  app-login.ion-page,
+  .app-router-container,
+  .app-router-container > ion-router-outlet {
+    width: 100% !important;
+    max-width: none !important;
+    margin-inline: 0 !important;
+    padding-inline: 0 !important;
+  }
+}
+
+body.signup-web-full-bleed {
+  width: 100%;
+  min-width: 100%;
+  overflow-x: hidden;
+
+  ion-app.ion-page,
+  ion-router-outlet,
+  signup.ion-page,
+  .app-router-container,
+  .app-router-container > ion-router-outlet {
+    width: 100% !important;
     max-width: none !important;
     margin-inline: 0 !important;
     padding-inline: 0 !important;
