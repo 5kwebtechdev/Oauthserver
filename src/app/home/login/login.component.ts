@@ -203,10 +203,18 @@ export class LoginComponent implements OnInit, OnDestroy {
     // uses (body.onboarding-active) or that column cap leaves white gutters
     // down both sides of this page's background regardless of its own CSS.
     document.body.classList.add('onboarding-active');
+
+    const capacitor = (window as any).Capacitor;
+    const isNativeShell = window.location.protocol === 'capacitor:' ||
+      !!(capacitor?.isNativePlatform?.());
+    if (!isNativeShell) {
+      document.body.classList.add('login-web-full-bleed');
+    }
   }
 
   ngOnDestroy(): void {
     document.body.classList.remove('onboarding-active');
+    document.body.classList.remove('login-web-full-bleed');
   }
 
   focusPassword(): void {

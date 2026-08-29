@@ -447,3 +447,238 @@
         }
     }
 }
+
+// ── Responsive web presentation ─────────────────────────────────────────────
+// The installed Android/iOS application keeps the compact mobile composition.
+// On browser/tablet widths the same dynamic content is presented as a focused
+// rewards dashboard instead of stretching the mobile card edge-to-edge.
+@media (min-width: 768px) {
+    :host-context(html:not(.plt-capacitor)) ion-content {
+        --background:
+            radial-gradient(48vw 52vh at 2% 4%, rgba(139, 141, 203, 0.20), transparent 68%),
+            radial-gradient(46vw 48vh at 98% 6%, rgba(246, 172, 114, 0.18), transparent 68%),
+            radial-gradient(48vw 52vh at 8% 98%, rgba(137, 179, 182, 0.17), transparent 68%),
+            radial-gradient(46vw 50vh at 94% 94%, rgba(225, 82, 124, 0.16), transparent 68%),
+            #f9f8fc;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-page {
+        width: min(calc(100% - 48px), 1180px);
+        margin: 0 auto;
+        padding: clamp(24px, 3vw, 42px) 0 72px;
+        box-sizing: border-box;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto auto auto auto;
+        column-gap: clamp(28px, 5vw, 72px);
+        width: 100%;
+        min-height: 360px;
+        padding: clamp(26px, 3vw, 38px) clamp(28px, 4vw, 52px) 30px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.64);
+        border-radius: 34px;
+        background:
+            radial-gradient(circle at 85% 18%, rgba(255, 240, 168, 0.32), transparent 26%),
+            radial-gradient(circle at 12% 90%, rgba(190, 111, 3, 0.24), transparent 38%),
+            linear-gradient(120deg, #b86600 0%, #e99a22 48%, #f4b53b 72%, #c97808 100%);
+        box-shadow: 0 22px 52px rgba(125, 73, 5, 0.20);
+        box-sizing: border-box;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-card::before,
+    :host-context(html:not(.plt-capacitor)) .coin-card::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-card::before {
+        width: 240px;
+        height: 240px;
+        top: -130px;
+        right: 18%;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-card::after {
+        width: 150px;
+        height: 150px;
+        right: -54px;
+        bottom: -60px;
+        background: rgba(67, 36, 119, 0.08);
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-card .header {
+        grid-column: 1 / -1;
+        position: relative;
+        z-index: 1;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-card .header p {
+        font-size: clamp(18px, 1.7vw, 23px);
+    }
+
+    :host-context(html:not(.plt-capacitor)) .robot-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border: 1px solid rgba(255, 255, 255, 0.34);
+        border-radius: 17px;
+        background: rgba(255, 255, 255, 0.14);
+        transition: transform 180ms ease, background 180ms ease;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .robot-link:hover {
+        transform: translateY(-3px) rotate(3deg);
+        background: rgba(255, 255, 255, 0.24);
+    }
+
+    :host-context(html:not(.plt-capacitor)) .robot-icon {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coins {
+        grid-column: 1;
+        align-self: center;
+        z-index: 1;
+        gap: 12px;
+        min-height: 88px;
+        margin-top: 6px;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coins .coin-icon {
+        width: 72px;
+        height: 72px;
+        aspect-ratio: 1;
+        object-fit: contain;
+        filter: drop-shadow(0 8px 12px rgba(120, 61, 0, 0.30));
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coins .coin-value,
+    :host-context(html:not(.plt-capacitor)) .coins .digit-col {
+        font-size: clamp(44px, 5vw, 64px);
+        font-family: var(--font-heading, 'Fredoka', sans-serif);
+    }
+
+    :host-context(html:not(.plt-capacitor)) .panda-message {
+        grid-column: 1 / -1;
+        position: relative;
+        z-index: 1;
+        align-items: center;
+        margin-top: 4px;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .panda-message app-speech-bubble {
+        max-width: calc(100% - 150px);
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-panda-image {
+        width: 126px;
+        max-height: 116px;
+        filter: drop-shadow(0 10px 14px rgba(71, 40, 5, 0.24));
+        animation: web-coin-pet-float 3.6s ease-in-out infinite;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-card > superme-button {
+        grid-column: 1 / -1;
+        position: relative;
+        z-index: 1;
+        width: min(100%, 420px);
+        margin: 10px auto 0;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-list-section {
+        width: 100%;
+        margin-top: 30px;
+        padding: 28px clamp(24px, 3vw, 38px) 38px;
+        border: 1px solid rgba(67, 36, 119, 0.08);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.84);
+        box-shadow: 0 16px 40px rgba(67, 36, 119, 0.08);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-sizing: border-box;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-list-section h2 {
+        margin-bottom: 6px;
+        font-size: clamp(21px, 2vw, 27px);
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-list-item {
+        min-height: 72px;
+        padding: 12px 16px;
+        border: 1px solid rgba(67, 36, 119, 0.06);
+        box-shadow: 0 7px 18px rgba(67, 36, 119, 0.06);
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-list-item:hover {
+        transform: translateY(-2px);
+        border-color: rgba(235, 162, 53, 0.28);
+        box-shadow: 0 11px 24px rgba(67, 36, 119, 0.10);
+    }
+
+    :host-context(html:not(.plt-capacitor)) .item-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-label .item-title {
+        font-size: 15px;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-count .count-icon {
+        width: 26px;
+        height: 26px;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-count .count-value {
+        font-size: 17px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 940px) {
+    :host-context(html:not(.plt-capacitor)) .coin-page {
+        width: min(calc(100% - 32px), 820px);
+        padding-top: 20px;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-card {
+        min-height: 330px;
+        padding: 24px;
+        border-radius: 28px;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coins .coin-icon {
+        width: 62px;
+        height: 62px;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-list-section {
+        padding: 24px 20px 32px;
+        border-radius: 24px;
+    }
+}
+
+@keyframes web-coin-pet-float {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(-7px) rotate(1.5deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :host-context(html:not(.plt-capacitor)) .coin-panda-image,
+    :host-context(html:not(.plt-capacitor)) .robot-link,
+    :host-context(html:not(.plt-capacitor)) .coin-list-item {
+        animation: none;
+        transition: none;
+    }
+}

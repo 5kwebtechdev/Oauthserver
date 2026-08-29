@@ -214,7 +214,8 @@
   // count alone and wins the tie by injection order). Without the
   // extra selector this padding/width silently loses to that rule.
   ion-content .signup-container.role-layout {
-    width: min(100%, 960px);
+    width: 100%;
+    min-height: 100dvh;
     padding: 48px 32px 40px;
     // ion-content paints its own solid white --background layer, and this
     // container also set a solid white background on top of that (see its
@@ -233,6 +234,17 @@
 
   ion-content.bg-white {
     --background: linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%) !important;
+
+    &::part(background) {
+      background:
+        radial-gradient(45vw 45vh at 6% 6%, rgba(139, 141, 203, 0.24), transparent 65%),
+        radial-gradient(48vw 48vh at 95% 10%, rgba(246, 172, 114, 0.2), transparent 65%),
+        radial-gradient(48vw 48vh at 8% 95%, rgba(137, 179, 182, 0.22), transparent 65%),
+        radial-gradient(48vw 48vh at 94% 92%, rgba(225, 82, 124, 0.22), transparent 65%),
+        linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%);
+      background-position: center;
+      background-size: cover;
+    }
   }
 
   // .role-step (nested inside .signup-container in signup.component.scss)

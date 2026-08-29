@@ -2,6 +2,20 @@
   <main class="login-page">
     <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
 
+    <aside class="login-panda-guide" aria-label="Panda login guide">
+      <span class="login-panda-guide__spark login-panda-guide__spark--one" aria-hidden="true">✦</span>
+      <span class="login-panda-guide__spark login-panda-guide__spark--two" aria-hidden="true">★</span>
+      <div class="login-panda-guide__message">
+        <strong>Hi, SuperStar!</strong>
+        <span>Log in to continue your SuperMe adventure.</span>
+      </div>
+      <div class="login-panda-guide__mascot" aria-hidden="true">
+        <span class="login-panda-guide__glow"></span>
+        <img src="assets/Images-Pet/Panda-Age1-Happy.png" alt="" />
+      </div>
+      <span class="login-panda-guide__pointer" aria-hidden="true">➜</span>
+    </aside>
+
     <section class="login-shell" aria-labelledby="login-title">
       <header class="login-header">
         <h1 id="login-title" class="login-title">{{ hasLoggedInBefore ? 'Welcome Back to SuperMeApp!' : 'Welcome to SuperMeApp!' }}</h1>

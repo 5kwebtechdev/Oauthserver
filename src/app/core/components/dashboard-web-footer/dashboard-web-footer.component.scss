@@ -501,6 +501,342 @@
   }
 }
 
+// Playful, responsive treatment for the logged-in web footer. This component
+// is never rendered inside the native Capacitor applications.
+@media (min-width: 768px) {
+  .dashboard-footer,
+  .dashboard-footer--parent {
+    position: relative;
+    width: min(calc(100% - 40px), 1280px);
+    margin: 40px auto 24px;
+    overflow: hidden;
+    border: 1px solid rgb(82 49 123 / 9%);
+    border-radius: 30px;
+    background:
+      radial-gradient(circle at 4% 4%, rgb(141 126 212 / 10%), transparent 22%),
+      radial-gradient(circle at 96% 6%, rgb(239 105 151 / 9%), transparent 21%),
+      linear-gradient(145deg, rgb(255 255 255 / 98%), rgb(255 250 252 / 96%));
+    box-shadow: 0 24px 65px rgb(55 32 85 / 11%);
+  }
+
+  .dashboard-footer::before,
+  .dashboard-footer::after {
+    position: absolute;
+    z-index: 0;
+    width: 12px;
+    height: 12px;
+    content: '';
+    opacity: 0.55;
+    background: #f2a43a;
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+    animation: footer-sparkle 3s ease-in-out infinite;
+  }
+
+  .dashboard-footer::before {
+    top: 30px;
+    left: 36%;
+  }
+
+  .dashboard-footer::after {
+    top: 62px;
+    right: 5%;
+    background: #e25c8e;
+    animation-delay: 1.2s;
+  }
+
+  .dashboard-footer__inner {
+    position: relative;
+    z-index: 1;
+    padding: clamp(28px, 4vw, 48px);
+    gap: 36px;
+  }
+
+  .footer-directory {
+    grid-template-columns:
+      minmax(185px, 0.9fr)
+      minmax(170px, 0.8fr)
+      minmax(230px, 1.15fr)
+      minmax(220px, 1fr);
+    column-gap: clamp(28px, 4vw, 60px);
+    row-gap: 34px;
+  }
+
+  .footer-brand {
+    min-height: 160px;
+    padding: 18px 20px;
+    border: 1px solid rgb(89 54 132 / 8%);
+    border-radius: 22px;
+    background: rgb(255 255 255 / 68%);
+    box-shadow: 0 12px 30px rgb(55 32 85 / 6%);
+  }
+
+  .footer-brand__logo {
+    width: fit-content;
+    padding: 4px 10px 4px 4px;
+    border-radius: 15px;
+    transition: transform 200ms ease, background 200ms ease;
+  }
+
+  .footer-brand__logo:hover,
+  .footer-brand__logo:focus-visible {
+    background: linear-gradient(135deg, #f4efff, #fff2f7);
+    transform: translateY(-3px) rotate(-1deg);
+  }
+
+  .footer-brand__logo img {
+    width: 72px;
+    height: 54px;
+    filter: drop-shadow(0 5px 7px rgb(65 39 92 / 12%));
+    transition: transform 220ms cubic-bezier(.2, .8, .2, 1);
+  }
+
+  .footer-brand__logo:hover img {
+    transform: scale(1.08);
+  }
+
+  .footer-brand__tagline {
+    padding-left: 6px;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .footer-brand__socials {
+    padding-left: 6px;
+    gap: 12px;
+  }
+
+  .footer-brand__socials a {
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgb(80 48 119 / 8%);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 6px 14px rgb(55 32 85 / 7%);
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  .footer-brand__socials a:hover,
+  .footer-brand__socials a:focus-visible {
+    background: linear-gradient(135deg, #f4efff, #fff1f6);
+    box-shadow: 0 10px 20px rgb(55 32 85 / 13%);
+    transform: translateY(-5px) rotate(-4deg);
+  }
+
+  .footer-brand__socials img {
+    width: 22px;
+    max-height: 22px;
+  }
+
+  .footer-downloads {
+    gap: 20px;
+  }
+
+  .footer-downloads__buttons {
+    width: 148px;
+    gap: 10px;
+  }
+
+  .download-button {
+    width: 148px;
+    min-height: 50px;
+    border: 1px solid rgb(255 255 255 / 24%);
+    background: linear-gradient(145deg, #312e30, #1f1d1f);
+    box-shadow: 0 8px 17px rgb(38 29 35 / 16%);
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .download-button:hover,
+  .download-button:focus-visible {
+    box-shadow: 0 13px 25px rgb(38 29 35 / 23%);
+    transform: translateY(-4px) scale(1.02);
+  }
+
+  .footer-downloads__qr {
+    padding: 10px;
+    border: 1px solid rgb(225 82 124 / 12%);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 10px 23px rgb(55 32 85 / 8%);
+    transition: transform 190ms ease, box-shadow 190ms ease;
+  }
+
+  .footer-downloads__qr:hover {
+    box-shadow: 0 15px 30px rgb(55 32 85 / 13%);
+    transform: translateY(-4px);
+  }
+
+  .footer-downloads__qr img {
+    width: 118px;
+    height: 118px;
+  }
+
+  .footer-section {
+    padding: 8px 10px;
+    border-radius: 16px;
+    transition: background 180ms ease, transform 180ms ease;
+  }
+
+  .footer-section:hover {
+    background: rgb(248 244 255 / 60%);
+    transform: translateY(-2px);
+  }
+
+  .footer-section h2 {
+    font-family: var(--font-heading, 'Fredoka', sans-serif);
+    font-size: 19px;
+    letter-spacing: 1.2px;
+  }
+
+  .footer-section h2::after {
+    transform-origin: left;
+    transition: transform 220ms ease;
+  }
+
+  .footer-section:hover h2::after {
+    transform: scaleX(1.12);
+  }
+
+  .footer-section a {
+    position: relative;
+    padding: 3px 0 3px 14px;
+    font-size: 15px;
+    transition: color 160ms ease, transform 160ms ease;
+  }
+
+  .footer-section a::before {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 5px;
+    height: 5px;
+    content: '';
+    opacity: 0;
+    border-radius: 50%;
+    background: #e1527c;
+    transform: translate(-4px, -50%) scale(.4);
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .footer-section a:hover,
+  .footer-section a:focus-visible {
+    color: #752f92;
+    transform: translateX(5px);
+  }
+
+  .footer-section a:hover::before,
+  .footer-section a:focus-visible::before {
+    opacity: 1;
+    transform: translate(0, -50%) scale(1);
+  }
+
+  .trust-strip {
+    min-height: 210px;
+    padding: 18px 24px;
+    gap: 12px;
+    border: 1px solid rgb(89 54 132 / 12%);
+    background:
+      radial-gradient(circle at 8% 20%, rgb(151 132 221 / 16%), transparent 23%),
+      linear-gradient(135deg, #f0ebfa, #e9e4f5);
+    box-shadow: 0 16px 38px rgb(67 36 119 / 11%);
+  }
+
+  .trust-strip__intro > img {
+    width: 106px;
+    height: 106px;
+    flex-basis: 106px;
+    filter: drop-shadow(0 11px 13px rgb(67 36 119 / 17%));
+    animation: footer-shield-float 4s ease-in-out infinite;
+  }
+
+  .trust-strip__intro h2 {
+    font-family: var(--font-heading, 'Fredoka', sans-serif);
+    font-size: 25px;
+  }
+
+  .trust-feature {
+    padding: 10px 12px;
+    border-radius: 16px;
+    transition: background 180ms ease, transform 180ms ease;
+  }
+
+  .trust-feature:hover {
+    background: rgb(255 255 255 / 50%);
+    transform: translateY(-4px);
+  }
+
+  .trust-feature > img {
+    transition: transform 220ms cubic-bezier(.2, .8, .2, 1);
+  }
+
+  .trust-feature:hover > img {
+    transform: scale(1.1) rotate(-4deg);
+  }
+
+  .footer-legal {
+    padding-top: 4px;
+  }
+
+  .footer-legal a {
+    padding: 5px 8px;
+    border-radius: 9px;
+    transition: color 160ms ease, background 160ms ease;
+  }
+
+  .footer-legal a:hover,
+  .footer-legal a:focus-visible {
+    background: #f4effb;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .dashboard-footer__inner {
+    padding: 30px;
+  }
+
+  .footer-directory {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+
+  .trust-strip__features {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trust-feature__divider {
+    display: none;
+  }
+}
+
+@keyframes footer-shield-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-7px) rotate(2deg); }
+}
+
+@keyframes footer-sparkle {
+  0%, 100% { opacity: .3; transform: scale(.7) rotate(0); }
+  50% { opacity: 1; transform: scale(1.25) rotate(45deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-footer::before,
+  .dashboard-footer::after,
+  .trust-strip__intro > img,
+  .footer-brand__logo,
+  .footer-brand__socials a,
+  .download-button,
+  .footer-downloads__qr,
+  .footer-section,
+  .footer-section a,
+  .trust-feature {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @media (max-width: 430px) {
   .footer-downloads__qr img {
     width: 96px;

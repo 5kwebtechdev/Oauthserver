@@ -336,6 +336,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // full-bleed outlet reset HomePage uses (body.onboarding-active) or
     // that column cap leaves white gutters regardless of this page's own CSS.
     document.body.classList.add('onboarding-active');
+    if (!Capacitor.isNativePlatform()) {
+      document.body.classList.add('signup-web-full-bleed');
+    }
 
     // Safety: ensure any stuck loaders from navigation are cleared immediately
     this.loadingService.forceHide();
@@ -2663,6 +2666,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     document.body.classList.remove('onboarding-active');
+    document.body.classList.remove('signup-web-full-bleed');
     void this.keyboardShowListener?.remove();
     void this.keyboardHideListener?.remove();
     window.visualViewport?.removeEventListener('resize', this.visualViewportResizeHandler);
@@ -3017,8 +3021,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
         const completedPassword = password || this.signupCredentialState.getPassword() || this.password?.value || '';
         if (this.shouldOpenUnlockPotentialStep(resp, responseStep, payload, !!payload.petName)) {
-          this.loadingService.forceHide();
-          this.navigateToSignupStep(5);
+          this.openUnlockPotentialStepWithSession(payload, completedPassword);
           return;
         }
 
@@ -3609,8 +3612,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         }
 
         if (this.shouldOpenUnlockPotentialStep(resp, responseStep, payload, includePet)) {
-          this.loadingService.forceHide();
-          this.navigateToSignupStep(5);
+          this.openUnlockPotentialStepWithSession(payload, passwordForLogin);
           return;
         }
 
@@ -3845,6 +3847,60 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.registrationInProgress = false;
         this.loadingService.forceHide();
         this.errorMessage = err?.error?.message || 'Something went wrong. Please try again.';
+      }
+    });
+  }
+
+  /**
+   * Establish the newly-created account session before showing the final
+   * activation screen. Previously SELF registration navigated to step 5
+   * first and relied on an in-memory password surviving that route change.
+   * When Ionic recreated the lazy signup page, the password was gone and the
+   * final button could only show "automatic sign-in could not start".
+   *
+   * Credentials remain in memory only and are cleared by continueAfterUnlock
+   * after activation. Native and web therefore share the reliable flow
+   * without writing a password to local/session storage.
+   */
+  private openUnlockPotentialStepWithSession(payload: any, password: string): void {
+    const credentials = {
+      ...(payload?.email ? { email: String(payload.email).trim() } : {}),
+      ...(!payload?.email && payload?.phone ? { phone: String(payload.phone).trim() } : {}),
+      password: String(password || '')
+    };
+
+    const showFinalStep = () => {
+      this.registrationInProgress = false;
+      this.loadingService.forceHide();
+      this.navigateToSignupStep(5);
+    };
+
+    if (!credentials.password || (!('email' in credentials) && !('phone' in credentials))) {
+      // Keep the completed registration reachable even for an old/resumed
+      // draft, but do not discard any credential state that may still be
+      // recoverable by the final action.
+      showFinalStep();
+      return;
+    }
+
+    this.signupCredentialState.setPendingLogin(credentials);
+
+    if (this.authService.isLoggedIn() || this.isOAuthSignup) {
+      showFinalStep();
+      return;
+    }
+
+    // Incomplete onboarding accounts are allowed to authenticate (the Child
+    // family-link flow already uses this contract). Doing it here removes the
+    // fragile second login that used to happen only after Unlock was tapped.
+    this.registrationInProgress = true;
+    this.authService.login(credentials).subscribe({
+      next: () => showFinalStep(),
+      error: (error) => {
+        // Retain the in-memory credentials so the final action can retry if
+        // the pre-login failed because of a transient network/backend delay.
+        console.warn('[Signup] Pre-activation login did not complete', error);
+        showFinalStep();
       }
     });
   }

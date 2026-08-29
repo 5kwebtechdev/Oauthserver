@@ -11,7 +11,7 @@
             </div>
 
             <div class="coins" [class.coins--rolling]="showTargetDigits && !coinAnimDone" [class.coins--done]="coinAnimDone">
-                <img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coin" class="coin-icon">
+                <img src="assets/Navigation/figma-logged-in/coin.png" alt="SuperMe coin" class="coin-icon">
                 <span class="coin-value" *ngIf="isLoading || coinTotal <= 0">0</span>
                 <div class="coin-value-roller" *ngIf="!isLoading && coinTotal > 0">
                     <span class="digit-col" *ngFor="let d of coinDigits; let i = index"
@@ -107,7 +107,7 @@
 
                         <!-- Amount -->
                         <div class="coin-count">
-                            <img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coin" class="count-icon">
+                            <img src="assets/Navigation/figma-logged-in/coin.png" alt="Coin" class="count-icon">
                             <span class="count-value" [class.negative]="item.count < 0">
                                 {{ item.count < 0 ? item.count : ('+' + item.count) }}
                             </span>

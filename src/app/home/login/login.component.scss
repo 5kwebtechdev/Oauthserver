@@ -16,6 +16,37 @@
   }
 }
 
+@keyframes loginPandaArrive {
+  from { opacity: 0; transform: translate(-28px, -50%) scale(0.78); }
+  to { opacity: 1; transform: translate(0, -50%) scale(1); }
+}
+
+@keyframes loginPandaBounce {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  45% { transform: translateY(-11px) rotate(2deg); }
+  70% { transform: translateY(-3px) rotate(0); }
+}
+
+@keyframes loginPandaBubble {
+  0%, 15% { transform: translateY(4px) scale(0.96); }
+  45%, 100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes loginPandaGlow {
+  0%, 100% { opacity: 0.55; transform: scale(0.88); }
+  50% { opacity: 0.95; transform: scale(1.06); }
+}
+
+@keyframes loginPandaSparkle {
+  from { opacity: 0.25; transform: scale(0.65) rotate(-15deg); }
+  to { opacity: 1; transform: scale(1.15) rotate(12deg); }
+}
+
+@keyframes loginPandaPoint {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(8px); }
+}
+
 :host {
   display: block;
   width: 100%;
@@ -51,6 +82,10 @@ button {
   background: #ffffff;
   color: #282527;
   font-family: var(--font-sans, 'Nunito', sans-serif);
+}
+
+.login-panda-guide {
+  display: none;
 }
 
 .login-back-btn {
@@ -700,7 +735,20 @@ button {
   // white through any gap.
   .login-content {
     width: 100%;
+    min-width: 100vw;
+    min-height: 100dvh;
     --background: linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%);
+
+    &::part(background) {
+      background:
+        radial-gradient(45vw 45vh at 6% 6%, rgba(139, 141, 203, 0.28), transparent 65%),
+        radial-gradient(48vw 48vh at 95% 10%, rgba(246, 172, 114, 0.24), transparent 65%),
+        radial-gradient(48vw 48vh at 8% 95%, rgba(137, 179, 182, 0.26), transparent 65%),
+        radial-gradient(48vw 48vh at 94% 92%, rgba(225, 82, 124, 0.26), transparent 65%),
+        linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 65%, #fbdfe7 100%);
+      background-size: cover;
+      background-position: center;
+    }
   }
 
   .login-page {
@@ -756,6 +804,137 @@ button {
   .country-modal {
     bottom: 24px;
     border-radius: 8px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .login-panda-guide {
+    position: absolute;
+    z-index: 3;
+    top: 52%;
+    left: calc(50% - 430px);
+    display: flex;
+    width: 245px;
+    min-height: 310px;
+    align-items: center;
+    justify-content: flex-end;
+    flex-direction: column;
+    pointer-events: none;
+    transform: translateY(-50%);
+    animation: loginPandaArrive 700ms 180ms cubic-bezier(.18, .89, .32, 1.24) both;
+  }
+
+  .login-panda-guide__message {
+    position: relative;
+    z-index: 4;
+    width: 220px;
+    padding: 15px 18px;
+    border: 2px solid rgba(67, 36, 119, 0.16);
+    border-radius: 20px 20px 20px 5px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 30px rgba(67, 36, 119, 0.12);
+    color: #6b656a;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    animation: loginPandaBubble 1.7s 850ms ease-in-out infinite alternate;
+  }
+
+  .login-panda-guide__message strong,
+  .login-panda-guide__message span {
+    display: block;
+  }
+
+  .login-panda-guide__message strong {
+    margin-bottom: 4px;
+    color: #432477;
+    font-family: 'Fredoka', var(--font-sans, sans-serif);
+    font-size: 21px;
+    font-weight: 600;
+  }
+
+  .login-panda-guide__message span {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .login-panda-guide__message::after {
+    position: absolute;
+    right: 30px;
+    bottom: -12px;
+    width: 22px;
+    height: 22px;
+    border-right: 2px solid rgba(67, 36, 119, 0.16);
+    border-bottom: 2px solid rgba(67, 36, 119, 0.16);
+    background: #ffffff;
+    content: '';
+    transform: rotate(45deg);
+  }
+
+  .login-panda-guide__mascot {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: 190px;
+    height: 190px;
+    margin-top: 5px;
+    place-items: end center;
+  }
+
+  .login-panda-guide__mascot img {
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: auto;
+    height: 184px;
+    object-fit: contain;
+    filter: drop-shadow(0 14px 12px rgba(67, 36, 119, 0.16));
+    animation: loginPandaBounce 1.9s 900ms ease-in-out infinite;
+  }
+
+  .login-panda-guide__glow {
+    position: absolute;
+    z-index: 1;
+    right: 14px;
+    bottom: 4px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 243, 198, 0.95) 0 34%, rgba(246, 172, 114, 0.28) 35% 57%, transparent 59%);
+    animation: loginPandaGlow 1.8s ease-in-out infinite;
+  }
+
+  .login-panda-guide__pointer {
+    position: absolute;
+    right: -3px;
+    bottom: 82px;
+    z-index: 5;
+    color: #e1527c;
+    font-size: 38px;
+    font-weight: 800;
+    text-shadow: 0 5px 12px rgba(225, 82, 124, 0.24);
+    animation: loginPandaPoint 900ms ease-in-out infinite;
+  }
+
+  .login-panda-guide__spark {
+    position: absolute;
+    z-index: 5;
+    color: #f6ac72;
+    animation: loginPandaSparkle 900ms ease-in-out infinite alternate;
+  }
+
+  .login-panda-guide__spark--one {
+    top: 92px;
+    left: 4px;
+    font-size: 24px;
+  }
+
+  .login-panda-guide__spark--two {
+    right: 12px;
+    top: 134px;
+    color: #8b8dcb;
+    font-size: 18px;
+    animation-delay: 280ms;
   }
 }
 
@@ -824,8 +1003,11 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
   .login-shell,
-  .login-spinner {
+  .login-spinner,
+  .login-panda-guide,
+  .login-panda-guide * {
     animation-duration: 1ms;
+    animation-iteration-count: 1;
   }
 
   .login-back-btn,
