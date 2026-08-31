@@ -1,5 +1,5 @@
 import { HttpParams } from '@angular/common/http';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { ProductStoreComponent } from './product-store.components';
 
 describe('ProductStoreComponent category filtering', () => {
@@ -122,7 +122,58 @@ describe('ProductStoreComponent category filtering', () => {
 
     expect(component.activeProductSubCategory).toBe('Notebooks');
     expect(requests.length).toBe(1);
-    expect(requests[0].params.get('subCategory')).toBe('Notebooks');
+    expect(requests[0].params.get('subCategory')).toBe('Students');
+    expect(requests[0].params.get('subCategory1')).toBe('Notebooks');
+  });
+
+  it('opens every product in a new top tab and clears previous rail and brand filters', () => {
+    const exam = { id: 'Exam Essentials', label: 'Exam Essentials', imageUrl: null };
+    component.subCategoryLevels = [
+      { options: [exam], selected: 'Craft & Hobbies' },
+      { options: [], selected: 'Adhesives' },
+    ];
+    component.selectedBrands.add('Old brand');
+    component.selectSubCategoryAt(0, exam);
+
+    expect(requests[0].params.get('subCategory')).toBe('Exam Essentials');
+    expect(requests[0].params.has('subCategory1')).toBeFalse();
+    expect(component.selectedBrands.size).toBe(0);
+    expect(component.railSubCategoryLevel).toBeNull();
+  });
+
+  it('returns to all products in the same tab when it is clicked after a rail selection', () => {
+    const craft = { id: 'Craft & Hobbies', label: 'Craft & Hobbies', imageUrl: null };
+    component.subCategoryLevels = [
+      { options: [craft], selected: craft.id },
+      { options: [], selected: 'Canvases & Surfaces' },
+    ];
+    component.selectSubCategoryAt(0, craft);
+
+    expect(requests[0].params.get('subCategory')).toBe(craft.id);
+    expect(requests[0].params.has('subCategory1')).toBeFalse();
+  });
+
+  it('retains both category levels when loading more products', () => {
+    component.subCategoryLevels = [
+      { options: [], selected: 'Craft & Hobbies' },
+      { options: [], selected: 'Adhesives' },
+    ];
+    component.loadProducts(1);
+    expect(requests[0].params.get('subCategory')).toBe('Craft & Hobbies');
+    expect(requests[0].params.get('subCategory1')).toBe('Adhesives');
+    expect(requests[0].params.get('page')).toBe('1');
+  });
+
+  it('does not restore an old rail response after selecting All', () => {
+    const pending = new Subject<any>();
+    (component as any).http = { get: () => pending };
+    const all = { id: component.allSubCategoryId, label: 'All', imageUrl: null };
+    component.subCategoryLevels = [{ options: [all], selected: 'Craft & Hobbies' }];
+    component.loadSubCategoryLevel(1, ['Craft & Hobbies']);
+    component.selectSubCategoryAt(0, all);
+    pending.next([{ name: 'Adhesives', imageUrl: null }]);
+    expect(component.railSubCategoryLevel).toBeNull();
+    expect(component.primarySubCategoryLevel?.selected).toBe(all.id);
   });
 
   it('removes the subcategory parameter when subcategories are reset', () => {
@@ -136,7 +187,8 @@ describe('ProductStoreComponent category filtering', () => {
     component.resetSubCategories();
 
     expect(component.activeProductSubCategory).toBeNull();
-    expect(component.railSubCategoryLevel?.selected).toBe('');
+    expect(component.railSubCategoryLevel).toBeNull();
+    expect(component.primarySubCategoryLevel?.selected).toBe(component.allSubCategoryId);
     expect(requests.length).toBe(1);
     expect(requests[0].params.has('subCategory')).toBeFalse();
   });

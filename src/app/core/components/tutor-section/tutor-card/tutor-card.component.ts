@@ -54,6 +54,7 @@ interface EduHubPreview {
   image: string;
   fee: number | null;
   location: string;
+  counselor?: Tutor;
 }
 
 @Component({
@@ -160,9 +161,15 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     return this.externalLoading.has(this.selectedCategoryKey);
   }
 
+  get isSelectedCategoryLoading(): boolean {
+    return this.isExternalCategory(this.selectedCategoryKey)
+      ? this.isExternalCategoryLoading
+      : this.isLoading;
+  }
+
   /** Keep the category CTA available whenever the selected preview has data. */
   get showViewAll(): boolean {
-    if (this.isLoading) return false;
+    if (this.isSelectedCategoryLoading) return false;
     if (this.selectedCategoryKey === 'tutors') return this.visibleTutors.length > 0;
     if (this.selectedCategoryKey === 'academies') return this.academyTutors.length > 0;
     if (this.isExternalCategory(this.selectedCategoryKey)) return this.visibleExternalPreviews.length > 0;
@@ -177,10 +184,8 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   selectCategory(category: EduHubCategory): void {
     if (this.selectedCategoryKey === category.key) return;
 
-    // These categories have dedicated EduHub flows. Opening an inline preview
-    // here made the card feel unresponsive and prevented users from reaching
-    // the required entry screen.
-    if (category.key === 'counselors' || category.key === 'second-hand-books') {
+    // Second-hand books keep their dedicated flow; counselors filter inline.
+    if (category.key === 'second-hand-books') {
       void this.router.navigateByUrl(category.route);
       return;
     }
@@ -193,8 +198,6 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       this.loadAcademies();
     }
     if (this.isExternalCategory(category.key)) this.loadExternalCategory(category.key);
-    // Workshops / Events / Stationery: no backend source yet — the template
-    // shows an empty state for them instead of hardcoded placeholder data.
   }
 
   private preloadExternalCategories(): void {
@@ -211,6 +214,29 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     if (!source || this.externalLoading.has(categoryKey) || this.externalPreviews.has(categoryKey)) return;
 
     this.externalLoading.add(categoryKey);
+    if (categoryKey === 'counselors') {
+      // Use the same API and normalization as the full counselor directory.
+      this.subscriptions.add(this.tutorService.getTutorsByEntityType('COUNSELOR').subscribe({
+        next: counselors => {
+          const previews = counselors.map(counselor => ({
+            ...this.mapExternalPreview(counselor, this.categories.find(c => c.key === 'counselors')!.image),
+            name: counselor.name?.trim() || counselor.entityName?.trim() || 'Counselor',
+            description: counselor.subjects?.join(', ') || counselor.qualification || 'Counselor',
+            fee: Number(counselor.categoryMappings?.find(m => m.categoryHourlyRate > 0)?.categoryHourlyRate || counselor.hourlyRate || counselor.fees) || null,
+            location: counselor.location || [counselor.city, counselor.state].filter(Boolean).join(', '),
+            counselor
+          }));
+          this.externalPreviews.set(categoryKey, previews);
+          this.externalCounts.set(categoryKey, previews.length);
+          this.externalLoading.delete(categoryKey);
+        },
+        error: () => {
+          this.externalLoading.delete(categoryKey);
+          this.externalCounts.set(categoryKey, 0);
+        }
+      }));
+      return;
+    }
     const baseUrl = this.getUserFacingApiBaseUrl();
     const endpointUrl = source.endpoint === 'tutors'
       ? `${baseUrl}/tutors`
@@ -450,6 +476,12 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       return;
     }
     this.router.navigateByUrl(this.selectedCategory.route);
+  }
+
+  onViewCounselorProfile(counselor: Tutor): void {
+    void this.router.navigate(['/authed/counselors', counselor.id], {
+      state: { tutor: counselor }
+    });
   }
 
   getTutorMeta(tutor: TutorListItem): string {

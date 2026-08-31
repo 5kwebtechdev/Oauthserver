@@ -51,6 +51,7 @@
 
 // ── Scroll track ─────────────────────────────────────────────────────────────
 .adb__scroll-track {
+  position: relative;
   display: flex;
   gap: 10px;
   will-change: transform;
@@ -306,6 +307,35 @@
 // (article/eduhub/parent-learning/lesson), which already run at their own
 // fixed sizing on every screen size.
 @include bp.tablet-up {
+  :host-context(html:not(.plt-capacitor)) .adb:not(.adb--article-details):not(.adb--eduhub-parent):not(.adb--eduhub-inner):not(.adb--parent-learning):not(.adb--lesson) {
+    .adb__card {
+      height: auto;
+      aspect-ratio: 305 / 182;
+      box-shadow: none;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .adb__img {
+      // Round the image itself, not the letterboxed space around it.
+      // Intrinsic sizing keeps every banner's full artwork visible.
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 16px;
+      object-fit: contain;
+      background: #fff;
+    }
+
+    &.adb--single .adb__card {
+      flex-basis: 100%;
+      min-width: 100%;
+    }
+  }
+
   .adb:not(.adb--article-details):not(.adb--eduhub-parent):not(.adb--eduhub-inner):not(.adb--parent-learning):not(.adb--lesson) {
     .adb__card {
       flex: 0 0 calc(50% - 5px);

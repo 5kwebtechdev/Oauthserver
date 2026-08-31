@@ -302,8 +302,11 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
 
   selectSubCategoryAt(levelIndex: number, option: SubCategoryOption): void {
     const level = this.subCategoryLevels[levelIndex];
-    if (!level || level.selected === option.id) return;
+    if (!level) return;
+    // Re-selecting a top tab returns to all of its products after using the rail.
+    if (level.selected === option.id && !(levelIndex === 0 && this.railSubCategoryLevel?.selected)) return;
 
+    ++this.subCategoryRequestId;
     this.clearProductFilters(false);
     level.selected = option.id;
     // Drop deeper levels — they no longer apply to the new selection
@@ -335,9 +338,12 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
 
   /** Clear the rail filter and return to every product in the store category. */
   resetSubCategories(): void {
+    ++this.subCategoryRequestId;
     this.activeProductSubCategory = null;
-    const railLevel = this.railSubCategoryLevel;
-    if (railLevel) railLevel.selected = '';
+    if (this.primarySubCategoryLevel) this.primarySubCategoryLevel.selected = this.allSubCategoryId;
+    this.subCategoryLevels = this.subCategoryLevels.slice(0, 1);
+    this.subCategoriesLoading = false;
+    this.subCategoriesError = false;
     this.clearProductFilters();
     this.loadProducts();
     this.cdr.detectChanges();
@@ -492,8 +498,12 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
       .set('categoryId', String(this.selectedCategory))
       .set('page', String(page))
       .set('size', String(this.productsPageSize));
-    if (this.activeProductSubCategory) {
-      params = params.set('subCategory', this.activeProductSubCategory);
+    // Keep the hierarchy intact: top tabs use subCategory, while the left
+    // rail adds subCategory1 instead of replacing the parent category.
+    for (let index = 0; index < this.subCategoryLevels.length; index++) {
+      const selected = this.subCategoryLevels[index].selected;
+      if (!selected || selected === this.allSubCategoryId) break;
+      params = params.set(index === 0 ? 'subCategory' : `subCategory${index}`, selected);
     }
     // school + class only apply to categories scoped to a specific school (e.g. School Uniform, Textbooks)
     if (this.selectedCategoryRequiresSchoolClass && this.schoolId != null && this.className) {

@@ -251,6 +251,18 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     const parentLearning = this.variant === 'parent-learning';
     const lesson = this.variant === 'lesson';
     const defaultDesktop = this.isDesktopDefaultCarousel();
+    // Match the rendered web cards, not an estimated percentage (CSS uses
+    // 50% minus half the gap). Clamp the last slide to keep both cards whole.
+    if (defaultDesktop && !document.documentElement.classList.contains('plt-capacitor')) {
+      const cards = Array.from(el.children) as HTMLElement[];
+      const target = cards[this.currentIndex];
+      const last = cards[cards.length - 1];
+      if (!target || !last) return;
+      const maxOffset = Math.max(0, last.offsetLeft + last.offsetWidth - containerWidth);
+      const offset = Math.min(target.offsetLeft, maxOffset);
+      el.style.transform = `translateX(${-offset}px)`;
+      return;
+    }
     const singleAd = this.ads.length === 1;
     const cardWidth = lesson || singleAd
       ? containerWidth

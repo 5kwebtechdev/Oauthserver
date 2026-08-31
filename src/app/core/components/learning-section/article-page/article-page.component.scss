@@ -8,6 +8,119 @@
   --details-border: #d9d6d8;
 }
 
+// A browser reading surface; native apps retain the original article layout.
+@media (min-width: 768px) {
+  :host-context(html:not(.plt-capacitor)) {
+    .learning-details-content {
+      --background: linear-gradient(135deg, #f4f0fb, #fffaf7 55%, #fdf0f6);
+    }
+
+    .learning-details {
+      width: min(calc(100% - 48px), 1160px);
+      min-height: 0;
+      margin: 24px auto 48px;
+      padding: 8px clamp(20px, 3vw, 40px) 32px;
+      border: 1px solid #eee5f0;
+      border-radius: 28px;
+      box-shadow: 0 16px 48px rgba(67, 36, 119, .07);
+      box-sizing: border-box;
+    }
+
+    .learning-details-header {
+      width: 100%;
+      min-height: 72px;
+      padding: 12px 0;
+      align-items: center;
+      &__back { background: #f4eef9; border-radius: 50%; }
+      &__back img { width: 32px; height: 32px; }
+      &__share { width: auto; flex-direction: row; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 28px; background: #fdf0f5; color: #90214d; }
+      button:focus-visible { outline: 3px solid #7341a7; outline-offset: 3px; }
+    }
+
+    .learning-details-main {
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      align-items: center;
+      gap: 32px;
+      padding: 12px 0 24px;
+      > * { min-width: 0; }
+      > :not(.learning-details-hero):not(.learning-details-summary) {
+        grid-column: 1 / -1;
+        width: min(100%, 760px);
+        justify-self: center;
+      }
+    }
+
+    .learning-details-hero {
+      border-radius: 20px;
+      background: #faf6f1;
+      img { object-fit: contain; }
+    }
+
+    .learning-details-summary {
+      border: 0;
+      padding: 8px 0;
+      gap: 24px;
+      &__copy h1 { font-family: var(--font-heading, 'Fredoka', sans-serif); font-size: clamp(26px, 2.5vw, 36px); line-height: 1.2; font-weight: 500; overflow-wrap: anywhere; }
+      &__copy p { font-size: 17px; line-height: 1.6; }
+    }
+
+    .learning-details-byline {
+      flex-wrap: wrap;
+      padding-top: 18px;
+      border-top: 1px solid #eee5f0;
+      &__author { flex: 1; }
+      &__author strong { max-width: none; white-space: normal; }
+      &__meta { width: 100%; margin: 8px 0 0; flex-wrap: wrap; gap: 12px; }
+      &__meta > span { padding: 6px 10px; border-radius: 10px; background: #faf5fa; }
+    }
+
+    .article-content {
+      font-size: 17px;
+      line-height: 1.8;
+      ::ng-deep p,
+      ::ng-deep li,
+      ::ng-deep ul,
+      ::ng-deep ol { font-size: 17px !important; line-height: 1.8 !important; color: #514b50 !important; }
+      ::ng-deep p { margin-bottom: 16px !important; }
+      ::ng-deep h1,
+      ::ng-deep h2 { font-size: 25px !important; margin-bottom: 14px !important; }
+      ::ng-deep h3,
+      ::ng-deep h4 { font-size: 21px !important; margin-bottom: 12px !important; }
+      ::ng-deep table { display: block; max-width: 100%; overflow-x: auto; }
+      ::ng-deep pre { max-width: 100%; overflow-x: auto; }
+      ::ng-deep iframe,
+      ::ng-deep video { max-width: 100%; }
+    }
+
+    .learning-details-related {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      h2 { grid-column: 1 / -1; font-size: 24px; }
+      &__card { width: 100%; grid-template-columns: 110px minmax(0, 1fr); padding: 10px; border: 1px solid #eee5f0; border-radius: 18px; background: #fffbfd; }
+    }
+
+    .learning-details-action {
+      padding: 24px;
+      border-radius: 20px;
+      background: #fdf0f5;
+      box-sizing: border-box;
+      &__button { max-width: 440px; }
+    }
+
+    .learning-details button:focus-visible { outline: 3px solid #7341a7; outline-offset: 3px; }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  :host-context(html:not(.plt-capacitor)) {
+    .learning-details-main { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .learning-details-hero { max-width: 620px; justify-self: center; }
+    .learning-details-summary { width: 100%; }
+  }
+}
+
 .learning-details-content {
   --background: #ffffff;
   // The header handles the top safe area itself; avoid a second Ionic inset

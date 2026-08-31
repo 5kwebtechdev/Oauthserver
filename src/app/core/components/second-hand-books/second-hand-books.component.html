@@ -1,4 +1,4 @@
-<ion-content fullscreen class="second-hand-books-content" [class.seller-content]="view === 'seller' || view === 'seller-success'">
+<ion-content fullscreen class="second-hand-books-content" [class.books-choice-content]="view === 'choice'" [class.seller-content]="view === 'seller' || view === 'seller-success'">
   <div class="second-hand-books-page" [class.second-hand-books-page--listing-flow]="view === 'my-listings' || view === 'book-details' || view === 'seller' || view === 'seller-success'">
     <ng-container [ngSwitch]="view">
       <ng-container *ngSwitchCase="'seller-success'">
