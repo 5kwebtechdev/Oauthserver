@@ -442,7 +442,6 @@ align-self: stretch;
 			border-radius: 32px;
 			background: rgba(255, 255, 255, 0.78);
 			box-shadow: 0 24px 65px rgba(76, 49, 112, 0.12);
-			backdrop-filter: blur(18px);
 			box-sizing: border-box;
 		}
 
@@ -584,14 +583,31 @@ align-self: stretch;
 		}
 
 		.address-popup {
+			top: 0;
+			bottom: 0;
 			padding: 24px;
+			align-items: center;
+			opacity: 0;
+			visibility: hidden;
+			transform: translateY(12px);
 			background: rgba(29, 20, 40, 0.28);
 			backdrop-filter: blur(5px);
+			transition: opacity 200ms ease, transform 240ms ease, visibility 200ms ease;
+		}
+
+		.address-popup.open {
+			top: 0;
+			bottom: 0;
+			opacity: 1;
+			visibility: visible;
+			transform: translateY(0);
 		}
 
 		.address-popup-inner {
 			max-width: 760px;
+			max-height: min(680px, calc(100vh - 48px));
 			padding: 24px 28px;
+			overflow-y: auto;
 			border-radius: 28px;
 			box-shadow: 0 24px 70px rgba(34, 23, 47, 0.24);
 		}

@@ -656,6 +656,215 @@ ion-content.tutor-detail-page {
   font-size: 17px;
 }
 
+/* Web profile layout -------------------------------------------------------
+   Keep the compact Ionic presentation for Android/iOS. On browser-sized
+   screens the same dynamic profile data is composed as a readable desktop
+   workspace instead of stretching the mobile card. */
+@media (min-width: 768px) {
+  :host-context(html:not(.plt-capacitor)) {
+    ion-content.tutor-detail-page {
+      --background:
+        radial-gradient(circle at 8% 12%, rgba(142, 126, 255, .14), transparent 28%),
+        radial-gradient(circle at 92% 10%, rgba(255, 177, 203, .18), transparent 31%),
+        linear-gradient(135deg, #f5f4ff 0%, #fbfbff 48%, #fff5f8 100%);
+    }
+
+    .detail-shell {
+      width: min(calc(100% - 48px), 1180px);
+      min-height: auto;
+      margin: 24px auto 64px;
+      padding: 28px clamp(26px, 4vw, 48px) 42px;
+      border: 1px solid rgba(111, 83, 177, .12);
+      border-radius: 30px;
+      background: rgba(255, 255, 255, .9);
+      box-shadow: 0 24px 70px rgba(65, 43, 101, .12);
+      backdrop-filter: blur(14px);
+    }
+
+    .detail-header {
+      min-height: 54px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(78, 37, 168, .09);
+    }
+
+    .header-action {
+      width: 46px;
+      height: 46px;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        color: var(--detail-purple);
+        background: #f2edff;
+        transform: translateY(-2px);
+      }
+    }
+
+    .detail-content {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(310px, .72fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .profile-hero {
+      grid-column: 1 / -1;
+      grid-template-columns: 138px minmax(0, 1fr);
+      column-gap: 28px;
+      padding: 26px 30px;
+      border: 1px solid rgba(113, 85, 183, .16);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 90% 10%, rgba(255, 195, 221, .42), transparent 30%),
+        linear-gradient(125deg, #f3efff 0%, #fff8f1 54%, #effbfc 100%);
+      box-shadow: 0 12px 30px rgba(67, 36, 119, .08);
+    }
+
+    .avatar-wrap {
+      width: 138px;
+      height: 138px;
+    }
+
+    .profile-copy h1 {
+      font-size: clamp(30px, 3vw, 42px);
+    }
+
+    .profile-copy p {
+      font-size: 17px;
+    }
+
+    .profile-stats {
+      margin-top: 18px;
+      gap: 14px;
+    }
+
+    .stat {
+      font-size: 14px;
+    }
+
+    .teaching-section {
+      grid-column: 1 / -1;
+      padding: 22px 24px;
+      border: 1px solid rgba(111, 83, 177, .12);
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 9px 26px rgba(52, 39, 78, .06);
+    }
+
+    .teaching-grid {
+      gap: 14px;
+    }
+
+    .teaching-pill {
+      min-height: 72px;
+      padding: 14px 17px;
+      border-radius: 16px;
+      transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+
+      &:hover {
+        border-color: rgba(79, 46, 209, .28);
+        box-shadow: 0 10px 24px rgba(79, 46, 209, .09);
+        transform: translateY(-2px);
+      }
+    }
+
+    .information-card {
+      grid-column: 1;
+      grid-row: 3 / span 5;
+      padding: 4px 24px;
+      border-radius: 22px;
+      box-shadow: 0 12px 30px rgba(52, 39, 78, .07);
+    }
+
+    .information-row {
+      grid-template-columns: minmax(190px, 34%) minmax(0, 1fr);
+      gap: 24px;
+      padding: 21px 0;
+    }
+
+    .information-label,
+    .information-value {
+      font-size: 15px;
+    }
+
+    .unlock-card,
+    .unlocked-contact-card,
+    .tutor-faq {
+      grid-column: 2;
+    }
+
+    .unlock-card,
+    .unlocked-contact-card {
+      padding: 22px;
+      border-radius: 22px;
+      box-shadow: 0 12px 28px rgba(45, 64, 138, .1);
+    }
+
+    .unlock-benefits {
+      grid-template-columns: 1fr;
+    }
+
+    :host ::ng-deep .tutor-faq .fact-item {
+      overflow: hidden;
+      box-shadow: 0 5px 16px rgba(52, 39, 78, .05);
+    }
+
+    .contact-backdrop {
+      padding: 24px;
+      align-items: center;
+    }
+
+    .contact-sheet {
+      width: min(100%, 620px);
+      max-height: calc(100vh - 48px);
+      padding: 22px 26px 26px;
+      overflow-y: auto;
+      border-radius: 26px;
+      box-shadow: 0 28px 80px rgba(25, 19, 35, .28);
+    }
+
+    .sheet-handle {
+      display: none;
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  :host-context(html:not(.plt-capacitor)) {
+    .detail-shell {
+      width: min(calc(100% - 32px), 900px);
+      padding-inline: 28px;
+    }
+
+    .detail-content {
+      grid-template-columns: 1fr;
+    }
+
+    .profile-hero,
+    .teaching-section,
+    .information-card,
+    .unlock-card,
+    .unlocked-contact-card,
+    .tutor-faq {
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    .unlock-benefits {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host-context(html:not(.plt-capacitor)) {
+    .header-action,
+    .teaching-pill {
+      transition: none;
+    }
+  }
+}
+
 .counselor-unlock-sheet {
   border-radius: 32px 32px 0 0;
 }

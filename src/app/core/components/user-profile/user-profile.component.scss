@@ -425,3 +425,158 @@ profile-content-card {
     border-color: #4CAF50;
   }
 }
+
+/*
+ * Web presentation
+ * Keep the compact mobile layout untouched inside the Capacitor apps while
+ * giving browser users a purpose-built profile dashboard.
+ */
+@media (min-width: 768px) {
+  :host-context(html:not(.plt-capacitor)) {
+    ion-content {
+      --background: linear-gradient(135deg, #fff9f2 0%, #f7f6ff 50%, #fff3f7 100%);
+    }
+
+    .profile {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(310px, 370px) minmax(0, 1fr);
+      align-items: start;
+      gap: clamp(20px, 2.4vw, 34px);
+      width: min(100%, 1380px);
+      margin: 0 auto;
+      padding: clamp(24px, 3vw, 44px);
+    }
+
+    .profile::before,
+    .profile::after {
+      position: absolute;
+      z-index: 0;
+      width: 210px;
+      height: 210px;
+      border-radius: 50%;
+      content: '';
+      pointer-events: none;
+      filter: blur(2px);
+      opacity: 0.38;
+    }
+
+    .profile::before {
+      top: 14px;
+      right: 4%;
+      background: radial-gradient(circle, rgba(239, 108, 154, 0.2), transparent 68%);
+    }
+
+    .profile::after {
+      bottom: 70px;
+      left: 1%;
+      background: radial-gradient(circle, rgba(106, 80, 211, 0.18), transparent 68%);
+    }
+
+    .user-profile-main,
+    .profile-content,
+    social-media {
+      position: relative;
+      z-index: 1;
+    }
+
+    .user-profile-main {
+      position: sticky;
+      top: 112px;
+      width: 100%;
+      min-height: 430px;
+      padding: 34px 26px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 30px;
+      box-shadow: 0 22px 55px rgba(85, 39, 67, 0.2);
+      isolation: isolate;
+    }
+
+    .user-profile,
+    [parent-profile-detail] {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+    }
+
+    .user-profile-main::before {
+      width: 180px;
+      height: 180px;
+      opacity: 0.24;
+    }
+
+    .user-profile-main::after {
+      width: 150px;
+      height: 150px;
+      opacity: 0.18;
+    }
+
+    .profile-content {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .menu-group {
+      min-width: 0;
+      margin: 0;
+    }
+
+    .menu-group__label {
+      margin: 0 0 9px 5px;
+      color: #766f78;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+    }
+
+    .menu-group__card {
+      overflow: hidden;
+      border: 1px solid rgba(89, 65, 112, 0.08);
+      border-radius: 20px;
+      box-shadow: 0 10px 26px rgba(67, 44, 70, 0.07);
+      transition: box-shadow 180ms ease, transform 180ms ease;
+    }
+
+    .menu-group__card:hover {
+      box-shadow: 0 14px 32px rgba(67, 44, 70, 0.11);
+      transform: translateY(-2px);
+    }
+
+    .logout-section {
+      align-self: end;
+      margin-top: 22px;
+    }
+
+    social-media {
+      grid-column: 1 / -1;
+      width: 100%;
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1080px) {
+  :host-context(html:not(.plt-capacitor)) {
+    .profile {
+      grid-template-columns: 1fr;
+      width: min(100%, 920px);
+    }
+
+    .user-profile-main {
+      position: relative;
+      top: auto;
+      min-height: 330px;
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 860px) {
+  :host-context(html:not(.plt-capacitor)) {
+    .profile-content {
+      grid-template-columns: 1fr;
+    }
+  }
+}

@@ -2,6 +2,7 @@ import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Capacitor } from '@capacitor/core';
 import { HttpClientModule } from '@angular/common/http';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
@@ -43,6 +44,8 @@ interface VisualOption {
     styleUrls: ['./questions.component.scss']
 })
 export class QuestionsComponent implements OnInit, OnDestroy {
+    readonly isWebBrowser = !Capacitor.isNativePlatform();
+
     // Heading shown in the navigator
     quizTitle = 'Apple Orchard Math Challenge';
 

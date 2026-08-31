@@ -1,5 +1,5 @@
 <ion-content>
-    <main class="institute-detail-fill-container">
+    <main class="institute-detail-fill-container" [class.institute-detail-fill-container--web]="isWebBrowser">
         <div class="find-your-institute">
             <superme-navigator heading="" [showSubtext]="false" (back)="goBack()"></superme-navigator>
             <div class="image-n-text d-flex flex-column justify-content-center align-items-center">

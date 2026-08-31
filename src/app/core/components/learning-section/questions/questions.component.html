@@ -1,4 +1,4 @@
-<ion-content #content fullscreen class="quiz-question-content">
+<ion-content #content fullscreen class="quiz-question-content" [class.quiz-question-content--web]="isWebBrowser">
     <ng-container *ngIf="currentQuestion as question">
         <div class="quiz-question-page">
             <header class="quiz-header">

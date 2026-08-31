@@ -15,6 +15,34 @@
   }
 }
 
+@media (hover: hover) and (pointer: fine) {
+  :host-context(html:not(.plt-capacitor)) {
+    .profile-content-main {
+      cursor: pointer;
+      transition: background-color 180ms ease, transform 180ms ease;
+    }
+
+    .profile-content-main:hover {
+      background: linear-gradient(90deg, rgba(247, 241, 255, 0.78), rgba(255, 246, 241, 0.72));
+      transform: translateX(3px);
+    }
+
+    .profile-content-main .eclipse,
+    .profile-content-main .chev {
+      transition: transform 180ms ease, background-color 180ms ease;
+    }
+
+    .profile-content-main:hover .eclipse {
+      background-color: #f0e9fb;
+      transform: scale(1.06);
+    }
+
+    .profile-content-main:hover .chev {
+      transform: translateX(3px);
+    }
+  }
+}
+
 .content-left {
   display: flex;
   align-items: center;
