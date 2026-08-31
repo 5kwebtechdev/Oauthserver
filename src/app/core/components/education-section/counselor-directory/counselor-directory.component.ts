@@ -2,13 +2,14 @@ import { CommonModule, Location } from '@angular/common';
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Share } from '@capacitor/share';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
-import { Tutor, formatContactModes, formatExperience } from '../../../models/tutor.model';
+import { Tutor, SelectedFilters, formatContactModes, formatExperience } from '../../../models/tutor.model';
+import { TutorAllFilterComponent } from '../../tutor-section/tutor-all-filter/tutor-all-filter.component';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { PetAgeService } from '../../../services/pet-age.service';
@@ -42,6 +43,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   entityType = 'COUNSELOR';
   directoryTitle = 'Counselors';
   singularTitle = 'Counselor';
+  educationFilters: SelectedFilters | null = null;
 
   private readonly subscriptions = new Subscription();
   private readonly likeSubscriptions = new Map<number, Subscription>();
@@ -54,7 +56,8 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     private readonly likeService: TutorLikeService,
     private readonly authService: AuthService,
     private readonly core: CoreService,
-    private readonly petAgeService: PetAgeService
+    private readonly petAgeService: PetAgeService,
+    private readonly modalCtrl: ModalController
   ) {}
 
   /** Panda uses the same Figma artwork shown on Home/Coins/Learning instead of this page's decorative mascot. */
@@ -152,7 +155,9 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
     this.subscriptions.add(
-      this.tutorService.getTutorsByEntityType(this.entityType).subscribe({
+      (this.educationFilters && this.entityType !== 'COUNSELOR'
+        ? this.tutorService.searchDirectory(this.entityType, this.educationFilters)
+        : this.tutorService.getTutorsByEntityType(this.entityType)).subscribe({
         next: counselors => {
           this.counselors = Array.isArray(counselors) ? counselors : [];
           this.counselors.forEach(counselor => this.watchLikes(counselor));
@@ -160,10 +165,23 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.isLoading = false;
-          this.errorMessage = 'We couldn’t load counselors right now. Check your connection and try again.';
+          this.errorMessage = `We couldn’t load ${this.directoryTitle.toLowerCase()} right now. Check your connection and try again.`;
         }
       })
     );
+  }
+
+  async openEducationFilters(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: TutorAllFilterComponent,
+      componentProps: { initialFilters: this.educationFilters, useServerResults: true }
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data?.clearAll || data?.filters) {
+      this.educationFilters = data.clearAll ? null : data.filters;
+      this.loadCounselors();
+    }
   }
 
   toggleVerifiedMenu(event: Event): void {

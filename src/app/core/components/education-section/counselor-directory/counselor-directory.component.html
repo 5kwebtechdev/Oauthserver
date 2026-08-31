@@ -60,13 +60,18 @@
           </div>
         </header>
 
-        <div class="counselor-filter-row" *ngIf="!isLoading && !errorMessage">
-          <button type="button" (click)="openFilters('specialization')">
+        <div class="counselor-filter-row" *ngIf="!isLoading">
+          <button *ngIf="entityType !== 'COUNSELOR'" type="button" (click)="openEducationFilters()">
+            <img src="assets/Icons-Neutral/Icon-Tutor-Subjects.png" alt="" aria-hidden="true">
+            <span>{{ educationFilters ? 'Filters applied' : 'Filters' }}</span>
+            <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
+          </button>
+          <button *ngIf="entityType === 'COUNSELOR'" type="button" (click)="openFilters('specialization')">
             <img src="assets/Icons-Neutral/Icon-Tutor-Subjects.png" alt="" aria-hidden="true">
             <span>Specialization</span>
             <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
           </button>
-          <button type="button" (click)="openFilters('experience')">
+          <button *ngIf="entityType === 'COUNSELOR'" type="button" (click)="openFilters('experience')">
             <img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">
             <span>Experience</span>
             <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">

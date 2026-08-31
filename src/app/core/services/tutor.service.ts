@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError, forkJoin } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../../package/api/auth.service';
@@ -11,7 +11,8 @@ import {
     TutorSortOption,
     toTutorListItem,
     getExperienceYears,
-    SelectedFilters
+    SelectedFilters,
+    TutorCategory
 } from '../models/tutor.model';
 
 @Injectable({
@@ -148,6 +149,34 @@ export class TutorService {
      * `fetchTutorsByEntityType` deliberately retains its legacy empty-array
      * fallback for callers that predate inline error states.
      */
+    searchDirectory(entityType: string, filters: SelectedFilters): Observable<Tutor[]> {
+        // Filter the entity-specific directory using its saved education mappings.
+        // The legacy POST /tutors/search is not available on every deployment.
+        return forkJoin({
+            tutors: this.getTutorsByEntityType(entityType),
+            categories: this.http.get<TutorCategory[]>(`${this.apiUrl}/tutors/categories`, { headers: this.getHeaders() })
+        }).pipe(map(({ tutors, categories }) => {
+            const normalize = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const category = categories.find(item => normalize(item.categoryKey) === normalize(filters.categoryKey));
+            if (!category) return [];
+            return tutors.filter(tutor => (tutor.categoryMappings || []).some(mapping => {
+                if (String(mapping.categoryId) !== String(category.id)) return false;
+                let fields: Record<string, unknown> = {};
+                try {
+                    fields = typeof mapping.selectedFieldOptions === 'string'
+                        ? JSON.parse(mapping.selectedFieldOptions) : mapping.selectedFieldOptions || {};
+                } catch { return false; }
+                return Object.entries(filters.filters).every(([key, selected]) => {
+                    if (!selected.length) return true;
+                    const matchingKey = Object.keys(fields || {}).find(field => normalize(field) === normalize(key));
+                    const raw = matchingKey ? fields[matchingKey] : undefined;
+                    const values = (Array.isArray(raw) ? raw : raw == null ? [] : [raw]).map(normalize);
+                    return selected.some(value => values.includes(normalize(value)));
+                });
+            }));
+        }));
+    }
+
     getTutorsByEntityType(entityType: string): Observable<Tutor[]> {
         const normalizedType = String(entityType || '').trim().toUpperCase();
         const params = new HttpParams().set('entityType', normalizedType);

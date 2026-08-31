@@ -39,7 +39,6 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
 import { MoodService } from '../../core/services/mood.service';
 import { MoodTransition } from '../../core/models/mood.model';
 import { PetAgeService } from '../../core/services/pet-age.service';
-import { Capacitor } from '@capacitor/core';
 
 type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
 
@@ -86,8 +85,6 @@ type HomeTimePeriod = 'morning' | 'evening' | 'night';
   ]
 })
 export class UserDashboardComponent implements OnInit, OnDestroy {
-  // Reels are temporarily unavailable on iOS while that experience is revised.
-  public readonly showReelPreview = Capacitor.getPlatform() !== 'ios';
 
   // Minimal properties used by the template
   public userName = '';
