@@ -1,94 +1,127 @@
-import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
+import { ReelsExpandComponent } from '../reel-expand/reels-expand.component';
+import { ReelService, YoutubeReel } from '../../../services/reel.service';
+import { ReelBookmarksService } from '../../../services/reel-bookmarks.service';
+
+interface BookmarkedReel {
+  id: number;
+  videoId: string;
+  image: string;
+  title: string;
+  author: string;
+  avatar: string;
+  likes: string;
+  likeCount: number;
+  commentCount: number;
+  liked: boolean;
+  saved: boolean;
+  video: string;
+  tags: string;
+  category: string;
+  duration: string;
+  link?: string;
+}
 
 @Component({
   selector: 'bookmark-reels',
   templateUrl: './bookmark-reels.component.html',
   styleUrls: ['./bookmark-reels.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, SupermeCardHeaderComponent]
+  imports: [CommonModule, IonicModule, SupermeCardHeaderComponent, ReelsExpandComponent]
 })
 export class BookmarkReelsComponent implements OnInit {
-  @Input() items: any[] = [];
+  readonly fallbackThumbnail = 'assets/figma/reels/reel-volcano.png';
   title = 'Bookmarked Reels';
+  reels: BookmarkedReel[] = [];
+  isLoading = true;
+  private showMyReels = false;
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
-  // Bookmarked categories with their reels
-  bookmarkedCategories = [
-    {
-      category: 'Science Wonders',
-      reels: [
-        { id: 1, image: 'assets/images/reel-1-placeholder.png', title: 'Epic Volcano Eruption' },
-        { id: 2, image: 'assets/images/reel-1-placeholder.png', title: 'Crystal Growing' },
-        { id: 3, image: 'assets/images/reel-1-placeholder.png', title: 'Magnet Tricks' },
-        { id: 4, image: 'assets/images/reel-1-placeholder.png', title: 'Physics Fun' }
-      ]
-    },
-    {
-      category: 'Creative Arts',
-      reels: [
-        { id: 5, image: 'assets/images/reel-1-placeholder.png', title: 'Sunset Painting' },
-        { id: 6, image: 'assets/images/reel-1-placeholder.png', title: 'Finger Art' },
-        { id: 7, image: 'assets/images/reel-1-placeholder.png', title: 'Paper Crafts' },
-        { id: 8, image: 'assets/images/reel-1-placeholder.png', title: 'Drawing Tips' }
-      ]
-    },
-    {
-      category: 'Comedy & Fun',
-      reels: [
-        { id: 9, image: 'assets/images/reel-1-placeholder.png', title: 'Funny Faces' },
-        { id: 10, image: 'assets/images/reel-1-placeholder.png', title: 'Pet Tricks' },
-        { id: 11, image: 'assets/images/reel-1-placeholder.png', title: 'Dance Moves' },
-        { id: 12, image: 'assets/images/reel-1-placeholder.png', title: 'Jokes Time' }
-      ]
-    },
-    {
-      category: 'Science Wonders',
-      reels: [
-        { id: 13, image: 'assets/images/reel-1-placeholder.png', title: 'Space Facts' },
-        { id: 14, image: 'assets/images/reel-1-placeholder.png', title: 'Robot Building' },
-        { id: 15, image: 'assets/images/reel-1-placeholder.png', title: 'Chemistry Fun' },
-        { id: 16, image: 'assets/images/reel-1-placeholder.png', title: 'Cool Experiments' }
-      ]
-    }
-  ];
+  constructor(
+    private readonly route: ActivatedRoute,
+    private readonly reelService: ReelService,
+    private readonly reelBookmarks: ReelBookmarksService
+  ) {}
 
-  ngOnInit() {
-    // Load bookmarked reels from a service or local storage
-    // For now, using mock data above
-
-    // Detect if we came from My Reels (router set query param) so header reads "My Reels"
-    const src = this.route.snapshot.queryParamMap.get('source');
-    if (src === 'my-reels') {
+  ngOnInit(): void {
+    this.showMyReels = this.route.snapshot.queryParamMap.get('source') === 'my-reels';
+    if (this.showMyReels) {
       this.title = 'My Reels';
     }
+    this.loadReels();
   }
 
   goBack(): void {
     window.history.back();
   }
 
-  onViewAll(): void {
-    // Navigate to the global reels listing (adjust route if needed)
-    this.router.navigate(['/authed/reels']);
+  openReel(reel: BookmarkedReel): void {
+    const startIndex = this.reels.findIndex(item => item.id === reel.id);
+    window.dispatchEvent(new CustomEvent('openReelPlayAll', {
+      detail: { slides: this.reels, startIndex: Math.max(0, startIndex) }
+    }));
   }
 
-  openReel(reelOrCategory: any): void {
-    // If this looks like a category object, navigate to the all-reels listing
-    // passing the category name as a route parameter so AllReelsComponent
-    // can read it via route.paramMap.get('category').
-    if (reelOrCategory && reelOrCategory.category) {
-      const cat = reelOrCategory.category;
-      // Use matrix param so paramMap will contain 'category'
-      this.router.navigate(['/authed/reels', { category: encodeURIComponent(cat) }]);
-      return;
+  onThumbnailError(reel: BookmarkedReel): void {
+    if (reel.image !== this.fallbackThumbnail) {
+      reel.image = this.fallbackThumbnail;
     }
+  }
 
-    // Otherwise treat it as a single reel selection (placeholder behavior)
-    console.log('Opening reel:', reelOrCategory);
+  removeBookmark(reel: BookmarkedReel, event: Event): void {
+    event.stopPropagation();
+    this.reelBookmarks.toggle(reel.id);
+    this.reels = this.reels.filter(item => item.id !== reel.id);
+  }
+
+  trackReel(_index: number, reel: BookmarkedReel): number {
+    return reel.id;
+  }
+
+  private loadReels(): void {
+    const savedIds = this.reelBookmarks.savedIds();
+    this.reelService.getReels().subscribe({
+      next: rows => {
+        const sourceRows = this.showMyReels ? rows : rows.filter(reel => savedIds.has(String(reel.id)));
+        this.reels = sourceRows.map(reel => this.toViewModel(reel));
+        this.isLoading = false;
+      },
+      error: () => {
+        this.reels = [];
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private toViewModel(reel: YoutubeReel): BookmarkedReel {
+    const raw = reel as Record<string, unknown>;
+    const videoId = String(reel.videoId || '').trim();
+    return {
+      id: reel.id,
+      videoId,
+      image: this.firstText(raw['thumbnailUrl'], raw['thumbnail'])
+        || (videoId ? `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg` : this.fallbackThumbnail),
+      title: this.firstText(raw['title'], raw['caption'], raw['description']) || 'YouTube Reel',
+      author: this.firstText(raw['author'], raw['creatorName']) || 'SuperMe Creator',
+      avatar: this.firstText(raw['authorAvatarUrl'], raw['avatarUrl']) || 'assets/figma/reels/avatar.png',
+      likes: String(Number(reel.likeCount) || 0),
+      likeCount: Number(reel.likeCount) || 0,
+      commentCount: Number(reel.commentCount) || 0,
+      liked: Boolean(reel.liked),
+      saved: this.reelBookmarks.isSaved(reel.id),
+      video: '',
+      tags: this.firstText(raw['tags'], raw['hashtags']) || '',
+      category: this.firstText(raw['categoryName'], raw['category']) || '',
+      duration: this.firstText(raw['duration'], raw['timeDuration']) || '',
+      link: videoId ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}` : undefined
+    };
+  }
+
+  private firstText(...values: unknown[]): string | undefined {
+    const match = values.find(value => typeof value === 'string' && value.trim());
+    return typeof match === 'string' ? match.trim() : undefined;
   }
 }

@@ -432,16 +432,7 @@
               <span>{{ shouldShowUsernameError() ? getUsernameValidationMessage() : 'Great! This username is available' }}</span>
             </p>
 
-            <p id="username-policy-message" class="username-policy-note" *ngIf="shouldShowUsernameSuccess()">
-              <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-              <span>You cannot change it again for 30 days.</span>
-            </p>
-
-            <p class="username-figma-helper">
-              <img src="assets/Images-Transparent/details-info-figma.svg" alt="" aria-hidden="true" />
-              <span>This username will appear throughout SuperMeApp</span>
-            </p>
-            <p class="username-change-note"><span aria-hidden="true"></span>Relax, you can change it again</p>
+            <p class="username-change-note">Relax, you can change it again</p>
           </div>
           </ng-container>
 
@@ -468,6 +459,10 @@
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Date of Birth</span>
             <span class="profile-field-meta">
+              <span *ngIf="currentRole === 'self' || currentRole === 'child'"
+                class="profile-field-hint profile-field-purpose">
+                To show personalized content
+              </span>
               <span *ngIf="isOAuthSignup" class="profile-optional-badge">Optional</span>
               <span *ngIf="computedAge !== null" class="profile-field-hint age-count">
                 {{ computedAge }} years old

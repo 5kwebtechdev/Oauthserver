@@ -77,6 +77,19 @@
   box-shadow: none;
   scroll-snap-align: start;
   text-decoration: none;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  contain: layout paint;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reel-preview-card--loading {
+    animation: none;
+  }
 }
 
 .reel-preview-card--loading {

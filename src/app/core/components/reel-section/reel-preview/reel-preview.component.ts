@@ -1,10 +1,11 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { catchError, map, of } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
-import { AuthService } from '../../../services/auth.service';
+import { ReelService } from '../../../services/reel.service';
+import { ReelBookmarksService } from '../../../services/reel-bookmarks.service';
+import { ReelsExpandComponent } from '../reel-expand/reels-expand.component';
 
 export interface ReelPreviewItem {
   id: string | number;
@@ -16,12 +17,13 @@ export interface ReelPreviewItem {
   title?: string;
   likeCount?: number;
   commentCount?: number;
+  liked?: boolean;
 }
 
 @Component({
   selector: 'reel-preview-section',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ReelsExpandComponent],
   templateUrl: './reel-preview.component.html',
   styleUrls: ['./reel-preview.component.scss']
 })
@@ -36,8 +38,8 @@ export class ReelPreviewSectionComponent implements OnInit {
   isLoading = true;
 
   constructor(
-    private http: HttpClient,
-    private authService: AuthService
+    private readonly reelService: ReelService,
+    private readonly reelBookmarks: ReelBookmarksService
   ) {}
 
   ngOnInit(): void {
@@ -54,11 +56,39 @@ export class ReelPreviewSectionComponent implements OnInit {
       : this.fallbackThumbnailUrl;
   }
 
+  openReel(item: ReelPreviewItem, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const slides = this.items.map(reel => ({
+      id: reel.id,
+      videoId: reel.videoId || '',
+      image: reel.thumbnailUrl || this.fallbackThumbnailUrl,
+      avatar: reel.authorAvatarUrl || 'assets/figma/reels/avatar.png',
+      author: reel.author || 'SuperMe Creator',
+      title: reel.title || 'YouTube Reel',
+      category: reel.category || '',
+      tags: '',
+      video: '',
+      duration: '',
+      liked: Boolean(reel.liked),
+      saved: this.reelBookmarks.isSaved(reel.id),
+      likeCount: reel.likeCount || 0,
+      likes: String(reel.likeCount || 0),
+      commentCount: reel.commentCount || 0,
+      link: reel.videoId ? `https://www.youtube.com/watch?v=${encodeURIComponent(reel.videoId)}` : undefined
+    }));
+    const startIndex = this.items.findIndex(reel => reel.id === item.id);
+
+    window.dispatchEvent(new CustomEvent('openReelPlayAll', {
+      detail: { slides, startIndex: Math.max(0, startIndex) }
+    }));
+  }
+
   private loadReels(): void {
-    this.http.get<unknown>(`${environment.apiUrl}/reels`).pipe(
+    this.reelService.getReels().pipe(
       map(response => this.normalizeResponse(response)),
-      switchMap(items => items.length ? of(items) : this.loadPublicReels()),
-      catchError(() => this.loadPublicReels())
+      catchError(() => of([] as ReelPreviewItem[]))
     ).subscribe({
       next: items => {
         this.items = items.slice(0, this.maxItems);
@@ -69,15 +99,6 @@ export class ReelPreviewSectionComponent implements OnInit {
         this.isLoading = false;
       }
     });
-  }
-
-  private loadPublicReels() {
-    const userId = this.authService.getUserId();
-    const params = userId ? new HttpParams().set('userId', userId) : undefined;
-    return this.http.get<unknown>(`${environment.apiUrl}/api/reels`, { params }).pipe(
-      map(response => this.normalizeResponse(response)),
-      catchError(() => of([] as ReelPreviewItem[]))
-    );
   }
 
   private normalizeResponse(response: unknown): ReelPreviewItem[] {
@@ -126,7 +147,8 @@ export class ReelPreviewSectionComponent implements OnInit {
           authorAvatarUrl: this.firstText(raw?.author?.avatarUrl, raw?.user?.profilePicUrl, raw?.creatorAvatarUrl),
           title: this.firstText(raw?.title, raw?.reelTitle, raw?.caption, raw?.description),
           likeCount: this.toOptionalNumber(raw?.likeCount ?? raw?.likes),
-          commentCount: this.toOptionalNumber(raw?.commentCount ?? raw?.comments)
+          commentCount: this.toOptionalNumber(raw?.commentCount ?? raw?.comments),
+          liked: Boolean(raw?.liked)
         };
       })
       .filter((item: ReelPreviewItem) => !!item.thumbnailUrl || !!item.videoId || !!item.title);

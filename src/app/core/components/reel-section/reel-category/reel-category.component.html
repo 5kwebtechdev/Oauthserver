@@ -67,7 +67,7 @@
         [attr.aria-label]="'Play ' + reel.title"
         (click)="openReel(reel, $event)"
         (keydown)="onCardKeydown($event, reel)">
-        <img class="reel-card-image" [src]="reel.image" [alt]="reel.title">
+        <img class="reel-card-image" [src]="reel.image" [alt]="reel.title" loading="lazy" decoding="async">
         <div class="reel-card-overlay"></div>
 
         <img

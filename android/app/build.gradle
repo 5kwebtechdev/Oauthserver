@@ -35,8 +35,8 @@ android {
         applicationId = "com.superme.app"
         minSdk = 26
         targetSdk = rootProject.ext.targetSdkVersion
-        versionCode = 42
-        versionName = "0.1.11"
+        versionCode = 43
+        versionName = "0.1.12"
         manifestPlaceholders = [    
             deeplinkHost: envOrProp('DEEPLINK_HOST') ?: 'supermeapp.com',
             deeplinkAltHost: envOrProp('DEEPLINK_ALT_HOST') ?: 'www.supermeapp.com',

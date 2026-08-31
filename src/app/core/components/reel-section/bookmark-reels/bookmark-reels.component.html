@@ -1,24 +1,37 @@
 <ion-content [fullscreen]="true" class="ion-padding-top">
   <div class="safe-area-top"></div>
+  <superme-card-header [title]="title" [showBackArrow]="true" (backClick)="goBack()"></superme-card-header>
 
-  <superme-card-header [title]="title" [showBackArrow]="true" (backClick)="goBack()">
-    <div superme-header-actions *ngIf="title === 'My Reels'">
-    </div>
-  </superme-card-header>
-
-  <div class="bookmark-reels-page">
-    <div class="categories-container">
-      <div class="category-item" *ngFor="let category of bookmarkedCategories">
-        <div class="reels-collage" (click)="openReel(category)">
-          <div class="collage-item" *ngFor="let reel of category.reels.slice(0, 4)">
-            <img [src]="reel.image" [alt]="reel.title">
-          </div>
+  <main class="bookmark-reels-page">
+    <div class="bookmark-grid" *ngIf="!isLoading && reels.length">
+      <article
+        class="bookmark-card"
+        *ngFor="let reel of reels; trackBy: trackReel"
+        role="button"
+        tabindex="0"
+        (click)="openReel(reel)"
+        (keydown.enter)="openReel(reel)">
+        <img class="bookmark-thumbnail" [src]="reel.image" [alt]="reel.title" loading="lazy" (error)="onThumbnailError(reel)">
+        <span class="bookmark-play" aria-hidden="true">▶</span>
+        <button
+          *ngIf="title === 'Bookmarked Reels'"
+          type="button"
+          class="remove-bookmark"
+          aria-label="Remove saved reel"
+          (click)="removeBookmark(reel, $event)">🔖</button>
+        <div class="bookmark-copy">
+          <strong>{{ reel.title }}</strong>
+          <span>{{ reel.author }}</span>
         </div>
-
-        <div class="category-name">
-          {{ category.category }}
-        </div>
-      </div>
+      </article>
     </div>
-  </div>
+
+    <div class="empty-state" *ngIf="!isLoading && !reels.length">
+      <div class="empty-icon" aria-hidden="true">🔖</div>
+      <h2>{{ title === 'My Reels' ? 'No reels yet' : 'No saved reels yet' }}</h2>
+      <p>{{ title === 'My Reels' ? 'Your uploaded reels will appear here.' : 'Tap the bookmark icon on a reel to save it here.' }}</p>
+    </div>
+  </main>
+
+  <reels-expand></reels-expand>
 </ion-content>
