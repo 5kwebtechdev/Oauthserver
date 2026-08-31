@@ -2,6 +2,7 @@ import { CommonModule, Location } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -40,7 +41,7 @@ export class ParentLearningListingComponent implements OnInit, OnDestroy {
       icon: 'assets/figma/parent-home/parent-learning-quizzes.webp'
     }
   ];
-  readonly pageSize = 5;
+  readonly pageSize = Capacitor.isNativePlatform() ? 5 : 6;
 
   selectedCategory: ParentLearningCategory = 'blogs';
   searchOpen = false;

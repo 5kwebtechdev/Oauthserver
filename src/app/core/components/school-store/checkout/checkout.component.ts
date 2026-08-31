@@ -11,7 +11,7 @@ import { CustomToastService } from '../../../services/custom-toast.service';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { environment } from '../../../../../environments/environment';
 
-export type PaymentMethod = 'COD' | 'ONLINE';
+export type PaymentMethod = 'ONLINE';
 
 interface CheckoutSummary {
     items: any[];
@@ -55,7 +55,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     schoolId: number | null = null;
     classId: number | null = null;
 
-    paymentMethod: PaymentMethod = 'COD';
+    readonly paymentMethod: PaymentMethod = 'ONLINE';
 
     summary: CheckoutSummary | null = null;
     summaryLoading = false;
@@ -180,13 +180,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         });
     }
 
-    selectPayment(m: PaymentMethod): void {
-        if (this.placing || this.paymentMethod === m) return;
-        this.paymentMethod = m;
-        this.fetchSummary();
-        this.cdr.detectChanges();
-    }
-
     get totalDisplay(): string {
         const t = this.summary?.payableTotal ?? 0;
         return '₹' + t.toFixed(2);
@@ -220,7 +213,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             { headers: this.headers() }
         ).subscribe({
             next: (res) => {
-                if (this.paymentMethod === 'ONLINE') {
                     const paymentUrl = this.resolvePaymentUrl(res);
                     if (paymentUrl.provided && !paymentUrl.url) {
                         this.placing = false;
@@ -234,14 +226,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
                     } else {
                         this.openRazorpay(res);
                     }
-                } else {
-                    this.placing = false;
-                    this.orderId = res?.orderId ?? res?.id ?? null;
-                    this.orderNumber = res?.orderNumber ?? null;
-                    this.cartService.reset();
-                    this.showSuccessSheet = true;
-                    this.cdr.detectChanges();
-                }
             },
             error: (err) => {
                 this.placing = false;

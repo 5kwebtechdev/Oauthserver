@@ -3,6 +3,128 @@
   width: 100%;
 }
 
+// Browser entry page only: preserve every native and downstream form layout.
+@media (min-width: 768px) {
+  :host-context(html:not(.plt-capacitor)) .books-choice-content {
+    --background: linear-gradient(135deg, #f2effb, #fffaf5 55%, #eef7fb);
+    --padding-bottom: 32px;
+
+    .second-hand-books-page {
+      width: min(calc(100% - 48px), 1180px);
+      min-height: 0;
+      margin: 28px auto 40px;
+      padding: 16px;
+      border: 1px solid #ece6f5;
+      border-radius: 32px;
+      background: #fff;
+      box-shadow: 0 16px 48px rgba(67, 36, 119, .08);
+      box-sizing: border-box;
+    }
+
+    .books-hero {
+      min-height: 300px;
+      border-radius: 24px;
+      background: #e3dfff;
+    }
+
+    .books-toolbar {
+      padding: 22px 28px;
+      gap: 12px;
+      h1 { font-size: clamp(22px, 2.2vw, 30px); }
+    }
+
+    .books-back {
+      width: 44px;
+      height: 44px;
+      flex-basis: 44px;
+      background: rgba(255, 255, 255, .8);
+    }
+
+    .books-hero__message {
+      left: 8%;
+      right: 8%;
+      height: 208px;
+    }
+
+    .books-speech {
+      width: calc(100% - 220px);
+      max-width: 480px;
+      top: 26px;
+      padding: 22px 24px;
+      border-radius: 24px;
+      p { font-size: clamp(22px, 2.4vw, 30px); line-height: 1.25; }
+      > span { margin-top: 10px; font-size: 17px; }
+    }
+
+    .books-hero__pet {
+      width: 210px;
+      max-height: 208px;
+      bottom: 0;
+    }
+
+    .books-main { min-height: 0; padding: 32px 16px 20px; }
+    .books-choice { gap: 28px; }
+    .books-choice__heading {
+      h2 { font-size: clamp(24px, 2.4vw, 30px); }
+      p { max-width: none; margin-top: 8px; font-size: 16px; }
+    }
+
+    .books-choice__actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .books-action-card {
+      position: relative;
+      min-width: 0;
+      min-height: 244px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 24px;
+      border: 1px solid #dce5f5;
+      border-radius: 22px;
+      background: linear-gradient(145deg, #eef4ff, #f8faff);
+      box-shadow: 0 5px 18px rgba(49, 88, 168, .06);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+      &:nth-child(2) { background: linear-gradient(145deg, #edf8f2, #fafffc); border-color: #d6eadf; }
+      &:nth-child(3) { background: linear-gradient(145deg, #f1ebfb, #fcfaff); border-color: #e5daf4; }
+      &:focus-visible { outline: 3px solid #7341a7; outline-offset: 3px; }
+    }
+
+    .books-action-card__art {
+      width: 76px;
+      height: 76px;
+      flex-basis: 76px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, .8);
+    }
+
+    .books-action-card__content {
+      gap: 6px;
+      strong { font-size: 21px; }
+      span { font-size: 15px; line-height: 1.5; }
+    }
+
+    .books-action-card__arrow { position: absolute; top: 40px; right: 24px; }
+  }
+}
+
+@media (min-width: 768px) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+  :host-context(html:not(.plt-capacitor)) .books-choice-content .books-action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(67, 36, 119, .13);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 959px) {
+  :host-context(html:not(.plt-capacitor)) .books-choice-content {
+    .books-choice__actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .books-action-card:last-child { grid-column: 1 / -1; min-height: 120px; flex-direction: row; align-items: center; padding-right: 84px; }
+  }
+}
+
 /* This route is a full-bleed mobile experience.  The shared readable-width
    route cap leaves visible white rails on wider iPhones unless this page opts
    out explicitly. */

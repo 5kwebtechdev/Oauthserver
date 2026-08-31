@@ -21,9 +21,9 @@
     </button>
   </nav>
 
-  <div class="eduhub-loading" *ngIf="isLoading || isExternalCategoryLoading"><ion-spinner name="crescent"></ion-spinner></div>
+  <div class="eduhub-loading" *ngIf="isSelectedCategoryLoading"><ion-spinner name="crescent"></ion-spinner></div>
 
-  <ng-container *ngIf="!isLoading && !isExternalCategoryLoading">
+  <ng-container *ngIf="!isSelectedCategoryLoading">
     <ng-container *ngIf="selectedCategoryKey === 'tutors'">
       <div class="eduhub-tutors" *ngIf="visibleTutors.length">
         <article class="eduhub-tutor" *ngFor="let tutor of visibleTutors; trackBy: trackTutor" (click)="onViewProfile(tutor)" role="button" tabindex="0" (keyup.enter)="onViewProfile(tutor)">
@@ -83,6 +83,7 @@
           </div>
           <div class="eduhub-tutor__footer">
             <span>{{ listing.fee != null ? ('₹ ' + listing.fee) : 'Contact for pricing' }}</span>
+            <button type="button" *ngIf="listing.counselor as counselor" (click)="onViewCounselorProfile(counselor)">Check Profile</button>
           </div>
         </article>
       </div>

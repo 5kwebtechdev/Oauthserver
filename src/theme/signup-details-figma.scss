@@ -1093,8 +1093,10 @@
     border-radius: 24px;
     background: rgba(255, 255, 255, 0.38);
     box-shadow: 0 12px 32px rgba(67, 36, 119, 0.07);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    // A backdrop filter makes this form the containing block of the fixed
+    // birthday overlay. Keep the translucent card without trapping the modal.
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     box-sizing: border-box;
   }
 
