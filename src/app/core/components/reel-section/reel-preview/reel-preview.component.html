@@ -8,10 +8,9 @@
   </div>
 
   <div class="reel-preview-grid" *ngIf="!isLoading; else loadingCards">
-    <a class="reel-preview-card"
+    <button type="button" class="reel-preview-card"
       *ngFor="let item of items; trackBy: trackByReel"
-      [routerLink]="['/authed/reel-section']"
-      [queryParams]="item.videoId ? { videoId: item.videoId } : null"
+      (click)="openReel(item, $event)"
       [attr.aria-label]="item.title || 'Open reel'">
 
       <img *ngIf="item.thumbnailUrl"
@@ -39,7 +38,7 @@
           {{ item.likeCount }} likes
         </p>
       </div>
-    </a>
+    </button>
   </div>
 
   <ng-template #loadingCards>
@@ -49,3 +48,5 @@
     </div>
   </ng-template>
 </section>
+
+<reels-expand></reels-expand>

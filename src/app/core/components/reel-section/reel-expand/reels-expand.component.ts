@@ -1,5 +1,8 @@
 import { Component, OnDestroy, OnInit, ViewChild, ElementRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReelService } from '../../../services/reel.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ReelBookmarksService } from '../../../services/reel-bookmarks.service';
 
 @Component({
   selector: 'reels-expand',
@@ -28,9 +31,20 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
   private wasPlayingBeforeOptions = false;
 
   @ViewChild('playerVideo', { static: false }) playerVideo!: ElementRef<HTMLVideoElement>;
+  @ViewChild('youtubePlayer', { static: false }) youtubePlayer?: ElementRef<HTMLIFrameElement>;
 
   private boundOpenSingle: any;
   private boundOpenPlayAll: any;
+  private likeRequestInProgress = false;
+  private touchStartY: number | null = null;
+  private suppressNextMediaClick = false;
+  private lastWheelNavigationAt = 0;
+
+  constructor(
+    private readonly reelService: ReelService,
+    private readonly sanitizer: DomSanitizer,
+    private readonly reelBookmarks: ReelBookmarksService
+  ) {}
 
   ngOnInit(): void {
     // open single reel
@@ -40,6 +54,7 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
         if (detail) {
           this.playlist = [detail];
           this.currentIndex = 0;
+          this.prepareYoutubePlayer(this.current);
           this.expanded = true;
           
           // Add body class when opening
@@ -57,8 +72,14 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
       try {
         const detail = ev && ev.detail;
         if (detail && Array.isArray(detail.slides)) {
-          this.playlist = detail.slides.slice();
-          this.currentIndex = 0;
+          // Keep the playlist light. Only the active YouTube player is prepared;
+          // creating trusted iframe URLs for every off-screen reel is unnecessary.
+          this.playlist = detail.slides;
+          const requestedIndex = Number(detail.startIndex);
+          this.currentIndex = Number.isInteger(requestedIndex)
+            ? Math.min(Math.max(requestedIndex, 0), this.playlist.length - 1)
+            : 0;
+          this.prepareYoutubePlayer(this.current);
           this.expanded = true;
           
           // Add body class when opening
@@ -125,6 +146,8 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
 
   playCurrent() {
     this.pauseVideo();
+    this.prepareYoutubePlayer(this.current);
+    this.refreshCurrentStatus();
     const videoEl = this.playerVideo && this.playerVideo.nativeElement;
     if (videoEl && this.current) {
       // if current has a video URL use it, otherwise nothing to play
@@ -133,42 +156,6 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
         // Set video source
         videoEl.src = this.current.video || this.current.image || '';
         videoEl.load();
-        
-        // Define event handlers
-        const handleTimeUpdate = () => {
-          if (videoEl.duration) {
-            this.videoProgress = (videoEl.currentTime / videoEl.duration) * 100;
-          }
-        };
-        
-        const handleLoadedMetadata = () => {
-          this.videoProgress = 0;
-        };
-        
-        const handlePlay = () => {
-          this.isPlaying = true;
-        };
-        
-        const handlePause = () => {
-          this.isPlaying = false;
-        };
-        
-        const handleEnded = () => {
-          this.onVideoEnded();
-        };
-        
-        // Remove existing listeners and add new ones
-        videoEl.removeEventListener('timeupdate', handleTimeUpdate);
-        videoEl.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        videoEl.removeEventListener('play', handlePlay);
-        videoEl.removeEventListener('pause', handlePause);
-        videoEl.removeEventListener('ended', handleEnded);
-        
-        videoEl.addEventListener('timeupdate', handleTimeUpdate);
-        videoEl.addEventListener('loadedmetadata', handleLoadedMetadata);
-        videoEl.addEventListener('play', handlePlay);
-        videoEl.addEventListener('pause', handlePause);
-        videoEl.addEventListener('ended', handleEnded);
         
         // autoplay where possible
         const tryPlay = async () => {
@@ -199,6 +186,18 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
   // New method for toggle play/pause on screen tap
   togglePlayPause(event: Event) {
     event.stopPropagation();
+    if (this.suppressNextMediaClick) {
+      this.suppressNextMediaClick = false;
+      return;
+    }
+
+    if (this.current?.youtubeEmbedUrl) {
+      this.isPlaying = !this.isPlaying;
+      this.sendYoutubeCommand(this.isPlaying ? 'playVideo' : 'pauseVideo');
+      this.showPlayPauseIndicatorBriefly();
+      return;
+    }
+
     const videoEl = this.playerVideo && this.playerVideo.nativeElement;
     
     if (!videoEl || !this.current?.video) {
@@ -220,17 +219,66 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     }
     
     // Show play/pause indicator briefly
-    this.showPlayPauseIndicator = true;
-    
-    // Clear any existing timeout
-    if (this.indicatorTimeout) {
-      clearTimeout(this.indicatorTimeout);
+    this.showPlayPauseIndicatorBriefly();
+  }
+
+  onVideoTimeUpdate(event: Event): void {
+    const video = event.currentTarget as HTMLVideoElement;
+    this.videoProgress = video.duration
+      ? (video.currentTime / video.duration) * 100
+      : 0;
+  }
+
+  onVideoMetadataLoaded(): void {
+    this.videoProgress = 0;
+  }
+
+  onVideoPlay(): void {
+    this.isPlaying = true;
+  }
+
+  onVideoPause(): void {
+    this.isPlaying = false;
+  }
+
+  onTouchStart(event: TouchEvent): void {
+    this.touchStartY = event.changedTouches[0]?.clientY ?? null;
+  }
+
+  onTouchEnd(event: TouchEvent): void {
+    if (this.touchStartY === null) {
+      return;
     }
-    
-    // Hide indicator after 800ms
-    this.indicatorTimeout = setTimeout(() => {
-      this.showPlayPauseIndicator = false;
-    }, 800);
+
+    const endY = event.changedTouches[0]?.clientY;
+    const deltaY = typeof endY === 'number' ? endY - this.touchStartY : 0;
+    this.touchStartY = null;
+
+    if (Math.abs(deltaY) < 50) {
+      return;
+    }
+
+    this.suppressNextMediaClick = true;
+    if (deltaY < 0) {
+      this.next();
+    } else {
+      this.prev();
+    }
+  }
+
+  onWheel(event: WheelEvent): void {
+    if (Math.abs(event.deltaY) < 30) {
+      return;
+    }
+
+    const now = Date.now();
+    if (now - this.lastWheelNavigationAt < 500) {
+      return;
+    }
+
+    event.preventDefault();
+    this.lastWheelNavigationAt = now;
+    event.deltaY > 0 ? this.next() : this.prev();
   }
 
   onVideoEnded() {
@@ -247,14 +295,14 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
   next() {
     if (this.currentIndex < this.playlist.length - 1) {
       this.currentIndex += 1;
-      this.playCurrent();
+      setTimeout(() => this.playCurrent());
     }
   }
 
   prev() {
     if (this.currentIndex > 0) {
       this.currentIndex -= 1;
-      this.playCurrent();
+      setTimeout(() => this.playCurrent());
     }
   }
 
@@ -332,8 +380,17 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
   }
 
   deleteReel() {
-    this.closeOptions();
-    console.log('Delete Reel clicked', this.current);
+    const reelId = this.current?.id;
+    if (reelId === undefined || reelId === null) {
+      return;
+    }
+
+    this.reelService.deleteReel(reelId).subscribe({
+      next: () => {
+        this.closeOptions();
+        this.close();
+      }
+    });
   }
 
   copyLink() {
@@ -377,20 +434,109 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
   }
 
   toggleLike() {
-    if (this.current) {
-      this.current.liked = !this.current.liked;
-      // Here you could also emit an event or call a service to persist the like
+    const reel = this.current;
+    if (!reel || this.likeRequestInProgress || reel.id === undefined || reel.id === null) {
+      return;
     }
+
+    this.likeRequestInProgress = true;
+    this.reelService.toggleLike(reel.id).subscribe({
+      next: result => {
+        reel.liked = result.liked;
+        reel.likeCount = result.likeCount;
+        reel.likes = this.formatCount(result.likeCount);
+        this.likeRequestInProgress = false;
+      },
+      error: () => {
+        this.likeRequestInProgress = false;
+      }
+    });
   }
 
   toggleSave() {
     if (this.current) {
-      this.current.saved = !this.current.saved;
-      // Here you could also emit an event or call a service to persist the save
+      this.current.saved = this.reelBookmarks.toggle(this.current.id);
     }
   }
 
   private getCurrentLink() {
     return this.current && (this.current.link || this.current.url) ? (this.current.link || this.current.url) : window.location.href;
+  }
+
+  private refreshCurrentStatus(): void {
+    const reel = this.current;
+    if (!reel || reel.id === undefined || reel.id === null) {
+      return;
+    }
+
+    this.reelService.getStatus(reel.id).subscribe({
+      next: status => {
+        reel.liked = status.liked;
+        reel.likeCount = status.likeCount;
+        reel.likes = this.formatCount(status.likeCount);
+        reel.commentCount = status.commentCount;
+      }
+    });
+  }
+
+  private formatCount(value: unknown): string {
+    const count = Number(value) || 0;
+    return count >= 1000
+      ? `${Number((count / 1000).toFixed(count >= 10000 ? 0 : 1))}K`
+      : String(count);
+  }
+
+  private prepareYoutubePlayer(reel: any): void {
+    if (!reel) {
+      return;
+    }
+
+    const videoId = this.extractYoutubeVideoId(reel?.videoId || reel?.link || reel?.url);
+    if (!videoId) {
+      reel.youtubeEmbedUrl = null;
+      return;
+    }
+
+    if (reel.youtubeEmbedUrl && reel.preparedYoutubeVideoId === videoId) {
+      return;
+    }
+
+    const url = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`
+      + '?autoplay=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&controls=0';
+    reel.youtubeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url) as SafeResourceUrl;
+    reel.preparedYoutubeVideoId = videoId;
+  }
+
+  private extractYoutubeVideoId(value: unknown): string | undefined {
+    if (typeof value !== 'string' || !value.trim()) {
+      return undefined;
+    }
+
+    const source = value.trim();
+    if (/^[A-Za-z0-9_-]{11}$/.test(source)) {
+      return source;
+    }
+
+    return source.match(
+      /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i
+    )?.[1];
+  }
+
+  private sendYoutubeCommand(command: 'playVideo' | 'pauseVideo'): void {
+    this.youtubePlayer?.nativeElement.contentWindow?.postMessage(JSON.stringify({
+      event: 'command',
+      func: command,
+      args: []
+    }), '*');
+  }
+
+  private showPlayPauseIndicatorBriefly(): void {
+    this.showPlayPauseIndicator = true;
+    if (this.indicatorTimeout) {
+      clearTimeout(this.indicatorTimeout);
+    }
+    this.indicatorTimeout = setTimeout(() => {
+      this.showPlayPauseIndicator = false;
+    }, 800);
   }
 }

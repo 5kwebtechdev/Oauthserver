@@ -271,6 +271,7 @@ button {
   border-radius: 24px;
   background: #282527;
   overflow: hidden;
+  contain: layout paint;
   cursor: pointer;
   outline: none;
 
@@ -356,8 +357,6 @@ button {
   border: 1px solid #ebe6f5;
   border-radius: 50%;
   background: rgba(235, 230, 245, 0.7);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
   transform: translate(-50%, -50%);
   display: flex;
   align-items: center;

@@ -1,16 +1,37 @@
 <div class="reels-expand" [class.expanded]="expanded">
-  <section class="expanded-player" *ngIf="expanded && current" aria-label="Reel player">
+  <section
+    class="expanded-player"
+    *ngIf="expanded && current"
+    aria-label="Reel player"
+    (touchstart)="onTouchStart($event)"
+    (touchend)="onTouchEnd($event)"
+    (wheel)="onWheel($event)">
     <div class="media-wrap" (click)="togglePlayPause($event)">
+      <iframe
+        *ngIf="current.youtubeEmbedUrl"
+        #youtubePlayer
+        class="reel-youtube-player"
+        [src]="current.youtubeEmbedUrl"
+        [title]="current.title || 'YouTube reel'"
+        loading="eager"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allowfullscreen>
+      </iframe>
       <video
-        *ngIf="current.video"
+        *ngIf="!current.youtubeEmbedUrl && current.video"
         #playerVideo
         class="reel-video"
         [poster]="current.image"
+        preload="metadata"
         playsinline
+        (timeupdate)="onVideoTimeUpdate($event)"
+        (loadedmetadata)="onVideoMetadataLoaded()"
+        (play)="onVideoPlay()"
+        (pause)="onVideoPause()"
         (ended)="onVideoEnded()">
         <source [src]="current.video" type="video/mp4">
       </video>
-      <img *ngIf="!current.video" [src]="current.image" [alt]="current.title">
+      <img *ngIf="!current.youtubeEmbedUrl && !current.video" [src]="current.image" [alt]="current.title" decoding="async">
 
       <div class="play-pause-overlay" [class.show]="showPlayPauseIndicator" aria-hidden="true">
         <span class="play-pause-icon">

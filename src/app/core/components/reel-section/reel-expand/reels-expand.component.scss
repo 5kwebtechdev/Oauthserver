@@ -48,12 +48,19 @@ body.reel-expanded [class*='bottom-nav'] {
 }
 
 .media-wrap > img,
-.media-wrap > video {
+.media-wrap > video,
+.media-wrap > iframe {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
+}
+
+.reel-youtube-player {
+  border: 0;
+  background: #000000;
+  pointer-events: none;
 }
 
 .expanded-player::before {

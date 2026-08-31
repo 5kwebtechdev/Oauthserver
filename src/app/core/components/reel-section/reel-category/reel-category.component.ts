@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 
 import { ReelsExpandComponent } from '../reel-expand/reels-expand.component';
+import { ReelService, YoutubeReel } from '../../../services/reel.service';
+import { ReelBookmarksService } from '../../../services/reel-bookmarks.service';
 
 interface ReelCategory {
   label: string;
@@ -12,6 +14,7 @@ interface ReelCategory {
 
 interface ReelItem {
   id: number;
+  videoId: string;
   category: string;
   author: string;
   title: string;
@@ -24,6 +27,9 @@ interface ReelItem {
   aiGenerated?: boolean;
   saved: boolean;
   liked: boolean;
+  likeCount: number;
+  commentCount: number;
+  link?: string;
 }
 
 @Component({
@@ -33,7 +39,7 @@ interface ReelItem {
   standalone: true,
   imports: [CommonModule, IonicModule, ReelsExpandComponent]
 })
-export class ReelCategoryComponent {
+export class ReelCategoryComponent implements OnInit {
   readonly categories: ReelCategory[] = [
     { label: 'Education', icon: 'assets/figma/reels/categories/education.png' },
     { label: 'How-to', icon: 'assets/figma/reels/categories/how-to.png' },
@@ -49,21 +55,20 @@ export class ReelCategoryComponent {
     { label: 'Productivity', icon: 'assets/figma/reels/categories/productivity.png' }
   ];
 
-  readonly slides: ReelItem[] = [
-    this.createReel(1, 'Education', 'Username', 'Epic Volcano Eruption Experiment!', '20 sec', '10K', true),
-    this.createReel(2, 'How-to', 'LabLearner', 'Grow a Crystal at Home', '30 sec', '8.2K'),
-    this.createReel(3, 'STEM', 'CurioKid', 'Magnet Tricks You Can Try', '25 sec', '6K'),
-    this.createReel(4, 'Arts & Creativity', 'ArtWhiz', 'Painting a Sunset with My Fingers!', '60 sec', '1K'),
-    this.createReel(5, 'Productivity', 'DoodleStar', 'Turn Scribbles into Characters', '40 sec', '4.5K'),
-    this.createReel(6, 'Entertainment', 'CraftyBee', 'Easy Paper Crafts for Rainy Days', '35 sec', '3.2K'),
-    this.createReel(7, 'Fitness', 'FunnyBones', 'Silly Dance Moves to Try', '15 sec', '12K'),
-    this.createReel(8, 'Animals & Nature', 'GiggleGang', 'Tiny Pranks (Nice Ones!)', '22 sec', '5K')
-  ];
+  slides: ReelItem[] = [];
 
   selectedCategory = 'All';
   searchTerm = '';
 
-  constructor(private readonly router: Router) {}
+  constructor(
+    private readonly router: Router,
+    private readonly reelService: ReelService,
+    private readonly reelBookmarks: ReelBookmarksService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadReels();
+  }
 
   get filteredSlides(): ReelItem[] {
     const query = this.searchTerm.trim().toLowerCase();
@@ -101,12 +106,19 @@ export class ReelCategoryComponent {
 
   openReel(reel: ReelItem, event?: Event): void {
     event?.stopPropagation();
-    window.dispatchEvent(new CustomEvent('openReelExpanded', { detail: reel }));
+    const playlist = this.filteredSlides;
+    const startIndex = playlist.findIndex(item => item.id === reel.id);
+    window.dispatchEvent(new CustomEvent('openReelPlayAll', {
+      detail: {
+        slides: playlist,
+        startIndex: Math.max(0, startIndex)
+      }
+    }));
   }
 
   toggleSave(reel: ReelItem, event: Event): void {
     event.stopPropagation();
-    reel.saved = !reel.saved;
+    reel.saved = this.reelBookmarks.toggle(reel.id);
   }
 
   onCardKeydown(event: KeyboardEvent, reel: ReelItem): void {
@@ -124,29 +136,58 @@ export class ReelCategoryComponent {
     return reel.id;
   }
 
-  private createReel(
-    id: number,
-    category: string,
-    author: string,
-    title: string,
-    duration: string,
-    likes: string,
-    aiGenerated = false
-  ): ReelItem {
+  private loadReels(): void {
+    this.reelService.getReels().subscribe({
+      next: reels => {
+        this.slides = reels.map(reel => this.toReelItem(reel));
+      },
+      error: () => {
+        this.slides = [];
+      }
+    });
+  }
+
+  private toReelItem(reel: YoutubeReel): ReelItem {
+    const source = reel as Record<string, unknown>;
+    const videoId = String(reel.videoId || '').trim();
+    const category = this.firstText(source['categoryName'], source['category']) || '';
+    const author = this.firstText(source['author'], source['creatorName']) || 'SuperMe Creator';
+    const title = this.firstText(source['title'], source['caption'], source['description']) || 'YouTube Reel';
+    const duration = this.firstText(source['duration'], source['timeDuration']) || '';
+    const image = this.firstText(source['thumbnailUrl'], source['thumbnail'])
+      || (videoId ? `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg` : 'assets/figma/reels/reel-volcano.png');
+    const avatar = this.firstText(source['authorAvatarUrl'], source['avatarUrl']) || 'assets/figma/reels/avatar.png';
+
     return {
-      id,
+      id: reel.id,
+      videoId,
       category,
       author,
       title,
       duration,
-      likes,
-      tags: '#FunScience #DIYExperiment....',
-      image: 'assets/figma/reels/reel-volcano.png',
-      avatar: 'assets/figma/reels/avatar.png',
+      likes: this.formatCount(reel.likeCount),
+      tags: this.firstText(source['tags'], source['hashtags']) || '',
+      image,
+      avatar,
       video: '',
-      aiGenerated,
-      saved: false,
-      liked: false
+      aiGenerated: Boolean(source['aiGenerated']),
+      saved: this.reelBookmarks.isSaved(reel.id),
+      liked: Boolean(reel.liked),
+      likeCount: Number(reel.likeCount) || 0,
+      commentCount: Number(reel.commentCount) || 0,
+      link: videoId ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}` : undefined
     };
+  }
+
+  private firstText(...values: unknown[]): string | undefined {
+    const match = values.find(value => typeof value === 'string' && value.trim());
+    return typeof match === 'string' ? match.trim() : undefined;
+  }
+
+  private formatCount(value: unknown): string {
+    const count = Number(value) || 0;
+    return count >= 1000
+      ? `${Number((count / 1000).toFixed(count >= 10000 ? 0 : 1))}K`
+      : String(count);
   }
 }

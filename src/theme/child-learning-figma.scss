@@ -649,7 +649,9 @@
 	display: block;
 	overflow: hidden;
 	border-radius: 16px;
-	background: #a19ca0;
+	// Course/category artwork is transparent. Keep its canvas white so the
+	// icon is shown cleanly instead of inheriting the old grey placeholder tile.
+	background: #fff;
 
 	app-img {
 		width: 100%;
