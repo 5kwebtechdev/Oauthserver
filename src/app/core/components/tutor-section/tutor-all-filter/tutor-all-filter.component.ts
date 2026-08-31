@@ -24,6 +24,8 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
 
   /** Previously applied filters to pre-populate selections */
   @Input() initialFilters: SelectedFilters | null = null;
+  // Directory searches are server-backed; the shared tutor cache isn't their count.
+  @Input() useServerResults = false;
 
   /** Loading state */
   isLoading = false;

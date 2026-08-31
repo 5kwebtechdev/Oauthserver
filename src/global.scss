@@ -1233,8 +1233,11 @@ body.dashboard-web-view {
 // Family onboarding uses its own 420/600/720/960px responsive containers.
 // Release the generic routed-page cap on web so those internal containers and
 // their action buttons cannot be clipped at the old 768px page boundary.
-@media (min-width: 769px) {
-  body.family-onboard-web-view {
+@media (min-width: 768px) {
+  // Ionic can destroy the previous family route after the next one has
+  // entered, removing its shared body class. Scope sizing to the visible
+  // routed component instead, including when navigating between family steps.
+  html:not(.plt-capacitor) body:has(app-family-onboard:not(.ion-page-hidden)) {
     ion-router-outlet,
     .ion-page {
       max-width: none !important;
@@ -1350,6 +1353,25 @@ ion-content {
 
 // Master Class lessons are an immersive reading flow. Keep the Ionic overlay
 // full-screen on phones and tablets so no card edge clips the fixed lesson CTA.
+// Activity creation/editing is shared by dashboard, calendar and activity cards.
+// Scope the desktop dialog sizing to its content, leaving nested pickers alone.
+@media (min-width: 768px) {
+  html:not(.plt-capacitor) ion-modal:has(activity-input) {
+    --width: min(860px, calc(100vw - 48px));
+    --height: min(900px, calc(100dvh - 48px));
+    --max-width: calc(100vw - 48px);
+    --max-height: calc(100dvh - 48px);
+    --border-radius: 24px;
+    --box-shadow: 0 24px 80px rgba(49, 30, 75, 0.24);
+
+    activity-input.ion-page {
+      max-width: none;
+      margin: 0;
+      padding: 0;
+    }
+  }
+}
+
 .academy-lesson-modal {
   --width: 100%;
   --height: 100%;

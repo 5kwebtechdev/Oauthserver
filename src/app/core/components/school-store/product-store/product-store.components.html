@@ -156,6 +156,7 @@
                                     <div class="product-pane-empty">
                                         <empty-state [imageSrc]="'assets/School-assets/empty-product-list.png'"
                                             [imageAlt]="'No products'" [leadText]="'Nothing Here... Yet!'"
+                                            [subText]="'No products to show here right now. Explore more products in the shop.'"
                                             [buttonText]="'View all Products'" [buttonType]="'magenta'"
                                             (buttonClicked)="resetSubCategories()">
                                         </empty-state>
@@ -167,6 +168,7 @@
                                 <div class="product-pane-empty">
                                     <empty-state [imageSrc]="'assets/School-assets/empty-product-list.png'"
                                         [imageAlt]="'Unable to load products'" [leadText]="'Unable to load products'"
+                                        [subText]="'Please try again to continue browsing.'"
                                         [buttonText]="'Retry'" [buttonType]="'magenta'"
                                         (buttonClicked)="retryProducts()">
                                     </empty-state>

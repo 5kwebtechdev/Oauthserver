@@ -67,8 +67,8 @@
       <superme-button
         type="columbian-blue"
         small
-        [text]="resultCount === null ? 'Show result' : ('Show ' + resultCount + (resultCount === 1 ? ' result' : ' results'))"
-        [disabled]="(resultCount ?? 0) < 1"
+        [text]="useServerResults || resultCount === null ? 'Show result' : ('Show ' + resultCount + (resultCount === 1 ? ' result' : ' results'))"
+        [disabled]="useServerResults ? !selectedCategory : (resultCount ?? 0) < 1"
         (click)="showResult()">
       </superme-button>
       

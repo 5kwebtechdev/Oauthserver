@@ -3360,6 +3360,11 @@ ion-content.family-success-content {
   }
 
   :host-context(html:not(.plt-capacitor)) .superme-page-container.family-success-page {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-inline: auto;
+    box-sizing: border-box;
     min-height: 100dvh;
     padding: clamp(24px, 4vw, 56px) clamp(24px, 5vw, 76px) !important;
     background: transparent;
@@ -3367,10 +3372,12 @@ ion-content.family-success-content {
 
   :host-context(html:not(.plt-capacitor)) .family-success-section {
     width: min(100%, 980px);
+    max-width: 100%;
+    min-width: 0;
     min-height: auto;
     margin: 0 auto;
     padding: clamp(38px, 5vw, 64px) clamp(28px, 5vw, 64px) 48px;
-    overflow: visible;
+    overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.9);
     border-radius: 34px;
     background: rgba(255, 255, 255, 0.86);
@@ -3384,6 +3391,7 @@ ion-content.family-success-content {
     width: min(100%, 760px);
     max-width: 760px;
     margin-inline: auto;
+    min-width: 0;
   }
 
   :host-context(html:not(.plt-capacitor)) .family-success-confetti--top {
@@ -3429,6 +3437,8 @@ ion-content.family-success-content {
   :host-context(html:not(.plt-capacitor)) .family-success-code span {
     font-size: clamp(30px, 3vw, 38px);
     letter-spacing: 0.2em;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   :host-context(html:not(.plt-capacitor)) .family-success-qr {

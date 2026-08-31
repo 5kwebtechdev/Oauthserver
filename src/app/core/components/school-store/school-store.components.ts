@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
 import { AdBannerComponent } from '../ad-banner/ad-banner.component';
 import { FooterComponent } from '../footer/footer.component';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { AddressService } from '../../services/address.service';
@@ -79,6 +79,8 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 	storeCategories: StoreCategory[] = [];
 	categoriesLoading = false;
 	categoriesError = false;
+	private categoryRouteSub?: Subscription;
+	private requestedCategory: string | null = null;
 
 	constructor(
 		private router: Router,
@@ -87,10 +89,15 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 		private authService: AuthService,
 		private cartService: CartService,
 		private addressService: AddressService,
-		private toastService: CustomToastService
+		private toastService: CustomToastService,
+		private route: ActivatedRoute
 	) { }
 
 	ngOnInit(): void {
+		this.categoryRouteSub = this.route.queryParamMap.subscribe(params => {
+			this.requestedCategory = params.get('category');
+			this.openRequestedCategory();
+		});
 		this._cartSub = this.cartService.count$.subscribe(n => {
 			this.cartCount = n;
 			this.cdr.detectChanges();
@@ -102,6 +109,7 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 	}
 
 	ngOnDestroy(): void {
+		this.categoryRouteSub?.unsubscribe();
 		try { this._cartSub?.unsubscribe(); } catch (e) { }
 		try { this._addressSub?.unsubscribe(); } catch (e) { }
 	}
@@ -146,6 +154,7 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 			next: (res) => {
 				this.storeCategories = Array.isArray(res) ? res : [];
 				this.categoriesLoading = false;
+				this.openRequestedCategory();
 				this.cdr.detectChanges();
 			},
 			error: () => {
@@ -156,11 +165,25 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 		});
 	}
 
-	openCategory(cat: StoreCategory): void {
+	private openRequestedCategory(): void {
+		if (!this.requestedCategory || !this.storeCategories.length) return;
+		// Navigation labels may be singular while API display names are plural.
+		const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, ' ')
+			.trim().split(/\s+/).map(word => word.replace(/s$/, '')).join(' ');
+		const requested = normalize(this.requestedCategory);
+		const category = this.storeCategories.find(cat => String(cat.id) === this.requestedCategory
+			|| normalize(cat.name || '') === requested || normalize(cat.displayName || '') === requested);
+		if (!category) return;
+		this.requestedCategory = null;
+		// Replace the intermediate selection page so Back doesn't redirect again.
+		this.openCategory(category, true);
+	}
+
+	openCategory(cat: StoreCategory, replaceUrl = false): void {
 		if (cat.requiresSchoolClass) {
-			this.router.navigateByUrl(`/authed/school-store/institute-detail?categoryId=${cat.id}`).catch(() => {});
+			this.router.navigateByUrl(`/authed/school-store/institute-detail?categoryId=${cat.id}`, { replaceUrl }).catch(() => {});
 		} else {
-			this.router.navigateByUrl(`/authed/school-store/product?category=${cat.id}`).catch(() => {});
+			this.router.navigateByUrl(`/authed/school-store/product?category=${cat.id}`, { replaceUrl }).catch(() => {});
 		}
 	}
 
