@@ -13,6 +13,7 @@ import { Address } from '../../../api/address.api';
 import { CustomToastService } from '../../../services/custom-toast.service';
 import { SchoolContextService } from '../../../services/school-context.service';
 import { environment } from '../../../../../environments/environment';
+import { Capacitor } from '@capacitor/core';
 
 interface StoreCategory {
   id: number;
@@ -90,6 +91,9 @@ type Product = {
 })
 export class ProductStoreComponent implements OnDestroy, OnInit {
   @ViewChild(IonContent, { static: false }) ionContent?: IonContent;
+
+  /** Keeps the wider catalogue treatment out of the native Android/iOS app. */
+  readonly isWebBrowser = !Capacitor.isNativePlatform();
 
   // popup state for address/subtext
   showAddressPopup = false;

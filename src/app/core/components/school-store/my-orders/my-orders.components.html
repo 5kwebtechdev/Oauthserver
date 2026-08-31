@@ -77,7 +77,9 @@
     </main>
 
     <!-- Filter Screen -->
-    <div class="order-filter-screen" [class.visible]="isFilterScreenVisible">
+    <div class="order-filter-screen"
+         [class.visible]="isFilterScreenVisible"
+         [class.order-filter-screen--web]="isWebBrowser">
         <div class="nav-head">
             <superme-navigator heading="All Filters" backIcon="arrowSvg" (back)="goBack()">
         </superme-navigator>
@@ -128,7 +130,7 @@
                 </div>
             </div>
         </div>
-        <div class="filter-actions" style="padding:16px;">
+        <div class="filter-actions filter-actions--apply" style="padding:16px;">
             <superme-button type="magenta" size="large" [text]="'Apply (Showing ' + filteredOrders.length + ' results)'" (click)="applyFilters()"></superme-button>
         </div>
     </div>

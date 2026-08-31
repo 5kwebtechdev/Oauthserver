@@ -10,6 +10,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../../environments/environment';
 import { INDIA_STATES, INDIA_STATE_OPTIONS } from '../../../constants/india-location-options';
+import { Capacitor } from '@capacitor/core';
 
 export interface SchoolItem {
   id: number;
@@ -28,6 +29,8 @@ export interface SchoolItem {
   imports: [CommonModule, IonicModule, FormsModule, SupermeNavigatorComponent, SupermeButtonComponent, FooterComponent]
 })
 export class InstituteDetailFillComponent {
+
+  readonly isWebBrowser = !Capacitor.isNativePlatform();
 
   // categoryId this page was opened for (from Student-Store), forwarded to the product page on submit
   categoryId: number | null = null;

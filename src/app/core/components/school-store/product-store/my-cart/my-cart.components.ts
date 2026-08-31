@@ -14,6 +14,7 @@ import { AddressService } from '../../../../services/address.service';
 import { Address } from '../../../../api/address.api';
 import { SchoolContextService } from '../../../../services/school-context.service';
 import { environment } from '../../../../../../environments/environment';
+import { Capacitor } from '@capacitor/core';
 
 interface CartItem {
     id: number;
@@ -45,6 +46,7 @@ interface CartItem {
     styleUrls: ['./my-cart.components.scss']
 })
 export class MyCartComponent implements OnInit, OnDestroy, ViewWillEnter {
+    readonly isWebBrowser = !Capacitor.isNativePlatform();
     showAddressPopup = false;
     addresses: Address[] = [];
     selectedAddress: Address | null = null;
@@ -185,6 +187,20 @@ export class MyCartComponent implements OnInit, OnDestroy, ViewWillEnter {
 
     goBack(): void {
         try { window.history.back(); } catch (e) { }
+    }
+
+    openProductDetails(item: CartItem): void {
+        const productId = Number(item?.productId);
+        if (!Number.isFinite(productId) || productId <= 0) return;
+
+        const schoolId = item.schoolId ?? this.schoolId;
+        const classId = item.classId ?? this.classId;
+        this.router.navigate(['/authed/school-store/product', productId], {
+            queryParams: {
+                ...(schoolId != null ? { schoolId } : {}),
+                ...(classId != null ? { classId } : {})
+            }
+        });
     }
 
     onRightAction(): void {
@@ -490,44 +506,58 @@ export class MyCartComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
 
     get totalPrice(): number {
-        if (this.apiItemsTotal != null) return this.apiItemsTotal;
+        if (this.apiItemsTotal != null) return this.roundMoney(this.apiItemsTotal);
         if (!this.items || !this.items.length) return 0;
-        return this.items.reduce((sum, it) => {
+        return this.roundMoney(this.items.reduce((sum, it) => {
             // prefer lineTotal (already accounts for quantity) when present
             if (it?.lineTotal != null) return sum + Number(it.lineTotal);
             const p = Number(it?.sellingPrice ?? it?.price ?? 0);
             const q = Number(it?.quantity || 1);
             return sum + p * q;
-        }, 0);
+        }, 0));
     }
 
     get totalPriceDisplay(): string {
-        return '₹' + this.totalPrice;
+        return this.moneyDisplay(this.totalPrice);
     }
 
     get gstAmount(): number {
-        return this.apiGstTotal != null ? this.apiGstTotal : Math.round(this.totalPrice * 0.18);
+        return this.roundMoney(this.apiGstTotal != null ? this.apiGstTotal : this.totalPrice * 0.18);
     }
 
     get gstDisplay(): string {
-        return '₹' + this.gstAmount;
+        return this.moneyDisplay(this.gstAmount);
     }
 
     get deliveryFee(): number {
-        return this.totalPrice > 500 ? 0 : 99;
+        return this.roundMoney(this.totalPrice > 500 ? 0 : 99);
     }
 
     get deliveryDisplay(): string {
-        return this.deliveryFee === 0 ? 'Free' : '₹' + this.deliveryFee;
+        return this.deliveryFee === 0 ? 'Free' : this.moneyDisplay(this.deliveryFee);
     }
 
     get toPay(): number {
-        if (this.apiPayableTotal != null) return this.apiPayableTotal + this.deliveryFee;
-        return this.totalPrice + this.gstAmount + this.deliveryFee;
+        if (this.apiPayableTotal != null) return this.roundMoney(this.apiPayableTotal + this.deliveryFee);
+        return this.roundMoney(this.totalPrice + this.gstAmount + this.deliveryFee);
     }
 
     get toPayDisplay(): string {
-        return '₹' + this.toPay;
+        return this.moneyDisplay(this.toPay);
+    }
+
+    moneyDisplay(value: unknown): string {
+        const amount = this.roundMoney(value);
+        return `₹${new Intl.NumberFormat('en-IN', {
+            minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+            maximumFractionDigits: 2
+        }).format(amount)}`;
+    }
+
+    private roundMoney(value: unknown): number {
+        const amount = Number(value);
+        if (!Number.isFinite(amount)) return 0;
+        return Math.round((amount + Number.EPSILON) * 100) / 100;
     }
 
     async openAddressInput(): Promise<void> {

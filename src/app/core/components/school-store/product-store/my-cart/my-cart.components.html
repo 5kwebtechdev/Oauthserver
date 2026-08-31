@@ -1,5 +1,5 @@
 <ion-content>
-    <main class="my-cart-main d-flex flex-column gap-3">
+    <main class="my-cart-main d-flex flex-column gap-3" [class.my-cart-main--web]="isWebBrowser">
 
                 <superme-navigator #navigator
                         heading="My Cart"
@@ -60,7 +60,9 @@
 
                 <!--cart products list-->
                 <div class="cart-products-list" *ngIf="!cartLoading && !cartError && items.length > 0">
-                  <div class="cart-product-item" *ngFor="let item of items; let i = index">
+                  <div class="cart-product-item cart-product-item--clickable" *ngFor="let item of items; let i = index"
+                       role="link" tabindex="0" (click)="openProductDetails(item)"
+                       (keyup.enter)="openProductDetails(item)">
                     <div class="product-item-img">
                       <img [src]="item.thumbnailUrl || item.imageUrl || item.image"
                            [alt]="item.productName"
@@ -70,8 +72,8 @@
                       <h2>{{ item.productName }}</h2>
                       <p *ngIf="item.schoolName">{{ item.schoolName }}</p>
                       <div class="price d-flex gap-2">
-                        <span class="discounted-price">₹{{ item.sellingPrice ?? item.price }}</span>
-                        <span *ngIf="(item.mrp ?? item.originalPrice ?? 0) > (item.sellingPrice ?? item.price ?? 0)" class="original-price">₹{{ item.mrp ?? item.originalPrice }}</span>
+                        <span class="discounted-price">{{ moneyDisplay(item.sellingPrice ?? item.price) }}</span>
+                        <span *ngIf="(item.mrp ?? item.originalPrice ?? 0) > (item.sellingPrice ?? item.price ?? 0)" class="original-price">{{ moneyDisplay(item.mrp ?? item.originalPrice) }}</span>
                       </div>
                       <h2 *ngIf="item.deliveryDays" style="color:#90214D; font-size: 13px;">{{ item.deliveryDays }}-day delivery</h2>
                       <div class="item-bottom-row">
@@ -79,18 +81,18 @@
                           <h2 style="font-size: 10px;">Size: {{ item.sizeLabel }}</h2>
                         </div>
                         <div class="quantity-selector d-flex align-center gap-2">
-                          <button class="qty-btn decrease" aria-label="Decrease quantity" (click)="decreaseQuantity(i)">
+                          <button class="qty-btn decrease" aria-label="Decrease quantity" (click)="$event.stopPropagation(); decreaseQuantity(i)">
                             <span>-</span>
                           </button>
                           <span class="quantity-count">{{ item.quantity }}</span>
-                          <button class="qty-btn increase" aria-label="Increase quantity" (click)="increaseQuantity(i)">
+                          <button class="qty-btn increase" aria-label="Increase quantity" (click)="$event.stopPropagation(); increaseQuantity(i)">
                             <span>+</span>
                           </button>
                         </div>
                         <button class="delete-btn"
                                 aria-label="Remove item"
                                 [disabled]="deletingIndex === i"
-                                (click)="deleteCartItem(item, i)">
+                                (click)="$event.stopPropagation(); deleteCartItem(item, i)">
                           <svg *ngIf="deletingIndex !== i" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#bb2124" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>

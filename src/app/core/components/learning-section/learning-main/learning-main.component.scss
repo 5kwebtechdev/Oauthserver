@@ -2181,3 +2181,183 @@
 		transform: translateY(-9px) rotate(1deg);
 	}
 }
+@media (min-width: 768px) {
+  :host-context(html:not(.plt-capacitor)) {
+    .parent-learning-content {
+      --background:
+        radial-gradient(circle at 8% 10%, rgba(178, 156, 255, 0.22), transparent 30%),
+        radial-gradient(circle at 92% 16%, rgba(255, 157, 184, 0.22), transparent 28%),
+        #fbfafc;
+    }
+
+    .parent-learning-page {
+      width: min(calc(100% - 48px), 1320px);
+      min-height: calc(100vh - 110px);
+      margin: 24px auto 48px;
+      padding-bottom: 48px;
+      overflow: hidden;
+      border: 1px solid rgba(76, 39, 133, 0.08);
+      border-radius: 32px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 24px 60px rgba(59, 37, 92, 0.1);
+    }
+
+    .parent-learning-hero,
+    .parent-learning-hero--root {
+      min-height: 220px;
+      padding-top: 0;
+    }
+
+    .parent-learning-hero {
+      border-radius: 32px 32px 0 0;
+    }
+
+    .parent-learning-hero__content {
+      min-height: 220px;
+      grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+      align-items: end;
+      padding: 0 clamp(28px, 5vw, 72px);
+    }
+
+    .parent-learning-hero--root .parent-learning-hero__copy {
+      align-self: center;
+      padding: 0 0 24px;
+    }
+
+    .parent-learning-hero__copy h2 {
+      font-size: clamp(30px, 3vw, 44px);
+      line-height: 1.08;
+    }
+
+    .parent-learning-hero__copy p {
+      max-width: 650px;
+      margin-top: 12px;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: clamp(15px, 1.2vw, 18px);
+      line-height: 1.5;
+      -webkit-line-clamp: 3;
+    }
+
+    .parent-learning-hero__art {
+      width: min(100%, 380px);
+      height: 220px;
+      object-position: right bottom;
+      transform: none;
+      filter: drop-shadow(0 10px 14px rgba(62, 26, 89, 0.18));
+    }
+
+    .parent-learning-body {
+      width: min(100%, 1180px);
+      margin: 0 auto;
+      padding: 28px clamp(24px, 4vw, 48px) 0;
+      gap: 28px;
+      overflow: visible;
+    }
+
+    .parent-learning-tabs {
+      width: 100%;
+      height: auto;
+      min-height: 92px;
+      margin: 0;
+      padding: 8px;
+      gap: 8px;
+      overflow: visible;
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(66, 39, 98, 0.08);
+    }
+
+    .parent-learning-tab {
+      height: auto;
+      min-height: 76px;
+      border-radius: 15px;
+      font-size: 16px;
+      transition: transform 180ms ease, background-color 180ms ease, color 180ms ease;
+    }
+
+    .parent-learning-tab:not(.parent-learning-tab--active):hover {
+      color: #ac2456;
+      background: #fcf3f6;
+      transform: translateY(-2px);
+    }
+
+    .parent-category-section {
+      gap: 28px;
+    }
+
+    .parent-learning-ad {
+      width: 100%;
+      margin: 0;
+      overflow: hidden;
+      border-radius: 22px;
+      box-shadow: 0 14px 32px rgba(68, 37, 97, 0.1);
+    }
+
+    .parent-category-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      padding: 0 0 24px;
+    }
+
+    .parent-category-card {
+      height: auto;
+      min-height: 112px;
+      gap: 14px;
+      padding: 14px 18px;
+      border-radius: 20px;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .parent-category-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px rgba(183, 36, 91, 0.12);
+    }
+
+    .parent-category-card__image {
+      flex-basis: 72px;
+      width: 72px;
+      height: 72px;
+    }
+
+    .parent-category-card__copy strong {
+      font-size: 18px;
+    }
+
+    .parent-category-card__copy small {
+      font-size: 14px;
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1050px) {
+  :host-context(html:not(.plt-capacitor)) {
+    .parent-learning-page {
+      width: calc(100% - 32px);
+      margin: 16px auto 32px;
+      border-radius: 26px;
+    }
+
+    .parent-learning-hero,
+    .parent-learning-hero--root,
+    .parent-learning-hero__content {
+      min-height: 200px;
+    }
+
+    .parent-learning-hero__content {
+      grid-template-columns: minmax(0, 1fr) 250px;
+      padding-inline: 32px;
+    }
+
+    .parent-learning-hero__art {
+      width: 250px;
+      height: 190px;
+    }
+
+    .parent-learning-body {
+      padding-inline: 22px;
+    }
+
+    .parent-category-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}

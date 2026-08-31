@@ -292,6 +292,133 @@ input[type="radio"]:checked::after {
     border-bottom: 1px solid rgba(40, 37, 39, 0.20);
 }
 
+// Browser-only presentation for the filters. Native builds intentionally keep
+// the existing full-screen mobile sheet above.
+@media (min-width: 768px) {
+    .order-filter-screen--web {
+        justify-content: center;
+        align-items: center;
+        padding: clamp(24px, 5vh, 56px) clamp(24px, 5vw, 72px);
+        background:
+            radial-gradient(circle at 12% 15%, rgba(139, 124, 232, 0.20), transparent 29%),
+            radial-gradient(circle at 88% 84%, rgba(241, 85, 142, 0.16), transparent 31%),
+            linear-gradient(135deg, #f8f6ff 0%, #fff8f1 50%, #f4fbfb 100%);
+        transform: translateY(24px) scale(0.985);
+    }
+
+    .order-filter-screen--web.visible {
+        transform: translateY(0) scale(1);
+    }
+
+    .order-filter-screen--web .nav-head,
+    .order-filter-screen--web .filter-content,
+    .order-filter-screen--web .filter-actions--apply {
+        width: min(920px, calc(100vw - 48px));
+    }
+
+    .order-filter-screen--web .nav-head {
+        overflow: hidden;
+        border: 1px solid rgba(83, 43, 139, 0.10);
+        border-bottom: 0;
+        border-radius: 28px 28px 0 0;
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 18px 50px rgba(58, 31, 89, 0.12);
+    }
+
+    .order-filter-screen--web .filter-content {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+        align-items: stretch;
+        gap: clamp(24px, 4vw, 48px);
+        flex: 0 1 auto;
+        min-height: 0;
+        padding: 28px 32px;
+        overflow: auto;
+        border-right: 1px solid rgba(83, 43, 139, 0.10);
+        border-left: 1px solid rgba(83, 43, 139, 0.10);
+        background: rgba(255, 255, 255, 0.94);
+    }
+
+    .order-filter-screen--web .status-filter,
+    .order-filter-screen--web .time-filter {
+        width: 100%;
+        gap: 16px !important;
+    }
+
+    .order-filter-screen--web .status-filter h2,
+    .order-filter-screen--web .time-filter h2 {
+        color: #4d2784;
+        font-size: 20px;
+        line-height: 1.2;
+    }
+
+    .order-filter-screen--web .status-options,
+    .order-filter-screen--web .time-options {
+        align-items: stretch;
+        gap: 12px !important;
+    }
+
+    .order-filter-screen--web .status-options label,
+    .order-filter-screen--web .time-options label {
+        min-height: 52px;
+        max-width: none;
+        padding: 13px 16px;
+        border: 1px solid rgba(77, 39, 132, 0.12);
+        border-radius: 14px;
+        background: linear-gradient(135deg, #ffffff 0%, #fbf8ff 100%);
+        box-shadow: 0 5px 14px rgba(58, 31, 89, 0.05);
+        transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .order-filter-screen--web .status-options label:hover,
+    .order-filter-screen--web .time-options label:hover {
+        transform: translateY(-2px);
+        border-color: rgba(144, 33, 77, 0.38);
+        box-shadow: 0 9px 20px rgba(58, 31, 89, 0.10);
+    }
+
+    .order-filter-screen--web .status-options label:has(input:checked),
+    .order-filter-screen--web .time-options label:has(input:checked) {
+        border-color: #90214d;
+        background: linear-gradient(135deg, #fff5f9 0%, #f7f1ff 100%);
+        box-shadow: 0 0 0 3px rgba(144, 33, 77, 0.08);
+    }
+
+    .order-filter-screen--web .divider {
+        align-self: stretch;
+        width: 1px;
+        height: auto;
+        border: 0;
+        background: linear-gradient(180deg, transparent, rgba(77, 39, 132, 0.22), transparent);
+    }
+
+    .order-filter-screen--web .filter-actions--apply {
+        position: static;
+        padding: 18px 32px 28px !important;
+        overflow: hidden;
+        border: 1px solid rgba(83, 43, 139, 0.10);
+        border-top: 0;
+        border-radius: 0 0 28px 28px;
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 22px 50px rgba(58, 31, 89, 0.12);
+    }
+}
+
+@media (min-width: 768px) and (max-height: 650px) {
+    .order-filter-screen--web {
+        justify-content: flex-start;
+        overflow-y: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .order-filter-screen--web,
+    .order-filter-screen--web .status-options label,
+    .order-filter-screen--web .time-options label {
+        transition: none;
+    }
+}
+
 .order-card{
   display: flex;
   width: 100%;
@@ -568,4 +695,3 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
     height: 14px !important;
     aspect-ratio: 1/1 !important;
 }
-

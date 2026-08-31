@@ -11,6 +11,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { CustomToastService } from '../../../services/custom-toast.service';
 import { environment } from '../../../../../environments/environment';
+import { Capacitor } from '@capacitor/core';
 
 // ── Backend types ─────────────────────────────────────────────────────────────
 type BackendStatus =
@@ -130,6 +131,8 @@ const PAGE_SIZE = 20;
     styleUrls: ['./my-orders.components.scss']
 })
 export class MyOrdersComponent implements OnInit {
+
+    readonly isWebBrowser = !Capacitor.isNativePlatform();
 
     // ── List state ────────────────────────────────────────────────────────────
     orders: ApiOrder[] = [];

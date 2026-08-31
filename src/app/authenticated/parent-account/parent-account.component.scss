@@ -2282,3 +2282,312 @@ button {
 .child-switcher__rail .switcher-action--invite {
   margin-left: 0;
 }
+
+// ── Parent dashboard: web-only responsive experience ─────────────────────
+// Capacitor retains the purpose-built mobile layout above.
+@media (min-width: 768px) {
+  :host-context(html:not(.plt-capacitor)) {
+    .parent-home-content {
+      --background:
+        radial-gradient(circle at 7% 12%, rgba(139, 141, 203, 0.16), transparent 27%),
+        radial-gradient(circle at 94% 16%, rgba(225, 82, 124, 0.12), transparent 30%),
+        linear-gradient(135deg, #faf8ff 0%, #fffaf5 47%, #f1fbfa 100%);
+    }
+
+    .parent-home {
+      width: min(1180px, calc(100% - 48px));
+      max-width: none;
+      margin: 28px auto 52px;
+      padding: 28px clamp(28px, 4vw, 52px) 46px;
+      overflow: visible;
+      border: 1px solid rgba(67, 36, 119, 0.09);
+      border-radius: 34px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 26px 72px rgba(66, 42, 92, 0.13);
+      box-sizing: border-box;
+    }
+
+    .parent-header {
+      height: auto;
+      min-height: 82px;
+      margin: 0;
+      padding: 14px 18px;
+      border: 1px solid rgba(67, 36, 119, 0.08);
+      border-radius: 24px;
+      background: linear-gradient(110deg, rgba(244, 240, 252, 0.92), rgba(255, 247, 241, 0.9), rgba(238, 249, 248, 0.9));
+      box-shadow: 0 11px 30px rgba(67, 36, 119, 0.09);
+
+      &__identity {
+        gap: 14px;
+      }
+
+      &__copy strong {
+        font-family: var(--font-heading, 'Fredoka', sans-serif);
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      &__copy span {
+        font-size: 14px;
+      }
+    }
+
+    .parent-avatar {
+      width: 62px;
+      height: 62px;
+      flex-basis: 62px;
+      border-width: 3px;
+      box-shadow: 0 8px 18px rgba(67, 36, 119, 0.18);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+
+      &:hover {
+        transform: translateY(-3px) rotate(-2deg);
+        box-shadow: 0 13px 24px rgba(67, 36, 119, 0.23);
+      }
+    }
+
+    .notification-button,
+    .parent-coin-pill {
+      transition: transform 180ms ease, box-shadow 180ms ease;
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 13px 24px rgba(67, 36, 119, 0.17);
+      }
+    }
+
+    .child-switcher {
+      margin-top: 24px;
+      padding: 18px;
+      border: 1px solid rgba(67, 36, 119, 0.08);
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 12px 32px rgba(67, 36, 119, 0.08);
+
+      &__rail {
+        min-height: 112px;
+        gap: 14px;
+      }
+    }
+
+    .switcher-child,
+    .switcher-action,
+    .switcher-co-parent {
+      min-height: 108px;
+      border-radius: 20px;
+      transition: transform 190ms ease, box-shadow 190ms ease, background 190ms ease;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 26px rgba(67, 36, 119, 0.13);
+      }
+    }
+
+    .switcher-child:not(.switcher-child--selected) {
+      background: linear-gradient(145deg, #fff, #faf7ff);
+    }
+
+    .switcher-child--selected {
+      box-shadow: 0 14px 30px rgba(67, 36, 119, 0.2);
+    }
+
+    .mood-balance-section,
+    .performance-section,
+    .foundation-section {
+      margin-top: 30px;
+      padding: 24px 26px;
+      border: 1px solid rgba(67, 36, 119, 0.08);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 12px 34px rgba(67, 36, 119, 0.08);
+    }
+
+    .mood-balance-section {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(244, 250, 244, 0.96), rgba(255, 250, 239, 0.94), rgba(253, 242, 246, 0.92));
+
+      &::after {
+        position: absolute;
+        right: -55px;
+        bottom: -70px;
+        width: 170px;
+        height: 170px;
+        border-radius: 50%;
+        background: rgba(139, 141, 203, 0.08);
+        content: '';
+        pointer-events: none;
+      }
+    }
+
+    .section-heading {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 22px;
+
+      h2 {
+        font-size: clamp(21px, 2vw, 26px);
+        font-weight: 600;
+      }
+    }
+
+    .outline-pill {
+      transition: transform 180ms ease, box-shadow 180ms ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 9px 18px rgba(67, 36, 119, 0.13);
+      }
+    }
+
+    .mood-balance {
+      position: relative;
+      z-index: 1;
+      gap: 16px;
+
+      &__bar {
+        height: 66px;
+        border: 5px solid rgba(255, 255, 255, 0.76);
+        border-radius: 24px;
+        box-shadow: inset 0 2px 7px rgba(40, 37, 39, 0.08), 0 8px 20px rgba(40, 37, 39, 0.08);
+
+        span {
+          font-size: 19px;
+        }
+      }
+
+      &__legend {
+        gap: clamp(18px, 4vw, 38px);
+        flex-wrap: wrap;
+
+        span {
+          padding: 7px 10px;
+          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.72);
+          font-size: 14px;
+        }
+      }
+    }
+
+    .performance-card {
+      padding: 30px;
+      border-radius: 30px;
+      box-shadow: 0 16px 38px rgba(67, 36, 119, 0.1);
+    }
+
+    .metric-grid {
+      grid-template-columns: repeat(4, minmax(130px, 1fr));
+      gap: 22px;
+    }
+
+    .metric {
+      min-height: 190px;
+      justify-content: center;
+      padding: 18px 12px;
+      border: 1px solid rgba(67, 36, 119, 0.08);
+      border-radius: 20px;
+      background: linear-gradient(145deg, #fff, #faf8fd);
+      transition: transform 190ms ease, box-shadow 190ms ease;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 26px rgba(67, 36, 119, 0.11);
+      }
+
+      &__label {
+        min-height: 42px;
+        font-size: 14px;
+      }
+
+      &__ring {
+        width: 108px;
+        height: 108px;
+
+        &::after {
+          inset: 12px;
+        }
+
+        span {
+          font-size: 21px;
+        }
+      }
+
+      > strong {
+        font-size: 14px;
+      }
+    }
+
+    .ai-insight {
+      min-height: 106px;
+      padding: 20px 22px;
+      border-radius: 20px;
+      background: linear-gradient(115deg, #f5f1ea, #fff9ef);
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 26px rgba(125, 80, 17, 0.13);
+      }
+    }
+
+    .foundation-rail {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      overflow: visible;
+    }
+
+    .foundation-card {
+      width: 100%;
+      min-width: 0;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 26px rgba(67, 36, 119, 0.11);
+      }
+    }
+
+    .today-plan,
+    .parent-ad,
+    .parent-learning-card,
+    .parent-message,
+    .parent-community,
+    .parenting-tip {
+      margin-top: 30px;
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  :host-context(html:not(.plt-capacitor)) {
+    .parent-home {
+      width: min(940px, calc(100% - 32px));
+      padding-inline: 24px;
+    }
+
+    .metric-grid,
+    .foundation-rail {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .child-switcher__rail {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host-context(html:not(.plt-capacitor)) .parent-avatar,
+  :host-context(html:not(.plt-capacitor)) .notification-button,
+  :host-context(html:not(.plt-capacitor)) .parent-coin-pill,
+  :host-context(html:not(.plt-capacitor)) .switcher-child,
+  :host-context(html:not(.plt-capacitor)) .switcher-action,
+  :host-context(html:not(.plt-capacitor)) .switcher-co-parent,
+  :host-context(html:not(.plt-capacitor)) .metric,
+  :host-context(html:not(.plt-capacitor)) .ai-insight,
+  :host-context(html:not(.plt-capacitor)) .foundation-card {
+    transition: none;
+  }
+}

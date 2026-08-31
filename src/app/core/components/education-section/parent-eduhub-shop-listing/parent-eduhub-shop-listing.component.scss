@@ -1287,3 +1287,14 @@ button {
     animation: none;
   }
 }
+
+@media (min-width:768px){:host-context(html:not(.plt-capacitor)){
+  .parent-eduhub-inner-content{--background:linear-gradient(135deg,#f3f1ff 0%,#fff9f4 48%,#fff0f7 100%)}.parent-eduhub-inner-page{max-width:none;background:transparent;padding:22px 28px 72px;box-shadow:none}
+  .directory-hero{max-width:1180px;min-height:310px;margin:auto;border-radius:30px;background-size:cover;box-shadow:0 18px 46px rgba(74,61,132,.14)}.directory-toolbar,.directory-hero__message{max-width:1080px}.directory-toolbar{min-height:78px;padding:14px 28px}.directory-toolbar__title h1{max-width:680px;font-size:28px}
+  .directory-hero__message{height:220px}.directory-speech{top:34px;left:7%;width:340px;height:118px}.directory-speech p{padding:22px 27px;font-size:23px}.directory-pet{right:5%;width:260px}.directory-search{max-width:760px;min-height:52px}
+  .directory-main{max-width:1080px;margin-top:22px;padding:28px 32px 56px;gap:24px;border:1px solid rgba(96,76,156,.1);border-radius:28px;background:rgba(255,255,255,.9);box-shadow:0 18px 52px rgba(54,43,96,.1);backdrop-filter:blur(12px)}
+  .refer-card{min-height:82px;padding:14px 16px;border-radius:20px;transition:transform .2s ease,box-shadow .2s ease}.refer-card:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(49,88,168,.18)}.directory-section__copy h2{font-size:24px}.directory-section__copy p{max-width:520px;font-size:15px}
+  .directory-list,.directory-loading{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.listing-card{height:100%;transition:transform .2s ease,box-shadow .2s ease}.listing-card:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(49,88,168,.14)}.directory-state,.pagination-error,ion-infinite-scroll,.directory-ad{grid-column:1/-1}
+}}
+@media (min-width:768px) and (max-width:1023px){:host-context(html:not(.plt-capacitor)){.parent-eduhub-inner-page{padding-inline:18px}.directory-main{padding-inline:22px}.directory-list,.directory-loading{grid-template-columns:1fr}}}
+@media (prefers-reduced-motion:reduce){:host-context(html:not(.plt-capacitor)) .refer-card,:host-context(html:not(.plt-capacitor)) .listing-card{transition:none}}
