@@ -14,9 +14,11 @@ import { CoreService } from '../../../services/core.service';
 import { UserService } from '../../../services/user.service';
 import { EduHubEventsService } from '../../../services/eduhub-events.service';
 import { PetAgeService } from '../../../services/pet-age.service';
+import { EduHubCityService } from '../../../services/eduhub-city.service';
 import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
+import { EduHubCitySelectorComponent } from '../eduhub-city-selector/eduhub-city-selector.component';
 
 type DirectorySort = 'verified' | 'nearest';
 type ContactMethod = 'call' | 'email';
@@ -86,7 +88,8 @@ interface EduHubShopListing {
     IonicModule,
     AdBannerComponent,
     FooterComponent,
-    SupermePetComponent
+    SupermePetComponent,
+    EduHubCitySelectorComponent
   ],
   templateUrl: './parent-eduhub-shop-listing.component.html',
   styleUrls: ['./parent-eduhub-shop-listing.component.scss']
@@ -127,7 +130,8 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     private readonly core: CoreService,
     private readonly userService: UserService,
     private readonly eduHubEventsService: EduHubEventsService,
-    private readonly petAgeService: PetAgeService
+    private readonly petAgeService: PetAgeService,
+    private readonly cityService: EduHubCityService
   ) {}
 
   /** Panda uses the same Figma artwork shown on Home/Coins/Learning instead of this page's decorative mascot. */
@@ -198,14 +202,18 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
 
   get visibleListings(): EduHubShopListing[] {
     const query = this.normalize(this.searchQuery);
-    const filtered = query
-      ? this.listings.filter(item => this.normalize([
+    const city = this.normalize(this.cityService.city);
+    const filtered = this.listings.filter(item => {
+      const itemLocation = this.normalize([item.publicLocation, item.fullAddress].join(' '));
+      const matchesCity = !city || itemLocation.includes(city);
+      const matchesQuery = !query || this.normalize([
           item.name,
           item.publicLocation,
           item.fullAddress,
           item.entityType
-        ].join(' ')).includes(query))
-      : [...this.listings];
+        ].join(' ')).includes(query);
+      return matchesCity && matchesQuery;
+    });
 
     if (this.selectedSort === 'nearest') {
       return filtered.sort((a, b) => {

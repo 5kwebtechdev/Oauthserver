@@ -6,7 +6,10 @@
           <button type="button" class="toolbar-button toolbar-button--back" aria-label="Back" (click)="goBack()">
             <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
           </button>
-          <h1>{{ title }}</h1>
+          <div class="events-toolbar__heading">
+            <h1>{{ title }}</h1>
+            <eduhub-city-selector></eduhub-city-selector>
+          </div>
         </div>
 
         <button type="button" class="toolbar-button toolbar-button--search" aria-label="Search listings"

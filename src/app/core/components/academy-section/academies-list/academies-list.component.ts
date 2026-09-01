@@ -15,6 +15,8 @@ import { environment } from '../../../../../environments/environment';
 import { TutorListComponent } from '../../tutor-section/tutor-list/tutor-list.component';
 import { TutorProfileComponent } from '../../tutor-section/tutor-profile/tutor-profile.component';
 import { Tutor, TutorListItem } from '../../../models/tutor.model';
+import { EduHubCitySelectorComponent } from '../../education-section/eduhub-city-selector/eduhub-city-selector.component';
+import { EduHubCityService } from '../../../services/eduhub-city.service';
 
 type AcademySort = 'recent' | 'alphabets' | 'rating' | 'price';
 
@@ -50,7 +52,8 @@ interface Academy {
     SupermeSpeechBubbleComponent,
     SupermePopupComponent,
     FooterComponent,
-    TutorListComponent
+    TutorListComponent,
+    EduHubCitySelectorComponent
   ],
   templateUrl: './academies-list.component.html',
   styleUrls: ['./academies-list.component.scss']
@@ -82,7 +85,8 @@ export class AcademiesListComponent implements OnInit {
     private authService: AuthService,
     private toastService: CustomToastService,
     private modalCtrl: ModalController,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private cityService: EduHubCityService
   ) { }
 
   ngOnInit(): void {
@@ -241,13 +245,14 @@ export class AcademiesListComponent implements OnInit {
 
   get filteredAcademies(): Academy[] {
     const q = this.searchQuery.trim().toLowerCase();
-    if (!q) return this.academies;
+    const city = this.cityService.city.toLowerCase();
     return this.academies.filter(a =>
-      a.name.toLowerCase().includes(q) ||
-      a.headline.toLowerCase().includes(q) ||
-      a.location.toLowerCase().includes(q) ||
-      a.subjects.some(s => s.toLowerCase().includes(q)) ||
-      a.classes.some(c => c.toLowerCase().includes(q))
+      (!city || a.location.toLowerCase().includes(city)) &&
+      (!q || a.name.toLowerCase().includes(q) ||
+        a.headline.toLowerCase().includes(q) ||
+        a.location.toLowerCase().includes(q) ||
+        a.subjects.some(s => s.toLowerCase().includes(q)) ||
+        a.classes.some(c => c.toLowerCase().includes(q)))
     );
   }
 

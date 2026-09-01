@@ -574,6 +574,74 @@ button {
   padding: 0 16px;
 }
 
+.weekly-overview {
+  width: calc(100% - 32px);
+  margin: 24px 16px 0;
+  padding: 16px;
+  overflow: hidden;
+  border: 1px solid #ded7ea;
+  border-radius: 32px;
+  background: #ffffff;
+  box-shadow: 0 1px 5px rgba(67, 36, 119, 0.12);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    h2 {
+      margin: 0;
+      color: #432477;
+      font-family: var(--font-heading, 'Fredoka', sans-serif);
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    span {
+      flex: 0 0 auto;
+      color: #6b656a;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+  }
+
+  .mood-balance-section,
+  .performance-section,
+  .foundation-section {
+    margin-top: 20px;
+    padding: 0;
+  }
+
+  .section-heading {
+    margin-bottom: 12px;
+  }
+
+  &__cta {
+    display: flex;
+    width: 100%;
+    min-height: 50px;
+    margin-top: 24px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 2px solid #432477;
+    border-radius: 18px;
+    background: #ffffff;
+    color: #432477;
+    font-family: var(--font-heading, 'Fredoka', sans-serif);
+    font-size: 16px;
+    font-weight: 600;
+
+    ion-icon {
+      width: 22px;
+      height: 22px;
+    }
+  }
+}
+
 .section-heading {
   display: flex;
   align-items: center;
@@ -855,34 +923,20 @@ button {
   padding: 12px;
   border: 1px solid #e2aa47;
   border-radius: 14px;
-  background: #fff9ec;
+  background: #fffaf1;
   color: #514b4e;
 
   &__visual {
-    position: relative;
-    display: grid;
-    width: 62px;
-    height: 62px;
-    flex: 0 0 62px;
-    place-items: center;
-    border-radius: 14px;
-    background: #fff0b8;
-    color: #6a488f;
+    width: 104px;
+    height: 104px;
+    flex: 0 0 104px;
+    overflow: hidden;
 
-    span {
-      position: absolute;
-      top: 4px;
-      left: 7px;
-      color: #f2b44c;
-      font-size: 18px;
-    }
-
-    strong {
-      color: #6b656a;
-      font-size: 12px;
-      line-height: 1.05;
-      text-align: center;
-      text-transform: uppercase;
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   }
 
@@ -896,6 +950,7 @@ button {
   h3 {
     color: #282527;
     font-size: 13px;
+    font-weight: 600;
   }
 
   p {
@@ -908,7 +963,7 @@ button {
     margin-top: 5px;
     padding: 4px 6px;
     border-radius: 4px;
-    background: #f2b44c;
+    background: #f5b24a;
     color: #514b4e;
     font-size: 9px;
     line-height: 1.25;
@@ -1169,8 +1224,25 @@ button {
     width: 100%;
     padding: 16px;
     border-radius: 32px;
-    background: #e8ecf7;
     box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+  }
+
+  // The parent dashboard uses the same stateful Today’s Plan card as the
+  // child dashboard. Keep its wrapper from flattening the per-tab themes.
+  ::ng-deep .glance-card--all {
+    background: #FFF3F7;
+  }
+
+  ::ng-deep .glance-card--habits {
+    background: #F3F2FF;
+  }
+
+  ::ng-deep .glance-card--tasks {
+    background: #FFF4EE;
+  }
+
+  ::ng-deep .glance-card--timetable {
+    background: #EFF8F8;
   }
 
   ::ng-deep .glance-card .superme-card-header__title {
@@ -1240,6 +1312,7 @@ button {
 }
 
 .parent-learning-card {
+  --learning-card-bg: #fff8fa;
   display: flex;
   width: calc(100% - 32px);
   margin: 24px 16px 0;
@@ -1253,12 +1326,14 @@ button {
   box-shadow: 0 0 2px rgba(172, 36, 86, 0.15);
 
   &--rewards {
+    --learning-card-bg: #fcf3f6;
     border: 0;
     background: #fcf3f6;
     box-shadow: 0 0 2px 1px rgba(240, 165, 188, 0.5);
   }
 
   &--parenting {
+    --learning-card-bg: #ebe6f5;
     gap: 0;
     border: 0;
     background: #ebe6f5;

@@ -21,7 +21,6 @@ const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
     link: '/authed/content',
     children: [
       { label: 'Quiz', link: '/authed/content', queryParams: { type: 'QUIZ' } },
-      { label: 'Puzzle', link: '/authed/content', queryParams: { type: 'PUZZLE' } },
       { label: 'Article', link: '/authed/content', queryParams: { type: 'ARTICLE' } },
       { label: 'Master Class', link: '/authed/content', queryParams: { type: 'MASTERCLASS' } },
       { label: 'Reels', link: '/authed/reels' },

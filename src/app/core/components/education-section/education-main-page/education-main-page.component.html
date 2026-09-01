@@ -2,10 +2,29 @@
     <ng-container *ngIf="usesNewEduHubLayout; else standardEduHub">
         <main class="parent-eduhub-page">
             <header class="parent-eduhub-header">
-                <button *ngIf="isParentRole" type="button" class="parent-eduhub-back" aria-label="Back" (click)="goBack()">
-                    <img src="assets/icons/back-arrow.svg" alt="" aria-hidden="true">
-                </button>
-                <h1>EduHub</h1>
+                <div class="parent-eduhub-toolbar">
+                    <div class="parent-eduhub-toolbar__identity">
+                        <button type="button" class="parent-eduhub-back" aria-label="Back" (click)="goBack()">
+                            <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
+                        </button>
+                        <div>
+                            <h1>EduHub</h1>
+                            <eduhub-city-selector></eduhub-city-selector>
+                        </div>
+                    </div>
+                    <button type="button" class="parent-eduhub-search" aria-label="Search EduHub"
+                        (click)="openParentCategory(parentEduHubSections[0].categories[0])">
+                        <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
+                    </button>
+                </div>
+                <div class="parent-eduhub-hero-copy">
+                    <div>
+                        <h2>Your growth network,<br>All in one place</h2>
+                        <p>Explore trusted tutors, academies, shops, counselors, and more in one place.</p>
+                        <aside>We just connect you with the lister and we are not liable for anything beyond that.</aside>
+                    </div>
+                    <img src="assets/figma/parent-eduhub/header-hero.png" alt="" aria-hidden="true">
+                </div>
             </header>
 
             <ad-banner class="parent-eduhub-ad" aria-label="Featured EduHub offers"

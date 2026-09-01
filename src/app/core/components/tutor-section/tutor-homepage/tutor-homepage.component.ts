@@ -16,6 +16,8 @@ import { SupermePopupComponent } from '../../superme-popup/superme-popup.compone
 import { TutorService } from '../../../services/tutor.service';
 import { TutorApi } from '../../../api/tutor.api';
 import { TutorListItem, TutorSortOption } from '../../../models/tutor.model';
+import { EduHubCitySelectorComponent } from '../../education-section/eduhub-city-selector/eduhub-city-selector.component';
+import { EduHubCityService } from '../../../services/eduhub-city.service';
 
 @Component({
   selector: 'tutor-homepage',
@@ -29,7 +31,8 @@ import { TutorListItem, TutorSortOption } from '../../../models/tutor.model';
     SupermePetComponent,
     SupermeSpeechBubbleComponent,
     FooterComponent,
-    SupermePopupComponent
+    SupermePopupComponent,
+    EduHubCitySelectorComponent
   ],
   templateUrl: './tutor-homepage.component.html',
   styleUrls: ['./tutor-homepage.component.scss']
@@ -65,7 +68,8 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
     private tutorApi: TutorApi,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cityService: EduHubCityService
   ) { }
 
   ngOnInit(): void {
@@ -122,6 +126,16 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
     return this.isCounselorDirectory
       ? 'Find a trusted counselor who can support your child.'
       : 'Sniffed out the best tutors just for you, ready to fetch your favorite?';
+  }
+
+  get visibleTutors(): TutorListItem[] {
+    const city = this.cityService.city.toLocaleLowerCase();
+    return this.tutors.filter(tutor => {
+      const raw = this.tutorService.getTutorFromCache(tutor.id) as any;
+      const location = [raw?.city, raw?.location, raw?.state, (tutor as any)?.location]
+        .filter(Boolean).join(' ').toLocaleLowerCase();
+      return !city || location.includes(city);
+    });
   }
 
   onViewProfile(tutor: TutorListItem): void {

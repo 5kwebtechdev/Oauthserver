@@ -26,6 +26,7 @@ import { ProfileSelectorService } from '../../../services/profile-selector-servi
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
 import { EventApi } from '../../../api/event.api';
+import { getEventTypeIcon } from '../event-type-icon';
 
 @Component({
   selector: 'activity-card',
@@ -2058,8 +2059,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     }).subscribe({
       next: ({ calendar, events }: { calendar: any; events: any[] }) => {
         const calendarEvents = Array.isArray(calendar?.events) ? calendar.events : [];
-        const personalCalendarEvents = calendarEvents.filter((item: any) => !this.isGlancePlannerSchedule(item));
-        this.glancePlannerRaw = calendarEvents.filter((item: any) => this.isGlancePlannerSchedule(item));
+        const personalEventIds = this.getGlancePersonalEventIds(events);
+        // Calendar events that also exist in the personal-events feed are
+        // personal events, even if their API record has start/end times. Do
+        // not render the same birthday/appointment as a timetable card.
+        const isPersonalCalendarEvent = (item: any) =>
+          this.isGlancePersonalEvent(item, personalEventIds) || !this.isGlancePlannerSchedule(item);
+        const personalCalendarEvents = calendarEvents.filter(isPersonalCalendarEvent);
+        this.glancePlannerRaw = calendarEvents.filter((item: any) => !isPersonalCalendarEvent(item) && this.isGlancePlannerSchedule(item));
         this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents(personalCalendarEvents, events);
         this.finishGlancePlannerLoad();
       },
@@ -2117,10 +2124,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   getGlanceUpcomingEventIcon(event: any): string {
-    const description = `${event?.eventType || ''} ${event?.title || ''} ${event?.name || ''}`.toLowerCase();
-    return description.includes('exam') || description.includes('test')
-      ? 'assets/figma/home-glance/event-exam.svg'
-      : 'assets/figma/home-glance/event-birthday.svg';
+    const cachedEvent = this.eventApi.getCachedEvent(event?.id);
+    const eventType = event?.eventType || event?.event_type || cachedEvent?.eventType;
+    const fallback = `${event?.title || cachedEvent?.name || ''} ${event?.name || cachedEvent?.name || ''}`;
+    return getEventTypeIcon(eventType, fallback);
   }
 
   getGlanceUpcomingEventCountdown(event: any): string {
@@ -2198,6 +2205,21 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       || Boolean(item?.startTime && item?.endTime);
   }
 
+  private getGlancePersonalEventIds(events: any[]): Set<string> {
+    const ids = new Set<string>();
+    (events || []).forEach(event => {
+      [event?.id, event?.eventId, event?.calendarId, event?.calendar_id]
+        .filter(value => value !== undefined && value !== null && String(value).trim() !== '')
+        .forEach(value => ids.add(String(value)));
+    });
+    return ids;
+  }
+
+  private isGlancePersonalEvent(item: any, personalEventIds: Set<string>): boolean {
+    return [item?.id, item?.eventId, item?.calendarId, item?.calendar_id]
+      .some(value => value !== undefined && value !== null && personalEventIds.has(String(value)));
+  }
+
   private getGlanceUpcomingEventOccurrence(event: any, referenceDate: Date): Date | null {
     const original = this.getGlanceLocalDate(event?.eventDate || event?.startDate || event?.start_date);
     if (!original) return null;
@@ -2216,7 +2238,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   private mergeGlanceUpcomingEvents(calendarEvents: any[], personalEvents: any[]): any[] {
-    const merged = [...(calendarEvents || []), ...(personalEvents || [])];
+    // The events endpoint can include timetable schedules too. Filter both
+    // sources here as a final boundary so a schedule never appears in the
+    // Upcoming Events row as well as in the Timetable tab.
+    const merged = [...(calendarEvents || []), ...(personalEvents || [])]
+      .filter(event => !this.isGlancePlannerSchedule(event));
     const unique = new Map<string, any>();
     merged.forEach((event, index) => {
       const key = String(event?.id ?? [
@@ -2703,7 +2729,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   /** "Today at a Glance" header subtitle, e.g. "5 Habits • 3 Tasks • 1 Planner" */
-  /** "Planner" label/icon is used for every role now, matching the Child/Self experience. */
+  /** Planner label/icon is shared across every role. */
   get usesPlannerExperience(): boolean {
     return true;
   }
@@ -2719,13 +2745,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   get viewActionLabel(): string {
     switch (this.currentActive) {
       case 'habits':
-        return 'View Habit';
+        return 'View All Habits';
       case 'tasks':
-        return 'View Task';
+        return 'View All Tasks';
       case 'timetable':
-        return `View ${this.plannerTabLabel}`;
+        return 'View All Planners';
       default:
-        return 'View all';
+        return 'View All';
     }
   }
 
@@ -2746,7 +2772,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const parts = [
       `${this.totalHabitsLoaded} Habit${this.totalHabitsLoaded === 1 ? '' : 's'}`,
       `${this.totalTasksLoaded} Task${this.totalTasksLoaded === 1 ? '' : 's'}`,
-      `${this.totalTimetablesLoaded} ${this.plannerTabLabel}${this.totalTimetablesLoaded === 1 ? '' : 's'}`
+      `${this.totalTimetablesLoaded} Planner${this.totalTimetablesLoaded === 1 ? '' : 's'}`
     ];
     return parts.join(' • ');
   }

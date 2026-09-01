@@ -45,7 +45,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
             [attr.data-difficulty]="getDifficultyTone(item)">
             {{ getDifficultyLabel(item) }}
           </span>
-          <div *ngIf="rewardMode" class="reward-card-summary" aria-hidden="true">
+          <div *ngIf="rewardMode" class="reward-card-summary">
             <h3>{{ item?.title }}</h3>
             <div class="reward-card-summary__meta">
               <span>
@@ -61,6 +61,19 @@ import { AuthService } from 'src/app/core/services/auth.service';
                 {{ getItemDuration(item) }}
               </span>
             </div>
+            <button type="button" class="reward-assign"
+              [class.reward-assign--assigned]="isRewardAssigned(item)"
+              [disabled]="isRewardAssigned(item)"
+              [attr.aria-label]="isRewardAssigned(item)
+                ? (item?.title || 'Learning activity') + ' is already assigned'
+                : 'Assign ' + getRewardCoins(item) + ' coins to ' + (item?.title || 'learning activity')"
+              (click)="onRewardClick($event, item, i)">
+              <span>{{ isRewardAssigned(item) ? 'Already Assigned' : 'Assign' }}</span>
+              <ng-container *ngIf="!isRewardAssigned(item)">
+                <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
+                <strong>{{ getRewardCoins(item) }}</strong>
+              </ng-container>
+            </button>
           </div>
           <span *ngIf="contentMode === 'parenting' && getDifficultyLabel(item)" class="parenting-difficulty"
             [attr.data-difficulty]="getDifficultyTone(item)">
@@ -79,19 +92,6 @@ import { AuthService } from 'src/app/core/services/auth.service';
               </span>
             </div>
           </div>
-          <button *ngIf="rewardMode" type="button" class="reward-assign"
-            [class.reward-assign--assigned]="isRewardAssigned(item)"
-            [disabled]="isRewardAssigned(item)"
-            [attr.aria-label]="isRewardAssigned(item)
-              ? (item?.title || 'Learning activity') + ' is already assigned'
-              : 'Assign ' + getRewardCoins(item) + ' coins to ' + (item?.title || 'learning activity')"
-            (click)="onRewardClick($event, item, i)">
-            <span>{{ isRewardAssigned(item) ? 'Already Assigned' : 'Assign' }}</span>
-            <ng-container *ngIf="!isRewardAssigned(item)">
-              <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
-              <strong>{{ getRewardCoins(item) }}</strong>
-            </ng-container>
-          </button>
         </div>
       </div>
 
@@ -279,7 +279,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
         min-width: 68px;
         height: 28px;
         background:
-          linear-gradient(#FFFFFF, #FFFFFF) padding-box,
+          linear-gradient(var(--learning-card-bg, #FFFFFF), var(--learning-card-bg, #FFFFFF)) padding-box,
           linear-gradient(135deg, #7C74D8, #E1527C, #F2A33B) border-box;
         border: 2px solid transparent;
         border-radius: 16px;
@@ -668,7 +668,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
           padding: 8px 16px;
           border: 2px solid #e1527c;
           border-radius: 22px;
-          background: #ffffff;
+          background: var(--learning-card-bg, #ffffff);
           color: #432477;
           font-family: var(--font-sans, 'Nunito', sans-serif);
           font-size: 13px;
@@ -760,13 +760,13 @@ import { AuthService } from 'src/app/core/services/auth.service';
           position: absolute;
           z-index: 3;
           right: 0;
-          bottom: 42px;
+          bottom: 0;
           left: 0;
           display: flex;
-          min-height: 52px;
+          min-height: 88px;
           flex-direction: column;
           justify-content: flex-end;
-          gap: 2px;
+          gap: 4px;
           padding: 8px;
           border-radius: 0 0 12px 12px;
           background: linear-gradient(180deg, rgba(40, 37, 39, 0.5) 0%, #282527 100%);
@@ -817,12 +817,12 @@ import { AuthService } from 'src/app/core/services/auth.service';
         }
 
         .reward-assign {
-          position: absolute;
+          position: relative;
           z-index: 5;
-          right: 8px;
-          bottom: 8px;
-          left: 8px;
-          width: auto;
+          right: auto;
+          bottom: auto;
+          left: auto;
+          width: 100%;
           min-height: 34px;
           gap: 4px;
           padding: 6px 8px;
@@ -836,6 +836,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
           font-size: 13px;
           font-weight: 700;
           line-height: 1.2;
+          pointer-events: auto;
 
           img {
             width: 16px;

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Geolocation, Position } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -29,7 +30,21 @@ export class LocationService {
      */
     async getCurrentPosition(): Promise<Position> {
         try {
-            const position = await Geolocation.getCurrentPosition();
+            if (Capacitor.isNativePlatform()) {
+                const permission = await Geolocation.checkPermissions();
+                if (permission.location !== 'granted' && permission.coarseLocation !== 'granted') {
+                    const requested = await Geolocation.requestPermissions({ permissions: ['location', 'coarseLocation'] });
+                    if (requested.location !== 'granted' && requested.coarseLocation !== 'granted') {
+                        throw new Error('Location permission was not granted');
+                    }
+                }
+            }
+
+            const position = await Geolocation.getCurrentPosition({
+                enableHighAccuracy: false,
+                timeout: 12000,
+                maximumAge: 300000
+            });
             return position;
         } catch (error) {
             console.error('Error getting location:', error);
@@ -49,6 +64,10 @@ export class LocationService {
      */
     async reverseGeocode(lat: number, lng: number): Promise<AddressDetails> {
         try {
+            if (!this.googleMapsApiKey) {
+                return await this.reverseGeocodeWithoutApiKey(lat, lng);
+            }
+
             const response: any = await this.http
                 .get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${this.googleMapsApiKey}`)
                 .pipe(
@@ -66,6 +85,44 @@ export class LocationService {
             console.error('Error in reverse geocoding:', error);
             throw error;
         }
+    }
+
+    /**
+     * Key-free fallback used by EduHub when a Google Maps key is not configured.
+     * BigDataCloud's client endpoint returns locality details for browser/app coordinates.
+     */
+    private async reverseGeocodeWithoutApiKey(lat: number, lng: number): Promise<AddressDetails> {
+        const response: any = await this.http.get(
+            'https://api.bigdatacloud.net/data/reverse-geocode-client',
+            {
+                params: {
+                    latitude: String(lat),
+                    longitude: String(lng),
+                    localityLanguage: 'en'
+                }
+            }
+        ).toPromise();
+
+        const city = String(
+            response?.city ||
+            response?.locality ||
+            response?.principalSubdivision ||
+            ''
+        ).trim();
+
+        if (!city) {
+            throw new Error('Unable to determine city from current location');
+        }
+
+        return {
+            pincode: String(response?.postcode || ''),
+            city,
+            state: String(response?.principalSubdivision || ''),
+            flat: '',
+            area: String(response?.locality || city),
+            coordinates: { lat, lng },
+            formattedAddress: String(response?.localityInfo?.informative?.[0]?.description || city)
+        };
     }
 
     /**

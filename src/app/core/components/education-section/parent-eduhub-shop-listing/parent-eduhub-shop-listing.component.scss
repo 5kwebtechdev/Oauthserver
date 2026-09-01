@@ -76,6 +76,13 @@ button {
   }
 }
 
+.directory-toolbar__heading {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  color: var(--text);
+}
+
 .icon-button {
   display: grid;
   flex: 0 0 auto;

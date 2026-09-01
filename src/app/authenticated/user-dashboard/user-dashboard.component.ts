@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
@@ -85,6 +85,8 @@ type HomeTimePeriod = 'morning' | 'evening' | 'night';
   ]
 })
 export class UserDashboardComponent implements OnInit, OnDestroy {
+
+  @ViewChild(ActivityCardComponent) activityCard?: ActivityCardComponent;
 
   // Minimal properties used by the template
   public userName = '';
@@ -184,12 +186,14 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   ];
   private readonly handleHomeVisibilityChange = (): void => {
     if (document.visibilityState === 'visible') {
+      this.activityCard?.switchTab('all');
       this.syncHomeTimePeriod();
       this.refreshWeekStreakDays();
       this.maybeShowDailyStreakPopup();
     }
   };
   private readonly handleHomeWindowFocus = (): void => {
+    this.activityCard?.switchTab('all');
     this.syncHomeTimePeriod();
     this.refreshWeekStreakDays();
     this.maybeShowDailyStreakPopup();
@@ -516,6 +520,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter(): void {
+    // Ionic caches the dashboard, so a tab selected before navigating away or
+    // backgrounding the app can otherwise remain active on the next app open.
+    this.activityCard?.switchTab('all');
     this.syncHomeTimePeriod();
     this.refreshWeekStreakDays();
     this.maybeShowDailyStreakPopup();

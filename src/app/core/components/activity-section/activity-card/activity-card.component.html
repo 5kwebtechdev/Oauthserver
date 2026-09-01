@@ -113,6 +113,8 @@
     <!-- Empty State (uses shared EmptyStateComponent) -->
     <!-- Task-specific: all tasks completed (taskCompletionRate === 100 AND totalHabits > 0) -->
     <empty-state *ngIf="currentActive === 'tasks' && taskCompletionRate === 100 && totalTasksLoaded > 0"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No tasks available illustration"
       leadText="All tasks done!"
       subText="Your tasks can be reviewed in the main habits screen. You can even mark them done from there."
       buttonText="">
@@ -129,6 +131,8 @@
 
     <!-- Task-specific: tasks existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && totalTasksLoaded > 0 && taskCompletionRate < 100"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No tasks available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
       buttonText="">
@@ -136,6 +140,8 @@
 
     <!-- Habit-specific: all habits completed (habitCompletionRate === 100 AND totalTasks > 0) -->
     <empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalHabitsLoaded > 0"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No habits available illustration"
       leadText="All habits done!"
       subText="Your habits can be reviewed in the main habits screen. You can even mark them done from there."
       buttonText="">
@@ -289,6 +295,8 @@
     <!-- Empty State (uses shared EmptyStateComponent) -->
     <!-- Task-specific: all tasks completed/skipped (taskCompletionRate === 100 AND totalHabits > 0) -->
     <empty-state *ngIf="currentActive === 'tasks' && taskCompletionRate === 100 && totalTasksLoaded > 0"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No tasks available illustration"
       leadText="All tasks done!"
       subText="Your tasks can be reviewed in the main habits screen."
       buttonText="">
@@ -305,6 +313,8 @@
 
     <!-- Task-specific: tasks existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && totalTasksLoaded > 0 && taskCompletionRate < 100"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No tasks available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
       buttonText="">
@@ -312,6 +322,8 @@
 
     <!-- Habit-specific: all habits completed/skipped (habitCompletionRate === 100 AND totalTasks > 0) -->
     <empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalHabitsLoaded > 0"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageAlt="No habits available illustration"
       leadText="All habits done!"
       subText="Your habits can be reviewed in the main habits screen."
       buttonText="">

@@ -141,13 +141,15 @@
         </div>
       </section>
 
+      <section class="weekly-overview" aria-labelledby="weekly-overview-title">
+        <header class="weekly-overview__header">
+          <h2 id="weekly-overview-title">Last 7 Days at a glance</h2>
+          <span>{{ weeklyDateRange }}</span>
+        </header>
+
       <section class="mood-balance-section" aria-labelledby="mood-balance-title">
-        <div class="section-heading section-heading--button">
-          <h2 id="mood-balance-title">
-            Mood Balance (Last 7 days)
-            <img src="assets/figma/parent-home/info.svg" alt="" aria-hidden="true">
-          </h2>
-          <button type="button" class="outline-pill" (click)="openInsights()">View more</button>
+        <div class="section-heading">
+          <h2 id="mood-balance-title">Mood Balance</h2>
         </div>
 
         <div class="mood-balance" [class.mood-balance--loading]="moodBalanceLoading">
@@ -181,8 +183,7 @@
 
       <section class="performance-section" aria-labelledby="performance-title">
         <div class="section-heading">
-          <h2 id="performance-title">This Week's Performance</h2>
-          <span>Updated {{ statsUpdatedLabel }}</span>
+          <h2 id="performance-title">Performance</h2>
         </div>
 
         <div class="performance-card">
@@ -201,7 +202,7 @@
                 [style.--metric-color]="metric.color">
                 <span *ngIf="!performanceLoading">{{ metric.displayValue }}</span>
               </div>
-              <strong *ngIf="!performanceLoading" [style.color]="metric.color">{{ metric.status }}</strong>
+              <strong *ngIf="!performanceLoading && !showPerformanceBlankState" [style.color]="metric.color">{{ metric.status }}</strong>
               <span *ngIf="performanceLoading" class="metric__status-skeleton" aria-hidden="true"></span>
               <p *ngIf="activeMetricInfo === getMetricInfo(metric)" class="metric__tooltip" role="status">
                 {{ activeMetricInfo }}
@@ -209,9 +210,9 @@
             </article>
           </div>
 
-          <section *ngIf="!performanceLoading && !hasPerformanceData" class="performance-empty-state" aria-live="polite">
+          <section *ngIf="!performanceLoading && showPerformanceBlankState" class="performance-empty-state" aria-live="polite">
             <div class="performance-empty-state__visual" aria-hidden="true">
-              <span>★</span><strong>7<br>days</strong>
+              <img src="assets/figma/parent-home/performance-empty-state.png" alt="">
             </div>
             <div>
               <h3>The adventure is just beginning!</h3>
@@ -220,7 +221,7 @@
             </div>
           </section>
 
-          <button *ngIf="performanceLoading || hasPerformanceData" class="ai-insight" type="button" (click)="openInsights()">
+          <button *ngIf="performanceLoading || !showPerformanceBlankState" class="ai-insight" type="button" (click)="openInsights()">
             <img src="assets/figma/parent-home/ai-insight.webp" alt="" aria-hidden="true">
             <span>
               <span><strong>AI Insight :</strong> {{ aiInsight }}</span>
@@ -231,9 +232,8 @@
       </section>
 
       <section class="foundation-section" aria-labelledby="foundation-title">
-        <div class="section-heading section-heading--button">
-          <h2 id="foundation-title">Weekly Foundational Overview</h2>
-          <button type="button" class="outline-pill" (click)="openInsights()">View all</button>
+        <div class="section-heading">
+          <h2 id="foundation-title">Foundational Overview</h2>
         </div>
 
         <div class="foundation-rail">
@@ -254,6 +254,12 @@
             </span>
           </article>
         </div>
+      </section>
+
+        <button type="button" class="weekly-overview__cta" (click)="openInsights()">
+          <ion-icon name="bar-chart-outline" aria-hidden="true"></ion-icon>
+          <span>View detailed insights</span>
+        </button>
       </section>
 
       <section class="today-plan" aria-label="Today's plan">

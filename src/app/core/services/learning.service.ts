@@ -514,15 +514,49 @@ export class LearningService {
     ): LearningCategorySummary[] {
         return (categories || [])
             .filter(category => (category.status || 'ACTIVE').toUpperCase() === 'ACTIVE')
-            .map(category => ({
-                ...category,
-                type,
-                name: category.name || category.categoryName || 'Untitled',
-                categoryName: category.categoryName || category.name || 'Untitled',
-                thumbnailUrl: this.normalizeApiImageUrl(category.thumbnailUrl || category.image),
-                image: this.normalizeApiImageUrl(category.image || category.thumbnailUrl),
-                count: Number(category.count || 0)
-            }));
+            .map(category => {
+                const pendingCount = this.resolvePendingCategoryCount(category);
+                return {
+                    ...category,
+                    type,
+                    name: category.name || category.categoryName || 'Untitled',
+                    categoryName: category.categoryName || category.name || 'Untitled',
+                    thumbnailUrl: this.normalizeApiImageUrl(category.thumbnailUrl || category.image),
+                    image: this.normalizeApiImageUrl(category.image || category.thumbnailUrl),
+                    pendingCount,
+                    // Keep `count` aligned with what the category card displays.
+                    count: pendingCount
+                };
+            });
+    }
+
+    private resolvePendingCategoryCount(category: LearningCategorySummary): number {
+        const pending = category.pending
+            ?? category.pendingCount
+            ?? category.pendingQuizCount
+            ?? category.pendingArticleCount
+            ?? category.pendingCourseCount;
+
+        if (pending != null) return this.toCategoryCount(pending);
+
+        const total = category.totalCount ?? category.count;
+        const completed = category.completedCount
+            ?? category.completedQuizCount
+            ?? category.completedArticleCount
+            ?? category.completedCourseCount;
+
+        if (total != null && completed != null) {
+            return Math.max(0, this.toCategoryCount(total) - this.toCategoryCount(completed));
+        }
+
+        // Older API responses expose only `count`; retain that value until the
+        // user-scoped pending/completed fields are available.
+        return this.toCategoryCount(total);
+    }
+
+    private toCategoryCount(value: unknown): number {
+        const count = Number(value ?? 0);
+        return Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0;
     }
 
     /**

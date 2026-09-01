@@ -42,6 +42,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
   showRemovePopup: boolean = false;
   memberToRemove: FamilyMember | null = null;
   familyRelationship: 'SELF' | 'PARENT' | 'CHILD' | null = null;
+  familyAsChild = false;
   familyCanSwitchRoles = false;
   familyAgeLocked = false;
   familyHasFamily = false;
@@ -294,6 +295,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
     // Pre-populate from locally stored user data so the UI isn't blank during the API call
     try {
       const userData = this.coreAuthService.getUserData();
+      this.familyAsChild = userData?.asChild === true;
       if (userData?.family?.familyCode) {
         this.familyCode = userData.family.familyCode;
         this.familyName = userData.family.familyName || this.familyName;
@@ -502,6 +504,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
   private applyFamilyStatusResponse(response: any): void {
     const relationship = this.normalizeRelationshipValue(response?.relationship);
     this.familyRelationship = relationship;
+    this.familyAsChild = response?.asChild === true;
     this.familyCanSwitchRoles = response?.canSwitchRoles === true;
     this.familyAgeLocked = response?.ageLocked === true;
     this.familyHasFamily = response?.hasFamily === true;
@@ -592,7 +595,8 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
         ...userData,
         id: response?.userId || userData.id,
         name: response?.name || userData.name,
-        relationship
+        relationship,
+        asChild: response?.asChild === true
       };
 
       if (response?.hasFamily && (response?.familyCode || response?.familyName)) {
@@ -818,6 +822,11 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
       console.error('Failed to determine user relationship:', e);
       return false;
     }
+  }
+
+  /** Label the no-family state using the role selected for this SELF account. */
+  get familyModeHeading(): string {
+    return this.familyAsChild ? 'Using Child role' : 'Using Self mode';
   }
 
   /**

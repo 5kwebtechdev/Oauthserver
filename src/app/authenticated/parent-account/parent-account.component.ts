@@ -299,6 +299,17 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         });
     }
 
+    get weeklyDateRange(): string {
+        const end = new Date();
+        const start = new Date(end);
+        start.setDate(end.getDate() - 6);
+        const format = (date: Date): string => date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+        });
+        return `${format(start)}–${format(end)}`;
+    }
+
     get performanceMetrics(): ParentMetric[] {
         return [
             this.buildMetric('Completion Rate', this.completionRate, `${this.clampPercentage(this.completionRate)}%`, this.completionRateColor),
@@ -311,6 +322,19 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             ),
             this.buildMetric('App’s Score', this.appScore, `${Math.round(this.appScore)}`, this.appScoreColor, this.appScoreLabel)
         ];
+    }
+
+    get showPerformanceBlankState(): boolean {
+        const allMetricsAreZero = [
+            this.completionRate,
+            this.consistencyRate,
+            this.improvementRate,
+            this.appScore
+        ].every(value => Number(value || 0) === 0);
+        const hasFewerThanSevenDays = this.isFirstWeek
+            || this.daysInWeek < 7
+            || this.activeDaysThisWeek < 7;
+        return allMetricsAreZero && hasFewerThanSevenDays;
     }
 
     get aiInsight(): string {
@@ -609,6 +633,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     async ionViewWillEnter(): Promise<void> {
         // Fires on initial load AND every time this screen becomes active (return from navigation).
+        this.activityCard?.switchTab('all');
         await Promise.all([
             this.loadChildren(),
             firstValueFrom(

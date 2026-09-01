@@ -449,3 +449,9 @@ display: flex;
 :host ::ng-deep app-superme-popup .superme-popup-actions .superme-popup-dual-cta > * {
   width: 100%;
 }
+.eduhub-heading-with-city {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+}

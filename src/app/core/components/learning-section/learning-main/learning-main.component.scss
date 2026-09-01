@@ -1083,10 +1083,11 @@
 	min-height: calc(193px + var(--sat, 0px));
 }
 
-// The bottom-navigation root is not a drill-down page. Removing the empty
-// navigation row keeps the hero balanced when there is no Back action.
+// Keep the root header tall enough for its Back control as well as the hero
+// copy. This matches the drill-down navigation pattern and gives parents a
+// clear way back to their previous screen.
 .parent-learning-hero--root {
-	min-height: calc(133px + var(--sat, 0px));
+	min-height: calc(181px + var(--sat, 0px));
 }
 
 .parent-learning-hero__nav {
@@ -1097,6 +1098,10 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 0 16px;
+}
+
+.parent-learning-hero__nav--root {
+	justify-content: flex-start;
 }
 
 .parent-learning-hero__heading {
@@ -1220,11 +1225,10 @@
 	transform: translateY(10px);
 }
 
-// The root Parent Learning page has no navigation row. Reserve the same
-// visual breathing room above its title without adding blank space to detail
-// pages that already have a back-navigation header.
+// The root header now includes a navigation row, so it shares the detail
+// header's natural spacing rather than adding a second top offset.
 .parent-learning-hero--root .parent-learning-hero__copy {
-	padding-top: 16px;
+	padding-top: 0;
 }
 
 .parent-learning-body {

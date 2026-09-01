@@ -471,3 +471,9 @@ h2 { margin: 0; }
     padding-inline: 12px;
   }
 }
+.eduhub-heading-with-city {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+}

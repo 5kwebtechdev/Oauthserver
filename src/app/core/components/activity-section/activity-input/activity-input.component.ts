@@ -21,6 +21,7 @@ import { NavigationService } from '../../../services/navigation.service';
 import { AuthService } from '../../../services/auth.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { CustomToastService } from '../../../services/custom-toast.service';
+import { EVENT_TYPE_ICONS, getEventTypeIcon } from '../event-type-icon';
 
 type ActivityTab = 'habits' | 'tasks' | 'timetable' | 'events';
 type ActivityNavigationTab = ActivityTab | 'planner';
@@ -540,9 +541,10 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       error: () => {
         // Keep the required system choices usable if the type request is unavailable.
         this.eventTypes = [
-          { key: 'Birthday', label: 'Birthday', icon: 'assets/figma/activity-event/birthday.svg' },
-          { key: 'Anniversary', label: 'Anniversary', icon: 'assets/figma/activity-event/anniversary.svg' },
-          { key: 'Exam', label: 'Exam', icon: 'assets/figma/activity-event/personal.svg' }
+          { key: 'Birthday', label: 'Birthday', icon: EVENT_TYPE_ICONS.birthday },
+          { key: 'Anniversary', label: 'Anniversary', icon: EVENT_TYPE_ICONS.anniversary },
+          { key: 'Exam', label: 'Exam', icon: EVENT_TYPE_ICONS.exam },
+          { key: 'Holiday', label: 'Holiday', icon: EVENT_TYPE_ICONS.holiday }
         ];
         this.ensureEventTypeOption(this.selectedEventType);
       }
@@ -554,21 +556,14 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.eventTypes = [...this.eventTypes, {
       key,
       label: key,
-      icon: 'assets/figma/activity-event/personal.svg',
+      icon: EVENT_TYPE_ICONS.default,
       custom: true
     }];
   }
 
   private mapEventType(type: EventTypeDto): EventChoice {
     const label = String(type.name || '').trim();
-    const normalized = label.toLowerCase();
-    const icon = normalized === 'birthday'
-      ? 'assets/figma/activity-event/birthday.svg'
-      : normalized === 'anniversary'
-        ? 'assets/figma/activity-event/anniversary.svg'
-        : normalized === 'exam'
-          ? 'assets/figma/activity-event/personal.svg'
-          : 'assets/figma/activity-event/personal.svg';
+    const icon = getEventTypeIcon(label);
 
     return { key: label, label, icon, id: type.id, custom: !type.system };
   }

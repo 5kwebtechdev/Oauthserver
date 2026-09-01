@@ -217,9 +217,14 @@
 @media (min-width: 768px) {
   .adb--eduhub-parent .adb__card {
     min-width: 0;
-    width: min(100%, 480px);
-    flex-basis: min(100%, 480px);
+    width: calc(50% - 6px);
+    flex-basis: calc(50% - 6px);
+    aspect-ratio: 16 / 8.5;
+    border-radius: 20px;
+    box-shadow: 0 10px 24px rgba(67, 36, 119, .12);
   }
+
+  .adb--eduhub-parent .adb__scroll-track { gap: 12px; }
 }
 
 // A single banner must use the whole content width. The former 81% carousel
