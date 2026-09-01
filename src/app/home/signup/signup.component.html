@@ -406,7 +406,6 @@
           <ng-container *ngIf="currentRole !== 'parent'">
           <h4 class="profile-field-heading">
             <span class="profile-field-title">{{ isOAuthSignup ? 'Choose a SuperMe username' : 'Username' }}</span>
-            <span class="profile-field-hint">{{ isOAuthSignup ? 'Visible in SuperMe only' : 'Name used in the app' }}</span>
           </h4>
           <div class="input-group username-field">
             <div class="username-input-shell"
@@ -432,7 +431,10 @@
               <span>{{ shouldShowUsernameError() ? getUsernameValidationMessage() : 'Great! This username is available' }}</span>
             </p>
 
-            <p class="username-change-note">Relax, you can change it again</p>
+            <p id="username-policy-message" class="username-policy-note" *ngIf="shouldShowUsernameSuccess()" role="status">
+              <i class="fa-solid fa-clock" aria-hidden="true"></i>
+              <span>Once saved, you can change your username again after 30 days.</span>
+            </p>
           </div>
           </ng-container>
 

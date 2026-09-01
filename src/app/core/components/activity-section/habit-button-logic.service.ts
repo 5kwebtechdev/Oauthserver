@@ -6,6 +6,7 @@ import { Injectable } from '@angular/core';
  */
 @Injectable({ providedIn: 'root' })
 export class HabitButtonLogicService {
+  private static readonly LETS_GO_WINDOW_MS = 5 * 60 * 1000;
   /**
    * Combine date string (YYYY-MM-DD) with time string (HH:MM:SS or HH:MM) to create timestamp
    */
@@ -40,13 +41,12 @@ export class HabitButtonLogicService {
     };
   }
 
-  /**
-   * Check whether the current time is inside the scheduled activity window.
-   */
-  isWithinLetsGoWindow(startTimeStamp: number, endTimeStamp: number): boolean {
-    if (!startTimeStamp || !endTimeStamp) return false;
+  /** Check whether the current time is in the five-minute start window. */
+  isWithinLetsGoWindow(startTimeStamp: number): boolean {
+    if (!startTimeStamp) return false;
     const now = Date.now();
-    return now >= startTimeStamp && now <= endTimeStamp;
+    return now >= startTimeStamp - HabitButtonLogicService.LETS_GO_WINDOW_MS
+      && now <= startTimeStamp + HabitButtonLogicService.LETS_GO_WINDOW_MS;
   }
 
   /**
@@ -66,29 +66,28 @@ export class HabitButtonLogicService {
   }
 
   /**
-   * Enable "Let's Go" only during the API-provided start/end window.
+   * Enable "Let's Go" only from five minutes before through five minutes
+   * after the scheduled start time.
    */
   isLetsGoEnabled(habit: any, hasOtherOngoing: boolean = false): boolean {
     if (hasOtherOngoing) return false;
-    const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
-    if (!startTimeStamp || !endTimeStamp) return false;
+    const { startTimeStamp } = this.getTimestamps(habit);
+    if (!startTimeStamp) return false;
     if (!this.isToday(startTimeStamp)) return false;
-    const now = Date.now();
-    return now >= startTimeStamp && now <= endTimeStamp;
+    return this.isWithinLetsGoWindow(startTimeStamp);
   }
 
   /**
-   * Show "Let's Go" only during the API-provided start/end window.
+   * Show "Let's Go" only during the five-minute start window.
    */
   isLetsGoVisible(habit: any): boolean {
     if (!habit) return false;
     const status = habit.status?.toLowerCase();
     if (status === 'ongoing' || status === 'completed' || status === 'skipped') return false;
-    const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
-    if (!startTimeStamp || !endTimeStamp) return false;
+    const { startTimeStamp } = this.getTimestamps(habit);
+    if (!startTimeStamp) return false;
     if (!this.isToday(startTimeStamp)) return false;
-    const now = Date.now();
-    return now >= startTimeStamp && now <= endTimeStamp;
+    return this.isWithinLetsGoWindow(startTimeStamp);
   }
 
   /**
@@ -118,10 +117,11 @@ export class HabitButtonLogicService {
     // If ongoing, enable (but caller must ensure `hasOtherOngoing` is false)
     if (status === 'ongoing') return true;
 
-    // For pending: enable Done after the scheduled activity window ends.
+    // For pending: Let’s Go has priority around start time. Once that
+    // five-minute grace window closes, Done becomes the available action.
     if (status === 'pending') {
-      if (!startTimeStamp || !endTimeStamp) return false;
-      return Date.now() > endTimeStamp;
+      if (!startTimeStamp) return false;
+      return Date.now() > startTimeStamp + HabitButtonLogicService.LETS_GO_WINDOW_MS;
     }
 
     return false;

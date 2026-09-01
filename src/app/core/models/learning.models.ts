@@ -145,6 +145,19 @@ export interface LearningCategorySummary {
     thumbnailUrl?: string;
     image?: string;
     status?: string;
+    /** Pending count returned by the category summary APIs. */
+    pending?: number;
+    /** User-scoped items that have not yet been completed. */
+    pendingCount?: number;
+    /** User-scoped items already completed; used when the API only returns a total. */
+    completedCount?: number;
+    totalCount?: number;
+    pendingQuizCount?: number;
+    pendingArticleCount?: number;
+    pendingCourseCount?: number;
+    completedQuizCount?: number;
+    completedArticleCount?: number;
+    completedCourseCount?: number;
     count?: number;
     createdAt?: string;
     type?: 'puzzle' | 'quiz' | 'article' | 'masterclass';

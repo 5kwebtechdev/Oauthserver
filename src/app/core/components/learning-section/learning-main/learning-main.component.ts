@@ -767,6 +767,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   private mapAcademyCategoryToSummary(category: AcademyCategory): LearningCategorySummary {
+    const pendingCount = this.resolveAcademyPendingCount(category);
     return {
       id: category.id,
       name: this.formatMasterClassTitle(category.categoryName),
@@ -775,9 +776,24 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       thumbnailUrl: category.thumbnailUrl || '',
       image: category.thumbnailUrl || '',
       status: category.status,
-      count: category.courseCount || 0,
+      pendingCount,
+      count: pendingCount,
       type: 'masterclass'
     };
+  }
+
+  private resolveAcademyPendingCount(category: AcademyCategory): number {
+    const pending = category.pending ?? category.pendingCount ?? category.pendingCourseCount;
+    if (pending != null) return this.toCategoryCount(pending);
+
+    const total = this.toCategoryCount(category.courseCount);
+    const completed = category.completedCount ?? category.completedCourseCount;
+    return completed == null ? total : Math.max(0, total - this.toCategoryCount(completed));
+  }
+
+  private toCategoryCount(value: unknown): number {
+    const count = Number(value ?? 0);
+    return Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0;
   }
 
   private formatMasterClassTitle(categoryName: string): string {
@@ -1019,24 +1035,8 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   getCategoryCountText(item: LearningCategorySummary): string {
-    const count = Number(item.count || 0);
-    const label = this.getCategoryUnitLabel(count);
-    return `${count} ${label}`;
-  }
-
-  private getCategoryUnitLabel(count: number): string {
-    const singular = count === 1;
-    switch (this.selectedCategory) {
-      case 'quizzes':
-        return singular ? 'quiz' : 'quizzes';
-      case 'articles':
-        return singular ? 'article' : 'articles';
-      case 'masterclass':
-        return singular ? 'course' : 'courses';
-      case 'puzzles':
-      default:
-        return singular ? 'puzzle' : 'puzzles';
-    }
+    const count = this.toCategoryCount(item.pendingCount ?? item.count);
+    return `${count} pending`;
   }
 
   clearSearch(): void {

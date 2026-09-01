@@ -20,8 +20,8 @@
 
             <div class="child-week-days" (pointerdown)="onChildDateCarouselPointerDown($event)"
                 (pointerup)="onChildDateCarouselPointerUp($event)" (pointercancel)="onChildDateCarouselPointerUp($event)">
-                <button type="button" class="child-week-day" *ngFor="let day of childWeekDates"
-                    [class.is-selected]="isChildDateSelected(day)" (click)="selectChildDate(day)"
+                <a class="child-week-day" *ngFor="let day of childWeekDates"
+                    [class.is-selected]="isChildDateSelected(day)" [href]="getChildDateUrl(day)"
                     [attr.aria-label]="(day | date:'fullDate')">
                     <span>{{ day | date:'EEE' }}</span>
                     <strong>{{ day | date:'d' }}</strong>
@@ -31,7 +31,7 @@
                         <b class="task-dot" [class.is-visible]="getChildDateActivities(day).task"></b>
                         <b class="planner-dot" [class.is-visible]="getChildDateActivities(day).planner"></b>
                     </i>
-                </button>
+                </a>
             </div>
 
             <div class="child-activity-legend" aria-label="Calendar key">
@@ -126,7 +126,7 @@
 
                 <button type="button" class="child-activity-card" *ngFor="let entry of childVisibleItems"
                     [ngClass]="'child-activity-card--' + entry.type" long-press [delay]="700"
-                    (tap)="onCardTap(entry.item)" (press)="onCardLongPress(entry.item, entry.type)">
+                    (click)="onCardTap(entry.item)" (press)="onCardLongPress(entry.item, entry.type)">
                     <div class="child-card-copy">
                         <strong>{{ getChildItemTitle(entry.item) }}</strong>
                         <span>{{ getChildItemTime(entry.item) }}</span>
@@ -162,16 +162,16 @@
                 </section>
 
                 <div class="child-calendar-empty child-calendar-error"
-                    *ngIf="plannerLoadError && !hasChildCalendarContent">
+                    *ngIf="childCalendarTab === 'planner' && plannerLoadError && !hasChildCalendarContent">
                     <strong>Couldn’t load your planner</strong>
                     <span>Check your connection and try again.</span>
                     <button type="button" (click)="retryPlannerData()">Retry</button>
                 </div>
 
                 <div class="child-calendar-empty"
-                    *ngIf="!plannerLoadError && !hasChildCalendarContent">
+                    *ngIf="(childCalendarTab !== 'planner' || !plannerLoadError) && !hasChildCalendarContent">
                     <strong>{{ childCalendarTab === 'planner' ? 'No planner items for this day' : 'Nothing here yet' }}</strong>
-                    <span>{{ childCalendarTab === 'planner' ? 'Your schedules and events will appear here.' : 'Choose another date or add a new activity.' }}</span>
+                    <span>{{ childCalendarTab === 'planner' ? 'Your schedules will appear here.' : 'Choose another date or add a new activity.' }}</span>
                 </div>
             </div>
             <ng-template #childActivityLoading>

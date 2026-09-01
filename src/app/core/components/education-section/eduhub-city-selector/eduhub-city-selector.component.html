@@ -1,0 +1,13 @@
+<label class="eduhub-city-selector" [class.is-detecting]="isDetectingLocation"
+  [attr.title]="locationMessage || 'Select EduHub city'">
+  <span class="sr-only">Select city</span>
+  <span class="eduhub-city-selector__pin" aria-hidden="true"></span>
+  <select [ngModel]="cityService.city" (ngModelChange)="selectCity($event)"
+    [disabled]="isDetectingLocation" aria-label="Select EduHub city or use current location">
+    <option [value]="currentLocationOption">Use current location</option>
+    <option *ngIf="!cities.includes(cityService.city)" [value]="cityService.city">{{ cityService.city }}</option>
+    <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+  </select>
+  <span class="eduhub-city-selector__chevron" aria-hidden="true"></span>
+  <span class="sr-only" role="status" aria-live="polite">{{ locationMessage }}</span>
+</label>

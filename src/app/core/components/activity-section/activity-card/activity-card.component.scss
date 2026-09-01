@@ -805,22 +805,22 @@ h4 {
 
 .glance-card--all {
   --glance-tab-active: #A92557;
-  background: #EAF2F3;
+  background: #FFF3F7;
 }
 
 .glance-card--habits {
   --glance-tab-active: #8B8DCB;
-  background: #EAF2F3;
+  background: #F3F2FF;
 }
 
 .glance-card--tasks {
   --glance-tab-active: #E95B2A;
-  background: #EAF2F3;
+  background: #FFF4EE;
 }
 
 .glance-card--timetable {
-  --glance-tab-active: #89B3B6;
-  background: #EAF2F3;
+  --glance-tab-active: #4F8589;
+  background: #EFF8F8;
 }
 
 .day-at-glance-container {
@@ -847,21 +847,22 @@ h4 {
 }
 
 .glance-done-pill {
-  min-width: 91px;
+  display: inline-flex;
+  min-width: 90px;
   min-height: 34px;
-  padding: 8px 16px;
-  border-color: transparent;
-  background:
-    linear-gradient(#FFFFFF, #FFFFFF) padding-box,
-    linear-gradient(135deg, #7C74D8, #E1527C, #F2A33B) border-box;
-  border: 2px solid transparent;
-  border-radius: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border: 1px solid #432477;
+  border-radius: 20px;
+  background: #FFFFFF;
   color: #282527;
   font-family: var(--font-heading);
   font-size: 13px;
   font-weight: 400;
   line-height: 1.4;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .glance-progress-track {
@@ -948,7 +949,9 @@ h4 {
 
 .text-view-all,
 .add-new-pill {
+  width: 132px;
   min-height: 38px;
+  justify-content: center;
   padding: 8px 16px;
   border: 2px solid #8B8DCB;
   border-radius: 24px;
@@ -957,6 +960,7 @@ h4 {
   font-size: 15px;
   font-weight: 700;
   line-height: 1.4;
+  box-sizing: border-box;
 }
 
 .add-new-pill {
@@ -964,6 +968,19 @@ h4 {
   background:
     linear-gradient(#FFFFFF, #FFFFFF) padding-box,
     linear-gradient(135deg, #8B8DCB, #E1527C, #F2A33B) border-box;
+}
+
+.text-view-all {
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1.5px solid transparent;
+  border-radius: 24px;
+  background:
+    linear-gradient(#FFFFFF, #FFFFFF) padding-box,
+    linear-gradient(135deg, #8B8DCB, #E1527C) border-box;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 // ── Upcoming events carousel ────────────────────────────────────────────────
@@ -1074,9 +1091,13 @@ h4 {
   -webkit-tap-highlight-color: transparent;
 
   > img {
+    box-sizing: border-box;
     flex: 0 0 auto;
     height: 38px;
     object-fit: contain;
+    padding: 9px;
+    border-radius: 50%;
+    background: #EAF2F3;
     width: 38px;
   }
 

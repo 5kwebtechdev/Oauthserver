@@ -10,6 +10,7 @@ import { CoreService } from '../../../services/core.service';
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
+import { EduHubCitySelectorComponent } from '../eduhub-city-selector/eduhub-city-selector.component';
 
 type ParentEduHubCategoryKind = 'route' | 'store' | 'coming-soon';
 
@@ -59,7 +60,8 @@ interface ParentShopCategoryDefinition {
         RouterModule,
         FooterComponent,
         SkeletonImageComponent,
-        AdBannerComponent
+        AdBannerComponent,
+        EduHubCitySelectorComponent
     ],
     templateUrl: './education-main-page.component.html',
     styleUrls: ['./education-main-page.component.scss']
@@ -154,8 +156,7 @@ export class EducationMainPageComponent implements OnInit {
     ) {
         this.isParentRole = this.authService.isParentUser();
         // Use one consistent, category-based EduHub experience for every
-        // authenticated role. The header still keeps Parent-specific back
-        // navigation where applicable.
+        // authenticated role, including the dashboard back navigation.
         this.usesNewEduHubLayout = true;
         this.parentShopCategories = this.createParentShopCategories();
     }

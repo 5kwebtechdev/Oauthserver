@@ -59,6 +59,11 @@ export interface AcademyCategory {
   thumbnailUrl?: string;
   status?: string;
   courseCount?: number;
+  pending?: number;
+  pendingCount?: number;
+  pendingCourseCount?: number;
+  completedCount?: number;
+  completedCourseCount?: number;
 }
 
 // Academy Feed API — /courses/academy-feed

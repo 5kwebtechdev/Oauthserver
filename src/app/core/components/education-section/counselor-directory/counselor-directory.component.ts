@@ -15,13 +15,15 @@ import { CoreService } from '../../../services/core.service';
 import { PetAgeService } from '../../../services/pet-age.service';
 import { TutorLikeService } from '../../../services/tutor-like.service';
 import { TutorService } from '../../../services/tutor.service';
+import { EduHubCityService } from '../../../services/eduhub-city.service';
+import { EduHubCitySelectorComponent } from '../eduhub-city-selector/eduhub-city-selector.component';
 
 type FilterTab = 'specialization' | 'experience';
 
 @Component({
   selector: 'app-counselor-directory',
   standalone: true,
-  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent],
+  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent],
   templateUrl: './counselor-directory.component.html',
   styleUrls: ['./counselor-directory.component.scss']
 })
@@ -57,7 +59,8 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly core: CoreService,
     private readonly petAgeService: PetAgeService,
-    private readonly modalCtrl: ModalController
+    private readonly modalCtrl: ModalController,
+    private readonly cityService: EduHubCityService
   ) {}
 
   /** Panda uses the same Figma artwork shown on Home/Coins/Learning instead of this page's decorative mascot. */
@@ -81,6 +84,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   get visibleCounselors(): Tutor[] {
+    const city = this.cityService.city.toLocaleLowerCase();
     return this.counselors.filter(counselor => {
       const specializations = this.getSpecializations(counselor);
       const experience = this.getExperienceFilterValue(counselor);
@@ -93,6 +97,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         counselor.state
       ].filter(Boolean).join(' ').toLocaleLowerCase();
       return (!this.verifiedOnly || this.isVerified(counselor))
+        && (!city || [counselor.city, counselor.location].filter(Boolean).join(' ').toLocaleLowerCase().includes(city))
         && (!this.selectedSpecializations.size || specializations.some(value => this.selectedSpecializations.has(value)))
         && (!this.selectedExperience.size || this.selectedExperience.has(experience))
         && (!this.searchQuery.trim() || searchableText.includes(this.searchQuery.trim().toLocaleLowerCase()));
@@ -267,16 +272,25 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   async referCounselor(): Promise<void> {
     const listingType = this.singularTitle.trim().toLowerCase() || 'listing';
     const article = /^[aeiou]/i.test(listingType) ? 'an' : 'a';
+    const tutorReferral = 'Know a great tutor?\n\n👉 Refer them to get listed on SuperMeApp and grow their reach.\n\n🔗 https://bit.ly/Become-a-tutor';
+    const referralText = this.entityType === 'TUTOR'
+      ? tutorReferral
+      : `Know ${article} ${listingType}? Refer them to get listed on SuperMe EduHub.`;
     try {
       await Share.share({
         title: 'Refer for listing',
-        text: `Know ${article} ${listingType}? Refer them to get listed on SuperMe EduHub.`,
-        url: 'https://supermeapp.com'
+        text: referralText,
+        ...(this.entityType === 'TUTOR' ? {} : { url: 'https://supermeapp.com' })
       });
     } catch (error) {
       const message = String((error as { message?: string })?.message ?? error ?? '').toLowerCase();
       if (!message.includes('cancel') && !message.includes('dismiss')) {
-        this.core.triggerToasrt('Unable to open sharing right now. Please try again.', 'error');
+        try {
+          await navigator.clipboard.writeText(referralText);
+          this.core.triggerToasrt('Referral message copied.', 'success');
+        } catch {
+          this.core.triggerToasrt('Unable to open sharing right now. Please try again.', 'error');
+        }
       }
     }
   }

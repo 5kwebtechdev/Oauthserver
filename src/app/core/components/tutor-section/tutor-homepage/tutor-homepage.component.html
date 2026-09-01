@@ -4,7 +4,10 @@
     <div class="tutor-header">
       <!-- Heading and Button -->
       <div class="header-top">
-        <h2>{{ directoryHeading }}</h2>
+        <div class="eduhub-heading-with-city">
+          <h2>{{ directoryHeading }}</h2>
+          <eduhub-city-selector></eduhub-city-selector>
+        </div>
         <superme-button type="columbian-blue" text="Refer a Tutor" (click)="openReferModal()"></superme-button>
       </div>
   
@@ -86,15 +89,15 @@
     <div class="title-tutor-list">
       <span *ngIf="!searchQuery">{{ isCounselorDirectory ? 'Counselors you can trust' : 'Top picks, trusted by many' }}</span>
       <span *ngIf="searchQuery">Search results for "{{ searchQuery }}"</span>
-      <span class="tutor-count" *ngIf="tutors.length > 0">({{ tutors.length }} {{ isCounselorDirectory ? 'counselors' : 'tutors' }})</span>
+      <span class="tutor-count" *ngIf="visibleTutors.length > 0">({{ visibleTutors.length }} {{ isCounselorDirectory ? 'counselors' : 'tutors' }})</span>
     </div>
 
     
     <!-- Tutor list -->
-    <tutor-list *ngIf="!isLoading" [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
+    <tutor-list *ngIf="!isLoading" [tutors]="visibleTutors" (viewProfile)="onViewProfile($event)"></tutor-list>
     
     <!-- No results image + messages -->
-    <div *ngIf="!isLoading && tutors.length === 0 && searchQuery" class="no-results">
+    <div *ngIf="!isLoading && visibleTutors.length === 0" class="no-results">
       <img src="assets/Images-Transparent/File-search.png" alt="No results" class="no-results__image" />
       <p class="no-results__primary">No tutors found</p>
       <p class="no-results__secondary">Try adjusting your search or filters to find the right tutor.</p>

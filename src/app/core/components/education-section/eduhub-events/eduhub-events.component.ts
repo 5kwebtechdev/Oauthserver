@@ -7,9 +7,11 @@ import { InfiniteScrollCustomEvent, IonicModule } from '@ionic/angular';
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
+import { EduHubCitySelectorComponent } from '../eduhub-city-selector/eduhub-city-selector.component';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { PetAgeService } from '../../../services/pet-age.service';
+import { EduHubCityService } from '../../../services/eduhub-city.service';
 import {
   EduHubEventEntityType,
   EduHubEventItem,
@@ -26,7 +28,7 @@ interface EventListingRouteData {
 @Component({
   selector: 'app-eduhub-events',
   standalone: true,
-  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent],
+  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent],
   templateUrl: './eduhub-events.component.html',
   styleUrls: ['./eduhub-events.component.scss']
 })
@@ -59,7 +61,8 @@ export class EduHubEventsComponent implements OnInit {
     private readonly eventsService: EduHubEventsService,
     private readonly authService: AuthService,
     private readonly core: CoreService,
-    private readonly petAgeService: PetAgeService
+    private readonly petAgeService: PetAgeService,
+    private readonly cityService: EduHubCityService
   ) {}
 
   /** Panda uses the same Figma artwork shown on Home/Coins/Learning instead of this page's decorative mascot. */
@@ -92,6 +95,7 @@ export class EduHubEventsComponent implements OnInit {
 
   get visibleItems(): EduHubEventItem[] {
     const query = this.normalise(this.searchQuery);
+    const city = this.normalise(this.cityService.city);
     return this.items.filter(item => {
       const matchesQuery = !query || this.normalise([
         item.name,
@@ -104,7 +108,8 @@ export class EduHubEventsComponent implements OnInit {
         item.categoryName
       ].join(' ')).includes(query);
       const matchesFilter = this.activeFilter !== 'verified' || !!item.verified;
-      return matchesQuery && matchesFilter;
+      const matchesCity = !city || this.normalise([item.city, item.address, item.venue].join(' ')).includes(city);
+      return matchesQuery && matchesFilter && matchesCity;
     });
   }
 

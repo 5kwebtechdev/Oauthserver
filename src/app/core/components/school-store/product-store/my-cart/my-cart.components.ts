@@ -538,8 +538,12 @@ export class MyCartComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
 
     get toPay(): number {
-        if (this.apiPayableTotal != null) return this.roundMoney(this.apiPayableTotal + this.deliveryFee);
-        return this.roundMoney(this.totalPrice + this.gstAmount + this.deliveryFee);
+        // Add currency as integer paise. Directly adding decimal rupee values
+        // can produce values such as 174.51999999999998 on JavaScript engines,
+        // which previously leaked into both the bill and sticky payment bar.
+        // Build the payable amount from the same three rows shown above so the
+        // displayed breakdown and final total can never disagree.
+        return this.addMoney(this.totalPrice, this.gstAmount, this.deliveryFee);
     }
 
     get toPayDisplay(): string {
@@ -558,6 +562,14 @@ export class MyCartComponent implements OnInit, OnDestroy, ViewWillEnter {
         const amount = Number(value);
         if (!Number.isFinite(amount)) return 0;
         return Math.round((amount + Number.EPSILON) * 100) / 100;
+    }
+
+    private addMoney(...values: unknown[]): number {
+        const totalPaise = values.reduce<number>((sum, value) => {
+            const amount = Number(value);
+            return sum + (Number.isFinite(amount) ? Math.round((amount + Number.EPSILON) * 100) : 0);
+        }, 0);
+        return totalPaise / 100;
     }
 
     async openAddressInput(): Promise<void> {

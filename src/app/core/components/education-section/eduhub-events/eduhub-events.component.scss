@@ -71,6 +71,13 @@ button {
   }
 }
 
+.events-toolbar__heading {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  color: var(--text);
+}
+
 .toolbar-button {
   display: grid;
   width: 48px;

@@ -6,7 +6,10 @@
           <button type="button" class="toolbar-button toolbar-button--back" aria-label="Back" (click)="goBack()">
             <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
           </button>
-          <h1>{{ directoryTitle }}</h1>
+          <div class="counselor-toolbar__heading">
+            <h1>{{ directoryTitle }}</h1>
+            <eduhub-city-selector></eduhub-city-selector>
+          </div>
         </div>
         <button type="button" class="toolbar-button toolbar-button--search" [attr.aria-label]="'Search ' + directoryTitle.toLowerCase()"
           [attr.aria-expanded]="searchOpen" (click)="toggleSearch()">
@@ -36,8 +39,8 @@
       <button type="button" class="counselor-refer" (click)="referCounselor()">
         <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
         <span class="counselor-refer__copy">
-            <strong>Know a {{ singularTitle }}?</strong>
-          <small>Refer them to get listed on Eduhub.</small>
+          <strong>{{ entityType === 'TUTOR' ? 'Know a great tutor?' : 'Know a ' + singularTitle + '?' }}</strong>
+          <small>{{ entityType === 'TUTOR' ? 'Refer them to get listed on SuperMeApp and grow their reach.' : 'Refer them to get listed on EduHub.' }}</small>
         </span>
         <span class="counselor-refer__cta">Refer for listing</span>
       </button>

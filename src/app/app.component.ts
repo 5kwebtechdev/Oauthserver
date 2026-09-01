@@ -204,7 +204,14 @@ export class AppComponent implements OnInit, OnDestroy {
         // the narrow layout while navigating into /authed.
         document.body.classList.toggle('authed-shell-active', routePath.startsWith('/authed'));
 
-        const skipNavigationLoader = routePath === '/home/reset-password';
+        // Authenticated screens render their own skeleton/empty/error states.
+        // A second, full-screen navigation loader blocks the whole Android UI
+        // during tab and query-param changes (for example Blogs <-> Quizzes),
+        // even while the previous screen is still usable. Keep the global
+        // loader for auth/onboarding transitions, but never cover the signed-in
+        // app just because its child route is changing.
+        const skipNavigationLoader = routePath.startsWith('/authed')
+          || routePath === '/home/reset-password';
 
         if (skipNavigationLoader) {
           return;
