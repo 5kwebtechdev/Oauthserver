@@ -226,6 +226,37 @@
   white-space: nowrap;
 }
 
+@media (max-width: 600px) {
+  .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-field-heading {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    row-gap: 5px;
+  }
+
+  .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-field-meta {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-field-hint {
+    align-self: flex-start;
+    justify-self: start;
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-field-purpose,
+  .signup-container.profile-layout .profile-step.profile-step--figma .profile .age-count {
+    display: block;
+    width: 100%;
+    line-height: 1.35;
+  }
+}
+
 .profile-step--figma .profile .profile-field-description {
   width: 100%;
   margin: -4px 0 10px;
