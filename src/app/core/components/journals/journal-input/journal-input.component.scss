@@ -224,13 +224,22 @@
 
 .journal-note__copy,
 .journal-photo__copy {
+  align-items: flex-start;
+  align-self: start;
   display: flex;
   min-width: 0;
   flex-direction: column;
+  font-family: var(--font-sans, 'Nunito', sans-serif);
   font-size: 15px;
   line-height: 1.3;
+  text-align: left;
 
-  strong { color: var(--journal-ink); font-weight: 600; }
+  strong {
+    color: var(--journal-ink);
+    font-family: var(--font-heading, 'Fredoka', sans-serif);
+    font-size: 15px;
+    font-weight: 600;
+  }
   > span { color: #a19ca0; font-weight: 500; }
 }
 
@@ -254,11 +263,11 @@
 }
 
 .journal-photo__picker {
-  display: flex;
+  display: grid;
   width: 100%;
   min-width: 184px;
+  grid-template-columns: 40px minmax(0, 1fr);
   align-items: center;
-  justify-content: flex-start;
   gap: 8px;
   padding: 8px;
   border: 0;
