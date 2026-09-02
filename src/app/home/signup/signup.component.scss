@@ -1087,6 +1087,24 @@ superme-navigator.signup-navigator {
     margin-inline: 0;
   }
 
+  // Keep profile controls in their natural document flow. Some mobile
+  // WebViews stretch an unconfigured form/grid child to the remaining
+  // viewport height, which separated the DOB label, age and input by large
+  // blank areas.
+  .profile form {
+    display: block;
+    min-height: 0;
+    height: auto;
+  }
+
+  .profile-field-meta {
+    display: flex;
+    min-width: 0;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 8px 12px;
+  }
+
   superme-birthdaypicker {
     display: block;
     width: 100%;
@@ -1987,6 +2005,29 @@ swiper-slide.swiper-slide-active .pet-card {
     .profile-field-heading {
       grid-template-columns: minmax(0, 1fr);
       row-gap: 2px;
+      min-height: 0;
+      height: auto;
+      margin: 18px 0 6px;
+    }
+
+    .profile form > .profile-field-heading:first-child {
+      margin-top: 0;
+    }
+
+    .profile-field-meta {
+      display: flex;
+      width: 100%;
+      min-height: 0;
+      height: auto;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .input-group {
+      min-height: 0;
+      height: auto;
+      margin-bottom: 18px;
     }
 
     .profile .profile-field-hint {
