@@ -1,4 +1,20 @@
 <ion-content class="login-content" [fullscreen]="true">
+  <header class="login-public-header" aria-label="SuperMeApp website navigation">
+    <a class="login-public-brand" href="/" aria-label="Visit SuperMeApp website home">
+      <img src="assets/Images-Transparent/SuperMeLogoFinal3.png" alt="SuperMeApp" />
+      <strong>SuperMeApp</strong>
+    </a>
+    <nav class="login-public-nav" aria-label="Website links">
+      <a href="/habit-tracker">Grow</a>
+      <a href="/routine-planner">Plan</a>
+      <a href="/quiz">Learn</a>
+      <a href="/articles">Parenting</a>
+      <a href="/find-a-tutor">EduHub</a>
+      <a href="/school-uniforms">Shop</a>
+      <a href="/become-a-tutor">Get Listed</a>
+    </nav>
+    <a class="login-public-home" href="/">Website Home</a>
+  </header>
   <main class="login-page">
     <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
 
