@@ -1,4 +1,4 @@
-<ion-content class="journal-compose" [fullscreen]="true">
+<ion-content class="journal-compose" [class.journal-compose--adult]="isAge16Plus" [fullscreen]="true">
   <main class="journal-compose__shell">
     <header class="compose-header">
       <button type="button" aria-label="Go back" (click)="goBack()">
@@ -29,6 +29,7 @@
         >
           <span
             class="journal-option__image"
+            [class.journal-option__image--icon]="option.kind === 'icon'"
             [class.journal-option__image--calm]="section.key === 'emotions' && option.label === 'Calm'"
             [class.journal-option__image--anxious]="section.key === 'emotions' && option.label === 'Anxious'"
           >

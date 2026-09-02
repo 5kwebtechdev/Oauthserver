@@ -6,11 +6,13 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
+import { AuthService } from '../../../services/auth.service';
 import { RefreshService } from '../../../services/refresh.service';
 
 interface JournalOption {
   label: string;
   image: string;
+  kind?: 'photo' | 'icon';
 }
 
 interface JournalSection {
@@ -50,8 +52,9 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   noteMaxLength = 100;
   currentUploadIndex = -1;
   submitting = false;
+  isAge16Plus = false;
 
-  readonly sections: JournalSection[] = [
+  readonly under16Sections: JournalSection[] = [
     {
       key: 'emotions',
       title: 'How are you feeling?',
@@ -72,10 +75,10 @@ export class JournalInputComponent implements OnInit, OnDestroy {
       icon: 'assets/figma/journal/bedtime.svg',
       columns: 4,
       options: [
-        { label: 'Deep', image: 'assets/figma/journal/sleep-deep-figma.png' },
-        { label: 'Moderate', image: 'assets/figma/journal/sleep-moderate-figma.png' },
-        { label: 'Disturbed', image: 'assets/figma/journal/sleep-disturbed-figma.png' },
-        { label: 'Awake', image: 'assets/figma/journal/sleep-awake-figma.png' },
+        { label: 'Deep', image: 'assets/figma/journal/sleep-deep-hd.webp' },
+        { label: 'Moderate', image: 'assets/figma/journal/sleep-moderate-hd.webp' },
+        { label: 'Disturbed', image: 'assets/figma/journal/sleep-disturbed-hd.webp' },
+        { label: 'Awake', image: 'assets/figma/journal/sleep-awake-hd.webp' },
       ],
     },
     {
@@ -143,16 +146,78 @@ export class JournalInputComponent implements OnInit, OnDestroy {
     },
   ];
 
+  readonly age16PlusSections: JournalSection[] = [
+    this.under16Sections[0],
+    {
+      key: 'carrying', title: 'What are you carrying today?', icon: 'assets/figma/journal/adult/carrying.svg', columns: 4,
+      options: [
+        ['Relaxed', 'relaxed'], ['Bored', 'bored'], ['Tired', 'tired'], ['Angry', 'angry'],
+        ['Stressed', 'stressed'], ['Desperate', 'desperate'], ['Depressed', 'depressed'], ['Lonely', 'lonely'],
+        ['Pressured', 'pressured'], ['Annoyed', 'annoyed'], ['Proud', 'proud'], ['Hopeful', 'hopeful'],
+        ['Grateful', 'grateful'], ['Enthusiastic', 'enthusiastic'],
+      ].map(([label, asset]) => ({ label, image: `assets/figma/journal/adult/${asset}.svg`, kind: 'icon' as const })),
+    },
+    {
+      key: 'health', title: 'How’s your health?', icon: 'assets/figma/journal/adult/health.svg', columns: 4,
+      options: [
+        ['Good', 'health-good'], ['Normal', 'health-normal'], ['Unwell', 'health-unwell'], ['Quite Sick', 'health-sick'],
+      ].map(([label, asset]) => ({ label, image: `assets/figma/journal/adult/${asset}.svg`, kind: 'icon' as const })),
+    },
+    {
+      key: 'hobbies', title: 'What did you do?', icon: 'assets/figma/journal/adult/interests.svg', columns: 4,
+      options: [
+        ['Movies', 'movies'], ['Reading', 'reading'], ['Art', 'art'], ['Sport', 'sport'],
+        ['Music', 'music'], ['Travel', 'travel'], ['Exercise', 'exercise'],
+      ].map(([label, asset]) => ({ label, image: `assets/figma/journal/adult/${asset}.svg`, kind: 'icon' as const })),
+    },
+    {
+      key: 'social', title: 'Who were you with?', icon: 'assets/figma/journal/adult/group.svg', columns: 4,
+      options: [
+        ['Family', 'family'], ['Friends', 'friends'], ['Party', 'party'], ['Alone', 'lonely'],
+      ].map(([label, asset]) => ({ label, image: `assets/figma/journal/adult/${asset}.svg`, kind: 'icon' as const })),
+    },
+    {
+      key: 'school', title: 'How was school/college today?', icon: 'assets/figma/journal/adult/school.svg', columns: 4,
+      options: [
+        ['Exam', 'school-exam'], ['Hard', 'school-hard'], ['Easy', 'school-easy'], ['Fun', 'school-fun'],
+      ].map(([label, asset]) => ({ label, image: `assets/figma/journal/adult/${asset}.svg`, kind: 'icon' as const })),
+    },
+    {
+      key: 'growth', title: 'How did you grow today?', icon: 'assets/figma/journal/adult/growth.svg', columns: 4,
+      options: [
+        ['Exercise', 'exercise'], ['Learnings', 'learning'], ['Meditation', 'meditation'], ['Listen', 'listen'],
+      ].map(([label, asset]) => ({ label, image: `assets/figma/journal/adult/${asset}.svg`, kind: 'icon' as const })),
+    },
+    {
+      key: 'productivity', title: 'How productive were you?', icon: 'assets/figma/journal/adult/productivity.svg', columns: 4,
+      options: [
+        ['Start early', 'start-early'], ['Make list', 'make-list'], ['Focus', 'focus'], ['Took break', 'took-break'],
+      ].map(([label, asset]) => ({ label, image: `assets/figma/journal/adult/${asset}.svg`, kind: 'icon' as const })),
+    },
+    {
+      key: 'day', title: 'How was your day?', icon: 'assets/figma/journal/adult/day.svg', columns: 4,
+      options: [
+        ['Worst Day', 'worst-day'], ['Hectic', 'hectic'], ['Normal', 'bored'], ['Slow Paced', 'slow-paced'],
+      ].map(([label, asset]) => ({ label, image: `assets/figma/journal/adult/${asset}.svg`, kind: 'icon' as const })),
+    },
+  ];
+
+  get sections(): JournalSection[] {
+    return this.isAge16Plus ? this.age16PlusSections : this.under16Sections;
+  }
+
   constructor(
     private readonly router: Router,
     private readonly http: HttpClient,
     private readonly authApi: AuthApi,
+    private readonly authService: AuthService,
     private readonly refreshService: RefreshService,
     private readonly location: Location,
   ) {}
 
   ngOnInit(): void {
     this.text = this.initialText || '';
+    this.isAge16Plus = (this.authService.getCurrentUserAge() ?? 0) >= 16;
   }
 
   ngOnDestroy(): void {

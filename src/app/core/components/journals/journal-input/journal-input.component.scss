@@ -138,6 +138,31 @@
   transform: translate(-2%, -9%);
 }
 
+.journal-option__image--icon {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 0 2px 1px rgba(67, 36, 119, .5);
+
+  > img {
+    width: 40px;
+    height: 40px;
+    border-radius: 0;
+    object-fit: contain;
+  }
+}
+
+.journal-compose--adult .journal-question h2 {
+  color: var(--journal-ink);
+}
+
+.journal-compose--adult .journal-question[data-section='emotions'] h2 {
+  color: var(--journal-purple);
+}
+
 .journal-option--selected .journal-option__image {
   border-color: var(--journal-purple);
   transform: translateY(-1px);
