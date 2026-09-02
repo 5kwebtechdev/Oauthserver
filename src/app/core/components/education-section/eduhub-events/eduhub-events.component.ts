@@ -48,7 +48,9 @@ export class EduHubEventsComponent implements OnInit {
   searchOpen = false;
   searchQuery = '';
   filterOpen = false;
-  activeFilter: ListingFilter = 'verified';
+  // Active listings are the default catalogue. Verification is an optional
+  // trust signal and must not hide an otherwise active event/workshop.
+  activeFilter: ListingFilter = 'all';
 
   private readonly pageSize = 20;
   private readonly likeInProgress = new Set<number>();
@@ -323,8 +325,21 @@ export class EduHubEventsComponent implements OnInit {
 
   private normaliseItems(items: EduHubEventItem[] | null | undefined): EduHubEventItem[] {
     return Array.isArray(items)
-      ? items.filter(item => item && Number.isFinite(Number(item.id)))
+      ? items.filter(item =>
+          item
+          && Number.isFinite(Number(item.id))
+          && this.isActiveListing(item)
+        )
       : [];
+  }
+
+  private isActiveListing(item: EduHubEventItem): boolean {
+    const accountStatus = this.normalise(item.accountStatus);
+    if (accountStatus) return accountStatus === 'active';
+
+    // Backward compatibility for older responses that did not yet expose
+    // accountStatus but used the listing status field for the same state.
+    return this.normalise(item.status) === 'active';
   }
 
   private safePage(value: number | null | undefined, fallback: number): number {

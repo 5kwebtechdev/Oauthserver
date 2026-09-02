@@ -27,6 +27,7 @@ export interface EduHubEventItem {
   city: string | null;
   state: string | null;
   status: string;
+  accountStatus?: string | null;
   verified: boolean;
   latitude: number | null;
   longitude: number | null;
