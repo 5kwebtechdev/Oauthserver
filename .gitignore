@@ -103,4 +103,7 @@ src/assets/Icons-Neutral/TotalActiveDays-3D.png
 
 # Local scripts
 monitor-logs.ps1
-rebuild-apk.ps1
+rebuild-apk.ps1*.apk
+*.aab
+www/
+android/app/build/
