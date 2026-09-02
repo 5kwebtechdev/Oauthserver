@@ -8,6 +8,7 @@ import { CustomToastService } from './custom-toast.service';
 import { CrashlyticsService } from './crashlytics.service';
 
 const STORED_TOKEN_KEY = 'fcm_token';
+const ANDROID_NOTIFICATION_CHANNEL_ID = 'superme_ping_v1';
 
 @Injectable({ providedIn: 'root' })
 export class PushNotificationService {
@@ -142,11 +143,15 @@ export class PushNotificationService {
 
     try {
       await FirebaseMessaging.createChannel({
-        id: 'superme_default',
+        // Android notification-channel sound settings cannot be changed after
+        // a channel has been created on a device. Use a versioned channel ID
+        // so existing installations migrate from the old silent channel.
+        id: ANDROID_NOTIFICATION_CHANNEL_ID,
         name: 'SuperMeApp',
         description: 'SuperMeApp notifications',
-        importance: Importance.Default,
+        importance: Importance.High,
         visibility: Visibility.Public,
+        sound: 'superme_ping.mp3',
         vibration: true,
         lights: true,
         lightColor: '#EE6621'

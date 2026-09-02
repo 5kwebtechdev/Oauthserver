@@ -80,7 +80,7 @@
             android:resource="@color/notification_color" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="superme_default" />
+            android:value="superme_ping_v1" />
 
     </application>
 
