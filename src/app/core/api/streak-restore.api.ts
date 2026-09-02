@@ -13,6 +13,13 @@ export interface StreakStatus {
   restoreToStreak: number | null;
   restoreCost: number;
   coins: number;
+  last7Days?: StreakStatusDay[];
+}
+
+export interface StreakStatusDay {
+  label: string;
+  date: string;
+  active: boolean;
 }
 
 export interface StreakRestoreResult {

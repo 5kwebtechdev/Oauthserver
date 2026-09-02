@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
-import { StreakRestoreApi, StreakStatus } from '../../core/api/streak-restore.api';
+import { StreakRestoreApi, StreakStatus, StreakStatusDay } from '../../core/api/streak-restore.api';
 import { StreakRestoreModalComponent } from '../../core/components/streak-restore/streak-restore-modal.component';
 import { ActivityCardComponent } from "../../core/components/activity-section/activity-card/activity-card.component";
 import { LearningSectionComponent } from "../../core/components/learning-section/learning-section.component";
@@ -147,6 +147,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public awaitingTasks: number = 0;
   public awaitingHabits: number = 0;
   public weekStreakDays: DayStreak[] = [];
+  private streakStatusDays: StreakStatusDay[] | null = null;
 
   // Insights — "This Week's Performance" + Mood Balance, same widget the
   // Parent Home Screen shows about a selected child, scoped here to the
@@ -912,8 +913,31 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   /** Build the rolling seven-day Figma streak, ending with Today. */
-  private refreshWeekStreakDays(streakLength: number = this.userStreaks): void {
+  private refreshWeekStreakDays(
+    streakLength: number = this.userStreaks,
+    apiDays: StreakStatusDay[] | null = this.streakStatusDays
+  ): void {
     const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thurs', 'Fri', 'Sat'];
+
+    if (Array.isArray(apiDays) && apiDays.length) {
+      this.streakStatusDays = apiDays;
+      const latestSevenDays = apiDays.slice(-7);
+      this.currentStreakDayIndex = Math.max(0, latestSevenDays.length - 1);
+      this.weekStreakDays = latestSevenDays.map((day, index) => {
+        const parsedDate = day.date ? new Date(`${day.date}T00:00:00`) : null;
+        const isToday = day.label === 'today' || index === latestSevenDays.length - 1;
+        return {
+          label: isToday
+            ? 'Today'
+            : parsedDate && !Number.isNaN(parsedDate.getTime())
+              ? weekdayLabels[parsedDate.getDay()]
+              : day.label,
+          status: day.active ? 'completed' : 'missed'
+        };
+      });
+      return;
+    }
+
     const today = new Date();
     this.currentStreakDayIndex = 6;
     const safeStreak = Math.max(0, Number(streakLength) || 0);
@@ -1126,7 +1150,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
     this.streakRestoreApi.getStreakStatus(userId).subscribe({
       next: (status: StreakStatus) => {
-        this.refreshWeekStreakDays(status.currentStreak);
+        this.refreshWeekStreakDays(status.currentStreak, status.last7Days ?? null);
         this.canRestoreStreak = status.canRestore;
         this.dailyStreakEligible = Number(status.currentStreak) > 0;
         this.streakStatusResolved = true;
