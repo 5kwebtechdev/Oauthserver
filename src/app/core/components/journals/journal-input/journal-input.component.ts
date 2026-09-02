@@ -86,8 +86,8 @@ export class JournalInputComponent implements OnInit, OnDestroy {
       options: [
         { label: 'Good', image: 'assets/figma/journal/health-good.png' },
         { label: 'Normal', image: 'assets/figma/journal/health-normal.png' },
-        { label: 'Unwell', image: 'assets/Images-Thumbnails/Image-Journal-Health3.jpg' },
-        { label: 'Quite Sick', image: 'assets/Images-Thumbnails/Image-Journal-Health2.jpg' },
+        { label: 'Unwell', image: 'assets/figma/journal/health-unwell-new.png' },
+        { label: 'Quite Sick', image: 'assets/figma/journal/health-quite-sick-new.png' },
       ],
     },
     {

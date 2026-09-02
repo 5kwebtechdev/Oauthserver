@@ -109,6 +109,7 @@
   border-radius: 16px;
   background: #fff;
   box-sizing: border-box;
+  overflow: hidden;
   box-shadow: 0 0 2px 1px rgba(107, 101, 106, .1);
   transition: border-color .16s ease, transform .16s ease;
 
@@ -119,6 +120,22 @@
     border-radius: 14px;
     object-fit: cover;
   }
+}
+
+// These two source images include extra canvas around the emoji. Match the
+// crop used by the Figma card so every mood visual fills the same 64px area.
+.journal-option__image--calm > img {
+  width: 187%;
+  height: 133%;
+  max-width: none;
+  transform: translate(-23%, -5%);
+}
+
+.journal-option__image--anxious > img {
+  width: 110%;
+  height: 144%;
+  max-width: none;
+  transform: translate(-2%, -9%);
 }
 
 .journal-option--selected .journal-option__image {

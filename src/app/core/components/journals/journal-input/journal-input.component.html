@@ -27,7 +27,11 @@
           [attr.aria-pressed]="isSelected(section.key, index)"
           (click)="selectOption(section.key, index)"
         >
-          <span class="journal-option__image">
+          <span
+            class="journal-option__image"
+            [class.journal-option__image--calm]="section.key === 'emotions' && option.label === 'Calm'"
+            [class.journal-option__image--anxious]="section.key === 'emotions' && option.label === 'Anxious'"
+          >
             <img [src]="option.image" [alt]="option.label" />
             <span class="journal-option__check" *ngIf="isSelected(section.key, index)">
               <img src="assets/figma/journal/check.svg" alt="Selected" />
