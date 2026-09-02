@@ -20,8 +20,9 @@
   <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
 
   <script>
-    // The mobile builds already provide their own native launch screen. Keep this
-    // instant web loader limited to browser visits such as /app/login and signup.
+    // Mark the native shell before first paint. Its OS launch screen stays
+    // static (as required by iOS/Android), then hands off to our animated brand
+    // reveal as soon as the WebView is ready.
     try {
       var capacitor = window.Capacitor;
       var isNativeShell = window.location.protocol === 'capacitor:' ||
@@ -54,7 +55,137 @@
       pointer-events: none;
     }
 
-    .superme-native-shell #superme-web-loader { display: none !important; }
+    .superme-native-shell #superme-web-loader {
+      background: #ffffff;
+      isolation: isolate;
+    }
+
+    .superme-native-shell .superme-loader-orb,
+    .superme-native-shell .superme-loader-card,
+    .superme-native-shell .superme-loader-star {
+      display: none;
+    }
+
+    .superme-native-splash {
+      display: none;
+    }
+
+    .superme-native-shell .superme-native-splash {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+      background: #ffffff;
+    }
+
+    .superme-native-splash__wash {
+      position: absolute;
+      inset: -12%;
+      z-index: 0;
+      background:
+        radial-gradient(circle at 19% 18%, rgba(255, 198, 218, .96), transparent 34%),
+        radial-gradient(circle at 84% 24%, rgba(190, 222, 255, .92), transparent 38%),
+        linear-gradient(145deg, #fff8f3 0%, #eee9ff 53%, #fff0f7 100%);
+      clip-path: circle(0% at 50% 50%);
+      animation: superme-wash-reveal 2.35s cubic-bezier(.72, 0, .2, 1) forwards;
+    }
+
+    .superme-native-splash__spark {
+      position: absolute;
+      z-index: 3;
+      width: 48px;
+      aspect-ratio: 1;
+      transform: rotate(45deg) scale(.1);
+      border-radius: 7px 48% 7px 48%;
+      background: linear-gradient(135deg, #f5aa31 4%, #e94775 48%, #6d48b6 96%);
+      box-shadow: 0 0 0 0 rgba(229, 72, 117, .18);
+      animation: superme-spark-bloom 1.35s cubic-bezier(.2, .8, .2, 1) forwards;
+    }
+
+    .superme-native-splash__spark::before,
+    .superme-native-splash__spark::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: inherit;
+    }
+
+    .superme-native-splash__spark::before { transform: rotate(90deg); }
+    .superme-native-splash__spark::after { transform: rotate(180deg); }
+
+    .superme-native-splash__brand {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      width: min(76vw, 330px);
+      align-items: center;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateY(8px) scale(.86);
+      animation: superme-brand-arrive .72s 1.02s cubic-bezier(.2, .82, .2, 1.08) forwards;
+    }
+
+    .superme-native-splash__logo {
+      width: min(76vw, 310px);
+      height: auto;
+      filter: drop-shadow(0 12px 20px rgba(67, 36, 119, .18));
+    }
+
+    .superme-native-splash__tagline {
+      margin: 8px 0 0;
+      color: #432477;
+      font-size: clamp(15px, 4.2vw, 19px);
+      font-weight: 650;
+      letter-spacing: .01em;
+    }
+
+    .superme-native-splash__mini-spark {
+      position: absolute;
+      color: #f5aa31;
+      opacity: 0;
+      animation: superme-mini-spark .58s 1.58s ease-out forwards;
+    }
+
+    .superme-native-splash__mini-spark--left {
+      top: 30%;
+      left: 16%;
+      font-size: 24px;
+    }
+
+    .superme-native-splash__mini-spark--right {
+      right: 15%;
+      bottom: 29%;
+      color: #e94775;
+      font-size: 18px;
+      animation-delay: 1.74s;
+    }
+
+    @keyframes superme-spark-bloom {
+      0% { transform: rotate(45deg) scale(.1); opacity: 0; }
+      24% { transform: rotate(45deg) scale(.56); opacity: 1; }
+      66% { transform: rotate(135deg) scale(1.12); box-shadow: 0 0 0 16px rgba(229, 72, 117, .09); }
+      100% { transform: rotate(225deg) scale(0); opacity: 0; box-shadow: 0 0 0 52px rgba(229, 72, 117, 0); }
+    }
+
+    @keyframes superme-wash-reveal {
+      0%, 28% { clip-path: circle(0% at 50% 50%); }
+      72%, 100% { clip-path: circle(82% at 50% 50%); }
+    }
+
+    @keyframes superme-brand-arrive {
+      0% { opacity: 0; transform: translateY(8px) scale(.86); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes superme-mini-spark {
+      0% { opacity: 0; transform: scale(.2) rotate(-25deg); }
+      70% { opacity: 1; transform: scale(1.18) rotate(8deg); }
+      100% { opacity: .9; transform: scale(1) rotate(0); }
+    }
 
     .superme-loader-orb {
       position: absolute;
@@ -155,6 +286,9 @@
 
     @media (prefers-reduced-motion: reduce) {
       #superme-web-loader * { animation: none !important; }
+      .superme-native-splash__wash { clip-path: none; }
+      .superme-native-splash__brand { opacity: 1; transform: none; }
+      .superme-native-splash__spark { display: none; }
     }
   </style>
 
@@ -170,6 +304,16 @@
 
 <body>
   <div id="superme-web-loader" role="status" aria-live="polite" aria-label="SuperMeApp is loading">
+    <div class="superme-native-splash" aria-hidden="true">
+      <div class="superme-native-splash__wash"></div>
+      <div class="superme-native-splash__spark"></div>
+      <span class="superme-native-splash__mini-spark superme-native-splash__mini-spark--left">✦</span>
+      <span class="superme-native-splash__mini-spark superme-native-splash__mini-spark--right">✦</span>
+      <div class="superme-native-splash__brand">
+        <img class="superme-native-splash__logo" src="assets/Images-Transparent/SuperMeLogoFinal3.png" alt="" />
+        <p class="superme-native-splash__tagline">Grow • Learn • Shine</p>
+      </div>
+    </div>
     <div class="superme-loader-orb" aria-hidden="true"></div>
     <span class="superme-loader-star superme-loader-star--one" aria-hidden="true">✦</span>
     <span class="superme-loader-star superme-loader-star--two" aria-hidden="true">✦</span>

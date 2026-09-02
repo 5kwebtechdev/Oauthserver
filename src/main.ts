@@ -25,7 +25,14 @@ const hideStartupLoader = () => {
     !!(capacitor?.isNativePlatform?.());
 
   if (isNativeShell) {
-    startupLoader.remove();
+    // Let the branded native splash finish its short reveal before handing the
+    // screen to Angular. The native launch window is intentionally plain white,
+    // so this loader also prevents a blank WebView frame during bootstrap.
+    const remaining = Math.max(0, 2600 - (performance.now() - loaderStartedAt));
+    window.setTimeout(() => {
+      startupLoader.classList.add('superme-web-loader--leaving');
+      window.setTimeout(() => startupLoader.remove(), 360);
+    }, remaining);
     return;
   }
 
