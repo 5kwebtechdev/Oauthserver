@@ -1402,6 +1402,12 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
           ),
           this.learningService.fetchQuizCards(true, scopedUserId, undefined, true).pipe(map(items => this.pickLatest(items)))
         ])
+      : this.childSelfLearningViewAll
+        // Child/Self Home's "Start Curious, Play, Conquer!" rail is a quiz
+        // discovery surface. Do not mix article or puzzle cards into it.
+        ? this.learningService.fetchQuizCards(true, scopedUserId, scopedAge).pipe(
+            map(items => this.pickLatestItems(items, 3))
+          )
       : forkJoin([
           this.learningService.fetchQuizCards(true, scopedUserId, scopedAge).pipe(map(items => this.pickLatest(items))),
           this.learningService.fetchPuzzleCards(true, scopedUserId, scopedAge).pipe(map(items => this.pickLatest(items))),
@@ -1425,7 +1431,11 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   private pickLatest(cards: any[] = []) {
-    if (!cards || !cards.length) return null;
+    return this.pickLatestItems(cards, 1)[0] ?? null;
+  }
+
+  private pickLatestItems(cards: any[] = [], limit = 1): any[] {
+    if (!cards || !cards.length || limit <= 0) return [];
     // Prefer publishedAt / createdAt / updatedAt on rawData if available
     const withDates = cards.map(c => {
       const raw = c.rawData || c;
@@ -1439,6 +1449,6 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
       if (!b.date) return -1;
       return b.date.getTime() - a.date.getTime();
     });
-    return withDates[0].card;
+    return withDates.slice(0, limit).map(item => item.card);
   }
 }
