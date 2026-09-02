@@ -18,20 +18,30 @@
                 </button>
             </div>
 
-            <div class="child-week-days" (pointerdown)="onChildDateCarouselPointerDown($event)"
-                (pointerup)="onChildDateCarouselPointerUp($event)" (pointercancel)="onChildDateCarouselPointerUp($event)">
-                <a class="child-week-day" *ngFor="let day of childWeekDates"
-                    [class.is-selected]="isChildDateSelected(day)" [href]="getChildDateUrl(day)"
-                    [attr.aria-label]="(day | date:'fullDate')">
-                    <span>{{ day | date:'EEE' }}</span>
-                    <strong>{{ day | date:'d' }}</strong>
-                    <i class="child-date-dots" aria-hidden="true"
-                        [class.has-single-dot]="childDateActivityCount(day) === 1">
-                        <b class="habit-dot" [class.is-visible]="getChildDateActivities(day).habit"></b>
-                        <b class="task-dot" [class.is-visible]="getChildDateActivities(day).task"></b>
-                        <b class="planner-dot" [class.is-visible]="getChildDateActivities(day).planner"></b>
-                    </i>
-                </a>
+            <div class="child-date-carousel">
+                <button type="button" class="child-date-arrow" aria-label="Go to previous day"
+                    (click)="moveChildDateByDay(-1)">
+                    <span aria-hidden="true">&#8249;</span>
+                </button>
+                <div class="child-week-days" (pointerdown)="onChildDateCarouselPointerDown($event)"
+                    (pointerup)="onChildDateCarouselPointerUp($event)" (pointercancel)="onChildDateCarouselPointerUp($event)">
+                    <a class="child-week-day" *ngFor="let day of childWeekDates"
+                        [class.is-selected]="isChildDateSelected(day)" [href]="getChildDateUrl(day)"
+                        [attr.aria-label]="(day | date:'fullDate')">
+                        <span>{{ day | date:'EEE' }}</span>
+                        <strong>{{ day | date:'d' }}</strong>
+                        <i class="child-date-dots" aria-hidden="true"
+                            [class.has-single-dot]="childDateActivityCount(day) === 1">
+                            <b class="habit-dot" [class.is-visible]="getChildDateActivities(day).habit"></b>
+                            <b class="task-dot" [class.is-visible]="getChildDateActivities(day).task"></b>
+                            <b class="planner-dot" [class.is-visible]="getChildDateActivities(day).planner"></b>
+                        </i>
+                    </a>
+                </div>
+                <button type="button" class="child-date-arrow" aria-label="Go to next day"
+                    (click)="moveChildDateByDay(1)">
+                    <span aria-hidden="true">&#8250;</span>
+                </button>
             </div>
 
             <div class="child-activity-legend" aria-label="Calendar key">

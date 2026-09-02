@@ -399,6 +399,14 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         this.onDateSelected(target);
     }
 
+    /** Move and select exactly one day while keeping a seven-day window visible. */
+    moveChildDateByDay(offset: -1 | 1): void {
+        const target = new Date(this.selectedDate);
+        target.setDate(target.getDate() + offset);
+        target.setHours(0, 0, 0, 0);
+        this.onDateSelected(target);
+    }
+
     onChildDateCarouselPointerDown(event: PointerEvent): void {
         this.childCarouselPointerStartX = event.clientX;
     }
