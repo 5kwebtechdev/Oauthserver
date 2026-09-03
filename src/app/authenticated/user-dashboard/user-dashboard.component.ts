@@ -181,9 +181,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   private hasEnteredDashboard = false;
   private homeTimeChangeTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly homePeriodBackgrounds = [
-    '/assets/Images-Thumbnails/HeaderV2.png',
-    '/assets/Images-Thumbnails/HeaderV2-evening.png',
-    '/assets/Images-Thumbnails/HeaderV2-night.png'
+    'assets/Images-Thumbnails/HeaderV2.png',
+    'assets/Images-Thumbnails/HeaderV2-evening.png',
+    'assets/Images-Thumbnails/HeaderV2-night.png'
   ];
   private readonly handleHomeVisibilityChange = (): void => {
     if (document.visibilityState === 'visible') {
