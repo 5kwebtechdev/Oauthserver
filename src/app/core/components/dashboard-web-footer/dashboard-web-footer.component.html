@@ -128,8 +128,8 @@
             [routerLink]="item.routerLink || null"
             [queryParams]="item.queryParams || null"
             [attr.href]="item.href || null"
-            [attr.target]="item.href ? '_blank' : null"
-            [attr.rel]="item.href ? 'noopener noreferrer' : null"
+            [attr.target]="item.href && !item.sameTab ? '_blank' : null"
+            [attr.rel]="item.href && !item.sameTab ? 'noopener noreferrer' : null"
             >{{ item.label }}</a
           >
           <span *ngIf="!last" aria-hidden="true">|</span>
@@ -151,8 +151,8 @@
         [routerLink]="item.routerLink || null"
         [queryParams]="item.queryParams || null"
         [attr.href]="item.href || null"
-        [attr.target]="item.href ? '_blank' : null"
-        [attr.rel]="item.href ? 'noopener noreferrer' : null"
+        [attr.target]="item.href && !item.sameTab ? '_blank' : null"
+        [attr.rel]="item.href && !item.sameTab ? 'noopener noreferrer' : null"
         >{{ item.label }}</a
       >
     </nav>
