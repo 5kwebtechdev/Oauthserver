@@ -105,5 +105,10 @@ src/assets/Icons-Neutral/TotalActiveDays-3D.png
 monitor-logs.ps1
 rebuild-apk.ps1*.apk
 *.aab
+
+# Generated distributable builds are published outside Git (App Store / Play
+# Console or release storage). They can contain multi-hundred-MB IPA archives.
+/artifacts/
+
 www/
 android/app/build/
