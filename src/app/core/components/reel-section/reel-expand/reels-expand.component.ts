@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReelService } from '../../../services/reel.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ReelBookmarksService } from '../../../services/reel-bookmarks.service';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'reels-expand',
@@ -501,8 +502,24 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const url = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`
-      + '?autoplay=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&controls=0';
+    // YouTube requires an HTTP referrer or equivalent client identity. A
+    // Capacitor iOS page uses a custom local scheme, so it cannot provide a
+    // normal HTTP referrer and YouTube otherwise responds with player error
+    // 153. Identify the native app with its public web origin; browsers keep
+    // their actual origin so localhost and production web builds both work.
+    const playerOrigin = Capacitor.isNativePlatform()
+      ? 'https://supermeapp.com'
+      : window.location.origin;
+    const params = new URLSearchParams({
+      autoplay: '1',
+      playsinline: '1',
+      rel: '0',
+      enablejsapi: '1',
+      controls: '0',
+      origin: playerOrigin,
+      widget_referrer: 'https://supermeapp.com'
+    });
+    const url = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?${params.toString()}`;
     reel.youtubeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url) as SafeResourceUrl;
     reel.preparedYoutubeVideoId = videoId;
   }
