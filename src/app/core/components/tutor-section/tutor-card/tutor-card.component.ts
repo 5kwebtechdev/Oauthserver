@@ -222,14 +222,16 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       // Use the same API and normalization as the full counselor directory.
       this.subscriptions.add(this.tutorService.getTutorsByEntityType('COUNSELOR').subscribe({
         next: counselors => {
-          const previews = counselors.map(counselor => ({
+          const previews = counselors
+            .filter(counselor => counselor?.isActive === true)
+            .map(counselor => ({
             ...this.mapExternalPreview(counselor, this.categories.find(c => c.key === 'counselors')!.image),
             name: counselor.name?.trim() || counselor.entityName?.trim() || 'Counselor',
             description: counselor.subjects?.join(', ') || counselor.qualification || 'Counselor',
             fee: Number(counselor.categoryMappings?.find(m => m.categoryHourlyRate > 0)?.categoryHourlyRate || counselor.hourlyRate || counselor.fees) || null,
             location: counselor.location || [counselor.city, counselor.state].filter(Boolean).join(', '),
-            counselor
-          }));
+              counselor
+            }));
           this.externalPreviews.set(categoryKey, previews);
           this.externalCounts.set(categoryKey, previews.length);
           this.externalLoading.delete(categoryKey);

@@ -37,7 +37,9 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   showVerifiedMenu = false;
   searchOpen = false;
   searchQuery = '';
-  verifiedOnly = true;
+  // Active listings are the default. Verification is a trust badge, not a
+  // visibility requirement, so unverified active counselors remain visible.
+  verifiedOnly = false;
   showFilters = false;
   filterTab: FilterTab = 'specialization';
   selectedSpecializations = new Set<string>();
@@ -164,7 +166,8 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         ? this.tutorService.searchDirectory(this.entityType, this.educationFilters)
         : this.tutorService.getTutorsByEntityType(this.entityType)).subscribe({
         next: counselors => {
-          this.counselors = Array.isArray(counselors) ? counselors : [];
+          this.counselors = (Array.isArray(counselors) ? counselors : [])
+            .filter(counselor => counselor?.isActive === true);
           this.counselors.forEach(counselor => this.watchLikes(counselor));
           this.isLoading = false;
         },

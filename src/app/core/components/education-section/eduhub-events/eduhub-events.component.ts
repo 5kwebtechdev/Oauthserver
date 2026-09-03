@@ -334,6 +334,11 @@ export class EduHubEventsComponent implements OnInit {
   }
 
   private isActiveListing(item: EduHubEventItem): boolean {
+    // The explicit activity flag takes precedence when the API supplies it.
+    // Verification never decides whether an event/workshop is discoverable.
+    if (item.isActive === true) return true;
+    if (item.isActive === false) return false;
+
     const accountStatus = this.normalise(item.accountStatus);
     if (accountStatus) return accountStatus === 'active';
 
