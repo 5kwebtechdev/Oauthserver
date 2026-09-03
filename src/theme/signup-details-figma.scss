@@ -776,6 +776,25 @@
   margin: 0 0 10px !important;
 }
 
+/* Keep the DOB copy and picker in one natural-height group. Native WebViews
+ * can otherwise stretch adjacent form children across the remaining viewport,
+ * leaving a large blank area between the helper text, label and input. */
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-dob-field {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-dob-field > .input-group {
+  flex: 0 0 auto !important;
+}
+
 .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-avatar-heading {
   margin-bottom: 16px !important;
 }
@@ -801,6 +820,33 @@
   font-weight: 500 !important;
   line-height: 1.3 !important;
   text-align: right !important;
+}
+
+@media (max-width: 600px) {
+  .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-dob-field > .profile-field-heading {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
+    row-gap: 4px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-dob-field .profile-field-meta {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    gap: 4px 10px !important;
+  }
+
+  .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-dob-field .profile-field-hint {
+    align-self: auto !important;
+    justify-self: start !important;
+    width: auto !important;
+    max-width: 100% !important;
+    text-align: left !important;
+  }
 }
 
 .signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group {

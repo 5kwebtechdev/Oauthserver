@@ -458,31 +458,32 @@
             </div>
           </div>
 
-          <h4 class="profile-field-heading">
-            <span class="profile-field-title">Date of Birth</span>
-            <span class="profile-field-meta">
-              <span *ngIf="currentRole === 'self' || currentRole === 'child'"
-                class="profile-field-hint profile-field-purpose">
-                To show personalized content
+          <section class="profile-dob-field">
+            <h4 class="profile-field-heading">
+              <span class="profile-field-title">Date of Birth</span>
+              <span class="profile-field-meta">
+                <span *ngIf="currentRole === 'self' || currentRole === 'child'"
+                  class="profile-field-hint profile-field-purpose">
+                  To show personalized content
+                </span>
+                <span *ngIf="isOAuthSignup" class="profile-optional-badge">Optional</span>
+                <span *ngIf="computedAge !== null" class="profile-field-hint age-count">
+                  {{ computedAge }} years old
+                </span>
               </span>
-              <span *ngIf="isOAuthSignup" class="profile-optional-badge">Optional</span>
-              <span *ngIf="computedAge !== null" class="profile-field-hint age-count">
-                {{ computedAge }} years old
-              </span>
-            </span>
-          </h4>
-          <div class="input-group">
-            <!--            <input  formControlName="dob" type="text" placeholder="Date of Birth" />-->
-            <superme-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false"
-              [showTrigger]="openBirthdayPicker" [variant]="'figma-purple'"
-              style="width: 100%">
-              <input type="text" formControlName="dob" readonly (click)="openBirthdayPickerNow()"
-                placeholder="Select Date of birth" />
-            </superme-birthdaypicker>
-            <div class="error" *ngIf="dob()?.invalid && (dob()?.dirty || dob()?.touched)">
-              Please select your date of birth.
+            </h4>
+            <div class="input-group">
+              <superme-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false"
+                [showTrigger]="openBirthdayPicker" [variant]="'figma-purple'"
+                style="width: 100%">
+                <input type="text" formControlName="dob" readonly (click)="openBirthdayPickerNow()"
+                  placeholder="Select Date of birth" />
+              </superme-birthdaypicker>
+              <div class="error" *ngIf="dob()?.invalid && (dob()?.dirty || dob()?.touched)">
+                Please select your date of birth.
+              </div>
             </div>
-          </div>
+          </section>
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Gender</span>
             <span class="profile-field-meta">
