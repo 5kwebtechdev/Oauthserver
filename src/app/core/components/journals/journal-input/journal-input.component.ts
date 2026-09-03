@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
 import { AuthService } from '../../../services/auth.service';
@@ -213,6 +213,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
     private readonly authApi: AuthApi,
     private readonly authService: AuthService,
     private readonly refreshService: RefreshService,
+    private readonly toastController: ToastController,
     private readonly location: Location,
   ) {}
 
@@ -297,9 +298,27 @@ export class JournalInputComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Failed to add journal', error);
         this.submitting = false;
+        const apiMessage = String(error?.error?.message || error?.message || '').toLowerCase();
+        if (error?.status === 400 && apiMessage.includes('only one journal entry per day')) {
+          this.emotionError = 'Aapne aaj ka journal entry already add kar liya hai.';
+          void this.showSaveError('Aapne aaj ka journal entry already add kar liya hai.');
+          return;
+        }
         this.emotionError = 'Your journal could not be saved. Please try again.';
+        void this.showSaveError(this.emotionError);
       },
     });
+  }
+
+  private async showSaveError(message: string): Promise<void> {
+    const toast = await this.toastController.create({
+      message,
+      duration: 4000,
+      position: 'top',
+      color: 'danger',
+      buttons: [{ text: 'OK', role: 'cancel' }],
+    });
+    await toast.present();
   }
 
   triggerNativeFilePicker(): void {
