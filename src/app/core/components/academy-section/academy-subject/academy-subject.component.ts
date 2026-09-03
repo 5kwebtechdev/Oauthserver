@@ -116,7 +116,7 @@ export class AcademySubjectComponent implements OnInit {
             badge: this.formatDifficulty(course.difficulty || 'BEGINNER'),
             thumb: this.convertDriveLink(course.thumbnailUrl || '', fallbackThumb),
             fallbackThumb,
-            coinIcon: 'assets/Icons-Neutral/Icons-Coins.png',
+            coinIcon: 'assets/figma/learning-details/coin.webp',
             courseId: course.id?.toString(),
             rawCourse: course
           };
