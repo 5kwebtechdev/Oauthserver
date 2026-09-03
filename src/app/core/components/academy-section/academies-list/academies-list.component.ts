@@ -109,15 +109,19 @@ export class AcademiesListComponent implements OnInit {
   loadAcademies(): void {
     this.isLoading = true;
     this.hasError = false;
-    this.http.get<any>(`${environment.apiUrl}/tutors/overview`, {
+    this.http.get<any>(`${environment.apiUrl}/tutors`, {
       headers: this.headers(),
       params: { entityType: 'ACADEMY' }
     }).subscribe({
       next: (res) => {
         const raw = Array.isArray(res)
           ? res
-          : (res?.data?.tutors ?? res?.tutors ?? res?.content ?? []);
-        this.academies = (Array.isArray(raw) ? raw : []).map((a: any) => this.mapAcademy(a));
+          : (res?.data?.tutors ?? res?.data?.content ?? res?.data ?? res?.tutors ?? res?.content ?? []);
+        // Active academies belong in the directory regardless of verification.
+        // `verified` controls only the badge shown on the card/profile.
+        this.academies = (Array.isArray(raw) ? raw : [])
+          .filter((academy: any) => academy?.isActive === true)
+          .map((academy: any) => this.mapAcademy(academy));
         this.academyListItems = this.academies.map(academy => this.toAcademyListItem(academy));
         this.totalAcademies = Number(res?.data?.totalElements ?? this.academies.length);
         this.isLoading = false;
@@ -144,7 +148,7 @@ export class AcademiesListComponent implements OnInit {
     const location = a?.location ?? [a?.city, a?.state].filter(Boolean).join(', ');
     const fees = Number(a?.fees ?? a?.hourlyRate ?? a?.price ?? 0);
     const totalStudents = Number(a?.totalStudents ?? a?.studentCount ?? 0);
-    const verified = !!(a?.isVerified ?? a?.documentsVerified ?? a?.verificationStatus === 'Verified');
+    const verified = !!(a?.verified ?? a?.isVerified ?? a?.documentsVerified ?? a?.verificationStatus === 'Verified');
 
     const profile = {
       ...a,
@@ -176,6 +180,7 @@ export class AcademiesListComponent implements OnInit {
       email: a?.email ?? '',
       totalStudents,
       isVerified: verified,
+      verified,
       documentsVerified: verified,
       champsLiked: Number(a?.champsLiked ?? 0),
       likedByUser: !!(a?.likedByUser ?? a?.liked),
@@ -270,6 +275,7 @@ export class AcademiesListComponent implements OnInit {
       rating: academy.rating,
       champsLiked: Number(academy.profile.champsLiked || 0),
       likedByUser: academy.liked,
+      isVerified: academy.verified,
       experience: academy.experience,
       qualification: academy.headline || 'Academy',
       hourlyRate: academy.hourlyRate,

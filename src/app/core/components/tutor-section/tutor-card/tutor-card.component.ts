@@ -351,21 +351,26 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     this.isLoading = true;
 
     this.subscriptions.add(
-      this.http.get<any>(`${environment.apiUrl}/tutors/overview`, {
+      this.http.get<any>(`${environment.apiUrl}/tutors`, {
         headers: this.academyHeaders(),
         params: { entityType: 'ACADEMY' }
       }).subscribe({
         next: (res) => {
           const raw = Array.isArray(res)
             ? res
-            : (res?.data?.tutors ?? res?.tutors ?? res?.content ?? []);
+            : (res?.data?.tutors ?? res?.data?.content ?? res?.data ?? res?.tutors ?? res?.content ?? []);
 
           this.academyProfiles.clear();
-          const mapped: TutorListItem[] = (Array.isArray(raw) ? raw : []).map((a: any) => {
-            const { listItem, profile } = this.mapAcademy(a);
-            if (listItem.id != null) this.academyProfiles.set(Number(listItem.id), profile);
-            return listItem;
-          });
+          const mapped: TutorListItem[] = (Array.isArray(raw) ? raw : [])
+            // Academy discovery must be driven by account activity, not the
+            // verification flag. Unverified active academies are visible but
+            // simply do not receive a Verified badge.
+            .filter((academy: any) => academy?.isActive === true)
+            .map((a: any) => {
+              const { listItem, profile } = this.mapAcademy(a);
+              if (listItem.id != null) this.academyProfiles.set(Number(listItem.id), profile);
+              return listItem;
+            });
 
           this.academyTutors = mapped.slice(0, this.maxTutors);
           this.academyTotalCount = Number(res?.data?.totalElements ?? mapped.length);
@@ -395,6 +400,8 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     const levels = Array.isArray(a?.classes) ? a.classes.map((s: any) => String(s).trim()).filter(Boolean) : [];
     const fees = Number(a?.fees ?? a?.hourlyRate ?? a?.price ?? 0);
 
+    const verified = !!(a?.verified ?? a?.isVerified ?? a?.documentsVerified ?? a?.verificationStatus === 'Verified');
+
     const profile = {
       ...a,
       id: a?.id,
@@ -406,7 +413,9 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       levels,
       location,
       hourlyRate: fees,
-      fees
+      fees,
+      isVerified: verified,
+      verified
     } as unknown as Tutor;
 
     const listItem: TutorListItem = {
@@ -417,7 +426,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       rating: Number(a?.rating ?? 0),
       champsLiked: Number(a?.champsLiked ?? 0),
       likedByUser: !!(a?.likedByUser ?? a?.liked),
-      isVerified: !!(a?.isVerified ?? a?.verified),
+      isVerified: verified,
       experience: a?.experience ?? a?.experienceRange ?? '',
       qualification: a?.qualification ?? a?.headline ?? 'Academy',
       hourlyRate: fees,
