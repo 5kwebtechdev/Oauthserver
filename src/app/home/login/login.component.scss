@@ -90,6 +90,11 @@ button {
   font-family: var(--font-sans, 'Nunito', sans-serif);
 }
 
+// Native safety net: keep website chrome hidden even during Angular startup.
+:host-context(html.plt-capacitor) .login-public-header {
+  display: none !important;
+}
+
 .login-public-brand {
   display: inline-flex;
   align-items: center;

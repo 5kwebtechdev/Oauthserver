@@ -1,5 +1,5 @@
 <ion-content class="login-content" [fullscreen]="true">
-  <header class="login-public-header" aria-label="SuperMeApp website navigation">
+  <header *ngIf="isWebBrowser" class="login-public-header" aria-label="SuperMeApp website navigation">
     <a class="login-public-brand" href="/" aria-label="Visit SuperMeApp website home">
       <img src="assets/Images-Transparent/SuperMeLogoFinal3.png" alt="SuperMeApp" />
       <strong>SuperMeApp</strong>
