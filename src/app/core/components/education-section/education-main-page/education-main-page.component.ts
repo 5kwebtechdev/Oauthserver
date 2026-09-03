@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
@@ -67,6 +67,8 @@ interface ParentShopCategoryDefinition {
     styleUrls: ['./education-main-page.component.scss']
 })
 export class EducationMainPageComponent implements OnInit {
+    @ViewChild('parentEduHubSearchInput') parentEduHubSearchInput?: ElementRef<HTMLInputElement>;
+
     readonly isParentRole: boolean;
     readonly usesNewEduHubLayout: boolean;
     readonly parentLoadingCards = [0, 1, 2, 3];
@@ -75,6 +77,8 @@ export class EducationMainPageComponent implements OnInit {
     parentShopCategoriesLoading = false;
     parentShopCategoriesError = false;
     selectedParentCategoryId: string | null = null;
+    parentSearchOpen = false;
+    parentSearchQuery = '';
 
     private readonly parentLearningCategories: ParentEduHubCategory[] = [
         {
@@ -196,6 +200,34 @@ export class EducationMainPageComponent implements OnInit {
         ];
     }
 
+    get filteredParentEduHubSections(): ParentEduHubSection[] {
+        const query = this.parentSearchQuery.trim().toLowerCase();
+        if (!query) return this.parentEduHubSections;
+
+        return this.parentEduHubSections
+            .map(section => ({
+                ...section,
+                categories: section.categories.filter(category =>
+                    category.label.toLowerCase().includes(query)
+                )
+            }))
+            .filter(section => section.loading || section.error || section.categories.length > 0);
+    }
+
+    toggleParentSearch(): void {
+        this.parentSearchOpen = !this.parentSearchOpen;
+        if (!this.parentSearchOpen) {
+            this.parentSearchQuery = '';
+            return;
+        }
+
+        setTimeout(() => this.parentEduHubSearchInput?.nativeElement.focus());
+    }
+
+    onParentSearchInput(event: Event): void {
+        this.parentSearchQuery = (event.target as HTMLInputElement | null)?.value ?? '';
+    }
+
     ngOnInit(): void {
         if (this.usesNewEduHubLayout) {
             // A category is a navigation action, not a persistent selection.
@@ -237,6 +269,8 @@ export class EducationMainPageComponent implements OnInit {
     }
 
     openParentCategory(category: ParentEduHubCategory): void {
+        this.parentSearchOpen = false;
+        this.parentSearchQuery = '';
         // Keep the category cards visually neutral after the next navigation.
         // The :active state still provides immediate tap feedback.
         this.selectedParentCategoryId = null;

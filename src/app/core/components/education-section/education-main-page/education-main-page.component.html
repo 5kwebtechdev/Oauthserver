@@ -1,7 +1,7 @@
 <ion-content [style.--padding-top]="'var(--sat)'" [class.parent-eduhub-content]="usesNewEduHubLayout">
     <ng-container *ngIf="usesNewEduHubLayout; else standardEduHub">
         <main class="parent-eduhub-page">
-            <header class="parent-eduhub-header">
+            <header class="parent-eduhub-header" [class.parent-eduhub-header--search-open]="parentSearchOpen">
                 <div class="parent-eduhub-toolbar">
                     <div class="parent-eduhub-toolbar__identity">
                         <button type="button" class="parent-eduhub-back" aria-label="Back" (click)="goBack()">
@@ -13,9 +13,16 @@
                         </div>
                     </div>
                     <button type="button" class="parent-eduhub-search" aria-label="Search EduHub"
-                        (click)="openParentCategory(parentEduHubSections[0].categories[0])">
+                        [attr.aria-expanded]="parentSearchOpen" (click)="toggleParentSearch()">
                         <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
                     </button>
+                </div>
+                <div class="parent-eduhub-search-panel" *ngIf="parentSearchOpen">
+                    <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
+                    <input #parentEduHubSearchInput type="search" inputmode="search"
+                        aria-label="Search EduHub categories" placeholder="Search tutors, shops, events..."
+                        [value]="parentSearchQuery" (input)="onParentSearchInput($event)">
+                    <button type="button" aria-label="Close search" (click)="toggleParentSearch()">×</button>
                 </div>
                 <div class="parent-eduhub-hero-copy">
                     <div>
@@ -33,7 +40,7 @@
 
             <div class="parent-eduhub-sections">
                 <section class="parent-eduhub-section"
-                    *ngFor="let section of parentEduHubSections; trackBy: trackSection"
+                    *ngFor="let section of filteredParentEduHubSections; trackBy: trackSection"
                     [attr.aria-busy]="section.loading ? 'true' : null"
                     [attr.aria-labelledby]="'parent-eduhub-' + section.key">
                     <header class="parent-eduhub-section__header">
@@ -73,6 +80,11 @@
                         No categories are available right now.
                     </p>
                 </section>
+                <div class="parent-eduhub-no-results" *ngIf="parentSearchQuery.trim() && !filteredParentEduHubSections.length" role="status">
+                    <span aria-hidden="true">🔎</span>
+                    <h2>No matching EduHub category</h2>
+                    <p>Try tutor, academy, shop, counselor, event or workshop.</p>
+                </div>
             </div>
         </main>
     </ng-container>
