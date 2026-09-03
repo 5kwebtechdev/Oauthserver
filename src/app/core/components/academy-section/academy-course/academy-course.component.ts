@@ -6,8 +6,9 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { CourseCard } from '../academy-section.component';
 import { AcademyLessonsComponent } from '../academy-lessons/academy-lessons.component';
 import { AcademyService, CourseDetailResponse, CourseLesson } from '../../../services/academy.service';
+import { CoinService } from '../../../services/coin.service';
 import { catchError, finalize } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { of, take } from 'rxjs';
 
 type CourseLessonView = {
   title: string;
@@ -52,6 +53,10 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
   loadError: string | null = null;
   readonly fallbackCourseImage = 'assets/Images-Transparent/Academy-Course-Thubmnail1.png';
   readonly fallbackLessonImage = 'assets/Images-Transparent/Academy-Course-Thubmnail2.png';
+  // Learning pages use this gold star coin. Keeping one asset for the wallet,
+  // lesson rewards and course reward makes every value immediately recognisable.
+  readonly learningCoinAsset = 'assets/figma/learning-details/coin.webp';
+  walletCoins = 0;
   private readonly fallbackLessonImages = [
     'assets/Images-Transparent/Academy-Course-Thubmnail1.png',
     'assets/Images-Transparent/Academy-Course-Thubmnail2.png',
@@ -66,7 +71,8 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
     private router: Router,
     private modalCtrl: ModalController,
     private academyService: AcademyService,
-    private navigation: NavigationService
+    private navigation: NavigationService,
+    private coinService: CoinService
   ) { }
 
   // navigate back using history-aware NavigationService
@@ -75,6 +81,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadWalletCoins();
     // If parent provided the course via `@Input()` or navigation state, use it
     if (this.course) {
       // If we have course with numeric id, fetch from API
@@ -107,6 +114,25 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
         this.loadCourseById(id);
       }
     }
+  }
+
+  private loadWalletCoins(): void {
+    this.walletCoins = Math.max(0, Number(this.coinService.getTotalCoins()) || 0);
+
+    // The course API's `totalCoins` is the reward available in this course,
+    // not the child's wallet balance. Fetch the wallet total separately so
+    // the top-right balance stays correct and does not change from course to course.
+    this.coinService.loadCoinHistory().pipe(take(1)).subscribe({
+      next: response => {
+        const total = Number(response?.totalCoins);
+        if (Number.isFinite(total)) {
+          this.walletCoins = Math.max(0, total);
+        }
+      },
+      error: () => {
+        // A cached balance is still useful when the wallet endpoint is offline.
+      }
+    });
   }
 
   ngOnChanges(_changes: SimpleChanges): void {

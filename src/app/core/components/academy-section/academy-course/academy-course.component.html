@@ -14,9 +14,9 @@
         <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
       </button>
 
-      <div class="hero-coins" *ngIf="courseCoins > 0" [attr.aria-label]="courseCoins + ' coins available'">
-        <img src="assets/Icons-Neutral/Icons-Coins.png" alt="" aria-hidden="true">
-        <strong>{{ courseCoins }}</strong>
+      <div class="hero-coins" [attr.aria-label]="walletCoins + ' coins available'">
+        <img [src]="learningCoinAsset" alt="" aria-hidden="true">
+        <strong>{{ walletCoins }}</strong>
       </div>
 
       <div class="hero-shell">
@@ -107,7 +107,7 @@
                 <span><ion-icon name="time-outline" aria-hidden="true"></ion-icon>{{ getLessonDuration(lesson) }}</span>
                 <i aria-hidden="true"></i>
                 <span class="lesson-card__coins" *ngIf="lesson.coins != null">
-                  <img src="assets/Icons-Neutral/Icons-Coins.png" alt="" aria-hidden="true">{{ lesson.coins }}
+                  <img [src]="learningCoinAsset" alt="" aria-hidden="true">{{ lesson.coins }}
                 </span>
               </span>
             </span>
@@ -134,7 +134,7 @@
     <footer class="course-reward" *ngIf="courseCoins > 0">
       <span class="course-reward__star"><ion-icon name="star" aria-hidden="true"></ion-icon></span>
       <p>Earn coins <i aria-hidden="true"></i> Complete lessons <i aria-hidden="true"></i> Build skills</p>
-      <strong><img src="assets/Icons-Neutral/Icons-Coins.png" alt="" aria-hidden="true"> +{{ averageLessonCoins }} per lesson</strong>
+      <strong><img [src]="learningCoinAsset" alt="" aria-hidden="true"> +{{ averageLessonCoins }} per lesson</strong>
     </footer>
   </main>
 </ion-content>
