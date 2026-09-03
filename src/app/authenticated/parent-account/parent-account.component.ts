@@ -27,6 +27,7 @@ import { CustomToastService } from '../../core/services/custom-toast.service';
 import { REGISTRATION_ONBOARDING_STATE_KEY } from '../../core/services/onboarding-state.service';
 import { Share } from '@capacitor/share';
 import { Clipboard } from '@capacitor/clipboard';
+import { Capacitor } from '@capacitor/core';
 import { environment } from '../../../environments/environment';
 import { LearningService } from '../../core/services/learning.service';
 
@@ -94,6 +95,9 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     private activeMessageTemplate?: 'celebrate' | 'encourage';
     private managedChildRefreshTimers: ReturnType<typeof setTimeout>[] = [];
     private readonly assigningLearningItems = new Set<string>();
+    private switcherTouchStartX = 0;
+    private switcherTouchStartY = 0;
+    private lastNativeSwitcherTouchAt = 0;
     
     public userName: string = 'User';
     public parentName: string = 'Parent';
@@ -1069,10 +1073,43 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     }
 
     onSwitcherChildClick(child: ChildInfo, event: Event): void {
+        // iOS WebView emits a synthetic click after touchend. Ignore only that
+        // duplicate; mouse/keyboard clicks and Android taps keep this path.
+        if (Date.now() - this.lastNativeSwitcherTouchAt < 600) return;
         if (this.isSelectedChild(child)) {
             this.toggleSwitchPopup(event);
             return;
         }
+        this.selectChild(child);
+    }
+
+    onSwitcherTouchStart(event: TouchEvent): void {
+        const touch = event.touches[0];
+        this.switcherTouchStartX = touch?.clientX ?? 0;
+        this.switcherTouchStartY = touch?.clientY ?? 0;
+    }
+
+    onSwitcherChildTouchEnd(child: ChildInfo, event: TouchEvent): void {
+        if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'ios') return;
+        const touch = event.changedTouches[0];
+        const movedX = Math.abs((touch?.clientX ?? 0) - this.switcherTouchStartX);
+        const movedY = Math.abs((touch?.clientY ?? 0) - this.switcherTouchStartY);
+        if (movedX > 12 || movedY > 12) return;
+
+        // Handle the selection at touchend because WKWebView can suppress the
+        // following click when this control sits inside a horizontal rail.
+        event.preventDefault();
+        event.stopPropagation();
+        this.lastNativeSwitcherTouchAt = Date.now();
+        if (this.isSelectedChild(child)) this.toggleSwitchPopup();
+        else this.selectChild(child);
+    }
+
+    onPopupChildTouchEnd(child: ChildInfo, event: TouchEvent): void {
+        if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'ios') return;
+        event.preventDefault();
+        event.stopPropagation();
+        this.lastNativeSwitcherTouchAt = Date.now();
         this.selectChild(child);
     }
 

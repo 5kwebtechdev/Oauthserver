@@ -379,15 +379,20 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         // after a pointer-cancel, which previously made every other date
         // appear unclickable.
         this.onDateSelected(date);
+        this.syncChildDateInUrl(date);
     }
 
-    /** Native links keep date selection dependable on desktop browsers. */
-    getChildDateUrl(date: Date): string {
+    private syncChildDateInUrl(date: Date): void {
         const tab = this.childCalendarTab === 'habit' ? 'habits'
             : this.childCalendarTab === 'task' ? 'tasks'
             : this.childCalendarTab === 'planner' ? 'planner'
             : 'all';
-        return `/authed/activity-page?tab=${tab}&date=${this.dateKey(date)}`;
+        void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { tab, date: this.dateKey(date) },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+        });
     }
 
     moveChildMonth(offset: number): void {
@@ -396,7 +401,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         const target = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + offset, 1);
         target.setHours(0, 0, 0, 0);
         this.childCarouselStartDate = target;
-        this.onDateSelected(target);
+        this.selectChildDate(target);
     }
 
     /** Move and select exactly one day while keeping a seven-day window visible. */
@@ -404,7 +409,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         const target = new Date(this.selectedDate);
         target.setDate(target.getDate() + offset);
         target.setHours(0, 0, 0, 0);
-        this.onDateSelected(target);
+        this.selectChildDate(target);
     }
 
     onChildDateCarouselPointerDown(event: PointerEvent): void {
@@ -432,7 +437,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         }
         target.setHours(0, 0, 0, 0);
         this.childCarouselStartDate = target;
-        this.onDateSelected(target);
+        this.selectChildDate(target);
     }
 
     get childWeekDates(): Date[] {

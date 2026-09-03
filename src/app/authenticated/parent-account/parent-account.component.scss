@@ -13,6 +13,7 @@
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 button {
@@ -162,6 +163,7 @@ button {
 
 .child-switcher {
   position: relative;
+  z-index: 2;
   margin-top: 16px;
   padding: 0 16px;
 
@@ -196,6 +198,8 @@ button {
   color: #282527;
   text-align: left;
   cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
   transition: flex-basis 220ms ease, width 220ms ease, color 220ms ease;
 
   &--selected {

@@ -25,8 +25,8 @@
                 </button>
                 <div class="child-week-days" (pointerdown)="onChildDateCarouselPointerDown($event)"
                     (pointerup)="onChildDateCarouselPointerUp($event)" (pointercancel)="onChildDateCarouselPointerUp($event)">
-                    <a class="child-week-day" *ngFor="let day of childWeekDates"
-                        [class.is-selected]="isChildDateSelected(day)" [href]="getChildDateUrl(day)"
+                    <button type="button" class="child-week-day" *ngFor="let day of childWeekDates"
+                        [class.is-selected]="isChildDateSelected(day)" (click)="selectChildDate(day)"
                         [attr.aria-label]="(day | date:'fullDate')">
                         <span>{{ day | date:'EEE' }}</span>
                         <strong>{{ day | date:'d' }}</strong>
@@ -36,7 +36,7 @@
                             <b class="task-dot" [class.is-visible]="getChildDateActivities(day).task"></b>
                             <b class="planner-dot" [class.is-visible]="getChildDateActivities(day).planner"></b>
                         </i>
-                    </a>
+                    </button>
                 </div>
                 <button type="button" class="child-date-arrow" aria-label="Go to next day"
                     (click)="moveChildDateByDay(1)">
