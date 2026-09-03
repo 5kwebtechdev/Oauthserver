@@ -45,6 +45,7 @@ interface EduHubDirectoryResponse {
   city?: string | null;
   status?: string | null;
   accountStatus?: string | null;
+  isActive?: boolean | null;
   verified?: boolean | null;
   imageUrls?: string[] | null;
   imageUrl?: string | null;
@@ -538,6 +539,12 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
   }
 
   private isPublished(item: EduHubDirectoryResponse): boolean {
+    // Active is the listing visibility flag. Verification is deliberately not
+    // part of this condition: active, unverified stationery shops must be
+    // discoverable and simply render without a Verified badge.
+    if (item.isActive === true) return true;
+    if (item.isActive === false) return false;
+
     const statuses = [item.status, item.accountStatus]
       .map(value => this.normalize(value))
       .filter(Boolean);

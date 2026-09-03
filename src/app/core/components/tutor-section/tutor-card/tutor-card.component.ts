@@ -45,6 +45,10 @@ interface EduHubDirectoryItem {
   city?: string | null;
   state?: string | null;
   address?: string | null;
+  status?: string | null;
+  accountStatus?: string | null;
+  isActive?: boolean | null;
+  verified?: boolean | null;
 }
 
 interface EduHubPreview {
@@ -253,7 +257,9 @@ export class TutorCardComponent implements OnInit, OnDestroy {
         next: response => {
           const rawItems = this.extractDirectoryItems(response);
           const fallbackImage = this.categories.find(category => category.key === categoryKey)?.image || '';
-          const previews = rawItems.map(item => this.mapExternalPreview(item, fallbackImage));
+          const previews = rawItems
+            .filter(item => this.isActiveDirectoryListing(item))
+            .map(item => this.mapExternalPreview(item, fallbackImage));
           this.externalPreviews.set(categoryKey, previews);
           this.externalCounts.set(categoryKey, Number(response?.totalElements ?? response?.data?.totalElements ?? previews.length));
           this.externalLoading.delete(categoryKey);
@@ -272,6 +278,23 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       ? response
       : (response?.content ?? response?.items ?? response?.tutors ?? response?.data?.content ?? response?.data?.items ?? response?.data?.tutors ?? response?.data ?? []);
     return Array.isArray(items) ? items : [];
+  }
+
+  /**
+   * Active is the only visibility requirement for EduHub shop cards.
+   * `verified` is intentionally not considered here: an active but
+   * unverified stationery shop remains visible without a Verified badge.
+   */
+  private isActiveDirectoryListing(item: EduHubDirectoryItem): boolean {
+    if (item.isActive === true) return true;
+    if (item.isActive === false) return false;
+
+    const statuses = [item.status, item.accountStatus]
+      .map(status => String(status ?? '').trim().toLowerCase())
+      .filter(Boolean);
+    return !statuses.length || statuses.every(status =>
+      ['active', 'approved', 'published', 'verified', 'enabled'].includes(status)
+    );
   }
 
   /**
