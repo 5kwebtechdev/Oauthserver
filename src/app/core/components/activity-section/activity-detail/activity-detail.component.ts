@@ -61,6 +61,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   public abortPopupConfig: SupermePopupConfig = {};
   public showDeletePopup: boolean = false;
   public deletePopupConfig: SupermePopupConfig = {};
+  private deletingActivity = false;
 
   constructor(
     private router: Router,
@@ -558,18 +559,21 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   confirmDelete(): void {
-    if (!this.habit || !this.canEdit()) return;
+    if (!this.habit || !this.canEdit() || this.deletingActivity) return;
+    this.deletingActivity = true;
     const id = String(this.habit.id);
     const isTask = this.habit.type === 'tasks';
     const api$ = isTask ? this.taskApi.deleteTask(id) : this.habitApi.deleteHabit(id);
 
-    api$.subscribe({
+    api$.pipe(finalize(() => this.deletingActivity = false)).subscribe({
       next: () => {
         if (isTask) this.habitService.notifyTaskDeleted();
         else this.habitService.deleteHabit(id);
+        // Close before navigation so a successful delete never leaves its
+        // confirmation overlay attached while the list reloads.
         this.closeDeletePopup();
         this.router.navigate(['/authed/activity-page'], {
-          state: { type: this.habit?.type || 'habits' }
+          state: { type: this.habit?.type || 'habits', refresh: true }
         }).catch(() => {});
       },
       error: (err) => console.error('Failed to delete activity', err)

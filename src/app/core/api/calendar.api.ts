@@ -44,15 +44,15 @@ export class CalendarApi {
         return this.http.put(url, payload, { headers: this.headers() });
     }
 
-    deleteCalendarEvent(eventId: string): Observable<any> {
+    deleteCalendarEvent(eventId: string): Observable<string> {
         const url = `${this.base}/planner-data/timetable-entry/${eventId}`;
-        return this.http.delete(url, { headers: this.headers() });
+        return this.http.delete(url, { headers: this.headers(), responseType: 'text' });
     }
 
     /** Delete a planner timetable entry using the unified planner-data API. */
-    deleteTimetableEntry(entryId: string | number): Observable<void> {
+    deleteTimetableEntry(entryId: string | number): Observable<string> {
         const url = `${this.base}/planner-data/timetable-entry/${entryId}`;
-        return this.http.delete<void>(url, { headers: this.headers() });
+        return this.http.delete(url, { headers: this.headers(), responseType: 'text' });
     }
 
     /**

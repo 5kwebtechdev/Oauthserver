@@ -181,9 +181,11 @@ export class TaskApi {
      * Delete a task by id
      * @param id Task id
      */
-    deleteTask(id: string): Observable<any> {
+    deleteTask(id: string): Observable<string> {
         const url = `${this.base}/planner-data/task/${id}`;
-        return this.http.delete(url, { headers: this.headers() });
+        // The planner endpoint returns a plain-text success message, not JSON.
+        // Explicitly accepting text ensures a successful delete reaches `next`.
+        return this.http.delete(url, { headers: this.headers(), responseType: 'text' });
     }
 
     letsGoTask(id: string): Observable<any> {

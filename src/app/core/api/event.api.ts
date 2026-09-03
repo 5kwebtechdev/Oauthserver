@@ -79,8 +79,11 @@ export class EventApi {
     return this.http.get<EventDto>(`${this.base}/events/${id}`, { headers: this.headers() });
   }
 
-  deleteEvent(id: string | number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/planner-data/event/${id}`, { headers: this.headers() });
+  deleteEvent(id: string | number): Observable<string> {
+    return this.http.delete(`${this.base}/planner-data/event/${id}`, {
+      headers: this.headers(),
+      responseType: 'text'
+    });
   }
 
   private headers(): HttpHeaders {

@@ -147,9 +147,9 @@ export class HabitApi {
      * Delete a habit by id
      * @param id Habit id
      */
-    deleteHabit(id: string): Observable<any> {
+    deleteHabit(id: string): Observable<string> {
         const url = `${this.base}/planner-data/habit/${id}`;
-        return this.http.delete(url, { headers: this.headers() });
+        return this.http.delete(url, { headers: this.headers(), responseType: 'text' });
     }
 
     /**
