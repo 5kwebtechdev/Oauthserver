@@ -83,8 +83,8 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   readonly categories: EduHubCategory[] = [
     { key: 'tutors', label: 'Tutors', image: 'assets/figma/eduhub-home/category-tutors.webp', route: '/authed/tutors' },
     { key: 'academies', label: 'Academies', image: 'assets/figma/eduhub-home/category-academies.webp', route: '/authed/academies' },
-    { key: 'workshops', label: 'Workshops', image: 'assets/figma/eduhub-home/category-workshops.webp', route: '/authed/education' },
-    { key: 'events', label: 'Events', image: 'assets/figma/eduhub-home/category-events.webp', route: '/authed/education' },
+    { key: 'workshops', label: 'Workshops', image: 'assets/figma/eduhub-home/category-workshops.webp', route: '/authed/education/workshops' },
+    { key: 'events', label: 'Events', image: 'assets/figma/eduhub-home/category-events.webp', route: '/authed/education/events' },
     { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/eduhub-home/category-stationery.webp', route: '/authed/school-store' },
     { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/eduhub-home/category-book-stores.webp', route: '/authed/school-store' },
     { key: 'counselors', label: 'Counselors', image: 'assets/figma/eduhub-home/category-counselors.webp', route: '/authed/counselors' },
