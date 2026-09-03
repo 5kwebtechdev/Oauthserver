@@ -124,14 +124,15 @@
     <div class="footer-legal">
       <nav aria-label="Legal links">
         <ng-container *ngFor="let item of legalLinks; let last = last">
-          <a
-            [routerLink]="item.routerLink || null"
-            [queryParams]="item.queryParams || null"
-            [attr.href]="item.href || null"
-            [attr.target]="item.href && !item.sameTab ? '_blank' : null"
-            [attr.rel]="item.href && !item.sameTab ? 'noopener noreferrer' : null"
-            >{{ item.label }}</a
-          >
+          <a *ngIf="item.routerLink; else externalLegalLink"
+            [routerLink]="item.routerLink"
+            [queryParams]="item.queryParams || null">{{ item.label }}</a>
+          <ng-template #externalLegalLink>
+            <a
+              [href]="item.href"
+              [attr.target]="item.sameTab ? null : '_blank'"
+              [attr.rel]="item.sameTab ? null : 'noopener noreferrer'">{{ item.label }}</a>
+          </ng-template>
           <span *ngIf="!last" aria-hidden="true">|</span>
         </ng-container>
       </nav>
@@ -146,15 +147,17 @@
   <section class="footer-section">
     <h2>{{ section.title }}</h2>
     <nav [attr.aria-label]="section.title">
-      <a
-        *ngFor="let item of section.links"
-        [routerLink]="item.routerLink || null"
-        [queryParams]="item.queryParams || null"
-        [attr.href]="item.href || null"
-        [attr.target]="item.href && !item.sameTab ? '_blank' : null"
-        [attr.rel]="item.href && !item.sameTab ? 'noopener noreferrer' : null"
-        >{{ item.label }}</a
-      >
+      <ng-container *ngFor="let item of section.links">
+        <a *ngIf="item.routerLink; else externalFooterLink"
+          [routerLink]="item.routerLink"
+          [queryParams]="item.queryParams || null">{{ item.label }}</a>
+        <ng-template #externalFooterLink>
+          <a
+            [href]="item.href"
+            [attr.target]="item.sameTab ? null : '_blank'"
+            [attr.rel]="item.sameTab ? null : 'noopener noreferrer'">{{ item.label }}</a>
+        </ng-template>
+      </ng-container>
     </nav>
   </section>
 </ng-template>

@@ -17,12 +17,18 @@ try {
 const startupLoader = document.getElementById('superme-web-loader');
 const loaderStartedAt = performance.now();
 
+const capacitor = (window as any).Capacitor;
+const isNativeShell = window.location.protocol === 'capacitor:' ||
+  !!(capacitor?.isNativePlatform?.());
+
+// The branded startup animation belongs to the installed app only. Remove it
+// synchronously on the website so it cannot obscure public content or crawlers.
+if (!isNativeShell) {
+  startupLoader?.remove();
+}
+
 const hideStartupLoader = () => {
   if (!startupLoader) return;
-
-  const capacitor = (window as any).Capacitor;
-  const isNativeShell = window.location.protocol === 'capacitor:' ||
-    !!(capacitor?.isNativePlatform?.());
 
   if (isNativeShell) {
     // Let the branded native splash finish its short reveal before handing the
@@ -36,13 +42,6 @@ const hideStartupLoader = () => {
     return;
   }
 
-  // Avoid a distracting flash on fast devices while still handing control to
-  // Angular quickly. The loader is removed after its short fade transition.
-  const remaining = Math.max(0, 650 - (performance.now() - loaderStartedAt));
-  window.setTimeout(() => {
-    startupLoader.classList.add('superme-web-loader--leaving');
-    window.setTimeout(() => startupLoader.remove(), 420);
-  }, remaining);
 };
 
 platformBrowserDynamic().bootstrapModule(AppModule)

@@ -82,8 +82,8 @@ export class DashboardWebFooterComponent implements OnInit {
   readonly companySection: FooterSection = {
     title: 'ABOUT SUPERMEAPP',
     links: [
-      { label: 'About Us', href: 'https://supermeapp.com/about', sameTab: true },
-      { label: 'Meet the team', href: 'https://supermeapp.com/about#team', sameTab: true },
+      { label: 'About Us', href: 'https://supermeapp.com/about' },
+      { label: 'Meet the team', href: 'https://supermeapp.com/about#team' },
     ],
   };
 
@@ -123,10 +123,10 @@ export class DashboardWebFooterComponent implements OnInit {
     {
       title: 'GET LISTED',
       links: [
-        { label: 'Become a Tutor', href: 'https://supermeapp.com/become-a-tutor', sameTab: true },
-        { label: 'List your Business', href: 'https://supermeapp.com/submit-an-ad', sameTab: true },
-        { label: 'Advertise your Event/Workshop', href: 'https://supermeapp.com/submit-an-ad', sameTab: true },
-        { label: 'Advertise with Us', href: 'https://supermeapp.com/submit-an-ad', sameTab: true },
+        { label: 'Become a Tutor', href: 'https://supermeapp.com/become-a-tutor' },
+        { label: 'List your Business', href: 'https://supermeapp.com/submit-an-ad' },
+        { label: 'Advertise your Event/Workshop', href: 'https://supermeapp.com/submit-an-ad' },
+        { label: 'Advertise with Us', href: 'https://supermeapp.com/submit-an-ad' },
       ],
     },
   ];

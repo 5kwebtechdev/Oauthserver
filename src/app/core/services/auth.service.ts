@@ -739,9 +739,9 @@ export class AuthService {
     this.analytics.clearUserId();
     this.crashlytics.clearUserId();
 
-    // Remove the authenticated Ionic view stack immediately. External/native
-    // sign-out can finish in parallel without leaving old user content visible.
-    const navigation = redirectToLogin
+    // Native apps return to the in-app login screen. On the website, logout
+    // returns to the public homepage instead of rendering the app login route.
+    const navigation = redirectToLogin && this.isMobilePlatform
       ? this.navCtrl.navigateRoot('/login', { animated: false })
       : Promise.resolve(true);
 
@@ -750,6 +750,10 @@ export class AuthService {
       pushCleanup,
       this.authSessionCleanup.clearExternalAuthSessions()
     ]);
+
+    if (redirectToLogin && !this.isMobilePlatform && typeof window !== 'undefined') {
+      window.location.replace(environment.publicWebUrl || 'https://supermeapp.com');
+    }
   }
 
   private clearLocalUserState(): void {

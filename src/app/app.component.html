@@ -9,7 +9,7 @@
     <ion-router-outlet></ion-router-outlet>
   </div>
 
-  <app-superme-loading></app-superme-loading>
+  <app-superme-loading *ngIf="isNativePlatform"></app-superme-loading>
   <app-network-issue></app-network-issue>
 
   <div *ngIf="isUpdateCheckPending" class="app-update-check-gate" role="status"

@@ -37,6 +37,7 @@ import { AuthService as CoreAuthService } from './core/services/auth.service';
 })
 export class AppComponent implements OnInit, OnDestroy {
   toast$: Observable<Toast | null>;
+  readonly isNativePlatform = Capacitor.isNativePlatform();
   /**
    * A router can start a redirect before the navigation it replaces emits
    * NavigationCancel. Keep one loader token per navigation id so a late
@@ -210,7 +211,8 @@ export class AppComponent implements OnInit, OnDestroy {
         // even while the previous screen is still usable. Keep the global
         // loader for auth/onboarding transitions, but never cover the signed-in
         // app just because its child route is changing.
-        const skipNavigationLoader = routePath.startsWith('/authed')
+        const skipNavigationLoader = !this.isNativePlatform
+          || routePath.startsWith('/authed')
           || routePath === '/home/reset-password';
 
         if (skipNavigationLoader) {
