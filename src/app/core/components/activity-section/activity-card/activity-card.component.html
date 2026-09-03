@@ -29,15 +29,26 @@
     </div>
 
     <div class="glance-upcoming__list" role="list">
-      <button type="button" class="glance-event-card" role="listitem"
+      <div class="glance-action-swipe" role="listitem"
         *ngFor="let event of glanceUpcomingEvents; trackBy: trackGlanceUpcomingEvent"
-        (click)="openUpcomingEvents()">
-        <img [src]="getGlanceUpcomingEventIcon(event)" alt="" aria-hidden="true">
-        <span>
-          <strong>{{ getGlancePlannerTitle(event) }}</strong>
-          <em>{{ getGlanceUpcomingEventCountdown(event) }}</em>
-        </span>
-      </button>
+        (touchstart)="onActionSwipeStart($event, 'event-' + event.id)"
+        (touchmove)="onActionSwipeMove($event, 'event-' + event.id)"
+        (touchend)="onActionSwipeEnd('event-' + event.id)">
+        <button type="button" class="glance-swipe-delete" aria-label="Delete event"
+          (click)="openDeletePopup(event, 'event')">
+          <span aria-hidden="true">🗑</span><em>Delete</em>
+        </button>
+        <button type="button" class="glance-event-card"
+          [style.transform]="'translateX(-' + getActionSwipeOffset('event-' + event.id) + 'px)'"
+          [style.transition]="actionSwipeKey === 'event-' + event.id ? 'transform .2s ease' : null"
+          (click)="onUpcomingEventTap('event-' + event.id)">
+          <img [src]="getGlanceUpcomingEventIcon(event)" alt="" aria-hidden="true">
+          <span>
+            <strong>{{ getGlancePlannerTitle(event) }}</strong>
+            <em>{{ getGlanceUpcomingEventCountdown(event) }}</em>
+          </span>
+        </button>
+      </div>
     </div>
   </section>
 </ng-template>
@@ -46,10 +57,19 @@
 <ng-template #plannerCards>
   <section class="glance-planner-cards"
     *ngIf="(currentActive === 'all' || currentActive === 'timetable') && hasGlancePlannerCards">
-    <article class="glance-planner-card" *ngFor="let card of glancePlannerCards; let i = index; trackBy: trackGlancePlannerCard"
-      [style.--planner-color]="card.color">
+    <div class="glance-action-swipe glance-action-swipe--planner"
+      *ngFor="let card of glancePlannerCards; let i = index; trackBy: trackGlancePlannerCard"
+      (touchstart)="onActionSwipeStart($event, 'planner-' + card.id)"
+      (touchmove)="onActionSwipeMove($event, 'planner-' + card.id)"
+      (touchend)="onActionSwipeEnd('planner-' + card.id)">
+      <button type="button" class="glance-swipe-delete" aria-label="Delete planner entry"
+        (click)="openDeletePopup(card.source, 'timetable')">
+        <span aria-hidden="true">🗑</span><em>Delete</em>
+      </button>
+      <article class="glance-planner-card" [style.--planner-color]="card.color"
+        [style.transform]="'translateX(-' + getActionSwipeOffset('planner-' + card.id) + 'px)'">
       <button type="button" class="glance-planner-card__header"
-        [attr.aria-expanded]="isGlancePlannerExpanded(card, i)" (click)="toggleGlancePlannerCard(card, i)">
+        [attr.aria-expanded]="isGlancePlannerExpanded(card, i)" (click)="onPlannerCardTap(card, i)">
         <span class="glance-planner-card__heading">
           <i></i>
           <strong>{{ getGlancePlannerTitle(card.source) }}</strong>
@@ -74,7 +94,8 @@
           <em *ngIf="getGlancePlannerEntryCountdown(entry) as countdown">{{ countdown }}</em>
         </div>
       </div>
-    </article>
+      </article>
+    </div>
   </section>
 </ng-template>
 

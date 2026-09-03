@@ -1072,6 +1072,51 @@ h4 {
   width: 100%;
 }
 
+.glance-action-swipe {
+  position: relative;
+  flex: 0 0 min(192.5px, 54vw);
+  overflow: hidden;
+  border-radius: 16px;
+  background: #D93025;
+  scroll-snap-align: start;
+
+  &--planner {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  .glance-event-card,
+  .glance-planner-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    transition: transform .22s ease;
+    will-change: transform;
+  }
+}
+
+.glance-swipe-delete {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  width: 80px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  border: 0;
+  background: #D93025;
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+
+  span { font-size: 18px; line-height: 1; }
+  em { font-size: 11px; font-style: normal; font-weight: 700; }
+}
+
 .glance-event-card {
   align-items: center;
   appearance: none;
@@ -1082,7 +1127,7 @@ h4 {
   color: #282527;
   cursor: pointer;
   display: flex;
-  flex: 0 0 min(192.5px, 54vw);
+  flex: 0 0 100%;
   gap: 8px;
   min-height: 54px;
   padding: 8px;
@@ -1147,7 +1192,7 @@ h4 {
   }
 
   .glance-tab { font-size: 13px; }
-  .glance-event-card { flex-basis: min(176px, 68vw); }
+  .glance-action-swipe { flex-basis: min(176px, 68vw); }
 }
 
 // ── Planner tab: grouped schedule cards ─────────────────────────────────────

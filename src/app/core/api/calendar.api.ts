@@ -45,8 +45,14 @@ export class CalendarApi {
     }
 
     deleteCalendarEvent(eventId: string): Observable<any> {
-        const url = `${this.base}/calendar/delete/${eventId}`;
+        const url = `${this.base}/planner-data/timetable-entry/${eventId}`;
         return this.http.delete(url, { headers: this.headers() });
+    }
+
+    /** Delete a planner timetable entry using the unified planner-data API. */
+    deleteTimetableEntry(entryId: string | number): Observable<void> {
+        const url = `${this.base}/planner-data/timetable-entry/${entryId}`;
+        return this.http.delete<void>(url, { headers: this.headers() });
     }
 
     /**

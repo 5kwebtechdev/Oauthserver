@@ -14,7 +14,7 @@ export class HabitService {
   // Use ReplaySubject(1) so late subscribers (navigating back) still receive
   // the last change event even if it was emitted before they subscribed.
   // Extend actions to include 'updated' for edit flows.
-  private dataChangedSubject = new ReplaySubject<{ type: 'habit' | 'task' | 'planner', action: 'added' | 'deleted' | 'updated' }>(1);
+  private dataChangedSubject = new ReplaySubject<{ type: 'habit' | 'task' | 'planner' | 'event', action: 'added' | 'deleted' | 'updated' }>(1);
   public dataChanged$ = this.dataChangedSubject.asObservable();
 
   private currentLoadedDate: string = '';
@@ -230,6 +230,14 @@ export class HabitService {
 
   notifyTaskDeleted(): void {
     this.dataChangedSubject.next({ type: 'task', action: 'deleted' });
+  }
+
+  notifyPlannerDeleted(): void {
+    this.dataChangedSubject.next({ type: 'planner', action: 'deleted' });
+  }
+
+  notifyEventDeleted(): void {
+    this.dataChangedSubject.next({ type: 'event', action: 'deleted' });
   }
 
   notifyHabitCompleted(): void {

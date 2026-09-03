@@ -80,7 +80,7 @@ export class EventApi {
   }
 
   deleteEvent(id: string | number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/events/delete/${id}`, { headers: this.headers() });
+    return this.http.delete<void>(`${this.base}/planner-data/event/${id}`, { headers: this.headers() });
   }
 
   private headers(): HttpHeaders {

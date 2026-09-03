@@ -26,7 +26,9 @@ import { ProfileSelectorService } from '../../../services/profile-selector-servi
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
 import { EventApi } from '../../../api/event.api';
+import { CalendarApi } from '../../../api/calendar.api';
 import { getEventTypeIcon } from '../event-type-icon';
+import { CustomToastService } from '../../../services/custom-toast.service';
 
 @Component({
   selector: 'activity-card',
@@ -230,10 +232,19 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   public swipeTracking: boolean = false;
   private readonly SWIPE_THRESHOLD = 50;
   readonly DELETE_REVEAL_WIDTH = 80;
+  public actionSwipeKey: string | null = null;
+  public actionSwipeOffset = 0;
+  private actionSwipeStartX = 0;
+  private actionSwipeStartY = 0;
+  private actionSwipeTracking = false;
+  private actionSwipeInitialOffset = 0;
 
   // Delete popup state
   public showDeletePopup: boolean = false;
   public deletePopupConfig: SupermePopupConfig = {};
+  public deletingItem = false;
+  private pendingDeleteItem: any = null;
+  private pendingDeleteType: 'habit' | 'task' | 'event' | 'timetable' = 'habit';
 
   // Auto-reload timers
   private letsGoWindowTimer: any;
@@ -252,8 +263,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     private habitCardService: HabitCardService,
     private habitApi: HabitApi,
     private taskApi: TaskApi,
+    private calendarApi: CalendarApi,
     private calendarService: CalendarService,
     private eventApi: EventApi,
+    private toastService: CustomToastService,
     private habitService: HabitService,
     private modalCtrl: ModalController,
     private router: Router,
@@ -1359,11 +1372,77 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     this.swipeOffset = 0;
   }
 
-  openDeletePopup(): void {
+  onActionSwipeStart(event: TouchEvent, key: string): void {
+    if (this.actionSwipeKey && this.actionSwipeKey !== key) this.closeActionSwipe();
+    this.actionSwipeKey = key;
+    this.actionSwipeStartX = event.touches[0].clientX;
+    this.actionSwipeStartY = event.touches[0].clientY;
+    this.actionSwipeInitialOffset = this.actionSwipeOffset;
+    this.actionSwipeTracking = true;
+  }
+
+  onActionSwipeMove(event: TouchEvent, key: string): void {
+    if (!this.actionSwipeTracking || this.actionSwipeKey !== key) return;
+    const dx = event.touches[0].clientX - this.actionSwipeStartX;
+    const dy = event.touches[0].clientY - this.actionSwipeStartY;
+    if (Math.abs(dy) > Math.abs(dx) + 5) {
+      this.actionSwipeTracking = false;
+      return;
+    }
+    this.actionSwipeOffset = Math.max(0, Math.min(this.actionSwipeInitialOffset - dx, this.DELETE_REVEAL_WIDTH));
+    if (dx < 0) event.preventDefault();
+  }
+
+  onActionSwipeEnd(key: string): void {
+    if (!this.actionSwipeTracking || this.actionSwipeKey !== key) return;
+    this.actionSwipeTracking = false;
+    if (this.actionSwipeOffset >= this.SWIPE_THRESHOLD) {
+      this.actionSwipeOffset = this.DELETE_REVEAL_WIDTH;
+    } else {
+      this.closeActionSwipe();
+    }
+  }
+
+  getActionSwipeOffset(key: string): number {
+    return this.actionSwipeKey === key ? this.actionSwipeOffset : 0;
+  }
+
+  closeActionSwipe(): void {
+    this.actionSwipeKey = null;
+    this.actionSwipeOffset = 0;
+    this.actionSwipeTracking = false;
+  }
+
+  onUpcomingEventTap(key: string): void {
+    if (this.getActionSwipeOffset(key) > 0) {
+      this.closeActionSwipe();
+      return;
+    }
+    this.openUpcomingEvents();
+  }
+
+  onPlannerCardTap(card: { id: string }, index: number): void {
+    const key = `planner-${card.id}`;
+    if (this.getActionSwipeOffset(key) > 0) {
+      this.closeActionSwipe();
+      return;
+    }
+    this.toggleGlancePlannerCard(card, index);
+  }
+
+  openDeletePopup(item: any = this.habit, forcedType?: 'habit' | 'task' | 'event' | 'timetable'): void {
     this.closeSwipe();
+    this.closeActionSwipe();
+    if (!item || this.deletingItem) return;
+
+    this.pendingDeleteItem = item;
+    this.pendingDeleteType = forcedType || this.resolveDeleteType(item);
     const coins = this.getCoinReward();
-    const streak = this.getStreak();
-    const headingHtml = `Delete this activity?<br/><span style="font-weight:400;font-size:14px;">This will remove every instance of this activity in the date range you selected.</span><div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;align-items:center;justify-content:center;"><span style="font-weight:400;font-size:13px;opacity:0.7;">You are about to lose:</span><div style="display:flex;align-items:center;gap:8px;"><img src='assets/Icons-Neutral/Icons-Coins.png' style="width:20px;height:20px;" alt="coins"/><span style="font-weight:600;">${coins}</span></div></div>`;
+    const label = this.pendingDeleteType === 'timetable' ? 'planner entry' : this.pendingDeleteType;
+    const lossHtml = coins > 0
+      ? `<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;align-items:center;justify-content:center;"><span style="font-weight:400;font-size:13px;opacity:0.7;">You are about to lose:</span><div style="display:flex;align-items:center;gap:8px;"><img src='assets/Icons-Neutral/Icons-Coins.png' style="width:20px;height:20px;" alt="coins"/><span style="font-weight:600;">${coins}</span></div></div>`
+      : '';
+    const headingHtml = `Delete this ${label}?<br/><span style="font-weight:400;font-size:14px;">This action cannot be undone.</span>${lossHtml}`;
     this.deletePopupConfig = {
       image: 'assets/Images-Transparent/Image-Input-Delete.png',
       imageAlt: 'Delete',
@@ -1387,20 +1466,70 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   handleDeleteConfirm(): void {
-    this.closeDeletePopup();
-    if (!this.habit) return;
-    const id = this.habit.id;
-    if (this.habit.type === 'tasks') {
-      this.taskApi.deleteTask(id).subscribe({
-        next: () => { this.habitService.notifyTaskDeleted(); },
-        error: (err: any) => console.error('Failed to delete task', err)
-      });
-    } else {
-      this.habitApi.deleteHabit(id).subscribe({
-        next: () => { this.habitService.deleteHabit(id); },
-        error: (err: any) => console.error('Failed to delete habit', err)
-      });
+    const item = this.pendingDeleteItem;
+    const type = this.pendingDeleteType;
+    if (!item || this.deletingItem) return;
+
+    const id = String(item.entryId ?? item.id ?? item.calendarId ?? '');
+    if (!id) {
+      this.toastService.error('Unable to identify this item. Please refresh and try again.');
+      this.closeDeletePopup();
+      return;
     }
+
+    this.deletingItem = true;
+    const request$ = type === 'task'
+      ? this.taskApi.deleteTask(id)
+      : type === 'event'
+      ? this.eventApi.deleteEvent(id)
+      : type === 'timetable'
+      ? this.calendarApi.deleteTimetableEntry(id)
+      : this.habitApi.deleteHabit(id);
+
+    request$.subscribe({
+      next: () => {
+        this.deletingItem = false;
+        this.closeDeletePopup();
+        this.removeDeletedItemFromView(id, type);
+        if (type === 'task') this.habitService.notifyTaskDeleted();
+        else if (type === 'event') this.habitService.notifyEventDeleted();
+        else if (type === 'timetable') this.habitService.notifyPlannerDeleted();
+        else this.habitService.deleteHabit(id);
+        this.toastService.success(`${type === 'timetable' ? 'Planner entry' : this.capitalize(type)} deleted.`);
+      },
+      error: (err: any) => {
+        this.deletingItem = false;
+        this.toastService.error(err?.error?.message || `Could not delete this ${type}. Please try again.`);
+      }
+    });
+  }
+
+  private resolveDeleteType(item: any): 'habit' | 'task' | 'event' | 'timetable' {
+    const raw = String(item?.type ?? item?.entityType ?? '').toLowerCase();
+    if (raw.includes('task')) return 'task';
+    if (raw.includes('event')) return 'event';
+    if (raw.includes('time') || raw.includes('planner') || item?.entryId != null) return 'timetable';
+    return 'habit';
+  }
+
+  private removeDeletedItemFromView(id: string, type: 'habit' | 'task' | 'event' | 'timetable'): void {
+    const differs = (item: any) => String(item?.entryId ?? item?.id ?? item?.calendarId ?? '') !== id;
+    if (type === 'task') this.tasks = this.tasks.filter(differs);
+    if (type === 'habit') this.habits = this.habits.filter(differs);
+    if (type === 'event') this.glanceUpcomingEventRaw = this.glanceUpcomingEventRaw.filter(differs);
+    if (type === 'timetable') {
+      this.timetables = this.timetables.filter(differs);
+      this.glancePlannerRaw = this.glancePlannerRaw.filter(differs);
+    }
+    this.hasTasks = this.tasks.length > 0;
+    this.hasHabits = this.habits.length > 0;
+    this.hasTimetables = this.timetables.length > 0;
+    this.updateEmptyState();
+    this.cdr.detectChanges();
+  }
+
+  private capitalize(value: string): string {
+    return value.charAt(0).toUpperCase() + value.slice(1);
   }
 
   // ───────────────────────────────────────────────────────────────────────────

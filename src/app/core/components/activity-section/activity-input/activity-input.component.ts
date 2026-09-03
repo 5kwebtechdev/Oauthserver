@@ -2197,7 +2197,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     }
 
     if (this.currentActive === 'timetable') {
-      this.calendarApi.deleteCalendarEvent(backendId).subscribe({
+      this.calendarApi.deleteTimetableEntry(backendId).subscribe({
         next: () => {
           console.log('Calendar event deleted successfully');
           finalizeLocalDelete(this.editingId);
@@ -2213,27 +2213,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
             return;
           }
 
-          console.warn('Primary calendar delete failed, trying alternate path', err);
-          this.calendarApi.deleteCalendarEventV2(backendId).subscribe({
-            next: () => {
-              console.log('Calendar event deleted via alternate path');
-              finalizeLocalDelete(this.editingId);
-              this.deleting = false;
-            },
-            error: (err2) => {
-              const isActualError2 = err2?.status && err2.status >= 400;
-
-              if (isActualError2) {
-                console.error('Failed to delete calendar event on server', err2);
-                alert(`Failed to delete ${this.currentActive === 'events' ? 'event' : 'timetable'} on server. Please try again.`);
-                this.deleting = false;
-              } else {
-                console.log('Treating alternate path as successful deletion');
-                finalizeLocalDelete(this.editingId);
-                this.deleting = false;
-              }
-            }
-          });
+          console.error('Failed to delete timetable entry on server', err);
+          alert('Failed to delete timetable entry on server. Please try again.');
+          this.deleting = false;
         }
       });
       return;

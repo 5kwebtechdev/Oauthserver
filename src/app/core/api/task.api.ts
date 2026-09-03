@@ -182,7 +182,7 @@ export class TaskApi {
      * @param id Task id
      */
     deleteTask(id: string): Observable<any> {
-        const url = `${this.base}/tasks/delete/${id}`;
+        const url = `${this.base}/planner-data/task/${id}`;
         return this.http.delete(url, { headers: this.headers() });
     }
 
