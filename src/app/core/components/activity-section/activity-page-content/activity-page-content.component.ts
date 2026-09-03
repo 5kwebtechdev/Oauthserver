@@ -653,6 +653,25 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         this.plannerExpansion.set(card.id, !this.isPlannerExpanded(card, index));
     }
 
+    editPlannerEntry(source: any, entry: any, event: Event): void {
+        event.stopPropagation();
+        const planner = {
+            ...source,
+            type: 'timetable',
+            activities: Array.isArray(source?.activities) && source.activities.length
+                ? source.activities
+                : [entry]
+        };
+        void this.router.navigate(['/authed/activity-input'], {
+            state: {
+                habit: planner,
+                currentActive: 'timetable',
+                selectedDate: this.getSelectedDateString(),
+                origin: this.router.url
+            }
+        });
+    }
+
     trackPlannerCard(_index: number, card: PlannerScheduleCard): string {
         return card.id;
     }

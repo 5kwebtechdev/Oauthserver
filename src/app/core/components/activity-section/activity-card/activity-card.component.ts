@@ -7,7 +7,7 @@ import { SupermePopupComponent, SupermePopupConfig, SupermePopupCTA } from '../.
 
 import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
-import { ModalController } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { HabitCardService } from 'src/app/core/components/activity-section/activity-card/activity-card.service';
@@ -47,6 +47,7 @@ import { CustomToastService } from '../../../services/custom-toast.service';
     RouterModule,
     SupermePopupComponent,
     EmptyStateComponent,
+    IonicModule,
   ]
 })
 export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
@@ -1430,6 +1431,20 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     this.toggleGlancePlannerCard(card, index);
   }
 
+  async openGlancePlannerEditor(source: any, entry: any, event: Event): Promise<void> {
+    event.stopPropagation();
+    // The calendar API stores one planner schedule with its timetable entries.
+    // Edit that parent schedule so every row keeps its correct id and dates.
+    const planner = {
+      ...source,
+      type: 'timetable',
+      activities: Array.isArray(source?.activities) && source.activities.length
+        ? source.activities
+        : [entry]
+    };
+    await this.openTimetableEditorFor(planner);
+  }
+
   openDeletePopup(item: any = this.habit, forcedType?: 'habit' | 'task' | 'event' | 'timetable'): void {
     this.closeSwipe();
     this.closeActionSwipe();
@@ -1654,12 +1669,17 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    */
   private async openTimetableEditor() {
     if (!this.habit) return;
+    await this.openTimetableEditorFor(this.habit);
+  }
+
+  private async openTimetableEditorFor(planner: any): Promise<void> {
+    if (!planner) return;
 
     const { ActivityInputComponent } = await import('../activity-input/activity-input.component');
     const modal = await this.modalCtrl.create({
       component: ActivityInputComponent,
       componentProps: {
-        editingHabit: this.habit,
+        editingHabit: planner,
         initialTab: 'timetable'
       }
     });

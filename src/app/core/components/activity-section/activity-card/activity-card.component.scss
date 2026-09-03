@@ -1315,7 +1315,7 @@ h4 {
   align-items: center;
   display: grid;
   gap: 8px;
-  grid-template-columns: minmax(72px, .9fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(72px, .9fr) minmax(0, 1fr) auto 34px;
   border-top: 1px solid #D9D6D8;
   min-height: 48px;
   transition: opacity 180ms ease, color 180ms ease;
@@ -1360,9 +1360,23 @@ h4 {
   }
 }
 
+.glance-planner-entry__edit {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #eaf2f3;
+  color: #537c81;
+
+  ion-icon { font-size: 17px; }
+}
+
 @media (max-width: 360px) {
   .glance-planner-entry {
-    grid-template-columns: minmax(58px, .8fr) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(58px, .8fr) minmax(0, 1fr) auto 30px;
     gap: 5px;
   }
 

@@ -92,6 +92,10 @@
           <time>{{ getGlancePlannerEntryTime(entry) }}</time>
           <strong>{{ getGlancePlannerTitle(entry) }}</strong>
           <em *ngIf="getGlancePlannerEntryCountdown(entry) as countdown">{{ countdown }}</em>
+          <button type="button" class="glance-planner-entry__edit" aria-label="Edit planner entry"
+            (click)="openGlancePlannerEditor(card.source, entry, $event)">
+            <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+          </button>
         </div>
       </div>
       </article>

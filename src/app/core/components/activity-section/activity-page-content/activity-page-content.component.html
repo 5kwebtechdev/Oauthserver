@@ -166,6 +166,10 @@
                                 <time>{{ getPlannerEntryTime(entry) }}</time>
                                 <strong>{{ getChildItemTitle(entry) }}</strong>
                                 <em *ngIf="getPlannerEntryCountdown(entry) as countdown">{{ countdown }}</em>
+                                <button type="button" class="child-planner-entry__edit" aria-label="Edit planner entry"
+                                    (click)="editPlannerEntry(card.source, entry, $event)">
+                                    <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+                                </button>
                             </div>
                         </div>
                     </article>

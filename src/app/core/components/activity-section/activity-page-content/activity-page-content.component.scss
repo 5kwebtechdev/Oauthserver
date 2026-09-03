@@ -796,7 +796,7 @@
     align-items: center;
     display: grid;
     gap: 8px;
-    grid-template-columns: minmax(72px, .9fr) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(72px, .9fr) minmax(0, 1fr) auto 34px;
     min-height: 30px;
     transition: opacity 180ms ease, color 180ms ease;
 
@@ -834,6 +834,20 @@
         time,
         strong { color: var(--child-muted); }
     }
+}
+
+.child-planner-entry__edit {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #eaf2f3;
+    color: #537c81;
+
+    ion-icon { font-size: 17px; }
 }
 
 .child-card-copy {
@@ -928,7 +942,7 @@
     .child-pulse-item p { font-size: 10px; }
     .child-pulse-ring { height: 50px; width: 50px; }
     .child-pulse-ring span { font-size: 13px; }
-    .child-planner-entry { grid-template-columns: minmax(58px, .8fr) minmax(0, 1fr) auto; gap: 5px; }
+    .child-planner-entry { grid-template-columns: minmax(58px, .8fr) minmax(0, 1fr) auto 30px; gap: 5px; }
     .child-planner-entry time,
     .child-planner-entry strong { font-size: 13px; }
     .child-planner-entry em { font-size: 11px; padding: 2px 5px; }
