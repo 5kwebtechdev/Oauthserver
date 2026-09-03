@@ -243,7 +243,7 @@ export class SupermeCalendarComponent implements OnChanges {
    */
   private getMoodEmojiPath(moodName: string): string {
     const moodMap: { [key: string]: string } = {
-      'Happy': 'assets/Images-Transparent/Image-Mood-Happy.png',
+      'Happy': 'assets/Images-Transparent/Image-Mood-Happy.webp',
       'Very Happy': 'assets/Images-Transparent/Image-Mood-Very happy.png',
       'Excited': 'assets/Images-Transparent/Image-Mood-Excited.png',
       'Sad': 'assets/Images-Transparent/Image-Mood-Sad.png',

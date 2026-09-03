@@ -247,7 +247,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     
     // Mood assets
     private readonly moodAssetMap: Record<string, string> = {
-        'HAPPY': 'assets/Images-Transparent/Image-Mood-Happy.png',
+        'HAPPY': 'assets/Images-Transparent/Image-Mood-Happy.webp',
         'VERY HAPPY': 'assets/Images-Transparent/Image-Mood-Very happy.png',
         'EXCITED': 'assets/Images-Transparent/Image-Mood-Excited.png',
         'SAD': 'assets/Images-Transparent/Image-Mood-Sad.png',

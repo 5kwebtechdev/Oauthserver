@@ -43,7 +43,7 @@ export interface VibesDisplayResponse {
 
 // Mood emoji mapping - only six available mood images
 export const MOOD_EMOJI_MAP: { [key: string]: string } = {
-  'Happy': 'assets/Images-Transparent/Image-Mood-Happy.png',
+  'Happy': 'assets/Images-Transparent/Image-Mood-Happy.webp',
   'Very Happy': 'assets/Images-Transparent/Image-Mood-Very happy.png',
   'Excited': 'assets/Images-Transparent/Image-Mood-Excited.png',
   'Sad': 'assets/Images-Transparent/Image-Mood-Sad.png',
