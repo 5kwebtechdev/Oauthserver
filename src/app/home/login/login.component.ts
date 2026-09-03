@@ -11,7 +11,6 @@ import { CredentialSaverService, SavedCredentials } from '../../core/services/cr
 import { OnboardingStateService } from '../../core/services/onboarding-state.service';
 import { SocialMediaComponent } from '../../core/components/social-media/social-media.component';
 import { AuthBackButtonComponent } from '../../core/components/auth-back-button/auth-back-button.component';
-import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-login',
@@ -27,8 +26,6 @@ import { Capacitor } from '@capacitor/core';
   ],
 })
 export class LoginComponent implements OnInit, OnDestroy {
-  /** Website navigation must never render inside the Android/iOS app shell. */
-  public readonly isWebBrowser = !Capacitor.isNativePlatform();
   public signInForm: FormGroup;
   public readonly loginMode = 'email' as const;
   public hidePassword = true;
