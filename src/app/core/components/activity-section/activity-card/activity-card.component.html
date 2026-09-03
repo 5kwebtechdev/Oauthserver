@@ -85,6 +85,10 @@
             alt="" aria-hidden="true">
         </span>
       </button>
+      <button type="button" class="glance-planner-card__edit" aria-label="Edit planner"
+        (click)="openGlancePlannerEditor(card.source, card.entries[0], $event)">
+        <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+      </button>
       <p>{{ getGlancePlannerDateRange(card.source) }}</p>
       <div class="glance-planner-card__entries" *ngIf="isGlancePlannerExpanded(card, i)">
         <div class="glance-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackGlancePlannerEntry"
@@ -496,6 +500,10 @@
         <strong>{{ habit?.title || 'Planner' }}</strong>
         <span>Today</span>
       </span>
+      <button type="button" class="planner-home-card__edit" aria-label="Edit planner"
+        (click)="editPlannerFromCard($event)">
+        <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+      </button>
     </div>
     <div *ngIf="habit?.type !== 'timetable'" class="habit-header-container clickable" (tap)="toggle()" long-press [delay]="1500" (press)="onLongPress()">
       <div class="container w-full p-0">

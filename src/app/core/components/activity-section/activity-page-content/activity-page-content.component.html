@@ -159,6 +159,10 @@
                                     [class.is-collapsed]="!isPlannerExpanded(card, i)" />
                             </span>
                         </button>
+                        <button type="button" class="child-planner-card__edit" aria-label="Edit planner"
+                            (click)="editPlannerEntry(card.source, card.entries[0], $event)">
+                            <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+                        </button>
                         <p>{{ getPlannerDateRange(card.source) }}</p>
                         <div class="child-planner-card__entries" *ngIf="isPlannerExpanded(card, i)">
                             <div class="child-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackPlannerEntry"

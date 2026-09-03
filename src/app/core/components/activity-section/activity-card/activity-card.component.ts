@@ -1445,6 +1445,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     await this.openTimetableEditorFor(planner);
   }
 
+  async editPlannerFromCard(event: Event): Promise<void> {
+    event.stopPropagation();
+    await this.openTimetableEditor();
+  }
+
   openDeletePopup(item: any = this.habit, forcedType?: 'habit' | 'task' | 'event' | 'timetable'): void {
     this.closeSwipe();
     this.closeActionSwipe();
