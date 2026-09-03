@@ -1,5 +1,6 @@
-import { Component, Input, OnInit, HostListener } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 
 export interface JournalEntry {
   id?: string | number;
@@ -15,14 +16,17 @@ export interface JournalEntry {
   selector: 'journal-post-card',
   templateUrl: './journal-post-card.component.html',
   styleUrls: ['./journal-post-card.component.scss'],
-  imports: [CommonModule],
+  imports: [CommonModule, IonicModule],
   standalone: true
 })
 export class JournalPostCardComponent implements OnInit {
   @Input() entry!: JournalEntry;
+  @Output() edit = new EventEmitter<JournalEntry>();
+  @Output() remove = new EventEmitter<JournalEntry>();
   
   viewerOpen: boolean = false;
   viewerSrc: string = '';
+  actionsOpen = false;
 
   ngOnInit(): void {
     // Initialize if needed
@@ -125,5 +129,22 @@ export class JournalPostCardComponent implements OnInit {
   closeImageViewer(): void {
     this.viewerOpen = false;
     this.viewerSrc = '';
+  }
+
+  toggleActions(event: Event): void {
+    event.stopPropagation();
+    this.actionsOpen = !this.actionsOpen;
+  }
+
+  editEntry(event: Event): void {
+    event.stopPropagation();
+    this.actionsOpen = false;
+    this.edit.emit(this.entry);
+  }
+
+  deleteEntry(event: Event): void {
+    event.stopPropagation();
+    this.actionsOpen = false;
+    this.remove.emit(this.entry);
   }
 }

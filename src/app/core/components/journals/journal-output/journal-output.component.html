@@ -72,7 +72,8 @@
       </div>
 
       <div class="entries" *ngIf="!loading && !errorMessage && filteredEntries.length > 0">
-        <journal-post-card *ngFor="let entry of filteredEntries; trackBy: trackById" [entry]="entry">
+        <journal-post-card *ngFor="let entry of filteredEntries; trackBy: trackById" [entry]="entry"
+          (edit)="onEditEntry($event)" (remove)="confirmDelete($event)">
         </journal-post-card>
       </div>
     </section>
@@ -82,4 +83,17 @@
     aria-label="Add journal entry" (click)="onAddClick()">
     <img src="assets/figma/journal/add.svg" alt="" aria-hidden="true" />
   </button>
+
+  <div class="journal-delete-backdrop" *ngIf="entryPendingDelete" role="presentation" (click)="cancelDelete()">
+    <section class="journal-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="journal-delete-title"
+      (click)="$event.stopPropagation()">
+      <button type="button" class="journal-delete-dialog__close" aria-label="Cancel delete" (click)="cancelDelete()">×</button>
+      <span class="journal-delete-dialog__icon"><ion-icon name="trash-outline" aria-hidden="true"></ion-icon></span>
+      <h2 id="journal-delete-title">Delete journal entry?</h2>
+      <p>This entry and its attached moments will be permanently removed. This cannot be undone.</p>
+      <button type="button" class="journal-delete-dialog__confirm" [disabled]="deleting" (click)="deleteEntry()">
+        {{ deleting ? 'Deleting…' : 'Yes, Delete Entry' }}
+      </button>
+    </section>
+  </div>
 </ion-content>

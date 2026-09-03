@@ -4,7 +4,7 @@
       <button type="button" aria-label="Go back" (click)="goBack()">
         <img src="assets/figma/journal/back.svg" alt="" aria-hidden="true" />
       </button>
-      <h1>What have you been up to?</h1>
+      <h1>{{ editingEntryId != null ? 'Edit your journal entry' : 'What have you been up to?' }}</h1>
     </header>
 
     <section
@@ -106,7 +106,7 @@
       <ion-spinner *ngIf="submitting" name="crescent"></ion-spinner>
       <ng-container *ngIf="!submitting">
         <img class="journal-save__check" src="assets/figma/journal/check.svg" alt="" aria-hidden="true" />
-        <span>Save Journal</span>
+        <span>{{ editingEntryId != null ? 'Save Changes' : 'Save Journal' }}</span>
         <span class="journal-save__reward">
           <img src="assets/figma/journal/coin.png" alt="Coin" />
           <strong>+5</strong>

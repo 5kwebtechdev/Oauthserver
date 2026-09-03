@@ -53,6 +53,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   currentUploadIndex = -1;
   submitting = false;
   isAge16Plus = false;
+  editingEntryId: string | number | null = null;
 
   readonly under16Sections: JournalSection[] = [
     {
@@ -216,8 +217,15 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.text = this.initialText || '';
     this.isAge16Plus = (this.authService.getCurrentUserAge() ?? 0) >= 16;
+    const entry = history?.state?.journalEntry as any;
+    if (entry?.id != null) {
+      this.editingEntryId = entry.id;
+      this.text = entry.text || entry.notes || '';
+      this.restoreSelections(entry);
+    } else {
+      this.text = this.initialText || '';
+    }
   }
 
   ngOnDestroy(): void {
@@ -274,7 +282,11 @@ export class JournalInputComponent implements OnInit, OnDestroy {
     this.uploadedImages.forEach(({ file }) => formData.append('files', file));
 
     this.submitting = true;
-    this.http.post(`${environment.apiUrl}/journal/add`, formData, this.authHeaders()).subscribe({
+    const request = this.editingEntryId != null
+      ? this.http.put(`${environment.apiUrl}/journal/${encodeURIComponent(String(this.editingEntryId))}`, formData, this.authHeaders())
+      : this.http.post(`${environment.apiUrl}/journal/add`, formData, this.authHeaders());
+
+    request.subscribe({
       next: () => {
         this.refreshService.notifyJournalAdded();
         this.save.emit(this.text);
@@ -365,7 +377,29 @@ export class JournalInputComponent implements OnInit, OnDestroy {
     this.uploadedImages = [];
     this.imageUploadError = null;
     this.emotionError = null;
+    this.editingEntryId = null;
     if (this.fileInput?.nativeElement) this.fileInput.nativeElement.value = '';
+  }
+
+  private restoreSelections(entry: any): void {
+    const values: Record<string, string> = {
+      emotions: entry.emotions ?? entry.mood,
+      sleep: entry.sleep,
+      health: entry.health,
+      hobbies: entry.hobbies,
+      social: entry.social,
+      school: entry.school,
+      growth: entry.growth,
+      carrying: entry.carrying,
+      productivity: entry.productivity,
+      day: entry.day,
+    };
+
+    this.sections.forEach(section => {
+      const value = String(values[section.key] ?? '').split(',')[0].trim().toLowerCase();
+      const index = section.options.findIndex(option => option.label.toLowerCase() === value);
+      if (index >= 0) this.selected[section.key] = index;
+    });
   }
 
   private revokePreviewUrls(): void {

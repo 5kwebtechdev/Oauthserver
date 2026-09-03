@@ -1,7 +1,21 @@
-<div class="post-card">
+<article class="post-card">
   <div class="post-header">
     <div class="post-date">{{ formatHeaderDate(entry.date) }}</div>
-    <div class="post-time">{{ formatTime(entry.date) }}</div>
+    <div class="post-header__actions">
+      <div class="post-time">{{ formatTime(entry.date) }}</div>
+      <button type="button" class="post-menu-trigger" aria-label="Journal entry options"
+        [attr.aria-expanded]="actionsOpen" (click)="toggleActions($event)">
+        <ion-icon name="ellipsis-vertical" aria-hidden="true"></ion-icon>
+      </button>
+      <div class="post-action-menu" *ngIf="actionsOpen" role="menu" aria-label="Journal entry actions">
+        <button type="button" role="menuitem" class="post-action-menu__edit" (click)="editEntry($event)">
+          <ion-icon name="create-outline" aria-hidden="true"></ion-icon><span>Edit</span>
+        </button>
+        <button type="button" role="menuitem" class="post-action-menu__delete" (click)="deleteEntry($event)">
+          <ion-icon name="trash-outline" aria-hidden="true"></ion-icon><span>Delete</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <div class="post-body" [class.center-emoji]="!hasDetails(entry)">
@@ -39,7 +53,7 @@
       
     </div>
   </div>
-</div>
+</article>
 
 <!-- Image viewer overlay -->
 <div class="image-viewer-backdrop" *ngIf="viewerOpen" (click)="closeImageViewer()">
@@ -50,4 +64,3 @@
     <img [src]="viewerSrc" alt="attachment preview" />
   </div>
 </div>
-

@@ -15,6 +15,16 @@ export interface JournalOutputEntry {
   emoji?: string;
   tags?: string[];
   images?: string[];
+  emotions?: string;
+  sleep?: string;
+  health?: string;
+  hobbies?: string;
+  social?: string;
+  school?: string;
+  growth?: string;
+  carrying?: string;
+  productivity?: string;
+  day?: string;
 }
 
 type MoodTone = 'great' | 'okay' | 'low' | 'none';
@@ -39,6 +49,8 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
   monthLabel = '';
   loading = false;
   errorMessage = '';
+  entryPendingDelete: JournalOutputEntry | null = null;
+  deleting = false;
 
   constructor(
     private readonly router: Router,
@@ -174,6 +186,38 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
     if (!this.hasEntryForToday) void this.router.navigate(['/authed/journal-input']);
   }
 
+  onEditEntry(entry: JournalOutputEntry): void {
+    if (entry.id == null) return;
+    void this.router.navigate(['/authed/journal-input'], { state: { journalEntry: entry } });
+  }
+
+  confirmDelete(entry: JournalOutputEntry): void {
+    if (entry.id != null) this.entryPendingDelete = entry;
+  }
+
+  cancelDelete(): void {
+    if (!this.deleting) this.entryPendingDelete = null;
+  }
+
+  deleteEntry(): void {
+    const entry = this.entryPendingDelete;
+    if (!entry?.id || this.deleting) return;
+
+    this.deleting = true;
+    this.http.delete(`${environment.apiUrl}/journal/${encodeURIComponent(String(entry.id))}`, this.authOptions()).subscribe({
+      next: () => {
+        this.entries = this.entries.filter(item => String(item.id) !== String(entry.id));
+        this.entryPendingDelete = null;
+        this.deleting = false;
+      },
+      error: (error) => {
+        console.error('Failed to delete journal entry', error);
+        this.deleting = false;
+        this.errorMessage = 'We could not delete this entry. Please try again.';
+      },
+    });
+  }
+
   goBack(): void {
     void this.router.navigate(['/authed/user-dashboard']);
   }
@@ -201,8 +245,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
   private loadEntriesFromApi(month: number, year: number): void {
     const url = `${environment.apiUrl}/journal/entries?type=MONTH&month=${month}&year=${year}`;
     const token = this.authApi.getToken();
-    let headers = new HttpHeaders();
-    if (token) headers = headers.set('Authorization', token.startsWith('Bearer ') ? token : `Bearer ${token}`);
+    const { headers } = this.authOptions();
 
     this.loading = true;
     this.errorMessage = '';
@@ -218,6 +261,13 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
         this.loading = false;
       },
     });
+  }
+
+  private authOptions(): { headers: HttpHeaders } {
+    const token = this.authApi.getToken();
+    let headers = new HttpHeaders();
+    if (token) headers = headers.set('Authorization', token.startsWith('Bearer ') ? token : `Bearer ${token}`);
+    return { headers };
   }
 
   private mapApiEntries(items: any[]): JournalOutputEntry[] {
@@ -246,6 +296,16 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
         mood: item.emotions || item.mood || '',
         tags,
         images: rawImages.map((image) => this.absoluteImageUrl(image)).filter(Boolean),
+        emotions: item.emotions,
+        sleep: item.sleep,
+        health: item.health,
+        hobbies: item.hobbies,
+        social: item.social,
+        school: item.school,
+        growth: item.growth,
+        carrying: item.carrying,
+        productivity: item.productivity,
+        day: item.day,
       };
     });
   }
