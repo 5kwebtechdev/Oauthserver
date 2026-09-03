@@ -6,6 +6,9 @@ import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
 import { JournalPostCardComponent } from '../journal-post-card/journal-post-card.component';
+import { CalendarService } from '../../../services/calendar.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 export interface JournalOutputEntry {
   id?: string | number;
@@ -25,6 +28,10 @@ export interface JournalOutputEntry {
   carrying?: string;
   productivity?: string;
   day?: string;
+  habitCountTotal?: number;
+  habitCountCompleted?: number;
+  taskCountTotal?: number;
+  taskCountCompleted?: number;
 }
 
 type MoodTone = 'great' | 'okay' | 'low' | 'none';
@@ -56,6 +63,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
     private readonly router: Router,
     private readonly http: HttpClient,
     private readonly authApi: AuthApi,
+    private readonly calendarService: CalendarService,
   ) {}
 
   ngOnInit(): void {
@@ -252,6 +260,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
     this.http.get<unknown>(url, { headers, observe: 'response' }).subscribe({
       next: (response) => {
         this.entries = Array.isArray(response.body) ? this.mapApiEntries(response.body) : [];
+        this.loadPreviousDayActivityCounts();
         this.loading = false;
       },
       error: (error) => {
@@ -318,6 +327,44 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
     }));
   }
 
+  /** Historical cards show the completed/total habits and tasks for that day.
+   * Today deliberately has no count because its result is not final yet. */
+  private loadPreviousDayActivityCounts(): void {
+    const todayKey = this.dateKey(new Date());
+    const dates = Array.from(new Set((this.entries || [])
+      .map(entry => this.entryDate(entry))
+      .filter((date): date is Date => !!date)
+      .map(date => this.dateKey(date))
+      .filter(date => date < todayKey)));
+    if (!dates.length) return;
+
+    forkJoin(dates.map(date => this.calendarService.getUserCalendar(date, 'day').pipe(
+      catchError(() => of(null)),
+    ))).subscribe(results => {
+      const counts = new Map<string, { habitTotal: number; habitCompleted: number; taskTotal: number; taskCompleted: number }>();
+      results.forEach((response: any, index) => {
+        if (!response) return;
+        counts.set(dates[index], {
+          habitTotal: Number(response.totalHabits ?? response.habits?.length ?? 0),
+          habitCompleted: Number(response.totalHabitsCompleted ?? response.habits?.filter((item: any) => String(item?.status).toUpperCase() === 'COMPLETED').length ?? 0),
+          taskTotal: Number(response.totalTasks ?? response.tasks?.length ?? 0),
+          taskCompleted: Number(response.totalTasksCompleted ?? response.tasks?.filter((item: any) => String(item?.status).toUpperCase() === 'COMPLETED').length ?? 0),
+        });
+      });
+      this.entries = this.entries.map(entry => {
+        const date = this.entryDate(entry);
+        const summary = date ? counts.get(this.dateKey(date)) : undefined;
+        return summary ? {
+          ...entry,
+          habitCountTotal: summary.habitTotal,
+          habitCountCompleted: summary.habitCompleted,
+          taskCountTotal: summary.taskTotal,
+          taskCountCompleted: summary.taskCompleted,
+        } : entry;
+      });
+    });
+  }
+
   private entryDate(entry: JournalOutputEntry): Date | null {
     if (!entry?.date) return null;
     const date = entry.date instanceof Date ? entry.date : new Date(entry.date);
@@ -334,7 +381,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
   private moodTone(mood?: string): MoodTone {
     const value = (mood || '').trim().toLowerCase();
     if (['happy', 'excited', 'calm', 'great', 'good', 'joyful'].includes(value)) return 'great';
-    if (['sad', 'anxious', 'frustrated', 'frustated', 'angry', 'low', 'unwell', 'bad', 'upset'].includes(value)) return 'low';
+    if (['sad', 'low', 'unwell', 'bad', 'upset'].includes(value)) return 'low';
     return 'okay';
   }
 

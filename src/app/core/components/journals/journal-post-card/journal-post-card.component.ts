@@ -10,6 +10,10 @@ export interface JournalEntry {
   emoji?: string;
   tags?: string[];
   images?: string[];
+  habitCountTotal?: number;
+  habitCountCompleted?: number;
+  taskCountTotal?: number;
+  taskCountCompleted?: number;
 }
 
 @Component({
@@ -104,6 +108,45 @@ export class JournalPostCardComponent implements OnInit {
     };
 
     return emotionMap[mood] || null;
+  }
+
+  getMoodTone(mood?: string): 'great' | 'okay' | 'low' {
+    const value = (mood || '').trim().toLowerCase();
+    if (['happy', 'excited', 'calm', 'great', 'good', 'joyful'].includes(value)) return 'great';
+    if (['sad', 'low', 'unwell', 'bad', 'upset'].includes(value)) return 'low';
+    return 'okay';
+  }
+
+  getTagIcon(tag: string): string {
+    const key = tag.split(':')[0].trim().toLowerCase().replace(/[^a-z]/g, '');
+    const icons: Record<string, string> = {
+      sleep: 'assets/figma/journal/bedtime.svg',
+      health: 'assets/figma/journal/health.svg',
+      healthcheck: 'assets/figma/journal/health.svg',
+      hobbies: 'assets/figma/journal/interests.svg',
+      hobby: 'assets/figma/journal/interests.svg',
+      social: 'assets/figma/journal/group.svg',
+      school: 'assets/figma/journal/school.svg',
+      growth: 'assets/figma/journal/growth.svg',
+    };
+    return icons[key] || 'assets/figma/journal/note.svg';
+  }
+
+  getTagValue(tag: string): string {
+    return tag.split(':').slice(1).join(':').trim() || tag;
+  }
+
+  isPastEntry(entry: JournalEntry): boolean {
+    const date = entry?.date instanceof Date ? entry.date : new Date(entry?.date || '');
+    if (Number.isNaN(date.getTime())) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    return date.getTime() < today.getTime();
+  }
+
+  hasActivityCounts(entry: JournalEntry): boolean {
+    return [entry.habitCountTotal, entry.taskCountTotal].some(value => Number(value) > 0);
   }
 
   formatHeaderDate(date?: string | Date): string {
