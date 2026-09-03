@@ -300,8 +300,8 @@ export class JournalInputComponent implements OnInit, OnDestroy {
         this.submitting = false;
         const apiMessage = String(error?.error?.message || error?.message || '').toLowerCase();
         if (error?.status === 400 && apiMessage.includes('only one journal entry per day')) {
-          this.emotionError = 'Aapne aaj ka journal entry already add kar liya hai.';
-          void this.showSaveError('Aapne aaj ka journal entry already add kar liya hai.');
+          this.emotionError = 'You can add only one journal entry per day.';
+          void this.showSaveError(this.emotionError);
           return;
         }
         this.emotionError = 'Your journal could not be saved. Please try again.';
