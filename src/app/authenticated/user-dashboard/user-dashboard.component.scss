@@ -756,7 +756,7 @@ ion-content {
     flex-direction: column;
     gap: 14px;
     width: 100%;
-    background-image: url(/assets/Images-Thumbnails/HeaderV2.png);
+    background-image: url('../../../assets/Images-Thumbnails/HeaderV2.png');
     position: relative;
     // height: clamp(253px, 38dvh, 181px);
     background-size: cover;
@@ -1206,20 +1206,20 @@ ion-content {
   padding: 0;
   overflow: hidden;
   border-radius: 24px;
-  background-image: url('/assets/Images-Thumbnails/HeaderV2.png');
+  background-image: url('../../../assets/Images-Thumbnails/HeaderV2.png');
   background-size: cover;
   background-position: center;
 
   &.home-period-morning {
-    background-image: url('/assets/Images-Thumbnails/HeaderV2.png');
+    background-image: url('../../../assets/Images-Thumbnails/HeaderV2.png');
   }
 
   &.home-period-evening {
-    background-image: url('/assets/Images-Thumbnails/HeaderV2-evening.png');
+    background-image: url('../../../assets/Images-Thumbnails/HeaderV2-evening.png');
   }
 
   &.home-period-night {
-    background-image: url('/assets/Images-Thumbnails/HeaderV2-night.png');
+    background-image: url('../../../assets/Images-Thumbnails/HeaderV2-night.png');
   }
 
   &.home-period-evening,
