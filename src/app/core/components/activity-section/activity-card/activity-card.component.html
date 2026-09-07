@@ -31,6 +31,7 @@
     <div class="glance-upcoming__list" role="list">
       <div class="glance-action-swipe" role="listitem"
         *ngFor="let event of glanceUpcomingEvents; trackBy: trackGlanceUpcomingEvent"
+        [class.is-swipe-open]="getActionSwipeOffset('event-' + event.id) > 0"
         (touchstart)="onActionSwipeStart($event, 'event-' + event.id)"
         (touchmove)="onActionSwipeMove($event, 'event-' + event.id)"
         (touchend)="onActionSwipeEnd('event-' + event.id)">
@@ -59,6 +60,7 @@
     *ngIf="(currentActive === 'all' || currentActive === 'timetable') && hasGlancePlannerCards">
     <div class="glance-action-swipe glance-action-swipe--planner"
       *ngFor="let card of glancePlannerCards; let i = index; trackBy: trackGlancePlannerCard"
+      [class.is-swipe-open]="getActionSwipeOffset('planner-' + card.id) > 0"
       (touchstart)="onActionSwipeStart($event, 'planner-' + card.id)"
       (touchmove)="onActionSwipeMove($event, 'planner-' + card.id)"
       (touchend)="onActionSwipeEnd('planner-' + card.id)">
@@ -85,10 +87,6 @@
             alt="" aria-hidden="true">
         </span>
       </button>
-      <button type="button" class="glance-planner-card__edit" aria-label="Edit planner"
-        (click)="openGlancePlannerEditor(card.source, card.entries[0], $event)">
-        <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
-      </button>
       <p>{{ getGlancePlannerDateRange(card.source) }}</p>
       <div class="glance-planner-card__entries" *ngIf="isGlancePlannerExpanded(card, i)">
         <div class="glance-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackGlancePlannerEntry"
@@ -96,10 +94,6 @@
           <time>{{ getGlancePlannerEntryTime(entry) }}</time>
           <strong>{{ getGlancePlannerTitle(entry) }}</strong>
           <em *ngIf="getGlancePlannerEntryCountdown(entry) as countdown">{{ countdown }}</em>
-          <button type="button" class="glance-planner-entry__edit" aria-label="Edit planner entry"
-            (click)="openGlancePlannerEditor(card.source, entry, $event)">
-            <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
-          </button>
         </div>
       </div>
       </article>

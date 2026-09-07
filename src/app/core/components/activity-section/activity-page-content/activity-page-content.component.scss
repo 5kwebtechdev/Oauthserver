@@ -822,7 +822,7 @@
 .child-planner-card__actions {
     flex: 0 0 auto;
     gap: 6px;
-    padding-right: 36px;
+    padding-right: 0;
 
     em {
         background: #e8f2f2;
@@ -865,7 +865,7 @@
     align-items: center;
     display: grid;
     gap: 8px;
-    grid-template-columns: minmax(72px, .9fr) minmax(0, 1fr) auto 34px;
+    grid-template-columns: minmax(72px, .9fr) minmax(0, 1fr) auto;
     min-height: 30px;
     transition: opacity 180ms ease, color 180ms ease;
 
@@ -903,20 +903,6 @@
         time,
         strong { color: var(--child-muted); }
     }
-}
-
-.child-planner-entry__edit {
-    display: grid;
-    width: 30px;
-    height: 30px;
-    place-items: center;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: #eaf2f3;
-    color: #537c81;
-
-    ion-icon { font-size: 17px; }
 }
 
 .child-card-copy {
