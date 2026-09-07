@@ -2213,12 +2213,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     }).subscribe({
       next: ({ calendar, events }: { calendar: any; events: any[] }) => {
         const calendarEvents = Array.isArray(calendar?.events) ? calendar.events : [];
-        const personalEventIds = this.getGlancePersonalEventIds(events);
-        // Calendar events that also exist in the personal-events feed are
-        // personal events, even if their API record has start/end times. Do
-        // not render the same birthday/appointment as a timetable card.
-        const isPersonalCalendarEvent = (item: any) =>
-          this.isGlancePersonalEvent(item, personalEventIds) || !this.isGlancePlannerSchedule(item);
+        // IDs from /calendar/user-calendar and /events/all belong to separate
+        // domains and can collide. Classify each calendar record from its own
+        // semantic fields instead of matching bare numeric IDs across APIs.
+        const isPersonalCalendarEvent = (item: any) => !this.isGlancePlannerSchedule(item);
         const personalCalendarEvents = calendarEvents.filter(isPersonalCalendarEvent);
         this.glancePlannerRaw = calendarEvents.filter((item: any) => !isPersonalCalendarEvent(item) && this.isGlancePlannerSchedule(item));
         this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents(personalCalendarEvents, events);
@@ -2346,32 +2344,21 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   private isGlancePlannerSchedule(item: any): boolean {
     const type = String(item?.originalCalendarType || item?.type || item?.eventType || '').toUpperCase();
-    // 'EVENT' entries are personal calendar events (birthdays, appointments) merged
-    // in from a separate endpoint — everything else in this feed is a timetable/
-    // planner schedule, even a simple single time-block without a colorCode/
-    // activities array (e.g. one created via the plain, non-multi-entry form).
-    if (type === 'EVENT' || item?.eventDate || item?.recurrence || item?.allDay === true) return false;
-    return Array.isArray(item?.activities)
-      || Boolean(item?.colorCode || item?.color_code)
-      || type.includes('TIMETABLE')
+    // Planner evidence wins first: timetables are often recurring and must not
+    // be sent to Upcoming Events merely because `recurrence` is present.
+    if (type.includes('TIMETABLE')
       || type.includes('PLANNER')
       || type.includes('SCHEDULE')
-      || Boolean(item?.startTime && item?.endTime);
-  }
+      || Array.isArray(item?.activities)
+      || item?.timetableId != null || item?.timetable_id != null
+      || item?.plannerId != null || item?.planner_id != null
+      || item?.scheduleId != null || item?.schedule_id != null) return true;
 
-  private getGlancePersonalEventIds(events: any[]): Set<string> {
-    const ids = new Set<string>();
-    (events || []).forEach(event => {
-      [event?.id, event?.eventId, event?.calendarId, event?.calendar_id]
-        .filter(value => value !== undefined && value !== null && String(value).trim() !== '')
-        .forEach(value => ids.add(String(value)));
-    });
-    return ids;
-  }
+    // Personal calendar events carry an explicit event classification/date.
+    if (type === 'EVENT' || item?.eventDate || item?.event_date || item?.allDay === true) return false;
 
-  private isGlancePersonalEvent(item: any, personalEventIds: Set<string>): boolean {
-    return [item?.id, item?.eventId, item?.calendarId, item?.calendar_id]
-      .some(value => value !== undefined && value !== null && personalEventIds.has(String(value)));
+    // Older single-row planner responses may only expose their colour/time.
+    return Boolean(item?.colorCode || item?.color_code || (item?.startTime && item?.endTime));
   }
 
   private getGlanceUpcomingEventOccurrence(event: any, referenceDate: Date): Date | null {

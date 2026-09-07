@@ -860,11 +860,15 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
     private isPlannerSchedule(item: any): boolean {
         const type = String(item?.type || item?.eventType || '').toUpperCase();
-        return Array.isArray(item?.activities)
-            || Boolean(item?.colorCode || item?.color_code)
-            || type.includes('TIMETABLE')
+        if (type.includes('TIMETABLE')
             || type.includes('PLANNER')
-            || type.includes('SCHEDULE');
+            || type.includes('SCHEDULE')
+            || Array.isArray(item?.activities)
+            || item?.timetableId != null || item?.timetable_id != null
+            || item?.plannerId != null || item?.planner_id != null
+            || item?.scheduleId != null || item?.schedule_id != null) return true;
+        if (type === 'EVENT' || item?.eventDate || item?.event_date || item?.allDay === true) return false;
+        return Boolean(item?.colorCode || item?.color_code || (item?.startTime && item?.endTime));
     }
 
     private plannerOccursOnSelectedDate(item: any): boolean {
