@@ -2379,11 +2379,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   private mergeGlanceUpcomingEvents(calendarEvents: any[], personalEvents: any[]): any[] {
-    // The events endpoint can include timetable schedules too. Filter both
-    // sources here as a final boundary so a schedule never appears in the
-    // Upcoming Events row as well as in the Timetable tab.
+    // Upcoming Events is intentionally strict. A genuine event created by the
+    // Event form always has both eventDate and eventType; timetable rows do not.
+    // The backend can expose both through /events/all, so endpoint membership
+    // alone must never be treated as proof that a record is a personal event.
     const merged = [...(calendarEvents || []), ...(personalEvents || [])]
-      .filter(event => !this.isGlancePlannerSchedule(event));
+      .filter(event => this.isGlancePersonalEventRecord(event));
     const unique = new Map<string, any>();
     merged.forEach((event, index) => {
       const key = String(event?.id ?? [
@@ -2395,6 +2396,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       if (!unique.has(key)) unique.set(key, event);
     });
     return Array.from(unique.values());
+  }
+
+  private isGlancePersonalEventRecord(item: any): boolean {
+    const eventDate = item?.eventDate ?? item?.event_date;
+    const eventType = item?.eventType ?? item?.event_type;
+    return Boolean(String(eventDate || '').trim())
+      && Boolean(String(eventType || '').trim())
+      && !this.isGlancePlannerSchedule(item);
   }
 
   private glancePlannerOccursOnDate(item: any, date: Date): boolean {

@@ -743,7 +743,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     if (!this.isCurrentPlannerRequest(requestId, contextKey, selectedDateString)) return;
                     const allEvents = response.events || [];
                     const plannerItems = allEvents.filter(item => this.isPlannerSchedule(item));
-                    const eventItems = allEvents.filter(item => !this.isPlannerSchedule(item));
+                    const eventItems = allEvents.filter(item => this.isPersonalEventRecord(item));
 
                     const monthActivities: Record<string, { habit?: boolean; task?: boolean; planner?: boolean }> = {};
                     this.recordChildCalendarActivities(response.habits || [], 'habit', monthActivities);
@@ -869,6 +869,14 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
             || item?.scheduleId != null || item?.schedule_id != null) return true;
         if (type === 'EVENT' || item?.eventDate || item?.event_date || item?.allDay === true) return false;
         return Boolean(item?.colorCode || item?.color_code || (item?.startTime && item?.endTime));
+    }
+
+    private isPersonalEventRecord(item: any): boolean {
+        const eventDate = item?.eventDate ?? item?.event_date;
+        const eventType = item?.eventType ?? item?.event_type;
+        return Boolean(String(eventDate || '').trim())
+            && Boolean(String(eventType || '').trim())
+            && !this.isPlannerSchedule(item);
     }
 
     private plannerOccursOnSelectedDate(item: any): boolean {
