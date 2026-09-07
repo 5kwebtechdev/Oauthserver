@@ -2153,7 +2153,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   get glancePlannerCards(): Array<{ id: string; source: any; color: string; entries: any[] }> {
     const today = new Date();
-    return this.glancePlannerRaw
+    return this.mergeDuplicateGlancePlannerSchedules(this.glancePlannerRaw)
       .filter(item => this.glancePlannerOccursOnDate(item, today))
       .map((source, index) => ({
         // Fall back to an index-qualified key (not just the title) so that
@@ -2422,9 +2422,59 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   private getGlancePlannerEntriesForDate(item: any, date: Date): any[] {
     const entries = Array.isArray(item?.activities) && item.activities.length ? item.activities : [item];
-    return entries
+    const uniqueEntries = new Map<string, any>();
+    entries.forEach((entry: any, index: number) => {
+      const key = this.glancePlannerEntryIdentity(entry, index);
+      if (!uniqueEntries.has(key)) uniqueEntries.set(key, entry);
+    });
+    return Array.from(uniqueEntries.values())
       .filter((entry: any) => this.glanceEntryOccursOnDate(entry, date, item?.daysOfWeek))
       .sort((left: any, right: any) => this.getGlancePlannerEntryTimestamp(left, 'start') - this.getGlancePlannerEntryTimestamp(right, 'start'));
+  }
+
+  private mergeDuplicateGlancePlannerSchedules(items: any[]): any[] {
+    const schedules = new Map<string, any>();
+    (items || []).forEach((item: any, index: number) => {
+      const key = this.glancePlannerScheduleIdentity(item, index);
+      const entries = Array.isArray(item?.activities) && item.activities.length ? item.activities : [item];
+      const existing = schedules.get(key);
+      if (!existing) {
+        schedules.set(key, { ...item, activities: [...entries] });
+        return;
+      }
+
+      const uniqueEntries = new Map<string, any>();
+      [...(existing.activities || []), ...entries].forEach((entry: any, entryIndex: number) => {
+        const entryKey = this.glancePlannerEntryIdentity(entry, entryIndex);
+        if (!uniqueEntries.has(entryKey)) uniqueEntries.set(entryKey, entry);
+      });
+      existing.activities = Array.from(uniqueEntries.values());
+    });
+    return Array.from(schedules.values());
+  }
+
+  private glancePlannerScheduleIdentity(item: any, index: number): string {
+    const parentId = item?.timetableId ?? item?.timetable_id ?? item?.plannerId
+      ?? item?.planner_id ?? item?.scheduleId ?? item?.schedule_id ?? item?.seriesId ?? item?.series_id;
+    if (parentId !== null && parentId !== undefined && parentId !== '') return `schedule:${parentId}`;
+    const title = this.getGlancePlannerTitle(item).trim().toLowerCase();
+    const start = String(item?.startDate ?? item?.start_date ?? '').slice(0, 10);
+    const end = String(item?.endDate ?? item?.end_date ?? '').slice(0, 10);
+    const color = String(item?.colorCode ?? item?.color_code ?? '').toLowerCase();
+    const fallback = `${title}|${start}|${end}|${color}`;
+    return fallback.replace(/\|/g, '') ? `details:${fallback}` : `row:${item?.id ?? item?.calendarId ?? index}`;
+  }
+
+  private glancePlannerEntryIdentity(entry: any, index: number): string {
+    const id = entry?.entryId ?? entry?.entry_id ?? entry?.activityId ?? entry?.activity_id;
+    if (id !== null && id !== undefined && id !== '') return `entry:${id}`;
+    const name = this.getGlancePlannerTitle(entry).trim().toLowerCase();
+    const start = String(entry?.startTime ?? entry?.start_time ?? '');
+    const end = String(entry?.endTime ?? entry?.end_time ?? '');
+    const rawDays = entry?.daysOfWeek ?? entry?.days ?? [];
+    const days = (Array.isArray(rawDays) ? rawDays : [rawDays]).map(String).sort().join(',');
+    const fallback = `${name}|${start}|${end}|${days}`;
+    return fallback.replace(/\|/g, '') ? `details:${fallback}` : `row:${entry?.id ?? index}`;
   }
 
   private glanceEntryOccursOnDate(entry: any, date: Date, inheritedDays?: any): boolean {

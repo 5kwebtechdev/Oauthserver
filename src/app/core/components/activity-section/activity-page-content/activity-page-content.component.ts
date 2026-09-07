@@ -477,7 +477,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
     /** Planner cards are grouped schedules, not one card per schedule row. */
     get childPlannerCards(): PlannerScheduleCard[] {
-        return this.childPlannerItems
+        return this.mergeDuplicatePlannerSchedules(this.childPlannerItems)
             .filter(item => this.plannerOccursOnSelectedDate(item))
             .map((source, index) => ({
                 id: String(source?.id ?? source?.calendarId ?? source?.title ?? index),
@@ -522,14 +522,21 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     get showsPlannerEvents(): boolean {
-        return this.childCalendarTab === 'all' || this.childCalendarTab === 'planner';
+        // Events are a separate image-card section in All. The Planner tab is
+        // intentionally schedule-only, as defined by the calendar design.
+        return this.childCalendarTab === 'all' && this.childEventItems.length > 0;
     }
 
     get hasChildCalendarContent(): boolean {
         if (this.childCalendarTab === 'habit' || this.childCalendarTab === 'task') {
             return this.childVisibleItems.length > 0;
         }
+        if (this.childCalendarTab === 'planner') return this.childPlannerCards.length > 0;
         return this.childVisibleItems.length > 0 || this.childPlannerCards.length > 0 || this.childEventItems.length > 0;
+    }
+
+    openAllEvents(): void {
+        void this.router.navigate(['/authed/education/events']);
     }
 
     get childHabitCompletedCount(): number {
@@ -742,9 +749,8 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     this.recordChildCalendarActivities(response.habits || [], 'habit', monthActivities);
                     this.recordChildCalendarActivities(response.tasks || [], 'task', monthActivities);
                     this.recordChildCalendarActivities(plannerItems, 'planner', monthActivities);
-                    this.recordChildCalendarActivities(eventItems, 'planner', monthActivities);
                     this.replaceChildCalendarMonth(monthActivities);
-                    this.childPlannerItems = plannerItems;
+                    this.childPlannerItems = this.mergeDuplicatePlannerSchedules(plannerItems);
                     this.childEventItems = eventItems
                         .filter(event => this.eventOccursOnSelectedDate(event, selectedDateString))
                         .sort((left, right) => this.getPlannerStartTimestamp(left) - this.getPlannerStartTimestamp(right));
@@ -879,9 +885,69 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
     private getPlannerEntriesForSelectedDate(item: any): any[] {
         const entries = Array.isArray(item?.activities) && item.activities.length ? item.activities : [item];
-        return entries
+        const uniqueEntries = new Map<string, any>();
+        entries.forEach((entry: any, index: number) => {
+            const key = this.plannerEntryIdentity(entry, index);
+            if (!uniqueEntries.has(key)) uniqueEntries.set(key, entry);
+        });
+        return Array.from(uniqueEntries.values())
             .filter((entry: any) => this.entryOccursOnDate(entry, this.selectedDate, item?.daysOfWeek))
             .sort((left: any, right: any) => this.getPlannerEntryTimestamp(left, 'start') - this.getPlannerEntryTimestamp(right, 'start'));
+    }
+
+    /**
+     * Month responses may repeat the same timetable once per occurrence or
+     * activity. Collapse those records into one schedule card and merge only
+     * genuinely distinct rows, so a timetable never appears multiple times.
+     */
+    private mergeDuplicatePlannerSchedules(items: any[]): any[] {
+        const schedules = new Map<string, any>();
+        (items || []).forEach((item: any, index: number) => {
+            const key = this.plannerScheduleIdentity(item, index);
+            const existing = schedules.get(key);
+            const incomingEntries = Array.isArray(item?.activities) && item.activities.length
+                ? item.activities
+                : [item];
+
+            if (!existing) {
+                schedules.set(key, { ...item, activities: [...incomingEntries] });
+                return;
+            }
+
+            const mergedEntries = [...(existing.activities || []), ...incomingEntries];
+            const uniqueEntries = new Map<string, any>();
+            mergedEntries.forEach((entry: any, entryIndex: number) => {
+                const entryKey = this.plannerEntryIdentity(entry, entryIndex);
+                if (!uniqueEntries.has(entryKey)) uniqueEntries.set(entryKey, entry);
+            });
+            existing.activities = Array.from(uniqueEntries.values());
+        });
+        return Array.from(schedules.values());
+    }
+
+    private plannerScheduleIdentity(item: any, index: number): string {
+        const parentId = item?.timetableId ?? item?.timetable_id ?? item?.plannerId
+            ?? item?.planner_id ?? item?.scheduleId ?? item?.schedule_id ?? item?.seriesId ?? item?.series_id;
+        if (parentId !== null && parentId !== undefined && parentId !== '') return `schedule:${parentId}`;
+
+        const title = this.getChildItemTitle(item).trim().toLowerCase();
+        const start = String(item?.startDate ?? item?.start_date ?? '').slice(0, 10);
+        const end = String(item?.endDate ?? item?.end_date ?? '').slice(0, 10);
+        const color = String(item?.colorCode ?? item?.color_code ?? '').toLowerCase();
+        const fallback = `${title}|${start}|${end}|${color}`;
+        return fallback.replace(/\|/g, '') ? `details:${fallback}` : `row:${item?.id ?? item?.calendarId ?? index}`;
+    }
+
+    private plannerEntryIdentity(entry: any, index: number): string {
+        const id = entry?.entryId ?? entry?.entry_id ?? entry?.activityId ?? entry?.activity_id;
+        if (id !== null && id !== undefined && id !== '') return `entry:${id}`;
+        const name = this.getChildItemTitle(entry).trim().toLowerCase();
+        const start = String(entry?.startTime ?? entry?.start_time ?? '');
+        const end = String(entry?.endTime ?? entry?.end_time ?? '');
+        const rawDays = entry?.daysOfWeek ?? entry?.days ?? [];
+        const days = (Array.isArray(rawDays) ? rawDays : [rawDays]).map(String).sort().join(',');
+        const fallback = `${name}|${start}|${end}|${days}`;
+        return fallback.replace(/\|/g, '') ? `details:${fallback}` : `row:${entry?.id ?? index}`;
     }
 
     private entryOccursOnDate(entry: any, date: Date, inheritedDays?: any): boolean {

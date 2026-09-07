@@ -122,17 +122,23 @@
             </div>
 
             <div class="child-activity-list" *ngIf="!loading && !plannerLoading; else childActivityLoading">
-                <!-- Events remain above every selected-day activity, matching the Planner design. -->
-                <ng-container *ngIf="showsPlannerEvents">
-                    <button type="button" class="child-event-card" *ngFor="let event of childEventItems"
-                        (click)="onCardTap(event)">
-                        <img [src]="getChildEventIcon(event)" alt="" />
-                        <span>
-                            <strong>{{ getChildItemTitle(event) }}</strong>
-                            <em>{{ getChildEventSubtitle(event) }}</em>
-                        </span>
-                    </button>
-                </ng-container>
+                <!-- Personal events use their own compact image-card rail and never render as Planner rows. -->
+                <section class="child-event-cards" *ngIf="showsPlannerEvents" aria-label="Events">
+                    <header class="child-event-cards__header">
+                        <h2><img src="assets/figma/home-glance/upcoming-events.webp" alt="" />Upcoming Events</h2>
+                        <button type="button" (click)="openAllEvents()">View all</button>
+                    </header>
+                    <div class="child-event-cards__rail">
+                        <button type="button" class="child-event-card" *ngFor="let event of childEventItems"
+                            (click)="onCardTap(event)">
+                            <img [src]="getChildEventIcon(event)" alt="" />
+                            <span>
+                                <strong>{{ getChildItemTitle(event) }}</strong>
+                                <em>{{ getChildEventSubtitle(event) }}</em>
+                            </span>
+                        </button>
+                    </div>
+                </section>
 
                 <button type="button" class="child-activity-card" *ngFor="let entry of childVisibleItems"
                     [ngClass]="'child-activity-card--' + entry.type" long-press [delay]="700"
