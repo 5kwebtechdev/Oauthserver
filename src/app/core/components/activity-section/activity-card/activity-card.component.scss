@@ -1098,7 +1098,9 @@ h4 {
   flex: 0 0 min(192.5px, 54vw);
   overflow: hidden;
   border-radius: 16px;
-  background: #D93025;
+  // The delete button itself supplies the red reveal. Keeping the wrapper
+  // transparent prevents a red seam around an unswiped rounded card.
+  background: transparent;
   scroll-snap-align: start;
 
   &--planner {
@@ -1213,7 +1215,11 @@ h4 {
   }
 
   .glance-tab { font-size: 13px; }
-  .glance-action-swipe { flex-basis: min(176px, 68vw); }
+  // Only compact event cards need a fixed horizontal carousel width. Applying
+  // this flex-basis to Planner wrappers fixes their *height* in the vertical
+  // list, leaving the red delete layer exposed below collapsed cards.
+  .glance-upcoming__list .glance-action-swipe { flex-basis: min(176px, 68vw); }
+  .glance-action-swipe--planner { flex-basis: auto; }
 }
 
 // ── Planner tab: grouped schedule cards ─────────────────────────────────────
