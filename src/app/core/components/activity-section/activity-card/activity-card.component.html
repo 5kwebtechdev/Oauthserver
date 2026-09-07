@@ -22,7 +22,9 @@
     *ngIf="glanceUpcomingEvents.length > 0">
     <div class="glance-upcoming__header">
       <div class="glance-upcoming__title">
-        <img src="assets/figma/home-glance/upcoming-events.webp" alt="" aria-hidden="true">
+        <span class="glance-upcoming__icon" aria-hidden="true">
+          <img src="assets/figma/home-glance/upcoming-events.webp" alt="">
+        </span>
         <h3 id="glance-upcoming-title">Upcoming Events</h3>
       </div>
       <button type="button" class="glance-outline-button" (click)="openUpcomingEvents()">View all</button>
