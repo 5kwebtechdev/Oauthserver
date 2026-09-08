@@ -889,6 +889,12 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         const end = this.startOfDay(this.getLocalDate(item?.endDate || item?.end_date) || start);
         if (candidate < start || candidate > end) return false;
 
+        // For a one-day timetable the parent date is authoritative. Some API
+        // records contain stale/inconsistent activity weekdays even though the
+        // day endpoint correctly returns the timetable for this exact date.
+        if (this.dateKey(start) === this.dateKey(end)
+            && this.dateKey(candidate) === this.dateKey(start)) return true;
+
         const entries = Array.isArray(item?.activities) && item.activities.length
             ? item.activities
             : [item];
@@ -897,13 +903,19 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
     private getPlannerEntriesForSelectedDate(item: any): any[] {
         const entries = Array.isArray(item?.activities) && item.activities.length ? item.activities : [item];
+        const parentStart = this.getLocalDate(item?.startDate || item?.start_date);
+        const parentEnd = this.getLocalDate(item?.endDate || item?.end_date) || parentStart;
+        const isExactSingleDate = !!parentStart && !!parentEnd
+            && this.dateKey(parentStart) === this.dateKey(parentEnd)
+            && this.dateKey(parentStart) === this.getSelectedDateString();
         const uniqueEntries = new Map<string, any>();
         entries.forEach((entry: any, index: number) => {
             const key = this.plannerEntryIdentity(entry, index);
             if (!uniqueEntries.has(key)) uniqueEntries.set(key, entry);
         });
         return Array.from(uniqueEntries.values())
-            .filter((entry: any) => this.entryOccursOnDate(entry, this.selectedDate, item?.daysOfWeek))
+            .filter((entry: any) => isExactSingleDate
+                || this.entryOccursOnDate(entry, this.selectedDate, item?.daysOfWeek))
             .sort((left: any, right: any) => this.getPlannerEntryTimestamp(left, 'start') - this.getPlannerEntryTimestamp(right, 'start'));
     }
 
