@@ -58,8 +58,10 @@ export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     // Normalize inputs
-    const petCapitalized = this.capitalizePetName(this.pet);
-    if (!petCapitalized) return '';
+    // A newly-loaded session can briefly have no local pet selection before the
+    // profile response is hydrated. Keep the dashboard visual populated with
+    // the standard panda fallback instead of rendering an empty slot.
+    const petCapitalized = this.capitalizePetName(this.pet) || 'Panda';
 
     const moodCapitalized = this.capitalizeMood(this.mood);
     const ageValue = Math.max(1, Math.min(3, this.age)); // Clamp age between 1-3 (PRD max is 3)

@@ -1449,16 +1449,19 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         priority,
         sharedWithParent
       };
+      // Send every completed timetable row as an activity. The API persists
+      // one timetable with its entries in this array; limiting it to the child
+      // flow caused rows entered in the standard planner form to be dropped.
+      payload.activities = this.activities
+        .filter(entry => entry.name.trim())
+        .map(entry => ({
+          name: entry.name.trim(),
+          startTime: this.to24Hour(entry.startTime || ''),
+          endTime: this.to24Hour(entry.endTime || ''),
+          daysOfWeek: entry.days.map(day => ActivityInputComponent.DAY_MAP[day]).filter(Boolean)
+        }));
       if (this.isChildPlannerFlow) {
         payload.colorCode = this.selectedPlannerColor;
-        payload.activities = this.activities
-          .filter(entry => entry.name.trim())
-          .map(entry => ({
-            name: entry.name.trim(),
-            startTime: this.to24Hour(entry.startTime || ''),
-            endTime: this.to24Hour(entry.endTime || ''),
-            daysOfWeek: entry.days.map(day => ActivityInputComponent.DAY_MAP[day]).filter(Boolean)
-          }));
       }
       if (!(this.everyday && coversAllDays)) {
         payload.daysOfWeek = daysOfWeek;

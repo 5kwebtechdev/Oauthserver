@@ -771,14 +771,11 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
             };
           });
 
-          // Filter out completed and items 5 min past their endTime
-          const nowTt = Date.now();
-          const fiveMinTt = 5 * 60 * 1000;
+          // Keep a timetable visible for the whole scheduled date. A timetable is
+          // a day-level planner item, so it must not disappear when its current
+          // time slot ends; the date query/API controls when it leaves the view.
           timetableData = timetableData.filter((e: any) => {
-            if (e.status === 'completed') return false;
-            const endTs = Number(e.endTimeStamp || 0);
-            if (endTs > 0 && nowTt > endTs + fiveMinTt) return false;
-            return true;
+            return e.status !== 'completed';
           })
           .sort((a: any, b: any) => this.sortByUpcoming(a, b))
           .slice(0, 4);

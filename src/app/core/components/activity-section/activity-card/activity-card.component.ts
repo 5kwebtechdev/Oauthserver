@@ -2272,7 +2272,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   getGlancePlannerTitle(source: any): string {
-    return source?.title || source?.name || 'Planner';
+    // Planner APIs use `label` for the user-facing timetable name in some
+    // responses, while older responses expose it as `name`/`title`. Prefer the
+    // explicit label so generated placeholders such as "timetable 00" never
+    // replace what the user entered.
+    return source?.label || source?.plannerLabel || source?.activityLabel
+      || source?.name || source?.title || 'Planner';
   }
 
   getGlanceUpcomingEventIcon(event: any): string {
