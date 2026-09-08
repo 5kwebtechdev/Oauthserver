@@ -94,9 +94,8 @@
         <div class="glance-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackGlancePlannerEntry"
           [class.is-passed]="isGlancePlannerEntryPassed(entry)">
           <time>{{ getGlancePlannerEntryTime(entry) }}</time>
-          <!-- The schedule label belongs to the parent timetable. Entry rows may
-               carry the backend placeholder name (for example, "timetable 00"). -->
-          <strong>{{ getGlancePlannerTitle(card.source) }}</strong>
+          <!-- Each API activity carries the label entered for that time slot. -->
+          <strong>{{ getGlancePlannerTitle(entry) }}</strong>
           <em *ngIf="getGlancePlannerEntryCountdown(entry) as countdown">{{ countdown }}</em>
         </div>
       </div>
