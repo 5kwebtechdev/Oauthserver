@@ -172,14 +172,12 @@
                       <div class="parent-learning-card-item__rewards">
                         <span><img src="assets/figma/parent-child-learning/coin.webp" alt="Coins">{{ item.coins || 0 }}</span>
                         <ng-container *ngIf="isParentItemAssigned(item) && getParentBonusCoins(item) as bonus">
-                          <b aria-hidden="true">+</b>
-                          <span class="parent-learning-card-item__bonus"><img
-                              src="assets/figma/parent-child-learning/coin.webp" alt="Bonus coins">{{ bonus }}</span>
+                          <span class="parent-learning-card-item__bonus">+{{ bonus }} coins</span>
                         </ng-container>
                       </div>
-                      <button type="button" (click)="onParentLearningAction(item)"
-                        [class.parent-learning-card-item__action--assigned]="isParentItemAssigned(item) && getParentItemStatus(item) !== 'completed'"
-                        [disabled]="isParentCourseAssigning(item) || (isParentItemAssigned(item) && getParentItemStatus(item) !== 'completed')"
+                      <button *ngIf="getParentItemStatus(item) === 'completed' || !isParentItemAssigned(item)"
+                        type="button" (click)="onParentLearningAction(item)"
+                        [disabled]="isParentCourseAssigning(item)"
                         [attr.aria-busy]="isParentCourseAssigning(item)">
                         {{ isParentCourseAssigning(item) ? 'Assigning...' : getParentActionLabel(item) }}
                         <ng-container *ngIf="getParentItemStatus(item) === 'pending' && !isParentItemAssigned(item)">
@@ -399,9 +397,7 @@
                     <span class="child-learning-item__rewards">
                       <span><img src="assets/figma/parent-child-learning/coin.webp" alt="Coins">{{ item.coins || 0 }}</span>
                       <ng-container *ngIf="isParentItemAssigned(item) && getParentBonusCoins(item) as bonus">
-                        <b aria-hidden="true">+</b>
-                        <span class="child-learning-item__bonus"><img
-                            src="assets/figma/parent-child-learning/coin.webp" alt="Bonus coins">{{ bonus }}</span>
+                        <span class="child-learning-item__bonus">+{{ bonus }} coins</span>
                       </ng-container>
                       <span *ngIf="getChildTrophyCount(item) as trophies">
                         <img src="assets/figma/child-learning/trophy.webp" alt="Trophies">{{ trophies }}

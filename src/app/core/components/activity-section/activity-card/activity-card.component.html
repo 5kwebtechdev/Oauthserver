@@ -76,6 +76,7 @@
         [attr.aria-expanded]="isGlancePlannerExpanded(card, i)" (click)="onPlannerCardTap(card, i)">
         <span class="glance-planner-card__heading">
           <i></i>
+          <img class="glance-planner-card__icon" [src]="getGlancePlannerIcon(card.source)" alt="" aria-hidden="true">
           <strong>{{ getGlancePlannerTitle(card.source) }}</strong>
         </span>
         <span class="glance-planner-card__actions">

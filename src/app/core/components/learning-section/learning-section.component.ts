@@ -60,19 +60,16 @@ import { AuthService } from 'src/app/core/services/auth.service';
                 <img src="assets/figma/child-home/learning-schedule.svg" alt="">
                 {{ getItemDuration(item) }}
               </span>
+              <span *ngIf="isRewardAssigned(item)" class="reward-card-summary__assigned-coins">
+                +{{ getRewardCoins(item) }} coins
+              </span>
             </div>
-            <button type="button" class="reward-assign"
-              [class.reward-assign--assigned]="isRewardAssigned(item)"
-              [disabled]="isRewardAssigned(item)"
-              [attr.aria-label]="isRewardAssigned(item)
-                ? (item?.title || 'Learning activity') + ' is already assigned'
-                : 'Assign ' + getRewardCoins(item) + ' coins to ' + (item?.title || 'learning activity')"
+            <button *ngIf="!isRewardAssigned(item)" type="button" class="reward-assign"
+              [attr.aria-label]="'Assign ' + getRewardCoins(item) + ' coins to ' + (item?.title || 'learning activity')"
               (click)="onRewardClick($event, item, i)">
-              <span>{{ isRewardAssigned(item) ? 'Already Assigned' : 'Assign' }}</span>
-              <ng-container *ngIf="!isRewardAssigned(item)">
-                <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
-                <strong>{{ getRewardCoins(item) }}</strong>
-              </ng-container>
+              <span>Assign</span>
+              <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
+              <strong>{{ getRewardCoins(item) }}</strong>
             </button>
           </div>
           <span *ngIf="contentMode === 'parenting' && getDifficultyLabel(item)" class="parenting-difficulty"

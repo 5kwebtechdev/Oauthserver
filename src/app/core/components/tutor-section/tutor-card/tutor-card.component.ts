@@ -94,8 +94,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   selectedCategoryKey: CategoryKey = 'tutors';
 
+  // Tutors, Academies and Counselors share /v1/tutors and are separated by
+  // the backend's INDIVIDUAL, ACADEMY and COUNSELOR entityType filters.
   // Academies are the same underlying entity as tutors (entityType:
-  // 'ACADEMY' on /tutors/overview), just a different filter on the same
+  // 'ACADEMY'), just a different filter on the same
   // directory — not the unrelated in-app "Skills Quest" learning feed.
   // Lazily loaded the first time that category is selected.
   academyTutors: TutorListItem[] = [];
@@ -335,12 +337,11 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       })
     );
 
-    // Fetch tutors if not already loaded
-    if (!this.tutorService.isLoaded) {
-      this.subscriptions.add(
-        this.tutorService.fetchTutors().subscribe()
-      );
-    }
+    // The unfiltered endpoint mixes individual tutors, academies and
+    // counselors. The Tutors tab must contain individual profiles only.
+    this.subscriptions.add(
+      this.tutorService.fetchTutorsByEntityType('INDIVIDUAL').subscribe()
+    );
 
     // Subscribe to recent tutors
     this.subscriptions.add(

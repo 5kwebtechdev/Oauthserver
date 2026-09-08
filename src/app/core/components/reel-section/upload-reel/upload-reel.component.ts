@@ -436,12 +436,12 @@ export class UploadReelComponent implements OnDestroy {
 
     uploadSuccessConfig: SupermePopupConfig = {
         image: 'assets/Images-Transparent/Image-Reel-Success.png',
-        imageAlt: 'Reel uploaded',
-        heading: 'Reel Uploaded Successfully!'
+        imageAlt: 'Reel publish request submitted',
+        heading: 'Publish Request Submitted!'
     };
 
-    // Called when the user clicks Share - show the success popup
-    async onShare() {
+    // Save the reel and submit it for publishing.
+    async onRequestPublish() {
         // Validate required fields
         if (!this.selectedVideoFile) {
             this.showToast('Please select a video first', 'warning');

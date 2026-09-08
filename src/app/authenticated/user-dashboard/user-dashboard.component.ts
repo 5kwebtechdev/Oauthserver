@@ -637,7 +637,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
               type: 'habits',
               status: item.status,
               tags: (() => {
-                const raw = Array.isArray(item.tags) && item.tags.length ? item.tags : (item.tag ? [item.tag] : []);
+                const raw = item.tag ? [item.tag] : (Array.isArray(item.tags) ? item.tags : []);
                 return raw.map((t: any) => {
                   if (!t) return '';
                   if (typeof t === 'string') return t;
@@ -694,7 +694,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
               type: 'tasks',
               status: item.status,
               tags: (() => {
-                const raw = Array.isArray(item.tags) && item.tags.length ? item.tags : (item.tag ? [item.tag] : []);
+                const raw = item.tag ? [item.tag] : (Array.isArray(item.tags) ? item.tags : []);
                 return raw.map((t: any) => {
                   if (!t) return '';
                   if (typeof t === 'string') return t;

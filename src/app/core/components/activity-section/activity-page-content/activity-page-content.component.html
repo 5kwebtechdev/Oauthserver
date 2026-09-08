@@ -19,14 +19,16 @@
             </div>
 
             <div class="child-date-carousel">
-                <button type="button" class="child-date-arrow" aria-label="Go to previous day"
-                    (click)="moveChildDateByDay(-1)">
+                <button type="button" class="child-date-arrow" aria-label="Go to previous week"
+                    (click)="moveChildWeek(-1)">
                     <span aria-hidden="true">&#8249;</span>
                 </button>
                 <div class="child-week-days" (pointerdown)="onChildDateCarouselPointerDown($event)"
                     (pointerup)="onChildDateCarouselPointerUp($event)" (pointercancel)="onChildDateCarouselPointerUp($event)">
                     <button type="button" class="child-week-day" *ngFor="let day of childWeekDates"
-                        [class.is-selected]="isChildDateSelected(day)" (click)="selectChildDate(day)"
+                        [class.is-selected]="isChildDateSelected(day)"
+                        (pointerup)="onChildDateButtonPointerUp($event, day)"
+                        (click)="onChildDateButtonClick($event, day)"
                         [attr.aria-label]="(day | date:'fullDate')">
                         <span>{{ day | date:'EEE' }}</span>
                         <strong>{{ day | date:'d' }}</strong>
@@ -38,8 +40,8 @@
                         </i>
                     </button>
                 </div>
-                <button type="button" class="child-date-arrow" aria-label="Go to next day"
-                    (click)="moveChildDateByDay(1)">
+                <button type="button" class="child-date-arrow" aria-label="Go to next week"
+                    (click)="moveChildWeek(1)">
                     <span aria-hidden="true">&#8250;</span>
                 </button>
             </div>
@@ -140,15 +142,23 @@
                     </div>
                 </section>
 
-                <button type="button" class="child-activity-card" *ngFor="let entry of childVisibleItems"
-                    [ngClass]="'child-activity-card--' + entry.type" long-press [delay]="700"
-                    (click)="onCardTap(entry.item)" (press)="onCardLongPress(entry.item, entry.type)">
-                    <div class="child-card-copy">
-                        <strong>{{ getChildItemTitle(entry.item) }}</strong>
-                        <span>{{ getChildItemTime(entry.item) }}</span>
-                    </div>
-                    <em *ngIf="getChildItemTag(entry.item) as tag">{{ tag }}</em>
-                </button>
+                <ng-container *ngFor="let entry of childVisibleItems">
+                    <activity-card *ngIf="isChildActivityExpanded(entry.item, entry.type); else compactChildActivity"
+                        mode="single" [habit]="entry.item" [expanded]="true" [trackOnComplete]="true"
+                        [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()">
+                    </activity-card>
+                    <ng-template #compactChildActivity>
+                        <button type="button" class="child-activity-card"
+                            [ngClass]="'child-activity-card--' + entry.type" long-press [delay]="700"
+                            (click)="onCardTap(entry.item, entry.type)" (press)="onCardLongPress(entry.item, entry.type)">
+                            <div class="child-card-copy">
+                                <strong>{{ getChildItemTitle(entry.item) }}</strong>
+                                <span>{{ getChildItemTime(entry.item) }}</span>
+                            </div>
+                            <em *ngIf="getChildItemTag(entry.item) as tag">{{ tag }}</em>
+                        </button>
+                    </ng-template>
+                </ng-container>
 
                 <section class="child-planner-cards" *ngIf="childCalendarTab === 'all' || childCalendarTab === 'planner'">
                     <article class="child-planner-card" *ngFor="let card of childPlannerCards; let i = index; trackBy: trackPlannerCard"

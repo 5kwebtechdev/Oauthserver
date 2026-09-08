@@ -1302,6 +1302,14 @@ h4 {
     width: 12px;
   }
 
+  .glance-planner-card__icon {
+    display: block;
+    flex: 0 0 auto;
+    height: 24px;
+    object-fit: contain;
+    width: 24px;
+  }
+
   strong {
     color: #3E5A60;
     font-size: 17px;

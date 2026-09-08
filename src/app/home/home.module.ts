@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { HomePage } from './home.page';
 
 import { HomePageRoutingModule } from './home-routing.module';
 import { LoginComponent } from "./login/login.component";
@@ -40,7 +39,6 @@ import { AuthBackButtonComponent } from "../core/components/auth-back-button/aut
     QRCodeComponent
   ],
   declarations: [
-    HomePage,
     SignupComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]

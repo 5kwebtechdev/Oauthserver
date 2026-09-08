@@ -41,9 +41,9 @@
           <div class="info-label"><span class="info-icon"><img [src]="detailIcon('repeat')" alt="" /></span><span>Repeat</span></div>
           <strong>{{ shortDaysOfWeek }}</strong>
         </div>
-        <div class="info-row notes-row">
+        <div class="info-row notes-row" *ngIf="activityNotes">
           <div class="info-label"><span class="info-icon"><img [src]="detailIcon('notes')" alt="" /></span><span>Notes</span></div>
-          <strong>{{ habit.notes || habit.description || '—' }}</strong>
+          <strong>{{ activityNotes }}</strong>
         </div>
       </div>
 

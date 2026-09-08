@@ -30,7 +30,7 @@
       <div class="directory-hero__message">
         <div class="directory-speech">
           <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="" aria-hidden="true">
-          <p>Find trusted <strong>{{ pageTitle.toLowerCase() }}</strong> around you.</p>
+          <p><span class="callout-lead">Find trusted <strong>{{ pageTitle.toLowerCase() }}</strong></span><br>around you.</p>
         </div>
         <img *ngIf="isPandaPet" class="directory-pet" src="assets/figma/child-learning/header-pet.webp" alt="" aria-hidden="true">
         <superme-pet *ngIf="!isPandaPet" class="directory-pet" mood="happy" [size]="120"></superme-pet>

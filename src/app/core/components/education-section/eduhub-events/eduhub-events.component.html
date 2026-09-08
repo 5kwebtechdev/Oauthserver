@@ -29,7 +29,7 @@
       <div class="events-hero__content">
         <div class="events-speech" aria-hidden="true">
           <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="">
-          <p>Find exciting <strong>{{ title }}</strong><br>around you.</p>
+          <p><span class="callout-lead">Find exciting <strong>{{ title }}</strong></span><br>around you.</p>
         </div>
         <img *ngIf="isPandaPet" class="events-mascot" src="assets/figma/child-learning/header-pet.webp" alt="" aria-hidden="true">
         <superme-pet *ngIf="!isPandaPet" class="events-mascot" mood="happy" [size]="120"></superme-pet>

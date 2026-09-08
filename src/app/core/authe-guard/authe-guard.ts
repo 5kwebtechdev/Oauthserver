@@ -51,6 +51,18 @@ export const startupGuard: CanActivateFn = () => {
 };
 
 /**
+ * The legacy /home screen is retired. Keep the URL as a safe compatibility
+ * redirect for bookmarks and old links without ever creating HomePage.
+ */
+export const retiredHomeGuard: CanActivateFn = () => {
+    const router = inject(Router);
+    const authService = inject(AuthService);
+
+    if (!authService.isLoggedIn()) return router.parseUrl('/login');
+    return router.parseUrl(authService.getDashboardRoute());
+};
+
+/**
  * The old child instruction page is retired. Keeping a guarded legacy route
  * safely redirects browser history, old deep links, and upgraded sessions
  * without ever instantiating or flashing the removed component state.

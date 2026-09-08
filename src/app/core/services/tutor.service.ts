@@ -180,13 +180,17 @@ export class TutorService {
     getTutorsByEntityType(entityType: string): Observable<Tutor[]> {
         const normalizedType = String(entityType || '').trim().toUpperCase();
         const params = new HttpParams().set('entityType', normalizedType);
-        return this.http.get<Tutor[] | { content?: Tutor[]; data?: Tutor[] }>(`${this.apiUrl}/tutors`, {
+        return this.http.get<any>(`${this.apiUrl}/tutors`, {
             headers: this.getHeaders(),
             params
         }).pipe(
             map(response => Array.isArray(response)
                 ? response
-                : (response?.content || response?.data || []))
+                : (response?.content
+                    || response?.tutors
+                    || response?.data?.content
+                    || response?.data?.tutors
+                    || (Array.isArray(response?.data) ? response.data : [])))
         );
     }
 

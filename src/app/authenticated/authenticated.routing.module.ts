@@ -175,7 +175,7 @@ const routes: Routes = [
       }, {
         path: 'tutors',
         loadComponent: () => import('../core/components/education-section/counselor-directory/counselor-directory.component').then(m => m.CounselorDirectoryComponent),
-        data: { entityType: 'TUTOR', title: 'Tutors', singularTitle: 'Tutor' }
+        data: { entityType: 'INDIVIDUAL', title: 'Tutors', singularTitle: 'Tutor' }
       }, {
         path: 'academy',
         loadComponent: () => import('../core/components/academy-section/academy-home/academy-home.component').then(m => m.AcademyHomeComponent)

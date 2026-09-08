@@ -399,7 +399,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   getParentActionLabel(item: LearningCardData): string {
     const status = this.getParentItemStatus(item);
     if (status === 'completed') return 'View';
-    return this.isParentItemAssigned(item) ? 'Already Assigned' : 'Assign';
+    return 'Assign';
   }
 
   /** The "easy" green badge styling should also cover Beginner-level items. */
@@ -429,10 +429,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       ?? raw?.bonusCoins
       ?? raw?.extraCoinsByParent
       ?? raw?.extraCoins
-      ?? raw?.coinsForCorrectAnswer
       ?? 0
     );
-    return Number.isFinite(value) && value > 0 ? Math.round(value) : 0;
+    if (Number.isFinite(value) && value > 0) return Math.round(value);
+    return this.isParentItemAssigned(item) ? 20 : 0;
   }
 
   /** The parent-learning reward is 20 coins until the API provides an item-specific amount. */

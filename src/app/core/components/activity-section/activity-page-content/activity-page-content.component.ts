@@ -66,6 +66,8 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     public plannerLoadError: boolean = false;
     public showSingleMode: boolean = false;
     public singleModeHabit: Habit | null = null;
+    private expandedChildActivityKey: string | null = null;
+    private lastChildActivityLongPress = { key: '', at: 0 };
     public readonly MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER;
 
     /** Latest Figma calendar controls, shared by Child, Self, and parent-child contexts. */
@@ -77,6 +79,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     /** First date currently visible in the seven-day carousel. */
     private childCarouselStartDate: Date | null = null;
     private childCarouselPointerStartX: number | null = null;
+    private lastChildDatePointerSelection = { key: '', at: 0 };
     private readonly plannerExpansion = new Map<string, boolean>();
     private habitRequestId = 0;
     private taskRequestId = 0;
@@ -321,11 +324,19 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     onDateSelected(date: Date): void {
         const nextDate = this.startOfDay(date);
         const changedDate = this.getSelectedDateString() !== this.habitService.formatDateToYYYYMMDD(nextDate);
+        const visibleWindowStart = this.startOfDay(this.childCarouselStartDate || this.selectedDate);
+        const visibleWindowEnd = new Date(visibleWindowStart);
+        visibleWindowEnd.setDate(visibleWindowEnd.getDate() + 6);
         this.selectedDate = nextDate;
-        // The selected date always anchors the visible seven-day range. This
-        // keeps the active day in the first position after a tap, link
-        // navigation, or month change.
-        this.childCarouselStartDate = new Date(nextDate);
+        if (changedDate) this.expandedChildActivityKey = null;
+        // Keep an on-screen date in its existing position. Only move the
+        // seven-day window when the requested date is outside the current
+        // range (for example an arrow/month action or a deep link).
+        if (nextDate < visibleWindowStart || nextDate > visibleWindowEnd) {
+            this.childCarouselStartDate = new Date(nextDate);
+        } else if (!this.childCarouselStartDate) {
+            this.childCarouselStartDate = visibleWindowStart;
+        }
         if (changedDate && this.isPlannerCalendarDesign) {
             // Keep month dots stable, but remove selected-day content until the
             // correct date has been loaded. This avoids displaying yesterday's
@@ -350,6 +361,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
     /** Select a category in the new Child calendar without changing legacy tabs. */
     selectChildCalendarTab(tab: 'all' | 'habit' | 'task' | 'planner'): void {
+        if (this.childCalendarTab !== tab) this.expandedChildActivityKey = null;
         this.childCalendarTab = tab;
         this.currentMainTab = tab === 'task' ? 'tasks' : 'habits';
         this.ensureChildStatusFilterHasResults();
@@ -382,17 +394,48 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         this.syncChildDateInUrl(date);
     }
 
+    onChildDateButtonPointerUp(event: PointerEvent, date: Date): void {
+        const startX = this.childCarouselPointerStartX;
+        this.childCarouselPointerStartX = null;
+        event.stopPropagation();
+
+        const distance = startX === null ? 0 : event.clientX - startX;
+        const key = this.dateKey(date);
+        this.lastChildDatePointerSelection = { key, at: Date.now() };
+        if (Math.abs(distance) >= 40) {
+            this.moveChildDateCarousel(distance < 0 ? 1 : -1);
+            return;
+        }
+        if (Math.abs(distance) > 12) return;
+
+        this.selectChildDate(date);
+    }
+
+    onChildDateButtonClick(event: MouseEvent, date: Date): void {
+        event.stopPropagation();
+        const key = this.dateKey(date);
+        // Touch/mouse browsers emit a synthetic click immediately after the
+        // pointer event. Ignore only that duplicate; keyboard-generated clicks
+        // still select the date normally.
+        if (this.lastChildDatePointerSelection.key === key
+            && Date.now() - this.lastChildDatePointerSelection.at < 500) return;
+        this.selectChildDate(date);
+    }
+
     private syncChildDateInUrl(date: Date): void {
         const tab = this.childCalendarTab === 'habit' ? 'habits'
             : this.childCalendarTab === 'task' ? 'tasks'
             : this.childCalendarTab === 'planner' ? 'planner'
             : 'all';
-        void this.router.navigate([], {
+        const urlTree = this.router.createUrlTree([], {
             relativeTo: this.route,
             queryParams: { tab, date: this.dateKey(date) },
             queryParamsHandling: 'merge',
-            replaceUrl: true
         });
+        // A same-page Router navigation emits NavigationStart and therefore
+        // shows the native app loader. Replace only the address-bar state so
+        // selecting a date remains an in-place UI update with no page reload.
+        window.history.replaceState(window.history.state, '', this.router.serializeUrl(urlTree));
     }
 
     moveChildMonth(offset: number): void {
@@ -410,6 +453,11 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         target.setDate(target.getDate() + offset);
         target.setHours(0, 0, 0, 0);
         this.selectChildDate(target);
+    }
+
+    /** Move the calendar rail by one complete seven-day window. */
+    moveChildWeek(direction: -1 | 1): void {
+        this.moveChildDateCarousel(direction);
     }
 
     onChildDateCarouselPointerDown(event: PointerEvent): void {
@@ -430,11 +478,6 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         const start = new Date(this.childCarouselStartDate || this.selectedDate);
         const target = new Date(start);
         target.setDate(target.getDate() + (direction * 7));
-
-        // Never start a new month's carousel midway through the month.
-        if (target.getMonth() !== start.getMonth() || target.getFullYear() !== start.getFullYear()) {
-            target.setDate(1);
-        }
         target.setHours(0, 0, 0, 0);
         this.childCarouselStartDate = target;
         this.selectChildDate(target);
@@ -568,7 +611,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     getChildItemTag(item: any): string | null {
-        const tags = Array.isArray(item?.tags) ? item.tags : (item?.tag ? [item.tag] : []);
+        const tags = item?.tag ? [item.tag] : (Array.isArray(item?.tags) ? item.tags : []);
         const tag = tags.find((value: any) => Boolean(value));
         if (!tag) return null;
         if (typeof tag === 'object') return tag.value || tag.name || tag.title || null;
@@ -1124,7 +1167,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                         priority: h.priority?.trim().toLowerCase(),
                         routine: h.routine?.trim().toLowerCase(),
                         tags: (() => {
-                            const raw = Array.isArray(h.tags) && h.tags.length ? h.tags : (h.tag ? [h.tag] : []);
+                            const raw = h.tag ? [h.tag] : (Array.isArray(h.tags) ? h.tags : []);
                             const resolved = raw.map((t: any) => {
                                 if (!t) return '';
                                 if (typeof t === 'string') return t;
@@ -1215,7 +1258,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                             status: this.normalizeStatus(t.status, t),
                             priority: t.priority?.trim().toLowerCase(),
                             routine: t.routine?.trim().toLowerCase(),
-                            tags: Array.isArray(t.tags) && t.tags.length ? t.tags : (t.tag ? [t.tag] : []),
+                            tags: t.tag ? [t.tag] : (Array.isArray(t.tags) ? t.tags : []),
                             // Normalize reward/streak fields so ActivityCardComponent can read them
                             coinReward: Number(t.coinReward ?? t.rewardCoins ?? t.reward_coins ?? t.rewardsCoins ?? t.rewards?.coins ?? t.rewards?.rewardCoins ?? 0),
                             coinsEarned: Number(t.coinsEarned ?? t.coins ?? t.coins_earned ?? 0),
@@ -1477,7 +1520,16 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     /**
      * Handle single tap on a habit/task card - open single mode view
      */
-    onCardTap(habit: any): void {
+    onCardTap(habit: any, entryType?: 'habit' | 'task'): void {
+        if (this.isChildCalendarDesign && entryType) {
+            const key = this.getChildActivityKey(habit, entryType);
+            if (this.lastChildActivityLongPress.key === key
+                && Date.now() - this.lastChildActivityLongPress.at < 800) return;
+            this.expandedChildActivityKey = key;
+            try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
+            return;
+        }
+
         this.singleModeHabit = habit;
         this.showSingleMode = true;
         try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
@@ -1485,6 +1537,24 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
     /** Open the full action/detail screen from the compact calendar cards. */
     onCardLongPress(habit: any, entryType?: 'habit' | 'task'): void {
+        if (entryType) {
+            this.lastChildActivityLongPress = {
+                key: this.getChildActivityKey(habit, entryType),
+                at: Date.now()
+            };
+        }
+        this.openActivityDetail(habit, entryType, true);
+    }
+
+    isChildActivityExpanded(habit: any, entryType: 'habit' | 'task'): boolean {
+        return this.expandedChildActivityKey === this.getChildActivityKey(habit, entryType);
+    }
+
+    private getChildActivityKey(habit: any, entryType: 'habit' | 'task'): string {
+        return `${entryType}:${habit?.id ?? habit?.habitId ?? habit?.taskId ?? ''}`;
+    }
+
+    private openActivityDetail(habit: any, entryType?: 'habit' | 'task', fromLongPress = false): void {
         const itemId = Number(habit?.id ?? habit?.habitId ?? habit?.taskId);
         if (!Number.isFinite(itemId) || itemId <= 0) return;
 
@@ -1496,10 +1566,10 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
             state: {
                 habit: { ...habit, type: activityType },
                 type: activityType,
-                fromLongPress: true,
+                fromLongPress,
                 selectedDate: this.getSelectedDateString()
             },
-            queryParams: { type: activityType }
+            queryParams: { type: activityType, date: this.getSelectedDateString() }
         }).catch(error => console.error('[HabitPageContent] Unable to open activity detail:', error));
     }
 

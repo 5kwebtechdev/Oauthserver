@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpEvent, HttpEventType, HttpProgressEvent, HttpResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { map, catchError, filter, tap } from 'rxjs/operators';
 
 export interface UploadProgress {
     /** Percentage of upload completion (0-100) */
@@ -111,22 +111,10 @@ export class VideoUploadService {
             observe: 'events'
         }).pipe(
             tap((event: HttpEvent<VideoUploadResponse>) => this.handleUploadProgress(event)),
-            map((event: HttpEvent<VideoUploadResponse>) => {
-                if (event.type === HttpEventType.Response) {
-                    return event.body!;
-                }
-                // Return empty object for non-response events (will be filtered out)
-                return {} as VideoUploadResponse;
-            }),
-            // Filter out non-response events
-            map((response: VideoUploadResponse) => {
-                if (response && response.success !== undefined) {
-                    return response;
-                }
-                return null as any;
-            }),
-            // Remove null values
-            map((response: VideoUploadResponse | null) => response!),
+            // Upload progress events are not saved responses. Wait for the
+            // backend's final HTTP response before showing success/resetting.
+            filter((event): event is HttpResponse<VideoUploadResponse> => event.type === HttpEventType.Response),
+            map(event => event.body as VideoUploadResponse),
             catchError(error => {
                 this.uploadProgressSubject.next({
                     percentage: 0,

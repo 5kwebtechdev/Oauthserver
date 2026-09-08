@@ -142,7 +142,7 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             id: item.id,
             thumbnailUrl: (item.thumbnailUrl || '').trim(),
             label: this.getLabelForItem(item),
-            typeLabel: this.getTypeLabel(item.type),
+            typeLabel: this.getTypeLabel(item.type, item.amount),
             count: item.amount,
             date: new Date(item.timestamp),
             type: item.type,
@@ -224,7 +224,12 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
         }
     }
 
-    private getTypeLabel(type: string): string {
+    private getTypeLabel(type: string, amount: number = 0): string {
+        // The signed amount is authoritative: every debit belongs to Spend,
+        // even when its transaction type (for example LOGIN_STREAK_RESTORE)
+        // is otherwise unknown and would fall through to Reward.
+        if (Number(amount) < 0) return 'Spend';
+
         switch (type) {
             case 'DAILY_LOGIN_BONUS':       return 'Daily Bonus';
             case 'HABIT_COMPLETION':        return 'Habit';

@@ -2219,7 +2219,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         const isPersonalCalendarEvent = (item: any) => !this.isGlancePlannerSchedule(item);
         const personalCalendarEvents = calendarEvents.filter(isPersonalCalendarEvent);
         this.glancePlannerRaw = calendarEvents.filter((item: any) => !isPersonalCalendarEvent(item) && this.isGlancePlannerSchedule(item));
-        this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents(personalCalendarEvents, events);
+        // Some backend responses also expose timetable rows through /events/all.
+        // Exclude anything that matches a planner schedule before merging so a
+        // timetable entry can never leak into the Upcoming Events rail.
+        const personalEvents = (events || []).filter(event =>
+          !this.glancePlannerRaw.some(planner => this.matchesGlancePlannerRecord(event, planner))
+        );
+        this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents(personalCalendarEvents, personalEvents);
         this.finishGlancePlannerLoad();
       },
       error: () => {
@@ -2278,6 +2284,16 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     // replace what the user entered.
     return source?.label || source?.plannerLabel || source?.activityLabel
       || source?.name || source?.title || 'Planner';
+  }
+
+  getGlancePlannerIcon(source: any): string {
+    const rows = [source, ...(Array.isArray(source?.activities) ? source.activities : [])];
+    for (const row of rows) {
+      const icon = String(row?.selectedIcon ?? row?.iconUrl ?? row?.icon_url
+        ?? row?.iconPath ?? row?.icon ?? '').trim();
+      if (icon) return icon;
+    }
+    return 'assets/figma/child-planner/superme-planner-timetable.webp';
   }
 
   getGlanceUpcomingEventIcon(event: any): string {
@@ -2409,6 +2425,39 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     return Boolean(String(eventDate || '').trim())
       && Boolean(String(eventType || '').trim())
       && !this.isGlancePlannerSchedule(item);
+  }
+
+  private matchesGlancePlannerRecord(candidate: any, planner: any): boolean {
+    const normalize = (value: any) => String(value ?? '').trim().toLowerCase();
+    const candidateName = normalize(candidate?.name ?? candidate?.title ?? candidate?.label);
+    if (!candidateName) return false;
+
+    const plannerRows = [planner, ...(Array.isArray(planner?.activities) ? planner.activities : [])];
+    const matchingRows = plannerRows.filter(row =>
+      [row?.label, row?.plannerLabel, row?.activityLabel, row?.name, row?.title]
+        .some(value => normalize(value) === candidateName)
+    );
+    if (!matchingRows.length) return false;
+
+    const candidateDate = this.getGlanceLocalDate(candidate?.eventDate ?? candidate?.event_date
+      ?? candidate?.startDate ?? candidate?.start_date);
+    const plannerStart = this.getGlanceLocalDate(planner?.startDate ?? planner?.start_date);
+    const plannerEnd = this.getGlanceLocalDate(planner?.endDate ?? planner?.end_date) || plannerStart;
+    if (candidateDate && plannerStart && plannerEnd) {
+      const day = this.glanceStartOfDay(candidateDate).getTime();
+      if (day < this.glanceStartOfDay(plannerStart).getTime()
+        || day > this.glanceStartOfDay(plannerEnd).getTime()) return false;
+    }
+
+    const candidateStart = normalize(candidate?.startTime ?? candidate?.start_time).slice(0, 5);
+    const candidateEnd = normalize(candidate?.endTime ?? candidate?.end_time).slice(0, 5);
+    if (!candidateStart && !candidateEnd) return true;
+    return matchingRows.some(row => {
+      const rowStart = normalize(row?.startTime ?? row?.start_time).slice(0, 5);
+      const rowEnd = normalize(row?.endTime ?? row?.end_time).slice(0, 5);
+      return (!candidateStart || !rowStart || candidateStart === rowStart)
+        && (!candidateEnd || !rowEnd || candidateEnd === rowEnd);
+    });
   }
 
   private glancePlannerOccursOnDate(item: any, date: Date): boolean {

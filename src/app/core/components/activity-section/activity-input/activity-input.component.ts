@@ -1894,7 +1894,12 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       status: data.status ?? baseHabit.status,
       createdAt: data.createdAt ? new Date(data.createdAt) : (this.originalHabit?.createdAt ? new Date(this.originalHabit.createdAt) : new Date()),
       activities: baseHabit.activities,
-      tags: Array.isArray(data.tags) ? data.tags : this.selectedTags.map(t => t.value || t.key),
+      // The update response may still contain the previous legacy `tags`
+      // array even though `tagId` was changed successfully. Keep the explicit
+      // selection as the immediate UI source; subsequent GETs prefer `tag`.
+      tags: this.selectedTags.length
+        ? this.selectedTags.map(t => t.value || t.key)
+        : (data.tag ? [data.tag] : (Array.isArray(data.tags) ? data.tags : [])),
       streak: data.streak ?? data.streakCount ?? 0,
       highestStreak: data.highestStreak ?? 0,
       completionPercentage: data.completionPercentage ?? data.completionRate ?? 0,

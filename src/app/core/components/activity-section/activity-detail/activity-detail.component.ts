@@ -114,7 +114,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   private initNavigationState(): void {
     const state = history.state || {};
     this.cameFromLongPress = !!state['fromLongPress'];
-    this.selectedDateFromState = state['selectedDate'] || null;
+    this.selectedDateFromState = state['selectedDate'] ||
+      this.route.snapshot.queryParamMap.get('date') || null;
 
     const stateHabit = state['habit'];
     this.navigationOriginType = String(state['type'] || stateHabit?.type || 'habits');
@@ -212,7 +213,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
   private normalizeResponse(res: any, type: ActivityType): Habit {
     const timestamps = this.buttonLogic.calculateTimestamps(res);
-    const rawTags = Array.isArray(res.tags) && res.tags.length ? res.tags : (res.tag ? [res.tag] : []);
+    const rawTags = res.tag ? [res.tag] : (Array.isArray(res.tags) ? res.tags : []);
     const tags = rawTags.map((t: any) => this.normalizeTag(t));
 
     return {
@@ -419,10 +420,21 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     return String(first).trim();
   }
 
+  /** Notes are optional; placeholder dashes must not create an empty row. */
+  get activityNotes(): string {
+    const h = this.habit as any;
+    const candidates = [h?.notes, h?.description];
+    for (const value of candidates) {
+      if (value == null) continue;
+      const note = String(value).trim();
+      if (note && !/^[-–—]+$/.test(note)) return note;
+    }
+    return '';
+  }
+
   get speechMessage(): string {
     const h = this.habit as any;
-    const raw = h?.description ?? h?.notes ?? '';
-    const note = raw ? String(raw).trim() : '';
+    const note = this.activityNotes;
     if (!note) return '';
 
     const currentUserId = this.authService?.getUserId?.();
