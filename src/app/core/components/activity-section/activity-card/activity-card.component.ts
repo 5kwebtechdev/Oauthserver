@@ -2504,8 +2504,15 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   private getGlancePlannerColor(item: any): string {
-    const color = String(item?.colorCode ?? item?.color_code ?? '').trim();
-    return /^#[0-9a-f]{3,8}$/i.test(color) ? color : '#537C81';
+    // Timetable APIs can return the colour on the schedule itself or on an
+    // activity row within `activities`. Resolve both shapes so the coloured
+    // dot and left rail always match the colour picked while creating it.
+    const rows = [item, ...(Array.isArray(item?.activities) ? item.activities : [])];
+    for (const row of rows) {
+      const color = String(row?.colorCode ?? row?.color_code ?? row?.color ?? '').trim();
+      if (/^#[0-9a-f]{3,8}$/i.test(color)) return color;
+    }
+    return '#537C81';
   }
 
   private getGlanceLocalDate(value: any): Date | null {

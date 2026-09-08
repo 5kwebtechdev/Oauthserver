@@ -989,8 +989,15 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     private getPlannerColor(item: any): string {
-        const color = String(item?.colorCode ?? item?.color_code ?? '').trim();
-        return /^#[0-9a-f]{3,8}$/i.test(color) ? color : '#537C81';
+        // The calendar endpoint may attach the planner colour to the parent
+        // schedule or to one of its recurring activity rows. Use the chosen
+        // colour for the visual dot in either response shape.
+        const rows = [item, ...(Array.isArray(item?.activities) ? item.activities : [])];
+        for (const row of rows) {
+            const color = String(row?.colorCode ?? row?.color_code ?? row?.color ?? '').trim();
+            if (/^#[0-9a-f]{3,8}$/i.test(color)) return color;
+        }
+        return '#537C81';
     }
 
     private timestampForDateAndTime(date: Date, time: any): number {
