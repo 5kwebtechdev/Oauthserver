@@ -5,9 +5,10 @@
     <div class="week-streak-day" *ngFor="let day of days">
       <span class="week-streak-day-label">{{ day.label }}</span>
       <span class="week-streak-marker" [ngClass]="day.status" [attr.aria-label]="day.label + ' ' + day.status">
-        <span *ngIf="day.status === 'completed'" class="week-streak-fire-crop" aria-hidden="true">
+        <span *ngIf="day.status === 'completed' || day.status === 'missed'" class="week-streak-fire-crop" aria-hidden="true">
           <img
             class="week-streak-fire"
+            [class.week-streak-fire--missed]="day.status === 'missed'"
             src="assets/figma/child-home/week-streak-fire.webp"
             alt="">
         </span>

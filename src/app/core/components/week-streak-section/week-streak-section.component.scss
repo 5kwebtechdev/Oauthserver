@@ -65,7 +65,13 @@
     background: #ffffff;
   }
 
-  &.missed,
+  // A missed day remains visible as the same streak icon in Figma, but muted.
+  // It must not look like an untracked/future day.
+  &.missed {
+    border: 0;
+    background: #ffffff;
+  }
+
   &.pending,
   &.neutral {
     box-sizing: border-box;
@@ -92,6 +98,13 @@
   height: 140.08%;
   max-width: none;
   object-fit: fill;
+}
+
+// Figma's missed-streak treatment uses the original icon with luminosity
+// blending, rather than an empty outlined circle.
+.week-streak-fire--missed {
+  filter: grayscale(1) saturate(0.2) opacity(0.62);
+  mix-blend-mode: luminosity;
 }
 
 .week-streak-summary {
