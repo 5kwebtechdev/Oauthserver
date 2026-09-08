@@ -99,11 +99,11 @@ export class DashboardWebFooterComponent implements OnInit {
     {
       title: 'SHOP',
       links: [
-        { label: 'School Uniforms', routerLink: '/authed/school-store' },
-        { label: 'Textbook', routerLink: '/authed/school-store' },
-        { label: 'Stationery', routerLink: '/authed/school-store' },
-        { label: 'Entrance Exam Books', routerLink: '/authed/school-store' },
-        { label: 'General Books', routerLink: '/authed/school-store' },
+        { label: 'School Uniforms', href: '/shop/uniforms', sameTab: true },
+        { label: 'Textbook', href: '/shop/school-books', sameTab: true },
+        { label: 'Stationery', href: '/shop/stationery', sameTab: true },
+        { label: 'Entrance Exam Books', href: '/shop/books/competitive-exams', sameTab: true },
+        { label: 'General Books', href: '/shop/books/story-books', sameTab: true },
       ],
     },
     {

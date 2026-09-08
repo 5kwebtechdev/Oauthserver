@@ -56,7 +56,8 @@
                 *ngFor="let child of item.children"
                 class="web-header__dropdown-link"
                 role="menuitem"
-                [routerLink]="child.link"
+                [routerLink]="child.link.startsWith('/shop/') ? null : child.link"
+                [attr.href]="child.link.startsWith('/shop/') ? child.link : null"
                 [queryParams]="child.queryParams || null"
                 (click)="closeMenu()"
               >

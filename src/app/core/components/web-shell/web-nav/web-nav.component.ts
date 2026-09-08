@@ -18,47 +18,48 @@ interface WebNavItem {
 const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
   {
     label: 'Learning',
-    link: '/authed/content',
+    link: '/quiz',
     children: [
-      { label: 'Quiz', link: '/authed/content', queryParams: { type: 'QUIZ' } },
-      { label: 'Article', link: '/authed/content', queryParams: { type: 'ARTICLE' } },
-      { label: 'Master Class', link: '/authed/content', queryParams: { type: 'MASTERCLASS' } },
-      { label: 'Reels', link: '/authed/reels' },
+      { label: 'Quiz', link: '/quiz' },
+      { label: 'Puzzle', link: '/puzzle' },
+      { label: 'Article', link: '/article' },
+      { label: 'Master Class', link: '/master-class' },
+      { label: 'Reels', link: '/reels' },
     ],
   },
   {
     label: 'Quick Tools',
     link: '/authed/activity-page',
     children: [
-      { label: 'Journal', link: '/authed/journal-input' },
-      { label: 'Notes', link: '/authed/notes' },
-      { label: 'Calendar', link: '/authed/activity-calendar' },
+      { label: 'Journal', link: '/journal' },
+      { label: 'Notes', link: '/notes' },
+      { label: 'Calendar', link: '/productivity-calendar' },
     ],
   },
   {
     label: 'EduHub Listings',
     link: '/authed/education',
     children: [
-      { label: 'Tutor', link: '/authed/tutors' },
-      { label: 'Academy', link: '/authed/academies' },
-      { label: 'Stationery Shop', link: '/authed/education/shops', queryParams: { label: 'Stationery' } },
-      { label: 'Book Store', link: '/authed/education/shops', queryParams: { label: 'Book Store' } },
-      { label: 'Second-hand Book', link: '/authed/second-hand-books' },
-      { label: 'Sports Shop', link: '/authed/education/shops', queryParams: { label: 'Sports' } },
-      { label: 'Counselors', link: '/authed/counselors' },
-      { label: 'Events', link: '/authed/education/events' },
+      { label: 'Tutor', link: '/find-a-tutor' },
+      { label: 'Academy', link: '/academy' },
+      { label: 'Stationery Shop', link: '/stationery-shop', queryParams: { label: 'Stationery' } },
+      { label: 'Book Store', link: '/book-store', queryParams: { label: 'Book Store' } },
+      { label: 'Second-hand Book', link: '/second-hand-books' },
+      { label: 'Sports Shop', link: '/sports-shop', queryParams: { label: 'Sports' } },
+      { label: 'Counselors', link: '/counselor' },
+      { label: 'Events', link: '/event' },
       { label: 'Workshops', link: '/authed/education/workshops' },
     ],
   },
   {
     label: 'Shop',
-    link: '/authed/school-store',
+    link: '/shop',
     children: [
-      { label: 'School Uniforms', link: '/authed/school-store', queryParams: { category: 'School Uniforms' } },
-      { label: 'Textbook', link: '/authed/school-store', queryParams: { category: 'Textbook' } },
-      { label: 'Stationery', link: '/authed/school-store', queryParams: { category: 'Stationery' } },
-      { label: 'Entrance Exam Books', link: '/authed/school-store', queryParams: { category: 'Entrance Exam Books' } },
-      { label: 'General Books', link: '/authed/school-store', queryParams: { category: 'General Books' } },
+      { label: 'School Uniforms', link: '/shop/uniforms' },
+      { label: 'Textbook', link: '/shop/school-books' },
+      { label: 'Stationery', link: '/shop/stationery' },
+      { label: 'Entrance Exam Books', link: '/shop/books/competitive-exams' },
+      { label: 'General Books', link: '/shop/books/story-books' },
     ],
   },
   { label: 'Insights', link: '/authed/analytics' },
@@ -69,33 +70,33 @@ const PARENT_NAV_ITEMS: WebNavItem[] = [
     label: 'Parenting',
     link: '/authed/parent-learning',
     children: [
-      { label: 'Blogs', link: '/authed/content', queryParams: { type: 'ARTICLE' } },
-      { label: 'Quizzes', link: '/authed/content', queryParams: { type: 'QUIZ' } },
+      { label: 'Blogs', link: '/article' },
+      { label: 'Quizzes', link: '/quiz' },
     ],
   },
   {
     label: 'Shop',
-    link: '/authed/school-store',
+    link: '/shop',
     children: [
-      { label: 'School Uniforms', link: '/authed/school-store', queryParams: { category: 'School Uniforms' } },
-      { label: 'Textbook', link: '/authed/school-store', queryParams: { category: 'Textbook' } },
-      { label: 'Stationery', link: '/authed/school-store', queryParams: { category: 'Stationery' } },
-      { label: 'Entrance Exam Books', link: '/authed/school-store', queryParams: { category: 'Entrance Exam Books' } },
-      { label: 'General Books', link: '/authed/school-store', queryParams: { category: 'General Books' } },
+      { label: 'School Uniforms', link: '/shop/uniforms' },
+      { label: 'Textbook', link: '/shop/school-books' },
+      { label: 'Stationery', link: '/shop/stationery' },
+      { label: 'Entrance Exam Books', link: '/shop/books/competitive-exams' },
+      { label: 'General Books', link: '/shop/books/story-books' },
     ],
   },
   {
     label: 'EduHub Listings',
     link: '/authed/education',
     children: [
-      { label: 'Tutor', link: '/authed/tutors' },
-      { label: 'Academy', link: '/authed/academies' },
-      { label: 'Stationery Shop', link: '/authed/education/shops', queryParams: { label: 'Stationery' } },
-      { label: 'Book Store', link: '/authed/education/shops', queryParams: { label: 'Book Store' } },
-      { label: 'Second-hand Book', link: '/authed/second-hand-books' },
-      { label: 'Sports Shop', link: '/authed/education/shops', queryParams: { label: 'Sports' } },
-      { label: 'Counselors', link: '/authed/counselors' },
-      { label: 'Events', link: '/authed/education/events' },
+      { label: 'Tutor', link: '/find-a-tutor' },
+      { label: 'Academy', link: '/academy' },
+      { label: 'Stationery Shop', link: '/stationery-shop', queryParams: { label: 'Stationery' } },
+      { label: 'Book Store', link: '/book-store', queryParams: { label: 'Book Store' } },
+      { label: 'Second-hand Book', link: '/second-hand-books' },
+      { label: 'Sports Shop', link: '/sports-shop', queryParams: { label: 'Sports' } },
+      { label: 'Counselors', link: '/counselor' },
+      { label: 'Events', link: '/event' },
       { label: 'Workshops', link: '/authed/education/workshops' },
     ],
   },
@@ -154,6 +155,10 @@ export class WebNavComponent implements OnInit {
     }
 
     this.closeMenu();
+    if (item.link === '/shop') {
+      window.location.assign('/shop');
+      return;
+    }
     void this.router.navigateByUrl(item.link);
   }
 

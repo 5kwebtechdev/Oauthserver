@@ -5,6 +5,24 @@ import { authGuard, guestGuard } from './core/authe-guard/authe-guard';
 import { OurPoliciesComponent } from './core/components/user-profile/our-policies/our-policies.component';
 
 const routes: Routes = [
+  // Stable, readable logged-in URLs from the approved URL-structure sheet.
+  { path: 'quiz', loadComponent: () => import('./core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent), canActivate: [authGuard], data: { category: 'quizzes' } },
+  { path: 'puzzle', loadComponent: () => import('./core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent), canActivate: [authGuard], data: { category: 'puzzles' } },
+  { path: 'article', loadComponent: () => import('./core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent), canActivate: [authGuard], data: { category: 'articles' } },
+  { path: 'master-class', loadComponent: () => import('./core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent), canActivate: [authGuard], data: { category: 'masterclass' } },
+  { path: 'reels', redirectTo: 'authed/reels', pathMatch: 'full' },
+  { path: 'journal', redirectTo: 'authed/journal-output', pathMatch: 'full' },
+  { path: 'notes', redirectTo: 'authed/notes', pathMatch: 'full' },
+  { path: 'productivity-calendar', redirectTo: 'authed/activity-calendar', pathMatch: 'full' },
+  { path: 'find-a-tutor', redirectTo: 'authed/tutors', pathMatch: 'full' },
+  { path: 'academy', redirectTo: 'authed/academies', pathMatch: 'full' },
+  { path: 'sationery-shop', redirectTo: 'authed/education/shops', pathMatch: 'full' },
+  { path: 'stationery-shop', redirectTo: 'authed/education/shops', pathMatch: 'full' },
+  { path: 'book-store', redirectTo: 'authed/education/shops', pathMatch: 'full' },
+  { path: 'second-hand-books', redirectTo: 'authed/second-hand-books', pathMatch: 'full' },
+  { path: 'sports-shop', redirectTo: 'authed/education/shops', pathMatch: 'full' },
+  { path: 'counselor', redirectTo: 'authed/counselors', pathMatch: 'full' },
+  { path: 'event', redirectTo: 'authed/education/events', pathMatch: 'full' },
   // Stable public entry points used by the separate SuperMe marketing site.
   // Keep these redirects at the root so the website does not need to know the
   // Ionic app's internal `/home/*` route structure.

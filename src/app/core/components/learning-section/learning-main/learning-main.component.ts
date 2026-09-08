@@ -225,7 +225,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     // Parent users continue to use the family/child-management experience.
     const relationship = String(this.authService.getUserRelationship() || '').toUpperCase();
     this.childView = !this.parentView && (relationship === 'CHILD' || relationship === 'SELF');
-    const requestedCategory = this.normalizeCategory(this.route.snapshot.queryParamMap.get('tab'));
+    const requestedCategory = this.normalizeCategory(
+      this.route.snapshot.data['category'] || this.route.snapshot.queryParamMap.get('tab')
+    );
     if (requestedCategory) {
       this.selectedCategory = requestedCategory;
     } else if (this.parentView) {
