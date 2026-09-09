@@ -56,17 +56,17 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     {
       value: 'very-helpful',
       label: 'Very Helpful',
-      image: 'assets/figma/learning-details/very-helpful.webp'
+      image: 'assets/figma/learning-details/very-helpful-hd.png'
     },
     {
       value: 'helpful',
       label: 'Helpful',
-      image: 'assets/figma/learning-details/helpful.webp'
+      image: 'assets/figma/learning-details/helpful-hd.png'
     },
     {
       value: 'not-helpful',
       label: 'Not Helpful',
-      image: 'assets/figma/learning-details/not-helpful.webp'
+      image: 'assets/figma/learning-details/not-helpful-hd.png'
     }
   ];
 

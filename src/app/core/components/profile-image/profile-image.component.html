@@ -1,0 +1,6 @@
+<img *ngIf="showImage; else initialsFallback" [src]="src!" [alt]="alt || name || ''"
+  (error)="onImageError()">
+
+<ng-template #initialsFallback>
+  <span class="profile-image-initials" [attr.aria-label]="name || 'Profile image'">{{ initials }}</span>
+</ng-template>

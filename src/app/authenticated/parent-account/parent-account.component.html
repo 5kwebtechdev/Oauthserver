@@ -67,10 +67,9 @@
             [class.switcher-child--selected-single]="isSelectedChild(child) && children.length === 1"
             [class.switcher-child--selected-multiple]="isSelectedChild(child) && children.length > 1"
             [attr.aria-current]="isSelectedChild(child) ? 'true' : null"
-            [attr.aria-expanded]="isSelectedChild(child) ? showSwitchPopup : null"
             (touchstart)="onSwitcherTouchStart($event)"
             (touchend)="onSwitcherChildTouchEnd(child, $event)"
-            (click)="onSwitcherChildClick(child, $event)">
+            (click)="onSwitcherChildClick(child)">
             <img *ngIf="isSelectedChild(child)" class="switcher-child__shape"
               src="assets/figma/parent-home/selected-child-shape.svg"
               alt="" aria-hidden="true">
@@ -127,21 +126,6 @@
           </button>
         </div>
 
-        <div *ngIf="showSwitchPopup" class="switch-popup-backdrop" (click)="closeSwitchPopup()">
-          <div class="switch-popup" role="dialog" aria-label="Choose child"
-            (click)="$event.stopPropagation()">
-            <button *ngFor="let child of children" type="button" class="child-row"
-              [class.child-row--selected]="isSelectedChild(child)"
-              (touchend)="onPopupChildTouchEnd(child, $event)" (click)="selectChild(child)">
-              <img [src]="child.avatarUrl" [alt]="child.name + ' avatar'">
-              <span>
-                <strong>{{ child.name }}</strong>
-                <small>{{ child.relationship || 'Child' }}</small>
-              </span>
-              <b *ngIf="isSelectedChild(child)" aria-label="Selected">✓</b>
-            </button>
-          </div>
-        </div>
       </section>
 
       <section class="weekly-overview" aria-labelledby="weekly-overview-title">

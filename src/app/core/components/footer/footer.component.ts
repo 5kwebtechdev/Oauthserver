@@ -26,6 +26,7 @@ import { Capacitor } from '@capacitor/core';
 export class FooterComponent implements OnInit, OnDestroy {
   readonly isNativePlatform = Capacitor.isNativePlatform();
   @Input() mode: 'default' | 'parenting' = 'default';
+  @Input() showOnMobileWeb = false;
   private resizeListener: any;
   private routerSub: Subscription | undefined;
   currentUrl: string = '';

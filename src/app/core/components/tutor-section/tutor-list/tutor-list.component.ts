@@ -11,11 +11,12 @@ import {
 import { TutorLikeService } from '../../../services/tutor-like.service';
 import { AuthService } from '../../../services/auth.service';
 import { Subscription } from 'rxjs';
+import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 
 @Component({
   selector: 'tutor-list',
   standalone: true,
-  imports: [CommonModule, SupermeButtonComponent, AdBannerComponent],
+  imports: [CommonModule, SupermeButtonComponent, AdBannerComponent, ProfileImageComponent],
   templateUrl: './tutor-list.component.html',
   styleUrls: ['./tutor-list.component.scss']
 })

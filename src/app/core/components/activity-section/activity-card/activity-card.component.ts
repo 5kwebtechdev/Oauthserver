@@ -411,7 +411,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   /**
    * Open the start-confirmation popup for Let's Go
    */
-  openStartPopup() {
+  openStartPopup(event?: Event) {
+    // Expanded calendar cards use swipe and long-press gestures. Handling the
+    // CTA directly prevents those parent gestures from swallowing the action.
+    event?.stopPropagation();
+
+    if (!this.isLetsGoEnabled()) return;
+
     // Configure popup content (image, heading, subtitle, CTAs)
     const primary: SupermePopupCTA = {
       text: 'Start Now',
@@ -2216,16 +2222,18 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         // IDs from /calendar/user-calendar and /events/all belong to separate
         // domains and can collide. Classify each calendar record from its own
         // semantic fields instead of matching bare numeric IDs across APIs.
-        const isPersonalCalendarEvent = (item: any) => !this.isGlancePlannerSchedule(item);
-        const personalCalendarEvents = calendarEvents.filter(isPersonalCalendarEvent);
-        this.glancePlannerRaw = calendarEvents.filter((item: any) => !isPersonalCalendarEvent(item) && this.isGlancePlannerSchedule(item));
+        // /calendar/user-calendar is the timetable/planner source. Never feed
+        // records from it into Upcoming Events: older backend responses can
+        // attach event-like fields to timetable rows and make them look like
+        // personal events (for example a timetable activity named "Gym").
+        this.glancePlannerRaw = calendarEvents.filter((item: any) => this.isGlancePlannerSchedule(item));
         // Some backend responses also expose timetable rows through /events/all.
         // Exclude anything that matches a planner schedule before merging so a
         // timetable entry can never leak into the Upcoming Events rail.
         const personalEvents = (events || []).filter(event =>
           !this.glancePlannerRaw.some(planner => this.matchesGlancePlannerRecord(event, planner))
         );
-        this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents(personalCalendarEvents, personalEvents);
+        this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents([], personalEvents);
         this.finishGlancePlannerLoad();
       },
       error: () => {
@@ -2422,8 +2430,20 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   private isGlancePersonalEventRecord(item: any): boolean {
     const eventDate = item?.eventDate ?? item?.event_date;
     const eventType = item?.eventType ?? item?.event_type;
-    return Boolean(String(eventDate || '').trim())
+    // A genuine /events event uses `name` plus the event-only fields below.
+    // Calendar timetables use `title` and may be mirrored by older backends
+    // with eventDate/eventType added, so accepting title-only records leaks
+    // planner entries into the Home event rail.
+    const eventName = item?.name;
+    const hasEventPrivacyFlag = typeof item?.isPrivate === 'boolean'
+      || typeof item?.is_private === 'boolean';
+    const hasAllDayFlag = typeof item?.allDay === 'boolean'
+      || typeof item?.all_day === 'boolean';
+    return Boolean(String(eventName || '').trim())
+      && Boolean(String(eventDate || '').trim())
       && Boolean(String(eventType || '').trim())
+      && hasEventPrivacyFlag
+      && hasAllDayFlag
       && !this.isGlancePlannerSchedule(item);
   }
 

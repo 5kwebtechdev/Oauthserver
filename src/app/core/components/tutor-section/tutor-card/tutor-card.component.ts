@@ -5,10 +5,14 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { TutorService } from '../../../services/tutor.service';
 import { Tutor, TutorListItem } from '../../../models/tutor.model';
-import { Subscription } from 'rxjs';
+import { distinctUntilChanged, skip, Subscription } from 'rxjs';
 import { TutorLikeService } from '../../../services/tutor-like.service';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../../environments/environment';
+import { ProfileImageComponent } from '../../profile-image/profile-image.component';
+import { EduHubEventsService } from '../../../services/eduhub-events.service';
+import { EduHubCityService } from '../../../services/eduhub-city.service';
+import { EduHubCitySelectorComponent } from '../../education-section/eduhub-city-selector/eduhub-city-selector.component';
 
 type CategoryKey =
   | 'tutors'
@@ -65,7 +69,7 @@ interface EduHubPreview {
   selector: 'tutor-card',
   templateUrl: './tutor-card.component.html',
   styleUrls: ['./tutor-card.component.scss'],
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, ProfileImageComponent, EduHubCitySelectorComponent],
   standalone: true
 })
 export class TutorCardComponent implements OnInit, OnDestroy {
@@ -109,9 +113,9 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   private readonly externalCategorySources: Partial<Record<CategoryKey, { endpoint: 'events' | 'shops' | 'tutors'; entityType: string }>> = {
     workshops: { endpoint: 'events', entityType: 'Workshop' },
     events: { endpoint: 'events', entityType: 'Events' },
-    'book-stores': { endpoint: 'shops', entityType: 'Bookstore' },
+    'book-stores': { endpoint: 'shops', entityType: 'bookstore' },
     stationery: { endpoint: 'shops', entityType: 'stationary' },
-    'sports-shops': { endpoint: 'shops', entityType: 'sports shop' },
+    'sports-shops': { endpoint: 'shops', entityType: 'sports' },
     counselors: { endpoint: 'tutors', entityType: 'COUNSELOR' }
   };
   private readonly externalPreviews = new Map<CategoryKey, EduHubPreview[]>();
@@ -126,12 +130,17 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     private tutorService: TutorService,
     private likeService: TutorLikeService,
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
+    private readonly eduhubEventsService: EduHubEventsService,
+    private readonly cityService: EduHubCityService
   ) { }
 
   ngOnInit(): void {
     this.loadTutors();
-    this.preloadExternalCategories();
+    this.subscriptions.add(this.cityService.city$.pipe(
+      distinctUntilChanged(),
+      skip(1)
+    ).subscribe(() => this.onEduHubCityChanged()));
   }
 
   ngOnDestroy(): void {
@@ -146,7 +155,11 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   /** The Home preview must never render more than the first four tutors. */
   get visibleTutors(): TutorListItem[] {
-    return this.tutors.slice(0, this.maxTutors);
+    return this.filterBySelectedCity(this.tutors).slice(0, this.maxTutors);
+  }
+
+  get visibleAcademies(): TutorListItem[] {
+    return this.filterBySelectedCity(this.academyTutors).slice(0, this.maxTutors);
   }
 
   get hasMoreTutors(): boolean {
@@ -160,7 +173,9 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   }
 
   get visibleExternalPreviews(): EduHubPreview[] {
-    return (this.externalPreviews.get(this.selectedCategoryKey) || []).slice(0, this.maxTutors);
+    return (this.externalPreviews.get(this.selectedCategoryKey) || [])
+      .filter(item => this.matchesSelectedCity(item.location))
+      .slice(0, this.maxTutors);
   }
 
   get isExternalCategoryLoading(): boolean {
@@ -177,7 +192,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   get showViewAll(): boolean {
     if (this.isSelectedCategoryLoading) return false;
     if (this.selectedCategoryKey === 'tutors') return this.visibleTutors.length > 0;
-    if (this.selectedCategoryKey === 'academies') return this.academyTutors.length > 0;
+    if (this.selectedCategoryKey === 'academies') return this.visibleAcademies.length > 0;
     if (this.isExternalCategory(this.selectedCategoryKey)) return this.visibleExternalPreviews.length > 0;
     return true;
   }
@@ -188,7 +203,12 @@ export class TutorCardComponent implements OnInit, OnDestroy {
    * repeated taps never trigger duplicate API calls.
    */
   selectCategory(category: EduHubCategory): void {
-    if (this.selectedCategoryKey === category.key) return;
+    if (this.selectedCategoryKey === category.key) {
+      if (this.isExternalCategory(category.key) && !this.externalPreviews.has(category.key)) {
+        this.loadExternalCategory(category.key);
+      }
+      return;
+    }
 
     // Second-hand books keep their dedicated flow; counselors filter inline.
     if (category.key === 'second-hand-books') {
@@ -204,11 +224,6 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       this.loadAcademies();
     }
     if (this.isExternalCategory(category.key)) this.loadExternalCategory(category.key);
-  }
-
-  private preloadExternalCategories(): void {
-    (Object.keys(this.externalCategorySources) as CategoryKey[])
-      .forEach(categoryKey => this.loadExternalCategory(categoryKey));
   }
 
   private isExternalCategory(categoryKey: CategoryKey): boolean {
@@ -245,6 +260,31 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       }));
       return;
     }
+    // Events and workshops must use the paged EduHub events service. This is
+    // also the source used by their full listing pages, so Home cannot drift
+    // to a different endpoint or silently miss the `content` payload.
+    if (categoryKey === 'workshops' || categoryKey === 'events') {
+      const entityType = categoryKey === 'workshops' ? 'Workshop' : 'Events';
+      this.subscriptions.add(this.eduhubEventsService.getPage(entityType, 0, 20, this.cityService.city).subscribe({
+        next: response => {
+          const fallbackImage = this.categories.find(category => category.key === categoryKey)?.image || '';
+          const previews = (response?.content || [])
+            .filter(item => this.isActiveDirectoryListing(item as EduHubDirectoryItem))
+            .map(item => this.mapExternalPreview(item as EduHubDirectoryItem, fallbackImage));
+          this.externalPreviews.set(categoryKey, previews);
+          this.externalCounts.set(categoryKey, response?.totalElements ?? previews.length);
+          this.externalLoading.delete(categoryKey);
+        },
+        error: () => {
+          // Do not cache failed requests as successful empty responses; a
+          // later tap should be able to retry after auth/network recovery.
+          this.externalPreviews.delete(categoryKey);
+          this.externalCounts.set(categoryKey, 0);
+          this.externalLoading.delete(categoryKey);
+        }
+      }));
+      return;
+    }
     const baseUrl = this.getUserFacingApiBaseUrl();
     const endpointUrl = source.endpoint === 'tutors'
       ? `${baseUrl}/tutors`
@@ -252,6 +292,11 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     let params = new HttpParams().set('entityType', source.entityType);
     if (source.endpoint !== 'tutors') {
       params = params.set('page', '0').set('size', '20');
+      const userId = this.authService.getUserId();
+      if (userId != null) params = params.set('forUserId', String(userId));
+      if (source.endpoint === 'shops' && this.cityService.city.trim()) {
+        params = params.set('city', this.cityService.city.trim());
+      }
     }
     this.subscriptions.add(
       this.http.get<any>(endpointUrl, {
@@ -262,14 +307,17 @@ export class TutorCardComponent implements OnInit, OnDestroy {
           const rawItems = this.extractDirectoryItems(response);
           const fallbackImage = this.categories.find(category => category.key === categoryKey)?.image || '';
           const previews = rawItems
-            .filter(item => this.isActiveDirectoryListing(item))
+            // The shops API already applies its entity/status filtering. Keep
+            // returned shop records visible even when legacy responses omit
+            // the optional `isActive` flag.
+            .filter(item => source.endpoint === 'shops' || this.isActiveDirectoryListing(item))
             .map(item => this.mapExternalPreview(item, fallbackImage));
           this.externalPreviews.set(categoryKey, previews);
           this.externalCounts.set(categoryKey, Number(response?.totalElements ?? response?.data?.totalElements ?? previews.length));
           this.externalLoading.delete(categoryKey);
         },
         error: () => {
-          this.externalPreviews.set(categoryKey, []);
+          this.externalPreviews.delete(categoryKey);
           this.externalCounts.set(categoryKey, 0);
           this.externalLoading.delete(categoryKey);
         }
@@ -282,6 +330,32 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       ? response
       : (response?.content ?? response?.items ?? response?.tutors ?? response?.data?.content ?? response?.data?.items ?? response?.data?.tutors ?? response?.data ?? []);
     return Array.isArray(items) ? items : [];
+  }
+
+  private onEduHubCityChanged(): void {
+    this.externalPreviews.clear();
+    this.externalCounts.clear();
+    this.externalLoading.clear();
+    if (this.isExternalCategory(this.selectedCategoryKey)) {
+      this.loadExternalCategory(this.selectedCategoryKey);
+    }
+  }
+
+  private filterBySelectedCity(items: TutorListItem[]): TutorListItem[] {
+    return items.filter(item => {
+      const cached = this.tutorService.getTutorFromCache(item.id) as any;
+      return this.matchesSelectedCity([
+        item.location,
+        cached?.city,
+        cached?.location,
+        cached?.state
+      ].filter(Boolean).join(' '));
+    });
+  }
+
+  private matchesSelectedCity(location: unknown): boolean {
+    const city = this.cityService.city.trim().toLocaleLowerCase();
+    return !city || String(location ?? '').toLocaleLowerCase().includes(city);
   }
 
   /**
@@ -301,15 +375,11 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     );
   }
 
-  /**
-   * Use the local backend only for an Angular browser dev server. Capacitor
-   * builds continue using the configured secure API URL.
-   */
   private getUserFacingApiBaseUrl(): string {
-    const isBrowserLocalDev = typeof window !== 'undefined'
-      && ['localhost', '127.0.0.1'].includes(window.location.hostname)
-      && window.location.port === '4200';
-    return isBrowserLocalDev ? 'http://localhost:8080/v1' : environment.apiUrl;
+    // Keep Home previews on the same configured API as the full EduHub pages.
+    // Rewriting localhost:4200 to a separate backend caused valid production
+    // shop results to appear as an empty category in local frontend testing.
+    return environment.apiUrl;
   }
 
   private mapExternalPreview(item: EduHubDirectoryItem, fallbackImage: string): EduHubPreview {
@@ -361,15 +431,21 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   private academyHeaders(): HttpHeaders {
     const token = this.authService.getToken();
-    const authValue = token
-      ? (token.startsWith('Bearer ') ? token : `Bearer ${token}`)
-      : (environment.apiAuthToken?.startsWith('Bearer ') ? environment.apiAuthToken : `Bearer ${environment.apiAuthToken ?? ''}`);
-
-    return new HttpHeaders({
-      'Authorization': authValue,
+    const fallbackToken = String(environment.apiAuthToken ?? '').trim();
+    const selectedToken = token || fallbackToken;
+    let headers = new HttpHeaders({
       'Accept': 'application/json',
       'x-skip-loading': '1'
     });
+
+    if (selectedToken) {
+      headers = headers.set(
+        'Authorization',
+        selectedToken.startsWith('Bearer ') ? selectedToken : `Bearer ${selectedToken}`
+      );
+    }
+
+    return headers;
   }
 
   private loadAcademies(): void {
@@ -537,6 +613,14 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     return !!(tutor as TutorListItem & { likePending?: boolean }).likePending;
   }
 
+  getTimeLabel(tutor: TutorListItem): string {
+    const start = this.formatCardTime(tutor.startTime);
+    const end = this.formatCardTime(tutor.endTime);
+
+    if (start && end) return `${start} - ${end}`;
+    return start || end;
+  }
+
   toggleLike(event: Event, tutor: TutorListItem): void {
     event.stopPropagation();
     if (this.isLikePending(tutor)) return;
@@ -553,6 +637,22 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     const image = event.target as HTMLImageElement | null;
     if (!image || image.src.endsWith(fallbackImage)) return;
     image.src = fallbackImage;
+  }
+
+  private formatCardTime(value: unknown): string {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+
+    const timeMatch = raw.match(/(?:T|\b)(\d{1,2}):(\d{2})(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$/);
+    if (!timeMatch) return '';
+
+    const hours = Number(timeMatch[1]);
+    const minutes = Number(timeMatch[2]);
+    if (!Number.isInteger(hours) || !Number.isInteger(minutes) || hours > 23 || minutes > 59) return '';
+
+    const suffix = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${String(minutes).padStart(2, '0')} ${suffix}`;
   }
 
   trackCategory(_: number, category: EduHubCategory): CategoryKey {

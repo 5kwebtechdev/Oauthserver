@@ -9,6 +9,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { FooterComponent } from '../footer/footer.component';
 import { SupermeDropdownComponent } from '../superme-dropdown/superme-dropdown.component';
+import { ProfileImageComponent } from '../profile-image/profile-image.component';
 import { BookListing, BookListingCondition, BookListingCreateRequest, BookListingPage, BookListingType, BookListingsService } from '../../services/book-listings.service';
 import { AuthService } from '../../services/auth.service';
 import { INDIA_STATES, INDIA_STATE_OPTIONS } from '../../constants/india-location-options';
@@ -106,7 +107,7 @@ interface SellerConditionOption {
 @Component({
   selector: 'app-second-hand-books',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, FooterComponent, SupermeDropdownComponent],
+  imports: [CommonModule, FormsModule, IonicModule, FooterComponent, SupermeDropdownComponent, ProfileImageComponent],
   templateUrl: './second-hand-books.component.html',
   styleUrls: ['./second-hand-books.component.scss']
 })

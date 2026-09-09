@@ -98,6 +98,18 @@
   }
 }
 
+.eduhub-home-city {
+  display: flex;
+  width: max-content;
+  max-width: 180px;
+  margin-top: 7px;
+  padding: 5px 10px;
+  border: 1px solid rgba(20, 50, 168, 0.45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  color: #1432a8;
+}
+
 .eduhub-categories,
 .eduhub-tutors {
   display: flex;

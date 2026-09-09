@@ -1202,13 +1202,30 @@ $theme-colors-dark: (
 }
 
 .picker-body {
-  display: flex;
+  display: grid;
+  grid-template-rows: auto auto;
   min-width: 0;
   flex: 1;
   margin-inline: 32px;
-  flex-direction: column;
   align-items: center;
+  justify-items: center;
+  row-gap: 2px;
   text-align: center;
+}
+
+.picker-body > .picker-title,
+.picker-body > .superme-input-group {
+  position: static !important;
+  width: 100%;
+  min-width: 0;
+}
+
+.picker-body > .picker-title {
+  grid-row: 1;
+}
+
+.picker-body > .superme-input-group {
+  grid-row: 2;
 }
 
 .picker-body .superme-input-group,
@@ -1259,6 +1276,34 @@ $theme-colors-dark: (
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+// Planner uses its own card artwork, but keeps the same information hierarchy:
+// field label first, selected date/time directly below it.
+.planner-picker-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+}
+
+.planner-picker-copy > strong,
+.planner-picker-copy > superme-timepicker,
+.planner-picker-copy > superme-datepicker {
+  position: static !important;
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.planner-picker-copy ::ng-deep .superme-timepicker-wrapper input,
+.planner-picker-copy ::ng-deep .datepicker-wrapper input {
+  width: 100% !important;
+  padding: 0 !important;
+  text-align: left !important;
 }
 
 .picker-card ::ng-deep .superme-timepicker-wrapper input::placeholder,

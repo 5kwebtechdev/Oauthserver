@@ -145,11 +145,6 @@ export class DashboardWebFooterComponent implements OnInit {
       title: 'Secure & Safe environment',
       icon: `${this.assetRoot}/trust-secure.svg`,
     },
-    {
-      title: 'No Ads',
-      subtitle: 'For Kids',
-      icon: `${this.assetRoot}/trust-no-ads.svg`,
-    },
   ];
 
   readonly legalLinks: FooterLink[] = [

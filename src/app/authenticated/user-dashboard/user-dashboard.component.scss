@@ -1366,6 +1366,10 @@ ion-content {
   -webkit-backdrop-filter: blur(4px);
 }
 
+.header-stats-label {
+  display: none;
+}
+
 .header-stat {
   width: 44px;
   min-width: 44px;
@@ -1544,6 +1548,20 @@ footer {
 }
 
 @media (min-width: 768px) {
+  .home-hero-message {
+    left: auto;
+    right: clamp(128px, 11vw, 196px);
+    width: 259px;
+  }
+
+  .digital-pet {
+    right: 8px;
+  }
+
+  .digital-pet--panda {
+    right: 8px;
+  }
+
   .user-profile-section {
     padding-top: max(24px, env(safe-area-inset-top));
   }
@@ -1670,6 +1688,64 @@ footer {
   .dashboard-content {
     padding-top: 32px;
     padding-bottom: 48px;
+  }
+
+  // On wider screens, give the open side of the artwork a clear purpose.
+  // The message stays visually attached to the pet while the live values form
+  // their own responsive glass panel instead of floating at the lower edge.
+  .profile-bottom-group {
+    min-height: clamp(178px, 14vw, 220px);
+    height: clamp(178px, 14vw, 220px);
+  }
+
+  .header-stats-row {
+    left: clamp(24px, 4vw, 56px);
+    bottom: auto;
+    top: 50%;
+    display: grid;
+    grid-template-columns: repeat(5, auto);
+    align-items: center;
+    gap: clamp(12px, 1.7vw, 24px);
+    min-width: min(32%, 340px);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transform: translateY(-50%);
+  }
+
+  .header-stats-label {
+    display: block;
+    grid-column: 1 / -1;
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 2px rgba(40, 37, 39, 0.28);
+    opacity: 0.92;
+  }
+
+  .header-stat-value {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(40, 37, 39, 0.28);
+  }
+
+  .home-hero-message {
+    top: 18px;
+    right: clamp(146px, 13vw, 220px);
+  }
+
+  .digital-pet--panda {
+    right: clamp(8px, 1.5vw, 22px);
+
+    .digital-pet__panda-image {
+      width: clamp(138px, 12vw, 176px);
+      height: clamp(150px, 13vw, 190px);
+    }
   }
 
   // The "full-bleed" negative-margin trick (.home-glance-card, .ad-full-bleed)

@@ -76,7 +76,8 @@ export class EduHubEventsService {
   getPage(
     entityType: EduHubEventEntityType,
     page: number,
-    size = 20
+    size = 20,
+    city?: string
   ): Observable<EduHubEventPage> {
     let params = new HttpParams()
       .set('entityType', entityType)
@@ -87,6 +88,8 @@ export class EduHubEventsService {
     if (userId != null) {
       params = params.set('forUserId', String(userId));
     }
+    const selectedCity = String(city ?? '').trim();
+    if (selectedCity) params = params.set('city', selectedCity);
 
     return this.http.get<EduHubEventPage>(`${environment.apiUrl}/eduhub/events`, {
       headers: this.getHeaders(),

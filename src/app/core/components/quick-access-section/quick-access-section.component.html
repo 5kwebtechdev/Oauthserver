@@ -19,7 +19,8 @@
       <img src="assets/figma/child-home/quick-notes.webp" alt="" class="qa-shortcut-icon">
       <span class="qa-shortcut-label">Notes</span>
     </a>
-    <a class="qa-shortcut-card qa-shortcut-calendar" [routerLink]="['/authed/activity-calendar']">
+    <a class="qa-shortcut-card qa-shortcut-calendar" [routerLink]="['/authed/activity-page']"
+      [queryParams]="{ tab: 'all' }">
       <img src="assets/figma/child-home/quick-calendar.webp" alt="" class="qa-shortcut-icon">
       <span class="qa-shortcut-label">Calendar</span>
     </a>

@@ -574,6 +574,9 @@ h4 {
 
 .footer-cta {
   gap: 12px;
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
 }
 
 .habit-footer-container {

@@ -559,7 +559,9 @@
             <!-- Show only while the current time is inside the scheduled activity window. -->
             <ng-container *ngIf="getStatus() !== 'ongoing' && isCurrentDateView && isLetsGoVisible()">
               <superme-button
-                [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'" small text="Let`s Go" (click)="openStartPopup()"
+                [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'" small text="Let`s Go"
+                (pointerup)="openStartPopup($event)" (keydown.enter)="openStartPopup($event)"
+                (keydown.space)="$event.preventDefault(); openStartPopup($event)"
                 [disabled]="!isLetsGoEnabled()"></superme-button>
             </ng-container>
             <ng-container *ngIf="getStatus() === 'ongoing'">

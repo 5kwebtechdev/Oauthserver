@@ -79,6 +79,20 @@
 
                         <!-- Icon -->
                         <div class="item-icon-wrap">
+                            <ng-container *ngIf="item.count < 0; else earnedItemIcon">
+                                <span class="item-icon item-icon--spend" aria-hidden="true">
+                                    <img src="assets/Navigation/figma-logged-in/coin.png" alt="">
+                                </span>
+                                <span class="spend-badge" aria-hidden="true">−</span>
+                            </ng-container>
+                            <ng-template #earnedItemIcon>
+                            <ng-container *ngIf="item.type === 'DAILY_LOGIN_BONUS'; else regularItemIcon">
+                                <img
+                                    src="assets/Navigation/figma-logged-in/coin.png"
+                                    alt="SuperMe coin"
+                                    class="item-icon item-icon--coin">
+                            </ng-container>
+                            <ng-template #regularItemIcon>
                             <ng-container *ngIf="item.thumbnailUrl; else typeIcon">
                                 <img
                                     [src]="item.thumbnailUrl"
@@ -91,6 +105,8 @@
                                      [style.background]="getTypeBg(item.type)">
                                     <span class="type-letter">{{ getTypeLetter(item.type) }}</span>
                                 </div>
+                            </ng-template>
+                            </ng-template>
                             </ng-template>
                             <!-- Bonus star badge -->
                             <span *ngIf="item.type === 'DAILY_LOGIN_BONUS'" class="bonus-badge">★</span>

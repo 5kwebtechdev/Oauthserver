@@ -18,13 +18,13 @@ interface WebNavItem {
 const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
   {
     label: 'Learning',
-    link: '/quiz',
+    link: '/authed/content',
     children: [
-      { label: 'Quiz', link: '/quiz' },
-      { label: 'Puzzle', link: '/puzzle' },
-      { label: 'Article', link: '/article' },
-      { label: 'Master Class', link: '/master-class' },
-      { label: 'Reels', link: '/reels' },
+      { label: 'Quiz', link: '/authed/content', queryParams: { tab: 'quizzes' } },
+      { label: 'Puzzle', link: '/authed/content', queryParams: { tab: 'puzzles' } },
+      { label: 'Article', link: '/authed/content', queryParams: { tab: 'articles' } },
+      { label: 'Master Class', link: '/authed/content', queryParams: { tab: 'masterclass' } },
+      { label: 'Reels', link: '/authed/reels' },
     ],
   },
   {
@@ -53,13 +53,13 @@ const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
   },
   {
     label: 'Shop',
-    link: '/shop',
+    link: '/authed/school-store',
     children: [
-      { label: 'School Uniforms', link: '/shop/uniforms' },
-      { label: 'Textbook', link: '/shop/school-books' },
-      { label: 'Stationery', link: '/shop/stationery' },
-      { label: 'Entrance Exam Books', link: '/shop/books/competitive-exams' },
-      { label: 'General Books', link: '/shop/books/story-books' },
+      { label: 'School Uniforms', link: '/authed/school-store', queryParams: { category: 'School Uniforms' } },
+      { label: 'Textbook', link: '/authed/school-store', queryParams: { category: 'Textbook' } },
+      { label: 'Stationery', link: '/authed/school-store', queryParams: { category: 'Stationery' } },
+      { label: 'Entrance Exam Books', link: '/authed/school-store', queryParams: { category: 'Entrance Exam Books' } },
+      { label: 'General Books', link: '/authed/school-store', queryParams: { category: 'General Books' } },
     ],
   },
   { label: 'Insights', link: '/authed/analytics' },
@@ -70,19 +70,19 @@ const PARENT_NAV_ITEMS: WebNavItem[] = [
     label: 'Parenting',
     link: '/authed/parent-learning',
     children: [
-      { label: 'Blogs', link: '/article' },
-      { label: 'Quizzes', link: '/quiz' },
+      { label: 'Blogs', link: '/authed/parent-learning', queryParams: { category: 'blogs' } },
+      { label: 'Quizzes', link: '/authed/parent-learning', queryParams: { category: 'quizzes' } },
     ],
   },
   {
     label: 'Shop',
-    link: '/shop',
+    link: '/authed/school-store',
     children: [
-      { label: 'School Uniforms', link: '/shop/uniforms' },
-      { label: 'Textbook', link: '/shop/school-books' },
-      { label: 'Stationery', link: '/shop/stationery' },
-      { label: 'Entrance Exam Books', link: '/shop/books/competitive-exams' },
-      { label: 'General Books', link: '/shop/books/story-books' },
+      { label: 'School Uniforms', link: '/authed/school-store', queryParams: { category: 'School Uniforms' } },
+      { label: 'Textbook', link: '/authed/school-store', queryParams: { category: 'Textbook' } },
+      { label: 'Stationery', link: '/authed/school-store', queryParams: { category: 'Stationery' } },
+      { label: 'Entrance Exam Books', link: '/authed/school-store', queryParams: { category: 'Entrance Exam Books' } },
+      { label: 'General Books', link: '/authed/school-store', queryParams: { category: 'General Books' } },
     ],
   },
   {
@@ -166,10 +166,6 @@ export class WebNavComponent implements OnInit {
     }
 
     this.closeMenu();
-    if (item.link === '/shop') {
-      window.location.assign('/shop');
-      return;
-    }
     void this.router.navigateByUrl(item.link);
   }
 

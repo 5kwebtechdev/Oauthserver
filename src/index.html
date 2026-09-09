@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Superme</title>
+  <title>SuperMeApp</title>
 
   <base href="/" />
 
@@ -12,12 +12,15 @@
     content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="msapplication-tap-highlight" content="no" />
+  <meta name="application-name" content="SuperMeApp" />
+  <meta name="apple-mobile-web-app-title" content="SuperMeApp" />
 
   <!-- DEV ONLY: allow connect to local devtools probes (eg. Chrome DevTools app-specific probes). Remove or tighten before production. -->
   <!-- Added explicit localhost:4200 and websocket hosts so Chrome DevTools probes (/.well-known/...) are allowed while developing. -->
   <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:; connect-src 'self' http://localhost:4200 http://localhost:51735 http://localhost:* ws://localhost:4200 ws://localhost:51735 ws://localhost:* http://127.0.0.1:* https://localhost:* https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:"> -->
 
-  <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/icon/favicon.png" />
 
   <script>
     // Mark the native shell before first paint. Its OS launch screen stays

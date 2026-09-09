@@ -1,5 +1,5 @@
 <nav
-  *ngIf="isNativePlatform"
+  *ngIf="isNativePlatform || showOnMobileWeb"
   class="footer-main"
   aria-label="Primary navigation"
   [class.keyboard-hidden]="isKeyboardOpen"

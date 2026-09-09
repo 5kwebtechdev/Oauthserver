@@ -226,8 +226,7 @@
             <article class="listing-card" *ngFor="let listing of visibleMyListings; trackBy: trackByListing">
               <div class="listing-card__surface">
                 <div class="listing-card__image" [class.listing-card__image--empty]="!listingImages(listing).length">
-                  <img *ngIf="listingImages(listing)[0] as image" [src]="image" [alt]="listing.title" (error)="markImageFailed(image)">
-                  <ion-icon *ngIf="!listingImages(listing).length" name="book-outline" aria-hidden="true"></ion-icon>
+                  <app-profile-image [src]="listingImages(listing)[0]" [name]="listing.title" [alt]="listing.title"></app-profile-image>
                 </div>
 
                 <div class="listing-card__body">
@@ -393,7 +392,7 @@
             <section class="books-choice" aria-live="polite">
               <header class="books-choice__heading"><h2>Books near you</h2><p>Nearby books are sorted by distance when location is available.</p></header>
               <p *ngIf="listingsLoading">Loading listings…</p><p *ngIf="listingsError">{{ listingsError }}</p>
-              <button type="button" class="books-action-card" *ngFor="let listing of listings; trackBy: trackByListing" (click)="openListingDetails(listing, 'listings')"><span class="books-action-card__art"><img *ngIf="listingImages(listing)[0] as image" [src]="image" [alt]="listing.title" (error)="markImageFailed(image)"></span><span class="books-action-card__content"><strong>{{ listing.title }}</strong><span>{{ isListingFree(listing) ? 'FREE' : '₹' + listing.sellingPrice }} <span *ngIf="listing.distanceKm !== null">• {{ listing.distanceKm }} km away</span></span></span><span class="books-action-card__arrow" aria-hidden="true"><ion-icon name="arrow-forward"></ion-icon></span></button>
+              <button type="button" class="books-action-card" *ngFor="let listing of listings; trackBy: trackByListing" (click)="openListingDetails(listing, 'listings')"><span class="books-action-card__art"><app-profile-image [src]="listingImages(listing)[0]" [name]="listing.title" [alt]="listing.title"></app-profile-image></span><span class="books-action-card__content"><strong>{{ listing.title }}</strong><span>{{ isListingFree(listing) ? 'FREE' : '₹' + listing.sellingPrice }} <span *ngIf="listing.distanceKm !== null">• {{ listing.distanceKm }} km away</span></span></span><span class="books-action-card__arrow" aria-hidden="true"><ion-icon name="arrow-forward"></ion-icon></span></button>
               <p *ngIf="!listingsLoading && !listingsError && !listings.length">No listings available right now.</p>
             </section>
           </ng-template>
@@ -441,5 +440,6 @@
     </section>
   </div>
 
-  <app-footer *ngIf="view === 'choice' || view === 'buyer' || view === 'listings'"></app-footer>
+  <app-footer [showOnMobileWeb]="true"
+    *ngIf="view === 'choice' || view === 'buyer' || view === 'listings'"></app-footer>
 </ion-content>

@@ -86,7 +86,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   get visibleCounselors(): Tutor[] {
-    const city = this.cityService.city.toLocaleLowerCase();
+    const city = this.normalizeLocation(this.cityService.city);
     return this.counselors.filter(counselor => {
       const specializations = this.getSpecializations(counselor);
       const experience = this.getExperienceFilterValue(counselor);
@@ -99,7 +99,13 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         counselor.state
       ].filter(Boolean).join(' ').toLocaleLowerCase();
       return (!this.verifiedOnly || this.isVerified(counselor))
-        && (!city || [counselor.city, counselor.location].filter(Boolean).join(' ').toLocaleLowerCase().includes(city))
+        && (!city || this.normalizeLocation([
+          counselor.city,
+          counselor.location,
+          counselor.state,
+          (counselor as any).addressLine,
+          (counselor as any).exactLocation
+        ].filter(Boolean).join(' ')).includes(city))
         && (!this.selectedSpecializations.size || specializations.some(value => this.selectedSpecializations.has(value)))
         && (!this.selectedExperience.size || this.selectedExperience.has(experience))
         && (!this.searchQuery.trim() || searchableText.includes(this.searchQuery.trim().toLocaleLowerCase()));
@@ -167,7 +173,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         : this.tutorService.getTutorsByEntityType(this.entityType)).subscribe({
         next: counselors => {
           this.counselors = (Array.isArray(counselors) ? counselors : [])
-            .filter(counselor => counselor?.isActive === true);
+            .filter(counselor => this.isActiveListing(counselor));
           this.counselors.forEach(counselor => this.watchLikes(counselor));
           this.isLoading = false;
         },
@@ -177,6 +183,26 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  private isActiveListing(tutor: Tutor): boolean {
+    const explicitFlags = [(tutor as any)?.isActive, (tutor as any)?.active]
+      .filter(value => typeof value === 'boolean');
+    if (explicitFlags.includes(false)) return false;
+    if (explicitFlags.includes(true)) return true;
+
+    const status = String((tutor as any)?.accountStatus ?? (tutor as any)?.status ?? '')
+      .trim().toLocaleLowerCase();
+    return !status || ['active', 'approved', 'published', 'verified', 'enabled'].includes(status);
+  }
+
+  private normalizeLocation(value: unknown): string {
+    return String(value ?? '')
+      .normalize('NFKC')
+      .trim()
+      .toLocaleLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .replace(/\s+/g, ' ');
   }
 
   async openEducationFilters(): Promise<void> {

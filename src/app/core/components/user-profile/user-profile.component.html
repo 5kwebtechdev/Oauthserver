@@ -3,7 +3,7 @@
   <div class="profile">
 
     <section class="user-profile-main">
-      <div class="user-profile" *ngIf="user?.relationship !== 'PARENT'">
+      <div class="user-profile">
         <div class="avatar w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
           <div class="avatar-wrapper">
             <app-img
@@ -25,49 +25,6 @@
         </div>
       </div>
 
-      <div class="d-flex flex-column gap-3" parent-profile-detail *ngIf="user?.relationship === 'PARENT'">
-        <section class="family-con-detail" aria-label="Family details" *ngIf="creator">
-            <div class="f-head">
-              <div class="family-avatar">
-              <ng-container *ngIf="getMemberAvatar(creator) as creatorAvatar">
-                <img [src]="creatorAvatar.url" [alt]="creatorAvatar.alt || (creator.name + ' avatar')">
-              </ng-container>
-            </div>
-
-            <div class="f-head">
-              <h1>{{ creator.name }}</h1>
-              <p>{{ creator.age }} years old</p>
-
-              <div class="relationship-badge" [class.child]="creator.relationship === 'Child'"
-                [class.parent]="creator.relationship === 'Parent' || creator.relationship === 'Co-Parent'">
-                {{ (creator.relationship === 'Co-Parent' ? 'Parent' : creator.relationship) + ' / Creator' + (creator.you ? ' / You' : '') }}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="family-members" aria-label="Family members">
-          <div class="member-detail" *ngFor="let m of members">
-            <div class="member-info">
-              <div class="avtar-img" [class.is-you]="m.you">
-                <ng-container *ngIf="getMemberAvatar(m) as resolvedAvatar; else placeholder">
-                  <img *ngIf="resolvedAvatar.url; else placeholder" [src]="resolvedAvatar.url" [alt]="resolvedAvatar.alt || (m.name + ' avatar')" />
-                </ng-container>
-                <ng-template #placeholder><div class="avatar-placeholder"></div></ng-template>
-              </div>
-              <div class="name-age">
-                <h1>{{ m.name }}</h1>
-                <p>{{ m.age }} years old</p>
-              </div>
-            </div>
-
-            <div class="relationship-badge" [class.child]="m.relationship === 'Child'"
-              [class.parent]="m.relationship === 'Parent' || m.relationship === 'Co-Parent'" (click)="toggleMemberActive(m)">
-              {{ getBadgeText(m) }}
-            </div>
-          </div>
-        </section>
-      </div>
     </section>
 
     <section class="profile-content">

@@ -258,7 +258,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     };
     
     // Popup state
-    public showSwitchPopup: boolean = false;
     
     // Children from store
     public children: ChildInfo[] = [];
@@ -1047,39 +1046,22 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         }).url || '';
     }
 
-    // Toggle popup
-    toggleSwitchPopup(ev?: Event) {
-        if (ev) {
-            ev.stopPropagation();
-        }
-        if (!this.hasLinkedChildren) {
-            return;
-        }
-        this.showSwitchPopup = !this.showSwitchPopup;
-    }
-
-    closeSwitchPopup() {
-        this.showSwitchPopup = false;
-    }
-
     /** Select child via store (atomic update) */
     selectChild(child: ChildInfo): void {
         this.profileStore.select(child);
-        this.closeSwitchPopup();
     }
 
     isSelectedChild(child: ChildInfo): boolean {
         return String(child.id) === String(this.selectedChild?.id);
     }
 
-    onSwitcherChildClick(child: ChildInfo, event: Event): void {
+    onSwitcherChildClick(child: ChildInfo): void {
         // iOS WebView emits a synthetic click after touchend. Ignore only that
         // duplicate; mouse/keyboard clicks and Android taps keep this path.
         if (Date.now() - this.lastNativeSwitcherTouchAt < 600) return;
-        if (this.isSelectedChild(child)) {
-            this.toggleSwitchPopup(event);
-            return;
-        }
+        // The rail already exposes every child. Re-tapping the active child is
+        // intentionally a no-op instead of opening a second, duplicate picker.
+        if (this.isSelectedChild(child)) return;
         this.selectChild(child);
     }
 
@@ -1101,16 +1083,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         event.preventDefault();
         event.stopPropagation();
         this.lastNativeSwitcherTouchAt = Date.now();
-        if (this.isSelectedChild(child)) this.toggleSwitchPopup();
-        else this.selectChild(child);
-    }
-
-    onPopupChildTouchEnd(child: ChildInfo, event: TouchEvent): void {
-        if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'ios') return;
-        event.preventDefault();
-        event.stopPropagation();
-        this.lastNativeSwitcherTouchAt = Date.now();
-        this.selectChild(child);
+        if (!this.isSelectedChild(child)) this.selectChild(child);
     }
 
     /** Apply child stats to UI */

@@ -106,11 +106,6 @@ export class UserProfileComponent implements OnInit, OnChanges {
     this.loadUserDataFromStorage();
     // Load user stats from localStorage first, then API if not available
     this.loadUserStatsFromStorage();
-    // Load family details if user is a parent
-    if (this.user?.relationship === 'PARENT') {
-      this.loadFamilyDetails();
-    }
-
     // Subscribe to user data changes from CoreAuthService (primary source of truth)
     // This will reactively update the UI when user data changes (e.g., from edit-profile)
     this.coreAuthService.userData$.subscribe(userData => {

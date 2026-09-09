@@ -27,15 +27,21 @@
     flex: 0 0 100%;
     min-width: 100%;
     height: auto;
-    aspect-ratio: 2.85 / 1;
+    aspect-ratio: auto;
     border-radius: 12px;
+    background: #fff;
     box-shadow: 0 3px 12px rgba(44, 38, 84, .08);
     transform: none;
     opacity: 1;
   }
 
   .adb__img {
-    object-fit: cover;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
   }
 
   .adb__dots {

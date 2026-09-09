@@ -101,8 +101,7 @@
             <article class="listing-card">
               <div class="listing-card__top">
                 <div class="listing-card__image" [class.listing-card__image--empty]="!item.image">
-                  <img *ngIf="item.image" [src]="item.image" [alt]="item.name"
-                    (error)="onListingImageError(item)">
+                  <app-profile-image [src]="item.image" [name]="item.name" [alt]="item.name"></app-profile-image>
                 </div>
 
                 <div class="listing-card__details">

@@ -850,6 +850,133 @@
 	}
 }
 
+/* Browser/tablet layout: use the same wide content rhythm as Home while
+ * preserving the compact Figma composition in native and phone layouts. */
+@media (min-width: 768px) {
+	html:not(.plt-capacitor) {
+		.child-learning-content {
+			--background: linear-gradient(135deg, #f8f6ff 0%, #fffaf7 52%, #f8f3fa 100%);
+		}
+
+		.child-learning-page {
+			width: min(calc(100% - 48px), 1200px);
+			margin: 24px auto 48px;
+			padding-bottom: 56px;
+			overflow: hidden;
+			border: 1px solid rgba(139, 141, 203, 0.18);
+			border-radius: 28px;
+			box-shadow: 0 22px 54px rgba(67, 36, 119, 0.09);
+		}
+
+		.child-learning-hero {
+			height: clamp(270px, 24vw, 330px);
+			border-radius: 28px 28px 0 0;
+		}
+
+		.child-learning-hero__top {
+			padding: 20px clamp(28px, 4vw, 52px) 0;
+
+			> h1,
+			.child-learning-hero__category-heading h1 {
+				font-size: clamp(24px, 2vw, 30px);
+			}
+		}
+
+		.child-learning-coins {
+			min-width: 124px;
+			height: 44px;
+
+			strong { font-size: 17px; }
+		}
+
+		.child-learning-bubble {
+			top: clamp(112px, 10vw, 138px);
+			left: clamp(32px, 5vw, 72px);
+			width: clamp(275px, 27vw, 350px);
+			height: clamp(92px, 9vw, 116px);
+		}
+
+		.child-learning-bubble__copy {
+			top: 12%;
+			left: 5%;
+			width: 80%;
+
+			h2 { font-size: clamp(17px, 1.4vw, 21px); }
+			p { margin-top: 8px; font-size: clamp(13px, 1.05vw, 16px); }
+		}
+
+		.child-learning-hero__pet {
+			right: clamp(24px, 5vw, 70px);
+			width: clamp(190px, 18vw, 245px);
+			height: clamp(205px, 19vw, 260px);
+		}
+
+		.child-learning-body {
+			gap: 28px;
+			padding: 24px clamp(24px, 4vw, 48px) 32px;
+		}
+
+		.child-learning-tabs,
+		.child-learning-search,
+		.child-status-tabs {
+			width: 100%;
+			margin-inline: 0;
+		}
+
+		.child-learning-tabs {
+			height: 100px;
+			min-height: 100px;
+			padding: 6px;
+			border-radius: 18px;
+			box-shadow: 0 10px 28px rgba(67, 36, 119, 0.1);
+		}
+
+		.child-learning-tab {
+			height: 88px;
+			border-radius: 14px;
+			font-size: 16px;
+		}
+
+		.child-category-section__title {
+			padding-inline: 0;
+			font-size: 22px;
+		}
+
+		.child-learning-ad .adb__scroll-track {
+			padding-left: 0;
+		}
+
+		.child-category-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 18px;
+			padding-inline: 0;
+		}
+
+		.child-category-card {
+			height: 104px;
+			padding: 12px;
+			border-radius: 18px;
+		}
+
+		.child-category-card__image {
+			width: 64px;
+			height: 64px;
+			flex-basis: 64px;
+		}
+
+		.child-learning-list {
+			padding-inline: 0;
+		}
+	}
+}
+
+@media (min-width: 768px) and (max-width: 980px) {
+	html:not(.plt-capacitor) {
+		.child-learning-page { width: calc(100% - 32px); }
+		.child-category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	}
+}
+
 @media (max-width: 359px) {
 	.child-learning-hero__top {
 		padding-inline: 12px;

@@ -18,6 +18,7 @@ import { EduHubCityService } from '../../../services/eduhub-city.service';
 import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
+import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 import { EduHubCitySelectorComponent } from '../eduhub-city-selector/eduhub-city-selector.component';
 
 type DirectorySort = 'verified' | 'nearest';
@@ -90,6 +91,7 @@ interface EduHubShopListing {
     AdBannerComponent,
     FooterComponent,
     SupermePetComponent,
+    ProfileImageComponent,
     EduHubCitySelectorComponent
   ],
   templateUrl: './parent-eduhub-shop-listing.component.html',

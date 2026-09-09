@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
 import { INDIA_STATES } from '../../../constants/india-location-options';
 import { EduHubCityService } from '../../../services/eduhub-city.service';
@@ -17,10 +18,12 @@ const EDUHUB_LOCATION_PROMPTED_KEY = 'superme_eduhub_location_prompted';
   styleUrls: ['./eduhub-city-selector.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EduHubCitySelectorComponent implements OnInit {
+export class EduHubCitySelectorComponent implements OnInit, OnDestroy {
   readonly currentLocationOption = CURRENT_LOCATION_OPTION;
+  selectedCity = '';
   isDetectingLocation = false;
   locationMessage = '';
+  private readonly subscriptions = new Subscription();
   readonly cities = [
     'Mumbai',
     ...Array.from(new Set<string>(Object.values(INDIA_STATES).reduce<string[]>(
@@ -38,10 +41,20 @@ export class EduHubCitySelectorComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.selectedCity = this.cityService.city;
+    this.subscriptions.add(this.cityService.city$.subscribe(city => {
+      this.selectedCity = city;
+      this.cdr.markForCheck();
+    }));
+
     if (!this.cityService.hasSavedCity() && !this.wasLocationPromptedThisSession()) {
       this.markLocationPromptedThisSession();
       void this.useCurrentLocation();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   selectCity(city: string): void {

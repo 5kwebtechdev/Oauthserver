@@ -117,6 +117,7 @@
           </div>
 
           <div class="header-stats-row" aria-label="Your stats">
+            <span class="header-stats-label" aria-hidden="true">Today’s progress</span>
             <button type="button" class="header-stat" [routerLink]="['/authed/streaks']"
               [attr.aria-label]="'Open streaks. Current streak: ' + userStreaks">
               <span class="header-stat-icon-frame header-stat-icon-frame--streak" aria-hidden="true">

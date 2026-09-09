@@ -1,17 +1,18 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { HomePage } from './home.page';
 import { LoginComponent } from "./login/login.component";
 import { SignupComponent } from "./signup/signup.component";
 import { FamilyOnboardComponent } from "./family-onboard/family-onboard.component";
 import { ScanQrComponent } from './scan-qr/scan-qr.component';
 import { ResetPasswordComponent } from "./reset-password/reset-password.component";
-import { guestGuard, retiredChildInstructionsGuard, retiredHomeGuard } from "../core/authe-guard/authe-guard";
+import { guestGuard, retiredChildInstructionsGuard, startupGuard } from "../core/authe-guard/authe-guard";
 
 const routes: Routes = [
   {
     path: '',
-    canActivate: [retiredHomeGuard],
-    children: [{ path: '', redirectTo: '/login', pathMatch: 'full' }]
+    component: HomePage,
+    canActivate: [startupGuard]
   }, {
     path: 'login',
     component: LoginComponent,
