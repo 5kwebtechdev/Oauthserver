@@ -45,7 +45,12 @@
   </main>
 
   <footer class="notes-new__footer">
-    <superme-button type="magenta" text="Save" full [disabled]="loading || tagsLoading" (click)="save()"></superme-button>
+    <superme-button
+      type="magenta"
+      [text]="editing ? 'Save changes' : 'Add note'"
+      full
+      [disabled]="!canSave"
+      (click)="save()"></superme-button>
   </footer>
 
   <!-- Confirmation popup for deletion when editing an existing note -->

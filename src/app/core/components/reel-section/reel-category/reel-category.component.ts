@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
@@ -39,7 +39,7 @@ interface ReelItem {
   standalone: true,
   imports: [CommonModule, IonicModule, ReelsExpandComponent]
 })
-export class ReelCategoryComponent implements OnInit {
+export class ReelCategoryComponent implements OnInit, OnDestroy {
   readonly categories: ReelCategory[] = [
     { label: 'Education', icon: 'assets/figma/reels/categories/education.png' },
     { label: 'How-to', icon: 'assets/figma/reels/categories/how-to.png' },
@@ -59,6 +59,8 @@ export class ReelCategoryComponent implements OnInit {
 
   selectedCategory = 'All';
   searchTerm = '';
+  private readonly watchedReelIds = new Set<number>();
+  private boundReelViewed?: EventListener;
 
   constructor(
     private readonly router: Router,
@@ -67,7 +69,19 @@ export class ReelCategoryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.boundReelViewed = ((event: Event) => this.markReelAsWatched(event as CustomEvent<{ id?: number }>)) as EventListener;
+    window.addEventListener('reelViewed', this.boundReelViewed);
     this.loadReels();
+  }
+
+  ngOnDestroy(): void {
+    if (this.boundReelViewed) {
+      window.removeEventListener('reelViewed', this.boundReelViewed);
+    }
+  }
+
+  get hasWatchedAllReels(): boolean {
+    return this.slides.length > 0 && this.slides.every(reel => this.watchedReelIds.has(reel.id));
   }
 
   get filteredSlides(): ReelItem[] {
@@ -145,6 +159,13 @@ export class ReelCategoryComponent implements OnInit {
         this.slides = [];
       }
     });
+  }
+
+  private markReelAsWatched(event: CustomEvent<{ id?: number }>): void {
+    const reelId = Number(event.detail?.id);
+    if (Number.isFinite(reelId) && this.slides.some(reel => reel.id === reelId)) {
+      this.watchedReelIds.add(reelId);
+    }
   }
 
   private toReelItem(reel: YoutubeReel): ReelItem {

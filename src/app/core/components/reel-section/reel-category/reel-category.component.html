@@ -114,7 +114,12 @@
       </div>
     </ng-template>
 
-    <button type="button" class="add-reel" aria-label="Upload a reel" (click)="openUpload()">
+    <button
+      *ngIf="hasWatchedAllReels"
+      type="button"
+      class="add-reel"
+      aria-label="Upload a reel"
+      (click)="openUpload()">
       <img src="assets/figma/reels/add.svg" alt="">
     </button>
   </div>

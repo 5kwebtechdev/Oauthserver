@@ -31,6 +31,11 @@ export interface ReelComment {
   createdAt: string;
 }
 
+export interface ReelCategory {
+  id: number;
+  name: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ReelService {
   private readonly endpoint = `${environment.apiUrl}/api/reels`;
@@ -42,6 +47,11 @@ export class ReelService {
 
   getReels(): Observable<YoutubeReel[]> {
     return this.http.get<YoutubeReel[]>(this.endpoint, this.authOptions());
+  }
+
+  /** Categories are managed in the admin panel and intentionally public. */
+  getCategories(): Observable<ReelCategory[]> {
+    return this.http.get<ReelCategory[]>(`${this.endpoint}/categories`);
   }
 
   getStatus(reelId: number | string): Observable<ReelStatus> {

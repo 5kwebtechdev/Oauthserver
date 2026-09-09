@@ -36,6 +36,7 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
 
   private boundOpenSingle: any;
   private boundOpenPlayAll: any;
+  private boundClose: any;
   private likeRequestInProgress = false;
   private touchStartY: number | null = null;
   private suppressNextMediaClick = false;
@@ -91,6 +92,12 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
       } catch (e) { /* ignore */ }
     };
     window.addEventListener('openReelPlayAll', this.boundOpenPlayAll as EventListener);
+
+    // The persistent desktop header can return to Home while this player is
+    // open. The dashboard route may be unchanged, so router navigation alone
+    // does not destroy this component or dismiss its overlay.
+    this.boundClose = () => this.close();
+    window.addEventListener('closeReelExpanded', this.boundClose as EventListener);
   }
 
   ngOnDestroy(): void {
@@ -99,6 +106,9 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     }
     if (this.boundOpenPlayAll) {
       window.removeEventListener('openReelPlayAll', this.boundOpenPlayAll as EventListener);
+    }
+    if (this.boundClose) {
+      window.removeEventListener('closeReelExpanded', this.boundClose as EventListener);
     }
     
     // Clear any pending timeout
@@ -112,6 +122,13 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
 
   get current() {
     return this.playlist && this.playlist[this.currentIndex] ? this.playlist[this.currentIndex] : null;
+  }
+
+  private notifyReelViewed(): void {
+    const reelId = Number(this.current?.id);
+    if (Number.isFinite(reelId)) {
+      window.dispatchEvent(new CustomEvent('reelViewed', { detail: { id: reelId } }));
+    }
   }
 
   close() {
@@ -149,6 +166,7 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     this.pauseVideo();
     this.prepareYoutubePlayer(this.current);
     this.refreshCurrentStatus();
+    this.notifyReelViewed();
     const videoEl = this.playerVideo && this.playerVideo.nativeElement;
     if (videoEl && this.current) {
       // if current has a video URL use it, otherwise nothing to play

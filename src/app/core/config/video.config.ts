@@ -1,3 +1,5 @@
+import { environment } from 'src/environments/environment';
+
 /**
  * Video Compression & Upload Configuration
  * 
@@ -88,10 +90,11 @@ export const VideoConfig = {
      */
     upload: {
         /**
-         * API endpoint for video upload
-         * UPDATE THIS with your actual backend URL
+         * API endpoint for video upload. This follows the application's active
+         * SuperMe API environment, so development and production use the same
+         * configured base URL as the rest of the app.
          */
-        apiEndpoint: 'https://your-api-endpoint.com/api/reels/upload',
+        apiEndpoint: `${environment.apiUrl}/api/reels/upload`,
 
         /**
          * Maximum file size for upload (bytes)

@@ -4,6 +4,7 @@
       <a
         class="web-header__brand"
         [routerLink]="dashboardLink"
+        (click)="goHome($event)"
         aria-label="SuperMe App home"
       >
         <img class="web-header__logo" [src]="logoSrc" alt="SuperMeApp" />

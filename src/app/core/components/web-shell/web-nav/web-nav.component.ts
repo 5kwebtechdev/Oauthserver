@@ -135,6 +135,17 @@ export class WebNavComponent implements OnInit {
     return this.isParent ? '/authed/parent-account' : '/authed/user-dashboard';
   }
 
+  goHome(event: Event): void {
+    event.preventDefault();
+    this.closeMenu();
+
+    // A reel preview can be opened from the dashboard itself. Navigating to
+    // the same dashboard URL is ignored by Angular, so explicitly close the
+    // active full-screen player before leaving or returning home.
+    window.dispatchEvent(new Event('closeReelExpanded'));
+    void this.router.navigateByUrl(this.dashboardLink);
+  }
+
   openMenuOn(label: string): void {
     this.openMenu = label;
   }

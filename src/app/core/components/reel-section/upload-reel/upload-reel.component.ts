@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SupermeCardHeaderComponent } from 'src/app/core/components/superme-navigator/superme-card-header/superme-card-header.component';
 import { SupermeNavigatorComponent } from 'src/app/core/components/superme-navigator/superme-navigator.component';
@@ -13,6 +13,7 @@ import { VideoCompressionService, CompressionProgress } from 'src/app/core/servi
 import { VideoUploadService, UploadProgress } from 'src/app/core/services/video/video-upload.service';
 import { Subscription } from 'rxjs';
 import { ActiveConfig } from 'src/app/core/config/video.config';
+import { ReelCategory, ReelService } from '../../../services/reel.service';
 
 @Component({
     selector: 'upload-reel',
@@ -21,7 +22,7 @@ import { ActiveConfig } from 'src/app/core/config/video.config';
     standalone: true,
     imports: [CommonModule, IonicModule, FormsModule, SupermeCardHeaderComponent, SupermeButtonComponent, SupermeNavigatorComponent, SupermeInputsModule, SupermeToggleComponent, SupermePopupComponent]
 })
-export class UploadReelComponent implements OnDestroy {
+export class UploadReelComponent implements OnInit, OnDestroy {
     @Input() items: any[] = [];
     @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -71,17 +72,14 @@ export class UploadReelComponent implements OnDestroy {
     hashtagCount: number = 0;
     readonly maxHashtags = 4;
     reelCategory: string = '';
-    readonly categories = [
-        'Science Wonders',
-        'Creative Arts',
-        'Comedy & Fun',
-        'Daily Inspiration'
-    ];
+    categories: ReelCategory[] = [];
+    isLoadingCategories = false;
 
     constructor(
         private toastController: ToastController,
         private compressionService: VideoCompressionService,
-        private uploadService: VideoUploadService
+        private uploadService: VideoUploadService,
+        private reelService: ReelService
     ) {
         // Subscribe to compression progress
         this.compressionProgressSub = this.compressionService.progress$.subscribe(
@@ -92,6 +90,26 @@ export class UploadReelComponent implements OnDestroy {
         this.uploadProgressSub = this.uploadService.uploadProgress$.subscribe(
             progress => this.uploadProgress = progress
         );
+    }
+
+    ngOnInit(): void {
+        this.loadCategories();
+    }
+
+    private loadCategories(): void {
+        this.isLoadingCategories = true;
+        this.reelService.getCategories().subscribe({
+            next: categories => {
+                this.categories = categories
+                    .filter(category => Boolean(category?.name?.trim()))
+                    .sort((first, second) => first.name.localeCompare(second.name));
+                this.isLoadingCategories = false;
+            },
+            error: () => {
+                this.categories = [];
+                this.isLoadingCategories = false;
+            }
+        });
     }
 
     // Keep only alphabets and spaces (if you want to disallow spaces remove the space from the regex)

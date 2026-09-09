@@ -89,8 +89,19 @@
                 </div>
             </div>
             <div class="reel-meta-data-inputs">
-                <p class="meta-title">Enter Category</p>
-                <input class="superme-input" placeholder="Category" [(ngModel)]="reelCategory" />
+                <p class="meta-title">Select Category</p>
+                <select
+                    class="superme-input reel-category-select"
+                    [(ngModel)]="reelCategory"
+                    [disabled]="isLoadingCategories || !categories.length"
+                    aria-label="Reel category">
+                    <option value="" disabled>
+                        {{ isLoadingCategories ? 'Loading categories…' : 'Select a category' }}
+                    </option>
+                    <option *ngFor="let category of categories" [value]="category.name">
+                        {{ category.name }}
+                    </option>
+                </select>
             </div>
 
             <div class="ai-label">
