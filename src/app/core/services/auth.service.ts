@@ -739,9 +739,10 @@ export class AuthService {
     this.analytics.clearUserId();
     this.crashlytics.clearUserId();
 
-    // Native apps return to the in-app login screen. On the website, logout
-    // returns to the public homepage instead of rendering the app login route.
-    const navigation = redirectToLogin && this.isMobilePlatform
+    // Logout should always stay inside the current app host. During local
+    // development, sending web users to environment.publicWebUrl jumps from
+    // localhost to the production marketing site and makes logout look broken.
+    const navigation = redirectToLogin
       ? this.navCtrl.navigateRoot('/login', { animated: false })
       : Promise.resolve(true);
 
@@ -751,8 +752,8 @@ export class AuthService {
       this.authSessionCleanup.clearExternalAuthSessions()
     ]);
 
-    if (redirectToLogin && !this.isMobilePlatform && typeof window !== 'undefined') {
-      window.location.replace(environment.publicWebUrl || 'https://supermeapp.com');
+    if (redirectToLogin && typeof window !== 'undefined' && !window.location.pathname.endsWith('/login')) {
+      window.location.replace('/login');
     }
   }
 

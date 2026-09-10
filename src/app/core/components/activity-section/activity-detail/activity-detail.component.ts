@@ -14,7 +14,6 @@ import { AutoAbortService } from '../auto-abort.service';
 import { BadgePopupService } from '../../../services/badge-popup.service';
 import { PetAgeService } from '../../../services/pet-age.service';
 import { SupermeCalendarComponent } from '../../superme-inputs/superme-calendar/superme-calendar.component';
-import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermePopupComponent, SupermePopupConfig, SupermePopupCTA } from '../../superme-popup/superme-popup.component';
 
 type ActivityType = 'habits' | 'tasks' | 'timetable';
@@ -26,7 +25,7 @@ type ActivityType = 'habits' | 'tasks' | 'timetable';
   styleUrls: ['./activity-detail.component.scss'],
   imports: [
     CommonModule, IonicModule, SupermeCalendarComponent,
-    SupermeButtonComponent, SupermePopupComponent
+    SupermePopupComponent
   ]
 })
 export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {

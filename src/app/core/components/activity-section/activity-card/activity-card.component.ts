@@ -251,6 +251,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   private letsGoWindowTimer: any;
   private endTimeTimer: any;
   private startBubbleTimer: any;
+  private taskCountdownTimer: any;
 
   public maxItemsToShow: number = 4;  // percentageWrapper is inside the single-card template which is rendered conditionally,
   // so query it with static: false and guard access in code.
@@ -1029,6 +1030,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       this.endTime = this.habit.endTimeStamp;
       this.inProgress = this.habit.type === 'habits';
       this.isEmpty = false;
+
+      // Keep the child-friendly "Time left" copy current without requiring a refresh.
+      if (this.habit.type === 'tasks') {
+        this.taskCountdownTimer = setInterval(() => this.cdr.markForCheck(), 30_000);
+      }
     }
 
     // For ongoing habits, calculate the actual percentage based on elapsed time
@@ -1572,6 +1578,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     // Clear button state checker interval
     if (this.buttonStateCheckerInterval) {
       clearInterval(this.buttonStateCheckerInterval);
+    }
+
+    if (this.taskCountdownTimer) {
+      clearInterval(this.taskCountdownTimer);
     }
 
     // Clear auto-reload timers
@@ -2813,6 +2823,97 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       console.error('Error formatting time:', error);
       return '00:00';
     }
+  }
+
+  /** Compact, child-friendly date used by expanded task cards on Home. */
+  getTaskCardDate(value: Date | string | null | undefined, fallbackTimestamp?: number): string {
+    const date = this.getGlanceLocalDate(value)
+      || (fallbackTimestamp ? new Date(this.normalizePossibleTimestamp(fallbackTimestamp)) : null);
+    if (!date || isNaN(date.getTime())) return 'Not set';
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  /** Urgency copy deliberately avoids technical date/time language for children. */
+  getTaskTimeLeft(task: Habit | null | undefined): string {
+    if (!task) return 'Not set';
+    const now = new Date();
+
+    // When today's task has a scheduled time, show the useful near-term countdown
+    // instead of counting down to the final date of a multi-day task.
+    const startDate = this.getGlanceLocalDate(task.startDate);
+    const endDate = this.getGlanceLocalDate(task.endDate);
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(todayStart);
+    todayEnd.setHours(23, 59, 59, 999);
+    const isWithinTaskDates = (!startDate || startDate.getTime() <= todayEnd.getTime())
+      && (!endDate || endDate.getTime() >= todayStart.getTime());
+
+    if (isWithinTaskDates && task.startTime) {
+      const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const sessionStart = new Date(this.combineDateAndTime(todayKey, task.startTime));
+      const sessionEnd = task.endTime
+        ? new Date(this.combineDateAndTime(todayKey, task.endTime))
+        : null;
+
+      if (!isNaN(sessionStart.getTime()) && now.getTime() < sessionStart.getTime()) {
+        return this.formatTaskCountdown(sessionStart.getTime() - now.getTime());
+      }
+
+      if (sessionEnd && !isNaN(sessionEnd.getTime())) {
+        if (now.getTime() <= sessionEnd.getTime()) {
+          return this.formatTaskCountdown(sessionEnd.getTime() - now.getTime());
+        }
+        return "Today's time passed";
+      }
+    }
+
+    const due = this.getGlanceLocalDate(task.endDate)
+      || (task.endTimeStamp ? new Date(this.normalizePossibleTimestamp(task.endTimeStamp)) : null);
+    if (!due || isNaN(due.getTime())) return 'Not set';
+
+    // A date-only API value represents the whole due day, not midnight at its start.
+    if (!task.endTime && due.getHours() === 0 && due.getMinutes() === 0) {
+      due.setHours(23, 59, 59, 999);
+    }
+
+    const sameDay = due.getFullYear() === now.getFullYear()
+      && due.getMonth() === now.getMonth()
+      && due.getDate() === now.getDate();
+    if (sameDay) return 'Due today';
+
+    const remainingMs = due.getTime() - now.getTime();
+    if (remainingMs <= 0) return 'Due now';
+    const hours = Math.ceil(remainingMs / 3_600_000);
+    if (hours < 24) return `${hours} ${hours === 1 ? 'hour' : 'hours'} left`;
+    const days = Math.ceil(remainingMs / 86_400_000);
+    return `${days} ${days === 1 ? 'day' : 'days'} left`;
+  }
+
+  private formatTaskCountdown(remainingMs: number): string {
+    const minutes = Math.max(1, Math.ceil(remainingMs / 60_000));
+    if (minutes < 60) return `${minutes} min left`;
+    const hours = Math.ceil(minutes / 60);
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} left`;
+  }
+
+  /** Date-range countdown for a repeating habit; today's session time does not replace its goal duration. */
+  getHabitTimeLeft(habit: Habit | null | undefined): string {
+    if (!habit) return 'Not set';
+    const end = this.getGlanceLocalDate(habit.endDate)
+      || (habit.endTimeStamp ? new Date(this.normalizePossibleTimestamp(habit.endTimeStamp)) : null);
+    if (!end || isNaN(end.getTime())) return 'Ongoing';
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    const days = Math.ceil((endDay.getTime() - today.getTime()) / 86_400_000);
+    if (days < 0) return 'Goal ended';
+    if (days === 0) return 'Ends today';
+    return `${days} ${days === 1 ? 'day' : 'days'} left`;
+  }
+
+  getTaskNote(task: Habit | null | undefined): string {
+    return String(task?.notes || task?.description || '').trim();
   }
 
   formatTimeString(t?: string | null): string {

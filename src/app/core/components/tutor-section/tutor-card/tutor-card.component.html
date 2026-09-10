@@ -75,7 +75,12 @@
 
     <ng-container *ngIf="visibleExternalPreviews.length">
       <div class="eduhub-tutors">
-        <article class="eduhub-tutor" *ngFor="let listing of visibleExternalPreviews; trackBy: trackPreview">
+        <article class="eduhub-tutor" *ngFor="let listing of visibleExternalPreviews; trackBy: trackPreview"
+          [class.eduhub-tutor--clickable]="isShopCategory"
+          [attr.role]="isShopCategory ? 'button' : null"
+          [attr.tabindex]="isShopCategory ? 0 : null"
+          (click)="onViewShopDetails(listing)"
+          (keyup.enter)="onViewShopDetails(listing)">
           <app-profile-image class="eduhub-tutor__avatar" [src]="listing.image" [name]="listing.name" [alt]="listing.name"></app-profile-image>
           <div class="eduhub-tutor__body">
             <div class="eduhub-tutor__headline"><strong>{{ listing.name }}</strong></div>

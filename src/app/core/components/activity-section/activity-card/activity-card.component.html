@@ -233,7 +233,7 @@
   <!-- Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'habits' && hasHabits">
-    <activity-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem"
+    <activity-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem" [expanded]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
     </activity-card>
@@ -242,7 +242,7 @@
   <!-- Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'tasks' && hasTasks">
-    <activity-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem"
+    <activity-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem" [expanded]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
     </activity-card>
@@ -263,7 +263,8 @@
     *ngIf="currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
-      [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)" mode="single">
+      [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
+      [expanded]="item.type === 'tasks' || item.type === 'habits'" mode="single">
     </activity-card>
   </div>
 
@@ -412,7 +413,7 @@
   <!-- Recent Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'habits' && hasHabits">
-    <activity-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem"
+    <activity-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem" [expanded]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
     </activity-card>
@@ -421,7 +422,7 @@
   <!-- Recent Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'tasks' && hasTasks">
-    <activity-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem"
+    <activity-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem" [expanded]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
     </activity-card>
@@ -442,7 +443,8 @@
     *ngIf="currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
-      [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)" mode="single">
+      [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
+      [expanded]="item.type === 'tasks' || item.type === 'habits'" mode="single">
     </activity-card>
   </div>
 
@@ -469,7 +471,7 @@
 <div *ngIf="mode === 'single'" class="container w-full h-full p-0">
   <!-- Swipe backdrop: tapping it closes the reveal -->
   <div *ngIf="isSwipedOpen" class="swipe-backdrop" (click)="closeSwipe()"></div>
-  <div class="swipe-container"
+  <div class="swipe-container" [class.is-swipe-open]="isSwipedOpen || swipeOffset > 0"
     (touchstart)="onSwipeStart($event)"
     (touchmove)="onSwipeMove($event)"
     (touchend)="onSwipeEnd()">
@@ -540,6 +542,28 @@
     </div>
     <!-- Expandable content wrapper with animation (timetable entries have no streak/coin/complete actions) -->
     <div class="habit-expandable-content" [ngClass]="{'expanded': expanded}" *ngIf="habit?.type !== 'timetable'">
+      <section class="task-at-a-glance" *ngIf="habit?.type === 'tasks' || habit?.type === 'habits'"
+        [class.task-at-a-glance--habit]="habit?.type === 'habits'"
+        [attr.aria-label]="habit?.type === 'tasks' ? 'Task details' : 'Habit details'">
+        <div class="task-at-a-glance__dates">
+          <span>
+            <small>Start</small>
+            <strong>{{ getTaskCardDate(habit?.startDate, habit?.startTimeStamp) }}</strong>
+          </span>
+          <span>
+            <small>{{ habit?.type === 'tasks' ? 'Due' : 'End' }}</small>
+            <strong>{{ getTaskCardDate(habit?.endDate, habit?.endTimeStamp) }}</strong>
+          </span>
+          <span class="task-at-a-glance__countdown">
+            <small>Time left</small>
+            <strong>{{ habit?.type === 'tasks' ? getTaskTimeLeft(habit) : getHabitTimeLeft(habit) }}</strong>
+          </span>
+        </div>
+        <p class="task-at-a-glance__note" *ngIf="getTaskNote(habit) as taskNote">
+          <span aria-hidden="true">📝</span>
+          <span>{{ taskNote }}</span>
+        </p>
+      </section>
       <div class="habit-footer-progress-box" *ngIf="getStatus() === 'ongoing'">
         <div class="habit-footer-progress" #percentageWrapper [style.width.%]="percentageCompleted"></div>
       </div>

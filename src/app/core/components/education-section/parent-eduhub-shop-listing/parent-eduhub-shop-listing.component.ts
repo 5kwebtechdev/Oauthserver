@@ -6,7 +6,7 @@ import { AppLauncher } from '@capacitor/app-launcher';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { IonicModule } from '@ionic/angular';
-import { Subscription } from 'rxjs';
+import { distinctUntilChanged, skip, Subscription } from 'rxjs';
 
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../services/auth.service';
@@ -106,6 +106,8 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
 
   categoryId: number | null = null;
   categoryLabel = 'Shops';
+  entityType = '';
+  selectedListingId: number | null = null;
   listings: EduHubShopListing[] = [];
   loading = true;
   loadError = '';
@@ -147,6 +149,16 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
 
     this.subscriptions.add(
       this.route.queryParamMap.subscribe(params => {
+        const navigationCity = String(
+          history.state?.city ?? params.get('city') ?? ''
+        ).trim();
+        if (navigationCity) this.cityService.selectCity(navigationCity);
+
+        this.entityType = String(params.get('entityType') ?? '').trim();
+        const rawListingId = Number(params.get('listing'));
+        this.selectedListingId = Number.isFinite(rawListingId) && rawListingId > 0
+          ? rawListingId
+          : null;
         const rawCategoryId = Number(params.get('category'));
         this.categoryId = Number.isFinite(rawCategoryId) && rawCategoryId > 0
           ? rawCategoryId
@@ -162,6 +174,15 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
         } else {
           this.resolveCategoryLabel();
         }
+      })
+    );
+
+    // The selector on this page updates the shared city. Refresh the API
+    // immediately so changing city here updates this directory too.
+    this.subscriptions.add(
+      this.cityService.city$.pipe(skip(1), distinctUntilChanged()).subscribe(() => {
+        this.selectedListingId = null;
+        this.loadListings();
       })
     );
 
@@ -207,6 +228,7 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     const query = this.normalize(this.searchQuery);
     const city = this.normalize(this.cityService.city);
     const filtered = this.listings.filter(item => {
+      if (this.selectedListingId != null && item.id !== this.selectedListingId) return false;
       const itemLocation = this.normalize([item.publicLocation, item.fullAddress].join(' '));
       const matchesCity = !city || itemLocation.includes(city);
       const matchesQuery = !query || this.normalize([
@@ -510,10 +532,16 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     this.listings = [];
 
     const userId = this.authService.getUserId();
-    const params = userId != null ? { forUserId: String(userId) } : undefined;
+    const params: Record<string, string> = {
+      city: this.cityService.city,
+      page: '0',
+      size: '100'
+    };
+    if (userId != null) params['forUserId'] = String(userId);
+    if (this.entityType) params['entityType'] = this.entityType;
 
     this.http.get<any>(
-      `${environment.apiUrl}/eduhub`,
+      `${environment.apiUrl}/eduhub/shops`,
       { headers: this.getApiHeaders(), params }
     ).subscribe({
       next: response => {

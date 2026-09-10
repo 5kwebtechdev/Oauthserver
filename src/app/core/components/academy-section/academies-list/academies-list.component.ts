@@ -1,8 +1,10 @@
-import { Component, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
+import { distinctUntilChanged, skip, Subscription } from 'rxjs';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
@@ -58,7 +60,7 @@ interface Academy {
   templateUrl: './academies-list.component.html',
   styleUrls: ['./academies-list.component.scss']
 })
-export class AcademiesListComponent implements OnInit {
+export class AcademiesListComponent implements OnInit, OnDestroy {
   readonly adScreen: AdScreen = 'EDUHUB';
   readonly academyPlaceholderImage = 'assets/Images-Transparent/Academies.png';
   academies: Academy[] = [];
@@ -79,6 +81,8 @@ export class AcademiesListComponent implements OnInit {
     { key: 'rating', label: 'Top Rated' },
     { key: 'price', label: 'Price' }
   ];
+  private readonly subscriptions = new Subscription();
+  private academyRequestId = 0;
 
   constructor(
     private http: HttpClient,
@@ -86,11 +90,40 @@ export class AcademiesListComponent implements OnInit {
     private toastService: CustomToastService,
     private modalCtrl: ModalController,
     private cdr: ChangeDetectorRef,
-    private cityService: EduHubCityService
+    private cityService: EduHubCityService,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
-    this.loadAcademies();
+    // Read Angular's active route rather than window.location.search. Ionic's
+    // hash navigation can place query params after '#', where URLSearchParams
+    // on window.location.search cannot see them.
+    this.subscriptions.add(this.route.queryParamMap.subscribe(params => {
+      const navigationCity = String(
+        history.state?.city ?? params.get('city') ?? ''
+      ).trim();
+      if (navigationCity) this.cityService.selectCity(navigationCity);
+
+      const carriedAcademies = Array.isArray(history.state?.directoryItems)
+        ? history.state.directoryItems as Tutor[]
+        : [];
+      if (carriedAcademies.length) this.applyAcademies(carriedAcademies);
+
+      this.loadAcademies();
+    }));
+
+    // The shared selector is usable on this inner page as well. A new city
+    // selection must immediately refresh the directory for that city.
+    this.subscriptions.add(
+      this.cityService.city$.pipe(skip(1), distinctUntilChanged()).subscribe(() => {
+        this.searchQuery = '';
+        this.loadAcademies();
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   private headers(): HttpHeaders {
@@ -107,6 +140,7 @@ export class AcademiesListComponent implements OnInit {
   }
 
   loadAcademies(): void {
+    const requestId = ++this.academyRequestId;
     this.isLoading = true;
     this.hasError = false;
     this.http.get<any>(`${environment.apiUrl}/tutors`, {
@@ -114,25 +148,43 @@ export class AcademiesListComponent implements OnInit {
       params: { entityType: 'ACADEMY' }
     }).subscribe({
       next: (res) => {
+        if (requestId !== this.academyRequestId) return;
         const raw = Array.isArray(res)
           ? res
           : (res?.data?.tutors ?? res?.data?.content ?? res?.data ?? res?.tutors ?? res?.content ?? []);
         // Active academies belong in the directory regardless of verification.
         // `verified` controls only the badge shown on the card/profile.
-        this.academies = (Array.isArray(raw) ? raw : [])
-          .filter((academy: any) => academy?.isActive === true)
-          .map((academy: any) => this.mapAcademy(academy));
-        this.academyListItems = this.academies.map(academy => this.toAcademyListItem(academy));
+        this.applyAcademies(Array.isArray(raw) ? raw : []);
         this.totalAcademies = Number(res?.data?.totalElements ?? this.academies.length);
         this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: () => {
+        if (requestId !== this.academyRequestId) return;
         this.hasError = true;
         this.isLoading = false;
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private applyAcademies(raw: any[]): void {
+    this.academies = raw
+      .filter((academy: any) => this.isActiveAcademy(academy))
+      .map((academy: any) => this.mapAcademy(academy));
+    this.academyListItems = this.academies.map(academy => this.toAcademyListItem(academy));
+    this.totalAcademies = this.academies.length;
+  }
+
+  private isActiveAcademy(academy: any): boolean {
+    const explicit = [academy?.isActive, academy?.active]
+      .map(value => typeof value === 'string' ? value.trim().toLowerCase() === 'true' : value)
+      .filter(value => typeof value === 'boolean');
+    if (explicit.includes(false)) return false;
+    if (explicit.includes(true)) return true;
+
+    const status = String(academy?.accountStatus ?? academy?.status ?? '').trim().toLowerCase();
+    return !status || ['active', 'approved', 'published', 'verified', 'enabled'].includes(status);
   }
 
   // Field names are a best guess pending the real API contract — adjust once confirmed.
@@ -145,7 +197,9 @@ export class AcademiesListComponent implements OnInit {
 
     const name = a?.entityName ?? a?.name ?? a?.academyName ?? a?.title ?? 'Academy';
     const image = a?.profilePicUrl ?? a?.image ?? a?.thumbnailUrl ?? a?.imageUrl ?? this.academyPlaceholderImage;
-    const location = a?.location ?? [a?.city, a?.state].filter(Boolean).join(', ');
+    const location = String(a?.location ?? '').trim()
+      || [a?.city, a?.state].map((value: unknown) => String(value ?? '').trim()).filter(Boolean).join(', ')
+      || String(a?.addressLine ?? '').trim();
     const fees = Number(a?.fees ?? a?.hourlyRate ?? a?.price ?? 0);
     const totalStudents = Number(a?.totalStudents ?? a?.studentCount ?? 0);
     const verified = !!(a?.verified ?? a?.isVerified ?? a?.documentsVerified ?? a?.verificationStatus === 'Verified');
@@ -250,15 +304,21 @@ export class AcademiesListComponent implements OnInit {
 
   get filteredAcademies(): Academy[] {
     const q = this.searchQuery.trim().toLowerCase();
-    const city = this.cityService.city.toLowerCase();
-    return this.academies.filter(a =>
-      (!city || a.location.toLowerCase().includes(city)) &&
+    const city = this.cityService.city.trim().toLowerCase();
+    return this.academies.filter(a => {
+      const academyLocation = [
+        a.location,
+        a.profile.city,
+        a.profile.state,
+        a.profile.addressLine
+      ].filter(Boolean).join(' ').toLowerCase();
+      return (!city || academyLocation.includes(city)) &&
       (!q || a.name.toLowerCase().includes(q) ||
         a.headline.toLowerCase().includes(q) ||
         a.location.toLowerCase().includes(q) ||
         a.subjects.some(s => s.toLowerCase().includes(q)) ||
-        a.classes.some(c => c.toLowerCase().includes(q)))
-    );
+        a.classes.some(c => c.toLowerCase().includes(q)));
+    });
   }
 
   get filteredAcademyListItems(): TutorListItem[] {

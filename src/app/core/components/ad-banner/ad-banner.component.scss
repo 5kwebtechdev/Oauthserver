@@ -318,7 +318,35 @@
 // (article/eduhub/parent-learning/lesson), which already run at their own
 // fixed sizing on every screen size.
 @include bp.tablet-up {
-  :host-context(html:not(.plt-capacitor)) .adb:not(.adb--article-details):not(.adb--eduhub-parent):not(.adb--eduhub-inner):not(.adb--parent-learning):not(.adb--lesson) {
+  // Home-screen creatives are supplied at 1216 x 495. Keep one complete,
+  // full-width banner in view on web so artwork is never cropped, stretched,
+  // or squeezed into the two-column dimensions used by internal placements.
+  :host-context(html:not(.plt-capacitor)) .adb.adb--home {
+    .adb__card {
+      flex: 0 0 100%;
+      min-width: 100%;
+      height: auto;
+      aspect-ratio: 1216 / 495;
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(44, 38, 84, .1);
+      opacity: 1;
+      transform: none;
+    }
+
+    .adb__img {
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      border-radius: inherit;
+      object-fit: contain;
+      object-position: center;
+      background: #fff;
+    }
+  }
+
+  :host-context(html:not(.plt-capacitor)) .adb:not(.adb--home):not(.adb--article-details):not(.adb--eduhub-parent):not(.adb--eduhub-inner):not(.adb--parent-learning):not(.adb--lesson) {
     .adb__card {
       height: auto;
       aspect-ratio: 305 / 182;
@@ -347,7 +375,7 @@
     }
   }
 
-  .adb:not(.adb--article-details):not(.adb--eduhub-parent):not(.adb--eduhub-inner):not(.adb--parent-learning):not(.adb--lesson) {
+  .adb:not(.adb--home):not(.adb--article-details):not(.adb--eduhub-parent):not(.adb--eduhub-inner):not(.adb--parent-learning):not(.adb--lesson) {
     .adb__card {
       flex: 0 0 calc(50% - 5px);
       min-width: calc(50% - 5px);

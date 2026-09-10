@@ -869,12 +869,12 @@
 		}
 
 		.child-learning-hero {
-			height: clamp(270px, 24vw, 330px);
+			height: clamp(292px, 27vw, 360px);
 			border-radius: 28px 28px 0 0;
 		}
 
 		.child-learning-hero__top {
-			padding: 20px clamp(28px, 4vw, 52px) 0;
+			padding: 28px clamp(36px, 4.5vw, 64px) 0;
 
 			> h1,
 			.child-learning-hero__category-heading h1 {
@@ -890,25 +890,42 @@
 		}
 
 		.child-learning-bubble {
-			top: clamp(112px, 10vw, 138px);
-			left: clamp(32px, 5vw, 72px);
-			width: clamp(275px, 27vw, 350px);
-			height: clamp(92px, 9vw, 116px);
+			top: clamp(128px, 11.8vw, 158px);
+			left: clamp(56px, 6.6vw, 92px);
+			width: clamp(360px, 32vw, 430px);
+			height: clamp(128px, 11.6vw, 152px);
 		}
 
 		.child-learning-bubble__copy {
-			top: 12%;
-			left: 5%;
-			width: 80%;
+			top: 16%;
+			left: 5.6%;
+			width: 78%;
 
-			h2 { font-size: clamp(17px, 1.4vw, 21px); }
-			p { margin-top: 8px; font-size: clamp(13px, 1.05vw, 16px); }
+			h2 {
+				font-size: clamp(20px, 1.7vw, 24px);
+				line-height: 1.35;
+			}
+
+			p {
+				gap: 8px;
+				margin-top: 14px;
+				font-size: clamp(15px, 1.2vw, 18px);
+				line-height: 1.45;
+
+				> img {
+					width: 19px;
+					height: 19px;
+					flex-basis: 19px;
+					margin-top: 2px;
+				}
+			}
 		}
 
 		.child-learning-hero__pet {
-			right: clamp(24px, 5vw, 70px);
-			width: clamp(190px, 18vw, 245px);
-			height: clamp(205px, 19vw, 260px);
+			right: clamp(56px, 8vw, 124px);
+			bottom: -14px;
+			width: clamp(245px, 23vw, 315px);
+			height: clamp(245px, 23vw, 315px);
 		}
 
 		.child-learning-body {
@@ -973,6 +990,28 @@
 @media (min-width: 768px) and (max-width: 980px) {
 	html:not(.plt-capacitor) {
 		.child-learning-page { width: calc(100% - 32px); }
+		.child-learning-hero { height: 300px; }
+		.child-learning-bubble {
+			top: 128px;
+			left: 36px;
+			width: 330px;
+			height: 118px;
+		}
+		.child-learning-bubble__copy {
+			top: 15%;
+
+			h2 { font-size: 19px; }
+			p {
+				margin-top: 10px;
+				font-size: 14px;
+				line-height: 1.4;
+			}
+		}
+		.child-learning-hero__pet {
+			right: 22px;
+			width: 225px;
+			height: 225px;
+		}
 		.child-category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	}
 }

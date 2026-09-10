@@ -140,6 +140,10 @@ export class BadgeSectionComponent implements OnInit, OnDestroy {
      * Process the badge API response and update UI state
      */
     private processBadgeResponse(response: BadgeProgressResponse): void {
+        const activeBadges = Array.isArray(response.badges)
+            ? response.badges.filter(apiBadge => apiBadge?.isActive !== false)
+            : [];
+
         // Handle celebration card
         if (response.celebrationCard?.showCelebration) {
             this.celebrationCard = response.celebrationCard;
@@ -157,7 +161,7 @@ export class BadgeSectionComponent implements OnInit, OnDestroy {
         }
 
         // Map badges to UI model
-        this.badges = response.badges.map((apiBadge, index) => {
+        this.badges = activeBadges.map((apiBadge, index) => {
             const completionPercentage = this.calculateCompletionPercentage(apiBadge.progress, apiBadge.target);
 
             return {

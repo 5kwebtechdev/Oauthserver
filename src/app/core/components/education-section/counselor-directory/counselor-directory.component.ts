@@ -1,9 +1,9 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Share } from '@capacitor/share';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription, catchError, map, of, switchMap, take } from 'rxjs';
 
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
@@ -48,9 +48,11 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   directoryTitle = 'Counselors';
   singularTitle = 'Counselor';
   educationFilters: SelectedFilters | null = null;
+  private selectedCity = '';
 
   private readonly subscriptions = new Subscription();
   private readonly likeSubscriptions = new Map<number, Subscription>();
+  private directoryRequestVersion = 0;
 
   constructor(
     private readonly location: Location,
@@ -62,7 +64,8 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     private readonly core: CoreService,
     private readonly petAgeService: PetAgeService,
     private readonly modalCtrl: ModalController,
-    private readonly cityService: EduHubCityService
+    private readonly cityService: EduHubCityService,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   /** Panda uses the same Figma artwork shown on Home/Coins/Learning instead of this page's decorative mascot. */
@@ -75,6 +78,75 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     this.entityType = String(routeData['entityType'] || 'COUNSELOR').trim().toUpperCase();
     this.directoryTitle = String(routeData['title'] || 'Counselors').trim() || 'Counselors';
     this.singularTitle = String(routeData['singularTitle'] || this.directoryTitle.replace(/s$/i, '')).trim() || 'Listing';
+    const navigationState = (history.state || {}) as { city?: string; directoryItems?: Tutor[] };
+    const navigationCity = String(
+      this.route.snapshot.queryParamMap.get('city') || navigationState.city || ''
+    ).trim();
+    if (navigationCity) this.cityService.selectCity(navigationCity);
+    // Ionic keeps this route alive on mobile. Subscribe to the shared city so
+    // returning to the page or changing location immediately recomputes cards.
+    this.selectedCity = this.normalizeLocation(navigationCity || this.cityService.city);
+    this.subscriptions.add(this.cityService.city$.subscribe(city => {
+      const nextCity = this.normalizeLocation(city);
+      const cityChanged = nextCity !== this.selectedCity;
+      this.selectedCity = nextCity;
+      if (cityChanged) {
+        // A new city is a new directory query. Remove records handed off for
+        // the previous city and reload the complete entity directory so both
+        // the selector and cards always describe the same location.
+        this.educationFilters = null;
+        const cachedDirectory = this.filterDirectoryType(
+          this.tutorService.getDirectoryCache(this.entityType)
+        );
+        this.counselors = cachedDirectory.filter(item => this.isActiveListing(item));
+        this.loadCounselors();
+
+        // Keep the route in sync with the selector. Without this, Ionic can
+        // restore the old Home city from the URL when this cached page is
+        // revisited, making the selector appear unable to change location.
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { city },
+          queryParamsHandling: 'merge',
+          replaceUrl: true
+        });
+      }
+      // City selection can be emitted by the nested selector outside the
+      // cached Ionic page's normal render pass on native builds.
+      Promise.resolve().then(() => this.cdr.detectChanges());
+    }));
+
+    // Use the exact records the user could already see on Home. Router state
+    // survives the Home -> View All transition and avoids losing valid cards
+    // when a second mobile request is delayed or returns an anomalous empty
+    // response.
+    const handedOffItems = this.filterDirectoryType(navigationState.directoryItems);
+    if (handedOffItems.length) {
+      this.counselors = handedOffItems.filter(item => this.isActiveListing(item));
+      this.counselors.forEach(item => this.watchLikes(item));
+      this.isLoading = false;
+    }
+
+    const directoryCache = this.filterDirectoryType(
+      this.tutorService.getDirectoryCache(this.entityType)
+    );
+    if (!this.counselors.length && directoryCache.length) {
+      this.counselors = directoryCache.filter(item => this.isActiveListing(item));
+      this.counselors.forEach(item => this.watchLikes(item));
+      this.isLoading = false;
+    }
+
+    // "View all" is opened from Home, where the same service has already
+    // loaded valid tutor records. Paint those records immediately and keep
+    // them as a safe fallback while the directory refresh runs.
+    this.subscriptions.add(this.tutorService.allTutors$.pipe(take(1)).subscribe(items => {
+      const cached = this.filterDirectoryType(items);
+      if (cached.length && !this.counselors.length) {
+        this.counselors = cached.filter(item => this.isActiveListing(item));
+        this.counselors.forEach(item => this.watchLikes(item));
+        this.isLoading = false;
+      }
+    }));
     this.loadCounselors();
   }
 
@@ -86,7 +158,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   get visibleCounselors(): Tutor[] {
-    const city = this.normalizeLocation(this.cityService.city);
+    const city = this.selectedCity;
     return this.counselors.filter(counselor => {
       const specializations = this.getSpecializations(counselor);
       const experience = this.getExperienceFilterValue(counselor);
@@ -99,13 +171,13 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         counselor.state
       ].filter(Boolean).join(' ').toLocaleLowerCase();
       return (!this.verifiedOnly || this.isVerified(counselor))
-        && (!city || this.normalizeLocation([
+        && (!city || this.matchesSelectedCity(city, this.normalizeLocation([
           counselor.city,
           counselor.location,
           counselor.state,
           (counselor as any).addressLine,
           (counselor as any).exactLocation
-        ].filter(Boolean).join(' ')).includes(city))
+        ].filter(Boolean).join(' '))))
         && (!this.selectedSpecializations.size || specializations.some(value => this.selectedSpecializations.has(value)))
         && (!this.selectedExperience.size || this.selectedExperience.has(experience))
         && (!this.searchQuery.trim() || searchableText.includes(this.searchQuery.trim().toLocaleLowerCase()));
@@ -165,23 +237,75 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   loadCounselors(): void {
-    this.isLoading = true;
+    const requestVersion = ++this.directoryRequestVersion;
+    // Keep the Home-page results visible while refreshing this directory.
+    // A background request should not replace valid shared data with a loader.
+    this.isLoading = !this.counselors.length;
     this.errorMessage = '';
+    const directoryRequest = this.educationFilters && this.entityType !== 'COUNSELOR'
+      ? this.tutorService.searchDirectory(this.entityType, this.educationFilters)
+      : this.getDirectoryWithFallback();
     this.subscriptions.add(
-      (this.educationFilters && this.entityType !== 'COUNSELOR'
-        ? this.tutorService.searchDirectory(this.entityType, this.educationFilters)
-        : this.tutorService.getTutorsByEntityType(this.entityType)).subscribe({
+      directoryRequest.subscribe({
         next: counselors => {
-          this.counselors = (Array.isArray(counselors) ? counselors : [])
+          if (requestVersion !== this.directoryRequestVersion) return;
+          const refreshed = (Array.isArray(counselors) ? counselors : [])
             .filter(counselor => this.isActiveListing(counselor));
+          // Never replace the valid Home cache with an anomalous empty mobile
+          // response. A genuine empty directory still remains empty when no
+          // cached records exist.
+          if (refreshed.length || !this.counselors.length) this.counselors = refreshed;
           this.counselors.forEach(counselor => this.watchLikes(counselor));
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: () => {
+          if (requestVersion !== this.directoryRequestVersion) return;
           this.isLoading = false;
-          this.errorMessage = `We couldn’t load ${this.directoryTitle.toLowerCase()} right now. Check your connection and try again.`;
+          this.errorMessage = this.counselors.length
+            ? ''
+            : `We couldn’t load ${this.directoryTitle.toLowerCase()} right now. Check your connection and try again.`;
+          this.cdr.detectChanges();
         }
       })
+    );
+  }
+
+  /**
+   * Home already loads the general tutor directory successfully. Some mobile
+   * sessions receive an empty/error response from the entityType variant, so
+   * reuse that proven endpoint and filter locally instead of showing 0 cards.
+   */
+  private getDirectoryWithFallback(): Observable<Tutor[]> {
+    const expectedType = this.entityType;
+    const normalizeRequestedType = (items: Tutor[]) => (Array.isArray(items) ? items : [])
+      // The endpoint is already filtered by entityType. Some Academy payloads
+      // omit that property or return a legacy alias; normalizing it prevents
+      // valid Academy records from being discarded only on the inner page.
+      .map(item => ({ ...item, entityType: expectedType } as Tutor));
+    const filterExpectedType = (items: Tutor[]) => (Array.isArray(items) ? items : [])
+      .filter(item => String(item?.entityType || '').trim().toUpperCase() === expectedType);
+
+    // Unlike paginated workshops, the tutors endpoint returns the complete
+    // INDIVIDUAL directory. Fetch it without a city parameter and apply the
+    // same local city matcher as Home so active unverified tutors remain.
+    // Fetch the complete Academy directory just like Home. Some backend city
+    // filters use legacy spellings or have incomplete city indexing; applying
+    // the shared local matcher avoids valid cities returning an empty page.
+    return this.tutorService.getTutorsByEntityType(expectedType).pipe(
+      switchMap(items => {
+        const requestedDirectory = normalizeRequestedType(items);
+        return requestedDirectory.length
+          ? of(requestedDirectory)
+          : this.tutorService.fetchTutors(true).pipe(map(filterExpectedType));
+      }),
+      catchError(() => this.tutorService.fetchTutors(true).pipe(map(filterExpectedType)))
+    );
+  }
+
+  private filterDirectoryType(items: Tutor[] | null | undefined): Tutor[] {
+    return (Array.isArray(items) ? items : []).filter(item =>
+      String(item?.entityType || '').trim().toUpperCase() === this.entityType
     );
   }
 
@@ -203,6 +327,21 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
       .toLocaleLowerCase()
       .replace(/[^\p{L}\p{N}]+/gu, ' ')
       .replace(/\s+/g, ' ');
+  }
+
+  private matchesSelectedCity(selectedCity: string, listingLocation: string): boolean {
+    const aliases: Record<string, string[]> = {
+      bengaluru: ['bengaluru', 'bangalore'],
+      bangalore: ['bengaluru', 'bangalore'],
+      mumbai: ['mumbai', 'bombay'],
+      bombay: ['mumbai', 'bombay'],
+      chennai: ['chennai', 'madras'],
+      madras: ['chennai', 'madras'],
+      kolkata: ['kolkata', 'calcutta'],
+      calcutta: ['kolkata', 'calcutta']
+    };
+    const candidates = aliases[selectedCity] ?? [selectedCity];
+    return candidates.some(candidate => listingLocation.includes(candidate));
   }
 
   async openEducationFilters(): Promise<void> {
@@ -227,6 +366,9 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.verifiedOnly = value;
     this.showVerifiedMenu = false;
+    // Ionic may retain this page between navigations; update the cached view
+    // immediately when the user switches between Verified and All.
+    this.cdr.detectChanges();
   }
 
   openFilters(tab: FilterTab): void {
@@ -261,7 +403,25 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   isVerified(counselor: Tutor): boolean {
-    return !!(counselor.isVerified || counselor.verified);
+    // `isVerified` is the current API source of truth. Some older records can
+    // contain a stale, conflicting `verified` alias; OR-ing both values makes
+    // an explicitly unverified tutor appear verified and breaks this filter.
+    const primary = this.toOptionalBoolean((counselor as any).isVerified);
+    if (primary !== null) return primary;
+
+    const legacy = this.toOptionalBoolean((counselor as any).verified);
+    if (legacy !== null) return legacy;
+
+    return this.toOptionalBoolean((counselor as any).documentsVerified) === true;
+  }
+
+  private toOptionalBoolean(value: unknown): boolean | null {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value === 1 ? true : value === 0 ? false : null;
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'true' || normalized === '1') return true;
+    if (normalized === 'false' || normalized === '0') return false;
+    return null;
   }
 
   isLiked(counselor: Tutor): boolean {

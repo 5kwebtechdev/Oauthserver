@@ -189,10 +189,11 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
    *  the slide counter are switched off since both visible cards are equally
    *  current rather than one active slide among peeking neighbors. */
   private isDesktopDefaultCarousel(): boolean {
+    const isHomeScreen = this.screen === 'HOME' || this.screen === 'HOME_PARENTS';
     const isVariant = this.variant === 'article-details' || this.variant === 'eduhub-parent'
       || this.variant === 'eduhub-inner' || this.variant === 'parent-learning' || this.variant === 'lesson';
     const isTabletUp = typeof window !== 'undefined' && window.innerWidth > 768;
-    return !isVariant && isTabletUp;
+    return !isHomeScreen && !isVariant && isTabletUp;
   }
 
   private startAutoPlay(): void {
@@ -250,6 +251,10 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     const parentEduHubInner = this.variant === 'eduhub-inner';
     const parentLearning = this.variant === 'parent-learning';
     const lesson = this.variant === 'lesson';
+    const homeDesktop = (this.screen === 'HOME' || this.screen === 'HOME_PARENTS')
+      && typeof window !== 'undefined'
+      && window.innerWidth >= 768
+      && !document.documentElement.classList.contains('plt-capacitor');
     const defaultDesktop = this.isDesktopDefaultCarousel();
     // Match the rendered web cards, not an estimated percentage (CSS uses
     // 50% minus half the gap). Clamp the last slide to keep both cards whole.
@@ -264,13 +269,13 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
     const singleAd = this.ads.length === 1;
-    const cardWidth = lesson || singleAd
+    const cardWidth = lesson || singleAd || homeDesktop
       ? containerWidth
       : parentLearning
       ? Math.min(305, containerWidth * 0.845)
       : containerWidth * (articleDetails ? 0.845 : (parentEduHub || parentEduHubInner) ? 0.81 : defaultDesktop ? 0.47 : 0.82);
     const gap = lesson ? 0 : (articleDetails || parentEduHub || parentEduHubInner || parentLearning ? 8 : 10);
-    const noPeek = lesson || articleDetails || parentEduHub || parentEduHubInner || parentLearning || defaultDesktop;
+    const noPeek = lesson || articleDetails || parentEduHub || parentEduHubInner || parentLearning || homeDesktop || defaultDesktop;
     const peekOffset = noPeek ? 0 : (containerWidth - cardWidth) / 2;
     const translateX = peekOffset - this.currentIndex * (cardWidth + gap);
     el.style.transform = `translateX(${translateX}px)`;

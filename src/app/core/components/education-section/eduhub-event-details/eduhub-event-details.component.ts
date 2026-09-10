@@ -67,11 +67,10 @@ export class EduHubEventDetailsComponent implements OnInit {
 
   get publicLocation(): string {
     if (!this.item) return '';
-    const cityAndState = [this.item.city, this.item.state]
+    return [this.item.city, this.item.state]
       .map(value => String(value ?? '').trim())
       .filter(Boolean)
       .join(', ');
-    return cityAndState || String(this.item.address ?? '').trim();
   }
 
   get displayName(): string {
@@ -95,7 +94,7 @@ export class EduHubEventDetailsComponent implements OnInit {
   get venue(): string {
     if (!this.item) return '';
     return this.item.unlocked
-      ? String(this.item.exactLocation || this.item.address || this.publicLocation).trim()
+      ? this.firstText(this.item.exactLocation, this.item.address, this.item.venue, this.publicLocation)
       : this.publicLocation;
   }
 

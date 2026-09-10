@@ -1,8 +1,9 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Share } from '@capacitor/share';
 import { InfiniteScrollCustomEvent, IonicModule } from '@ionic/angular';
+import { Subscription, distinctUntilChanged, skip } from 'rxjs';
 
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
@@ -32,7 +33,7 @@ interface EventListingRouteData {
   templateUrl: './eduhub-events.component.html',
   styleUrls: ['./eduhub-events.component.scss']
 })
-export class EduHubEventsComponent implements OnInit {
+export class EduHubEventsComponent implements OnInit, OnDestroy {
   readonly loadingCards = [0, 1, 2];
 
   entityType: EduHubEventEntityType = 'Events';
@@ -54,6 +55,7 @@ export class EduHubEventsComponent implements OnInit {
 
   private readonly pageSize = 20;
   private readonly likeInProgress = new Set<number>();
+  private readonly subscriptions = new Subscription();
   private requestVersion = 0;
 
   constructor(
@@ -76,7 +78,17 @@ export class EduHubEventsComponent implements OnInit {
     const data = this.route.snapshot.data as EventListingRouteData;
     this.entityType = data.entityType === 'Workshop' ? 'Workshop' : 'Events';
     this.title = data.title === 'Workshops' ? 'Workshops' : 'Events';
+    const navigationCity = String(this.route.snapshot.queryParamMap.get('city') || '').trim();
+    if (navigationCity) this.cityService.selectCity(navigationCity);
     this.loadFirstPage();
+    this.subscriptions.add(this.cityService.city$.pipe(
+      distinctUntilChanged(),
+      skip(1)
+    ).subscribe(() => this.loadFirstPage()));
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   get sectionTitle(): string {
@@ -162,7 +174,7 @@ export class EduHubEventsComponent implements OnInit {
     this.totalPages = 0;
     this.totalElements = 0;
 
-    this.eventsService.getPage(this.entityType, 0, this.pageSize).subscribe({
+    this.eventsService.getPage(this.entityType, 0, this.pageSize, this.cityService.city).subscribe({
       next: response => {
         if (requestVersion !== this.requestVersion) return;
         this.items = this.normaliseItems(response.content);
@@ -189,7 +201,7 @@ export class EduHubEventsComponent implements OnInit {
     this.isLoadingMore = true;
     this.paginationError = '';
 
-    this.eventsService.getPage(this.entityType, nextPage, this.pageSize).subscribe({
+    this.eventsService.getPage(this.entityType, nextPage, this.pageSize, this.cityService.city).subscribe({
       next: response => {
         const incoming = this.normaliseItems(response.content)
           .filter(item => !this.items.some(current => current.id === item.id));
@@ -222,7 +234,9 @@ export class EduHubEventsComponent implements OnInit {
 
   getEventMeta(item: EduHubEventItem): string {
     const schedule = this.getScheduleLabel(item);
-    const venue = this.firstText(item.venue);
+    // Venue/address is protected contact information. The API may include it
+    // in the catalogue response, but it must not be exposed before unlock.
+    const venue = item.unlocked ? this.firstText(item.exactLocation, item.address, item.venue) : '';
     const organizer = this.firstText(item.organizer);
     return [schedule, venue, organizer ? `By ${organizer}` : ''].filter(Boolean).join(' • ');
   }
@@ -236,7 +250,11 @@ export class EduHubEventsComponent implements OnInit {
       .map(value => String(value ?? '').trim())
       .filter(Boolean)
       .join(', ');
-    return cityAndState || String(item.address ?? '').trim();
+    // Never fall back to the exact address for a locked landing-page card.
+    // City/state are the public discovery location; the complete venue is
+    // revealed on the details page only after a successful unlock.
+    if (!item.unlocked) return cityAndState;
+    return cityAndState || this.firstText(item.exactLocation, item.address, item.venue);
   }
 
   getFeeLabel(item: EduHubEventItem): string {

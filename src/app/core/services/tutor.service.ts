@@ -25,6 +25,7 @@ export class TutorService {
     private tutorsCache$ = new BehaviorSubject<Tutor[]>([]);
     private tutorsLoaded = false;
     private tutorsLoading$ = new BehaviorSubject<boolean>(false);
+    private readonly directoryCache = new Map<string, Tutor[]>();
 
     // Selected tutor for profile view
     private selectedTutor$ = new BehaviorSubject<Tutor | null>(null);
@@ -96,6 +97,17 @@ export class TutorService {
         return this.tutorsLoaded;
     }
 
+    setDirectoryCache(entityType: string, tutors: Tutor[] | null | undefined): void {
+        const key = String(entityType || '').trim().toUpperCase();
+        if (!key) return;
+        this.directoryCache.set(key, Array.isArray(tutors) ? [...tutors] : []);
+    }
+
+    getDirectoryCache(entityType: string): Tutor[] {
+        const key = String(entityType || '').trim().toUpperCase();
+        return [...(this.directoryCache.get(key) || [])];
+    }
+
     /**
      * Fetch all tutors from API - called once and cached
      * Subsequent calls return cached data
@@ -123,12 +135,12 @@ export class TutorService {
      * category guesses. For example, EduHub Counselors uses
      * GET /v1/tutors?entityType=COUNSELOR.
      */
-    fetchTutorsByEntityType(entityType: string): Observable<Tutor[]> {
+    fetchTutorsByEntityType(entityType: string, city?: string): Observable<Tutor[]> {
         const normalizedType = String(entityType || '').trim().toUpperCase();
         if (!normalizedType) return this.fetchTutors();
 
         this.tutorsLoading$.next(true);
-        return this.getTutorsByEntityType(normalizedType).pipe(
+        return this.getTutorsByEntityType(normalizedType, city).pipe(
             tap(tutors => {
                 this.tutorsCache$.next(tutors);
                 this.tutorsLoaded = true;
@@ -177,9 +189,11 @@ export class TutorService {
         }));
     }
 
-    getTutorsByEntityType(entityType: string): Observable<Tutor[]> {
+    getTutorsByEntityType(entityType: string, city?: string): Observable<Tutor[]> {
         const normalizedType = String(entityType || '').trim().toUpperCase();
-        const params = new HttpParams().set('entityType', normalizedType);
+        let params = new HttpParams().set('entityType', normalizedType);
+        const selectedCity = String(city ?? '').trim();
+        if (selectedCity) params = params.set('city', selectedCity);
         return this.http.get<any>(`${this.apiUrl}/tutors`, {
             headers: this.getHeaders(),
             params
@@ -190,7 +204,8 @@ export class TutorService {
                     || response?.tutors
                     || response?.data?.content
                     || response?.data?.tutors
-                    || (Array.isArray(response?.data) ? response.data : [])))
+                    || (Array.isArray(response?.data) ? response.data : []))),
+            tap(tutors => this.setDirectoryCache(normalizedType, tutors))
         );
     }
 

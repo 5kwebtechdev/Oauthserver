@@ -2,7 +2,8 @@ import { Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild } fro
 import { Platform, ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from "@angular/common";
 import { Router, RouterModule } from '@angular/router';
-import { catchError, delay, firstValueFrom, forkJoin, map, Observable, of, Subject, takeUntil } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { catchError, firstValueFrom, forkJoin, map, Observable, of, Subject, takeUntil } from 'rxjs';
 import { UserService } from '../../core/services/user.service';
 import { IonicModule } from "@ionic/angular";
 import { MoodService } from '../../core/services/mood.service';
@@ -32,6 +33,7 @@ import { environment } from '../../../environments/environment';
 import { LearningService } from '../../core/services/learning.service';
 
 type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
+type FamilyMessageType = 'CELEBRATE' | 'ENCOURAGE' | 'CUSTOM';
 
 interface MoodBalanceSegment {
     key: MoodBalanceKey;
@@ -361,7 +363,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                 'HABIT FORMATION',
                 this.completionRate,
                 'habit',
-                'assets/figma/parent-home/foundation-habit.webp'
+                'assets/figma/home-glance/tab-habit.webp'
             ),
             this.buildFoundation(
                 'TASK MANAGEMENT',
@@ -416,7 +418,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         private platform: Platform,
         private parentAnalyticsService: ParentAnalyticsService,
         private toastService: CustomToastService,
-        private learningService: LearningService
+        private learningService: LearningService,
+        private http: HttpClient
     ) { }
 
     assignLearningReward(event: { item?: any; coins?: number } | null): void {
@@ -1515,6 +1518,29 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.messageDraft = value.slice(0, this.messageMaxLength);
     }
 
+    sendQuickMessage(messageType: 'CELEBRATE' | 'ENCOURAGE'): void {
+        if (this.isSendingMessage) return;
+
+        const childId = this.getSelectedChildReceiverId();
+        if (childId === null) {
+            this.toastService.error('Please select a child before sending a message.');
+            return;
+        }
+
+        this.isSendingMessage = true;
+        this.sendMessageToChild(childId, messageType).subscribe({
+            next: () => {
+                this.isSendingMessage = false;
+                this.toastService.success('Message sent successfully.');
+            },
+            error: (error) => {
+                this.isSendingMessage = false;
+                console.warn('[ParentAccount] Unable to send family message:', error);
+                this.toastService.error('Unable to send message. Please try again.');
+            }
+        });
+    }
+
     closeMessageComposer(): void {
         this.dismissMessageComposer();
     }
@@ -1529,8 +1555,14 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         // Guard against duplicate taps while a send is already in flight.
         if (this.isSendingMessage) return;
 
+        const childId = this.getSelectedChildReceiverId();
+        if (childId === null) {
+            this.toastService.error('Please select a child before sending a message.');
+            return;
+        }
+
         this.isSendingMessage = true;
-        this.sendMessageToChild(this.selectedChild?.id ?? null, message).subscribe({
+        this.sendMessageToChild(childId, 'CUSTOM', message).subscribe({
             next: () => {
                 this.isSendingMessage = false;
                 this.toastService.success('Message sent successfully.');
@@ -1538,21 +1570,75 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                 // naturally leaves the user right where they were.
                 this.dismissMessageComposer();
             },
-            error: () => {
+            error: (error) => {
                 this.isSendingMessage = false;
+                console.warn('[ParentAccount] Unable to send family message:', error);
                 this.toastService.error('Unable to send message. Please try again.');
             }
         });
     }
 
-    /**
-     * TODO: no backend endpoint for "send a message to my child" exists yet.
-     * This is a placeholder so the toast/duplicate-tap UX can be built and
-     * verified now — swap the body for the real HTTP call once the API is
-     * available, keeping the same success/error contract.
-     */
-    private sendMessageToChild(childId: string | number | null, message: string): Observable<{ success: boolean }> {
-        return of({ success: true }).pipe(delay(400));
+    private sendMessageToChild(
+        childId: string | number,
+        messageType: FamilyMessageType,
+        customMessage?: string
+    ): Observable<{ success: boolean }> {
+        const payload: { receiverUserId: number | string; messageType: FamilyMessageType; customMessage?: string } = {
+            receiverUserId: childId,
+            messageType
+        };
+        if (messageType === 'CUSTOM' && customMessage) payload.customMessage = customMessage;
+
+        return this.http.post<{ success: boolean }>(
+            `${environment.apiUrl}/family/messages/`,
+            payload,
+            { headers: this.familyMessageHeaders() }
+        );
+    }
+
+    private familyMessageHeaders(): HttpHeaders {
+        let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        // AuthService.getToken() intentionally returns null when its activity
+        // timer considers the session incomplete. Family messages still need
+        // the JWT that belongs to the currently signed-in profile, so use the
+        // in-memory/raw stored session as a fallback (the same approach used
+        // by the family onboarding service).
+        const token = this.resolveFamilyMessageToken();
+        if (token) {
+            headers = headers.set('Authorization', `Bearer ${token}`);
+        }
+        return headers;
+    }
+
+    private resolveFamilyMessageToken(): string {
+        const candidates = [
+            this.authService.getToken(),
+            this.authService.getUserSession()?.token,
+            this.readStoredValue('auth_token')
+        ];
+
+        for (const candidate of candidates) {
+            const token = String(candidate ?? '')
+                .trim()
+                .replace(/^Bearer\s+/i, '')
+                .trim();
+            if (token) return token;
+        }
+        return '';
+    }
+
+    private readStoredValue(key: string): string | null {
+        try {
+            return localStorage.getItem(key);
+        } catch {
+            return null;
+        }
+    }
+
+    private getSelectedChildReceiverId(): string | number | null {
+        const childId = this.selectedChild?.id;
+        if (childId === null || childId === undefined || String(childId).trim() === '') return null;
+        return childId;
     }
 
     @HostListener('document:keydown.escape')

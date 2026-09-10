@@ -705,4 +705,20 @@
 		margin-inline: auto;
 		padding-inline: 32px;
 	}
+
+	// Do not let the seven weekday controls expand into oversized circles on
+	// wide activity modals. A fixed 44px target stays compact while retaining
+	// the recommended minimum pointer/touch area.
+	.child-planner-root .planner-entry-days {
+		grid-template-columns: repeat(7, 44px);
+		justify-content: space-between;
+		gap: 8px;
+
+		button {
+			width: 44px;
+			height: 44px;
+			aspect-ratio: auto;
+			font-size: 14px;
+		}
+	}
 }

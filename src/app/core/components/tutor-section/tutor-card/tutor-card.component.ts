@@ -89,11 +89,11 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     { key: 'academies', label: 'Academies', image: 'assets/figma/eduhub-home/category-academies.webp', route: '/authed/academies' },
     { key: 'workshops', label: 'Workshops', image: 'assets/figma/eduhub-home/category-workshops.webp', route: '/authed/education/workshops' },
     { key: 'events', label: 'Events', image: 'assets/figma/eduhub-home/category-events.webp', route: '/authed/education/events' },
-    { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/eduhub-home/category-stationery.webp', route: '/authed/school-store' },
-    { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/eduhub-home/category-book-stores.webp', route: '/authed/school-store' },
+    { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/eduhub-home/category-stationery.webp', route: '/authed/education/shops' },
+    { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/eduhub-home/category-book-stores.webp', route: '/authed/education/shops' },
     { key: 'counselors', label: 'Counselors', image: 'assets/figma/eduhub-home/category-counselors.webp', route: '/authed/counselors' },
     { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/eduhub-home/category-second-hand-books.webp', route: '/authed/second-hand-books' },
-    { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/eduhub-home/category-sports-shops.webp', route: '/authed/school-store' }
+    { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/eduhub-home/category-sports-shops.webp', route: '/authed/education/shops' }
   ];
 
   selectedCategoryKey: CategoryKey = 'tutors';
@@ -186,6 +186,12 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     return this.isExternalCategory(this.selectedCategoryKey)
       ? this.isExternalCategoryLoading
       : this.isLoading;
+  }
+
+  get isShopCategory(): boolean {
+    return this.selectedCategoryKey === 'stationery'
+      || this.selectedCategoryKey === 'book-stores'
+      || this.selectedCategoryKey === 'sports-shops';
   }
 
   /** Keep the category CTA available whenever the selected preview has data. */
@@ -339,6 +345,9 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     if (this.isExternalCategory(this.selectedCategoryKey)) {
       this.loadExternalCategory(this.selectedCategoryKey);
     }
+    // Tutors are returned as a complete INDIVIDUAL directory and are filtered
+    // locally. Changing city must not replace that complete cache with a
+    // backend-specific city response.
   }
 
   private filterBySelectedCity(items: TutorListItem[]): TutorListItem[] {
@@ -415,7 +424,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
     // Subscribe to recent tutors
     this.subscriptions.add(
-      this.tutorService.getRecentTutors(this.maxTutors).subscribe(tutors => {
+      // Keep the complete tutor directory here. `visibleTutors` applies the
+      // city filter first and only then limits the Home preview to four cards.
+      // Limiting before filtering hid valid records such as Elizabeth Sherly.
+      this.tutorService.getRecentTutors(Number.MAX_SAFE_INTEGER).subscribe(tutors => {
         this.tutors = tutors;
         this.syncLikeStates();
         if (this.selectedCategoryKey === 'tutors') this.isLoading = false;
@@ -467,14 +479,21 @@ export class TutorCardComponent implements OnInit, OnDestroy {
             // Academy discovery must be driven by account activity, not the
             // verification flag. Unverified active academies are visible but
             // simply do not receive a Verified badge.
-            .filter((academy: any) => academy?.isActive === true)
+            .filter((academy: any) => this.isActiveDirectoryListing(academy))
             .map((a: any) => {
               const { listItem, profile } = this.mapAcademy(a);
               if (listItem.id != null) this.academyProfiles.set(Number(listItem.id), profile);
               return listItem;
             });
 
-          this.academyTutors = mapped.slice(0, this.maxTutors);
+          // Keep every academy; `visibleAcademies` filters by city first and
+          // only then limits the Home preview. Slicing here hid Bengaluru
+          // academies whenever they were not among the first four API rows.
+          this.academyTutors = mapped;
+          this.tutorService.setDirectoryCache(
+            'ACADEMY',
+            Array.from(this.academyProfiles.values())
+          );
           this.academyTotalCount = Number(res?.data?.totalElements ?? mapped.length);
           this.academyLoaded = true;
           this.academyLoading = false;
@@ -583,10 +602,84 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   onViewAll(): void {
     if (this.selectedCategoryKey === 'tutors') {
-      this.router.navigateByUrl('/authed/tutors');
+      const visibleProfiles = this.visibleTutors
+        .map(tutor => this.tutorService.getTutorFromCache(tutor.id))
+        .filter((tutor): tutor is Tutor => !!tutor);
+      // Carry the exact Home selection into the full directory. This also
+      // protects native/Ionic navigation from recreating the destination
+      // before its shared-city subscription has emitted.
+      void this.router.navigate(['/authed/tutors'], {
+        queryParams: { city: this.cityService.city },
+        state: {
+          city: this.cityService.city,
+          directoryItems: visibleProfiles
+        }
+      });
+      return;
+    }
+    if (this.isShopCategory) {
+      const shopDirectory: Record<'stationery' | 'book-stores' | 'sports-shops', { label: string; entityType: string }> = {
+        stationery: { label: 'Stationery Shops', entityType: 'stationary' },
+        'book-stores': { label: 'Book Stores', entityType: 'bookstore' },
+        'sports-shops': { label: 'Sports Shops', entityType: 'sports' }
+      };
+      const selectedShop = shopDirectory[this.selectedCategoryKey as keyof typeof shopDirectory];
+
+      // These are EduHub local-business listings, not the school ecommerce
+      // catalogue. Preserve the Home city so each full directory opens with
+      // matching results and remains independently changeable there.
+      void this.router.navigate(['/authed/education/shops'], {
+        queryParams: {
+          label: selectedShop.label,
+          entityType: selectedShop.entityType,
+          city: this.cityService.city
+        },
+        state: { city: this.cityService.city }
+      });
+      return;
+    }
+    if (this.selectedCategoryKey === 'workshops' || this.selectedCategoryKey === 'events') {
+      void this.router.navigate([this.selectedCategory.route], {
+        queryParams: { city: this.cityService.city }
+      });
+      return;
+    }
+    if (this.selectedCategoryKey === 'academies') {
+      const visibleProfiles = this.visibleAcademies
+        .map(academy => this.academyProfiles.get(Number(academy.id)))
+        .filter((academy): academy is Tutor => !!academy);
+      void this.router.navigate([this.selectedCategory.route], {
+        queryParams: { city: this.cityService.city },
+        state: {
+          city: this.cityService.city,
+          directoryItems: visibleProfiles
+        }
+      });
       return;
     }
     this.router.navigateByUrl(this.selectedCategory.route);
+  }
+
+  onViewShopDetails(listing: EduHubPreview): void {
+    if (!this.isShopCategory) return;
+    const labelByCategory: Partial<Record<CategoryKey, string>> = {
+      stationery: 'Stationery Shops',
+      'book-stores': 'Book Stores',
+      'sports-shops': 'Sports Shops'
+    };
+    const entityTypeByCategory: Partial<Record<CategoryKey, string>> = {
+      stationery: 'stationary',
+      'book-stores': 'bookstore',
+      'sports-shops': 'sports'
+    };
+    void this.router.navigate(['/authed/education/shops'], {
+      queryParams: {
+        label: labelByCategory[this.selectedCategoryKey],
+        entityType: entityTypeByCategory[this.selectedCategoryKey],
+        listing: listing.id,
+        city: this.cityService.city
+      }
+    });
   }
 
   onViewCounselorProfile(counselor: Tutor): void {

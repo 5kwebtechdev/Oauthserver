@@ -1,5 +1,6 @@
 <ng-container *ngIf="isVisible && ads.length > 0">
   <div class="adb"
+    [class.adb--home]="screen === 'HOME' || screen === 'HOME_PARENTS'"
     [class.adb--article-details]="variant === 'article-details'"
     [class.adb--eduhub-parent]="variant === 'eduhub-parent'"
     [class.adb--eduhub-inner]="variant === 'eduhub-inner'"

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { INDIA_STATES } from '../../../constants/india-location-options';
@@ -37,6 +38,7 @@ export class EduHubCitySelectorComponent implements OnInit, OnDestroy {
   constructor(
     readonly cityService: EduHubCityService,
     private readonly locationService: LocationService,
+    private readonly route: ActivatedRoute,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -47,7 +49,11 @@ export class EduHubCitySelectorComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     }));
 
-    if (!this.cityService.hasSavedCity() && !this.wasLocationPromptedThisSession()) {
+    // An explicit city in an inner-page URL always wins. Automatically asking
+    // for the device location here could overwrite a city the user just chose
+    // when the Ionic page is recreated or refreshed.
+    const routeCity = String(this.route.snapshot.queryParamMap.get('city') ?? '').trim();
+    if (!routeCity && !this.cityService.hasSavedCity() && !this.wasLocationPromptedThisSession()) {
       this.markLocationPromptedThisSession();
       void this.useCurrentLocation();
     }

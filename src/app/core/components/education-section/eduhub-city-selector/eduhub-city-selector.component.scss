@@ -1,6 +1,6 @@
 :host {
   display: inline-flex;
-  max-width: 160px;
+  max-width: 220px;
 }
 
 .eduhub-city-selector {
@@ -9,6 +9,19 @@
   align-items: center;
   max-width: 100%;
   color: inherit;
+  min-width: 0;
+  min-height: 22px;
+}
+
+.eduhub-city-selector__value {
+  display: block;
+  max-width: clamp(110px, 14vw, 180px);
+  overflow: hidden;
+  padding-right: 20px;
+  color: currentColor;
+  font: 600 15px/1.3 var(--font-sans, 'Nunito', sans-serif);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .eduhub-city-selector__pin {
@@ -26,28 +39,35 @@
 }
 
 select {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  min-width: 100%;
   max-width: 100%;
   margin: 0;
-  padding: 0 18px 0 0;
+  padding: 1px 20px 1px 0;
   border: 0;
   outline: 0;
   background: transparent;
   color: inherit;
+  opacity: 0;
   font: 600 15px/1.3 var(--font-sans, 'Nunito', sans-serif);
   text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
 }
 
 select:disabled {
-  opacity: .72;
   cursor: wait;
 }
 
 .eduhub-city-selector__chevron {
   position: absolute;
   right: 2px;
+  z-index: 3;
   width: 7px;
   height: 7px;
   border-right: 2px solid currentColor;

@@ -46,6 +46,8 @@ export interface BadgeApiResponse {
     celebrationTitle: string;
     celebrationMessage: string;
     shareMessage: string;
+    /** Inactive badge definitions must not be presented in Badge Quest. */
+    isActive?: boolean;
 }
 
 export interface RecentAchievement {
