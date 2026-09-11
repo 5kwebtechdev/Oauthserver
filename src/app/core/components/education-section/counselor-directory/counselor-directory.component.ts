@@ -17,13 +17,14 @@ import { TutorLikeService } from '../../../services/tutor-like.service';
 import { TutorService } from '../../../services/tutor.service';
 import { EduHubCityService } from '../../../services/eduhub-city.service';
 import { EduHubCitySelectorComponent } from '../eduhub-city-selector/eduhub-city-selector.component';
+import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 
 type FilterTab = 'specialization' | 'experience';
 
 @Component({
   selector: 'app-counselor-directory',
   standalone: true,
-  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, TutorAllFilterComponent],
+  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, TutorAllFilterComponent, ProfileImageComponent],
   templateUrl: './counselor-directory.component.html',
   styleUrls: ['./counselor-directory.component.scss']
 })
@@ -498,13 +499,8 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     return counselor.name?.trim() || counselor.entityName?.trim() || this.singularTitle;
   }
 
-  getProfileImage(counselor: Tutor): string {
-    return counselor.profilePicUrl?.trim() || 'assets/Images-Transparent/Image-Tutor.png';
-  }
-
-  onImageError(event: Event): void {
-    const image = event.target as HTMLImageElement;
-    image.src = 'assets/Images-Transparent/Image-Tutor.png';
+  getProfileImage(counselor: Tutor): string | null {
+    return counselor.profilePicUrl?.trim() || null;
   }
 
   getSpecializationLabel(counselor: Tutor): string {

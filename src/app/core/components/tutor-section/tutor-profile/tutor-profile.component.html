@@ -17,7 +17,7 @@
 
       <main *ngIf="tutor" class="counselor-detail-content">
         <section class="counselor-profile-hero">
-          <div class="counselor-avatar-wrap"><img [src]="getProfileImage()" [alt]="getDisplayName() + ' profile image'" (error)="onProfileImageError($event)"><img *ngIf="isVerified()" class="counselor-verified" src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified"></div>
+          <div class="counselor-avatar-wrap"><app-profile-image [src]="getProfileImage()" [name]="getDisplayName()" [alt]="getDisplayName() + ' profile image'"></app-profile-image><img *ngIf="isVerified()" class="counselor-verified" src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified"></div>
           <div class="counselor-profile-copy"><h1>{{ getDisplayName() }}</h1><div class="counselor-profile-stats"><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">{{ getExperienceString() }}</span><button type="button" [disabled]="isLikeRequestInProgress" (click)="toggleLike()"><img src="assets/figma/parent-eduhub-inner/favorite.svg" alt="" aria-hidden="true">{{ getLikesCount() }} likes</button></div><span class="counselor-availability"><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true">{{ getContactModesString() }}</span></div>
         </section>
 
@@ -133,8 +133,8 @@
     <main *ngIf="tutor" class="detail-content">
       <section class="profile-hero">
         <div class="avatar-wrap">
-          <img class="avatar" [src]="getProfileImage()" [alt]="getDisplayName() + ' profile image'"
-            (error)="onProfileImageError($event)" />
+          <app-profile-image class="avatar" [src]="getProfileImage()" [name]="getDisplayName()"
+            [alt]="getDisplayName() + ' profile image'"></app-profile-image>
           <span class="verified-badge" *ngIf="isVerified()" aria-label="Verified tutor">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="m8.3 12.4 2.3 2.3 5.2-5.4" />

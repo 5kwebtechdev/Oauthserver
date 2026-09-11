@@ -23,13 +23,14 @@ import { TutorLikeService } from '../../../services/tutor-like.service';
 import { TutorService } from '../../../services/tutor.service';
 import { UserService } from '../../../services/user.service';
 import { FaqItem, PROFILE_FAQS, ProfileFactsComponent } from '../../user-profile/profile-facts/profile-facts.component';
+import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 
 type ContactMethod = 'call' | 'email' | 'whatsapp';
 
 @Component({
   selector: 'tutor-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, ProfileFactsComponent],
+  imports: [CommonModule, IonicModule, ProfileFactsComponent, ProfileImageComponent],
   templateUrl: './tutor-profile.component.html',
   styleUrls: ['./tutor-profile.component.scss']
 })
@@ -39,7 +40,6 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   @Input() tutor: Tutor | undefined;
   @Input() categoryKey: string | null = null;
 
-  readonly fallbackProfileImage = 'assets/Images-Transparent/Image-Tutor.png';
   readonly tutorFaqs: FaqItem[] = PROFILE_FAQS.filter(faq => {
     const section = (faq.section || '').toLowerCase();
     const screen = (faq.screen || '').toLowerCase();
@@ -243,15 +243,8 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     return this.tutor.name?.trim() || this.tutor.entityName?.trim() || (this.isCounselorProfile ? 'Counselor' : 'Tutor');
   }
 
-  getProfileImage(): string {
-    return this.tutor?.profilePicUrl?.trim() || this.fallbackProfileImage;
-  }
-
-  onProfileImageError(event: Event): void {
-    const image = event.target as HTMLImageElement;
-    if (!image.src.endsWith(this.fallbackProfileImage)) {
-      image.src = this.fallbackProfileImage;
-    }
+  getProfileImage(): string | null {
+    return this.tutor?.profilePicUrl?.trim() || null;
   }
 
   isVerified(): boolean {

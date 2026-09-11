@@ -108,7 +108,11 @@
             <article class="counselor-card">
               <div class="counselor-card__top">
                 <div class="counselor-card__photo">
-                  <img [src]="getProfileImage(counselor)" [alt]="getName(counselor) + ' profile image'" (error)="onImageError($event)">
+                  <app-profile-image
+                    [src]="getProfileImage(counselor)"
+                    [name]="getName(counselor)"
+                    [alt]="getName(counselor) + ' profile image'">
+                  </app-profile-image>
                 </div>
                 <div class="counselor-card__body">
                   <div class="counselor-card__headline">
