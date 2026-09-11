@@ -87,8 +87,7 @@ const routes: Routes = [
         loadComponent: () => import('../core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent)
       }, {
         path: 'content/description/:id',
-        redirectTo: 'content/questions/:id',
-        pathMatch: 'full'
+        loadComponent: () => import('../core/components/learning-section/learning-description/learning-description.component').then(m => m.LearningDescriptionComponent)
       }, {
         path: 'content/questions/:id',
         loadComponent: () => import('../core/components/learning-section/questions/questions.component').then(m => m.QuestionsComponent)

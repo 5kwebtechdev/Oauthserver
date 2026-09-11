@@ -5,7 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subject, of, throwError } from 'rxjs';
-import { catchError, map, takeUntil } from 'rxjs/operators';
+import { catchError, map, skip, takeUntil } from 'rxjs/operators';
 import { HttpClientModule } from '@angular/common/http';
 import { FooterComponent } from 'src/app/core/components/footer/footer.component';
 import { SupermePetComponent } from 'src/app/core/components/superme-pet/superme-pet.component';
@@ -235,6 +235,27 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       this.selectedCategory = savedCategory || 'quizzes';
     } else if (this.childView) {
       this.selectedCategory = 'quizzes';
+    }
+
+    // The shell reuses this component when only the learning query tab
+    // changes, so snapshot-only routing left Article/Master Class clicks on
+    // the old tab. React to later query changes as well.
+    this.route.queryParamMap.pipe(skip(1), takeUntil(this.destroy$)).subscribe(params => {
+      const nextCategory = this.normalizeCategory(params.get('tab'));
+      if (nextCategory && nextCategory !== this.selectedCategory) {
+        this.selectCategory(nextCategory);
+      }
+    });
+
+    // Keep old bookmarked ?tab=puzzles links usable, but canonicalize them so
+    // the removed Puzzle navigation item cannot remain visible in the URL.
+    if (this.route.snapshot.queryParamMap.get('tab')?.toLowerCase() === 'puzzles') {
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { tab: 'quizzes' },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      });
     }
 
     if (this.parentView) {
@@ -632,7 +653,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       void this.router.navigate(['/authed/content/article', item.id], extras);
       return;
     }
-    void this.router.navigate(['/authed/content/questions', item.id], extras);
+    void this.router.navigate(['/authed/content/description', item.id], extras);
   }
 
   openChildLearningItem(item: LearningCardData): void {

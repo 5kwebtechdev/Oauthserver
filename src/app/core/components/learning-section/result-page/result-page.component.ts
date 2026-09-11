@@ -107,8 +107,10 @@ export class ResultPageComponent implements OnInit, OnDestroy {
     });
 
     // Also intercept browser/iOS swipe-back (popstate) on web and PWA.
-    // Push a sentinel state first so the first popstate is ours to intercept.
-    history.pushState({ resultPageSentinel: true }, '');
+    // Do not push a second history entry here: that made the first Back press
+    // land on the same result page again. Replace the current entry instead,
+    // then let the previous page's popstate take us back to the content list.
+    history.replaceState({ ...(history.state || {}), resultPage: true }, '', window.location.href);
     window.addEventListener('popstate', this.handlePopState);
   }
 

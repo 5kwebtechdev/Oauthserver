@@ -83,6 +83,11 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly returnUrl: string;
   private readonly profileUserId: string | number | null;
+  /** Parent detail pages assign the article to the selected child instead of reading it. */
+  readonly parentAssignmentChildId: number | null;
+  isParentAssignment = false;
+  isAssigningToChild = false;
+  parentAssignmentComplete = false;
 
   // Popup state and config
   showMarkPopup = false;
@@ -121,6 +126,9 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     this.profileUserId = navigationState?.['ownProfile'] === true
       ? navigationState?.['forUserId'] ?? this.authService.getUserId()
       : null;
+    const selectedChildId = Number(navigationState?.['selectedChildId']);
+    this.parentAssignmentChildId = Number.isFinite(selectedChildId) && selectedChildId > 0 ? selectedChildId : null;
+    this.isParentAssignment = source.includes('view=parent') && this.parentAssignmentChildId !== null;
   }
 
   get isArticleRead(): boolean {
@@ -129,6 +137,25 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
   get isMarkAsReadDisabled(): boolean {
     return this.isMarking || this.isArticleRead || !this.readTimerComplete;
+  }
+
+  assignToChild(): void {
+    if (!this.article || !this.isParentAssignment || !this.parentAssignmentChildId || this.isAssigningToChild || this.parentAssignmentComplete) return;
+    this.isAssigningToChild = true;
+    this.actionError = '';
+    this.learningService.assignArticle(this.article.id, [this.parentAssignmentChildId], 20)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.isAssigningToChild = false;
+          this.parentAssignmentComplete = true;
+          this.actionError = '';
+        },
+        error: (error) => {
+          this.isAssigningToChild = false;
+          this.actionError = String(error?.error?.message || error?.message || 'Unable to assign this article. Please try again.');
+        }
+      });
   }
 
   get readTimerProgressPercent(): number {

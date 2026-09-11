@@ -2,5 +2,5 @@
   (error)="onImageError()">
 
 <ng-template #initialsFallback>
-  <span class="profile-image-initials" [attr.aria-label]="name || 'Profile image'">{{ initials }}</span>
+  <span class="profile-image-initials" [attr.aria-label]="name || 'Profile image'">{{ getProfileImageInitials() }}</span>
 </ng-template>

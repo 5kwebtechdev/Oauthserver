@@ -1,8 +1,9 @@
 <ng-container *ngIf="item?.type === 'article'; else challenge">
-    <learning-article-card [item]="item" [index]="index" (cardClick)="cardClick.emit($event)"></learning-article-card>
+    <learning-article-card [item]="item" [index]="index" [source]="source" [forUserId]="forUserId"
+        (cardClick)="cardClick.emit($event)"></learning-article-card>
 </ng-container>
 
 <ng-template #challenge>
-    <learning-challenge-card [item]="item" [index]="index" [source]="source"
+    <learning-challenge-card [item]="item" [index]="index" [source]="source" [forUserId]="forUserId"
         (cardClick)="cardClick.emit($event)"></learning-challenge-card>
 </ng-template>

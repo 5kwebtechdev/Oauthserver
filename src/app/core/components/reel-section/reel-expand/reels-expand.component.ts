@@ -169,6 +169,11 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     this.notifyReelViewed();
     const videoEl = this.playerVideo && this.playerVideo.nativeElement;
     if (videoEl && this.current) {
+      // iOS Safari only permits inline autoplay when the media is muted and
+      // the inline-playback flags are set before calling play().
+      videoEl.muted = true;
+      videoEl.setAttribute('playsinline', 'true');
+      videoEl.setAttribute('webkit-playsinline', 'true');
       // if current has a video URL use it, otherwise nothing to play
       const src = this.current.video || this.current.image || '';
       if (src) {

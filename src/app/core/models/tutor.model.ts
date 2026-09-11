@@ -228,7 +228,10 @@ export function toTutorListItem(tutor: Tutor): TutorListItem {
     return {
         id: tutor.id,
         name: tutor.name,
-        avatar: tutor.profilePicUrl || 'assets/Images-Transparent/Image-Tutor.png',
+        // Do not substitute the generic diamond placeholder here. The shared
+        // profile image component intentionally renders the first two initials
+        // when a tutor has no photo.
+        avatar: tutor.profilePicUrl || '',
         description: tutor.subjects?.length > 0
             ? tutor.subjects.join(', ')
             : `${tutor.qualification} Specialist`,

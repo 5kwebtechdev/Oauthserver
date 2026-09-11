@@ -286,9 +286,15 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
         : new Date(item.creationDate || item.date || '');
       const tags: string[] = [];
 
-      ['sleep', 'health', 'hobbies', 'social', 'school', 'growth'].forEach((key) => {
-        if (!item[key]) return;
-        String(item[key]).split(',').map((part) => part.trim()).filter(Boolean).forEach((part) => {
+      // Preserve every journal dimension returned by the API.  Previously the
+      // card only mapped six fields, so valid selections such as food,
+      // carrying, productivity and day silently disappeared from the UI.
+      ['sleep', 'health', 'hobbies', 'food', 'social', 'school', 'carrying', 'growth', 'productivity', 'day'].forEach((key) => {
+        const rawValue = item[key];
+        if (rawValue === null || rawValue === undefined || rawValue === '') return;
+        const values = Array.isArray(rawValue) ? rawValue : String(rawValue).split(',');
+        values.map((part: any) => typeof part === 'object' ? (part?.label ?? part?.name ?? part?.value ?? '') : String(part))
+          .map((part: string) => part.trim()).filter(Boolean).forEach((part) => {
           tags.push(`${key.charAt(0).toUpperCase()}${key.slice(1)}: ${part}`);
         });
       });

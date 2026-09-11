@@ -24,7 +24,9 @@
         class="reel-video"
         [poster]="current.image"
         preload="metadata"
+        muted
         playsinline
+        [attr.webkit-playsinline]="'true'"
         (timeupdate)="onVideoTimeUpdate($event)"
         (loadedmetadata)="onVideoMetadataLoaded()"
         (play)="onVideoPlay()"

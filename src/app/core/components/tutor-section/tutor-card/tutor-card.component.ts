@@ -63,6 +63,8 @@ interface EduHubPreview {
   fee: number | null;
   location: string;
   counselor?: Tutor;
+  /** Preserve the API record so details pages can render immediately. */
+  source?: EduHubDirectoryItem;
 }
 
 @Component({
@@ -399,7 +401,8 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       description: String(item?.bio || item?.description || item?.headline || [item?.city, item?.state].filter(Boolean).join(', ') || 'EduHub listing').trim(),
       image: item?.imageUrls?.[0] || item?.imageUrl || item?.thumbnailUrl || item?.profilePicUrl || item?.avatar || fallbackImage,
       fee: Number.isFinite(fee) ? fee : null,
-      location: [item?.city, item?.state].filter(Boolean).join(', ') || String(item?.address || '').trim()
+      location: [item?.city, item?.state].filter(Boolean).join(', ') || String(item?.address || '').trim(),
+      source: item
     };
   }
 
@@ -660,7 +663,35 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl(this.selectedCategory.route);
   }
 
-  onViewShopDetails(listing: EduHubPreview): void {
+  onViewExternalDetails(listing: EduHubPreview): void {
+    if (this.selectedCategoryKey === 'counselors' && listing.counselor) {
+      this.onViewCounselorProfile(listing.counselor);
+      return;
+    }
+
+    if (this.selectedCategoryKey === 'workshops' || this.selectedCategoryKey === 'events') {
+      const routeSegment = this.selectedCategoryKey;
+      const entityType = this.selectedCategoryKey === 'workshops' ? 'Workshop' : 'Events';
+      const title = this.selectedCategoryKey === 'workshops' ? 'Workshops' : 'Events';
+      const source = listing.source;
+
+      if (source) {
+        try {
+          sessionStorage.setItem(
+            `superme_eduhub_${entityType.toLowerCase()}_${listing.id}`,
+            JSON.stringify(source)
+          );
+        } catch {
+          // Router state still carries the record for normal navigation.
+        }
+      }
+
+      void this.router.navigate(['/authed/education', routeSegment, listing.id], {
+        state: { listing: source, entityType, title }
+      });
+      return;
+    }
+
     if (!this.isShopCategory) return;
     const labelByCategory: Partial<Record<CategoryKey, string>> = {
       stationery: 'Stationery Shops',
@@ -678,6 +709,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
         entityType: entityTypeByCategory[this.selectedCategoryKey],
         listing: listing.id,
         city: this.cityService.city
+      },
+      state: {
+        city: this.cityService.city,
+        listing: listing.source
       }
     });
   }

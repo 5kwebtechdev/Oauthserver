@@ -1,9 +1,9 @@
 import { Component, Input, TemplateRef, ContentChild, EventEmitter, Output, OnInit, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewInit, Renderer2, OnDestroy } from '@angular/core';
 import { NgIf, NgForOf } from "@angular/common";
-import { forkJoin, Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { forkJoin, Observable, Subscription } from 'rxjs';
+import { filter, map, tap } from 'rxjs/operators';
 import { IonicModule } from "@ionic/angular";
-import { Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { LearningCardComponent } from './learning-card/learning-card.component';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -39,6 +39,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
             [item]="item"
             [index]="i"
             [source]="source"
+            [forUserId]="forUserId"
             (cardClick)="onItemClick($event.item, $event.index)">
           </learning-card>
           <span *ngIf="rewardMode && getDifficultyLabel(item)" class="reward-difficulty"
@@ -56,21 +57,14 @@ import { AuthService } from 'src/app/core/services/auth.service';
                 <img src="assets/icons/child-home-trophy-figma.png" alt="">
                 {{ getItemTrophies(item) }}
               </span>
-              <span *ngIf="getItemDuration(item)">
-                <img src="assets/figma/child-home/learning-schedule.svg" alt="">
+              <span>
+                <img class="learning-meta-icon learning-meta-icon--time" src="assets/figma/child-learning/schedule.svg" alt="">
                 {{ getItemDuration(item) }}
               </span>
               <span *ngIf="isRewardAssigned(item)" class="reward-card-summary__assigned-coins">
                 +{{ getRewardCoins(item) }} coins
               </span>
             </div>
-            <button *ngIf="!isRewardAssigned(item)" type="button" class="reward-assign"
-              [attr.aria-label]="'Assign ' + getRewardCoins(item) + ' coins to ' + (item?.title || 'learning activity')"
-              (click)="onRewardClick($event, item, i)">
-              <span>Assign</span>
-              <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
-              <strong>{{ getRewardCoins(item) }}</strong>
-            </button>
           </div>
           <span *ngIf="contentMode === 'parenting' && getDifficultyLabel(item)" class="parenting-difficulty"
             [attr.data-difficulty]="getDifficultyTone(item)">
@@ -83,8 +77,8 @@ import { AuthService } from 'src/app/core/services/auth.service';
                 <img src="assets/icons/child-home-coin-figma.png" alt="">
                 {{ getItemCoins(item) }}
               </span>
-              <span *ngIf="getItemDuration(item)">
-                <img src="assets/figma/child-home/learning-schedule.svg" alt="">
+              <span>
+                <img class="learning-meta-icon learning-meta-icon--time" src="assets/figma/child-learning/schedule.svg" alt="">
                 {{ getItemDuration(item) }}
               </span>
             </div>
@@ -681,20 +675,20 @@ import { AuthService } from 'src/app/core/services/auth.service';
         .learning-slide-shell {
           position: relative;
           flex: 0 0 175px;
-          height: 160px;
+          height: 144px;
           border: 0;
           border-radius: 12px;
-          background: #ffffff;
+          background: transparent;
           box-shadow: none;
         }
 
         learning-card {
-          height: 160px;
+          height: 104px;
         }
 
         ::ng-deep learning-card .card-root,
         ::ng-deep learning-card .media {
-          height: 160px;
+          height: 104px;
           border-radius: 12px;
         }
 
@@ -716,7 +710,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
         ::ng-deep learning-card .difficulty,
         ::ng-deep learning-card .slide-body,
         ::ng-deep learning-card .article-body {
-          display: none;
+          display: none !important;
         }
 
         .reward-difficulty {
@@ -760,21 +754,20 @@ import { AuthService } from 'src/app/core/services/auth.service';
           bottom: 0;
           left: 0;
           display: flex;
-          min-height: 88px;
+          height: 36px;
           flex-direction: column;
-          justify-content: flex-end;
-          gap: 4px;
-          padding: 8px;
-          border-radius: 0 0 12px 12px;
-          background: linear-gradient(180deg, rgba(40, 37, 39, 0.5) 0%, #282527 100%);
-          backdrop-filter: blur(1px);
+          justify-content: flex-start;
+          gap: 2px;
+          padding: 0 4px;
+          border-radius: 0;
+          background: transparent;
           pointer-events: none;
 
           h3 {
             width: 100%;
             margin: 0;
             overflow: hidden;
-            color: #ffffff;
+            color: #282527;
             font-family: var(--font-sans, 'Nunito', sans-serif);
             font-size: 12px;
             font-weight: 700;
@@ -789,15 +782,15 @@ import { AuthService } from 'src/app/core/services/auth.service';
           display: flex;
           min-width: 0;
           align-items: center;
-          justify-content: space-between;
-          gap: 6px;
+          justify-content: flex-start;
+          gap: 8px;
 
           span {
             display: inline-flex;
             min-width: 0;
             align-items: center;
             gap: 2px;
-            color: #ffffff;
+            color: #6b656a;
             font-family: var(--font-sans, 'Nunito', sans-serif);
             font-size: 12px;
             font-weight: 600;
@@ -810,45 +803,10 @@ import { AuthService } from 'src/app/core/services/auth.service';
             height: 16px;
             flex: 0 0 16px;
             object-fit: contain;
+            filter: none;
           }
         }
 
-        .reward-assign {
-          position: relative;
-          z-index: 5;
-          right: auto;
-          bottom: auto;
-          left: auto;
-          width: 100%;
-          min-height: 34px;
-          gap: 4px;
-          padding: 6px 8px;
-          border: 1px solid #e1527c;
-          border-radius: 12px;
-          background:
-            radial-gradient(circle at 50% 45%, #f0a5bc 0%, #e97c9c 54%, #e1527c 100%);
-          box-shadow: inset -2px -2px 2px #f0a5bc;
-          color: #282527;
-          font-family: var(--font-sans, 'Nunito', sans-serif);
-          font-size: 13px;
-          font-weight: 700;
-          line-height: 1.2;
-          pointer-events: auto;
-
-          img {
-            width: 16px;
-            height: 16px;
-          }
-
-          strong {
-            font-size: 12px;
-            font-weight: 600;
-          }
-
-          &:active {
-            filter: brightness(0.96);
-          }
-        }
       }
 
       &.content-section--parenting {
@@ -903,10 +861,10 @@ import { AuthService } from 'src/app/core/services/auth.service';
         .learning-slide-shell {
           position: relative;
           flex: 0 0 175px;
-          height: 104px;
+          height: 144px;
           border: 0;
           border-radius: 12px;
-          background: #ffffff;
+          background: transparent;
           box-shadow: none;
         }
 
@@ -918,6 +876,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
         }
 
         ::ng-deep learning-card .card-root {
+          background: transparent;
           box-shadow: none;
         }
 
@@ -935,7 +894,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
         ::ng-deep learning-card .difficulty,
         ::ng-deep learning-card .slide-body,
         ::ng-deep learning-card .article-body {
-          display: none;
+          display: none !important;
         }
 
         .parenting-difficulty {
@@ -979,21 +938,21 @@ import { AuthService } from 'src/app/core/services/auth.service';
           bottom: 0;
           left: 0;
           display: flex;
-          min-height: 43px;
+          height: 36px;
           flex-direction: column;
-          justify-content: flex-end;
-          gap: 4px;
-          padding: 0 8px 4px;
-          border-radius: 0 0 12px 12px;
-          background: linear-gradient(180deg, rgba(40, 37, 39, 0.5) 0%, #282527 100%);
-          box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.1);
+          justify-content: flex-start;
+          gap: 2px;
+          padding: 0 4px;
+          border-radius: 0;
+          background: transparent;
+          box-shadow: none;
           pointer-events: none;
 
           h3 {
             width: 100%;
             margin: 0;
             overflow: hidden;
-            color: #ffffff;
+            color: #282527;
             font-family: var(--font-sans, 'Nunito', sans-serif);
             font-size: 12px;
             font-weight: 700;
@@ -1008,7 +967,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
           display: flex;
           width: 100%;
           align-items: center;
-          justify-content: space-between;
+          justify-content: flex-start;
           gap: 8px;
 
           span {
@@ -1016,7 +975,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
             min-width: 0;
             align-items: center;
             gap: 2px;
-            color: #ffffff;
+            color: #6b656a;
             font-family: var(--font-sans, 'Nunito', sans-serif);
             font-size: 12px;
             font-weight: 600;
@@ -1029,6 +988,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
             height: 16px;
             flex: 0 0 16px;
             object-fit: contain;
+            filter: none;
           }
         }
 
@@ -1209,6 +1169,8 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
   private scrollHandler?: () => void;
   private initialized = false;
   private loadRequestId = 0;
+  private wasOnSourceRoute = false;
+  private routerEventsSubscription?: Subscription;
 
   constructor(
     private renderer: Renderer2,
@@ -1226,6 +1188,7 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
 
   ngOnDestroy(): void {
     if (this.scrollHandler) this.scrollHandler();
+    this.routerEventsSubscription?.unsubscribe();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -1235,6 +1198,11 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
       if (this.contentMode !== 'parenting') this.parentingBlogCount = 0;
       this.loadLatestFromService();
     }
+  }
+
+  /** Refresh the Home rail after returning from a quiz/article screen. */
+  refreshFromApi(): void {
+    if (this.initialized) this.loadLatestFromService();
   }
 
   private updateActiveDot(): void {
@@ -1276,6 +1244,12 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   onItemClick(item: any, index: number) {
+    if (this.rewardMode) {
+      if (!this.isRewardAssigned(item)) {
+        this.rewardSelected.emit({ item, index, coins: this.getRewardCoins(item) });
+      }
+      return;
+    }
     this.itemSelected.emit({ item, index });
   }
 
@@ -1347,10 +1321,26 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
 
   getItemDuration(item: any): string {
     const raw = item?.rawData ?? item;
-    const existing = String(item?.timeDuration ?? '').trim();
-    if (existing) return existing;
-    const minutes = Number(raw?.durationMinutes ?? raw?.estimatedMinutes ?? raw?.duration ?? 0);
-    return Number.isFinite(minutes) && minutes > 0 ? `${Math.round(minutes)} min` : '';
+    const existing = String(
+      item?.timeDuration
+      ?? raw?.timeDuration
+      ?? raw?.estimatedTimeMinutes
+      ?? raw?.durationMinutes
+      ?? raw?.readTimeMinutes
+      ?? raw?.estimatedMinutes
+      ?? raw?.duration
+      ?? ''
+    ).trim();
+    if (existing) {
+      if (/^\d+(?:\.\d+)?$/.test(existing)) return `${Math.round(Number(existing))} min`;
+      return existing;
+    }
+
+    const buttonDuration = String(item?.buttonText ?? '').match(/(\d+(?:\.\d+)?)\s*(?:min|minute)/i);
+    if (buttonDuration) return `${Math.round(Number(buttonDuration[1]))} min`;
+
+    // The parent rails always reserve this metadata slot in the Figma design.
+    return '5 min';
   }
 
   getDifficultyLabel(item: any): string {
@@ -1370,6 +1360,21 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
 
   ngOnInit(): void {
     this.initialized = true;
+    this.routerEventsSubscription = this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe(event => {
+        const sourceRoute = (this.source || '').split('?')[0].replace(/\/$/, '');
+        if (!sourceRoute) return;
+        const currentRoute = event.urlAfterRedirects.split('?')[0].replace(/\/$/, '');
+        const isOnSourceRoute = currentRoute === sourceRoute;
+        if (isOnSourceRoute && this.wasOnSourceRoute) {
+          // Ionic keeps this dashboard component alive while the quiz/result
+          // routes are shown, so refresh the home rail on return.
+          this.loadLatestFromService();
+        }
+        this.wasOnSourceRoute = isOnSourceRoute;
+      });
+
     if (!this.items || this.items.length === 0) {
       try {
         this.loadLatestFromService();

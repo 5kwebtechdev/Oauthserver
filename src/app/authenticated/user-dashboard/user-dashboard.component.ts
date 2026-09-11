@@ -87,6 +87,7 @@ type HomeTimePeriod = 'morning' | 'evening' | 'night';
 export class UserDashboardComponent implements OnInit, OnDestroy {
 
   @ViewChild(ActivityCardComponent) activityCard?: ActivityCardComponent;
+  @ViewChild(LearningSectionComponent) learningSection?: LearningSectionComponent;
 
   // Minimal properties used by the template
   public userName = '';
@@ -148,6 +149,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public awaitingHabits: number = 0;
   public weekStreakDays: DayStreak[] = [];
   private streakStatusDays: StreakStatusDay[] | null = null;
+  public nextMilestoneDay: number | null = null;
+  public nextMilestoneCoins: number | null = null;
+  public daysToNextMilestone: number | null = null;
 
   // Insights — "This Week's Performance" + Mood Balance, same widget the
   // Parent Home Screen shows about a selected child, scoped here to the
@@ -535,6 +539,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     // request on first render.
     if (this.hasEnteredDashboard) {
       this.loadRecentHabitsAndTasks(true);
+      this.learningSection?.refreshFromApi();
     }
     this.hasEnteredDashboard = true;
   }
@@ -1147,12 +1152,16 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
     this.streakRestoreApi.getStreakStatus(userId).subscribe({
       next: (status: StreakStatus) => {
+        this.userStreaks = Number(status.currentStreak ?? this.userStreaks);
         this.refreshWeekStreakDays(status.currentStreak, status.last7Days ?? null);
         this.canRestoreStreak = status.canRestore;
         this.dailyStreakEligible = Number(status.currentStreak) > 0;
         this.streakStatusResolved = true;
         this.streakContinuityConfirmed = Number(status.currentStreak) > 0 && !status.canRestore;
         this.restoreToStreak = status.restoreToStreak;
+        this.nextMilestoneDay = status.nextMilestoneDay ?? null;
+        this.nextMilestoneCoins = status.nextMilestoneCoins ?? null;
+        this.daysToNextMilestone = status.daysToNextMilestone ?? null;
         this.restoreCost = status.restoreCost ?? 5;
         this.userCoins = Number(status.coins ?? this.userCoins);
         if (status.canRestore && !this.streakPopupShown) {

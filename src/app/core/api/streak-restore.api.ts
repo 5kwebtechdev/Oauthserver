@@ -13,6 +13,9 @@ export interface StreakStatus {
   restoreToStreak: number | null;
   restoreCost: number;
   coins: number;
+  nextMilestoneDay?: number | null;
+  nextMilestoneCoins?: number | null;
+  daysToNextMilestone?: number | null;
   last7Days?: StreakStatusDay[];
 }
 

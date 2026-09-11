@@ -253,7 +253,7 @@
 
 <ng-template #submitSection let-btnType="btnType" let-btnTypeFaded="btnTypeFaded" let-itemType="itemType">
   <div class="submit-row" (click)="onSubmitRowClick($event)">
-    <div *ngIf="serverErrorMessage && (currentActive === 'habits' || currentActive === 'tasks')" class="field-error"
+    <div *ngIf="serverErrorMessage && !isTimeOverlapError(serverErrorMessage) && (currentActive === 'habits' || currentActive === 'tasks')" class="field-error"
       style="margin-top: -24px;" role="alert">{{serverErrorMessage}}</div>
     <superme-button [type]="isFormComplete ? btnType : btnTypeFaded"
       [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update ' + itemType : 'Create ' + itemType)"
@@ -767,3 +767,7 @@
 <app-superme-popup [isVisible]="deletePopupVisible" [config]="deletePopupConfig" (primaryAction)="confirmDelete()"
   (secondaryAction)="cancelDelete()" (backdropClick)="cancelDelete()"
   (closeAction)="cancelDelete()"></app-superme-popup>
+
+<app-superme-popup [isVisible]="overlapPopupVisible" [config]="overlapPopupConfig"
+  (primaryAction)="closeOverlapPopup()" (backdropClick)="closeOverlapPopup()"
+  (closeAction)="closeOverlapPopup()"></app-superme-popup>

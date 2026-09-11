@@ -170,8 +170,11 @@
 
 .journal-option__check {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  // Keep the indicator inside the option image.  It was previously offset
+  // outside a container with overflow:hidden, which clipped the checkmark.
+  top: 4px;
+  right: 4px;
+  z-index: 2;
   display: grid;
   width: 18px;
   height: 18px;

@@ -747,7 +747,7 @@ export class LearningService {
             coins: apiArticle.coins ?? 0,
             buttonText: `Read in ${readTime}`,
             type: 'article',
-            timeDuration: normalizedArticle.timeDuration,
+            timeDuration: readTime,
             // Normalized tags
             tags: normalizedTags,
             rawData: normalizedArticle

@@ -18,6 +18,7 @@ export class LearningChallengeCardComponent {
     @Input() index: number = 0;
     /** Optional source route to return to when the challenge is closed. */
     @Input() source?: string;
+    @Input() forUserId: string | number | null = null;
     @Output() cardClick = new EventEmitter<{ item: LearningCardData; index: number }>();
 
     constructor(private router: Router) { }
@@ -26,9 +27,11 @@ export class LearningChallengeCardComponent {
         this.cardClick.emit({ item: this.item, index: this.index });
         // Quiz and puzzle cards start the challenge immediately. The questions
         // page loads the full challenge by ID and returns to the originating list.
-        this.router.navigate(['/authed/content/questions', this.item.id], {
-            state: this.source ? { source: this.source } : undefined
-        });
+        const state: Record<string, unknown> = {};
+        if (this.source) state['source'] = this.source;
+        const childId = Number(this.forUserId);
+        if (Number.isFinite(childId) && childId > 0) state['selectedChildId'] = childId;
+        this.router.navigate(['/authed/content/description', this.item.id], { state });
     }
 
     onCardAction(event: Event): void {

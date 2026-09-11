@@ -1583,17 +1583,29 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         messageType: FamilyMessageType,
         customMessage?: string
     ): Observable<{ success: boolean }> {
-        const payload: { receiverUserId: number | string; messageType: FamilyMessageType; customMessage?: string } = {
+        const payload: {
+            receiverUserId: number | string;
+            messageType: FamilyMessageType;
+            forUserId: number | string;
+            customMessage?: string;
+        } = {
             receiverUserId: childId,
-            messageType
+            messageType,
+            // The send endpoint requires the family member context as well as
+            // the recipient. This is part of the successful API request body.
+            forUserId: childId
         };
         if (messageType === 'CUSTOM' && customMessage) payload.customMessage = customMessage;
 
-        return this.http.post<{ success: boolean }>(
-            `${environment.apiUrl}/family/messages/`,
+        // The API returns a successful plain-text message (for example,
+        // "Family message sent successfully.") rather than a JSON object.
+        // Read it as text so Angular does not turn an HTTP 200 into a parse
+        // error and incorrectly show the failure toast.
+        return this.http.post(
+            `${environment.apiUrl}/family/messages/send`,
             payload,
-            { headers: this.familyMessageHeaders() }
-        );
+            { headers: this.familyMessageHeaders(), responseType: 'text' }
+        ).pipe(map(() => ({ success: true })));
     }
 
     private familyMessageHeaders(): HttpHeaders {

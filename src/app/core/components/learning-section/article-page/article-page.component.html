@@ -85,7 +85,7 @@
         </button>
       </section>
 
-      <section class="learning-details-action">
+      <section class="learning-details-action" *ngIf="!isParentAssignment">
         <button type="button" class="learning-details-action__button" (click)="openFeedbackPrompt()"
           [disabled]="isMarkAsReadDisabled" [class.learning-details-action__button--complete]="isArticleRead"
           [attr.aria-label]="isArticleRead ? 'Article already read' : (!readTimerComplete ? 'Read this article, available in ' + readTimerDisplay : 'Mark this article as read')">
@@ -106,6 +106,19 @@
         <p class="learning-details-action__ready" *ngIf="!isArticleRead && readTimerComplete && justUnlocked">
           You’re ready to mark this as read!
         </p>
+        <p class="learning-details-action__error" *ngIf="actionError" role="alert">{{ actionError }}</p>
+      </section>
+      <section class="learning-details-action learning-details-action--parent" *ngIf="isParentAssignment">
+        <button type="button" class="learning-details-action__button" (click)="assignToChild()"
+          [disabled]="isAssigningToChild || parentAssignmentComplete">
+          <ion-spinner *ngIf="isAssigningToChild" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!isAssigningToChild">
+            <span>{{ parentAssignmentComplete ? 'Assigned' : 'Assign' }}</span>
+            <span class="learning-details-action__reward">
+              <img src="assets/figma/learning-details/coin.webp" alt="" aria-hidden="true"> 20
+            </span>
+          </ng-container>
+        </button>
         <p class="learning-details-action__error" *ngIf="actionError" role="alert">{{ actionError }}</p>
       </section>
 

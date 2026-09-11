@@ -76,11 +76,12 @@
     <ng-container *ngIf="visibleExternalPreviews.length">
       <div class="eduhub-tutors">
         <article class="eduhub-tutor" *ngFor="let listing of visibleExternalPreviews; trackBy: trackPreview"
-          [class.eduhub-tutor--clickable]="isShopCategory"
-          [attr.role]="isShopCategory ? 'button' : null"
-          [attr.tabindex]="isShopCategory ? 0 : null"
-          (click)="onViewShopDetails(listing)"
-          (keyup.enter)="onViewShopDetails(listing)">
+          [class.eduhub-tutor--clickable]="true"
+          role="button"
+          tabindex="0"
+          (click)="onViewExternalDetails(listing)"
+          (keyup.enter)="onViewExternalDetails(listing)"
+          (keyup.space)="onViewExternalDetails(listing); $event.preventDefault()">
           <app-profile-image class="eduhub-tutor__avatar" [src]="listing.image" [name]="listing.name" [alt]="listing.name"></app-profile-image>
           <div class="eduhub-tutor__body">
             <div class="eduhub-tutor__headline"><strong>{{ listing.name }}</strong></div>
@@ -89,7 +90,7 @@
           </div>
           <div class="eduhub-tutor__footer">
             <span>{{ listing.fee != null ? ('₹ ' + listing.fee) : 'Contact for pricing' }}</span>
-            <button type="button" *ngIf="listing.counselor as counselor" (click)="onViewCounselorProfile(counselor)">Check Profile</button>
+            <button type="button" *ngIf="listing.counselor as counselor" (click)="onViewCounselorProfile(counselor); $event.stopPropagation()">Check Profile</button>
           </div>
         </article>
       </div>

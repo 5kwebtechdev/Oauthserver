@@ -125,9 +125,13 @@ export class JournalPostCardComponent implements OnInit {
       healthcheck: 'assets/figma/journal/health.svg',
       hobbies: 'assets/figma/journal/interests.svg',
       hobby: 'assets/figma/journal/interests.svg',
+      food: 'assets/figma/journal/note.svg',
       social: 'assets/figma/journal/group.svg',
       school: 'assets/figma/journal/school.svg',
+      carrying: 'assets/figma/journal/note.svg',
       growth: 'assets/figma/journal/growth.svg',
+      productivity: 'assets/figma/journal/note.svg',
+      day: 'assets/figma/journal/note.svg',
     };
     return icons[key] || 'assets/figma/journal/note.svg';
   }

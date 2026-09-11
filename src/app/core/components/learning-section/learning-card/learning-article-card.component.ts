@@ -15,6 +15,8 @@ import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.comp
 export class LearningArticleCardComponent implements OnChanges {
     @Input() item!: LearningCardData;
     @Input() index: number = 0;
+    @Input() source?: string;
+    @Input() forUserId: string | number | null = null;
     @Output() cardClick = new EventEmitter<{ item: LearningCardData; index: number }>();
 
     constructor(private router: Router) { }
@@ -28,7 +30,11 @@ export class LearningArticleCardComponent implements OnChanges {
     onCardClick() {
         this.cardClick.emit({ item: this.item, index: this.index });
         // Navigate with the article ID
-        this.router.navigate(['/authed/content/article', this.item.id]);
+        const state: Record<string, unknown> = {};
+        if (this.source) state['source'] = this.source;
+        const childId = Number(this.forUserId);
+        if (Number.isFinite(childId) && childId > 0) state['selectedChildId'] = childId;
+        this.router.navigate(['/authed/content/article', this.item.id], { state });
     }
 
     onCardAction(event: Event): void {

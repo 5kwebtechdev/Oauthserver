@@ -260,20 +260,20 @@
 
       <section class="parent-learning-card parent-learning-card--rewards" aria-label="Coin motivation">
         <learning-section
-          title="Motivate with coins"
+          title="Motivate your child"
           subtitle="Assign bonus coins to learning activities to boost motivation"
           headerIcon="assets/icons/child-home-coin-figma.png"
           [rewardMode]="true"
           [forUserId]="selectedChild?.id ?? null"
           [age]="selectedChildAge"
           (rewardSelected)="assignLearningReward($event)"
-          source="/authed/parent-account">
+          source="/authed/content?view=parent">
         </learning-section>
       </section>
 
       <section class="parent-learning-card parent-learning-card--parenting" aria-label="Parenting insights">
         <learning-section
-          title="Know More, Guide Better"
+          title="Grow With Your Child"
           subtitle="Learn • Reflect • Level Up"
           headerIcon="assets/figma/parent-home/parenting-section/header-bulb.webp"
           contentMode="parenting"

@@ -59,7 +59,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
           <div class="col-6" style="padding:12px;">
             <div class="meta">
               <div class="meta-value">
-                <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coin" class="meta-icon" />
+                <img src="/assets/figma/parent-child-learning/coin.webp" alt="coin" class="meta-icon" />
                 {{challenge.coinsForCorrectAnswer || challenge.coins || 5}} coins
               </div>
               <div class="meta-label">For Correct Answer</div>
@@ -72,7 +72,15 @@ import { Challenge } from 'src/app/core/models/learning.models';
         <p>{{challenge.descriptionExpanded || challenge.description}}</p>
       </div>
 
-      <button class="start-journey w-100" (click)="startJourney()">Start your journey</button>
+      <button class="start-journey w-100" (click)="isParentAssignment ? assignToChild() : startJourney()"
+        [disabled]="isAssigningToChild || assignmentComplete">
+        <span *ngIf="!isAssigningToChild">{{ assignmentComplete ? 'Assigned' : (isParentAssignment ? 'Assign' : 'Start your journey') }}</span>
+        <span *ngIf="isParentAssignment && !isAssigningToChild" class="assignment-coin-reward">
+          <img src="assets/figma/parent-child-learning/coin.webp" alt="" aria-hidden="true"> 20
+        </span>
+        <span *ngIf="isAssigningToChild">Assigning...</span>
+      </button>
+      <p *ngIf="assignmentError" class="assignment-error" role="alert">{{ assignmentError }}</p>
     </div>
 
     <div class="content-description-screen" *ngIf="isLoading" style="text-align: center; padding: 48px 16px;">
@@ -105,6 +113,9 @@ import { Challenge } from 'src/app/core/models/learning.models';
     .content-description-screen .description { color: #282527; font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 600; line-height: 140%; opacity: 0.7; }
     .content-description-screen .start-journey { display: flex; height: 56px; color: #FFF; padding: 10px; justify-content: center; align-items: center; gap: 8px; flex-shrink: 0; border-radius: 8px; border: 1px solid #CF3359; background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%); box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20); font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 700; line-height: 140%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: pointer; }
     .w-100 { width: 100%; }
+    .assignment-error { width: 100%; margin: -8px 0 0; color: #b42318; font-size: 13px; text-align: center; }
+    .assignment-coin-reward { display: inline-flex; align-items: center; gap: 4px; }
+    .assignment-coin-reward img { width: 20px; height: 20px; object-fit: contain; vertical-align: middle; }
     `
   ]
 })
@@ -114,6 +125,11 @@ export class LearningDescriptionComponent implements OnInit {
   isLoading = true;
   private isNavigating = false;
   private returnUrl = '/authed/content';
+  isParentAssignment = false;
+  isAssigningToChild = false;
+  assignmentComplete = false;
+  assignmentError = '';
+  private parentAssignmentChildId: number | null = null;
 
   constructor(
     public router: Router,
@@ -123,7 +139,13 @@ export class LearningDescriptionComponent implements OnInit {
 
   ngOnInit() {
     const navigation = this.router.getCurrentNavigation();
-    const source = navigation?.extras?.state?.['source'] ?? (history as any)?.state?.['source'];
+    const navigationState = navigation?.extras?.state || (history as any)?.state || {};
+    const source = navigationState?.['source'];
+    const selectedChildId = Number(navigationState?.['selectedChildId']);
+    this.parentAssignmentChildId = Number.isFinite(selectedChildId) && selectedChildId > 0 ? selectedChildId : null;
+    this.isParentAssignment = typeof source === 'string'
+      && (source.includes('view=parent') || source.includes('/parent-learning'))
+      && this.parentAssignmentChildId !== null;
     if (typeof source === 'string' && source.startsWith('/authed/content')) {
       this.returnUrl = source;
     }
@@ -163,6 +185,19 @@ export class LearningDescriptionComponent implements OnInit {
     } else {
       this.router.navigate(['/authed/content/questions']);
     }
+  }
+
+  assignToChild(): void {
+    if (!this.challenge || !this.parentAssignmentChildId || this.isAssigningToChild || this.assignmentComplete) return;
+    this.isAssigningToChild = true;
+    this.assignmentError = '';
+    this.learningService.assignChallenge(this.challenge.challengeId, [this.parentAssignmentChildId], 20).subscribe({
+      next: () => { this.isAssigningToChild = false; this.assignmentComplete = true; },
+      error: (error) => {
+        this.isAssigningToChild = false;
+        this.assignmentError = String(error?.error?.message || error?.message || 'Unable to assign this quiz. Please try again.');
+      }
+    });
   }
 
   onBack() {

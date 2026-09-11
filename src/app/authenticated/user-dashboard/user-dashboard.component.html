@@ -163,7 +163,9 @@
       </div>
 
       <!-- Current Week's API-backed streak -->
-      <week-streak-section class="w-full" [days]="weekStreakDays"></week-streak-section>
+      <week-streak-section class="w-full" [days]="weekStreakDays"
+        [currentStreak]="userStreaks" [nextMilestoneDay]="nextMilestoneDay"
+        [daysToNextMilestone]="daysToNextMilestone" [nextMilestoneCoins]="nextMilestoneCoins"></week-streak-section>
 
       <div class="mood-selector w-full">
         <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>

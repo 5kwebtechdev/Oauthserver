@@ -18,10 +18,14 @@ export class ProfileImageComponent implements OnChanges {
   imageFailed = false;
 
   get showImage(): boolean {
-    return !!this.src?.trim() && !this.imageFailed;
+    const source = String(this.src || '').trim();
+    // Legacy directory mappings used a generic diamond image when no photo
+    // existed. Treat that asset as missing so names get the intended initials.
+    const isGenericPlaceholder = /(?:Image-Tutor|Image-Academy|default-avatar|placeholder-avatar)\.(?:png|jpe?g|webp|svg)(?:$|[?#])/i.test(source);
+    return !!source && !isGenericPlaceholder && !this.imageFailed;
   }
 
-  get initials(): string {
+  getProfileImageInitials(): string {
     return getProfileImageInitials(this.name);
   }
 

@@ -284,7 +284,12 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   }
 
   isCategorySelected(key: any): boolean {
-    return !!this.selectedTags?.some(t => String(t.key) === String(key));
+    const option = this.tagOptions.find(o => String(o.key) === String(key));
+    const optionValue = String(option?.value || '').trim().toLowerCase();
+    return !!this.selectedTags?.some(t => {
+      const tagValue = String((t as any).value || (t as any).name || (t as any).title || '').trim().toLowerCase();
+      return String(t.key) === String(key) || (!!optionValue && tagValue === optionValue);
+    });
   }
 
   selectCategory(key: any) {
@@ -447,6 +452,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   // Delete confirmation popup state
   deletePopupVisible = false;
   deletePopupConfig: SupermePopupConfig = {};
+  overlapPopupVisible = false;
+  overlapPopupConfig: SupermePopupConfig = {};
   // internal guard to prevent double-delete
   private deleting = false;
 
@@ -473,6 +480,30 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       backdrop: true,
       ctaDirection: 'row'
     } as SupermePopupConfig;
+  }
+
+  private handleSaveError(error: any, fallback: string): void {
+    const message = String(error?.error?.message || error?.message || fallback);
+    this.serverErrorMessage = message;
+    if (/overlap|already exists|conflict|time slot/i.test(message)) {
+      this.overlapPopupConfig = {
+        heading: 'Time slot unavailable',
+        subtitle: `${message}\n\nChoose a different time or date for this activity.`,
+        primaryCTA: { text: 'Choose another time', buttonStyle: 'bronze', buttonMedium: true },
+        showCloseButton: true,
+        backdrop: true,
+        ctaDirection: 'column'
+      };
+      this.overlapPopupVisible = true;
+    }
+  }
+
+  isTimeOverlapError(message: string): boolean {
+    return /overlap|already exists|conflict|time slot/i.test(String(message || ''));
+  }
+
+  closeOverlapPopup(): void {
+    this.overlapPopupVisible = false;
   }
 
   constructor(
@@ -763,7 +794,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   }
 
   private syncSelectedTagsToComponent(): void {
-    if (!this.tagsComponent || !Array.isArray(this.selectedTags) || !this.selectedTags.length) return;
+    if (!Array.isArray(this.selectedTags) || !this.selectedTags.length) return;
     const keys = this.selectedTags.map(st => {
       // Match by numeric key first (most reliable)
       const byKey = this.tagOptions.find(o => String(o.key) === String(st.key));
@@ -774,8 +805,16 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       return byVal ? byVal.key : null;
     }).filter(k => k != null);
     if (keys.length) {
-      this.tagsComponent.selectedKeys = keys as any[];
-      this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
+      // Keep the form model aligned with the resolved option IDs too. This is
+      // important when an edit response contains only categoryId or name.
+      this.selectedTags = keys
+        .map(key => this.tagOptions.find(option => String(option.key) === String(key)))
+        .filter(Boolean)
+        .map(option => ({ key: String(option!.key), value: option!.value, type: option!.type }));
+      if (this.tagsComponent) {
+        this.tagsComponent.selectedKeys = keys as any[];
+        this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
+      }
       try { this.cd.detectChanges(); } catch (e) {}
     }
   }
@@ -876,10 +915,31 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         const dateForLookup = stateSelectedDate || this.formatDateStr(new Date());
         this.habitApi.getHabitByIdWithDate(Number(this.editingId), dateForLookup).subscribe({
           next: (res: any) => {
+            const detail = res?.data && typeof res.data === 'object' ? res.data : res;
             // isToggleOn mirrors isPrivateToChild exactly: true = toggle ON/private.
             this.isPrivate = !!res?.isToggleOn;
             if (res && ('reminderOffset' in res || 'reminder_offset' in res)) {
               this.reminderOffset = this.normalizeReminderOffset(res.reminderOffset ?? res.reminder_offset);
+            }
+            // The detail lookup is authoritative for edit forms and may contain
+            // the tag/category even when the calendar item used for navigation
+            // only contains title and dates. Restore that value once it arrives.
+            const rawCategory = detail?.category ?? detail?.categoryName;
+            const categoryObject = rawCategory && typeof rawCategory === 'object' ? rawCategory : null;
+            const categoryId = detail?.categoryId ?? detail?.tagId ?? detail?.tag_id ?? categoryObject?.id ?? detail?.tag?.id;
+            const categoryValue = categoryObject?.name ?? categoryObject?.value ?? categoryObject?.title
+              ?? (typeof rawCategory === 'string' ? rawCategory : undefined)
+              ?? detail?.tag?.name;
+            const responseTags = Array.isArray(detail?.tags) ? detail.tags : [];
+            if (categoryId != null || categoryValue) {
+              this.selectedTags = [{ key: String(categoryId ?? categoryValue), value: String(categoryValue ?? categoryId) }];
+              this.syncSelectedTagsToComponent();
+            } else if (responseTags.length) {
+              this.selectedTags = responseTags.map((tag: any) => {
+                if (typeof tag === 'string') return { key: tag, value: tag };
+                return { key: String(tag?.id ?? tag?.key ?? tag?.name ?? ''), value: tag?.name ?? tag?.value ?? tag?.title ?? '' };
+              }).filter((tag: any) => tag.value);
+              this.syncSelectedTagsToComponent();
             }
             this.cd.detectChanges();
           },
@@ -949,14 +1009,29 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         }))
         : this.activities;
 
-      // Handle new API format: h.tag = { id, name, system, userId }
-      // Also handle legacy format: h.tags = ["Study"] (string array) for backward compat
-      if (h.tag && typeof h.tag === 'object' && h.tag.id) {
-        this.selectedTags = [{ key: String(h.tag.id), value: h.tag.name }];
+      // Handle the API's category/tag variants. Create sends `tagId`, while
+      // older activity responses may expose `categoryId`, `category`, `tag`,
+      // or `tags`; normalize all of them so Edit restores the selected pill.
+      const rawCategory = h.category ?? h.categoryName;
+      const categoryValue = rawCategory && typeof rawCategory === 'object'
+        ? (rawCategory.name ?? rawCategory.value ?? rawCategory.title)
+        : rawCategory;
+      const categoryId = h.categoryId ?? h.tagId
+        ?? (rawCategory && typeof rawCategory === 'object' ? rawCategory.id : undefined);
+      if (h.tag && typeof h.tag === 'object' && (h.tag.id || h.tag.name || h.tag.value)) {
+        this.selectedTags = [{ key: String(h.tag.id ?? h.tag.name ?? h.tag.value), value: h.tag.name ?? h.tag.value ?? h.tag.title }];
+      } else if (typeof h.tag === 'string' && h.tag.trim()) {
+        this.selectedTags = [{ key: h.tag.trim(), value: h.tag.trim() }];
+      } else if (categoryId != null && String(categoryId).trim() !== '') {
+        this.selectedTags = [{ key: String(categoryId), value: String(categoryValue ?? '') }];
+      } else if (typeof categoryValue === 'string' && categoryValue.trim()) {
+        this.selectedTags = [{ key: categoryValue.trim(), value: categoryValue.trim() }];
       } else if (Array.isArray(h.tags) && h.tags.length) {
         const first = h.tags[0];
         if (typeof first === 'string') {
-          this.selectedTags = h.tags.map((t: string, idx: number) => ({ key: String(idx), value: t }));
+          // String responses contain the category name, not its array index.
+          // Keep the name as the key until the API options resolve it to an ID.
+          this.selectedTags = h.tags.map((t: string) => ({ key: String(t), value: t }));
         } else if (typeof first === 'object') {
           this.selectedTags = h.tags.map((t: any, idx: number) => (t.key && (t.value || t.name || t.title)) ? { key: String(t.key), value: t.value || t.name || t.title, type: t.type } : { key: String(idx), value: t.value || t.name || t.title || JSON.stringify(t) });
         }
@@ -1546,7 +1621,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
               this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
-          error: (err) => { this.isSubmitting = false; console.error('Failed to update task', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to update task. Please try again.'; }
+          error: (err) => { this.isSubmitting = false; console.error('Failed to update task', err); this.handleSaveError(err, 'Failed to update task. Please try again.'); }
         });
       } else {
         this.taskApi.createTask(payload).subscribe({
@@ -1562,7 +1637,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
           error: (err) => {
             this.isSubmitting = false;
             console.error('Failed to create task', err);
-            this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to create task. Please try again.';
+            this.handleSaveError(err, 'Failed to create task. Please try again.');
           }
         });
       }
@@ -1611,7 +1686,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
               this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
-          error: (err) => { this.isSubmitting = false; console.error('Failed to update habit', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to update habit. Please try again.'; }
+          error: (err) => { this.isSubmitting = false; console.error('Failed to update habit', err); this.handleSaveError(err, 'Failed to update habit. Please try again.'); }
         });
       } else {
         this.habitApi.createHabit(payload).subscribe({
@@ -1623,7 +1698,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
               this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
-          error: (err) => { this.isSubmitting = false; console.error('Failed to create habit', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to create habit. Please try again.'; }
+          error: (err) => { this.isSubmitting = false; console.error('Failed to create habit', err); this.handleSaveError(err, 'Failed to create habit. Please try again.'); }
         });
       }
     }

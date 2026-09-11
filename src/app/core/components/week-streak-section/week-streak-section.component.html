@@ -17,9 +17,7 @@
   </div>
 
   <div class="week-streak-summary" aria-live="polite">
-    <span class="week-streak-summary__completed">{{ completedDays }}/7 days completed</span>
-    <span class="week-streak-summary__reward">
-      {{ remainingDays }} more {{ remainingDays === 1 ? 'day' : 'days' }} to earn {{ rewardCoins }} coins
-    </span>
+    <span class="week-streak-summary__completed">{{ milestoneCompletedLabel }}</span>
+    <span class="week-streak-summary__reward">{{ milestoneRewardLabel }}</span>
   </div>
 </div>

@@ -19,6 +19,10 @@ export class WeekStreakSectionComponent {
   @Input() title = 'Last 7-Day Streak';
   @Input() days: DayStreak[] = [];
   @Input() rewardCoins = 10;
+  @Input() currentStreak: number | null = null;
+  @Input() nextMilestoneDay: number | null = null;
+  @Input() daysToNextMilestone: number | null = null;
+  @Input() nextMilestoneCoins: number | null = null;
 
   get completedDays(): number {
     return this.days.filter(day => day.status === 'completed').length;
@@ -26,5 +30,19 @@ export class WeekStreakSectionComponent {
 
   get remainingDays(): number {
     return Math.max(0, 7 - this.completedDays);
+  }
+
+  get milestoneCompletedLabel(): string {
+    if (this.currentStreak != null && this.nextMilestoneDay != null) {
+      return `${this.currentStreak}/${this.nextMilestoneDay} days completed`;
+    }
+    return `${this.completedDays}/7 days completed`;
+  }
+
+  get milestoneRewardLabel(): string {
+    if (this.daysToNextMilestone != null && this.nextMilestoneCoins != null) {
+      return `${this.daysToNextMilestone} more ${this.daysToNextMilestone === 1 ? 'day' : 'days'} to earn ${this.nextMilestoneCoins} coins`;
+    }
+    return `${this.remainingDays} more ${this.remainingDays === 1 ? 'day' : 'days'} to earn ${this.rewardCoins} coins`;
   }
 }
