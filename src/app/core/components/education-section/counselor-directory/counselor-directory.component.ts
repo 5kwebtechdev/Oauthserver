@@ -2,7 +2,7 @@ import { CommonModule, Location } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Share } from '@capacitor/share';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { Observable, Subscription, catchError, map, of, switchMap, take } from 'rxjs';
 
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
@@ -23,7 +23,7 @@ type FilterTab = 'specialization' | 'experience';
 @Component({
   selector: 'app-counselor-directory',
   standalone: true,
-  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent],
+  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, TutorAllFilterComponent],
   templateUrl: './counselor-directory.component.html',
   styleUrls: ['./counselor-directory.component.scss']
 })
@@ -48,6 +48,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   directoryTitle = 'Counselors';
   singularTitle = 'Counselor';
   educationFilters: SelectedFilters | null = null;
+  showEducationFilters = false;
   private selectedCity = '';
 
   private readonly subscriptions = new Subscription();
@@ -63,7 +64,6 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly core: CoreService,
     private readonly petAgeService: PetAgeService,
-    private readonly modalCtrl: ModalController,
     private readonly cityService: EduHubCityService,
     private readonly cdr: ChangeDetectorRef
   ) {}
@@ -155,6 +155,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     this.likeSubscriptions.forEach(subscription => subscription.unsubscribe());
     this.likeSubscriptions.clear();
     document.body.style.overflow = '';
+    document.body.classList.remove('tutor-filter-open');
   }
 
   get visibleCounselors(): Tutor[] {
@@ -344,13 +345,15 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     return candidates.some(candidate => listingLocation.includes(candidate));
   }
 
-  async openEducationFilters(): Promise<void> {
-    const modal = await this.modalCtrl.create({
-      component: TutorAllFilterComponent,
-      componentProps: { initialFilters: this.educationFilters, useServerResults: true }
-    });
-    await modal.present();
-    const { data } = await modal.onWillDismiss();
+  openEducationFilters(): void {
+    if (this.showEducationFilters) return;
+    this.showEducationFilters = true;
+    document.body.classList.add('tutor-filter-open');
+  }
+
+  closeEducationFilters(data?: any): void {
+    this.showEducationFilters = false;
+    document.body.classList.remove('tutor-filter-open');
     if (data?.clearAll || data?.filters) {
       this.educationFilters = data.clearAll ? null : data.filters;
       this.loadCounselors();
@@ -563,6 +566,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     } catch {
       return [];
     }
+    if (!selected || typeof selected !== 'object' || Array.isArray(selected)) return [];
     return Object.keys(selected)
       .filter(key => /special|subject|expert/i.test(key))
       .reduce<string[]>((items, key) => {

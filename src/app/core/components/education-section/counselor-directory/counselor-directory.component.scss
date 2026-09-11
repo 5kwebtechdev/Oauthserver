@@ -51,3 +51,36 @@ button { font: inherit; -webkit-tap-highlight-color: transparent; }
 }}
 @media (min-width:768px) and (max-width:1023px){:host-context(html:not(.plt-capacitor)){.counselor-directory-page{padding-inline:18px}.counselor-main{padding-inline:22px}.counselor-list,.counselor-loading{grid-template-columns:1fr}}}
 @media (prefers-reduced-motion:reduce){:host-context(html:not(.plt-capacitor)) .counselor-refer,:host-context(html:not(.plt-capacitor)) .counselor-card{transition:none}}
+
+.education-filter-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(22, 24, 35, 0.52);
+  box-sizing: border-box;
+}
+
+.education-filter-dialog {
+  display: block;
+  width: min(920px, 100%);
+  height: min(760px, calc(100dvh - 48px));
+  overflow: hidden;
+  border-radius: 24px;
+  background: #f5f7fa;
+  box-shadow: 0 24px 70px rgba(20, 24, 40, 0.28);
+}
+
+.education-filter-dialog tutor-all-filter {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 767px) {
+  .education-filter-overlay { padding: 0; }
+  .education-filter-dialog { width: 100%; height: 100dvh; border-radius: 0; }
+}

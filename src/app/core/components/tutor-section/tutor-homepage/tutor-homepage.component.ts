@@ -1,7 +1,7 @@
 import { Component, Output, EventEmitter, HostListener, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ModalController, ViewWillEnter } from '@ionic/angular';
+import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { Subject } from 'rxjs';
@@ -32,7 +32,8 @@ import { EduHubCityService } from '../../../services/eduhub-city.service';
     SupermeSpeechBubbleComponent,
     FooterComponent,
     SupermePopupComponent,
-    EduHubCitySelectorComponent
+    EduHubCitySelectorComponent,
+    TutorAllFilterComponent
   ],
   templateUrl: './tutor-homepage.component.html',
   styleUrls: ['./tutor-homepage.component.scss']
@@ -42,7 +43,8 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   isLoading = false;
   searchQuery = '';
   private directoryEntityType = '';
-  private lastAppliedFilters: any = null;
+  lastAppliedFilters: any = null;
+  showAllFilters = false;
 
   /** Emitted when a tutor profile is requested */
   @Output() viewProfile = new EventEmitter<TutorListItem>();
@@ -63,7 +65,6 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   private destroy$ = new Subject<void>();
 
   constructor(
-    private modalCtrl: ModalController,
     private tutorService: TutorService,
     private tutorApi: TutorApi,
     private cdr: ChangeDetectorRef,
@@ -82,6 +83,7 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   }
 
   ngOnDestroy(): void {
+    document.body.classList.remove('tutor-filter-open');
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -148,17 +150,15 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
     });
   }
 
-  async openAllFilters(): Promise<void> {
-    const modal = await this.modalCtrl.create({
-      component: TutorAllFilterComponent,
-      componentProps: {
-        filters: ['Mathematics', 'Science', 'English', 'Computer Science', 'Social Studies', 'Hindi', 'Art & Craft'],
-        initialFilters: this.lastAppliedFilters
-      }
-    });
-    await modal.present();
+  openAllFilters(): void {
+    if (this.showAllFilters) return;
+    this.showAllFilters = true;
+    document.body.classList.add('tutor-filter-open');
+  }
 
-    const { data } = await modal.onWillDismiss();
+  onAllFiltersDismiss(data?: any): void {
+    this.showAllFilters = false;
+    document.body.classList.remove('tutor-filter-open');
 
     // Clear All pressed — refetch all tutors from API and reset filter state
     if (data?.clearAll) {

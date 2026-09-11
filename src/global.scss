@@ -106,6 +106,10 @@ body {
   font-family: var(--font-sans);
 }
 
+body.tutor-filter-open {
+  overflow: hidden;
+}
+
 h1,
 h2,
 h3,
@@ -1356,6 +1360,29 @@ ion-content {
 // Activity creation/editing is shared by dashboard, calendar and activity cards.
 // Scope the desktop dialog sizing to its content, leaving nested pickers alone.
 @media (min-width: 768px) {
+  ion-modal.tutor-filter-modal {
+    --width: min(920px, calc(100vw - 48px));
+    --height: min(760px, calc(100dvh - 48px));
+    --max-width: calc(100vw - 48px);
+    --max-height: calc(100dvh - 48px);
+    --border-radius: 24px;
+    --box-shadow: 0 24px 80px rgba(49, 30, 75, 0.24);
+
+    // Ionic initially mounts dynamically-created pages with
+    // `.ion-page-invisible`. On this nested authenticated route that class is
+    // not consistently cleared after the modal transition, leaving only the
+    // white modal surface visible. Keep this scoped to the Tutor filter modal
+    // and also opt its page host out of the routed-page desktop width cap.
+    tutor-all-filter.ion-page,
+    tutor-all-filter.ion-page-invisible {
+      opacity: 1 !important;
+      visibility: visible !important;
+      max-width: none !important;
+      width: 100% !important;
+      padding-inline: 0 !important;
+    }
+  }
+
   html:not(.plt-capacitor) ion-modal:has(activity-input) {
     --width: min(860px, calc(100vw - 48px));
     --height: min(900px, calc(100dvh - 48px));

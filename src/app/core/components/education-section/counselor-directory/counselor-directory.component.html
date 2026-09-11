@@ -147,3 +147,19 @@
     </section>
   </div>
 </ion-content>
+
+<div *ngIf="showEducationFilters"
+     class="education-filter-overlay"
+     role="dialog"
+     aria-modal="true"
+     aria-label="Directory filters"
+     (click)="closeEducationFilters()">
+  <section class="education-filter-dialog" (click)="$event.stopPropagation()">
+    <tutor-all-filter
+      [embedded]="true"
+      [initialFilters]="educationFilters"
+      [useServerResults]="true"
+      (filterDismiss)="closeEducationFilters($event)">
+    </tutor-all-filter>
+  </section>
+</div>

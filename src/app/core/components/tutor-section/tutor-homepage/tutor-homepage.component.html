@@ -127,3 +127,24 @@
   <!--footer-->
   <app-footer></app-footer>
 </ion-content>
+
+<!--
+  This is intentionally rendered in-page rather than through Ionic's dynamic
+  modal outlet. On desktop web the outlet could leave the component marked as
+  ion-page-invisible until browser Back was pressed, producing a blank sheet.
+-->
+<div *ngIf="showAllFilters"
+     class="tutor-filter-overlay"
+     role="dialog"
+     aria-modal="true"
+     aria-label="Tutor filters"
+     (click)="onAllFiltersDismiss()">
+  <section class="tutor-filter-dialog" (click)="$event.stopPropagation()">
+    <tutor-all-filter
+      [embedded]="true"
+      [filters]="['Mathematics', 'Science', 'English', 'Computer Science', 'Social Studies', 'Hindi', 'Art & Craft']"
+      [initialFilters]="lastAppliedFilters"
+      (filterDismiss)="onAllFiltersDismiss($event)">
+    </tutor-all-filter>
+  </section>
+</div>

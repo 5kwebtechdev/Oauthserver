@@ -1,14 +1,11 @@
-import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { ModalController } from '@ionic/angular';
-import { TutorApi } from '../../../api/tutor.api';
-import { TutorCategory, TutorCategoryField, TutorCategoryOption, TutorCategoriesResponse, FilterGroup, FilterOption, SelectedFilters } from '../../../models/tutor.model';
-import { finalize } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
+import { TutorCategory, TutorCategoryField, TutorCategoryOption, FilterGroup, FilterOption, SelectedFilters } from '../../../models/tutor.model';
 import { TutorService } from '../../../services/tutor.service';
 
 @Component({
@@ -24,6 +21,9 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
 
   /** Previously applied filters to pre-populate selections */
   @Input() initialFilters: SelectedFilters | null = null;
+  /** Render directly inside a parent overlay instead of an Ionic modal. */
+  @Input() embedded = false;
+  @Output() filterDismiss = new EventEmitter<any>();
   // Directory searches are server-backed; the shared tutor cache isn't their count.
   @Input() useServerResults = false;
 
@@ -75,37 +75,21 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
    * Load tutor categories from API
    */
   private loadTutorCategories(): void {
-    this.isLoading = true;
+    // These PRD-defined filters are the authoritative UI configuration. They
+    // do not need to wait for the categories endpoint (whose response was not
+    // used here anyway); waiting left the Ionic modal as a blank white sheet
+    // whenever that request was slow or intercepted.
+    this.isLoading = false;
     this.errorMessage = null;
+    this.useFallbackData();
 
-    this.tutorApi.getTutorCategories()
-      .pipe(finalize(() => {
-        this.isLoading = false;
-        // Initialize swiper after data loads and view updates
-        setTimeout(() => this.initSwiper(), 100);
-      }))
-      .subscribe({
-        next: (_categories) => {
-          // Use predefined fallback data for display labels — API returns
-          // granular short options (e.g. "B.Tech") that don't match the
-          // Figma-specified combined labels (e.g. "Engineering (B.E / B.Tech / M.Tech)").
-          // Fallback data is always authoritative for display.
-          this.useFallbackData();
-
-          // Pre-populate selected filters from initialFilters
-          if (this.initialFilters?.filters) {
-            Object.entries(this.initialFilters.filters).forEach(([fieldKey, values]) => {
-              if (!this.hiddenFilterFieldKeys.has(fieldKey) && values.length > 0) {
-                this.selectedFiltersMap.set(fieldKey, new Set(values));
-              }
-            });
-          }
-        },
-        error: (error) => {
-          console.error('[TutorAllFilter] Error loading categories:', error);
-          this.useFallbackData();
+    if (this.initialFilters?.filters) {
+      Object.entries(this.initialFilters.filters).forEach(([fieldKey, values]) => {
+        if (!this.hiddenFilterFieldKeys.has(fieldKey) && values.length > 0) {
+          this.selectedFiltersMap.set(fieldKey, new Set(values));
         }
       });
+    }
   }
 
   /**
@@ -574,7 +558,7 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
     this.selectedFiltersMap.clear();
     this.resultCount = null;
     // Dismiss modal with clearAll flag so parent can refetch all tutors from API
-    this.modalCtrl.dismiss({ clearAll: true });
+    this.dismiss({ clearAll: true });
   }
 
   /**
@@ -608,7 +592,7 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
     this.updateResultCount();
 
     // Close modal and pass selected filters
-    this.modalCtrl.dismiss({
+    this.dismiss({
       filters: selectedFilters
     });
   }
@@ -652,7 +636,6 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
 
   constructor(
     private modalCtrl: ModalController,
-    private tutorApi: TutorApi,
     private tutorService: TutorService
   ) { }
 
@@ -676,6 +659,14 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
    * Close modal without applying filters
    */
   close(): void {
-    this.modalCtrl.dismiss();
+    this.dismiss();
+  }
+
+  private dismiss(data?: any): void {
+    if (this.embedded) {
+      this.filterDismiss.emit(data);
+      return;
+    }
+    void this.modalCtrl.dismiss(data);
   }
 }
