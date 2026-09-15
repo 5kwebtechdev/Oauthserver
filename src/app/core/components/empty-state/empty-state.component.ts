@@ -1,5 +1,5 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { SupermeButtonComponent } from '../superme-button/superme-button.component';
 import { buttonStyles } from '../superme-button/button.types';
 
@@ -9,7 +9,7 @@ import { buttonStyles } from '../superme-button/button.types';
   imports: [CommonModule, SupermeButtonComponent],
   template: `
     <div class="empty-state__body">
-      <img *ngIf="imageSrc" class="empty-state__illustration" [src]="imageSrc" [alt]="imageAlt">
+      <img *ngIf="imageSrc" class="empty-state__illustration" [src]="resolveImageSrc(imageSrc)" [alt]="imageAlt">
 
       <div class="empty-state__texts">
         <p class="empty-state__lead">{{ leadText }}</p>
@@ -80,6 +80,8 @@ import { buttonStyles } from '../superme-button/button.types';
   `]
 })
 export class EmptyStateComponent {
+  private readonly document = inject(DOCUMENT);
+
   @Input() imageSrc: string = '';
   @Input() imageAlt: string = '';
   @Input() leadText: string = '';
@@ -89,6 +91,23 @@ export class EmptyStateComponent {
   @Input() isLargeButton: boolean = true;
 
   @Output() buttonClicked = new EventEmitter<void>();
+
+  /**
+   * Resolve root-relative asset references against the app's configured base
+   * href. The web app is hosted at /app/, so `/assets/...` would incorrectly
+   * request files from the legacy root site and return an HTML fallback.
+   * Relative references continue to work for both web and native builds.
+   */
+  resolveImageSrc(src: string): string {
+    const value = String(src || '').trim();
+    if (!value.startsWith('/assets/')) {
+      return value;
+    }
+
+    const baseHref = this.document.querySelector('base')?.getAttribute('href') || '/';
+    const base = baseHref.endsWith('/') ? baseHref.slice(0, -1) : baseHref;
+    return `${base}${value}`;
+  }
 
   onButtonClick(): void {
     this.buttonClicked.emit();
