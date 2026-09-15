@@ -619,12 +619,14 @@
     }
 
     :host-context(html:not(.plt-capacitor)) .panda-message app-speech-bubble {
-        max-width: calc(100% - 150px);
+        max-width: calc(100% - 210px);
     }
 
     :host-context(html:not(.plt-capacitor)) .coin-panda-image {
-        width: 126px;
-        max-height: 116px;
+        width: 180px;
+        height: 170px;
+        max-height: none;
+        object-fit: contain;
         filter: drop-shadow(0 10px 14px rgba(71, 40, 5, 0.24));
         animation: web-coin-pet-float 3.6s ease-in-out infinite;
     }
@@ -702,6 +704,11 @@
     :host-context(html:not(.plt-capacitor)) .coins .coin-icon {
         width: 62px;
         height: 62px;
+    }
+
+    :host-context(html:not(.plt-capacitor)) .coin-panda-image {
+        width: 150px;
+        height: 144px;
     }
 
     :host-context(html:not(.plt-capacitor)) .coin-list-section {

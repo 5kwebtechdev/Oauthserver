@@ -32,20 +32,20 @@ export class BadgeSectionComponent implements OnInit, OnDestroy {
 
     // Icon mapping for badge titles
     private readonly BADGE_ICON_MAP: Readonly<Record<string, string>> = {
-        'Coin Collector': 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
-        'Quiz Ace': 'assets/Icons-Neutral/Icon-Badge-QuizAce.png',
-        'Pet Collector': 'assets/Icons-Neutral/Icon-Badge-PetCollector.png',
-        'Content Creator': 'assets/Icons-Neutral/Icon-Badge-ContentCreator.png',
-        'Knowledge Seeker': 'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.png',
-        'Habit Master': 'assets/Icons-Neutral/Icon-Badge-HabitMaster.png',
-        'Daily Champion': 'assets/Icons-Neutral/Icon-Badge-DailyChampion.png',
-        'Feature Explorer': 'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.png',
-        'Puzzle Master': 'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png',
-        'Pet Stylist': 'assets/Icons-Neutral/Icon-Badge-PetStylist.png',
-        'Task Terminator': 'assets/Icons-Neutral/Icon-Badges-TaskTerminator.png',
-        'Learning Enthusiast': 'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.png',
-        'Social Star': 'assets/Icons-Neutral/Icon-Badge-SocialStar.png',
-        'Streak Keeper': 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png'
+        'Coin Collector': 'assets/Icons-Neutral/Icon-Badge-CoinCollector.webp',
+        'Quiz Ace': 'assets/Icons-Neutral/Icon-Badge-QuizAce.webp',
+        'Pet Collector': 'assets/Icons-Neutral/Icon-Badge-PetCollector.webp',
+        'Content Creator': 'assets/Icons-Neutral/Icon-Badge-ContentCreator.webp',
+        'Knowledge Seeker': 'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.webp',
+        'Habit Master': 'assets/Icons-Neutral/Icon-Badge-HabitMaster.webp',
+        'Daily Champion': 'assets/Icons-Neutral/Icon-Badge-DailyChampion.webp',
+        'Feature Explorer': 'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.webp',
+        'Puzzle Master': 'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.webp',
+        'Pet Stylist': 'assets/Icons-Neutral/Icon-Badge-PetStylist.webp',
+        'Task Terminator': 'assets/Icons-Neutral/Icon-Badges-TaskTerminator.webp',
+        'Learning Enthusiast': 'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.webp',
+        'Social Star': 'assets/Icons-Neutral/Icon-Badge-SocialStar.webp',
+        'Streak Keeper': 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.webp'
     };
 
     constructor(
@@ -108,7 +108,7 @@ export class BadgeSectionComponent implements OnInit, OnDestroy {
      * Falls back to a default icon if title not found
      */
     private getBadgeIcon(title: string): string {
-        return this.BADGE_ICON_MAP[title] || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png';
+        return this.BADGE_ICON_MAP[title] || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.webp';
     }
 
     /**
@@ -194,7 +194,7 @@ export class BadgeSectionComponent implements OnInit, OnDestroy {
             const latestBadge = earnedBadges[0];
             return this.getBadgeIcon(latestBadge.title || latestBadge.name);
         }
-        return 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png';
+        return 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.webp';
     }
 
     /**

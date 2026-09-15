@@ -28,6 +28,7 @@ export interface LoginCredentials {
 
 export interface AuthResponse { 
   token: string;
+  firstLoggedForTheDay?: boolean;
   user: {
     id: number;
     name: string;
@@ -141,6 +142,7 @@ export class AuthService {
   private readonly LAST_ACTIVITY_KEY = 'last_activity';
   private readonly REMEMBER_ME_KEY = 'remember_me';
   private readonly PLATFORM_KEY = 'platform';
+  private readonly FIRST_LOGGED_FOR_DAY_KEY = 'superme_first_logged_for_the_day';
   // In-memory only. Used solely for Parent Home → Add Child → Parent Home,
   // where an unrelated request must not turn a successful child creation
   // into an unexpected login redirect.
@@ -314,6 +316,7 @@ export class AuthService {
                 },
                 credentials.rememberMe || false
               );
+              this.setFirstLoggedForTheDay(response.firstLoggedForTheDay === true, userId);
               this.analytics.logLogin(credentials.email ? 'email' : 'phone');
               this.analytics.setUserId(String(userId));
             } else {
@@ -323,6 +326,29 @@ export class AuthService {
         })
 
       );
+  }
+
+  /** Whether the login API confirmed this is the user's first login today. */
+  isFirstLoggedForTheDay(): boolean {
+    try {
+      return sessionStorage.getItem(this.FIRST_LOGGED_FOR_DAY_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  private setFirstLoggedForTheDay(value: boolean, userId: number): void {
+    try {
+      sessionStorage.setItem(this.FIRST_LOGGED_FOR_DAY_KEY, String(value));
+
+      // The backend is authoritative. If it reports the first login, discard
+      // a stale client-side seen marker so today's celebration can appear.
+      if (value) {
+        localStorage.removeItem(`superme_daily_streak_seen_${userId}`);
+      }
+    } catch {
+      // Storage restrictions should safely result in no automatic popup.
+    }
   }
 
   /**
@@ -766,6 +792,7 @@ export class AuthService {
       this.userDataSubject.next(null);
       this.removedFamilyMemberIds.clear();
       sessionStorage.removeItem(this.REMOVED_FAMILY_MEMBERS_KEY);
+      sessionStorage.removeItem(this.FIRST_LOGGED_FOR_DAY_KEY);
     } catch (error) {
       console.warn('[AuthService] A logout-state subscriber failed:', error);
     }

@@ -65,17 +65,17 @@
 
         <div class="counselor-filter-row" *ngIf="!isLoading">
           <button *ngIf="entityType !== 'COUNSELOR'" type="button" (click)="openEducationFilters()">
-            <img src="assets/Icons-Neutral/Icon-Tutor-Subjects.png" alt="" aria-hidden="true">
+            <img src="assets/Icons-Neutral/Icon-Tutor-Subjects.webp" alt="" aria-hidden="true">
             <span>{{ educationFilters ? 'Filters applied' : 'Filters' }}</span>
             <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
           </button>
           <button *ngIf="entityType === 'COUNSELOR'" type="button" (click)="openFilters('specialization')">
-            <img src="assets/Icons-Neutral/Icon-Tutor-Subjects.png" alt="" aria-hidden="true">
+            <img src="assets/Icons-Neutral/Icon-Tutor-Subjects.webp" alt="" aria-hidden="true">
             <span>Specialization</span>
             <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
           </button>
           <button *ngIf="entityType === 'COUNSELOR'" type="button" (click)="openFilters('experience')">
-            <img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">
+            <img src="assets/Icons-Neutral/Icon-Tutor-Experience.webp" alt="" aria-hidden="true">
             <span>Experience</span>
             <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
           </button>
@@ -120,7 +120,7 @@
                       <div class="counselor-card__name"><h3>{{ getName(counselor) }}</h3>
                         <img *ngIf="isVerified(counselor)" src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified"></div>
                       <p class="counselor-card__specialization">{{ getSpecializationLabel(counselor) }}</p>
-                      <p class="counselor-card__stats"><span><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true">{{ getAvailability(counselor) }}</span><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">{{ getExperience(counselor) }}</span></p>
+                      <p class="counselor-card__stats"><span><img src="assets/Icons-Neutral/Tutor-Mode.webp" alt="" aria-hidden="true">{{ getAvailability(counselor) }}</span><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.webp" alt="" aria-hidden="true">{{ getExperience(counselor) }}</span></p>
                     </div>
                     <div class="counselor-card__actions">
                       <button type="button" class="counselor-action counselor-action--heart" [class.is-liked]="isLiked(counselor)" [attr.aria-label]="isLiked(counselor) ? 'Unlike ' + singularTitle.toLowerCase() : 'Like ' + singularTitle.toLowerCase()" (click)="toggleLike(counselor)"><span aria-hidden="true"></span></button>
@@ -144,7 +144,7 @@
     <section class="filter-sheet" role="dialog" aria-modal="true" aria-labelledby="counselor-filter-title" (click)="$event.stopPropagation()">
       <header><h2 id="counselor-filter-title">Filters</h2><button type="button" aria-label="Close filters" (click)="closeFilters()"><img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true"></button></header>
       <div class="filter-sheet__content">
-        <nav aria-label="Filter groups"><button type="button" [class.is-active]="filterTab === 'specialization'" (click)="setFilterTab('specialization')"><img src="assets/Icons-Neutral/Icon-Tutor-Subjects.png" alt="" aria-hidden="true">Specialization</button><button type="button" [class.is-active]="filterTab === 'experience'" (click)="setFilterTab('experience')"><img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">Experience</button></nav>
+        <nav aria-label="Filter groups"><button type="button" [class.is-active]="filterTab === 'specialization'" (click)="setFilterTab('specialization')"><img src="assets/Icons-Neutral/Icon-Tutor-Subjects.webp" alt="" aria-hidden="true">Specialization</button><button type="button" [class.is-active]="filterTab === 'experience'" (click)="setFilterTab('experience')"><img src="assets/Icons-Neutral/Icon-Tutor-Experience.webp" alt="" aria-hidden="true">Experience</button></nav>
         <div class="filter-sheet__options"><label *ngFor="let option of activeFilterOptions"><span>{{ option }}</span><input type="checkbox" [checked]="activeSelectedOptions.has(option)" (change)="toggleFilterValue(option)"><span class="filter-checkbox" aria-hidden="true"></span></label><p *ngIf="!activeFilterOptions.length">No filter options are available yet.</p></div>
       </div>
       <footer><button type="button" class="filter-sheet__clear" (click)="clearFilters()">Clear all</button><button type="button" class="filter-sheet__apply" (click)="applyFilters()">{{ resultsLabel }}</button></footer>

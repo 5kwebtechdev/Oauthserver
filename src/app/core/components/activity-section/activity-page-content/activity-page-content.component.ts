@@ -704,7 +704,8 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     editPlannerEntry(source: any, entry: any, event: Event): void {
-        event.stopPropagation();
+        this.plannerHeldAt = Date.now();
+        event?.stopPropagation();
         const planner = {
             ...source,
             type: 'timetable',
@@ -724,6 +725,16 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
     trackPlannerCard(_index: number, card: PlannerScheduleCard): string {
         return card.id;
+    }
+
+    private plannerHeldAt = 0;
+    async viewPlanner(source: any, entry: any, event: Event): Promise<void> {
+        event.stopPropagation();
+        if (Date.now() - this.plannerHeldAt < 1000) return;
+        await this.router.navigate(['/authed/activity-detail', source.id], {
+            queryParams: { type: 'timetable' },
+            state: { habit: { ...source, type: 'timetable' }, plannerEntry: entry, type: 'timetable', selectedDate: this.getSelectedDateString() }
+        });
     }
 
     trackPlannerEntry(index: number, entry: any): string | number {

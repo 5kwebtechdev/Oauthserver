@@ -62,7 +62,7 @@ interface Academy {
 })
 export class AcademiesListComponent implements OnInit, OnDestroy {
   readonly adScreen: AdScreen = 'EDUHUB';
-  readonly academyPlaceholderImage = 'assets/Images-Transparent/Academies.png';
+  readonly academyPlaceholderImage = 'assets/Images-Transparent/Academies.webp';
   academies: Academy[] = [];
   academyListItems: TutorListItem[] = [];
   totalAcademies = 0;

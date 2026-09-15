@@ -452,12 +452,12 @@ export class MyCartComponent implements OnInit, OnDestroy, ViewWillEnter {
                 img.src = URL.createObjectURL(blob);
             })
             .catch(() => {
-                img.src = 'assets/School-assets/empty-product-list.png';
+                img.src = 'assets/School-assets/empty-product-list.webp';
                 img.style.objectFit = 'contain';
                 img.style.padding = '8px';
             });
         } else {
-            img.src = 'assets/School-assets/empty-product-list.png';
+            img.src = 'assets/School-assets/empty-product-list.webp';
             img.style.objectFit = 'contain';
             img.style.padding = '8px';
         }

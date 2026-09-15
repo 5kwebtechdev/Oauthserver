@@ -444,7 +444,7 @@ export class AppComponent implements OnInit, OnDestroy {
               levelText: badge.levelText || '',
               description: badge.description || '',
               achievementText: badge.achievementText || '',
-              iconUrl: badge.iconUrl || badge.icon || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
+              iconUrl: badge.iconUrl || badge.icon || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.webp',
               celebrationTitle: badge.celebrationTitle || `Level ${currentLevel} - Badge Unlocked!`,
               celebrationMessage: badge.celebrationMessage || `You earned a badge!`,
               shareMessage: badge.shareMessage || 'I earned a badge on SuperMe! 🚀',
@@ -506,24 +506,24 @@ export class AppComponent implements OnInit, OnDestroy {
 
   /** Local badge icon map — used as fallback when remote iconUrl fails to load on iOS */
   private readonly LOCAL_BADGE_ICONS: Record<string, string> = {
-    'Coin Collector':       'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
-    'Quiz Ace':             'assets/Icons-Neutral/Icon-Badge-QuizAce.png',
-    'Pet Collector':        'assets/Icons-Neutral/Icon-Badge-PetCollector.png',
-    'Content Creator':      'assets/Icons-Neutral/Icon-Badge-ContentCreator.png',
-    'Knowledge Seeker':     'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.png',
-    'Habit Master':         'assets/Icons-Neutral/Icon-Badge-HabitMaster.png',
-    'Daily Champion':       'assets/Icons-Neutral/Icon-Badge-DailyChampion.png',
-    'Feature Explorer':     'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.png',
-    'Puzzle Master':        'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png',
-    'Pet Stylist':          'assets/Icons-Neutral/Icon-Badge-PetStylist.png',
-    'Task Terminator':      'assets/Icons-Neutral/Icon-Badges-TaskTerminator.png',
-    'Learning Enthusiast':  'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.png',
-    'Social Star':          'assets/Icons-Neutral/Icon-Badge-SocialStar.png',
-    'Streak Keeper':        'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png',
+    'Coin Collector':       'assets/Icons-Neutral/Icon-Badge-CoinCollector.webp',
+    'Quiz Ace':             'assets/Icons-Neutral/Icon-Badge-QuizAce.webp',
+    'Pet Collector':        'assets/Icons-Neutral/Icon-Badge-PetCollector.webp',
+    'Content Creator':      'assets/Icons-Neutral/Icon-Badge-ContentCreator.webp',
+    'Knowledge Seeker':     'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.webp',
+    'Habit Master':         'assets/Icons-Neutral/Icon-Badge-HabitMaster.webp',
+    'Daily Champion':       'assets/Icons-Neutral/Icon-Badge-DailyChampion.webp',
+    'Feature Explorer':     'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.webp',
+    'Puzzle Master':        'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.webp',
+    'Pet Stylist':          'assets/Icons-Neutral/Icon-Badge-PetStylist.webp',
+    'Task Terminator':      'assets/Icons-Neutral/Icon-Badges-TaskTerminator.webp',
+    'Learning Enthusiast':  'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.webp',
+    'Social Star':          'assets/Icons-Neutral/Icon-Badge-SocialStar.webp',
+    'Streak Keeper':        'assets/Icons-Neutral/Icon-Badge-StreakKeeper.webp',
   };
 
   getLocalBadgeIcon(name?: string): string {
-    return this.LOCAL_BADGE_ICONS[name || ''] || 'assets/Images-Transparent/Image-Badge-Reward.png';
+    return this.LOCAL_BADGE_ICONS[name || ''] || 'assets/Images-Transparent/Image-Badge-Reward.webp';
   }
 
   /**
@@ -544,8 +544,12 @@ export class AppComponent implements OnInit, OnDestroy {
   private async initializeAppUpdateProtection(): Promise<void> {
     if (this.appUpdate.isNativeMobilePlatform()) {
       try {
-        this.appStateChangeListener = await App.addListener('appStateChange', ({ isActive }) => {
+        void App.addListener('appStateChange', ({ isActive }) => {
           if (isActive) this.checkAppUpdate();
+        }).then(listener => {
+          this.appStateChangeListener = listener;
+        }).catch(error => {
+          console.warn('[AppComponent] Unable to register app update resume listener:', error);
         });
       } catch (error) {
         console.warn('[AppComponent] Unable to register app update resume listener:', error);

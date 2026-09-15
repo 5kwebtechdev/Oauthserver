@@ -23,7 +23,7 @@ export class LessonListComponent {
       description: 'Discover what a budget is and why it matters.',
       duration: '3 mins',
       type: 'Text-based',
-      image: 'assets/img/lesson-binder.png'
+      image: 'assets/img/lesson-binder.webp'
     },
     {
       id: 'lesson-2',
@@ -31,7 +31,7 @@ export class LessonListComponent {
       description: 'Learn practical saving strategies.',
       duration: '5 mins',
       type: 'Interactive',
-      image: 'assets/img/lesson-binder.png'
+      image: 'assets/img/lesson-binder.webp'
     }
   ];
 }

@@ -506,7 +506,7 @@ export class MyOrdersComponent implements OnInit {
     }
 
     itemImage(item?: ApiOrderItem): string {
-        return item?.thumbnailUrl ?? 'assets/School-assets/empty-product-list.png';
+        return item?.thumbnailUrl ?? 'assets/School-assets/empty-product-list.webp';
     }
 
     // ── Cancel ────────────────────────────────────────────────────────────────

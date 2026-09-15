@@ -7,18 +7,18 @@
         <div class="stats-row">
             <div class="stat-card">
                 <span class="stat-label">Current Streak</span>
-                <img src="assets/Icons-Neutral/Icon-Streak.png" alt="Current streak" class="stat-icon" />
+                <img src="assets/Icons-Neutral/Icon-Streak.webp" alt="Current streak" class="stat-icon" />
                 <span class="stat-value">{{ currentUser?.currentStreak || 0 }} days</span>
             </div>
 
             <div class="stat-card">
                 <span class="stat-label">Best Streak</span>
-                <img src="assets/Icons-Neutral/Icon-BestStreak.png" alt="Best streak" class="stat-icon" />
+                <img src="assets/Icons-Neutral/Icon-BestStreak.webp" alt="Best streak" class="stat-icon" />
                 <span class="stat-value">{{ currentUser?.highestStreak || 0 }} days</span>
             </div>
             <div class="stat-card">
                 <span class="stat-label">Total Days Active</span>
-                <img src="assets/Icons-Neutral/Icon-Calendar.png" alt="Total active days" class="stat-icon" />
+                <img src="assets/Icons-Neutral/Icon-Calendar.webp" alt="Total active days" class="stat-icon" />
                 <span class="stat-value">{{ currentUser?.totalActiveDays || 0 }} days</span>
             </div>
         </div>
@@ -48,7 +48,7 @@
                         <!-- Rank -->
                         <div class="rank-wrap">
                             <ng-container [ngSwitch]="item.rank">
-                                <img *ngSwitchCase="1" src="assets/Icons-Neutral/Icon-Trophy.png" alt="1st" class="rank-trophy" />
+                                <img *ngSwitchCase="1" src="assets/Icons-Neutral/Icon-Trophy.webp" alt="1st" class="rank-trophy" />
                                 <span *ngSwitchDefault class="rank-num">{{ item.rank }}</span>
                             </ng-container>
                         </div>
@@ -56,7 +56,7 @@
                         <!-- Avatar -->
                         <div class="avatar-wrap" [class.avatar-highlight]="currentUser && item.rank === currentUser.rank">
                             <img class="avatar"
-                                 [src]="item.avatar || 'assets/avatar/ChildAvatar.png'"
+                                 [src]="item.avatar || 'assets/avatar/ChildAvatar.webp'"
                                  [alt]="item.avatarAlt || item.avatarName + ' avatar'" />
                         </div>
 
@@ -80,7 +80,7 @@
                             </div>
                             <div class="avatar-wrap avatar-highlight">
                                 <img class="avatar"
-                                     [src]="currentUserAvatarUrl || 'assets/avatar/ChildAvatar.png'"
+                                     [src]="currentUserAvatarUrl || 'assets/avatar/ChildAvatar.webp'"
                                      alt="Your avatar" />
                             </div>
                             <span class="name">

@@ -5,7 +5,7 @@
         <button class="toolbar-back" type="button" aria-label="Go back" (click)="onBack()">
           <img [src]="detailIcon('back')" alt="" />
         </button>
-        <div class="toolbar-actions" *ngIf="canEdit()">
+        <div class="toolbar-actions" *ngIf="habit.type !== 'timetable' && canEdit()">
           <button class="toolbar-action delete-action" type="button" aria-label="Delete activity" (click)="openDeletePopup()">
             <img [src]="detailIcon('delete')" alt="" />
           </button>
@@ -19,7 +19,7 @@
         <h1>{{ habit.title }}</h1>
         <p>Created on {{ habit.createdAt | date:'MMM d, y' }}</p>
         <div class="activity-badges">
-          <span class="priority-pill priority-{{ habit.priority | lowercase }}">
+          <span *ngIf="habit.type !== 'timetable'" class="priority-pill priority-{{ habit.priority | lowercase }}">
             <img [src]="detailIcon('priority')" alt="" />{{ habit.priority | titlecase }}
           </span>
           <span class="category-pill" *ngIf="tagText || hasRoutine()">
@@ -55,44 +55,44 @@
       </div>
     </section>
 
-    <section class="progress-section">
+    <section class="progress-section" *ngIf="habit.type !== 'timetable'">
       <div class="progress-title">
         <div class="figma-progress-title-icon" aria-hidden="true">
-          <img src="assets/app-assets/activity-detail/figma-progress-achievement.png" alt="" />
+          <img src="assets/app-assets/activity-detail/figma-progress-achievement.webp" alt="" />
         </div>
         <h2>Your activity’s progress</h2>
       </div>
       <div class="stats-card">
         <div class="stat-item">
           <div class="figma-stat-icon figma-streak-icon" aria-hidden="true">
-            <img src="assets/app-assets/activity-detail/figma-progress-streak.png" alt="" />
+            <img src="assets/app-assets/activity-detail/progress-streak-hd.webp" alt="" />
           </div>
           <span>Current<br />Streak</span><strong>{{ coinStats.userStreaks }}</strong><small>days</small>
         </div>
         <div class="stat-item">
           <div class="figma-stat-icon figma-coin-icon" aria-hidden="true">
-            <img src="assets/app-assets/activity-detail/figma-progress-coins.png" alt="" />
+            <img src="assets/app-assets/activity-detail/progress-coins-hd.webp" alt="" />
           </div>
           <span>Coins<br />Earned</span><strong>{{ coinStats.userCoins }}</strong><small>overall</small>
         </div>
         <div class="stat-item">
           <div class="figma-stat-icon figma-highest-streak-icon" aria-hidden="true">
-            <img src="assets/app-assets/activity-detail/figma-progress-highest-streak.png" alt="" />
+            <img src="assets/app-assets/activity-detail/progress-highest-streak-hd.webp" alt="" />
           </div>
           <span>Highest<br />Streak</span><strong>{{ coinStats.totalStreaks }}</strong><small>days</small>
         </div>
         <div class="stat-item">
           <div class="figma-stat-icon figma-completion-icon" aria-hidden="true">
-            <img src="assets/app-assets/activity-detail/figma-progress-completion.png" alt="" />
+            <img src="assets/app-assets/activity-detail/progress-completion-hd.webp" alt="" />
           </div>
           <span>Completion<br />Rate</span><strong>{{ coinStats.successPercentage }}%</strong><small>overall</small>
         </div>
       </div>
     </section>
 
-    <section class="calendar-section">
+    <section class="calendar-section" *ngIf="habit.type !== 'timetable'">
       <div class="detail-calendar">
-        <superme-calendar [useArrowNavigation]="true" [useActivityDetailStyle]="true"
+        <superme-calendar [useArrowNavigation]="true" [useCalendarMainStyle]="true"
           [activityDetailTheme]="habit.type === 'tasks' ? 'task' : 'habit'"
           [showMoodToggle]="false" [statusData]="calendarStatusData" [currentMonth]="currentCalendarMonth"
           [allowDateSelection]="false" (monthChanged)="onCalendarMonthChange($event)"></superme-calendar>

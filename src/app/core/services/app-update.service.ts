@@ -216,15 +216,25 @@ export class AppUpdateService {
   }
 
   private async getCurrentAppInfo(): Promise<InstalledAppInfo> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const info = await this.installedAppInfo.getInfo();
+      const info = await Promise.race([
+        this.installedAppInfo.getInfo(),
+        new Promise<never>((_resolve, reject) => {
+          timer = setTimeout(() => reject(new Error('Native app info timed out')), 5000);
+        })
+      ]);
       return {
         version: info.version,
         build: this.toPositiveInteger(info.build)
       };
     } catch (error) {
       console.warn('[AppUpdateService] Unable to read app version:', error);
-      return { version: '0.0.0', build: 0 };
+      // Unknown is not version zero: comparing it to the configured minimum
+      // would incorrectly lock a newly installed build behind Update Required.
+      throw error;
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
     }
   }
 

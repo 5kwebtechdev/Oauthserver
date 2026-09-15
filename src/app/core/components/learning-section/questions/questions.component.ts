@@ -113,7 +113,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
     // Leave challenge popup configuration
     leaveChallengePopupConfig: SupermePopupConfig = {
-        image: 'assets/Images-Transparent/Image-Leaving-Learning.png',
+        image: 'assets/Images-Transparent/Image-Leaving-Learning.webp',
         imageAlt: 'Leaving Learning',
         heading: 'You\'re Making Great Progress!',
         subtitle: 'If you leave now, you\'ll need to restart from the beginning.',
@@ -135,7 +135,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
     // New timer expiration popup configuration for content time exhaust
     contentTimeExhaustPopupConfig: SupermePopupConfig = {
-        image: 'assets/Images-Transparent/Image-Content-TimeExhaust.png',
+        image: 'assets/Images-Transparent/Image-Content-TimeExhaust.webp',
         imageAlt: 'Time\'s Up',
         heading: 'Time\'s Up!',
         subtitle: 'The timer ran out, but don\'t worry! You can try again. Ready for another round?',

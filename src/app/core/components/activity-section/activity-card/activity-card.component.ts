@@ -435,7 +435,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     };
 
     this.startPopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-Start.png',
+      image: 'assets/Images-Transparent/Image-Home-Start.webp',
       imageAlt: 'Ready to Start',
       heading: 'Ready to Start?',
       subtitle: "You're about to begin this habit!",
@@ -483,7 +483,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const streak = this.getStreak();
 
     // Build heading HTML to include coin and streak rows
-    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:16px;">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style=\"display:flex;flex-direction:column;align-items: center;gap:8px;margin-top:12px;text-align:left;\"><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/Icons-Neutral/Icons-Coins.png' style=\"width:20px;height:20px;\" alt=\"coins\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${coins}</div></div><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/Icons-Neutral/Icon-Streak.png' style=\"width:20px;height:20px;\" alt=\"streak\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${streak}</div></div></div>`;
+    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:16px;">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style=\"display:flex;flex-direction:column;align-items: center;gap:8px;margin-top:12px;text-align:left;\"><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/coin.webp' style=\"width:20px;height:20px;\" alt=\"coins\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${coins}</div></div><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/streak.webp' style=\"width:20px;height:20px;\" alt=\"streak\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${streak}</div></div></div>`;
 
     const primary: SupermePopupCTA = {
       text: 'Confirm',
@@ -500,7 +500,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     };
 
     this.completePopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-GreatWork.png',
+      image: 'assets/Images-Transparent/Image-Home-GreatWork.webp',
       imageAlt: 'Great Work',
       heading: headingHtml,
       subtitle: '',
@@ -538,7 +538,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     this.coinCapPendingType = type;
 
     this.coinCapPopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-GreatWork.png',
+      image: 'assets/Images-Transparent/Image-Home-GreatWork.webp',
       imageAlt: 'Daily Cap Reached',
       heading: 'Daily Coin Limit Reached',
       subtitle: message || "You've already earned the maximum coins for today. Mark as complete anyway?",
@@ -624,7 +624,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const coins = this.getCoinReward();
     const streak = this.getStreak();
 
-    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:16px;">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;"><img src='assets/Icons-Neutral/Icons-Coins.png' style="width:20px;height:20px;" alt="coins"/><div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;"><img src='assets/Icons-Neutral/Icon-Streak.png' style="width:20px;height:20px;" alt="streak"/><div style="font-weight:600;">${streak}</div></div></div>`;
+    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:16px;">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/coin.webp' style="width:20px;height:20px;" alt="coins"/><div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/streak.webp' style="width:20px;height:20px;" alt="streak"/><div style="font-weight:600;">${streak}</div></div></div>`;
 
     const primary: SupermePopupCTA = {
       text: 'Keep Going',
@@ -641,7 +641,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     };
 
     this.abortPopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-Abort.png',
+      image: 'assets/Images-Transparent/Image-Home-Abort.webp',
       imageAlt: 'Abort',
       heading: headingHtml,
       subtitle: '',
@@ -1444,7 +1444,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   async openGlancePlannerEditor(source: any, entry: any, event: Event): Promise<void> {
-    event.stopPropagation();
+    this.plannerHeldAt = Date.now();
+    event?.stopPropagation();
     // The calendar API stores one planner schedule with its timetable entries.
     // Edit that parent schedule so every row keeps its correct id and dates.
     const planner = {
@@ -1462,6 +1463,16 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     await this.openTimetableEditor();
   }
 
+  private plannerHeldAt = 0;
+  async viewPlanner(source: any, entry: any, event: Event): Promise<void> {
+    event.stopPropagation();
+    if (Date.now() - this.plannerHeldAt < 1000) return;
+    await this.router.navigate(['/authed/activity-detail', source.id], {
+      queryParams: { type: 'timetable' },
+      state: { habit: { ...source, type: 'timetable' }, plannerEntry: entry, type: 'timetable' }
+    });
+  }
+
   openDeletePopup(item: any = this.habit, forcedType?: 'habit' | 'task' | 'event' | 'timetable'): void {
     this.closeSwipe();
     this.closeActionSwipe();
@@ -1472,11 +1483,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const coins = this.getCoinReward();
     const label = this.pendingDeleteType === 'timetable' ? 'planner entry' : this.pendingDeleteType;
     const lossHtml = coins > 0
-      ? `<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;align-items:center;justify-content:center;"><span style="font-weight:400;font-size:13px;opacity:0.7;">You are about to lose:</span><div style="display:flex;align-items:center;gap:8px;"><img src='assets/Icons-Neutral/Icons-Coins.png' style="width:20px;height:20px;" alt="coins"/><span style="font-weight:600;">${coins}</span></div></div>`
+      ? `<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;align-items:center;justify-content:center;"><span style="font-weight:400;font-size:13px;opacity:0.7;">You are about to lose:</span><div style="display:flex;align-items:center;gap:8px;"><img src='assets/figma/parent-home/coin.webp' style="width:20px;height:20px;" alt="coins"/><span style="font-weight:600;">${coins}</span></div></div>`
       : '';
     const headingHtml = `Delete this ${label}?<br/><span style="font-weight:400;font-size:14px;">This action cannot be undone.</span>${lossHtml}`;
     this.deletePopupConfig = {
-      image: 'assets/Images-Transparent/Image-Input-Delete.png',
+      image: 'assets/Images-Transparent/Image-Input-Delete.webp',
       imageAlt: 'Delete',
       heading: headingHtml,
       subtitle: '',
@@ -1648,6 +1659,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
 
   onLongPress() {
+    if (this.habit?.type === 'timetable') this.plannerHeldAt = Date.now();
+    this.openActivityDetail(true);
+  }
+
+  private openActivityDetail(fromLongPress: boolean): void {
     if (!this.habit?.id) {
       return;
     }
@@ -1676,13 +1692,41 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       state: { 
         habit: this.habit, 
         type: itemType, 
-        fromLongPress: true,
+        fromLongPress,
         selectedDate: dateForApi 
       },
       queryParams: { type: itemType }
     }).catch(err => {
       console.error('Navigation to habit detail failed:', err);
     });
+  }
+
+  openCardContent(event: Event): void {
+    const target = event.target as HTMLElement | null;
+    const isNestedControl = target?.closest(
+      'button, a, input, textarea, select, ion-button, superme-button, [role="button"]'
+    );
+
+    // Let controls inside the card keep their own actions without also opening
+    // the activity detail screen.
+    if (isNestedControl && isNestedControl !== event.currentTarget) {
+      return;
+    }
+
+    if (event instanceof KeyboardEvent) {
+      event.preventDefault();
+    }
+
+    if (this.isSwipedOpen || this.swipeOffset > 0) {
+      this.closeSwipe();
+      return;
+    }
+
+    if (this.habit?.type === 'timetable') {
+      void this.viewPlanner(this.habit, null, event);
+      return;
+    }
+    this.openActivityDetail(false);
   }
 
   /**
@@ -3001,7 +3045,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       // Convert to lowercase and capitalize first letter for filename
       const routine = String(routineValue).toLowerCase();
       const capitalizedRoutine = routine.charAt(0).toUpperCase() + routine.slice(1);
-      const fileName = `Icon-Routine-${capitalizedRoutine}.png`;
+      const fileName = `Icon-Routine-${capitalizedRoutine}.webp`;
 
       return `/assets/Icons-Neutral/${fileName}`;
     } catch (e) {

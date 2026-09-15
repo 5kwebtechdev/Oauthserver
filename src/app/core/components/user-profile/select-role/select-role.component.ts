@@ -34,7 +34,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 						<h4 style="padding-left:10px;">Earn rewards together</h4>
 					</div>
 					<div class="col-6 p-l-0 child-role-image">
-						<img src="assets/Images-Transparent/Image-Role-Child.png" alt="">
+						<img src="assets/Images-Transparent/Image-Role-Child.webp" alt="">
 					</div>
 				</div>
 			</div>
@@ -45,7 +45,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 
 				<div class="row">
 					<div class="col-6 p-l-0 image-parent">
-						<img src="assets/Images-Transparent/Image-Role-Parent.png" alt="">
+						<img src="assets/Images-Transparent/Image-Role-Parent.webp" alt="">
 					</div>
 
 					<div class="col-6">

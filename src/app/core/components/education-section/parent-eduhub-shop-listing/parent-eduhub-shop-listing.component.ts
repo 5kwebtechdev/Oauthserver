@@ -1,7 +1,7 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppLauncher } from '@capacitor/app-launcher';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
@@ -129,6 +129,7 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly route: ActivatedRoute,
+    private readonly router: Router,
     private readonly location: Location,
     private readonly http: HttpClient,
     private readonly authService: AuthService,
@@ -504,6 +505,21 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     return item.id;
   }
 
+  openListing(item: EduHubShopListing, event?: Event): void {
+    event?.stopPropagation();
+    // Keep the complete card in navigation state so the detail screen opens
+    // instantly without another request. It can still show a useful fallback
+    // when opened from a copied URL.
+    try {
+      sessionStorage.setItem(`superme_eduhub_shop_${item.id}`, JSON.stringify(item));
+    } catch {
+      // Router state still supports the normal in-app navigation flow.
+    }
+    void this.router.navigate(['/authed/education/shops', item.id], {
+      state: { listing: item, categoryLabel: this.categoryLabel }
+    });
+  }
+
   private resolveCategoryLabel(): void {
     if (this.categoryId == null) {
       this.loadListings();
@@ -647,7 +663,9 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
       fullAddress,
       phone: this.firstText(item.phone),
       email: this.firstText(item.email),
-      image: this.firstText(item.imageUrls?.[0], item.imageUrl, item.thumbnailUrl),
+      image: /station(?:e|ar)y/i.test(this.categoryLabel)
+        ? ''
+        : this.firstText(item.imageUrls?.[0], item.imageUrl, item.thumbnailUrl),
       verified: !!item.verified,
       distanceKm: this.toFiniteNumber(item.distanceKm ?? item.distance),
       latitude: this.toFiniteNumber(item.latitude),

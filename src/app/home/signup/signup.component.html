@@ -225,7 +225,7 @@
             <span>Your Journey, Your progress</span>
             <span>For Your Eyes Only.</span>
           </span>
-          <img src="assets/Images-Transparent/choose-role-self-figma.png" alt="Self profile" />
+          <img src="assets/Images-Transparent/choose-role-self-figma.webp" alt="Self profile" />
         </button>
 
         <button type="button" class="signup-role-card signup-role-card--child" (click)="chooseRoleAndContinue('child')">
@@ -235,7 +235,7 @@
             <span>Sync your Account with Parents</span>
             <span>Safe Place for Kids to Learn &amp; Grow</span>
           </span>
-          <img src="assets/Images-Transparent/choose-role-child-figma.png" alt="Child profile" />
+          <img src="assets/Images-Transparent/choose-role-child-figma.webp" alt="Child profile" />
         </button>
 
         <button type="button" class="signup-role-card signup-role-card--parent" (click)="chooseRoleAndContinue('parent')">
@@ -245,7 +245,7 @@
             <span>Set your Child up for Success</span>
             <span>Build Confidence &amp; Accountability</span>
           </span>
-          <img src="assets/Images-Transparent/choose-role-parent-figma.png" alt="Parent profile" />
+          <img src="assets/Images-Transparent/choose-role-parent-figma.webp" alt="Parent profile" />
         </button>
       </div>
 
@@ -303,7 +303,7 @@
             <p class="role-card-v2__desc">Master life skills, build daily habits, and grow into your best self — with full privacy and entirely at your own pace.</p>
           </div>
           <div class="role-card-v2__img">
-            <img src="assets/Images-Transparent/self-main-section.png" alt="Self">
+            <img src="assets/Images-Transparent/self-main-section.webp" alt="Self">
           </div>
         </div>
 
@@ -317,7 +317,7 @@
             <p class="role-card-v2__desc">Get all the growth tools of independent mode, plus connect your progress to family and earn coins for your wins.</p>
           </div>
           <div class="role-card-v2__img">
-            <img src="assets/Images-Transparent/Child-main-section.png" alt="Child">
+            <img src="assets/Images-Transparent/Child-main-section.webp" alt="Child">
           </div>
         </div>
 
@@ -331,7 +331,7 @@
             <p class="role-card-v2__desc">See your child's habits and progress, reward their wins with coins, and get the insights you need to guide their growth.</p>
           </div>
           <div class="role-card-v2__img">
-            <img src="assets/Images-Transparent/Parent-main-section.png" alt="Parent">
+            <img src="assets/Images-Transparent/Parent-main-section.webp" alt="Parent">
           </div>
         </div>
       </div>
@@ -362,8 +362,8 @@
           <div class="details-header-illustration" aria-hidden="true">
             <img
               [src]="currentRole === 'parent'
-                ? 'assets/Images-Transparent/details-header-parent-figma.png'
-                : 'assets/Images-Transparent/details-header-child-figma.png'"
+                ? 'assets/Images-Transparent/details-header-parent-figma.webp'
+                : 'assets/Images-Transparent/details-header-child-figma.webp'"
               alt="" />
             <span></span>
           </div>
@@ -502,14 +502,14 @@
             
             <button type="button" class="gender-select-button" (click)="selectGender('male')"
               [class.active]="gender === 'male'" [attr.aria-pressed]="gender === 'male'">
-              <img src="assets/Images-Transparent/details-gender-male-figma.png" alt="" aria-hidden="true" />
+              <img src="assets/Images-Transparent/details-gender-male-figma.webp" alt="" aria-hidden="true" />
               Male
             </button>
             </div>
             <div class="gender-option">
             <button type="button" class="gender-select-button" (click)="selectGender('female')"
               [class.active]="gender === 'female'" [attr.aria-pressed]="gender === 'female'">
-              <img src="assets/Images-Transparent/details-gender-female-figma.png" alt="" aria-hidden="true" />
+              <img src="assets/Images-Transparent/details-gender-female-figma.webp" alt="" aria-hidden="true" />
               Female
             </button>
             </div>
@@ -563,6 +563,7 @@
               <input #referralInput id="signup-referral-code" type="text" [value]="referralCode"
                 (input)="onReferralInput($event)" (focus)="onReferralFieldFocus($event)"
                 (blur)="onReferralFieldBlur()" [disabled]="!showReferral"
+                [class.referral-input--focused]="!!focusedReferralField"
                 [placeholder]="currentRole === 'parent' ? 'Code' : 'Type 8 character code'"
                 maxlength="8" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false"
                 [readonly]="referralCodeReadonly" [attr.aria-readonly]="referralCodeReadonly"
@@ -772,7 +773,7 @@
 
       <ng-template #sharedWelcomeScreen>
         <div [@slideIn] class="welcome-page d-flex flex-column align-items-center justify-content-center gap-3">
-          <img src="assets/Images-Transparent/SuperMeLogoFinal3.png" alt="Onboarding pet" class="onboarding-image" />
+          <img src="assets/Images-Transparent/SuperMeLogoFinal3.webp" alt="Onboarding pet" class="onboarding-image" />
 
           <div class="welcome-content d-flex flex-column justify-content-center align-items-center gap-2">
             <h1 class="superpower-title">Your Superpower is now active!</h1>
@@ -780,19 +781,19 @@
           </div>
           <div class="new-messages superpower-list">
             <div class="superpower-card">
-              <span class="superpower-icon"><img src="assets/icons/superpower-build.png" alt="" aria-hidden="true" /></span>
+              <span class="superpower-icon"><img src="assets/icons/superpower-build.webp" alt="" aria-hidden="true" /></span>
               <p><span class="first-word first-word--build">Build</span> unbreakable habits that stick.</p>
             </div>
             <div class="superpower-card">
-              <span class="superpower-icon"><img src="assets/icons/superpower-crush.png" alt="" aria-hidden="true" /></span>
+              <span class="superpower-icon"><img src="assets/icons/superpower-crush.webp" alt="" aria-hidden="true" /></span>
               <p><span class="first-word first-word--crush">Crush</span> your daily tasks with ease.</p>
             </div>
             <div class="superpower-card">
-              <span class="superpower-icon"><img src="assets/icons/superpower-own.png" alt="" aria-hidden="true" /></span>
+              <span class="superpower-icon"><img src="assets/icons/superpower-own.webp" alt="" aria-hidden="true" /></span>
               <p><span class="first-word first-word--own">Own</span> your time and stay ahead.</p>
             </div>
             <div class="superpower-card">
-              <span class="superpower-icon"><img src="assets/icons/superpower-unlock.png" alt="" aria-hidden="true" /></span>
+              <span class="superpower-icon"><img src="assets/icons/superpower-unlock.webp" alt="" aria-hidden="true" /></span>
               <p><span class="first-word first-word--unlock">Unlock</span> life learnings to level up.</p>
             </div>
           </div>

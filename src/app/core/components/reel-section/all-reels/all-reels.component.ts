@@ -46,7 +46,7 @@ export class AllReelsComponent implements OnInit, OnDestroy {
                 likes: '10K',
                 views: '25K',
                 tags: '#FunScience',
-                image: 'assets/images/reel-1-placeholder.png'
+                image: 'assets/images/reel-1-placeholder.webp'
             }));
         }
     }

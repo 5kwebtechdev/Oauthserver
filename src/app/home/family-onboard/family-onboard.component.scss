@@ -320,6 +320,14 @@
     min-height: 175px;
   }
 
+  :host-context(html:not(.plt-capacitor)) .parent-join-family-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
+    height: auto;
+    min-height: 175px;
+  }
+
   :host-context(html:not(.plt-capacitor)) .create-family-step-arrow {
     display: none;
   }
@@ -366,6 +374,44 @@
     border-radius: 24px;
     background: rgba(255, 255, 255, 0.82);
     box-shadow: 0 12px 30px rgba(67, 36, 119, 0.1);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-join-family-entry {
+    width: min(calc(100% - 64px), 560px);
+    margin: 30px auto 0;
+    padding: 26px;
+    border: 1px solid rgba(115, 65, 167, 0.1);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 12px 30px rgba(67, 36, 119, 0.1);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-join-family-tabs {
+    gap: 20px;
+    height: auto;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-join-family-tab {
+    min-height: 42px;
+    height: auto;
+    padding: 7px 8px 8px;
+    font-size: 14px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-join-family-form {
+    margin-top: 22px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-join-family-input,
+  :host-context(html:not(.plt-capacitor)) .parent-join-family-input input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-join-family-submit {
+    width: 100%;
+    margin-top: 22px;
   }
 
   :host-context(html:not(.plt-capacitor)) .create-family-form__icon {
@@ -442,6 +488,10 @@
 
   :host-context(html:not(.plt-capacitor)) .create-family-steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-join-family-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

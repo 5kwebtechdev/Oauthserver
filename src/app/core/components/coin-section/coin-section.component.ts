@@ -316,4 +316,8 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
     onRedeem() {
         this.router.navigate(['/authed', 'coin-purchase']);
     }
+
+    onAddCoins(): void {
+        this.router.navigate(['/authed', 'coin-purchase']);
+    }
 }

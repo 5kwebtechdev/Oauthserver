@@ -41,13 +41,9 @@ export const startupGuard: CanActivateFn = () => {
         return router.parseUrl('/login');
     }
 
-    if (onboardingState.hasSeenSplash()) {
-        return router.createUrlTree(['/home/sign-up'], {
-            queryParams: { step: 1 }
-        });
-    }
-
-    return true;
+    // The legacy public HomePage is retired. Keep registration-resume routes
+    // above, then send every other signed-out visit to the current login page.
+    return router.parseUrl('/login');
 };
 
 /**

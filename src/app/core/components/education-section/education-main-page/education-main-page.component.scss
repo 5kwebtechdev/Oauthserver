@@ -191,6 +191,9 @@ ion-content {
         width: 40px;
         height: 40px;
         object-fit: contain;
+        // The EduHub hero sits on a blue surface; keep the navigation affordance
+        // high contrast while preserving the shared SVG asset.
+        filter: brightness(0) invert(1);
     }
 
     &:active {

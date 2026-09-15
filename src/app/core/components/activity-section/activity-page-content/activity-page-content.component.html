@@ -178,6 +178,11 @@
                         <p>{{ getPlannerDateRange(card.source) }}</p>
                         <div class="child-planner-card__entries" *ngIf="isPlannerExpanded(card, i)">
                             <div class="child-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackPlannerEntry"
+                                role="button" tabindex="0" [attr.aria-label]="'Edit ' + getChildItemTitle(entry)"
+          long-press [delay]="1200" (press)="editPlannerEntry(card.source, entry, $event)"
+          (click)="viewPlanner(card.source, entry, $event)"
+          (keydown.enter)="viewPlanner(card.source, entry, $event)"
+          (keydown.space)="$event.preventDefault(); viewPlanner(card.source, entry, $event)"
                                 [class.is-passed]="isPlannerEntryPassed(entry)">
                                 <time>{{ getPlannerEntryTime(entry) }}</time>
                                 <strong>{{ getChildItemTitle(entry) }}</strong>

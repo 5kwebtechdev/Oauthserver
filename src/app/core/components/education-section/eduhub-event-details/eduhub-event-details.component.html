@@ -1,4 +1,8 @@
 <ion-content fullscreen class="event-detail-content">
+  <div class="event-image-lightbox" *ngIf="imageFullscreen" role="dialog" aria-modal="true" aria-label="Listing image preview" (click)="closeImage()">
+    <button type="button" aria-label="Close image preview" (click)="closeImage()">×</button>
+    <img [src]="image" [alt]="displayName + ' image enlarged'" (click)="$event.stopPropagation()">
+  </div>
   <div class="event-detail-page">
     <header class="event-detail-hero">
       <div class="event-detail-toolbar">
@@ -20,8 +24,8 @@
       </div>
 
       <div class="event-detail-intro" *ngIf="item">
-        <div class="event-detail-image" [class.event-detail-image--empty]="!image">
-          <img *ngIf="image" class="event-detail-image__photo" [src]="image" [alt]="displayName" (error)="onImageError()">
+        <div class="event-detail-image" [class.event-detail-image--empty]="!image" role="button" tabindex="0" aria-label="View listing image full screen" (click)="openImage()" (keydown.enter)="openImage()" (keydown.space)="$event.preventDefault(); openImage()">
+          <app-profile-image class="event-detail-image__photo" [src]="image" [name]="displayName" [alt]="displayName"></app-profile-image>
           <img *ngIf="item.verified" class="event-detail-image__verified"
             src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified">
         </div>

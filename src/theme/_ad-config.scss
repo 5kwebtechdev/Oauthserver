@@ -1,0 +1,6 @@
+// Shared ad slot dimensions (CSS pixels). Smaller containers scale both axes.
+// Recommended artwork: 1216 x 495 px, or 2432 x 990 px for 2x displays.
+// Images always use contain: other aspect ratios get background space, not cropping.
+$width: 1216px;
+$height: 495px;
+$background: #fff;

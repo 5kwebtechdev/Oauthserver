@@ -16,7 +16,7 @@
 			flex-shrink: 0;
 			border-radius: 0px 0px 48px 48px;
 			overflow: visible;
-			background: url('/assets/Images-Thumbnails/Background-Content.png') center/cover no-repeat;
+			background: url('/assets/Images-Thumbnails/Background-Content.webp') center/cover no-repeat;
 			background-color: #ff5b77;
 
 
@@ -458,6 +458,13 @@
 	display: flex;
 	align-items: flex-end;
 	justify-content: flex-end;
+}
+
+.digital-pet__image {
+	width: 96px;
+	height: 96px;
+	object-fit: contain;
+	display: block;
 }
 
 /* Parent-only View All flow — Figma: Parent Assigned Learning. */
@@ -1220,7 +1227,7 @@
 	display: block;
 	object-fit: contain;
 	object-position: right bottom;
-	// header-family.png has transparent pixels beneath the visible table. Pull
+	// header-family.webp has transparent pixels beneath the visible table. Pull
 	// the canvas down by that margin so the visible artwork touches the hero edge.
 	transform: translateY(10px);
 }

@@ -92,7 +92,7 @@ export class SupermePopupComponent implements OnInit {
    */
   get isReelSuccessImage(): boolean {
     const img = this.finalConfig.image || '';
-    return img.includes('Image-Reel-Success.png');
+    return img.includes('Image-Reel-Success.webp');
   }
 
   get hasHeading(): boolean {

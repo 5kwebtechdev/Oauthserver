@@ -93,6 +93,11 @@
       <p>{{ getGlancePlannerDateRange(card.source) }}</p>
       <div class="glance-planner-card__entries" *ngIf="isGlancePlannerExpanded(card, i)">
         <div class="glance-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackGlancePlannerEntry"
+          role="button" tabindex="0" [attr.aria-label]="'Edit ' + getGlancePlannerTitle(entry)"
+          long-press [delay]="1200" (press)="openGlancePlannerEditor(card.source, entry, $event)"
+          (click)="viewPlanner(card.source, entry, $event)"
+          (keydown.enter)="viewPlanner(card.source, entry, $event)"
+          (keydown.space)="$event.preventDefault(); viewPlanner(card.source, entry, $event)"
           [class.is-passed]="isGlancePlannerEntryPassed(entry)">
           <time>{{ getGlancePlannerEntryTime(entry) }}</time>
           <!-- Each API activity carries the label entered for that time slot. -->
@@ -106,7 +111,7 @@
 </ng-template>
 
 <div *ngIf="mode === 'list'" class="d-flex flex-column gap-2 glance-card"
-  [ngClass]="'glance-card--' + currentActive">
+  [ngClass]="'glance-card--' + currentActive" [attr.data-active-tab]="currentActive">
   <ng-container *ngTemplateOutlet="upcomingEvents"></ng-container>
   <div class="day-at-glance-container">
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
@@ -115,21 +120,25 @@
     <div class="container w-full glance-tabs-shell">
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
+          [class.is-active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
           <img class="glance-tab-icon" src="assets/figma/home-glance/tab-all.webp" alt="" aria-hidden="true">
           <span>All</span>
         </button>
-        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
+        <button type="button" class="glance-tab glance-tab--habit" role="tab" [class.active]="currentActive === 'habits'"
+          [class.is-active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
           <img class="glance-tab-icon" src="assets/figma/home-glance/tab-habit.webp" alt="" aria-hidden="true">
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
+          [class.is-active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
           <img class="glance-tab-icon" src="assets/figma/home-glance/tab-task.webp" alt="" aria-hidden="true">
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
+          [class.is-active]="currentActive === 'timetable'"
           [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
           <img class="glance-tab-icon" [src]="plannerTabIcon" alt="" aria-hidden="true">
           <span>{{ plannerTabLabel }}</span>
@@ -140,7 +149,7 @@
     <!-- Empty State (uses shared EmptyStateComponent) -->
     <!-- Task-specific: all tasks completed (taskCompletionRate === 100 AND totalHabits > 0) -->
     <empty-state *ngIf="currentActive === 'tasks' && taskCompletionRate === 100 && totalTasksLoaded > 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No tasks available illustration"
       leadText="All tasks done!"
       subText="Your tasks can be reviewed in the main habits screen. You can even mark them done from there."
@@ -149,7 +158,7 @@
 
     <!-- Task-specific: no tasks at all (totalTasks === 0 AND habitCompletionRate < 100) -->
     <empty-state *ngIf="currentActive === 'tasks' && totalTasksLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No tasks illustration"
       leadText="No tasks lined up for today"
       subText="No tasks are scheduled for today. Add one to start building your streak and earn coins."
@@ -158,7 +167,7 @@
 
     <!-- Task-specific: tasks existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && totalTasksLoaded > 0 && taskCompletionRate < 100"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No tasks available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
@@ -167,7 +176,7 @@
 
     <!-- Habit-specific: all habits completed (habitCompletionRate === 100 AND totalTasks > 0) -->
     <empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalHabitsLoaded > 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No habits available illustration"
       leadText="All habits done!"
       subText="Your habits can be reviewed in the main habits screen. You can even mark them done from there."
@@ -176,7 +185,7 @@
 
     <!-- Habit-specific: no habits at all (totalHabits === 0 AND taskCompletionRate < 100) -->
     <empty-state *ngIf="currentActive === 'habits' && totalHabitsLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No habits illustration"
       leadText="No habit lined up for today"
       subText="No habits are scheduled for today. Add one to start building your streak and earn coins."
@@ -185,7 +194,7 @@
 
     <!-- Habit-specific: habits existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'habits' && !hasHabits && totalHabitsLoaded > 0 && habitCompletionRate < 100"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No habits available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
@@ -194,7 +203,7 @@
 
     <!-- Timetable-specific: no time table entries for today -->
     <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables && !hasGlancePlannerCards && !glancePlannerLoading"
-      imageSrc="/assets/Images-Transparent/Image-Calendar-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Calendar-Blank.webp"
       imageAlt="No planner entries illustration"
       leadText="No planner entries for today"
       subText="Nothing scheduled yet. Add a time block to plan out your day."
@@ -203,7 +212,7 @@
 
     <!-- Pending state for All tab: items existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'all' && isEmpty && (totalHabitsLoaded > 0 || totalTasksLoaded > 0 || totalTimetablesLoaded > 0) && !isAllLoadedContentCompleted"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No activities available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
@@ -212,7 +221,7 @@
 
     <!-- Generic blank empty state when nothing exists at all (totalTasks === 0 AND totalHabits === 0) -->
     <empty-state *ngIf="currentActive === 'all' && isEmpty && totalHabitsLoaded === 0 && totalTasksLoaded === 0 && totalTimetablesLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="Empty day illustration"
       leadText="Your day's a blank slate!"
       subText="Add habits and tasks to earn coins and level up your day. Don't miss out!"
@@ -221,7 +230,7 @@
 
     <!-- Completed State: show when both completion rates are 100% (taskCompletionRate === 100 AND habitCompletionRate === 100) -->
     <empty-state *ngIf="currentActive === 'all' && isAllLoadedContentCompleted"
-      imageSrc="/assets/Images-Transparent/Image-Home-Completed.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Completed.webp"
       imageAlt="Completed illustration"
       leadText="Great progress today!"
       subText="Your tasks and habits can be reviewed in the main tasks and habits screen. You can even mark them done from there."
@@ -289,7 +298,7 @@
 
 <!-- Recent Mode -->
 <div *ngIf="mode === 'recent'" class="d-flex flex-column gap-2 glance-card"
-  [ngClass]="'glance-card--' + currentActive">
+  [ngClass]="'glance-card--' + currentActive" [attr.data-active-tab]="currentActive">
   <ng-container *ngTemplateOutlet="upcomingEvents"></ng-container>
   <div class="day-at-glance-container">
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
@@ -298,21 +307,25 @@
     <div class="container w-full glance-tabs-shell">
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
+          [class.is-active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
           <img class="glance-tab-icon" src="assets/figma/home-glance/tab-all.webp" alt="" aria-hidden="true">
           <span>All</span>
         </button>
-        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
+        <button type="button" class="glance-tab glance-tab--habit" role="tab" [class.active]="currentActive === 'habits'"
+          [class.is-active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
           <img class="glance-tab-icon" src="assets/figma/home-glance/tab-habit.webp" alt="" aria-hidden="true">
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
+          [class.is-active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
           <img class="glance-tab-icon" src="assets/figma/home-glance/tab-task.webp" alt="" aria-hidden="true">
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
+          [class.is-active]="currentActive === 'timetable'"
           [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
           <img class="glance-tab-icon" [src]="plannerTabIcon" alt="" aria-hidden="true">
           <span>{{ plannerTabLabel }}</span>
@@ -323,7 +336,7 @@
     <!-- Empty State (uses shared EmptyStateComponent) -->
     <!-- Task-specific: all tasks completed/skipped (taskCompletionRate === 100 AND totalHabits > 0) -->
     <empty-state *ngIf="currentActive === 'tasks' && taskCompletionRate === 100 && totalTasksLoaded > 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No tasks available illustration"
       leadText="All tasks done!"
       subText="Your tasks can be reviewed in the main habits screen."
@@ -332,7 +345,7 @@
 
     <!-- Task-specific: no tasks at all (totalTasks === 0 AND habitCompletionRate < 100) -->
     <empty-state *ngIf="currentActive === 'tasks' && totalTasksLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No tasks illustration"
       leadText="No tasks lined up for today"
       subText="No tasks are scheduled for today. Add one to start building your streak and earn coins."
@@ -341,7 +354,7 @@
 
     <!-- Task-specific: tasks existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && totalTasksLoaded > 0 && taskCompletionRate < 100"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No tasks available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
@@ -350,7 +363,7 @@
 
     <!-- Habit-specific: all habits completed/skipped (habitCompletionRate === 100 AND totalTasks > 0) -->
     <empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalHabitsLoaded > 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No habits available illustration"
       leadText="All habits done!"
       subText="Your habits can be reviewed in the main habits screen."
@@ -359,7 +372,7 @@
 
     <!-- Habit-specific: no habits at all (totalHabits === 0 AND taskCompletionRate < 100) -->
     <empty-state *ngIf="currentActive === 'habits' && totalHabitsLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No habits illustration"
       leadText="No habit lined up for today"
       subText="No habits are scheduled for today. Add one to start building your streak and earn coins."
@@ -367,7 +380,7 @@
     </empty-state>
     <!-- Habit-specific: habits existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'habits' && !hasHabits && totalHabitsLoaded > 0 && habitCompletionRate < 100"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No habits available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
@@ -376,7 +389,7 @@
 
     <!-- Timetable-specific: no time table entries for today -->
     <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables && !hasGlancePlannerCards && !glancePlannerLoading"
-      imageSrc="/assets/Images-Transparent/Image-Calendar-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Calendar-Blank.webp"
       imageAlt="No planner entries illustration"
       leadText="No planner entries for today"
       subText="Nothing scheduled yet. Add a time block to plan out your day."
@@ -385,7 +398,7 @@
 
     <!-- Pending state for All tab: items existed but all cards hidden (end time passed, not all completed) -->
     <empty-state *ngIf="currentActive === 'all' && isEmpty && (totalHabitsLoaded > 0 || totalTasksLoaded > 0 || totalTimetablesLoaded > 0) && !isAllLoadedContentCompleted"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="No activities available illustration"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
@@ -393,7 +406,7 @@
     </empty-state>
     <!-- Generic blank empty state when nothing exists at all (totalTasks === 0 AND totalHabits === 0) -->
     <empty-state *ngIf="currentActive === 'all' && isEmpty && totalHabitsLoaded === 0 && totalTasksLoaded === 0 && totalTimetablesLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
       imageAlt="Empty day illustration"
       leadText="Your day’s a blank slate!"
       subText="Add habits and tasks to earn coins and level up your day. Don’t miss out!"
@@ -402,7 +415,7 @@
 
     <!-- Completed State: show when both completion rates are 100% OR when only one category exists with 100% -->
     <empty-state *ngIf="currentActive === 'all' && isAllLoadedContentCompleted"
-      imageSrc="/assets/Images-Transparent/Image-Home-Completed.png"
+      imageSrc="/assets/Images-Transparent/Image-Home-Completed.webp"
       imageAlt="Completed illustration"
       leadText="Great progress today!"
       subText="Your tasks and habits can be reviewed in the main tasks and habits screen."
@@ -488,10 +501,16 @@
       </button>
     </div>
   <div class="habit-wrapper"
+    role="button"
+    tabindex="0"
+    [attr.aria-label]="'Open ' + (habit?.title || habit?.type || 'activity')"
+    (click)="openCardContent($event)"
+    (keydown.enter)="openCardContent($event)"
+    (keydown.space)="openCardContent($event)"
     [style.transform]="'translateX(-' + swipeOffset + 'px)'"
-    [style.transition]="swipeTracking ? 'none' : 'transform 0.25s ease'"
+    [style.transition]="swipeTracking ? 'none' : 'transform 0.25s ease, translate 180ms ease, scale 180ms ease, box-shadow 180ms ease, filter 180ms ease'"
     [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime, 'task': habit?.type === 'tasks', 'timetable': habit?.type === 'timetable'}">
-    <div *ngIf="habit?.type === 'timetable'" class="planner-home-card" (tap)="toggle()" long-press
+    <div *ngIf="habit?.type === 'timetable'" class="planner-home-card" long-press
       [delay]="1500" (press)="onLongPress()">
       <span class="planner-home-card__icon" aria-hidden="true">
         <img src="assets/figma/child-planner/schedule.webp" alt="">
@@ -500,12 +519,8 @@
         <strong>{{ habit?.title || 'Planner' }}</strong>
         <span>Today</span>
       </span>
-      <button type="button" class="planner-home-card__edit" aria-label="Edit planner"
-        (click)="editPlannerFromCard($event)">
-        <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
-      </button>
     </div>
-    <div *ngIf="habit?.type !== 'timetable'" class="habit-header-container clickable" (tap)="toggle()" long-press [delay]="1500" (press)="onLongPress()">
+    <div *ngIf="habit?.type !== 'timetable'" class="habit-header-container clickable" long-press [delay]="1500" (press)="onLongPress()">
       <div class="container w-full p-0">
         <div class="d-flex justify-content-between">
           <h3 class="habit-title">{{habit?.title || 'Habit'}}</h3>
@@ -571,11 +586,11 @@
         <div class="container w-full justify-content-between d-flex p-0 align-items-center">
           <div class=" d-flex reward-section">
             <div class="single-point-container d-flex p-0 align-items-center">
-              <img class="score p-r-0" src="assets/Icons-Neutral/Icon-Streak.png" alt="">
+              <img class="score p-r-0" src="assets/figma/parent-home/streak.webp" alt="">
               <p class="score p-l-0">{{getStreak()}}</p>
             </div>
             <div class="single-point-container" *ngIf="getCoinReward() > 0">
-              <img class="score" src="assets/Icons-Neutral/Icons-Coins.png" alt="" style="width:24px;height:auto;">
+              <img class="score" src="assets/figma/parent-home/coin.webp" alt="" style="width:24px;height:auto;">
               <p class="score p-l-0">{{getCoinReward()}}</p>
             </div>
           </div>

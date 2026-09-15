@@ -237,7 +237,7 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
 
   private resetProductState(): void {
     this.product = null;
-    this.images = ['assets/School-assets/empty-product-list.png'];
+    this.images = ['assets/School-assets/empty-product-list.webp'];
     this.currentIndex = 0;
     this.quantity = 1;
     this.sizes = [];
@@ -274,7 +274,7 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
 
         this.images = Array.isArray(res.images) && res.images.length
           ? res.images
-          : ['assets/School-assets/empty-product-list.png'];
+          : ['assets/School-assets/empty-product-list.webp'];
 
         this.sizes = this.getSelectableSizes(res);
         const firstAvailable = this.sizes.find(s => s.available && s.stock > 0) || this.sizes[0];

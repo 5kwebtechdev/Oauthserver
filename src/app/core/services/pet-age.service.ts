@@ -157,7 +157,7 @@ export class PetAgeService {
 
   /**
    * Resolve all supported backend shapes, including values such as
-   * "Panda-Age1-Happy.png" and "src/main/resources/pets/Panda-Age1-Happy.png".
+   * "Panda-Age1-Happy.webp" and "src/main/resources/pets/Panda-Age1-Happy.webp".
    */
   resolvePetType(userPet: ApiUserPet | string | null | undefined): PetType | null {
     if (!userPet) return null;
@@ -181,7 +181,7 @@ export class PetAgeService {
     const normalizedAge = Math.max(1, Math.min(3, Number(age) || 1));
     const moodName = mood.charAt(0).toUpperCase() + mood.slice(1);
     const prefix = animated ? `${petName}-Move` : petName;
-    return `assets/Images-Pet/${prefix}-Age${normalizedAge}-${moodName}.png`;
+    return `assets/Images-Pet/${prefix}-Age${normalizedAge}-${moodName}.webp`;
   }
 
   getPetImageAlt(mood?: PetMood): string {

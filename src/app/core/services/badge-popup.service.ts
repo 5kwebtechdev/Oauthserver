@@ -4,7 +4,7 @@ import { catchError } from 'rxjs/operators';
 import { BadgeApi } from '../api/badge.api';
 import { BadgePopupData } from './badge-socket.service';
 
-const DEFAULT_ICON = 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png';
+const DEFAULT_ICON = 'assets/Icons-Neutral/Icon-Badge-CoinCollector.webp';
 
 @Injectable({ providedIn: 'root' })
 export class BadgePopupService {

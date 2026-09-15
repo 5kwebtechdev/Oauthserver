@@ -4,6 +4,7 @@ import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { StreakRestoreApi, StreakStatus, StreakStatusDay } from '../../core/api/streak-restore.api';
 import { StreakRestoreModalComponent } from '../../core/components/streak-restore/streak-restore-modal.component';
+import { StreakMilestoneComponent } from '../../core/components/streak-milestone/streak-milestone.component';
 import { ActivityCardComponent } from "../../core/components/activity-section/activity-card/activity-card.component";
 import { LearningSectionComponent } from "../../core/components/learning-section/learning-section.component";
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
@@ -13,7 +14,7 @@ import { AcademySectionComponent } from "../../core/components/academy-section/a
 import { IonicModule } from "@ionic/angular";
 import { SupermeInputsModule } from "../../core/components/superme-inputs/superme-inputs.module";
 import { MoodSelectorComponent } from "../../core/components/mood-selector/mood-selector.component";
-import { DayStreak, WeekStreakSectionComponent } from "../../core/components/week-streak-section/week-streak-section.component";
+import { DayStreak } from "../../core/components/week-streak-section/week-streak-section.component";
 import { ReelPreviewSectionComponent } from "../../core/components/reel-section/reel-preview/reel-preview.component";
 import { QuickAccessSectionComponent } from "../../core/components/quick-access-section/quick-access-section.component";
 import { SupermePetComponent } from '../../core/components/superme-pet/superme-pet.component';
@@ -66,6 +67,7 @@ type HomeTimePeriod = 'morning' | 'evening' | 'night';
   standalone: true,
   imports: [
     CommonModule,
+    StreakMilestoneComponent,
     RouterModule,
     ActivityCardComponent,
     AdBannerComponent,
@@ -74,7 +76,7 @@ type HomeTimePeriod = 'morning' | 'evening' | 'night';
     AcademySectionComponent,
     IonicModule,
     MoodSelectorComponent,
-    WeekStreakSectionComponent,
+    // WeekStreakSectionComponent is intentionally disabled with its template section.
     ReelPreviewSectionComponent,
     QuickAccessSectionComponent,
     SupermeInputsModule,
@@ -95,6 +97,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public avatarImageName: string | null = null;
   public userCoins: number = 0;
   public userStreaks: number = 0;
+  public loginStreakDays: number | null = null;
   public userDays: number = 0;
   public userBadges: number = 0;
   public homeTimePeriod: HomeTimePeriod = 'morning';
@@ -127,7 +130,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
   ];
   private dailyStreakEligible = false;
-  private streakStatusResolved = false;
+  public streakStatusResolved = false;
   private streakContinuityConfirmed = false;
   private homeOverlayFlowComplete = false;
   private dailyStreakShownDateThisSession: string | null = null;
@@ -174,7 +177,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   canRestoreStreak = false;
   restoreToStreak: number | null = null;
   restoreCost = 5;
-  private streakPopupShown = false;
 
   // Observable for shared toast service
   toast$: Observable<Toast | null>;
@@ -185,9 +187,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   private hasEnteredDashboard = false;
   private homeTimeChangeTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly homePeriodBackgrounds = [
-    'assets/Images-Thumbnails/HeaderV2.png',
-    'assets/Images-Thumbnails/HeaderV2-evening.png',
-    'assets/Images-Thumbnails/HeaderV2-night.png'
+    'assets/Images-Thumbnails/HeaderV2.webp',
+    'assets/Images-Thumbnails/HeaderV2-evening.webp',
+    'assets/Images-Thumbnails/HeaderV2-night.webp'
   ];
   private readonly handleHomeVisibilityChange = (): void => {
     if (document.visibilityState === 'visible') {
@@ -995,9 +997,18 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   dismissDailyStreakPopup(): void {
     this.showDailyStreakPopup = false;
+    this.markDailyStreakShown(this.getLocalDateKey(new Date()));
+    if (this.activeOverlay === 'daily-login' || this.activeOverlay === 'streak-milestone') {
+      this.dismissCurrentOverlay();
+    }
   }
 
   private maybeShowDailyStreakPopup(): void {
+    if (!this.authService.isFirstLoggedForTheDay()) {
+      this.showDailyStreakPopup = false;
+      return;
+    }
+
     if (!this.dailyStreakEligible
       || !this.streakStatusResolved
       || !this.streakContinuityConfirmed
@@ -1009,21 +1020,33 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     }
 
     const today = this.getLocalDateKey(new Date());
-    if (this.dailyStreakShownDateThisSession === today) return;
+    if (this.hasShownDailyStreakToday(today)) return;
+
+    this.markDailyStreakShown(today);
+    this.showDailyStreakPopup = true;
+  }
+
+  private hasShownDailyStreakToday(today: string): boolean {
+    if (this.dailyStreakShownDateThisSession === today) return true;
 
     const storageKey = this.getDailyStreakStorageKey();
     try {
-      if (storageKey && localStorage.getItem(storageKey) === today) return;
+      return Boolean(storageKey && localStorage.getItem(storageKey) === today);
     } catch {
       // Storage can be unavailable in strict privacy modes; the in-memory
       // date still prevents repeats for the current app session.
+      return false;
     }
+  }
 
+  private markDailyStreakShown(today: string): void {
     this.dailyStreakShownDateThisSession = today;
     try {
+      const storageKey = this.getDailyStreakStorageKey();
       if (storageKey) localStorage.setItem(storageKey, today);
-    } catch {}
-    this.showDailyStreakPopup = true;
+    } catch {
+      // Continue with the in-memory guard when storage is unavailable.
+    }
   }
 
   private getDailyStreakStorageKey(): string | null {
@@ -1153,21 +1176,18 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.streakRestoreApi.getStreakStatus(userId).subscribe({
       next: (status: StreakStatus) => {
         this.userStreaks = Number(status.currentStreak ?? this.userStreaks);
+        this.loginStreakDays = Number(status.currentStreak ?? 0);
         this.refreshWeekStreakDays(status.currentStreak, status.last7Days ?? null);
         this.canRestoreStreak = status.canRestore;
-        this.dailyStreakEligible = Number(status.currentStreak) > 0;
+        this.dailyStreakEligible = true;
         this.streakStatusResolved = true;
-        this.streakContinuityConfirmed = Number(status.currentStreak) > 0 && !status.canRestore;
+        this.streakContinuityConfirmed = !status.canRestore;
         this.restoreToStreak = status.restoreToStreak;
         this.nextMilestoneDay = status.nextMilestoneDay ?? null;
         this.nextMilestoneCoins = status.nextMilestoneCoins ?? null;
         this.daysToNextMilestone = status.daysToNextMilestone ?? null;
         this.restoreCost = status.restoreCost ?? 5;
         this.userCoins = Number(status.coins ?? this.userCoins);
-        if (status.canRestore && !this.streakPopupShown) {
-          this.streakPopupShown = true;
-          setTimeout(() => this.openStreakRestoreModal(), 800);
-        }
         this.maybeShowDailyStreakPopup();
       },
       error: () => {
@@ -1240,6 +1260,44 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           const nextOverlay = typeMap[resp.overlayType] ?? null;
 
           this.activeOverlay = nextOverlay;
+
+          // The streak celebration is a once-per-local-day experience. The
+          // API overlay can still be returned after a refresh, so consume it
+          // locally when today's popup has already been shown.
+          const isDailyStreakOverlay = nextOverlay === 'daily-login' || nextOverlay === 'streak-milestone';
+          if (isDailyStreakOverlay) {
+            if (!this.authService.isFirstLoggedForTheDay()) {
+              this.activeOverlay = null;
+              this.showDailyStreakPopup = false;
+              const apiType: ApiOverlayType = nextOverlay === 'daily-login'
+                ? 'DAILY_LOGIN'
+                : 'STREAK_MILESTONE';
+              this.petMessageApi.dismissHomeOverlay(apiType).subscribe({
+                next: () => this.pollHomeOverlay(),
+                error: () => {
+                  this.homeOverlayFlowComplete = true;
+                  this.loadHomeHeader();
+                },
+              });
+              return;
+            }
+
+            const today = this.getLocalDateKey(new Date());
+            if (this.hasShownDailyStreakToday(today)) {
+              this.showDailyStreakPopup = false;
+              const apiType: ApiOverlayType = nextOverlay === 'daily-login'
+                ? 'DAILY_LOGIN'
+                : 'STREAK_MILESTONE';
+              this.petMessageApi.dismissHomeOverlay(apiType).subscribe({
+                next: () => this.pollHomeOverlay(),
+                error: () => this.pollHomeOverlay(),
+              });
+              return;
+            }
+
+            this.markDailyStreakShown(today);
+            this.showDailyStreakPopup = true;
+          }
 
           if (resp.message) {
             this.overlayMessage = resp.message;

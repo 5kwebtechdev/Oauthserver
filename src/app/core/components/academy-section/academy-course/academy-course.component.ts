@@ -51,18 +51,18 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
   courseDetail: CourseDetailResponse | null = null;
   isLoadingCourse = false;
   loadError: string | null = null;
-  readonly fallbackCourseImage = 'assets/Images-Transparent/Academy-Course-Thubmnail1.png';
-  readonly fallbackLessonImage = 'assets/Images-Transparent/Academy-Course-Thubmnail2.png';
+  readonly fallbackCourseImage = 'assets/Images-Transparent/Academy-Course-Thubmnail1.webp';
+  readonly fallbackLessonImage = 'assets/Images-Transparent/Academy-Course-Thubmnail2.webp';
   // Learning pages use this gold star coin. Keeping one asset for the wallet,
   // lesson rewards and course reward makes every value immediately recognisable.
   readonly learningCoinAsset = 'assets/figma/learning-details/coin.webp';
   walletCoins = 0;
   private readonly fallbackLessonImages = [
-    'assets/Images-Transparent/Academy-Course-Thubmnail1.png',
-    'assets/Images-Transparent/Academy-Course-Thubmnail2.png',
-    'assets/Images-Transparent/Academy-Course-Thubmnail3.png',
-    'assets/Images-Transparent/Academy-Course-Thubmnail4.png',
-    'assets/Images-Transparent/Academy-Course-Thubmnail5.png',
+    'assets/Images-Transparent/Academy-Course-Thubmnail1.webp',
+    'assets/Images-Transparent/Academy-Course-Thubmnail2.webp',
+    'assets/Images-Transparent/Academy-Course-Thubmnail3.webp',
+    'assets/Images-Transparent/Academy-Course-Thubmnail4.webp',
+    'assets/Images-Transparent/Academy-Course-Thubmnail5.webp',
   ];
 
   // route-driven mode: if component is loaded via route we populate `course` from the id

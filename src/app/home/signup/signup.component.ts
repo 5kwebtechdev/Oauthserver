@@ -209,7 +209,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public passwordKeyboardHeight = 0;
   public referralKeyboardHeight = 0;
   private focusedPasswordField: HTMLElement | null = null;
-  private focusedReferralField: HTMLElement | null = null;
+  public focusedReferralField: HTMLElement | null = null;
   private keyboardShowListener: { remove: () => Promise<void> } | null = null;
   private keyboardHideListener: { remove: () => Promise<void> } | null = null;
   private visualViewportBaseline = 0;
@@ -248,30 +248,30 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   pets: any[] = [{
     displayName: 'Bao the Mindful Panda',
     name: 'Panda',
-    apiName: 'Panda-Age1-Happy.png',
-    image: 'assets/Images-Pet/Panda-Age1-Happy.png',
-    cardImage: 'assets/Images-Pet/selection-cards/Panda-selection-card.png',
+    apiName: 'Panda-Age1-Happy.webp',
+    image: 'assets/Images-Pet/Panda-Age1-Happy.webp',
+    cardImage: 'assets/Images-Pet/selection-cards/Panda-selection-card.webp',
     text: ['Your gentle guide to inner peace', 'Celebrates small acts of kindness']
   }, {
     displayName: 'Luna the Wise Owl',
     name: 'Owl',
-    apiName: 'Owl-Age1-Happy.png',
-    image: 'assets/Images-Pet/Owl-Age1-Happy.png',
-    cardImage: 'assets/Images-Pet/selection-cards/Owl-selection-card.png',
+    apiName: 'Owl-Age1-Happy.webp',
+    image: 'assets/Images-Pet/Owl-Age1-Happy.webp',
+    cardImage: 'assets/Images-Pet/selection-cards/Owl-selection-card.webp',
     text: ['Your midnight study buddy', 'Celebrates "aha!" moments']
   }, {
     displayName: 'Koda the Chill Llama',
     name: 'Llama',
-    apiName: 'Llama-Age1-Happy.png',
-    image: 'assets/Images-Pet/Llama-Age1-Happy.png',
-    cardImage: 'assets/Images-Pet/selection-cards/Llama-selection-card.png',
+    apiName: 'Llama-Age1-Happy.webp',
+    image: 'assets/Images-Pet/Llama-Age1-Happy.webp',
+    cardImage: 'assets/Images-Pet/selection-cards/Llama-selection-card.webp',
     text: ['Master of staying cool under pressure', 'Loves colorful, quirky adventures']
   }, {
     displayName: 'Zuki the Fierce Dragon',
     name: 'Dragon',
-    apiName: 'Dragon-Age1-Happy.png',
-    image: 'assets/Images-Pet/Dragon-Age1-Happy.png',
-    cardImage: 'assets/Images-Pet/selection-cards/Dragon-selection-card.png',
+    apiName: 'Dragon-Age1-Happy.webp',
+    image: 'assets/Images-Pet/Dragon-Age1-Happy.webp',
+    cardImage: 'assets/Images-Pet/selection-cards/Dragon-selection-card.webp',
     text: ['Loves big ideas and bold moves', 'Celebrates when you go on streaks']
   }]
 
@@ -410,8 +410,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.restoreSignupStateFromSession();
     this.restorePersistedRegistrationState();
     this.updateComputedAge(this.profileForm.get('dob')?.value);
-    this.refreshIncompleteAuthenticatedOnboarding();
-
     // Registration now starts with email only. Ignore a stale phone-mode value
     // left by an older version when this entry step is opened.
     if (this.step === 0.1) {
@@ -565,6 +563,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.step = 0.2;
       } else if (stepParam === '0.3') {
         this.step = 0.3;
+      }
+
+      // Step 2 is the profile/referral form itself. Do not hold its first
+      // render behind a background onboarding refresh; the saved draft is
+      // already restored synchronously above and the refresh is not needed to
+      // open or validate the referral panel.
+      if (this.step !== 2) {
+        this.refreshIncompleteAuthenticatedOnboarding();
       }
 
       // OAuth users are authenticated by Apple/Google before this page is
@@ -2085,8 +2091,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.referralValidationStatus = null;
     this.referralErrorMessage = '';
-    // Let the expand animation begin before opening the native keyboard.
-    setTimeout(() => this.referralInput?.nativeElement.focus(), 220);
+    // Focus on the first frame of the expansion so desktop and mobile users
+    // can type immediately instead of waiting for the panel animation.
+    requestAnimationFrame(() => {
+      if (!this.showReferral) return;
+      this.referralInput?.nativeElement.focus({ preventScroll: true });
+    });
   }
 
   // Handle referral input: allow only alphanumeric and max length 8
@@ -2135,8 +2145,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.visualViewportBaseline,
       window.visualViewport?.height || window.innerHeight
     );
-    setTimeout(() => this.scrollReferralControlsIntoView(), 80);
-    setTimeout(() => this.scrollReferralControlsIntoView(), 320);
+    this.scrollReferralControlsIntoView();
   }
 
   onReferralFieldBlur(): void {
@@ -3320,7 +3329,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     if (role !== 'parent' && includePet) {
       try {
-        // Backend expects short pet name ("Dragon"), not the filename ("Dragon-Age1-Happy.png")
+        // Backend expects short pet name ("Dragon"), not the filename ("Dragon-Age1-Happy.webp")
         const storedPet = sessionStorage.getItem('signup_pet') || this.currentImage?.apiName;
         const foundPet = storedPet
           ? this.pets.find(p => p.apiName === storedPet || p.name === storedPet)

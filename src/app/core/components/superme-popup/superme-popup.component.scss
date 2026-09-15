@@ -72,12 +72,21 @@
 }
 
 /* Specific sizing for the logout image */
-.superme-popup-image[src*="logout.png"] {
+.superme-popup-image[src*="logout.webp"] {
   width: 69px !important;
   height: 88px !important;
   aspect-ratio: 69/88 !important;
   object-fit: contain !important;
   border-radius: 8px;
+}
+
+/* Keep the feedback illustration crisp and fully visible. The source has a
+   transparent square canvas, so `cover` needlessly crops and softens it. */
+.superme-popup-image[src*="Image-Profile-Feedback.webp"] {
+  width: 132px !important;
+  height: 132px !important;
+  object-fit: contain !important;
+  border-radius: 0;
 }
 
 /* Specific sizing for the Reel upload success image requested by design */

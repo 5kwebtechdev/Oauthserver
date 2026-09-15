@@ -109,11 +109,12 @@ export class MoodService {
    * Pass forUserId when the caller needs a child-scoped analytics response.
    * @returns Observable of VibesDisplayResponse array
    */
-  getVibesDisplay(forUserId?: string | number): Observable<VibesDisplayResponse[]> {
+  getVibesDisplay(forUserId?: string | number, authenticatedUserOnly = false): Observable<VibesDisplayResponse[]> {
     const params = forUserId !== undefined && forUserId !== null
       ? { forUserId: String(forUserId) }
       : undefined;
-    return this.http.get<VibesDisplayResponse[]>(`${this.apiUrl}/vibes/display`, { params });
+    const headers = authenticatedUserOnly ? { 'X-Skip-Profile-Selector': 'true' } : undefined;
+    return this.http.get<VibesDisplayResponse[]>(`${this.apiUrl}/vibes/display`, { params, headers });
   }
 
   /** No-op kept for call-site compatibility */

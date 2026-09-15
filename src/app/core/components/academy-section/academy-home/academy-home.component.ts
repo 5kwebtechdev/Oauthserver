@@ -36,10 +36,10 @@ export class AcademyHomeComponent {
 
   private readonly cardColors = ['yellow', 'purple', 'pink', 'green'];
   private readonly fallbackImages = [
-    'assets/Images-Transparent/Image-Academy-Cat1.png',
-    'assets/Images-Transparent/Image-Academy-Cat2.png',
-    'assets/Images-Transparent/Image-Academy-Cat3.png',
-    'assets/Images-Transparent/Image-Academy-Cat4.png',
+    'assets/Images-Transparent/Image-Academy-Cat1.webp',
+    'assets/Images-Transparent/Image-Academy-Cat2.webp',
+    'assets/Images-Transparent/Image-Academy-Cat3.webp',
+    'assets/Images-Transparent/Image-Academy-Cat4.webp',
   ];
 
   constructor(

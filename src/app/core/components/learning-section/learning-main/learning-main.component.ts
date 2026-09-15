@@ -55,9 +55,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   categoryContentError = false;
 
   categoryTabs: { id: LearningCategoryTab; label: string; icon: string; parentIcon: string; ariaLabel: string }[] = [
-    { id: 'quizzes', label: 'Quizzes', icon: 'assets/Icons-Neutral/Icon-Content-Quiz.png', parentIcon: 'assets/figma/parent-child-learning/tab-quizzes.webp', ariaLabel: 'Open Quizzes' },
-    { id: 'articles', label: 'Articles', icon: 'assets/Icons-Neutral/Icon-Content-Articles.png', parentIcon: 'assets/figma/parent-child-learning/tab-articles.webp', ariaLabel: 'Open Articles' },
-    { id: 'masterclass', label: 'Master Class', icon: 'assets/Icons-Neutral/Icon-Content-ForYou.png', parentIcon: 'assets/figma/parent-child-learning/tab-masterclass.webp', ariaLabel: 'Open Master Class' }
+    { id: 'quizzes', label: 'Quizzes', icon: 'assets/Icons-Neutral/Icon-Content-Quiz.webp', parentIcon: 'assets/figma/parent-child-learning/tab-quizzes.webp', ariaLabel: 'Open Quizzes' },
+    { id: 'articles', label: 'Articles', icon: 'assets/Icons-Neutral/Icon-Content-Articles.webp', parentIcon: 'assets/figma/parent-child-learning/tab-articles.webp', ariaLabel: 'Open Articles' },
+    { id: 'masterclass', label: 'Master Class', icon: 'assets/Icons-Neutral/Icon-Content-ForYou.webp', parentIcon: 'assets/figma/parent-child-learning/tab-masterclass.webp', ariaLabel: 'Open Master Class' }
   ];
 
   categoryItems: Record<LearningCategoryTab, LearningCategorySummary[]> = {
@@ -1046,14 +1046,14 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
     switch (this.selectedCategory) {
       case 'quizzes':
-        return 'assets/Icons-Neutral/Icon-Content-Quiz.png';
+        return 'assets/Icons-Neutral/Icon-Content-Quiz.webp';
       case 'articles':
-        return 'assets/Icons-Neutral/Icon-Content-Articles.png';
+        return 'assets/Icons-Neutral/Icon-Content-Articles.webp';
       case 'masterclass':
-        return 'assets/Icons-Neutral/Icon-Content-ForYou.png';
+        return 'assets/Icons-Neutral/Icon-Content-ForYou.webp';
       case 'puzzles':
       default:
-        return 'assets/Icons-Neutral/Icon-Content-Puzzle.png';
+        return 'assets/Icons-Neutral/Icon-Content-Puzzle.webp';
     }
   }
 

@@ -41,18 +41,18 @@ interface ReelItem {
 })
 export class ReelCategoryComponent implements OnInit, OnDestroy {
   readonly categories: ReelCategory[] = [
-    { label: 'Education', icon: 'assets/figma/reels/categories/education.png' },
-    { label: 'How-to', icon: 'assets/figma/reels/categories/how-to.png' },
-    { label: 'Arts & Creativity', icon: 'assets/figma/reels/categories/arts-creativity.png' },
-    { label: 'Entertainment', icon: 'assets/figma/reels/categories/entertainment.png' },
-    { label: 'Fitness', icon: 'assets/figma/reels/categories/fitness.png' },
-    { label: 'Animals & Nature', icon: 'assets/figma/reels/categories/animals-nature.png' },
-    { label: 'Food', icon: 'assets/figma/reels/categories/food.png' },
-    { label: 'STEM', icon: 'assets/figma/reels/categories/stem.png' },
-    { label: 'Motivational', icon: 'assets/figma/reels/categories/motivational.png' },
-    { label: 'Gaming', icon: 'assets/figma/reels/categories/gaming.png' },
-    { label: 'People & Vlogs', icon: 'assets/figma/reels/categories/people-vlogs.png' },
-    { label: 'Productivity', icon: 'assets/figma/reels/categories/productivity.png' }
+    { label: 'Education', icon: 'assets/figma/reels/categories/education.webp' },
+    { label: 'How-to', icon: 'assets/figma/reels/categories/how-to.webp' },
+    { label: 'Arts & Creativity', icon: 'assets/figma/reels/categories/arts-creativity.webp' },
+    { label: 'Entertainment', icon: 'assets/figma/reels/categories/entertainment.webp' },
+    { label: 'Fitness', icon: 'assets/figma/reels/categories/fitness.webp' },
+    { label: 'Animals & Nature', icon: 'assets/figma/reels/categories/animals-nature.webp' },
+    { label: 'Food', icon: 'assets/figma/reels/categories/food.webp' },
+    { label: 'STEM', icon: 'assets/figma/reels/categories/stem.webp' },
+    { label: 'Motivational', icon: 'assets/figma/reels/categories/motivational.webp' },
+    { label: 'Gaming', icon: 'assets/figma/reels/categories/gaming.webp' },
+    { label: 'People & Vlogs', icon: 'assets/figma/reels/categories/people-vlogs.webp' },
+    { label: 'Productivity', icon: 'assets/figma/reels/categories/productivity.webp' }
   ];
 
   slides: ReelItem[] = [];
@@ -176,8 +176,8 @@ export class ReelCategoryComponent implements OnInit, OnDestroy {
     const title = this.firstText(source['title'], source['caption'], source['description']) || 'YouTube Reel';
     const duration = this.firstText(source['duration'], source['timeDuration']) || '';
     const image = this.firstText(source['thumbnailUrl'], source['thumbnail'])
-      || (videoId ? `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg` : 'assets/figma/reels/reel-volcano.png');
-    const avatar = this.firstText(source['authorAvatarUrl'], source['avatarUrl']) || 'assets/figma/reels/avatar.png';
+      || (videoId ? `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg` : 'assets/figma/reels/reel-volcano.webp');
+    const avatar = this.firstText(source['authorAvatarUrl'], source['avatarUrl']) || 'assets/figma/reels/avatar.webp';
 
     return {
       id: reel.id,

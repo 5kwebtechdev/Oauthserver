@@ -1,0 +1,57 @@
+<ion-content fullscreen class="tutor-detail-page shop-profile-page">
+  <div class="profile-image-lightbox" *ngIf="imageFullscreen" role="dialog" aria-modal="true" (click)="closeProfileImage()">
+    <button type="button" aria-label="Close profile image" (click)="closeProfileImage()">×</button>
+    <img [src]="listing?.image" [alt]="listing?.name || 'Shop image'" (click)="$event.stopPropagation()">
+  </div>
+  <div class="detail-shell" *ngIf="listing as item; else unavailable">
+    <header class="detail-header">
+      <button type="button" class="header-action" aria-label="Go back" (click)="goBack()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 19 8 12l7-7" /></svg>
+      </button>
+    </header>
+    <main class="detail-content">
+      <section class="profile-hero shop-profile-hero">
+        <div class="avatar-wrap shop-avatar-wrap" role="button" tabindex="0" aria-label="View shop profile image" (click)="openProfileImage()" (keydown.enter)="openProfileImage()" (keydown.space)="$event.preventDefault(); openProfileImage()">
+          <app-profile-image class="avatar" [src]="item.image" [name]="item.name" [alt]="item.name"></app-profile-image>
+          <span class="verified-badge" *ngIf="item.verified" aria-label="Verified listing">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.3 12.4 2.3 2.3 5.2-5.4" /></svg>
+          </span>
+        </div>
+        <div class="profile-copy"><h1>{{ item.name }}</h1><p>{{ categoryLabel }}</p></div>
+        <div class="profile-stats shop-profile-location" *ngIf="item.publicLocation">
+          <div class="stat"><img src="assets/Icons-Neutral/Tutor-Location.webp" alt=""><span>{{ item.publicLocation }}</span></div>
+        </div>
+      </section>
+      <section class="information-card" aria-label="Shop information">
+        <div class="information-row">
+          <div class="information-label"><img src="assets/Icons-Neutral/Tutor-Location.webp" alt=""><span>Location</span></div>
+          <div class="information-value">{{ item.publicLocation || 'Location not specified' }}</div>
+        </div>
+        <div class="information-row" *ngIf="item.unlocked && item.fullAddress">
+          <div class="information-label"><img src="assets/figma/parent-eduhub-inner/location.svg" alt=""><span>Address</span></div>
+          <div class="information-value">{{ item.fullAddress }}</div>
+        </div>
+        <div class="information-row information-row--last">
+          <div class="information-label"><img src="assets/figma/parent-eduhub-inner/lock.svg" alt=""><span>Contact details</span></div>
+          <div class="information-value" *ngIf="item.unlocked; else lockedContact">
+            <a *ngIf="item.phone" [href]="'tel:' + item.phone">{{ item.phone }}</a>
+            <a *ngIf="item.email" [href]="'mailto:' + item.email">{{ item.email }}</a>
+          </div>
+          <ng-template #lockedContact><div class="information-value">Address and contact details are locked</div></ng-template>
+        </div>
+      </section>
+      <section class="unlock-card" *ngIf="!item.unlocked">
+        <div class="unlock-heading"><div class="unlock-icon"><img src="assets/figma/contact-unlock/card-illustration.webp" alt=""></div><div><h2>Unlock contact details</h2><p>Unlock the full address and contact information for this listing.</p></div></div>
+        <div class="unlock-benefits"><span>Full Address</span><span>Phone Number</span><span>Email</span><span>View on map</span></div>
+        <button type="button" class="unlock-button" [disabled]="unlockInProgress" (click)="unlockListing()">
+          <ion-spinner *ngIf="unlockInProgress" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!unlockInProgress"><img src="assets/figma/contact-unlock/lock-open.svg" alt=""><span>Unlock Now</span><span class="unlock-cost"><img src="assets/figma/contact-unlock/coin.webp" alt="">{{ item.unlockCost }}</span></ng-container>
+        </button>
+      </section>
+    </main>
+  </div>
+  <ng-template #unavailable>
+    <div class="detail-shell"><header class="detail-header"><button type="button" class="header-action" (click)="goBack()">←</button></header><main class="error-state"><h1>This listing is unavailable</h1><p>Return to the shop list and choose it again.</p></main></div>
+  </ng-template>
+  <app-footer></app-footer>
+</ion-content>

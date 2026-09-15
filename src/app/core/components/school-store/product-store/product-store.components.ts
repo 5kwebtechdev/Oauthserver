@@ -523,7 +523,7 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
           subtitle: p.schoolName || undefined,
           price: this.formatCurrency(p.sellingPrice),
           mrp: this.formatCurrency(p.mrp),
-          img: p.thumbnailUrl || 'assets/School-assets/empty-product-list.png',
+          img: p.thumbnailUrl || 'assets/School-assets/empty-product-list.webp',
           outOfStock: !p.inStock,
           badge: p.mandatory ? 'Mandatory' : undefined,
           brand: p.brandName || p.tag || undefined,

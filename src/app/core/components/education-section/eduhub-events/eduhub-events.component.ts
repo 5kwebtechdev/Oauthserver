@@ -9,6 +9,7 @@ import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { EduHubCitySelectorComponent } from '../eduhub-city-selector/eduhub-city-selector.component';
+import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { PetAgeService } from '../../../services/pet-age.service';
@@ -29,7 +30,7 @@ interface EventListingRouteData {
 @Component({
   selector: 'app-eduhub-events',
   standalone: true,
-  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent],
+  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, ProfileImageComponent],
   templateUrl: './eduhub-events.component.html',
   styleUrls: ['./eduhub-events.component.scss']
 })

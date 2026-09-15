@@ -430,7 +430,7 @@
       content: '';
       border-radius: 24px;
       background:
-        url('/assets/app-assets/activity-detail/figma-progress-achievement-hd.png') center / 58px 58px no-repeat,
+        url('/assets/app-assets/activity-detail/figma-progress-achievement-hd.webp') center / 58px 58px no-repeat,
         linear-gradient(135deg, #fff1c9, #ffe8f1);
       box-shadow: 0 10px 25px rgba(101, 65, 137, 0.12);
       transform: rotate(5deg);
@@ -897,7 +897,7 @@
   width: 24px;
   height: 24px;
   overflow: hidden;
-  background-image: url('/assets/figma/parent-insights/section-sprite.png');
+  background-image: url('/assets/figma/parent-insights/section-sprite.webp');
   background-repeat: no-repeat;
   background-size: 300% 200%;
 
@@ -913,14 +913,14 @@
       width: 55px;
       height: 82px;
       content: '';
-      background: url('/assets/figma/parent-insights/habits-heading.png') center / 100% 100% no-repeat;
+      background: url('/assets/figma/parent-insights/habits-heading.webp') center / 100% 100% no-repeat;
     }
   }
 
   &--tasks {
     width: 20px;
     flex-basis: 20px;
-    background: url('/assets/figma/parent-insights/tasks-heading.png') center / contain no-repeat;
+    background: url('/assets/figma/parent-insights/tasks-heading.webp') center / contain no-repeat;
   }
 
   &--mood { background-position: 0 0; }
@@ -1398,7 +1398,7 @@
       left: -14.85px;
       width: 54.89px;
       height: 81.56px;
-      background-image: url('/assets/figma/parent-insights/habits-heading.png');
+      background-image: url('/assets/figma/parent-insights/habits-heading.webp');
     }
   }
 
@@ -1412,7 +1412,7 @@
       left: -4px;
       width: 32px;
       height: 32px;
-      background-image: url('/assets/figma/parent-insights/tasks-heading.png');
+      background-image: url('/assets/figma/parent-insights/tasks-heading.webp');
     }
   }
 
@@ -1420,7 +1420,7 @@
   &--knowledge::before,
   &--journal::before,
   &--achievements::before {
-    background-image: url('/assets/figma/parent-insights/section-sprite.png');
+    background-image: url('/assets/figma/parent-insights/section-sprite.webp');
   }
 
   &--mood::before {

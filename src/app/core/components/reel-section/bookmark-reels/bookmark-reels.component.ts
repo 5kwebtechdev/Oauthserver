@@ -34,7 +34,7 @@ interface BookmarkedReel {
   imports: [CommonModule, IonicModule, SupermeCardHeaderComponent, ReelsExpandComponent]
 })
 export class BookmarkReelsComponent implements OnInit {
-  readonly fallbackThumbnail = 'assets/figma/reels/reel-volcano.png';
+  readonly fallbackThumbnail = 'assets/figma/reels/reel-volcano.webp';
   title = 'Bookmarked Reels';
   reels: BookmarkedReel[] = [];
   isLoading = true;
@@ -106,7 +106,7 @@ export class BookmarkReelsComponent implements OnInit {
         || (videoId ? `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg` : this.fallbackThumbnail),
       title: this.firstText(raw['title'], raw['caption'], raw['description']) || 'YouTube Reel',
       author: this.firstText(raw['author'], raw['creatorName']) || 'SuperMe Creator',
-      avatar: this.firstText(raw['authorAvatarUrl'], raw['avatarUrl']) || 'assets/figma/reels/avatar.png',
+      avatar: this.firstText(raw['authorAvatarUrl'], raw['avatarUrl']) || 'assets/figma/reels/avatar.webp',
       likes: String(Number(reel.likeCount) || 0),
       likeCount: Number(reel.likeCount) || 0,
       commentCount: Number(reel.commentCount) || 0,

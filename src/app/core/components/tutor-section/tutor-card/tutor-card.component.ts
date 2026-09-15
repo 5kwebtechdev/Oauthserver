@@ -49,6 +49,13 @@ interface EduHubDirectoryItem {
   city?: string | null;
   state?: string | null;
   address?: string | null;
+  exactLocation?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  unlocked?: boolean | null;
+  isUnlocked?: boolean | null;
+  unlockCost?: number | string | null;
+  contactUnlockCost?: number | string | null;
   status?: string | null;
   accountStatus?: string | null;
   isActive?: boolean | null;
@@ -275,7 +282,13 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       const entityType = categoryKey === 'workshops' ? 'Workshop' : 'Events';
       this.subscriptions.add(this.eduhubEventsService.getPage(entityType, 0, 20, this.cityService.city).subscribe({
         next: response => {
-          const fallbackImage = this.categories.find(category => category.key === categoryKey)?.image || '';
+          // Category artwork is navigation chrome, not a person's/listing's
+          // profile image. Keep it as a fallback only for shop cards that
+          // intentionally use branded category art; Workshops and Events must
+          // fall back to the initials component when no image was uploaded.
+          const fallbackImage = source.endpoint === 'shops'
+            ? (this.categories.find(category => category.key === categoryKey)?.image || '')
+            : '';
           const previews = (response?.content || [])
             .filter(item => this.isActiveDirectoryListing(item as EduHubDirectoryItem))
             .map(item => this.mapExternalPreview(item as EduHubDirectoryItem, fallbackImage));
@@ -319,7 +332,14 @@ export class TutorCardComponent implements OnInit, OnDestroy {
             // returned shop records visible even when legacy responses omit
             // the optional `isActive` flag.
             .filter(item => source.endpoint === 'shops' || this.isActiveDirectoryListing(item))
-            .map(item => this.mapExternalPreview(item, fallbackImage));
+            .map(item => {
+              const preview = this.mapExternalPreview(item, fallbackImage);
+              // The Stationery API currently returns the shared blue pouch
+              // artwork as a successful image URL for every listing. Treat it
+              // as missing so each listing gets its own initials fallback.
+              if (categoryKey === 'stationery') preview.image = '';
+              return preview;
+            });
           this.externalPreviews.set(categoryKey, previews);
           this.externalCounts.set(categoryKey, Number(response?.totalElements ?? response?.data?.totalElements ?? previews.length));
           this.externalLoading.delete(categoryKey);
@@ -395,11 +415,13 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   private mapExternalPreview(item: EduHubDirectoryItem, fallbackImage: string): EduHubPreview {
     const fee = Number(item?.fee ?? item?.hourlyRate);
+    const candidateImage = item?.imageUrls?.[0] || item?.imageUrl || item?.thumbnailUrl || item?.profilePicUrl || item?.avatar || '';
+    const imageLooksLikePlaceholder = /(?:default|placeholder|category-(?:workshops?|events?)|(?:light[-_ ]?)bulb)[^/]*\.(?:png|jpe?g|webp|svg)(?:$|[?#])/i.test(candidateImage);
     return {
       id: item?.id ?? `${item?.name || item?.title || 'listing'}-${item?.city || ''}`,
       name: String(item?.name || item?.title || 'EduHub listing').trim(),
       description: String(item?.bio || item?.description || item?.headline || [item?.city, item?.state].filter(Boolean).join(', ') || 'EduHub listing').trim(),
-      image: item?.imageUrls?.[0] || item?.imageUrl || item?.thumbnailUrl || item?.profilePicUrl || item?.avatar || fallbackImage,
+      image: imageLooksLikePlaceholder ? fallbackImage : (candidateImage || fallbackImage),
       fee: Number.isFinite(fee) ? fee : null,
       location: [item?.city, item?.state].filter(Boolean).join(', ') || String(item?.address || '').trim(),
       source: item
@@ -703,16 +725,32 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       'book-stores': 'bookstore',
       'sports-shops': 'sports'
     };
-    void this.router.navigate(['/authed/education/shops'], {
-      queryParams: {
-        label: labelByCategory[this.selectedCategoryKey],
-        entityType: entityTypeByCategory[this.selectedCategoryKey],
-        listing: listing.id,
-        city: this.cityService.city
-      },
+    const source = listing.source;
+    const detailListing = {
+      id: Number(listing.id),
+      entityType: entityTypeByCategory[this.selectedCategoryKey] || '',
+      name: listing.name,
+      publicLocation: listing.location,
+      fullAddress: String(source?.exactLocation || source?.address || listing.location || ''),
+      phone: String(source?.phone || ''),
+      email: String(source?.email || ''),
+      image: listing.image,
+      verified: !!source?.verified,
+      unlockCost: Number(source?.unlockCost ?? source?.contactUnlockCost ?? 10),
+      unlocked: !!(source?.unlocked ?? source?.isUnlocked)
+    };
+
+    try {
+      sessionStorage.setItem(`superme_eduhub_shop_${listing.id}`, JSON.stringify(detailListing));
+    } catch {
+      // Navigation state is sufficient during the normal in-app flow.
+    }
+
+    void this.router.navigate(['/authed/education/shops', listing.id], {
       state: {
         city: this.cityService.city,
-        listing: listing.source
+        categoryLabel: labelByCategory[this.selectedCategoryKey],
+        listing: detailListing
       }
     });
   }

@@ -155,7 +155,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
    * with the file URI so the user can pick any app (WhatsApp, Telegram, etc.).
    */
   private async nativeShare(base64Data: string, text: string): Promise<void> {
-    const fileName = `family-qr-${this.familyCode}.png`;
+    const fileName = `family-qr-${this.familyCode}.webp`;
 
     // Write the image into the app's cache directory
     const savedFile = await Filesystem.writeFile({
@@ -187,7 +187,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
       bytes[i] = byteString.charCodeAt(i);
     }
     const blob = new Blob([bytes], { type: 'image/png' });
-    const file = new File([blob], `family-qr-${this.familyCode}.png`, { type: 'image/png' });
+    const file = new File([blob], `family-qr-${this.familyCode}.webp`, { type: 'image/png' });
 
     if (navigator.share && navigator.canShare?.({ files: [file] })) {
       await navigator.share({

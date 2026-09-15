@@ -23,7 +23,7 @@ import { ProfileImageComponent } from '../../profile-image/profile-image.compone
 export class TutorListComponent implements OnChanges, OnDestroy {
   @Input() tutors: TutorListItem[] = [];
   @Input() itemLabel = 'Tutor';
-  @Input() fallbackAvatar = 'assets/Images-Transparent/Image-Tutor.png';
+  @Input() fallbackAvatar = 'assets/Images-Transparent/Image-Tutor.webp';
   @Input() adScreen?: AdScreen;
 
   // track subscriptions / live states

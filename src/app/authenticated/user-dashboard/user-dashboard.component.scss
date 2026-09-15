@@ -469,7 +469,7 @@ ion-content {
 .user-profile-section {
     position: relative;
     height: clamp(240px, 38dvh, 340px);
-    // background-image: url(/assets/Images-Thumbnails/HeaderV2.png);
+    // background-image: url(/assets/Images-Thumbnails/HeaderV2.webp);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
@@ -756,7 +756,7 @@ ion-content {
     flex-direction: column;
     gap: 14px;
     width: 100%;
-    background-image: url('../../../assets/Images-Thumbnails/HeaderV2.png');
+    background-image: url('../../../assets/Images-Thumbnails/HeaderV2.webp');
     position: relative;
     // height: clamp(253px, 38dvh, 181px);
     background-size: cover;
@@ -1206,20 +1206,20 @@ ion-content {
   padding: 0;
   overflow: hidden;
   border-radius: 24px;
-  background-image: url('../../../assets/Images-Thumbnails/HeaderV2.png');
+  background-image: url('../../../assets/Images-Thumbnails/HeaderV2.webp');
   background-size: cover;
   background-position: center;
 
   &.home-period-morning {
-    background-image: url('../../../assets/Images-Thumbnails/HeaderV2.png');
+    background-image: url('../../../assets/Images-Thumbnails/HeaderV2.webp');
   }
 
   &.home-period-evening {
-    background-image: url('../../../assets/Images-Thumbnails/HeaderV2-evening.png');
+    background-image: url('../../../assets/Images-Thumbnails/HeaderV2-evening.webp');
   }
 
   &.home-period-night {
-    background-image: url('../../../assets/Images-Thumbnails/HeaderV2-night.png');
+    background-image: url('../../../assets/Images-Thumbnails/HeaderV2-night.webp');
   }
 
   &.home-period-evening,
@@ -2076,4 +2076,27 @@ footer {
       border-radius: 50%;
     }
   }
+}
+.streak-milestone-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(20px, 4vw, 48px);
+  overflow-y: auto;
+  background: rgba(0, 0, 0, .45);
+  app-streak-milestone {
+    width: min(100%, 560px);
+    max-height: calc(100dvh - clamp(40px, 8vw, 96px));
+    margin-block: auto;
+  }
+}
+@media (min-width: 1200px) {
+  .streak-milestone-overlay app-streak-milestone { width: clamp(460px, 31vw, 560px); }
+}
+@media (max-width: 600px) {
+  .streak-milestone-overlay { padding: 12px 0 max(0px, env(safe-area-inset-bottom)); align-items: flex-end; }
+  .streak-milestone-overlay app-streak-milestone { width: 100%; max-height: calc(100dvh - 12px); margin-bottom: 0; }
 }

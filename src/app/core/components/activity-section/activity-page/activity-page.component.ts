@@ -15,7 +15,7 @@ import { RefreshService } from '../../../services/refresh.service';
   standalone: true,
   selector: 'activity-page',
   template: `<ion-content [class.planner-activity-page]="usesPlannerActivityDesign">
-    <superme-navigator *ngIf="!usesPlannerActivityDesign" heading="Your Universe" [rightIcon]="'assets/Icons-Neutral/Icon-Calendar.png'"
+    <superme-navigator *ngIf="!usesPlannerActivityDesign" heading="Your Universe" [rightIcon]="'assets/Icons-Neutral/Icon-Calendar.webp'"
         rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()" (back)="onBack()"></superme-navigator>
 
     <activity-page-content #habitContent (back)="onBack()"

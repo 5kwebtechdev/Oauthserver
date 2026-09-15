@@ -990,7 +990,7 @@ export class LearningService {
                     id: item.id ?? 0,
                     title: item.title ?? item.name ?? 'Untitled',
                     description: item.description ?? '',
-                    image: item.thumbnailUrl ?? item.image ?? 'assets/icons/placeholder.png',
+                    image: item.thumbnailUrl ?? item.image ?? 'assets/icons/placeholder.webp',
                     coins: (item.coins as number) ?? 0,
                     buttonText: `Read in ${item.timeDuration ?? '5 min'}`,
                     type: 'article',
@@ -1006,7 +1006,7 @@ export class LearningService {
         const id = item.challengeId ?? item.id ?? 0;
         const title = item.name ?? item.title ?? item.name ?? 'Untitled Challenge';
         const description = item.description ?? '';
-        const image = item.thumbnailImageUrl ?? item.thumbnailUrl ?? item.image ?? 'assets/icons/placeholder.png';
+        const image = item.thumbnailImageUrl ?? item.thumbnailUrl ?? item.image ?? 'assets/icons/placeholder.webp';
         const coins = (item.coins as number) ?? 0;
         const trophy = (item.trophies as number) ?? undefined;
         const difficulty = item.difficultyDisplay ?? item.difficulty ?? undefined;

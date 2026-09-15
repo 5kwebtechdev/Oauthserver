@@ -7,13 +7,14 @@ import {
   StreakStatus
 } from '../../api/streak-restore.api';
 import { CustomToastService } from '../../services/custom-toast.service';
+import { StreakMilestoneComponent } from '../streak-milestone/streak-milestone.component';
 
 @Component({
   selector: 'app-streak-restore-modal',
   templateUrl: './streak-restore-modal.component.html',
   styleUrls: ['./streak-restore-modal.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, HttpClientModule]
+  imports: [CommonModule, IonicModule, HttpClientModule, StreakMilestoneComponent]
 })
 export class StreakRestoreModalComponent implements OnInit {
   @Input() restoreToStreak: number = 0;

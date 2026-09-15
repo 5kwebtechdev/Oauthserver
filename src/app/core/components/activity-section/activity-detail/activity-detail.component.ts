@@ -128,6 +128,22 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     const type = (state['type'] || stateHabit?.type ||
       this.route.snapshot.queryParamMap.get('type') || 'habits') as ActivityType;
 
+    // Planner schedules come from the calendar, not the habit/task endpoints.
+    if (type === 'timetable') {
+      if (stateHabit) {
+        const entry = state['plannerEntry'] || stateHabit.activities?.[0] || {};
+        this.habit = this.normalizeResponse({
+          ...stateHabit,
+          title: entry.title || entry.name || entry.activityName || stateHabit.title || stateHabit.name || 'Planner',
+          startTime: entry.startTime || entry.start_time || stateHabit.startTime,
+          endTime: entry.endTime || entry.end_time || stateHabit.endTime,
+          notes: entry.notes || entry.description || stateHabit.notes,
+          description: entry.description || entry.notes || stateHabit.description,
+        }, 'timetable');
+      }
+      return;
+    }
+
     if (id) {
       this.loadDetail(+id, type, this.selectedDateFromState || undefined);
     }
@@ -279,10 +295,10 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   badgeList: Array<any> = [];
 
   private readonly BADGE_ICON_MAP: Record<string, string> = {
-    'Coin Collector': 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
-    'Streak Keeper': 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png',
-    'Habit Master': 'assets/Icons-Neutral/Icon-Badge-HabitMaster.png',
-    'Task Terminator': 'assets/Icons-Neutral/Icon-Badges-TaskTerminator.png'
+    'Coin Collector': 'assets/Icons-Neutral/Icon-Badge-CoinCollector.webp',
+    'Streak Keeper': 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.webp',
+    'Habit Master': 'assets/Icons-Neutral/Icon-Badge-HabitMaster.webp',
+    'Task Terminator': 'assets/Icons-Neutral/Icon-Badges-TaskTerminator.webp'
   };
 
   prepareCoinStats() {
@@ -326,7 +342,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         isEarned: !!b?.isEarned,
         levelText: b?.levelText || '',
         progressColor: this.getBadgeColor(percent),
-        iconUrl: this.BADGE_ICON_MAP[b.title || b.name || ''] || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png'
+        iconUrl: this.BADGE_ICON_MAP[b.title || b.name || ''] || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.webp'
       };
     });
   }
@@ -552,7 +568,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   openDeletePopup(): void {
     if (!this.habit || !this.canEdit()) return;
     this.deletePopupConfig = {
-      image: 'assets/Images-Transparent/Image-Input-Delete.png',
+      image: 'assets/Images-Transparent/Image-Input-Delete.webp',
       imageAlt: 'Delete activity',
       heading: 'Delete this activity?',
       subtitle: 'This will remove every instance of this activity in the selected date range.',
@@ -603,7 +619,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
     const routine = String(this.habit!.routine).toLowerCase();
     const capitalized = routine.charAt(0).toUpperCase() + routine.slice(1);
-    return `assets/Icons-Neutral/Icon-Routine-${capitalized}.png`;
+    return `assets/Icons-Neutral/Icon-Routine-${capitalized}.webp`;
   }
 
   getRoutineName(): string {
@@ -660,7 +676,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     };
 
     this.startPopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-Start.png',
+      image: 'assets/Images-Transparent/Image-Home-Start.webp',
       imageAlt: 'Ready to Start',
       heading: 'Ready to Start?',
       subtitle: "You're about to begin this habit!",
@@ -725,7 +741,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     const streak = this.getStreak();
 
     // Build heading HTML to include coin and streak rows
-    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:16px;">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style=\"display:flex;flex-direction:column;align-items: center;gap:8px;margin-top:12px;text-align:left;\"><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/Icons-Neutral/Icons-Coins.png' style=\"width:20px;height:20px;\" alt=\"coins\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${coins}</div></div><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/Icons-Neutral/Icon-Streak.png' style=\"width:20px;height:20px;\" alt=\"streak\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${streak}</div></div></div>`;
+    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:16px;">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style=\"display:flex;flex-direction:column;align-items: center;gap:8px;margin-top:12px;text-align:left;\"><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/coin.webp' style=\"width:20px;height:20px;\" alt=\"coins\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${coins}</div></div><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/streak.webp' style=\"width:20px;height:20px;\" alt=\"streak\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${streak}</div></div></div>`;
 
     const primary: SupermePopupCTA = {
       text: 'Confirm',
@@ -742,7 +758,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     };
 
     this.completePopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-GreatWork.png',
+      image: 'assets/Images-Transparent/Image-Home-GreatWork.webp',
       imageAlt: 'Great Work',
       heading: headingHtml,
       subtitle: '',
@@ -799,7 +815,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     const coins = this.getCoinReward();
     const streak = this.getStreak();
 
-    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:16px;">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;"><img src='assets/Icons-Neutral/Icons-Coins.png' style="width:20px;height:20px;" alt="coins"/><div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;"><img src='assets/Icons-Neutral/Icon-Streak.png' style="width:20px;height:20px;" alt="streak"/><div style="font-weight:600;">${streak}</div></div></div>`;
+    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:16px;">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/coin.webp' style="width:20px;height:20px;" alt="coins"/><div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/streak.webp' style="width:20px;height:20px;" alt="streak"/><div style="font-weight:600;">${streak}</div></div></div>`;
 
     const primary: SupermePopupCTA = {
       text: 'Keep Going',
@@ -816,7 +832,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     };
 
     this.abortPopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-Abort.png',
+      image: 'assets/Images-Transparent/Image-Home-Abort.webp',
       imageAlt: 'Abort',
       heading: headingHtml,
       subtitle: '',

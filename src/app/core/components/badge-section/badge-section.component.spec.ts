@@ -35,7 +35,7 @@ describe('BadgeSectionComponent', () => {
             id: 'test',
             name: 'Test Badge',
             description: 'Test',
-            iconUrl: 'test.png',
+            iconUrl: 'test.webp',
             currentProgress: 8,
             targetProgress: 12,
             isLocked: false
@@ -50,7 +50,7 @@ describe('BadgeSectionComponent', () => {
             id: 'locked',
             name: 'Locked Badge',
             description: 'Locked',
-            iconUrl: 'locked.png',
+            iconUrl: 'locked.webp',
             currentProgress: 5,
             targetProgress: 10,
             isLocked: true

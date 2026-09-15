@@ -69,5 +69,35 @@
       </nav>
     </div>
 
+    <button class="mobile-menu-toggle" type="button" (click)="openMobileMenu()" aria-label="Open navigation menu" aria-haspopup="dialog">
+      <ion-icon name="menu-outline" aria-hidden="true"></ion-icon>
+    </button>
   </div>
 </header>
+
+<dialog #mobileMenu class="mobile-menu" aria-labelledby="mobile-menu-title" (click)="onMobileMenuBackdropClick($event)">
+  <div class="mobile-menu__panel">
+    <div class="mobile-menu__heading">
+      <a class="mobile-menu__brand" [routerLink]="dashboardLink" (click)="closeMobileMenu()" aria-label="SuperMeApp home"><img [src]="logoSrc" alt="" /><h2 id="mobile-menu-title">SuperMeApp</h2></a>
+      <button type="button" autofocus (click)="closeMobileMenu()" aria-label="Close navigation menu"><ion-icon name="close-outline" aria-hidden="true"></ion-icon></button>
+    </div>
+    <nav aria-label="Mobile navigation">
+      <a [routerLink]="dashboardLink" (click)="closeMobileMenu()">Home</a>
+      <ng-container *ngFor="let item of navItems">
+        <details *ngIf="item.children; else directMobileLink" name="mobile-navigation">
+          <summary><span role="link" tabindex="0" (click)="openMobileSection(item, $event)" (keydown.enter)="openMobileSection(item, $event)">{{ item.label }}</span><button type="button" class="mobile-menu__expand" [attr.aria-label]="'Expand ' + item.label" (click)="toggleMobileSection($event)"><ion-icon name="chevron-down-outline" aria-hidden="true"></ion-icon></button></summary>
+          <a *ngFor="let child of item.children" [routerLink]="child.link" [queryParams]="child.queryParams || null" (click)="markMobileMenuNavigation()">{{ child.label }}</a>
+        </details>
+        <ng-template #directMobileLink><a [routerLink]="item.link" (click)="markMobileMenuNavigation()">{{ item.label }}</a></ng-template>
+      </ng-container>
+    </nav>
+  </div>
+</dialog>
+
+<nav class="mobile-web-tabs" aria-label="Bottom navigation">
+  <a [routerLink]="dashboardLink" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" ariaCurrentWhenActive="page"><ion-icon name="home-outline" aria-hidden="true"></ion-icon><span>Home</span></a>
+  <a [routerLink]="isParent ? '/authed/parent-learning' : '/authed/content'" routerLinkActive="active" ariaCurrentWhenActive="page"><ion-icon name="book-outline" aria-hidden="true"></ion-icon><span>{{ isParent ? 'Parenting' : 'Learning' }}</span></a>
+  <a routerLink="/authed/school-store" routerLinkActive="active" ariaCurrentWhenActive="page"><ion-icon name="bag-outline" aria-hidden="true"></ion-icon><span>Shop</span></a>
+  <a routerLink="/authed/education" routerLinkActive="active" ariaCurrentWhenActive="page"><ion-icon name="school-outline" aria-hidden="true"></ion-icon><span>EduHub</span></a>
+  <button type="button" (click)="openMobileMenu()" aria-haspopup="dialog"><ion-icon name="menu-outline" aria-hidden="true"></ion-icon><span>More</span></button>
+</nav>

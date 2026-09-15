@@ -23,10 +23,17 @@
 }
 
 .stat-icon {
-  width: clamp(28px, 14vw, 60px);
-    height: clamp(28px, 18vw, 50px);
+  width: clamp(44px, 14vw, 60px);
+  height: clamp(44px, 14vw, 60px);
   flex-shrink: 0;
   object-fit: contain;
+}
+
+// The latest streak artwork includes more transparent padding than the other
+// stat assets. Scale only its artwork so the visible icons have equal weight
+// while every stat still occupies the same 60px box.
+.stat-col:nth-of-type(3) .stat-icon {
+  transform: scale(1.28);
 }
 
 .stat-value {

@@ -35,7 +35,7 @@ export class AcademyLessonsComponent implements OnInit, OnDestroy {
   readonly focusDurationSeconds = 60;
   remainingFocusSeconds = this.focusDurationSeconds;
   private focusTimer?: ReturnType<typeof setInterval>;
-  readonly fallbackLessonImage = 'assets/Images-Transparent/Academy-Course-Thubmnail2.png';
+  readonly fallbackLessonImage = 'assets/Images-Transparent/Academy-Course-Thubmnail2.webp';
 
   // Parsed content sections
   // learningOutcomes: string[] = [];

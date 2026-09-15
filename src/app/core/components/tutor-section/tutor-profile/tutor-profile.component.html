@@ -1,3 +1,7 @@
+<div class="profile-image-lightbox" *ngIf="profileImageFullscreen" role="dialog" aria-modal="true" aria-label="Profile image preview" (click)="closeProfileImage()">
+  <button type="button" class="profile-image-lightbox__close" aria-label="Close profile image" (click)="closeProfileImage()">×</button>
+  <img [src]="getProfileImage()" [alt]="getDisplayName() + ' profile image enlarged'" (click)="$event.stopPropagation()">
+</div>
 <ng-container *ngIf="isCounselorProfile; else standardTutorProfile">
   <ion-content fullscreen class="counselor-detail-page">
     <div class="counselor-detail-shell">
@@ -17,17 +21,17 @@
 
       <main *ngIf="tutor" class="counselor-detail-content">
         <section class="counselor-profile-hero">
-          <div class="counselor-avatar-wrap"><app-profile-image [src]="getProfileImage()" [name]="getDisplayName()" [alt]="getDisplayName() + ' profile image'"></app-profile-image><img *ngIf="isVerified()" class="counselor-verified" src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified"></div>
-          <div class="counselor-profile-copy"><h1>{{ getDisplayName() }}</h1><div class="counselor-profile-stats"><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="" aria-hidden="true">{{ getExperienceString() }}</span><button type="button" [disabled]="isLikeRequestInProgress" (click)="toggleLike()"><img src="assets/figma/parent-eduhub-inner/favorite.svg" alt="" aria-hidden="true">{{ getLikesCount() }} likes</button></div><span class="counselor-availability"><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true">{{ getContactModesString() }}</span></div>
+          <div class="counselor-avatar-wrap" role="button" tabindex="0" aria-label="View profile image full screen" (click)="openProfileImage()" (keydown.enter)="openProfileImage()" (keydown.space)="$event.preventDefault(); openProfileImage()"><app-profile-image [src]="getProfileImage()" [name]="getDisplayName()" [alt]="getDisplayName() + ' profile image'"></app-profile-image><img *ngIf="isVerified()" class="counselor-verified" src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified"></div>
+          <div class="counselor-profile-copy"><h1>{{ getDisplayName() }}</h1><div class="counselor-profile-stats"><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.webp" alt="" aria-hidden="true">{{ getExperienceString() }}</span><button type="button" [disabled]="isLikeRequestInProgress" (click)="toggleLike()"><img src="assets/figma/parent-eduhub-inner/favorite.svg" alt="" aria-hidden="true">{{ getLikesCount() }} likes</button></div><span class="counselor-availability"><img src="assets/Icons-Neutral/Tutor-Mode.webp" alt="" aria-hidden="true">{{ getContactModesString() }}</span></div>
         </section>
 
         <section class="counselor-information-card" aria-label="Counselor information">
-          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="" aria-hidden="true"><span>Qualifications</span></div><div class="counselor-information-value">{{ getCounselorQualifications() }}</div></div>
-          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Icon-Tutor-Subjects.png" alt="" aria-hidden="true"><span>Specializations</span></div><div class="counselor-information-value">{{ getCounselorSpecializations() }}</div></div>
-          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Icon-Tutor-Fees.png" alt="" aria-hidden="true"><span>Fees</span></div><div class="counselor-information-value">{{ getCounselorFee() }}</div></div>
-          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-LanguageSpoken.png" alt="" aria-hidden="true"><span>Languages Spoken</span></div><div class="counselor-information-value">{{ getLanguagesString() }}</div></div>
-          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-Location.png" alt="" aria-hidden="true"><span>Location</span></div><div class="counselor-information-value"><span>{{ getPublicLocation() }}</span><button *ngIf="!isContactUnlocked" type="button" class="counselor-locked-link" (click)="openUnlockConfirmation()"><img src="assets/figma/parent-eduhub-inner/lock.svg" alt="" aria-hidden="true">Full Address hidden</button><span *ngIf="isContactUnlocked" class="counselor-unlocked-address">{{ getFullLocation() }}</span></div></div>
-          <div class="counselor-information-row counselor-information-row--last"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="" aria-hidden="true"><span>About</span></div><div class="counselor-information-value counselor-about"><p [class.is-collapsed]="!isAboutExpanded && shouldShowReadMore()">{{ getAboutText() }}</p><button *ngIf="shouldShowReadMore()" type="button" (click)="toggleAbout()">{{ isAboutExpanded ? 'Read less' : 'Read more' }}</button></div></div>
+          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-Qualification.webp" alt="" aria-hidden="true"><span>Qualifications</span></div><div class="counselor-information-value">{{ getCounselorQualifications() }}</div></div>
+          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Icon-Tutor-Subjects.webp" alt="" aria-hidden="true"><span>Specializations</span></div><div class="counselor-information-value">{{ getCounselorSpecializations() }}</div></div>
+          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Icon-Tutor-Fees.webp" alt="" aria-hidden="true"><span>Fees</span></div><div class="counselor-information-value">{{ getCounselorFee() }}</div></div>
+          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-LanguageSpoken.webp" alt="" aria-hidden="true"><span>Languages Spoken</span></div><div class="counselor-information-value">{{ getLanguagesString() }}</div></div>
+          <div class="counselor-information-row"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-Location.webp" alt="" aria-hidden="true"><span>Location</span></div><div class="counselor-information-value"><span>{{ getPublicLocation() }}</span><button *ngIf="!isContactUnlocked" type="button" class="counselor-locked-link" (click)="openUnlockConfirmation()"><img src="assets/figma/parent-eduhub-inner/lock.svg" alt="" aria-hidden="true">Full Address hidden</button><span *ngIf="isContactUnlocked" class="counselor-unlocked-address">{{ getFullLocation() }}</span></div></div>
+          <div class="counselor-information-row counselor-information-row--last"><div class="counselor-information-label"><img src="assets/Icons-Neutral/Tutor-Qualification.webp" alt="" aria-hidden="true"><span>About</span></div><div class="counselor-information-value counselor-about"><p [class.is-collapsed]="!isAboutExpanded && shouldShowReadMore()">{{ getAboutText() }}</p><button *ngIf="shouldShowReadMore()" type="button" (click)="toggleAbout()">{{ isAboutExpanded ? 'Read less' : 'Read more' }}</button></div></div>
         </section>
 
         <section class="unlocked-contact-card counselor-unlocked-contact-card" *ngIf="isContactUnlocked" aria-label="Unlocked contact details">
@@ -132,7 +136,7 @@
 
     <main *ngIf="tutor" class="detail-content">
       <section class="profile-hero">
-        <div class="avatar-wrap">
+        <div class="avatar-wrap" role="button" tabindex="0" aria-label="View profile image full screen" (click)="openProfileImage()" (keydown.enter)="openProfileImage()" (keydown.space)="$event.preventDefault(); openProfileImage()">
           <app-profile-image class="avatar" [src]="getProfileImage()" [name]="getDisplayName()"
             [alt]="getDisplayName() + ' profile image'"></app-profile-image>
           <span class="verified-badge" *ngIf="isVerified()" aria-label="Verified tutor">
@@ -149,18 +153,18 @@
 
         <div class="profile-stats" aria-label="Tutor statistics">
           <div class="stat">
-            <img src="assets/Icons-Neutral/Experience.png" alt="" aria-hidden="true" />
+            <img src="assets/Icons-Neutral/Experience.webp" alt="" aria-hidden="true" />
             <span>{{ getExperienceString() }}</span>
           </div>
           <span class="stat-divider" aria-hidden="true"></span>
           <button type="button" class="stat stat-button" (click)="toggleLike()"
             [disabled]="isLikeRequestInProgress">
-            <img src="assets/Icons-Neutral/Icon-Tutor-Like.png" alt="" aria-hidden="true" />
+            <img src="assets/Icons-Neutral/Icon-Tutor-Like.webp" alt="" aria-hidden="true" />
             <span>{{ getLikesCount() }} likes</span>
           </button>
           <span class="stat-divider" aria-hidden="true"></span>
           <div class="stat">
-            <img src="assets/Icons-Neutral/Students.png" alt="" aria-hidden="true" />
+            <img src="assets/Icons-Neutral/Students.webp" alt="" aria-hidden="true" />
             <span><strong>{{ getStudentsCount() }}</strong> students</span>
           </div>
         </div>
@@ -185,7 +189,7 @@
       <section class="information-card" aria-label="Tutor information">
         <div class="information-row">
           <div class="information-label">
-            <img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true" />
+            <img src="assets/Icons-Neutral/Tutor-Mode.webp" alt="" aria-hidden="true" />
             <span>Mode</span>
           </div>
           <div class="information-value">{{ getContactModesString() }}</div>
@@ -193,7 +197,7 @@
 
         <div class="information-row">
           <div class="information-label">
-            <img src="assets/Icons-Neutral/Tutor-LanguageSpoken.png" alt="" aria-hidden="true" />
+            <img src="assets/Icons-Neutral/Tutor-LanguageSpoken.webp" alt="" aria-hidden="true" />
             <span>Languages Spoken</span>
           </div>
           <div class="information-value">{{ getLanguagesString() }}</div>
@@ -201,7 +205,7 @@
 
         <div class="information-row information-row--about">
           <div class="information-label">
-            <img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="" aria-hidden="true" />
+            <img src="assets/Icons-Neutral/Tutor-Qualification.webp" alt="" aria-hidden="true" />
             <span>About</span>
           </div>
           <div class="information-value about-value">
@@ -214,7 +218,7 @@
 
         <div class="information-row">
           <div class="information-label">
-            <img src="assets/Icons-Neutral/Tutor-TimeDay.png" alt="" aria-hidden="true" />
+            <img src="assets/Icons-Neutral/Tutor-TimeDay.webp" alt="" aria-hidden="true" />
             <span>Days &amp; Time</span>
           </div>
           <div class="information-value">
@@ -225,7 +229,7 @@
 
         <div class="information-row">
           <div class="information-label">
-            <img src="assets/Icons-Neutral/Tutor-Location.png" alt="" aria-hidden="true" />
+            <img src="assets/Icons-Neutral/Tutor-Location.webp" alt="" aria-hidden="true" />
             <span>Location</span>
           </div>
           <div class="information-value">
@@ -242,7 +246,7 @@
 
         <div class="information-row information-row--last">
           <div class="information-label">
-            <img src="assets/Icons-Neutral/Icon-Tutor-Fees.png" alt="" aria-hidden="true" />
+            <img src="assets/Icons-Neutral/Icon-Tutor-Fees.webp" alt="" aria-hidden="true" />
             <span>Fee</span>
           </div>
           <div class="information-value fee-value">

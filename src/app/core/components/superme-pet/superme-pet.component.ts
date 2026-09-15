@@ -49,8 +49,8 @@ export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
 
   /**
    * Get image path based on pet type, age, mood, and animation state
-   * Uses the Images-Pet folder structure: {PetType}-Age{age}-{Mood}.png
-   * Or for animations: {PetType}-Move-Age{age}-{Mood}.png
+   * Uses the Images-Pet folder structure: {PetType}-Age{age}-{Mood}.webp
+   * Or for animations: {PetType}-Move-Age{age}-{Mood}.webp
    */
   private getImagePath(): string {
     if (this.imageOverride) {
@@ -68,7 +68,7 @@ export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
 
     // Build image filename based on structure
     const prefix = this.animated ? `${petCapitalized}-Move` : petCapitalized;
-    const filename = `${prefix}-Age${ageValue}-${moodCapitalized}.png`;
+    const filename = `${prefix}-Age${ageValue}-${moodCapitalized}.webp`;
 
     return `assets/Images-Pet/${filename}`;
   }

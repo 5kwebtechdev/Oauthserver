@@ -42,7 +42,7 @@ export class ParentalControlChildComponent {
                 id: 'clash',
                 name: 'Clash of Clans',
                 iconType: 'img',
-                imgSrc: 'assets/app-assets/ClashOfClans-icon.png',
+                imgSrc: 'assets/app-assets/ClashOfClans-icon.webp',
                 time: '45min'
             }
         ];

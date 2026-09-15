@@ -139,29 +139,29 @@ export class ResultPageComponent implements OnInit, OnDestroy {
 
 
   private readonly BADGE_ICON_MAP: Readonly<Record<string, string>> = {
-    'Coin Collector':       'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
-    'Quiz Ace':             'assets/Icons-Neutral/Icon-Badge-QuizAce.png',
-    'Pet Collector':        'assets/Icons-Neutral/Icon-Badge-PetCollector.png',
-    'Content Creator':      'assets/Icons-Neutral/Icon-Badge-ContentCreator.png',
-    'Knowledge Seeker':     'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.png',
-    'Habit Master':         'assets/Icons-Neutral/Icon-Badge-HabitMaster.png',
-    'Daily Champion':       'assets/Icons-Neutral/Icon-Badge-DailyChampion.png',
-    'Feature Explorer':     'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.png',
-    'Puzzle Master':        'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png',
-    'Pet Stylist':          'assets/Icons-Neutral/Icon-Badge-PetStylist.png',
-    'Task Terminator':      'assets/Icons-Neutral/Icon-Badges-TaskTerminator.png',
-    'Learning Enthusiast':  'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.png',
-    'Social Star':          'assets/Icons-Neutral/Icon-Badge-SocialStar.png',
-    'Streak Keeper':        'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png'
+    'Coin Collector':       'assets/Icons-Neutral/Icon-Badge-CoinCollector.webp',
+    'Quiz Ace':             'assets/Icons-Neutral/Icon-Badge-QuizAce.webp',
+    'Pet Collector':        'assets/Icons-Neutral/Icon-Badge-PetCollector.webp',
+    'Content Creator':      'assets/Icons-Neutral/Icon-Badge-ContentCreator.webp',
+    'Knowledge Seeker':     'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.webp',
+    'Habit Master':         'assets/Icons-Neutral/Icon-Badge-HabitMaster.webp',
+    'Daily Champion':       'assets/Icons-Neutral/Icon-Badge-DailyChampion.webp',
+    'Feature Explorer':     'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.webp',
+    'Puzzle Master':        'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.webp',
+    'Pet Stylist':          'assets/Icons-Neutral/Icon-Badge-PetStylist.webp',
+    'Task Terminator':      'assets/Icons-Neutral/Icon-Badges-TaskTerminator.webp',
+    'Learning Enthusiast':  'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.webp',
+    'Social Star':          'assets/Icons-Neutral/Icon-Badge-SocialStar.webp',
+    'Streak Keeper':        'assets/Icons-Neutral/Icon-Badge-StreakKeeper.webp'
   };
 
   getBadgeIconUrl(badge: any): string {
     const title = badge?.title || badge?.name || '';
-    return this.BADGE_ICON_MAP[title] || 'assets/Icons-Neutral/Icon-Trophy.png';
+    return this.BADGE_ICON_MAP[title] || 'assets/Icons-Neutral/Icon-Trophy.webp';
   }
 
   onBadgeImageError(event: Event, _badge: any): void {
-    (event.target as HTMLImageElement).src = 'assets/Icons-Neutral/Icon-Trophy.png';
+    (event.target as HTMLImageElement).src = 'assets/Icons-Neutral/Icon-Trophy.webp';
   }
 
   // Returns true if the badge was earned — tries multiple boolean field names

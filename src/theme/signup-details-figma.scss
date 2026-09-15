@@ -577,6 +577,7 @@
 }
 
 .profile-step--figma .details-referral-section .input-group {
+  display: block;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -586,6 +587,46 @@
 
 .profile-step--figma .details-referral-section .input-group input {
   min-width: 0 !important;
+}
+
+/* Reveal the browser panel immediately. Avoid animating page layout while
+   focus and the software keyboard also change the scroll position. */
+html:not(.plt-capacitor) .signup-container.profile-layout .details-referral-section {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+
+  .referral-input-wrapper {
+    display: none;
+    transition: none;
+  }
+
+  .referral-input-wrapper.is-open {
+    display: block;
+    transition: none;
+  }
+
+  .referral-input-inner {
+    overflow: visible;
+    padding: 4px;
+    box-sizing: border-box;
+  }
+}
+
+/* Keep all four edges inside the field so an ancestor cannot clip the ring.
+   Override the shared input shadow and its transition at the same scope. */
+html:not(.plt-capacitor) .signup-container.profile-layout .profile-step.profile-step--figma .details-referral-section .input-group input {
+  margin: 0 !important;
+  transition: none !important;
+
+  &:focus,
+  &:focus-visible {
+    border: 2px solid #7341a7 !important;
+    box-shadow: inset 0 0 0 1px #7341a7, 0 0 0 3px rgba(115, 65, 167, 0.16) !important;
+  }
+
+  &[aria-invalid='true'] {
+    border-color: #c83c50 !important;
+  }
 }
 
 .profile-step--figma .details-referral-section .referral-validation {
@@ -1060,12 +1101,12 @@
   }
 
   html:not(.plt-capacitor) .signup-container.profile-layout .profile-step--figma {
-    width: min(100%, 920px);
+    width: min(100%, 1120px);
     margin: 0 auto;
     padding: 0 0 40px;
     overflow: visible;
     border: 1px solid rgba(255, 255, 255, 0.86);
-    border-radius: 30px;
+    border-radius: 32px;
     background:
       radial-gradient(circle at 12% 14%, rgba(139, 141, 203, 0.18), transparent 34%),
       radial-gradient(circle at 88% 18%, rgba(246, 172, 114, 0.17), transparent 35%),
@@ -1076,8 +1117,8 @@
   }
 
   html:not(.plt-capacitor) .profile-step--figma .details-header {
-    min-height: 260px;
-    border-radius: 30px 30px 0 0;
+    min-height: clamp(280px, 28vw, 350px);
+    border-radius: 32px 32px 0 0;
     background:
       radial-gradient(circle at 82% 28%, rgba(255, 255, 255, 0.9), transparent 32%),
       linear-gradient(135deg, rgba(228, 221, 251, 0.94) 0%, rgba(248, 233, 223, 0.92) 50%, rgba(226, 240, 238, 0.94) 100%);
@@ -1085,36 +1126,38 @@
 
   html:not(.plt-capacitor) .profile-step--figma .details-back-row,
   html:not(.plt-capacitor) .profile-step--figma .details-header-content {
-    width: min(100%, 800px);
+    width: min(100%, 980px);
   }
 
   html:not(.plt-capacitor) .profile-step--figma .details-back-row {
-    height: 58px;
-    padding-left: 24px;
+    height: clamp(58px, 6vw, 72px);
+    padding-left: clamp(24px, 4vw, 48px);
   }
 
   html:not(.plt-capacitor) .profile-step--figma .details-header-content {
-    min-height: 195px;
-    padding: 12px 48px 30px;
+    min-height: clamp(218px, 22vw, 278px);
+    padding: 8px clamp(48px, 6vw, 72px) 38px;
   }
 
   html:not(.plt-capacitor) .profile-step--figma .details-header-copy {
-    width: min(55%, 390px);
+    width: min(56%, 480px);
   }
 
   html:not(.plt-capacitor) .profile-step--figma .details-title {
-    font-size: clamp(30px, 3vw, 40px);
+    font-size: clamp(40px, 4.2vw, 56px);
+    line-height: 1.12;
   }
 
   html:not(.plt-capacitor) .profile-step--figma .details-progress-copy .profile-step-label,
   html:not(.plt-capacitor) .profile-step--figma .details-progress-copy .profile-hero__title {
-    font-size: 15px !important;
+    font-size: clamp(16px, 1.55vw, 18px) !important;
+    line-height: 1.4 !important;
   }
 
   html:not(.plt-capacitor) .profile-step--figma .details-progress-copy .profile-progress {
-    width: min(100%, 300px);
+    width: min(100%, 360px);
     height: 6px;
-    margin-top: 12px;
+    margin-top: 14px;
   }
 
   html:not(.plt-capacitor) .profile-step--figma .details-progress-copy .profile-progress span {
@@ -1122,14 +1165,32 @@
   }
 
   html:not(.plt-capacitor) .profile-step--figma .details-header-illustration {
-    right: 42px;
-    width: 250px;
-    height: 215px;
+    right: clamp(32px, 5vw, 72px);
+    width: clamp(270px, 31vw, 390px);
+    height: clamp(230px, 25vw, 300px);
   }
 
   html:not(.plt-capacitor) .profile-step--figma .details-header-illustration img {
-    width: 250px;
-    height: 215px;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* The parent artwork contains transparent horizontal padding. Override the
+     compact mobile crop so the people render at a comfortable desktop size. */
+  html:not(.plt-capacitor) .profile-step--figma.profile-step--parent .details-header-illustration {
+    right: clamp(28px, 5vw, 68px);
+    width: clamp(285px, 33vw, 420px);
+    height: clamp(235px, 26vw, 310px);
+    transform: none;
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma.profile-step--parent .details-header-illustration img {
+    width: auto !important;
+    max-width: none;
+    height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+    transform: none;
   }
 
   html:not(.plt-capacitor) .profile-step--figma .details-header-illustration span {
@@ -1141,8 +1202,8 @@
   html:not(.plt-capacitor) .signup-container.profile-layout .profile-step--figma > .details-referral-section,
   html:not(.plt-capacitor) .signup-container.profile-layout .profile-step--figma > .profile-button-wrapper,
   html:not(.plt-capacitor) .signup-container.profile-layout .profile-step--figma > .error-message {
-    width: min(calc(100% - 64px), 540px) !important;
-    max-width: 540px !important;
+    width: min(calc(100% - 64px), 620px) !important;
+    max-width: 620px !important;
   }
 
   html:not(.plt-capacitor) .signup-container.profile-layout .profile-step--figma > .profile {
@@ -1266,6 +1327,23 @@
     padding: 24px !important;
   }
 
+  html:not(.plt-capacitor) .profile-step--figma .details-header {
+    min-height: 260px;
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma .details-header-content {
+    min-height: 198px;
+    padding: 8px 32px 30px;
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma .details-header-copy {
+    width: min(56%, 360px);
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma .details-title {
+    font-size: clamp(34px, 5vw, 42px);
+  }
+
   html:not(.plt-capacitor) .profile-step--figma .details-header-illustration {
     right: 20px;
     width: 205px;
@@ -1275,5 +1353,59 @@
   html:not(.plt-capacitor) .profile-step--figma .details-header-illustration img {
     width: 205px;
     height: 185px;
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma.profile-step--parent .details-header-illustration {
+    right: 12px;
+    width: 220px;
+    height: 195px;
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma.profile-step--parent .details-header-illustration img {
+    width: auto !important;
+    height: 100%;
+  }
+}
+
+/* Responsive browser layout for phones. Native Capacitor screens retain the
+   original mobile measurements used by the installed iOS/Android apps. */
+@media (max-width: 767px) {
+  html:not(.plt-capacitor) .profile-step--figma .details-header {
+    min-height: calc(218px + var(--sat, 0px));
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma .details-header-content {
+    min-height: 170px;
+    padding-left: clamp(22px, 8vw, 36px);
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma .details-header-copy {
+    width: min(58vw, 220px);
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma .details-title {
+    font-size: clamp(28px, 8vw, 34px);
+    line-height: 1.16;
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma .details-progress-copy .profile-step-label,
+  html:not(.plt-capacitor) .profile-step--figma .details-progress-copy .profile-hero__title {
+    font-size: 14px !important;
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma.profile-step--parent .details-header-illustration {
+    right: 6px;
+    width: 148px;
+    height: 166px;
+    transform: none;
+  }
+
+  html:not(.plt-capacitor) .profile-step--figma.profile-step--parent .details-header-illustration img {
+    width: auto !important;
+    max-width: none;
+    height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+    transform: none;
   }
 }

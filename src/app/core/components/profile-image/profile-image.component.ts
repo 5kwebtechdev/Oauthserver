@@ -21,7 +21,7 @@ export class ProfileImageComponent implements OnChanges {
     const source = String(this.src || '').trim();
     // Legacy directory mappings used a generic diamond image when no photo
     // existed. Treat that asset as missing so names get the intended initials.
-    const isGenericPlaceholder = /(?:Image-Tutor|Image-Academy|default-avatar|placeholder-avatar)\.(?:png|jpe?g|webp|svg)(?:$|[?#])/i.test(source);
+    const isGenericPlaceholder = /(?:Image-Tutor|Image-Academy|Image-Counsel(?:or|ler)|Image-Sports|Image-Book|Image-Station(?:e|ar)y|default-avatar|placeholder-avatar|category-counsel(?:ors?|lers?)|category-sports|category-book|category-station(?:e|ar)y|book-store|station(?:e|ar)y(?:-shop)?)[^/]*\.(?:png|jpe?g|webp|svg)(?:$|[?#])/i.test(source);
     return !!source && !isGenericPlaceholder && !this.imageFailed;
   }
 

@@ -43,7 +43,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   blockedTooltipVisible = false;
   private blockedTooltipTimer: any = null;
 
-  private readonly neutralAsset = 'assets/Images-Transparent/Mood-emoji-neutral-home.png';
+  private readonly neutralAsset = 'assets/Images-Transparent/Mood-emoji-neutral-home.webp';
 
   // Mood to asset mapping (backend mood -> asset path)
   private readonly moodAssetMap: Record<string, string> = {

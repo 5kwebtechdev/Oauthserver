@@ -1,70 +1,9 @@
-<div class="restore-card">
-
-  <!-- ── Header (always visible) ── -->
-  <div class="restore-header">
-    <div class="flame-wrap">
-      <div class="sparkle-ring"></div>
-      <img src="assets/Icons-Neutral/Icon-Streak.png" alt="Streak" class="flame-img" />
-    </div>
-    <h2 class="restore-title">Oops! Your Streak Took a Break</h2>
-    <p class="restore-subtitle">You missed yesterday! Restore your streak and keep the momentum going.</p>
-    <div class="restore-streak-pill" *ngIf="restoreToStreak">
-      🔥 Restore to <strong>{{ restoreToStreak }}</strong> day streak &nbsp;·&nbsp; <strong>{{ restoreCost }}</strong> coins
-    </div>
-  </div>
-
-  <!-- ── Loading ── -->
-  <div class="restore-loading" *ngIf="isLoading">
-    <ion-spinner name="crescent" color="primary"></ion-spinner>
-    <p>Checking your login streak…</p>
-  </div>
-
-  <!-- ── Not eligible ── -->
-  <div class="no-coins-notice" *ngIf="!isLoading && notEligible">
-    😔 {{ notEligibleMessage }}
-  </div>
-
-  <!-- ── Content ── -->
-  <ng-container *ngIf="!isLoading && !notEligible && streakStatus">
-
-    <!-- Coin balance -->
-    <div class="coin-balance" [class.coin-balance--low]="notEnoughCoins">
-      <img src="assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="coin-bal-icon" />
-      <span>{{ userCoins }} coins available</span>
-    </div>
-
-    <!-- Not enough coins -->
-    <div class="no-coins-notice" *ngIf="notEnoughCoins">
-      😔 You don't have enough coins to restore your streak right now.
-    </div>
-
-    <p class="pick-label" *ngIf="!notEnoughCoins">
-      Restore your login streak to {{ restoreToStreak }} days and keep your momentum going.
-    </p>
-
-    <!-- Error message -->
-    <p class="restore-error" *ngIf="errorMessage">{{ errorMessage }}</p>
-
-  </ng-container>
-
-  <!-- ── Actions ── -->
-  <div class="restore-actions" *ngIf="!isLoading">
-    <button class="btn-cancel" (click)="dismiss(notEligible ? { notEligible: true } : null)" type="button">
-      {{ notEligible ? 'Close' : 'Cancel' }}
-    </button>
-    <button
-      *ngIf="!notEnoughCoins && !notEligible"
-      class="btn-restore"
-      [disabled]="!canRestore"
-      (click)="restore()"
-      type="button">
-      <ion-spinner *ngIf="isRestoring" name="crescent" class="restore-spinner"></ion-spinner>
-      <ng-container *ngIf="!isRestoring">
-        Restore
-        <img src="assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="restore-coin-img" />
-        {{ restoreCost }}
-      </ng-container>
-    </button>
-  </div>
-
-</div>
+<app-streak-milestone
+  [restoreMode]="true"
+  [restoreCost]="restoreCost"
+  [restoreDisabled]="isLoading || !canRestore"
+  [restoring]="isRestoring"
+  [notice]="isLoading ? 'Checking your login streak…' : (notEligible ? notEligibleMessage : (errorMessage || (notEnoughCoins ? 'You do not have enough coins to restore your streak.' : '')))"
+  (restore)="restore()"
+  (continue)="dismiss(notEligible ? { notEligible: true } : null)">
+</app-streak-milestone>

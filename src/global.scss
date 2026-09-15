@@ -1418,8 +1418,9 @@ ion-content {
 // ── Streak Restore modal — centered card ─────────────────────────────────────
 .streak-restore-modal {
   --border-radius: 24px;
-  --width: 88%;
-  --max-width: 360px;
+  --background: transparent;
+  --width: calc(100% - 24px);
+  --max-width: 480px;
   align-items: center;
   justify-content: center;
 
@@ -1427,7 +1428,8 @@ ion-content {
     height: auto;
     max-height: 90vh;
     border-radius: 24px;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.22);
+    background: transparent;
+    box-shadow: none;
   }
 
   &::part(backdrop) {

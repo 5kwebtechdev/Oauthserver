@@ -110,5 +110,8 @@ rebuild-apk.ps1*.apk
 # Console or release storage). They can contain multi-hundred-MB IPA archives.
 /artifacts/
 
+# Local iOS archives and exported app bundles
+build/
+
 www/
 android/app/build/

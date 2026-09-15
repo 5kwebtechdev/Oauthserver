@@ -50,11 +50,11 @@ import { AuthService } from 'src/app/core/services/auth.service';
             <h3>{{ item?.title }}</h3>
             <div class="reward-card-summary__meta">
               <span>
-                <img src="assets/icons/child-home-coin-figma.png" alt="">
+                <img src="assets/icons/child-home-coin-figma.webp" alt="">
                 {{ getItemCoins(item) }}
               </span>
               <span *ngIf="getItemTrophies(item) !== null">
-                <img src="assets/icons/child-home-trophy-figma.png" alt="">
+                <img src="assets/icons/child-home-trophy-figma.webp" alt="">
                 {{ getItemTrophies(item) }}
               </span>
               <span>
@@ -74,7 +74,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
             <h3>{{ item?.title }}</h3>
             <div class="parenting-card-summary__meta">
               <span>
-                <img src="assets/icons/child-home-coin-figma.png" alt="">
+                <img src="assets/icons/child-home-coin-figma.webp" alt="">
                 {{ getItemCoins(item) }}
               </span>
               <span>

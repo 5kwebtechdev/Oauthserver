@@ -35,6 +35,13 @@
   min-height: 0;
 }
 
+@media (max-width: 768px) {
+  .authed-shell--web {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+  }
+}
+
 // Global pull-to-refresh styling for all authenticated pages
 ion-refresher {
   --background: transparent;

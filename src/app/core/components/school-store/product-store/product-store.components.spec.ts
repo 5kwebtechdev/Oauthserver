@@ -53,7 +53,7 @@ describe('ProductStoreComponent category filtering', () => {
       title: 'Existing product',
       price: '₹100',
       mrp: '₹120',
-      img: 'existing.png',
+      img: 'existing.webp',
     }];
     component.productsPage = 0;
     component.productsTotalPages = 2;

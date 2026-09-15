@@ -57,11 +57,11 @@ export class LearningChallengeCardComponent {
         }
 
         if (diff === 'easy') {
-            return 'assets/Images-Transparent/Image-Content-Easy.png';
+            return 'assets/Images-Transparent/Image-Content-Easy.webp';
         }
 
         if (diff === 'hard') {
-            return 'assets/Images-Transparent/Image-Content-Hard.png';
+            return 'assets/Images-Transparent/Image-Content-Hard.webp';
         }
 
         return this.item?.difficultyImage ?? null;

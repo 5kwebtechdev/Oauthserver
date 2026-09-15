@@ -36,13 +36,13 @@ export class DashboardWebFooterComponent implements OnInit {
   readonly isWebBrowser = !Capacitor.isNativePlatform();
   readonly currentYear = new Date().getFullYear();
   readonly assetRoot = 'assets/Landing/figma-logged-in-footer';
-  readonly logoSrc = `${this.assetRoot}/superme-logo.png`;
+  readonly logoSrc = `${this.assetRoot}/superme-logo.webp`;
   readonly googlePlaySrc =
-    'assets/Landing/a545087c920a7aa3d0b8e311d8b60b7ded2efb74.png';
+    'assets/Landing/a545087c920a7aa3d0b8e311d8b60b7ded2efb74.webp';
   readonly appleStoreSrc = `${this.assetRoot}/store-apple.svg`;
   readonly desktopStoreSrc = `${this.assetRoot}/store-desktop.svg`;
-  readonly qrSrc = `${this.assetRoot}/download-qr.png`;
-  readonly trustedShieldSrc = `${this.assetRoot}/trusted-shield.png`;
+  readonly qrSrc = `${this.assetRoot}/download-qr.webp`;
+  readonly trustedShieldSrc = `${this.assetRoot}/trusted-shield.webp`;
   readonly featureDividerSrc = `${this.assetRoot}/feature-divider.svg`;
 
   readonly googlePlayUrl =

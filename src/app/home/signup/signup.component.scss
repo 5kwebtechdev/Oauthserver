@@ -3137,6 +3137,155 @@ swiper-slide.swiper-slide-active .pet-card {
   .parent-welcome__morning-grid { gap: 10px; }
 }
 
+/* Parent completion screen: keep the compact native layout, but let the web
+ * version use the available viewport instead of rendering as a 393px phone. */
+@media (min-width: 480px) and (max-width: 767.98px) {
+  :host-context(html:not(.plt-capacitor)) .signup-container.step-5-container {
+    padding: 24px !important;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome {
+    width: min(100%, 660px);
+    padding: 28px 24px 32px;
+    border: 1px solid rgba(115, 65, 167, .1);
+    border-radius: 28px;
+    box-shadow: 0 18px 44px rgba(67, 36, 119, .1);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (min-width: 768px) {
+  :host-context(html:not(.plt-capacitor)) .signup-container.step-5-container:not(.shared-welcome-layout) {
+    width: 100%;
+    max-width: none;
+    min-height: 100dvh;
+    margin: 0;
+    padding: clamp(24px, 3vw, 48px) clamp(28px, 5vw, 80px) !important;
+    justify-content: center;
+    background:
+      radial-gradient(42vw 45vh at 4% 5%, rgba(139, 141, 203, .22), transparent 68%),
+      radial-gradient(42vw 45vh at 96% 8%, rgba(246, 172, 114, .18), transparent 68%),
+      radial-gradient(44vw 48vh at 7% 96%, rgba(137, 179, 182, .2), transparent 68%),
+      radial-gradient(44vw 48vh at 94% 94%, rgba(225, 82, 124, .18), transparent 68%),
+      linear-gradient(135deg, #e3e2f7 0%, #fbe7d8 35%, #dcecec 66%, #fbdfe7 100%) !important;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome {
+    width: min(100%, 1080px);
+    margin: auto;
+    padding: clamp(28px, 3vw, 44px) clamp(30px, 4vw, 56px) clamp(32px, 3.5vw, 48px);
+    border: 1px solid rgba(255, 255, 255, .92);
+    border-radius: 34px;
+    background: rgba(255, 255, 255, .88);
+    box-shadow: 0 24px 64px rgba(67, 36, 119, .14);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__logo {
+    width: clamp(180px, 15vw, 220px);
+    height: clamp(120px, 11vw, 160px);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__heading {
+    margin-top: -10px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__heading h1 {
+    font-size: clamp(28px, 2.5vw, 36px);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__heading p {
+    max-width: 680px;
+    margin-top: 8px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 28px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__benefit {
+    grid-template-columns: 68px minmax(0, 1fr);
+    min-height: 104px;
+    gap: 14px;
+    padding: 14px 20px 14px 14px;
+    border: 1px solid rgba(115, 65, 167, .08);
+    border-radius: 20px;
+    box-shadow: 0 8px 22px rgba(67, 36, 119, .08);
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__benefit > img {
+    width: 68px;
+    height: 68px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__benefit h2 {
+    font-size: 16px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__benefit p {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__morning {
+    margin-top: 28px;
+    padding: 18px 0 0;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__morning > h2 {
+    font-size: 15px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__morning-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__morning-grid article {
+    min-height: 118px;
+    border: 1px solid rgba(115, 65, 167, .08);
+    border-radius: 20px;
+    box-shadow: 0 7px 18px rgba(67, 36, 119, .07);
+    font-size: 13px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__morning-grid img {
+    width: 52px;
+    height: 52px;
+  }
+
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__cta {
+    width: min(100%, 520px);
+    min-height: 60px;
+    margin-top: 30px;
+    border-radius: 20px;
+    font-size: 17px;
+    box-shadow: 0 12px 24px rgba(31, 19, 48, .22), inset -2px -2px 2px #fff;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 980px) {
+  :host-context(html:not(.plt-capacitor)) .parent-welcome__morning-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) and (max-height: 820px) {
+  :host-context(html:not(.plt-capacitor)) .signup-container.step-5-container:not(.shared-welcome-layout) {
+    justify-content: flex-start;
+  }
+}
+
 .welcome-page {
   display: flex;
   width: min(100%, 420px);
@@ -3341,10 +3490,10 @@ ion-content.details-content.referral-keyboard-open {
     opacity: 0;
     visibility: hidden;
     transition:
-      grid-template-rows 240ms ease,
-      margin-top 240ms ease,
-      opacity 180ms ease,
-      visibility 0s linear 240ms;
+      grid-template-rows 140ms ease,
+      margin-top 140ms ease,
+      opacity 110ms ease,
+      visibility 0s linear 140ms;
 
     &.is-open {
       grid-template-rows: 1fr;
@@ -3352,9 +3501,9 @@ ion-content.details-content.referral-keyboard-open {
       opacity: 1;
       visibility: visible;
       transition:
-        grid-template-rows 240ms ease,
-        margin-top 240ms ease,
-        opacity 180ms ease 40ms,
+        grid-template-rows 140ms ease,
+        margin-top 140ms ease,
+        opacity 110ms ease 20ms,
         visibility 0s linear 0s;
     }
 
@@ -3377,8 +3526,14 @@ ion-content.details-content.referral-keyboard-open {
         }
 
         &:focus {
-          border: 2px solid #ff823b;
+          border: 2px solid #7341a7;
+          box-shadow: 0 0 0 3px rgba(115, 65, 167, 0.18), 0 4px 14px rgba(67, 36, 119, 0.14);
           outline: none;
+        }
+
+        &.referral-input--focused {
+          border-color: #7341a7;
+          box-shadow: 0 0 0 3px rgba(115, 65, 167, 0.18), 0 4px 14px rgba(67, 36, 119, 0.14);
         }
 
         &[aria-invalid='true'] {

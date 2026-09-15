@@ -1191,7 +1191,7 @@ Thank you!`;
                 ? parsedAvatarKey
                 : this.resolveParentAvatarKey(profile);
             payload.avatarName = `avatar_${avatarKey}`;
-            payload.avatarImageName = `avatars/avatar${avatarKey}.png`;
+            payload.avatarImageName = `avatars/avatar${avatarKey}.webp`;
             // Optional — omit entirely rather than defaulting to a value the
             // user never actually chose (toApiGender() always resolves to a
             // real enum, which would falsely look like an explicit choice).
@@ -1355,7 +1355,7 @@ Thank you!`;
         const parsedAvatarKey = Number(profile.avatar);
         if (Number.isInteger(parsedAvatarKey) && parsedAvatarKey >= 1 && parsedAvatarKey <= 12) {
             googlePayload.avatarName = `avatar_${parsedAvatarKey}`;
-            googlePayload.avatarImageName = `avatars/avatar${parsedAvatarKey}.png`;
+            googlePayload.avatarImageName = `avatars/avatar${parsedAvatarKey}.webp`;
         } else if (!avatarUrl) {
             // No preset avatar chosen and no real Google/Apple photo either
             // (e.g. Apple never provides one, or photo access was denied) —
@@ -1363,7 +1363,7 @@ Thank you!`;
             // of falling back to just their name's initial.
             const fallbackKey = this.resolveParentAvatarKey(profile);
             googlePayload.avatarName = `avatar_${fallbackKey}`;
-            googlePayload.avatarImageName = `avatars/avatar${fallbackKey}.png`;
+            googlePayload.avatarImageName = `avatars/avatar${fallbackKey}.webp`;
         }
 
         if (idToken) {

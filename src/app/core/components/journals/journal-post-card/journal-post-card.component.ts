@@ -97,14 +97,14 @@ export class JournalPostCardComponent implements OnInit {
     if (!mood) return null;
 
     const emotionMap: { [k: string]: { label: string; image: string } } = {
-      happy: { label: 'Happy', image: 'assets/figma/journal/mood-happy.png' },
-      excited: { label: 'Excited', image: 'assets/figma/journal/mood-excited.png' },
-      calm: { label: 'Calm', image: 'assets/figma/journal/mood-calm.png' },
-      sad: { label: 'Sad', image: 'assets/figma/journal/mood-sad.png' },
-      anxious: { label: 'Anxious', image: 'assets/figma/journal/mood-anxious.png' },
-      frustrated: { label: 'Frustrated', image: 'assets/figma/journal/mood-frustrated.png' },
-      frustated: { label: 'Frustated', image: 'assets/figma/journal/mood-frustrated.png' },
-      angry: { label: 'Angry', image: 'assets/figma/journal/mood-frustrated.png' }
+      happy: { label: 'Happy', image: 'assets/figma/journal/mood-happy.webp' },
+      excited: { label: 'Excited', image: 'assets/figma/journal/mood-excited.webp' },
+      calm: { label: 'Calm', image: 'assets/figma/journal/mood-calm.webp' },
+      sad: { label: 'Sad', image: 'assets/figma/journal/mood-sad.webp' },
+      anxious: { label: 'Anxious', image: 'assets/figma/journal/mood-anxious.webp' },
+      frustrated: { label: 'Frustrated', image: 'assets/figma/journal/mood-frustrated.webp' },
+      frustated: { label: 'Frustated', image: 'assets/figma/journal/mood-frustrated.webp' },
+      angry: { label: 'Angry', image: 'assets/figma/journal/mood-frustrated.webp' }
     };
 
     return emotionMap[mood] || null;

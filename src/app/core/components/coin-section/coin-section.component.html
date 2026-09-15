@@ -6,12 +6,12 @@
             <div class="header">
                 <p>Ready to Treat Yourself?</p>
                 <a [routerLink]="['/authed','bot-helpline']" class="robot-link" aria-label="Helpline">
-                    <img src="assets/Icons-Neutral/Icon-Chatbot.png" alt="Robot" class="robot-icon">
+                    <img src="assets/Icons-Neutral/Icon-Chatbot.webp" alt="Robot" class="robot-icon">
                 </a>
             </div>
 
             <div class="coins" [class.coins--rolling]="showTargetDigits && !coinAnimDone" [class.coins--done]="coinAnimDone">
-                <img src="assets/Navigation/figma-logged-in/coin.png" alt="SuperMe coin" class="coin-icon">
+                <img src="assets/Navigation/figma-logged-in/coin.webp" alt="SuperMe coin" class="coin-icon">
                 <span class="coin-value" *ngIf="isLoading || coinTotal <= 0">0</span>
                 <div class="coin-value-roller" *ngIf="!isLoading && coinTotal > 0">
                     <span class="digit-col" *ngFor="let d of coinDigits; let i = index"
@@ -33,7 +33,7 @@
             </div>
 
             <superme-button *ngIf="!isParent" (click)="onRedeem()" text="Redeem" type="gold" size="large"></superme-button>
-            <superme-button *ngIf="isParent" text="Add" type="gold" size="large"></superme-button>
+            <superme-button *ngIf="isParent" (click)="onAddCoins()" text="Add" type="gold" size="large"></superme-button>
         </div>
 
         <!-- ── History Section ── -->
@@ -51,7 +51,7 @@
             <!-- Empty state -->
             <ng-container *ngIf="!isLoading && coinItems.length === 0">
                 <div class="blank-container">
-                    <img src="assets/Images-Transparent/Image-Home-Blank.png" alt="" class="home-blank">
+                    <img src="assets/Images-Transparent/Image-Home-Blank.webp" alt="" class="home-blank">
                     <div class="blank-text">
                         <h1>No transactions yet!</h1>
                         <p>Your coins are ready to treat your pet with cool outfits and accessories.</p>
@@ -81,14 +81,14 @@
                         <div class="item-icon-wrap">
                             <ng-container *ngIf="item.count < 0; else earnedItemIcon">
                                 <span class="item-icon item-icon--spend" aria-hidden="true">
-                                    <img src="assets/Navigation/figma-logged-in/coin.png" alt="">
+                                    <img src="assets/Navigation/figma-logged-in/coin.webp" alt="">
                                 </span>
                                 <span class="spend-badge" aria-hidden="true">−</span>
                             </ng-container>
                             <ng-template #earnedItemIcon>
                             <ng-container *ngIf="item.type === 'DAILY_LOGIN_BONUS'; else regularItemIcon">
                                 <img
-                                    src="assets/Navigation/figma-logged-in/coin.png"
+                                    src="assets/Navigation/figma-logged-in/coin.webp"
                                     alt="SuperMe coin"
                                     class="item-icon item-icon--coin">
                             </ng-container>
@@ -123,7 +123,7 @@
 
                         <!-- Amount -->
                         <div class="coin-count">
-                            <img src="assets/Navigation/figma-logged-in/coin.png" alt="Coin" class="count-icon">
+                            <img src="assets/Navigation/figma-logged-in/coin.webp" alt="Coin" class="count-icon">
                             <span class="count-value" [class.negative]="item.count < 0">
                                 {{ item.count < 0 ? item.count : ('+' + item.count) }}
                             </span>

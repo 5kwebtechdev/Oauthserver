@@ -28,7 +28,7 @@ export interface ReelPreviewItem {
   styleUrls: ['./reel-preview.component.scss']
 })
 export class ReelPreviewSectionComponent implements OnInit {
-  private readonly fallbackThumbnailUrl = 'assets/figma/reels/reel-volcano.png';
+  private readonly fallbackThumbnailUrl = 'assets/figma/reels/reel-volcano.webp';
 
   @Input() title = 'Made by Kids, for Kids!';
   @Input() subtitle = 'Watch reels • Create • Get Inspired';
@@ -64,7 +64,7 @@ export class ReelPreviewSectionComponent implements OnInit {
       id: reel.id,
       videoId: reel.videoId || '',
       image: reel.thumbnailUrl || this.fallbackThumbnailUrl,
-      avatar: reel.authorAvatarUrl || 'assets/figma/reels/avatar.png',
+      avatar: reel.authorAvatarUrl || 'assets/figma/reels/avatar.webp',
       author: reel.author || 'SuperMe Creator',
       title: reel.title || 'YouTube Reel',
       category: reel.category || '',

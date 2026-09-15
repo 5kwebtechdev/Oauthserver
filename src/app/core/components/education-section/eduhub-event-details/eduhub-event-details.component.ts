@@ -1,10 +1,11 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Share } from '@capacitor/share';
 import { IonicModule } from '@ionic/angular';
 
 import { FooterComponent } from '../../footer/footer.component';
+import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { UserService } from '../../../services/user.service';
@@ -18,7 +19,7 @@ interface EventDetailRouteData {
 @Component({
   selector: 'app-eduhub-event-details',
   standalone: true,
-  imports: [CommonModule, IonicModule, FooterComponent],
+  imports: [CommonModule, IonicModule, FooterComponent, ProfileImageComponent],
   templateUrl: './eduhub-event-details.component.html',
   styleUrls: ['./eduhub-event-details.component.scss']
 })
@@ -29,6 +30,7 @@ export class EduHubEventDetailsComponent implements OnInit {
   errorMessage = '';
   unlockInProgress = false;
   likeInProgress = false;
+  imageFullscreen = false;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -64,6 +66,18 @@ export class EduHubEventDetailsComponent implements OnInit {
   get image(): string {
     return this.item?.imageUrls?.find(url => typeof url === 'string' && url.trim())?.trim() ?? '';
   }
+
+  openImage(): void {
+    if (this.image) {
+      this.imageFullscreen = true;
+      return;
+    }
+    this.core.triggerToasrt('No profile picture available for this listing.', 'info');
+  }
+  closeImage(): void { this.imageFullscreen = false; }
+
+  @HostListener('document:keydown.escape')
+  onEscapeImage(): void { if (this.imageFullscreen) this.closeImage(); }
 
   get publicLocation(): string {
     if (!this.item) return '';

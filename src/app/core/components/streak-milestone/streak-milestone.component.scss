@@ -1,0 +1,57 @@
+:host { display: block; width: 100%; max-height: inherit; overflow-y: auto; overscroll-behavior: contain; font-family: Nunito, sans-serif; color: #432477; scrollbar-width: thin; }
+* { box-sizing: border-box; }
+h2, h3, p { margin: 0; }
+.reward-popup { width: 100%; max-width: none; margin: auto; }
+.hero { width: min(337px, 86%); height: 117px; position: relative; overflow: hidden; margin: 0 auto -2px; }
+.hero img { position: absolute; width: 145.32%; height: 278.26%; max-width: none; left: -23.46%; top: -16.03%; }
+.reward-body { position: relative; padding: 12px 16px 0; border-radius: 44px 44px 0 0; background: linear-gradient(#ebe6f5, #fff 45.545%); box-shadow: inset 0 2px 2px .5px #ffffff80; overflow: hidden; display: flex; flex-direction: column; gap: 12px; }
+header { text-align: center; } h2 { font-size: 20px; font-weight: 700; } header p { font-size: 13px; font-weight: 600; }
+.daily-reward { display: flex; gap: 12px; align-items: center; padding: 8px; background: #fef3d8; border: 1px solid #fee3aa; border-radius: 24px; }
+.daily-reward h3 { color: #282527; font-size: 15px; font-weight: 700; } .daily-reward strong { font-size: 20px; font-weight: 800; }
+.daily-reward p, .milestone-card p { color: #6b656a; font-size: 13px; font-weight: 600; line-height: 1.4; }
+.daily-image { width: 100px; height: 76px; flex: 0 0 100px; overflow: hidden; position: relative; }
+.daily-image img { width: 113.17%; height: 100%; position: absolute; left: -.59%; max-width: none; }
+.milestone-card { padding: 8px; border-radius: 24px; background: #ebe6f5; box-shadow: 0 0 2px .5px #43247780; }
+.milestone-heading { display: flex; align-items: center; gap: 12px; min-height: 60px; }
+.milestone-heading > div:last-child { min-width: 0; } .milestone-heading h3 { font-size: 20px; line-height: 1.35; font-weight: 800; }
+.streak-art { width: 100px; height: 60px; flex: 0 0 100px; position: relative; overflow: hidden; }
+.streak-art img { position: absolute; width: 134.7%; height: 161.46%; left: -20.77%; top: -34.29%; max-width: none; }
+.streak-art.achievement img { width: 206.06%; height: 153.5%; left: -13.62%; top: -28.54%; }
+.inline-coin { width: 16px; height: 16px; object-fit: contain; vertical-align: middle; } b { color: #432477; }
+.milestone-track { display: flex; margin: 12px 0 0; padding: 0; list-style: none; }
+.milestone-track li { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; color: #6b656a; font-size: 12px; font-weight: 600; }
+.milestone-track li:not(:last-child)::after { content: ''; position: absolute; left: calc(50% + 15px); right: calc(-50% + 15px); top: 12px; border-top: 2px dotted #aaa4ac; }
+.milestone-track li.completed::after { border-top-style: solid; border-color: #9e8bba; }
+.marker { height: 24px; width: 24px; border: 1px solid #6b656a; background: #d9d6d8; border-radius: 50%; display: grid; place-items: center; }
+.marker-icon { display: block; width: 16px; height: 16px; position: relative; overflow: hidden; }
+.marker img { width: 16px; height: 16px; object-fit: contain; }.completed .marker { background: white; border-color: white; }
+.completed .marker img { position: absolute; width: 205.07%; height: 140.08%; left: -53.4%; top: -15.46%; max-width: none; }
+.coins { display: flex; align-items: center; color: #432477; }.coins img { width: 14px; height: 14px; object-fit: contain; }
+footer { height: 72px; display: flex; justify-content: center; align-items: flex-start; position: relative; }
+button { font: inherit; cursor: pointer; color: white; background: radial-gradient(#7341a7, #432477); border: 1px solid #432477; border-radius: 16px; }
+button:focus-visible { outline: 3px solid #987ac4; outline-offset: 3px; }button:disabled { opacity: .55; cursor: default; }
+.continue-button { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 12px 24px; font-size: 13px; font-weight: 700; min-height: 44px; }
+.continue-button img { width: 18px; height: 16px; }.continue-button.outline { background: white; color: #432477; }.outline img { filter: brightness(.45); }
+.cloud { position: absolute; top: 0; width: 220px; height: 72px; overflow: hidden; pointer-events: none; }.cloud-left { right: calc(50% + 74px); transform: scaleX(-1); }.cloud-right { left: calc(50% + 74px); }
+.cloud img { position: absolute; width: 275.27%; height: 559.56%; left: -86.56%; top: -433.33%; max-width: none; }
+.broken-card { display: flex; align-items: center; gap: 8px; }.broken-card h3 { font-size: 17px; }.broken-card > div:nth-child(2) { flex: 1; min-width: 0; }
+.broken-art { width: 100px; height: 75px; flex: 0 0 100px; position: relative; overflow: hidden; }.broken-art img { position: absolute; width: 221.57%; height: 122.8%; left: -121.65%; top: -12.84%; max-width: none; }
+.restore-button { padding: 4px 8px; border-radius: 12px; font-size: 13px; min-height: 44px; }.restore-button span { display: block; }
+.notice { font-size: 13px; text-align: center; color: #a92557; }
+.milestone-card { position: relative; }
+.streak-count { display: inline-block; font-variant-numeric: tabular-nums; }
+.progress-cheer { min-height: 20px; text-align: center; font-size: 12px; font-weight: 800; color: #7341a7; }
+.celebrating .streak-count { animation: streak-pop 650ms ease-out both; }
+.celebrating .streak-art { animation: streak-pop 850ms ease-out both; }
+.just-reached .marker { animation: streak-pop 750ms 150ms ease-out both; box-shadow: 0 0 0 4px #fee3aa; }
+.sparkles { position: absolute; inset: 0; pointer-events: none; }
+.sparkles i { position: absolute; left: 50%; top: 32%; color: #efb52d; font-style: normal; font-size: 20px; opacity: 0; animation: streak-sparkle 1100ms ease-out both; --x: -80px; --y: -25px; }
+.sparkles i:nth-child(2) { --x: 75px; --y: -35px; color: #987ac4; animation-delay: 80ms; }
+.sparkles i:nth-child(3) { --x: -110px; --y: 32px; animation-delay: 160ms; }
+.sparkles i:nth-child(4) { --x: 110px; --y: 28px; color: #987ac4; animation-delay: 120ms; }
+.sparkles i:nth-child(5) { --x: 10px; --y: -48px; animation-delay: 200ms; }
+@keyframes streak-pop { 0% { transform: translateY(8px) scale(.8); opacity: .4; } 45% { transform: translateY(-4px) scale(1.12); opacity: 1; } 75% { transform: translateY(1px) scale(.98); } 100% { transform: none; opacity: 1; } }
+@keyframes streak-sparkle { 0% { transform: translate(0, 0) scale(.3); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(var(--x), var(--y)) scale(.7) rotate(35deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .celebrating .streak-count, .celebrating .streak-art, .just-reached .marker, .sparkles i { animation: none; } .sparkles { display: none; } }
+@media (max-width: 600px) { .hero { width: min(337px, 82%); }.reward-body { border-radius: 38px 38px 0 0; }.milestone-track li { font-size: clamp(10px, 3vw, 12px); } }
+@media (max-width: 360px) { .reward-body { padding-inline: 12px; }.daily-image, .streak-art { flex-basis: 76px; width: 76px; }.milestone-heading h3 { font-size: 17px; }.broken-art { flex-basis: 60px; width: 60px; }.broken-card h3 { font-size: 15px; } }

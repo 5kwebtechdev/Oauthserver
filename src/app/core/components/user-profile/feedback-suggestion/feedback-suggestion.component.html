@@ -6,7 +6,7 @@
       <p>1. How happy are you with the app?</p>
       <div class="select-emoji">
         <div class="emoji-btn" role="button" tabindex="0" (click)="selectMood('very-happy')" (keydown.enter)="selectMood('very-happy')" (keydown.space)="selectMood('very-happy')" [class.selected]="selectedMood === 'very-happy'">
-          <img class="mood-img" src="assets/Images-Transparent/Image-Mood-Very happy.png" alt="Very happy" />
+          <img class="mood-img" src="assets/Images-Transparent/Image-Mood-Very happy.webp" alt="Very happy" />
           <span class="tick" aria-hidden="true">
             <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 3.2L2.46667 4.66667L6.93333 0.2" stroke="#FFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -15,7 +15,7 @@
         </div>
 
         <div class="emoji-btn" role="button" tabindex="0" (click)="selectMood('happy')" (keydown.enter)="selectMood('happy')" (keydown.space)="selectMood('happy')" [class.selected]="selectedMood === 'happy'">
-          <img class="mood-img" src="assets/Images-Transparent/Image-Mood-Happy.webp" alt="Happy" />
+          <img class="mood-img" src="assets/figma/child-home/mood-happy.webp" alt="Happy" />
           <span class="tick" aria-hidden="true">
             <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 3.2L2.46667 4.66667L6.93333 0.2" stroke="#FFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -24,7 +24,7 @@
         </div>
 
         <div class="emoji-btn" role="button" tabindex="0" (click)="selectMood('upset')" (keydown.enter)="selectMood('upset')" (keydown.space)="selectMood('upset')" [class.selected]="selectedMood === 'upset'">
-          <img class="mood-img" src="assets/Images-Transparent/Image-Mood-Upset.png" alt="Upset" />
+          <img class="mood-img" src="assets/Images-Transparent/Image-Mood-Upset.webp" alt="Upset" />
           <span class="tick" aria-hidden="true">
             <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 3.2L2.46667 4.66667L6.93333 0.2" stroke="#FFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -33,7 +33,7 @@
         </div>
 
         <div class="emoji-btn" role="button" tabindex="0" (click)="selectMood('sad')" (keydown.enter)="selectMood('sad')" (keydown.space)="selectMood('sad')" [class.selected]="selectedMood === 'sad'">
-          <img class="mood-img" src="assets/Images-Transparent/Image-Mood-Sad.png" alt="Sad" />
+          <img class="mood-img" src="assets/Images-Transparent/Image-Mood-Sad.webp" alt="Sad" />
           <span class="tick" aria-hidden="true">
             <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 3.2L2.46667 4.66667L6.93333 0.2" stroke="#FFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -78,7 +78,7 @@
 
   <!-- Replaced inline thank-you markup with reusable superme popup -->
   <app-superme-popup [isVisible]="showThankYouPopup" [config]="{
-      image: 'assets/Images-Transparent/Image-Profile-Feedback.png',
+      image: 'assets/Images-Transparent/Image-Profile-Feedback.webp',
       imageAlt: 'Feedback image',
       heading: 'Thanks for making us better!',
       subtitle: 'Your thoughts help us to improve your experience',

@@ -8,13 +8,13 @@
       <h2>{{ celebrationText || 'Great Work!' }}</h2>
 
       <div class="congrats-img">
-        <img class="confetti left" src="assets/Images-Transparent/congrats.png" alt="confetti left"
+        <img class="confetti left" src="assets/Images-Transparent/congrats.webp" alt="confetti left"
           *ngIf="isExcellentScore()" />
         <div class="result-wrap" [ngStyle]="{'border-color': getScoreColor()}">
           <span class="question-count" [ngStyle]="{'color': getScoreColor()}">{{ correctAnswers }}/{{ totalQuestions
             }}</span>
         </div>
-        <img class="confetti right" src="assets/Images-Transparent/congrats.png" alt="confetti right"
+        <img class="confetti right" src="assets/Images-Transparent/congrats.webp" alt="confetti right"
           *ngIf="isExcellentScore()" />
       </div>
     </div>
@@ -22,12 +22,12 @@
     <div class="reward-u-got">
       <div class="reward-item">
         <span class="plus">+</span>
-        <img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins" class="reward-icon" />
+        <img src="assets/Icons-Neutral/Icons-Coins.webp" alt="Coins" class="reward-icon" />
         <span class="reward-count">{{ coinsEarned }}</span>
       </div>
       <div class="reward-item">
         <span class="plus">+</span>
-        <img src="assets/Icons-Neutral/Icon-Trophy.png" alt="Trophy" class="reward-icon" />
+        <img src="assets/Icons-Neutral/Icon-Trophy.webp" alt="Trophy" class="reward-icon" />
         <span class="reward-count">{{ trophiesEarned }}</span>
       </div>
     </div>

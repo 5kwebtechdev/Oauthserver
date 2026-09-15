@@ -15,16 +15,16 @@ Inputs:
 
 Assets:
 - Place pet images in `src/assets/Pets/` with the following filenames:
-  - `panda.png`
-  - `dragon.png`
-  - `llama.png`
-  - `owl.png`
+  - `panda.webp`
+  - `dragon.webp`
+  - `llama.webp`
+  - `owl.webp`
 
 Advanced (optional) asset organization for age/mood-specific images:
 - You can add more specific images and the component will automatically try them in this order (most specific -> fallback):
-  1. `assets/Pets/<pet>/age_<age>/mood_<mood>.png`  (e.g. `assets/Pets/panda/age_1/mood_playful.png`)
-  2. `assets/Pets/<pet>/age_<age>.png`            (e.g. `assets/Pets/panda/age_1.png`)
-  3. `assets/Pets/<pet>.png`                      (e.g. `assets/Pets/panda.png`)
+  1. `assets/Pets/<pet>/age_<age>/mood_<mood>.webp`  (e.g. `assets/Pets/panda/age_1/mood_playful.webp`)
+  2. `assets/Pets/<pet>/age_<age>.webp`            (e.g. `assets/Pets/panda/age_1.webp`)
+  3. `assets/Pets/<pet>.webp`                      (e.g. `assets/Pets/panda.webp`)
 
 Available moods:
 - `default` (no mood-specific image)

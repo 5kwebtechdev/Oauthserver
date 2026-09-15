@@ -128,6 +128,9 @@ export class UserProfileComponent implements OnInit, OnChanges {
         const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
         if (resolved.url) this.userAvatarUrl = resolved.url;
         if (resolved.alt) this.avatarImageName = resolved.alt;
+
+        const parentCoins = this.getAuthenticatedParentCoins();
+        if (parentCoins !== null) this.userCoins = parentCoins;
       }
     });
 
@@ -232,34 +235,53 @@ export class UserProfileComponent implements OnInit, OnChanges {
    * Load user statistics from localStorage first, then fetch from API if not available
    */
   private loadUserStatsFromStorage(): void {
-    // Try to load from localStorage first
+    // The shared stats cache may belong to the child selected on the parent
+    // dashboard. Profile must always represent the authenticated account, so
+    // avoid rendering that cache and fetch the account-scoped balance below.
     const cachedStats = this.userService.getUserStats();
+    console.log('[UserProfile] Ignoring shared stats cache for account-scoped profile stats:', cachedStats);
+    const parentCoins = this.getAuthenticatedParentCoins();
+    if (parentCoins !== null) this.userCoins = parentCoins;
+    this.loadUserStatsFromAPI();
+  }
 
-    if (cachedStats) {
-      // Use cached stats
-      this.userCoins = cachedStats.coins;
-      this.userStreaks = cachedStats.streaks;
-      this.userDays = cachedStats.days;
-      this.userBadges = cachedStats.badges;
+  /**
+   * Parent Home reads its wallet from the authenticated session. Reuse that
+   * exact source here because vibes/display can remain child-scoped after the
+   * parent has selected a child on the dashboard.
+   */
+  private getAuthenticatedParentCoins(): number | null {
+    if (!this.coreAuthService.isParentUser()) return null;
 
-      console.log('[UserProfile] Loaded stats from localStorage:', cachedStats);
-    } else {
-      // No cached stats, fetch from API
-      console.log('[UserProfile] No cached stats, fetching from API...');
-      this.loadUserStatsFromAPI();
-    }
+    const session = this.coreAuthService.getUserData();
+    const parent = session?.user ?? session?.data?.user ?? session?.data ?? session;
+    const candidates = [
+      parent?.coins,
+      parent?.totalCoins,
+      parent?.coinBalance,
+      parent?.availableCoins,
+      parent?.wallet?.coins,
+      parent?.wallet?.balance,
+      session?.coins,
+      session?.totalCoins
+    ];
+    const resolved = candidates
+      .map(value => value === null || value === undefined || value === '' ? Number.NaN : Number(value))
+      .find(value => Number.isFinite(value));
+
+    return resolved === undefined ? null : Math.max(0, resolved);
   }
 
   /**
    * Load user statistics from the vibes/display endpoint and cache them
    */
   private loadUserStatsFromAPI(): void {
-    this.moodService.getVibesDisplay().subscribe({
+    this.moodService.getVibesDisplay(undefined, true).subscribe({
       next: (data: VibesDisplayResponse[]) => {
         // The API returns an array, get the first item (current user's data)
         if (data && data.length > 0) {
           const userStats = data[0];
-          this.userCoins = userStats.coins || 0;
+          this.userCoins = this.getAuthenticatedParentCoins() ?? userStats.coins ?? 0;
           this.userStreaks = userStats.streak || 0;
           this.userDays = userStats.trophies || 0;
           this.userBadges = userStats.badges || 0;
@@ -322,7 +344,7 @@ export class UserProfileComponent implements OnInit, OnChanges {
     if (data && data.selected) {
       const selectedPet = data.selected;
       console.log('Selected pet from modal:', selectedPet);
-      const petName = selectedPet.apiName || `${selectedPet.name}-Age1-Happy.png`;
+      const petName = selectedPet.apiName || `${selectedPet.name}-Age1-Happy.webp`;
 
       this.coreAuthService.updatePetSelection(petName).subscribe({
         next: () => {

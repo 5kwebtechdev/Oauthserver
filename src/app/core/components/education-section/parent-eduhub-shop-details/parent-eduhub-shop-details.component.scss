@@ -1,0 +1,17 @@
+@use '../../tutor-section/tutor-profile/tutor-profile.component.scss';
+
+.shop-profile-page { --background: #fbf9ff; }
+.shop-profile-hero { grid-template-columns: auto minmax(0, 1fr); }
+.shop-avatar-wrap { width: clamp(112px, 16vw, 184px); height: clamp(112px, 16vw, 184px); }
+.shop-avatar-wrap .avatar { width: 100%; height: 100%; }
+.shop-profile-location { grid-column: 1 / -1; justify-content: flex-start; }
+.information-value a { display: block; color: #5030a0; text-decoration: none; margin-bottom: 6px; }
+.unlock-heading img { width: 48px; height: 48px; object-fit: contain; }
+.unlock-cost { display: inline-flex; align-items: center; gap: 6px; }
+.unlock-cost img { width: 22px; height: 22px; object-fit: contain; }
+
+@media (max-width: 640px) {
+  .shop-profile-hero { grid-template-columns: 1fr; text-align: center; }
+  .shop-avatar-wrap { margin: 0 auto; }
+  .shop-profile-location { justify-content: center; }
+}

@@ -167,11 +167,11 @@ export class TrophyService {
      */
     private getTrophyImage(difficulty: string): string {
         const imageMap: Record<string, string> = {
-            'Easy': 'assets/Icons-Neutral/Icon-Trophy.png',
-            'Medium': 'assets/Icons-Neutral/Icon-Trophy.png',
-            'Hard': 'assets/Icons-Neutral/Icon-Trophy.png'
+            'Easy': 'assets/Icons-Neutral/Icon-Trophy.webp',
+            'Medium': 'assets/Icons-Neutral/Icon-Trophy.webp',
+            'Hard': 'assets/Icons-Neutral/Icon-Trophy.webp'
         };
-        return imageMap[difficulty] || 'assets/Icons-Neutral/Icon-Trophy.png';
+        return imageMap[difficulty] || 'assets/Icons-Neutral/Icon-Trophy.webp';
     }
 
     /**

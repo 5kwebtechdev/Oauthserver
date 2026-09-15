@@ -6,8 +6,8 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
-const SUPERME_NOTIFICATION_ICON = '/assets/Images-Transparent/SuperMeLogoFinal3.png';
-const SUPERME_NOTIFICATION_BADGE = '/assets/Icons-Neutral/home-logo.png';
+const SUPERME_NOTIFICATION_ICON = '/assets/Images-Transparent/SuperMeLogoFinal3.webp';
+const SUPERME_NOTIFICATION_BADGE = '/assets/Icons-Neutral/home-logo.webp';
 
 // Firebase config is injected by the app at runtime via the service-worker
 // client messaging channel. Until then, background messages are buffered.

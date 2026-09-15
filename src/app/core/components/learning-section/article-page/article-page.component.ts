@@ -56,17 +56,17 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     {
       value: 'very-helpful',
       label: 'Very Helpful',
-      image: 'assets/figma/learning-details/very-helpful-hd.png'
+      image: 'assets/figma/learning-details/very-helpful-hd.webp'
     },
     {
       value: 'helpful',
       label: 'Helpful',
-      image: 'assets/figma/learning-details/helpful-hd.png'
+      image: 'assets/figma/learning-details/helpful-hd.webp'
     },
     {
       value: 'not-helpful',
       label: 'Not Helpful',
-      image: 'assets/figma/learning-details/not-helpful-hd.png'
+      image: 'assets/figma/learning-details/not-helpful-hd.webp'
     }
   ];
 
@@ -92,7 +92,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   // Popup state and config
   showMarkPopup = false;
   markPopupConfig: SupermePopupConfig = {
-    image: 'assets/Images-Transparent/Image-Home-GreatWork.png',
+    image: 'assets/Images-Transparent/Image-Home-GreatWork.webp',
     imageAlt: 'Great work',
     heading: 'Great job reading!',
     subtitle: "You'll earn 10 coins when you mark this article as read. Are you sure you want to complete it?",

@@ -467,6 +467,9 @@ button {
   box-sizing: border-box;
 }
 
+.listing-card--clickable { cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
+.listing-card--clickable:hover, .listing-card--clickable:focus-visible { transform: translateY(-3px); box-shadow: 0 16px 32px rgba(66, 39, 126, .14); outline: none; }
+
 .listing-card__top {
   display: flex;
   width: 100%;

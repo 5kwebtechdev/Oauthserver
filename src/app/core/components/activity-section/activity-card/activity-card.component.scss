@@ -307,6 +307,21 @@ p {
   box-shadow: 0 4px 16px rgba(124, 116, 216, 0.10);
   animation: glanceCardFadeIn 0.35s ease both;
   will-change: transform;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+
+  &:hover {
+    translate: 0 -3px;
+    scale: 1.005;
+    box-shadow: 0 10px 24px rgba(67, 36, 119, 0.14);
+    filter: brightness(1.01);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(67, 36, 119, 0.48);
+    outline-offset: 3px;
+  }
 }
 
 /* Task variant: use orange left border */
@@ -1076,10 +1091,25 @@ h4 {
   }
 }
 
+// Keep the selected state visible even when a dashboard-level style overrides
+// the shared button background. The class is bound directly to currentActive
+// in both list and recent templates, so it updates immediately on every tab
+// click and survives data refreshes.
+.glance-card .glance-tab.is-active {
+  background: var(--glance-tab-active) !important;
+}
+
 .glance-tab-icon {
   width: 20px;
   height: 20px;
   object-fit: contain;
+}
+
+// The exported habit artwork includes more transparent canvas than the other
+// tab icons. Scale only the artwork (not the tab layout) so its visible sprout
+// matches the neighboring icons without changing the tab height or spacing.
+.glance-tab--habit .glance-tab-icon {
+  transform: scale(1.5);
 }
 
 // The exported Planner artwork is white for its selected teal pill. Tint it
@@ -1517,6 +1547,8 @@ h4 {
 }
 
 .glance-planner-entry {
+  cursor: pointer;
+  &:focus-visible { outline: 2px solid #432477; outline-offset: 3px; border-radius: 8px; }
   align-items: center;
   display: grid;
   gap: 8px;

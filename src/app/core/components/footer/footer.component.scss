@@ -30,7 +30,7 @@
   min-height: calc(var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
   padding: 0 16px env(safe-area-inset-bottom, 0px);
   box-sizing: border-box;
-  /* nav-background.png has real alpha transparency at its edges (soft
+  /* nav-background.webp has real alpha transparency at its edges (soft
      shadow/blend), so the bar needs its own opaque fill underneath it —
      otherwise page content shows through wherever the PNG isn't fully
      opaque. The image still renders on top for its shape/shadow. */

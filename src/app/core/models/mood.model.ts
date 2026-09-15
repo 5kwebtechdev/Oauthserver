@@ -44,9 +44,9 @@ export interface VibesDisplayResponse {
 // Mood emoji mapping - only six available mood images
 export const MOOD_EMOJI_MAP: { [key: string]: string } = {
   'Happy': 'assets/Images-Transparent/Image-Mood-Happy.webp',
-  'Very Happy': 'assets/Images-Transparent/Image-Mood-Very happy.png',
-  'Excited': 'assets/Images-Transparent/Image-Mood-Excited.png',
-  'Sad': 'assets/Images-Transparent/Image-Mood-Sad.png',
-  'Upset': 'assets/Images-Transparent/Image-Mood-Upset.png',
-  'Nervous': 'assets/Images-Transparent/Image-Mood-Nervous.png',
+  'Very Happy': 'assets/Images-Transparent/Image-Mood-Very happy.webp',
+  'Excited': 'assets/Images-Transparent/Image-Mood-Excited.webp',
+  'Sad': 'assets/Images-Transparent/Image-Mood-Sad.webp',
+  'Upset': 'assets/Images-Transparent/Image-Mood-Upset.webp',
+  'Nervous': 'assets/Images-Transparent/Image-Mood-Nervous.webp',
 };

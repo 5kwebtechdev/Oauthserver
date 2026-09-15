@@ -1,5 +1,5 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppLauncher } from '@capacitor/app-launcher';
 import { Capacitor } from '@capacitor/core';
@@ -58,6 +58,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   isContactLaunching = false;
   isUnlockingContact = false;
   isContactUnlocked = false;
+  profileImageFullscreen = false;
 
   private tutorCategories: TutorCategory[] = [];
   private activeLikeTutorId: number | null = null;
@@ -215,6 +216,18 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     });
   }
 
+  openProfileImage(): void {
+    if (this.getProfileImage()) {
+      this.profileImageFullscreen = true;
+      return;
+    }
+    this.toastService.show('No profile picture available for this tutor.', 'info');
+  }
+  closeProfileImage(): void { this.profileImageFullscreen = false; }
+
+  @HostListener('document:keydown.escape')
+  onEscapeProfileImage(): void { if (this.profileImageFullscreen) this.closeProfileImage(); }
+
   async shareTutor(): Promise<void> {
     if (!this.tutor) return;
 
@@ -318,11 +331,11 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   getTeachingIcon(label: string): string {
     const normalized = label.toLowerCase();
-    if (normalized.includes('language')) return 'assets/Icons-Neutral/Tutor-LanguageSpoken.png';
+    if (normalized.includes('language')) return 'assets/Icons-Neutral/Tutor-LanguageSpoken.webp';
     if (normalized.includes('class') || normalized.includes('grade') || normalized.includes('level')) {
-      return 'assets/Icons-Neutral/Tutors-School.png';
+      return 'assets/Icons-Neutral/Tutors-School.webp';
     }
-    return 'assets/Icons-Neutral/Icon-Tutor-Subjects.png';
+    return 'assets/Icons-Neutral/Icon-Tutor-Subjects.webp';
   }
 
   getLevelsString(useFallback = true): string {

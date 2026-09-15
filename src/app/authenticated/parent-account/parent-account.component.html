@@ -1,7 +1,7 @@
 <!-- Family connected acknowledgment -->
 <div class="family-ack-backdrop" *ngIf="showFamilyAck" (click)="dismissFamilyAck()">
   <div class="family-ack-popup" (click)="$event.stopPropagation()">
-    <img class="family-ack-popup__img" src="assets/Images-Transparent/Image-Parents-Family.png" alt=""
+    <img class="family-ack-popup__img" src="assets/Images-Transparent/Image-Parents-Family.webp" alt=""
       aria-hidden="true">
     <h2 class="family-ack-popup__title">You're connected to your family</h2>
     <p class="family-ack-popup__desc">
@@ -50,7 +50,7 @@
             <img src="assets/figma/parent-home/notification.svg" alt="" aria-hidden="true">
           </button>
           <button type="button" class="parent-coin-pill" aria-label="Open coins" (click)="openCoinPage()">
-            <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
+            <img src="assets/figma/parent-home/coin.webp" alt="" aria-hidden="true">
             <span>{{ parentCoins }}</span>
           </button>
         </nav>
@@ -82,11 +82,11 @@
                 <strong [attr.title]="child.name">{{ child.name }}</strong>
                 <span class="switcher-child__stats">
                   <span>
-                    <img src="assets/icons/parent-home-streak.webp" alt="" aria-hidden="true">
+                    <img src="assets/figma/parent-home/streak.webp" alt="" aria-hidden="true">
                     {{ child.streak ?? 0 }}
                   </span>
                   <span>
-                    <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
+                    <img src="assets/figma/parent-home/coin.webp" alt="" aria-hidden="true">
                     {{ child.coins ?? 0 }}
                   </span>
                 </span>
@@ -199,7 +199,7 @@
 
           <section *ngIf="!performanceLoading && showPerformanceBlankState" class="performance-empty-state" aria-live="polite">
             <div class="performance-empty-state__visual" aria-hidden="true">
-              <img src="assets/figma/parent-home/performance-empty-state.png" alt="">
+              <img src="assets/figma/parent-home/performance-empty-state.webp" alt="">
             </div>
             <div>
               <h3>The adventure is just beginning!</h3>
@@ -224,8 +224,9 @@
         </div>
 
         <div class="foundation-rail">
-          <article *ngFor="let item of foundationalOverview" class="foundation-card"
-            [ngClass]="'foundation-card--' + item.tone">
+          <button *ngFor="let item of foundationalOverview" type="button" class="foundation-card"
+            [ngClass]="'foundation-card--' + item.tone" (click)="openInsights()"
+            [attr.aria-label]="'View ' + item.label + ' insights'">
             <span class="foundation-card__icon">
               <img [src]="item.icon" alt="" aria-hidden="true">
             </span>
@@ -239,7 +240,7 @@
                 </em>
               </span>
             </span>
-          </article>
+          </button>
         </div>
       </section>
 
@@ -262,7 +263,7 @@
         <learning-section
           title="Motivate your child"
           subtitle="Assign bonus coins to learning activities to boost motivation"
-          headerIcon="assets/icons/child-home-coin-figma.png"
+          headerIcon="assets/figma/parent-home/coin.webp"
           [rewardMode]="true"
           [forUserId]="selectedChild?.id ?? null"
           [age]="selectedChildAge"

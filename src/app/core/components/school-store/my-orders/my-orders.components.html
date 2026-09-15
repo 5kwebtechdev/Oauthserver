@@ -33,7 +33,7 @@
 
                 <div *ngIf="!ordersLoading && !ordersError && filteredOrders.length === 0 && orders.length === 0" class="no-order-empty-state">
                     <empty-state
-                        [imageSrc]="'assets/Images-Transparent/Cart-Blank.png'"
+                        [imageSrc]="'assets/Images-Transparent/Cart-Blank.webp'"
                         [imageAlt]="'No orders yet'"
                         [leadText]="'No orders yet'"
                         [subText]="'Items you order from the school store will show up here.'"
@@ -44,7 +44,7 @@
 
                 <div *ngIf="!ordersLoading && !ordersError && filteredOrders.length === 0 && orders.length > 0" class="no-order-empty-state">
                     <empty-state
-                        [imageSrc]="'assets/Images-Transparent/Cart-Blank.png'"
+                        [imageSrc]="'assets/Images-Transparent/Cart-Blank.webp'"
                         [imageAlt]="'No orders found'"
                         [leadText]="'No orders match that search'"
                         [subText]="'Try searching by Order ID, Item Name, or School Name to find what you\'re looking for.'"

@@ -201,6 +201,10 @@ const routes: Routes = [
         path: 'school-store',
         loadComponent: () => import('../core/components/school-store/school-store.components').then(m => m.SchoolStoreComponent)
       }, {
+        path: 'education/shops/:id',
+        loadComponent: () => import('../core/components/education-section/parent-eduhub-shop-details/parent-eduhub-shop-details.component').then(m => m.ParentEduHubShopDetailsComponent),
+        data: { title: 'Shop' }
+      }, {
         path: 'education/shops',
         loadComponent: () => import('../core/components/education-section/parent-eduhub-shop-listing/parent-eduhub-shop-listing.component').then(m => m.ParentEduHubShopListingComponent)
       }, {

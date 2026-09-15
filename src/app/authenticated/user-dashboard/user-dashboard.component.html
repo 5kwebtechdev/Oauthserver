@@ -1,7 +1,7 @@
 <!-- ══ Family connected acknowledgment popup ══ -->
 <div class="family-ack-backdrop" *ngIf="showFamilyAck" (click)="dismissFamilyAck()">
   <div class="family-ack-popup" (click)="$event.stopPropagation()">
-    <img class="family-ack-popup__img" src="assets/Images-Transparent/Image-Parents-Family.png" alt="" aria-hidden="true" />
+    <img class="family-ack-popup__img" src="assets/Images-Transparent/Image-Parents-Family.webp" alt="" aria-hidden="true" />
     <h2 class="family-ack-popup__title">You're connected to your family</h2>
     <p class="family-ack-popup__desc">This account is now set to {{ familyAckRole }} and linked to your family.</p>
     <button class="family-ack-popup__btn" (click)="dismissFamilyAck()">Let's Begin</button>
@@ -9,7 +9,12 @@
 </div>
 
 <!-- ══ Home-screen overlays (PRD: bonus coins, daily login, mood prompt, streak milestone) ══ -->
-<div *ngIf="activeOverlay"
+<div *ngIf="showDailyStreakPopup && streakStatusResolved && !showFamilyAck"
+     class="streak-milestone-overlay" role="dialog" aria-modal="true" aria-label="Streak Day"
+     (keydown.escape)="dismissDailyStreakPopup()">
+  <app-streak-milestone [days]="loginStreakDays ?? userStreaks" [celebrateProgress]="true" (continue)="dismissDailyStreakPopup()"></app-streak-milestone>
+</div>
+<div *ngIf="activeOverlay && activeOverlay !== 'daily-login' && activeOverlay !== 'streak-milestone'"
      class="home-overlay"
      role="dialog"
      aria-modal="true"
@@ -81,7 +86,7 @@
                 <img src="assets/icons/child-home-notification-figma.svg" alt="" class="notification-tool-icon" aria-hidden="true">
               </button>
               <button class="coin-pill" type="button" aria-label="Open coins" (click)="openCoinPage()">
-                <img src="assets/icons/child-home-coin-figma.png" alt="" class="coin-pill-icon" aria-hidden="true">
+                <img src="assets/icons/child-home-coin-figma.webp" alt="" class="coin-pill-icon" aria-hidden="true">
                 <span>{{ userCoins }}</span>
               </button>
             </nav>
@@ -121,7 +126,7 @@
             <button type="button" class="header-stat" [routerLink]="['/authed/streaks']"
               [attr.aria-label]="'Open streaks. Current streak: ' + userStreaks">
               <span class="header-stat-icon-frame header-stat-icon-frame--streak" aria-hidden="true">
-                <img src="assets/icons/child-home-streak-figma.png" alt="" class="header-stat-icon">
+                <img src="assets/icons/child-home-streak-figma.webp" alt="" class="header-stat-icon">
               </span>
               <span class="header-stat-value">{{ userStreaks }}</span>
             </button>
@@ -129,7 +134,7 @@
             <button type="button" class="header-stat" [routerLink]="['/authed/trophies']"
               [attr.aria-label]="'Open trophies. Total trophies: ' + userDays">
               <span class="header-stat-icon-frame" aria-hidden="true">
-                <img src="assets/icons/child-home-trophy-figma.png" alt="" class="header-stat-icon">
+                <img src="assets/icons/child-home-trophy-figma.webp" alt="" class="header-stat-icon">
               </span>
               <span class="header-stat-value">{{ userDays }}</span>
             </button>
@@ -137,7 +142,7 @@
             <button type="button" class="header-stat" [routerLink]="['/authed/badges']"
               [attr.aria-label]="'Open badges. Total badges: ' + userBadges">
               <span class="header-stat-icon-frame" aria-hidden="true">
-                <img src="assets/icons/child-home-badge-figma.png" alt="" class="header-stat-icon">
+                <img src="assets/icons/child-home-badge-figma.webp" alt="" class="header-stat-icon">
               </span>
               <span class="header-stat-value">{{ userBadges }}</span>
             </button>
@@ -162,10 +167,14 @@
         </div>
       </div>
 
-      <!-- Current Week's API-backed streak -->
-      <week-streak-section class="w-full" [days]="weekStreakDays"
-        [currentStreak]="userStreaks" [nextMilestoneDay]="nextMilestoneDay"
-        [daysToNextMilestone]="daysToNextMilestone" [nextMilestoneCoins]="nextMilestoneCoins"></week-streak-section>
+      <!--
+        Current Week's API-backed streak is temporarily hidden across roles.
+        Keep the implementation in place so it can be re-enabled without
+        rebuilding the streak data flow.
+        <week-streak-section class="w-full" [days]="weekStreakDays"
+          [currentStreak]="userStreaks" [nextMilestoneDay]="nextMilestoneDay"
+          [daysToNextMilestone]="daysToNextMilestone" [nextMilestoneCoins]="nextMilestoneCoins"></week-streak-section>
+      -->
 
       <div class="mood-selector w-full">
         <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>

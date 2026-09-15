@@ -44,7 +44,7 @@ export interface JournalEntry {
 
       <ng-template #emptyBody>
         <empty-state
-          [imageSrc]="'assets/Images-Transparent/Image-Journal-Blank.png'"
+          [imageSrc]="'assets/Images-Transparent/Image-Journal-Blank.webp'"
           [imageAlt]="'Panda with kids illustration'"
           [leadText]="'We are waiting to hear about your day!'"
           [subText]="'Post your journal to keep your story alive'"

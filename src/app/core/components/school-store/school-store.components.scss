@@ -252,7 +252,7 @@ align-self: stretch;
 /* Footer exchange row */
 .footer-exchange{
 	display: flex;
-	justify-content: space-between;
+	justify-content: space-evenly;
 	align-items: center;
 	gap: 12px;
 	padding: 12px 0;

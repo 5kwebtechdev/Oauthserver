@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { fakeAsync, tick, flushMicrotasks } from '@angular/core/testing';
 import { Platform } from '@ionic/angular';
 import { AppUpdateService } from './app-update.service';
 import { InstalledAppInfoService } from './installed-app-info.service';
@@ -54,6 +55,17 @@ describe('AppUpdateService', () => {
     expect(result.verificationFailed).toBeFalse();
     expect(result.platform).toBeNull();
   });
+
+  it('settles when the iOS app-info bridge never responds', fakeAsync(() => {
+    spyOn(Capacitor, 'isNativePlatform').and.returnValue(true);
+    spyOn(Capacitor, 'getPlatform').and.returnValue('ios');
+    installedAppInfo.getInfo.and.returnValue(new Promise(() => {}));
+    let failure: Error | undefined;
+    service.checkForUpdate().catch(error => failure = error);
+    tick(5000);
+    flushMicrotasks();
+    expect(failure?.message).toBe('Native app info timed out');
+  }));
 
   it('requires an update when Google Play exposes a higher Android version code', async () => {
     spyOn(Capacitor, 'isNativePlatform').and.returnValue(true);

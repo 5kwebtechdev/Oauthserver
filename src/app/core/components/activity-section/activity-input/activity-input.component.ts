@@ -458,11 +458,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   private deleting = false;
 
   // runtime asset path (served from /assets)
-  private readonly DELETE_IMAGE_PATH = 'assets/Images-Transparent/Image-Input-Delete.png';
+  private readonly DELETE_IMAGE_PATH = 'assets/Images-Transparent/Image-Input-Delete.webp';
 
   // use PNG assets for icons (18px width, height auto)
-  readonly _coinSvg = `<img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins" style="width:18px;height:auto;"/>`;
-  private readonly _streakSvg = `<img src="assets/Icons-Neutral/Icon-Streak.png" alt="Streak" style="width:18px;height:auto;"/>`;
+  readonly _coinSvg = `<img src="assets/figma/parent-home/coin.webp" alt="Coins" style="width:18px;height:auto;"/>`;
+  private readonly _streakSvg = `<img src="assets/figma/parent-home/streak.webp" alt="Streak" style="width:18px;height:auto;"/>`;
 
   private buildDeletePopupConfig(coin: number, streak: number): SupermePopupConfig {
     const headingHtml = `Delete this activity?<br/><div style="margin-top:12px;font-size:14px;color:#6b656a">This will remove every instance of this activity in the date range you selected.<div style="display:flex;flex-direction:column;gap:8px;align-items: center;margin-top:8px">` +

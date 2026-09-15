@@ -1,390 +1,69 @@
-@use '../../../../theme/breakpoints' as bp;
+@use '../../../../theme/ad-config' as ads;
 
-:host {
-  display: block;
-  width: 100%;
-}
-
-:host(.parent-eduhub-ad):not(:has(.adb)),
-:host(.parent-learning-ad):not(:has(.adb)),
-:host(.child-learning-ad):not(:has(.adb)) {
-  display: none;
-}
+:host { display: block; width: 100%; min-width: 0; }
+:host(:not(:has(.adb))) { display: none; }
 
 .adb {
   display: flex;
   flex-direction: column;
   gap: 10px;
   width: 100%;
+  max-width: ads.$width;
+  margin-inline: auto;
+  min-width: 0;
 }
-
-/* Compact inline placement for the Master Class lesson reader. The banner
-   remains data-driven and is entirely absent when the ads API has no result. */
-.adb--lesson {
-  gap: 0;
-
-  .adb__card {
-    flex: 0 0 100%;
-    min-width: 100%;
-    height: auto;
-    aspect-ratio: auto;
-    border-radius: 12px;
-    background: #fff;
-    box-shadow: 0 3px 12px rgba(44, 38, 84, .08);
-    transform: none;
-    opacity: 1;
-  }
-
-  .adb__img {
-    width: 100%;
-    height: auto;
-    max-height: none;
-    object-fit: contain;
-    object-position: center;
-    background: #fff;
-  }
-
-  .adb__dots {
-    display: none;
-  }
-}
-
-// ── Clip wrapper — only the card track gets overflow:hidden, not the dots row ─
-.adb__track-clip {
-  width: 100%;
-  overflow: hidden;
-}
-
-// ── Scroll track ─────────────────────────────────────────────────────────────
+.adb__track-clip { width: 100%; overflow: hidden; }
 .adb__scroll-track {
   position: relative;
   display: flex;
-  gap: 10px;
-  will-change: transform;
-  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  gap: 0;
+  padding: 0;
+  transition: transform .4s ease;
 }
-
-// ── Each card — 82% wide, adjacent cards peek at edges ───────────────────────
 .adb__card {
-  flex: 0 0 82%;
-  min-width: 82%;
-  border-radius: 16px;
-  overflow: hidden;
-  height: clamp(140px, 40vw, 276px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
-  transform: scale(0.95);
-  opacity: 0.65;
-  transition: transform 0.35s ease, opacity 0.35s ease;
-  position: relative; // needed for counter badge
-
-  &--active {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  &--clickable {
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
+  position: relative;
+  flex: 0 0 100%;
+  min-width: 0;
+  width: 100%;
+  aspect-ratio: ads.$width / ads.$height;
+  box-sizing: border-box;
+  background: ads.$background;
+  &--clickable { cursor: pointer; }
 }
-
-// ── Image fills card ──────────────────────────────────────────────────────────
 .adb__img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
   object-position: center;
-  display: block;
-  color: transparent;        // hides alt text when image fails to load
-  background: #EDEDF0;       // neutral gray placeholder while loading
+  background: ads.$background;
 }
-
-// ── Dot indicators + counter row ─────────────────────────────────────────────
 .adb__dots {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 18px;
-  margin-top: 0;
-  padding: 0 16px;
+  gap: 8px;
+  min-height: 24px;
 }
-
-// ── Slide counter badge — right side of dots row (Instamart style) ────────────
 .adb__counter {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 31px;
-  height: 18px;
   padding: 2px 8px;
   border-radius: 4px;
   background: #432477;
   color: #fff;
-  font-family: var(--font-sans, 'Nunito', sans-serif);
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0;
-  pointer-events: none;
-  user-select: none;
-  white-space: nowrap;
-  box-sizing: border-box;
+  font: 600 12px/1.4 var(--font-sans, 'Nunito', sans-serif);
 }
-
 .adb__dot {
-  width: 8px;
-  height: 8px;
-  flex: 0 0 8px;
-  border-radius: 50%;
-  background: #6B656A;
-  border: none;
+  width: 12px;
+  height: 12px;
+  border: 0;
   padding: 0;
+  border-radius: 50%;
+  background: #8e898e;
   cursor: pointer;
-  opacity: 0.75;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-
-  &:active {
-    opacity: 1;
-    transform: scale(0.9);
-  }
 }
-
-.adb--article-details {
-  gap: 8px;
-
-  .adb__scroll-track {
-    gap: 8px;
-  }
-
-  .adb__card {
-    height: 182px;
-    min-width: 84.5%;
-    flex-basis: 84.5%;
-    border-radius: 16px;
-    background: #6b656a;
-    box-shadow: none;
-    opacity: 1;
-    transform: none;
-  }
-
-  .adb__card--active {
-    opacity: 1;
-    transform: none;
-  }
-
-  .adb__counter {
-    background: #90214d;
-  }
-}
-
-.adb--eduhub-parent {
-  gap: 8px;
-
-  .adb__scroll-track {
-    gap: 8px;
-  }
-
-  .adb__card {
-    height: auto;
-    min-width: 81%;
-    flex-basis: 81%;
-    aspect-ratio: 305 / 182;
-    border-radius: 16px;
-    background: #6b656a;
-    box-shadow: none;
-    opacity: 1;
-    transform: none;
-  }
-
-  .adb__card--active {
-    opacity: 1;
-    transform: none;
-  }
-
-  .adb__counter {
-    background: #90214d;
-  }
-}
-
-// 81% of even a capped desktop container (e.g. 960px) is still a ~750px
-// card — fine as a mobile "single-card peek" carousel, but oversized once
-// there's real desktop width to work with. Cap it to a normal promotional
-// banner size instead of letting it dominate the page.
-@media (min-width: 480px) and (max-width: 767.98px) {
-  .adb--eduhub-parent .adb__card {
-    min-width: 0;
-    width: min(100%, 420px);
-    flex-basis: min(100%, 420px);
-  }
-}
-
-@media (min-width: 768px) {
-  .adb--eduhub-parent .adb__card {
-    min-width: 0;
-    width: calc(50% - 6px);
-    flex-basis: calc(50% - 6px);
-    aspect-ratio: 16 / 8.5;
-    border-radius: 20px;
-    box-shadow: 0 10px 24px rgba(67, 36, 119, .12);
-  }
-
-  .adb--eduhub-parent .adb__scroll-track { gap: 12px; }
-}
-
-// A single banner must use the whole content width. The former 81% carousel
-// width is useful only when there is another card to preview; with one result
-// it leaves a distracting empty area and looks broken on narrow devices.
-.adb--single {
-  .adb__card {
-    flex-basis: 100%;
-    min-width: 100%;
-  }
-}
-
-.adb--eduhub-inner {
-  gap: 8px;
-
-  .adb__scroll-track {
-    gap: 8px;
-  }
-
-  .adb__card {
-    height: auto;
-    min-width: 81%;
-    flex-basis: 81%;
-    aspect-ratio: 305 / 182;
-    border-radius: 16px;
-    background: #6b656a;
-    box-shadow: none;
-    opacity: 1;
-    transform: none;
-  }
-
-  .adb__card--active {
-    opacity: 1;
-    transform: none;
-  }
-
-  .adb__counter {
-    background: #432477;
-  }
-}
-
-.adb--parent-learning {
-  gap: 8px;
-
-  .adb__scroll-track {
-    gap: 8px;
-  }
-
-  .adb__card {
-    width: min(305px, 84.5%);
-    height: auto;
-    min-width: min(305px, 84.5%);
-    flex-basis: min(305px, 84.5%);
-    aspect-ratio: 305 / 182;
-    border-radius: 16px;
-    background: #6b656a;
-    box-shadow: none;
-    opacity: 1;
-    transform: none;
-  }
-
-  .adb__card--active {
-    opacity: 1;
-    transform: none;
-  }
-
-  .adb__counter {
-    background: #432477;
-  }
-}
-
-@media (max-width: 359px) {
-  .adb--article-details .adb__card {
-    height: 166px;
-  }
-}
-
-// Default (unvariant) ad slots — user-dashboard's screen="HOME" and similar —
-// show 2 cards at once on tablet/desktop instead of the mobile single-card-
-// peek carousel, with no dimmed "inactive" card (both are equally current)
-// and no "1/3" slide-count badge (dot buttons themselves stay visible). No
-// autoplay when there are only 2 ads — see isDesktopDefaultCarousel() in the
-// .ts, both are already on screen together so there's nothing to slide to.
-// :not() scoping keeps this from touching the other variant carousels
-// (article/eduhub/parent-learning/lesson), which already run at their own
-// fixed sizing on every screen size.
-@include bp.tablet-up {
-  // Home-screen creatives are supplied at 1216 x 495. Keep one complete,
-  // full-width banner in view on web so artwork is never cropped, stretched,
-  // or squeezed into the two-column dimensions used by internal placements.
-  :host-context(html:not(.plt-capacitor)) .adb.adb--home {
-    .adb__card {
-      flex: 0 0 100%;
-      min-width: 100%;
-      height: auto;
-      aspect-ratio: 1216 / 495;
-      border-radius: 20px;
-      background: #fff;
-      box-shadow: 0 8px 24px rgba(44, 38, 84, .1);
-      opacity: 1;
-      transform: none;
-    }
-
-    .adb__img {
-      width: 100%;
-      height: 100%;
-      max-width: none;
-      max-height: none;
-      border-radius: inherit;
-      object-fit: contain;
-      object-position: center;
-      background: #fff;
-    }
-  }
-
-  :host-context(html:not(.plt-capacitor)) .adb:not(.adb--home):not(.adb--article-details):not(.adb--eduhub-parent):not(.adb--eduhub-inner):not(.adb--parent-learning):not(.adb--lesson) {
-    .adb__card {
-      height: auto;
-      aspect-ratio: 305 / 182;
-      box-shadow: none;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .adb__img {
-      // Round the image itself, not the letterboxed space around it.
-      // Intrinsic sizing keeps every banner's full artwork visible.
-      width: auto;
-      height: auto;
-      max-width: 100%;
-      max-height: 100%;
-      border-radius: 16px;
-      object-fit: contain;
-      background: #fff;
-    }
-
-    &.adb--single .adb__card {
-      flex-basis: 100%;
-      min-width: 100%;
-    }
-  }
-
-  .adb:not(.adb--home):not(.adb--article-details):not(.adb--eduhub-parent):not(.adb--eduhub-inner):not(.adb--parent-learning):not(.adb--lesson) {
-    .adb__card {
-      flex: 0 0 calc(50% - 5px);
-      min-width: calc(50% - 5px);
-      opacity: 1;
-      transform: none;
-    }
-
-    .adb__counter {
-      display: none;
-    }
-  }
+.adb__dot:focus-visible { outline: 2px solid #432477; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .adb__scroll-track { transition: none; }
 }

@@ -91,7 +91,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   activityBreakdown: ActivityBreakdownSegment[] = this.emptyActivityBreakdown();
   primaryMood: PrimaryMood = {
     label: 'No data',
-    icon: 'assets/Images-Transparent/Mood-emoji-neutral-home.png',
+    icon: 'assets/Images-Transparent/Mood-emoji-neutral-home.webp',
   };
 
   private readonly destroy$ = new Subject<void>();
@@ -292,26 +292,26 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
         id: 'habits',
         title: 'Habits',
         metrics: [
-          this.metric('habits-week', 'This week', this.asNumber(insights.habits?.thisWeek), 'Progress in the last 7 days', 'assets/figma/parent-insights/metrics-sprite.png', 'habit', 'habit-week'),
-          this.metric('habits-month', 'This month', this.asNumber(insights.habits?.thisMonth), 'Growth over 30 days', 'assets/figma/parent-insights/metrics-sprite.png', 'habit', 'habit-month'),
+          this.metric('habits-week', 'This week', this.asNumber(insights.habits?.thisWeek), 'Progress in the last 7 days', 'assets/figma/parent-insights/metrics-sprite.webp', 'habit', 'habit-week'),
+          this.metric('habits-month', 'This month', this.asNumber(insights.habits?.thisMonth), 'Growth over 30 days', 'assets/figma/parent-insights/metrics-sprite.webp', 'habit', 'habit-month'),
         ],
       },
       {
         id: 'tasks',
         title: 'Tasks',
         metrics: [
-          this.metric('tasks-week', 'This week', this.asNumber(insights.tasks?.thisWeek), 'Progress in the last 7 days', 'assets/figma/parent-insights/metrics-sprite.png', 'task', 'task-week'),
-          this.metric('tasks-month', 'This month', this.asNumber(insights.tasks?.thisMonth), 'Growth over 30 days', 'assets/figma/parent-insights/metrics-sprite.png', 'task', 'task-month'),
+          this.metric('tasks-week', 'This week', this.asNumber(insights.tasks?.thisWeek), 'Progress in the last 7 days', 'assets/figma/parent-insights/metrics-sprite.webp', 'task', 'task-week'),
+          this.metric('tasks-month', 'This month', this.asNumber(insights.tasks?.thisMonth), 'Growth over 30 days', 'assets/figma/parent-insights/metrics-sprite.webp', 'task', 'task-month'),
         ],
       },
       {
         id: 'knowledge',
         title: 'Knowledge Gained',
         metrics: [
-          this.metric('quizzes', 'Quizzes', this.periodValues(insights.knowledgeGained?.quizzes).month, 'Quizzes conquered so far', 'assets/figma/parent-insights/quiz.png', 'knowledge', 'quiz'),
-          this.metric('puzzles', 'Puzzles', this.periodValues(insights.knowledgeGained?.puzzles).month, 'Puzzles cracked since you started', 'assets/figma/parent-insights/puzzle.png', 'knowledge', 'puzzle'),
-          this.metric('articles', 'Articles', this.periodValues(insights.knowledgeGained?.articles).month, 'Ideas absorbed since you joined', 'assets/figma/parent-insights/article.png', 'knowledge', 'article'),
-          this.metric('lessons', 'Lessons', this.periodValues(insights.knowledgeGained?.lessons).month, 'Lessons progress since you started', 'assets/figma/parent-insights/lesson.png', 'knowledge', 'lesson'),
+          this.metric('quizzes', 'Quizzes', this.periodValues(insights.knowledgeGained?.quizzes).month, 'Quizzes conquered so far', 'assets/figma/parent-insights/quiz.webp', 'knowledge', 'quiz'),
+          this.metric('puzzles', 'Puzzles', this.periodValues(insights.knowledgeGained?.puzzles).month, 'Puzzles cracked since you started', 'assets/figma/parent-insights/puzzle.webp', 'knowledge', 'puzzle'),
+          this.metric('articles', 'Articles', this.periodValues(insights.knowledgeGained?.articles).month, 'Ideas absorbed since you joined', 'assets/figma/parent-insights/article.webp', 'knowledge', 'article'),
+          this.metric('lessons', 'Lessons', this.periodValues(insights.knowledgeGained?.lessons).month, 'Lessons progress since you started', 'assets/figma/parent-insights/lesson.webp', 'knowledge', 'lesson'),
         ],
       },
     ];
@@ -331,10 +331,10 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
       id: 'achievements',
       title: 'Achievements',
       metrics: [
-        this.metric('badges', 'Badges', this.asNumber(insights.achievements?.badges), 'Badges earned in the last 30 days', 'assets/figma/parent-insights/badge.png', 'achievement', 'badge'),
-        this.metric('streaks', 'Streak', this.asNumber(insights.achievements?.streaks), 'Your longest streak this month', 'assets/figma/parent-insights/streak.png', 'achievement', 'streak'),
-        this.metric('trophies', 'Trophies', this.asNumber(insights.achievements?.trophies), 'Trophies unlocked this month', 'assets/figma/parent-insights/trophy.png', 'achievement', 'trophy'),
-        this.metric('coins', 'Coins', this.asNumber(insights.achievements?.coins), 'Coins collected this month', 'assets/figma/parent-insights/coin.png', 'achievement', 'coin'),
+        this.metric('badges', 'Badges', this.asNumber(insights.achievements?.badges), 'Badges earned in the last 30 days', 'assets/figma/parent-insights/badge.webp', 'achievement', 'badge'),
+        this.metric('streaks', 'Streak', this.asNumber(insights.achievements?.streaks), 'Your longest streak this month', 'assets/figma/parent-insights/streak.webp', 'achievement', 'streak'),
+        this.metric('trophies', 'Trophies', this.asNumber(insights.achievements?.trophies), 'Trophies unlocked this month', 'assets/figma/parent-insights/trophy.webp', 'achievement', 'trophy'),
+        this.metric('coins', 'Coins', this.asNumber(insights.achievements?.coins), 'Coins collected this month', 'assets/figma/parent-insights/coin.webp', 'achievement', 'coin'),
       ],
     });
 
@@ -345,10 +345,10 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     const knowledge = insights.knowledgeGained;
     const journal = insights.journal;
     const achievementMetrics = [
-      this.metric('badges', 'Badges', this.asNumber(insights.achievements?.badges), 'Badges earned in the last 30 days', 'assets/figma/parent-insights/badge.png', 'achievement'),
-      this.metric('streaks', 'Streak', this.asNumber(insights.achievements?.streaks), 'Your longest streak this month', 'assets/figma/parent-insights/streak.png', 'achievement'),
-      this.metric('trophies', 'Trophies', this.asNumber(insights.achievements?.trophies), 'Trophies unlocked this month', 'assets/figma/parent-insights/trophy.png', 'achievement'),
-      this.metric('coins', 'Coins', this.asNumber(insights.achievements?.coins), 'Coins collected this month', 'assets/figma/parent-insights/coin.png', 'achievement'),
+      this.metric('badges', 'Badges', this.asNumber(insights.achievements?.badges), 'Badges earned in the last 30 days', 'assets/figma/parent-insights/badge.webp', 'achievement'),
+      this.metric('streaks', 'Streak', this.asNumber(insights.achievements?.streaks), 'Your longest streak this month', 'assets/figma/parent-insights/streak.webp', 'achievement'),
+      this.metric('trophies', 'Trophies', this.asNumber(insights.achievements?.trophies), 'Trophies unlocked this month', 'assets/figma/parent-insights/trophy.webp', 'achievement'),
+      this.metric('coins', 'Coins', this.asNumber(insights.achievements?.coins), 'Coins collected this month', 'assets/figma/parent-insights/coin.webp', 'achievement'),
     ];
 
     return [
@@ -356,34 +356,34 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
         id: 'habits',
         title: 'Habits',
         metrics: [
-          this.metric('habits-week', 'This week', this.asNumber(insights.habits?.thisWeek), 'Progress in the last 7 days', 'assets/figma/parent-insights/metrics-sprite.png', 'habit', 'habit-week'),
-          this.metric('habits-month', 'This month', this.asNumber(insights.habits?.thisMonth), 'Growth over 30 days', 'assets/figma/parent-insights/metrics-sprite.png', 'habit', 'habit-month'),
+          this.metric('habits-week', 'This week', this.asNumber(insights.habits?.thisWeek), 'Progress in the last 7 days', 'assets/figma/parent-insights/metrics-sprite.webp', 'habit', 'habit-week'),
+          this.metric('habits-month', 'This month', this.asNumber(insights.habits?.thisMonth), 'Growth over 30 days', 'assets/figma/parent-insights/metrics-sprite.webp', 'habit', 'habit-month'),
         ],
       },
       {
         id: 'tasks',
         title: 'Tasks',
         metrics: [
-          this.metric('tasks-week', 'This week', this.asNumber(insights.tasks?.thisWeek), 'Progress in the last 7 days', 'assets/figma/parent-insights/metrics-sprite.png', 'task', 'task-week'),
-          this.metric('tasks-month', 'This month', this.asNumber(insights.tasks?.thisMonth), 'Growth over 30 days', 'assets/figma/parent-insights/metrics-sprite.png', 'task', 'task-month'),
+          this.metric('tasks-week', 'This week', this.asNumber(insights.tasks?.thisWeek), 'Progress in the last 7 days', 'assets/figma/parent-insights/metrics-sprite.webp', 'task', 'task-week'),
+          this.metric('tasks-month', 'This month', this.asNumber(insights.tasks?.thisMonth), 'Growth over 30 days', 'assets/figma/parent-insights/metrics-sprite.webp', 'task', 'task-month'),
         ],
       },
       {
         id: 'knowledge',
         title: 'Learnings',
         metrics: [
-          this.periodMetric('quizzes', 'Quizzes', knowledge?.quizzes, 'assets/figma/parent-insights/quiz.png', 'quiz'),
-          this.periodMetric('puzzles', 'Puzzles', knowledge?.puzzles, 'assets/figma/parent-insights/puzzle.png', 'puzzle'),
-          this.periodMetric('articles', 'Articles', knowledge?.articles, 'assets/figma/parent-insights/article.png', 'article'),
-          this.periodMetric('lessons', 'Lessons', knowledge?.lessons, 'assets/figma/parent-insights/lesson.png', 'lesson'),
+          this.periodMetric('quizzes', 'Quizzes', knowledge?.quizzes, 'assets/figma/parent-insights/quiz.webp', 'quiz'),
+          this.periodMetric('puzzles', 'Puzzles', knowledge?.puzzles, 'assets/figma/parent-insights/puzzle.webp', 'puzzle'),
+          this.periodMetric('articles', 'Articles', knowledge?.articles, 'assets/figma/parent-insights/article.webp', 'article'),
+          this.periodMetric('lessons', 'Lessons', knowledge?.lessons, 'assets/figma/parent-insights/lesson.webp', 'lesson'),
         ],
       },
       {
         id: 'journal',
         title: 'Journal',
         metrics: [
-          this.metric('journal-week', 'This week', this.asNumber(journal?.thisWeek), 'Journal entries this week', 'assets/figma/parent-insights/section-sprite.png', 'journal', 'journal', undefined, undefined, 'Entries'),
-          this.metric('journal-month', 'This month', this.asNumber(journal?.thisMonth), 'Journal entries this month', 'assets/figma/parent-insights/section-sprite.png', 'journal', 'journal', undefined, undefined, 'Entries'),
+          this.metric('journal-week', 'This week', this.asNumber(journal?.thisWeek), 'Journal entries this week', 'assets/figma/parent-insights/section-sprite.webp', 'journal', 'journal', undefined, undefined, 'Entries'),
+          this.metric('journal-month', 'This month', this.asNumber(journal?.thisMonth), 'Journal entries this month', 'assets/figma/parent-insights/section-sprite.webp', 'journal', 'journal', undefined, undefined, 'Entries'),
         ],
       },
       { id: 'achievements', title: 'Achievements', metrics: achievementMetrics },
@@ -478,8 +478,8 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     const label = [...counts.entries()]
       .sort((first, second) => second[1] - first[1])[0]?.[0] || 'No data';
     const icon = label === 'Excited'
-      ? 'assets/figma/child-self-insights/excited.png'
-      : MOOD_EMOJI_MAP[label] || 'assets/Images-Transparent/Mood-emoji-neutral-home.png';
+      ? 'assets/figma/child-self-insights/excited.webp'
+      : MOOD_EMOJI_MAP[label] || 'assets/Images-Transparent/Mood-emoji-neutral-home.webp';
 
     return { label, icon };
   }

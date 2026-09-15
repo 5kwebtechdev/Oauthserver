@@ -1,5 +1,51 @@
 @use "../../../../../theme/breakpoints" as bp;
 
+.mobile-menu-toggle, .mobile-web-tabs { display: none; }
+.mobile-menu {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  border: 0;
+  background: white;
+  color: #282527;
+  font-family: var(--font-sans);
+  &::backdrop { background: rgb(0 0 0 / 35%); }
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  &__panel { padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+  &__heading { position: sticky; top: 0; z-index: 1; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: max(18px, env(safe-area-inset-top)) 20px 18px; min-height: 80px; box-shadow: 0 6px 20px rgb(0 0 0 / 4%); }
+  a.mobile-menu__brand { display: flex; align-items: center; gap: 18px; padding: 0; min-width: 0; }
+  &__brand img { width: 58px; height: 44px; object-fit: contain; }
+  h2 {
+    margin: 0;
+    color: #282527;
+    font-family: var(--font-sans, "Nunito", sans-serif);
+    font-size: clamp(26px, 7vw, 30px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.35px;
+  }
+  button { flex-shrink: 0; border: 0; background: transparent; width: 44px; height: 44px; font-size: 30px; cursor: pointer; color: #282527; }
+  nav { padding: 12px 16px 24px; }
+  a, summary { display: flex; align-items: center; padding: 20px 0; min-height: 64px; color: #282527; text-decoration: none; cursor: pointer; font-size: 20px; }
+  summary { justify-content: space-between; gap: 12px; font-weight: 600; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary ion-icon { flex-shrink: 0; font-size: 20px; transition: transform 160ms ease; }
+  .mobile-menu__expand { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; color: inherit; font-size: 20px; }
+  details[open] > summary ion-icon { transform: rotate(180deg); }
+  details, nav > a, nav > ng-container > a { border-bottom: 1px solid #eee8ef; }
+  details a { padding: 14px 16px; min-height: 48px; font-size: 16px; color: #432477; }
+  a:hover, summary:hover { background: #faf7fc; }
+  a:active, summary:active { background: #f2edf8; }
+  @media (prefers-reduced-motion: reduce) { summary ion-icon { transition: none; } }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid #432477; outline-offset: -2px; }
+}
+
 :host {
   position: relative;
   z-index: 1000;
@@ -986,6 +1032,29 @@ button {
 @keyframes playful-menu-in {
   from { opacity: 0; transform: translateY(-8px) scale(.96); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 768px) {
+  :host .web-header { width: 100%; min-height: 64px; border-radius: 0; }
+  :host .web-header .web-header__inner {
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%; min-height: 64px; padding: 8px 16px; gap: 12px;
+  }
+  :host .web-header .web-header__left { display: flex; width: auto; flex: 1; min-width: 0; }
+  :host .web-header .web-header__nav { display: none; }
+  :host .web-header .web-header__brand { width: auto; margin: 0; padding: 0; }
+  :host .web-header .web-header__logo { width: 84px; height: 44px; max-height: 44px; object-fit: contain; }
+  :host .web-header .web-header__brand-label { display: none; }
+  .mobile-menu-toggle { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 12px; background: #f2edf8; color: #432477; font-size: 28px; cursor: pointer; }
+  .mobile-web-tabs {
+    position: fixed; inset: auto 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 4px max(4px, env(safe-area-inset-right)) env(safe-area-inset-bottom, 0px) max(4px, env(safe-area-inset-left));
+    height: calc(64px + env(safe-area-inset-bottom, 0px)); background: #fff; border-top: 1px solid #e8e1ef;
+    a, button { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 0; border-radius: 10px; background: transparent; color: #6b656a; text-decoration: none; font-size: 11px; font-family: var(--font-sans); cursor: pointer; }
+    ion-icon { font-size: 24px; }
+    .active { color: #432477; background: #f2edf8; font-weight: 700; }
+    :focus-visible { outline: 2px solid #432477; }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

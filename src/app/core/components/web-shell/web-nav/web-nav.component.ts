@@ -1,4 +1,5 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
@@ -104,7 +105,7 @@ const PARENT_NAV_ITEMS: WebNavItem[] = [
 @Component({
   selector: 'web-nav',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IonicModule],
   templateUrl: './web-nav.component.html',
   styleUrls: ['./web-nav.component.scss'],
 })
@@ -113,12 +114,52 @@ export class WebNavComponent implements OnInit {
   // This wordmark has a tightly cropped transparent canvas. The previous
   // square asset contained substantial empty space, so the logo looked tiny
   // even though its image element was already 48px tall.
-  readonly logoSrc = 'assets/Images-Transparent/SuperMeLogoFinal3.png';
+  readonly logoSrc = 'assets/Images-Transparent/SuperMeLogoFinal3.webp';
   readonly chevronSrc = `${this.navigationAssetRoot}/chevron.svg`;
 
   isParent = false;
   navItems: WebNavItem[] = CHILD_SELF_NAV_ITEMS;
   openMenu: string | null = null;
+  @ViewChild('mobileMenu') mobileMenu?: ElementRef<HTMLDialogElement>;
+
+  openMobileMenu(): void {
+    this.mobileMenu?.nativeElement.showModal();
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenu?.nativeElement.close();
+  }
+
+  onMobileMenuBackdropClick(event: MouseEvent): void {
+    // Returning false from an Angular click binding cancels native link and
+    // summary actions. Only close for the backdrop; let row clicks proceed.
+    if (event.target === this.mobileMenu?.nativeElement) {
+      this.closeMobileMenu();
+    }
+  }
+
+  openMobileSection(item: WebNavItem, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (item.link) {
+      this.closeMobileMenu();
+      void this.router.navigateByUrl(item.link);
+    }
+  }
+
+  markMobileMenuNavigation(): void {
+    this.closeMobileMenu();
+  }
+
+  toggleMobileSection(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget as HTMLElement | null;
+    const details = button?.closest('details') as HTMLDetailsElement | null;
+    if (details) {
+      details.open = !details.open;
+    }
+  }
 
   constructor(
     readonly router: Router,
@@ -136,6 +177,7 @@ export class WebNavComponent implements OnInit {
 
   goHome(event: Event): void {
     event.preventDefault();
+    this.closeMobileMenu();
     this.closeMenu();
 
     // A reel preview can be opened from the dashboard itself. Navigating to

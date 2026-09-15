@@ -58,15 +58,15 @@ function getStandardAvatarValue(
   const genderSuffix = gender === 'female' ? 'F' : '';
   switch (group.ageGroup) {
     case 'BELOW_11':
-      return `assets/figma/avatars/below-11-final/Below11-${index}${genderSuffix}.png`;
+      return `assets/figma/avatars/below-11-final/Below11-${index}${genderSuffix}.webp`;
     case 'AGE_11_13':
-      return `assets/figma/avatars/11-13-final/11-13-${index}${genderSuffix}.png`;
+      return `assets/figma/avatars/11-13-final/11-13-${index}${genderSuffix}.webp`;
     case 'AGE_14_15':
-      return `assets/figma/avatars/14-15-final/14-15-${index}${genderSuffix}.png`;
+      return `assets/figma/avatars/14-15-final/14-15-${index}${genderSuffix}.webp`;
     case 'AGE_16_17':
-      return `assets/figma/avatars/16-17-final/16-17-${index}${genderSuffix}.png`;
+      return `assets/figma/avatars/16-17-final/16-17-${index}${genderSuffix}.webp`;
     case 'AGE_18_PLUS':
-      return `assets/figma/avatars/18-plus-final/18plus-${index}${genderSuffix}.png`;
+      return `assets/figma/avatars/18-plus-final/18plus-${index}${genderSuffix}.webp`;
     default:
       return `assets/figma/avatars/${key}.webp`;
   }
@@ -79,7 +79,7 @@ const AVATARS: AvatarDefinition[] = AVATAR_GROUPS.reduce((avatars, group) => {
       avatars.push({
         key,
         label: group.figmaLabel(gender, index),
-        imageName: `${key}.png`,
+        imageName: `${key}.webp`,
         // Keep the existing backend-facing imageName stable while using the
         // latest bundled artwork for each age group as it becomes available.
         value: getStandardAvatarValue(group, gender, index, key),
@@ -96,7 +96,7 @@ const AVATARS: AvatarDefinition[] = AVATAR_GROUPS.reduce((avatars, group) => {
 const PARENT_AVATARS: AvatarDefinition[] = (['male', 'female'] as AvatarGender[])
   .reduce((avatars, gender) => {
     for (let index = 1; index <= 6; index++) {
-      const filename = gender === 'female' ? `Parent${index}F.png` : `Parent${index}.png`;
+      const filename = gender === 'female' ? `Parent${index}F.webp` : `Parent${index}.webp`;
       avatars.push({
         key: `parent-${gender}-${index}`,
         label: `Parent ${gender} avatar ${index}`,

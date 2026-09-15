@@ -453,7 +453,7 @@ export class UploadReelComponent implements OnInit, OnDestroy {
     showUploadSuccess: boolean = false;
 
     uploadSuccessConfig: SupermePopupConfig = {
-        image: 'assets/Images-Transparent/Image-Reel-Success.png',
+        image: 'assets/Images-Transparent/Image-Reel-Success.webp',
         imageAlt: 'Reel publish request submitted',
         heading: 'Publish Request Submitted!'
     };
