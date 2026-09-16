@@ -369,6 +369,27 @@
   background: #fff3cd;
 }
 
+.item-icon--category {
+    box-sizing: border-box;
+    padding: 6px;
+    object-fit: contain;
+}
+
+.history-day-badge {
+    position: absolute;
+    bottom: -3px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 3px;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    background: #452780;
+    color: #fff;
+    text-align: center;
+    font: 800 11px/16px var(--font-sans, 'Nunito', sans-serif);
+}
+
 .item-icon--spend {
   padding: 8px;
   box-sizing: border-box;

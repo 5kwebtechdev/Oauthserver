@@ -312,6 +312,6 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 	}
 
 	goBack(): void {
-		this.router.navigateByUrl('/home').catch(() => { this.router.navigate(['/authed/user-dashboard']); });
+		this.router.navigateByUrl('/home').catch(() => { this.router.navigate(['/home']); });
 	}
 }

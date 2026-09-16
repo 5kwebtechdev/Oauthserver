@@ -138,7 +138,7 @@ export class ActivityPageComponent implements OnInit, OnDestroy {
     const currentTab = this.usesPlannerActivityDesign
       ? 'timetable'
       : (this.habitContent?.currentMainTab ?? 'habits');
-    const origin = this.router.url || '/authed/user-dashboard';
+    const origin = this.router.url || '/home';
     this.router.navigate(['/authed/activity-input'], { state: { currentActive: currentTab, origin } }).catch(() => { });
   }
 
@@ -153,7 +153,7 @@ export class ActivityPageComponent implements OnInit, OnDestroy {
    * Navigate back to user dashboard
    */
   onBack(): void {
-    this.router.navigate(['/authed/user-dashboard']).catch(() => {
+    this.router.navigate(['/home']).catch(() => {
       this.router.navigateByUrl('/authed');
     });
   }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError, forkJoin } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../../package/api/auth.service';
@@ -12,7 +12,7 @@ import {
     toTutorListItem,
     getExperienceYears,
     SelectedFilters,
-    TutorCategory
+    TutorSearchRequest
 } from '../models/tutor.model';
 
 @Injectable({
@@ -23,6 +23,8 @@ export class TutorService {
 
     // Cache for all tutors - fetched once and reused
     private tutorsCache$ = new BehaviorSubject<Tutor[]>([]);
+    /** Last complete directory response, retained while filtered results are displayed. */
+    private unfilteredTutors: Tutor[] = [];
     private tutorsLoaded = false;
     private tutorsLoading$ = new BehaviorSubject<boolean>(false);
     private readonly directoryCache = new Map<string, Tutor[]>();
@@ -117,6 +119,7 @@ export class TutorService {
         return this.http.get<Tutor[]>(`${this.apiUrl}/tutors`, { headers: this.getHeaders() })
             .pipe(
                 tap(tutors => {
+                    this.unfilteredTutors = [...tutors];
                     this.tutorsCache$.next(tutors);
                     this.tutorsLoaded = true;
                     this.tutorsLoading$.next(false);
@@ -142,6 +145,7 @@ export class TutorService {
         this.tutorsLoading$.next(true);
         return this.getTutorsByEntityType(normalizedType, city).pipe(
             tap(tutors => {
+                this.unfilteredTutors = [...tutors];
                 this.tutorsCache$.next(tutors);
                 this.tutorsLoaded = true;
                 this.tutorsLoading$.next(false);
@@ -162,30 +166,34 @@ export class TutorService {
      * fallback for callers that predate inline error states.
      */
     searchDirectory(entityType: string, filters: SelectedFilters): Observable<Tutor[]> {
-        // Filter the entity-specific directory using its saved education mappings.
-        // The legacy POST /tutors/search is not available on every deployment.
-        return forkJoin({
-            tutors: this.getTutorsByEntityType(entityType),
-            categories: this.http.get<TutorCategory[]>(`${this.apiUrl}/tutors/categories`, { headers: this.getHeaders() })
-        }).pipe(map(({ tutors, categories }) => {
-            const normalize = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
-            const category = categories.find(item => normalize(item.categoryKey) === normalize(filters.categoryKey));
-            if (!category) return [];
-            return tutors.filter(tutor => (tutor.categoryMappings || []).some(mapping => {
-                if (String(mapping.categoryId) !== String(category.id)) return false;
-                let fields: Record<string, unknown> = {};
-                try {
-                    fields = typeof mapping.selectedFieldOptions === 'string'
-                        ? JSON.parse(mapping.selectedFieldOptions) : mapping.selectedFieldOptions || {};
-                } catch { return false; }
-                return Object.entries(filters.filters).every(([key, selected]) => {
-                    if (!selected.length) return true;
-                    const matchingKey = Object.keys(fields || {}).find(field => normalize(field) === normalize(key));
-                    const raw = matchingKey ? fields[matchingKey] : undefined;
-                    const values = (Array.isArray(raw) ? raw : raw == null ? [] : [raw]).map(normalize);
-                    return selected.some(value => values.includes(normalize(value)));
-                });
-            }));
+        const request: TutorSearchRequest = {
+            categoryKey: filters.categoryKey,
+            filters: filters.filters,
+            page: 0,
+            size: 100,
+            sort: 'RECENT'
+        };
+
+        return this.http.post<any>(`${this.apiUrl}/tutors/search`, request, {
+            headers: this.getHeaders()
+        }).pipe(map(response => {
+            const candidates = [
+                response,
+                response?.content,
+                response?.tutors,
+                response?.data,
+                response?.data?.content,
+                response?.data?.tutors,
+                response?.result,
+                response?.result?.content,
+                response?.result?.tutors
+            ];
+            const tutors = candidates.find(Array.isArray) || [];
+            const expectedType = String(entityType || '').trim().toUpperCase();
+            return expectedType
+                ? tutors.filter((tutor: Tutor) => !tutor?.entityType
+                    || String(tutor.entityType).trim().toUpperCase() === expectedType)
+                : tutors;
         }));
     }
 
@@ -421,6 +429,7 @@ export class TutorService {
      */
     clearCache(): void {
         this.tutorsCache$.next([]);
+        this.unfilteredTutors = [];
         this.tutorsLoaded = false;
         this.selectedTutor$.next(null);
         this.filteredTutors$.next([]);
@@ -439,80 +448,77 @@ export class TutorService {
     }
 
     /**
+     * Apply the dynamic category filters to the already loaded tutor records.
+     * This is used only when the server-side search endpoint is unavailable.
+     * Category fields live inside `categoryMappings.selectedFieldOptions`, not
+     * in the legacy top-level subjects/levels arrays.
+     */
+    applySelectedFilters(selected: SelectedFilters): void {
+        const tutors = this.unfilteredTutors.length > 0
+            ? this.unfilteredTutors
+            : (this.tutorsCache$.value || []);
+        const filtered = tutors.filter(tutor => this.matchesSelectedFilters(tutor, selected));
+        this.setCacheAndApply(filtered);
+    }
+
+    private matchesSelectedFilters(tutor: Tutor, selected: SelectedFilters): boolean {
+        const normalize = (value: unknown): string => String(value ?? '')
+            .trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+        const flatten = (value: unknown): string[] => {
+            if (Array.isArray(value)) {
+                return value.reduce<string[]>((all, item) => all.concat(flatten(item)), []);
+            }
+            if (value && typeof value === 'object') {
+                const record = value as Record<string, unknown>;
+                const preferred = record['optionValue'] ?? record['value'] ?? record['optionLabel'] ?? record['label'];
+                return preferred == null
+                    ? Object.values(record).reduce<string[]>((all, item) => all.concat(flatten(item)), [])
+                    : flatten(preferred);
+            }
+            return String(value ?? '').split(',').map(normalize).filter(Boolean);
+        };
+        const requested = Object.entries(selected?.filters || {}).filter(([, values]) => values?.length);
+        const categoryIds: Record<string, number> = {
+            SCHOOL: 1, COLLEGE: 2, LANGUAGES: 3, HOBBIES: 4,
+            EXAMS: 5, SPORTS: 6, OTHERS: 7
+        };
+        const expectedCategoryId = categoryIds[String(selected?.categoryKey || '').toUpperCase()];
+
+        return (tutor.categoryMappings || []).some(mapping => {
+            if (expectedCategoryId && Number(mapping.categoryId) !== expectedCategoryId) return false;
+
+            let fields: Record<string, unknown> = {};
+            try {
+                fields = typeof mapping.selectedFieldOptions === 'string'
+                    ? JSON.parse(mapping.selectedFieldOptions) : (mapping.selectedFieldOptions || {});
+            } catch {
+                return false;
+            }
+
+            return requested.every(([requestedKey, selectedValues]) => {
+                const actualKey = Object.keys(fields).find(key => normalize(key) === normalize(requestedKey));
+                if (!actualKey) return false;
+                const actualValues = flatten(fields[actualKey]);
+                // Multiple choices in one group are alternatives; separate
+                // filter groups are combined, matching the filter UI.
+                return selectedValues.some(value => actualValues.includes(normalize(value)));
+            });
+        });
+    }
+
+    /**
      * Estimate count of tutors matching a `SelectedFilters` payload.
      * This uses the same filtering heuristics as `applyFiltersAndSort` but
      * does not mutate service state.
      */
     countForSelectedFilters(selected: SelectedFilters | null): number {
-        const tutors = this.tutorsCache$.value || [];
+        const tutors = this.unfilteredTutors.length > 0
+            ? this.unfilteredTutors
+            : (this.tutorsCache$.value || []);
 
-        if (!selected || !selected.filters || Object.keys(selected.filters).length === 0) {
+        if (!selected) {
             return tutors.length;
         }
-
-        // Map SelectedFilters -> TutorFilters (heuristic)
-        const filters: TutorFilters = {};
-
-        for (const fk of Object.keys(selected.filters)) {
-            const vals = selected.filters[fk] || [];
-            const key = fk.toLowerCase();
-
-            if (key.includes('subject')) {
-                filters.subjects = [...(filters.subjects || []), ...vals];
-            } else if (key.includes('level') || key.includes('grade') || key.includes('class')) {
-                filters.levels = [...(filters.levels || []), ...vals];
-            } else if (key.includes('location') || key.includes('city')) {
-                filters.location = vals.length > 0 ? vals[0] : undefined;
-            } else if (key.includes('contact') || key.includes('mode')) {
-                filters.contactModes = [...(filters.contactModes || []), ...(vals as any)];
-            } else if (key.includes('availability') || key.includes('day') || key.includes('time')) {
-                filters.availability = [...(filters.availability || []), ...(vals as any)];
-            } else {
-                // fallback: try matching as subject
-                filters.subjects = [...(filters.subjects || []), ...vals];
-            }
-        }
-
-        let result = [...tutors];
-
-        // Apply subject filter
-        if (filters.subjects && filters.subjects.length > 0) {
-            result = result.filter(t =>
-                t.subjects?.some(s =>
-                    filters.subjects!.some(fs => s.toLowerCase().includes(fs.toLowerCase()))
-                )
-            );
-        }
-
-        // Apply levels filter
-        if (filters.levels && filters.levels.length > 0) {
-            result = result.filter(t =>
-                t.levels?.some(l =>
-                    filters.levels!.some(fl => l.toLowerCase().includes(fl.toLowerCase()))
-                )
-            );
-        }
-
-        // Apply location filter
-        if (filters.location) {
-            const locLower = filters.location.toLowerCase();
-            result = result.filter(t => t.location?.toLowerCase().includes(locLower));
-        }
-
-        // Apply availability filter
-        if (filters.availability && filters.availability.length > 0) {
-            result = result.filter(t =>
-                t.availability?.some(a => filters.availability!.includes(a))
-            );
-        }
-
-        // Apply contact modes filter
-        if (filters.contactModes && filters.contactModes.length > 0) {
-            result = result.filter(t =>
-                t.contactModes?.some(c => filters.contactModes!.includes(c))
-            );
-        }
-
-        return result.length;
+        return tutors.filter(tutor => this.matchesSelectedFilters(tutor, selected)).length;
     }
 }

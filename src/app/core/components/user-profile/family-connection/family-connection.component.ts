@@ -945,7 +945,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
           monitoringChildId: childId
         }));
         window.dispatchEvent(new CustomEvent('family-monitoring-changed'));
-        this.router.navigate(['/authed/user-dashboard'], { replaceUrl: true });
+        this.router.navigate(['/home'], { replaceUrl: true });
       },
       error: (error) => {
         this.isSwitchingMember = false;

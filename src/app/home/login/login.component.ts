@@ -242,7 +242,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   navigateToForgotPassword(): void {
-    this.navCtrl.navigateForward(['/home/reset-password'], { queryParams: { mode: 'email' } });
+    this.navCtrl.navigateForward(['/forgot-password'], { queryParams: { mode: 'email' } });
   }
 
   isLoginFormValid(): boolean {
@@ -267,7 +267,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   private returnToRoleSelection(): void {
     this.onboardingState.resetRoleSelection();
-    void this.navCtrl.navigateRoot('/home/sign-up', {
+    void this.navCtrl.navigateRoot('/signup', {
       queryParams: { step: 1 },
       animated: false
     });

@@ -90,7 +90,7 @@ describe('OnboardingStateService', () => {
       onboardingStep: 4,
       relationship: 'CHILD'
     })).toEqual({
-      url: '/home/sign-up',
+      url: '/signup',
       queryParams: { step: 2, role: 'child' }
     });
     expect(service.getResumeNavigation({
@@ -114,7 +114,7 @@ describe('OnboardingStateService', () => {
     }, 3);
 
     expect(service.getResumeNavigation({ onboardingStep: 3 })).toEqual({
-      url: '/home/sign-up',
+      url: '/signup',
       queryParams: { step: 2, role: 'parent' }
     });
   });
@@ -138,7 +138,7 @@ describe('OnboardingStateService', () => {
       ...base,
       selectedSignupRole: 'self'
     })).toEqual({
-      url: '/home/sign-up',
+      url: '/signup',
       queryParams: { step: 4, role: 'self' }
     });
     expect(service.getResumeNavigation({
@@ -153,7 +153,7 @@ describe('OnboardingStateService', () => {
       selectedSignupRole: 'child',
       familyLinkSkipped: true
     })).toEqual({
-      url: '/home/sign-up',
+      url: '/signup',
       queryParams: { step: 4, role: 'child' }
     });
   });

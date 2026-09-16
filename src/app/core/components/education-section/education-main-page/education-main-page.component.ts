@@ -126,28 +126,28 @@ export class EducationMainPageComponent implements OnInit {
 
     private readonly parentShopCategoryDefinitions: ParentShopCategoryDefinition[] = [
         {
-            id: 'stationery-shops',
-            label: 'Stationery Shops',
-            image: 'assets/figma/parent-eduhub/stationery.webp',
-            aliases: ['stationery']
-        },
-        {
             id: 'book-stores',
             label: 'Book Stores',
             image: 'assets/figma/parent-eduhub/books.webp',
             aliases: ['book store', 'books', 'textbook']
         },
         {
-            id: 'second-hand-books',
-            label: 'Second-hand Books',
-            image: 'assets/figma/parent-eduhub/second-hand-books.webp',
-            aliases: ['second hand book', 'secondhand book', 'used book']
-        },
-        {
             id: 'sports-shop',
             label: 'Sports Shop',
             image: 'assets/figma/parent-eduhub/sports.webp',
             aliases: ['sports', 'sport shop']
+        },
+        {
+            id: 'stationery-shops',
+            label: 'Stationery Shops',
+            image: 'assets/figma/parent-eduhub/stationery.webp',
+            aliases: ['stationery']
+        },
+        {
+            id: 'second-hand-books',
+            label: 'Second-hand Books',
+            image: 'assets/figma/parent-eduhub/second-hand-books.webp',
+            aliases: ['second hand book', 'secondhand book', 'used book']
         }
     ];
 
@@ -178,14 +178,6 @@ export class EducationMainPageComponent implements OnInit {
                 categories: this.parentLearningCategories
             },
             {
-                key: 'shops',
-                label: 'Shops',
-                icon: 'assets/figma/parent-eduhub/shops.svg',
-                categories: this.parentShopCategories,
-                loading: this.parentShopCategoriesLoading,
-                error: this.parentShopCategoriesError
-            },
-            {
                 key: 'guidance',
                 label: 'Guidance & Well-Being',
                 icon: 'assets/figma/parent-eduhub/guidance.svg',
@@ -196,6 +188,14 @@ export class EducationMainPageComponent implements OnInit {
                 label: 'Activities & Events',
                 icon: 'assets/figma/parent-eduhub/activities.svg',
                 categories: this.parentActivityCategories
+            },
+            {
+                key: 'shops',
+                label: 'Shops',
+                icon: 'assets/figma/parent-eduhub/shops.svg',
+                categories: this.parentShopCategories,
+                loading: this.parentShopCategoriesLoading,
+                error: this.parentShopCategoriesError
             }
         ];
     }

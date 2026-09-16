@@ -524,7 +524,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   onEdit() {
     if (!this.habit) {
       this.router.navigate(['/authed/activity-input'], {
-        state: { origin: this.router.url || '/authed/user-dashboard' }
+        state: { origin: this.router.url || '/home' }
       });
       return;
     }
@@ -536,7 +536,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         currentActive: this.habit.type || 'habits',
         selectedDate: this.selectedDateFromState,
         originType: this.navigationOriginType,
-        origin: this.router.url || '/authed/user-dashboard',
+        origin: this.router.url || '/home',
         fromDetail: true
       }
     });

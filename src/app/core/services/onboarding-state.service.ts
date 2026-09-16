@@ -192,7 +192,7 @@ export class OnboardingStateService {
 
     const role = this.getSignupRole(savedData);
     return {
-      url: '/home/sign-up',
+      url: '/signup',
       queryParams: {
         step: signupStep,
         ...(role ? { role } : {})
@@ -350,7 +350,7 @@ export class OnboardingStateService {
     const role = this.getSignupRole(savedData);
     if (!role) {
       return {
-        url: '/home/sign-up',
+        url: '/signup',
         queryParams: { step: 1 }
       };
     }
@@ -358,14 +358,14 @@ export class OnboardingStateService {
     const detailsCompleted = savedData.socialDetailsCompleted === true || effectiveStep >= 5;
     if (!detailsCompleted) {
       return {
-        url: '/home/sign-up',
+        url: '/signup',
         queryParams: { step: 2, role }
       };
     }
 
     if (effectiveStep >= 6) {
       return {
-        url: '/home/sign-up',
+        url: '/signup',
         queryParams: { step: 5, role }
       };
     }
@@ -382,7 +382,7 @@ export class OnboardingStateService {
         && savedData.asChild !== true;
       if (savedData.familyLinkSkipped === true || linkedToFamily) {
         return {
-          url: '/home/sign-up',
+          url: '/signup',
           queryParams: { step: 4, role: 'child' }
         };
       }
@@ -393,7 +393,7 @@ export class OnboardingStateService {
     }
 
     return {
-      url: '/home/sign-up',
+      url: '/signup',
       queryParams: { step: 4, role: 'self' }
     };
   }

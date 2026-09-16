@@ -69,6 +69,24 @@ export interface SelectedFilters {
     };
 }
 
+export type TutorSearchSort = 'RECENT' | 'ALPHABETICAL' | 'MOST_LIKED' | 'EXPERIENCE' | 'RATING';
+
+export interface TutorSearchRequest extends SelectedFilters {
+    page: number;
+    size: number;
+    sort: TutorSearchSort;
+}
+
+export interface TutorSearchPage {
+    content: Tutor[];
+    totalElements: number;
+    totalPages: number;
+    page: number;
+    size: number;
+    first: boolean;
+    last: boolean;
+}
+
 /**
  * Tutor API Response Models - Based on /v1/tutors endpoint
  */

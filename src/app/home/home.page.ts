@@ -124,7 +124,7 @@ export class HomePage implements OnInit, OnDestroy {
     try {
       // Angular Router is more reliable here than an Ionic root transition on
       // iOS after the full-screen walkthrough has been displayed.
-      const navigated = await this.router.navigate(['/home/sign-up'], {
+      const navigated = await this.router.navigate(['/signup'], {
         queryParams: { step: 1 },
         replaceUrl: true
       });
@@ -135,7 +135,7 @@ export class HomePage implements OnInit, OnDestroy {
     } catch (error) {
       console.error('[Onboarding] Unable to open signup from walkthrough:', error);
       // Keep a native fallback for an interrupted iOS router transition.
-      await this.navCtrl.navigateRoot('/home/sign-up?step=1', { animated: false });
+      await this.navCtrl.navigateRoot('/signup?step=1', { animated: false });
     } finally {
       this.isStartingJourney = false;
     }

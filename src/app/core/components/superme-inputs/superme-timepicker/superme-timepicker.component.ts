@@ -16,6 +16,14 @@ import {
 
 type WheelField = 'hour' | 'minute' | 'period';
 
+interface WheelDragState {
+  pointerId: number;
+  startY: number;
+  startScrollTop: number;
+  moved: boolean;
+  tapIndex: number | null;
+}
+
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'superme-timepicker',
@@ -64,6 +72,10 @@ export class SupermeTimepickerComponent implements ControlValueAccessor, OnDestr
   selectedDurationMinutes: number | null = null;
 
   private scrollTimeouts: Record<WheelField, any> = { hour: null, minute: null, period: null };
+  private wheelGestureTimeouts: Record<WheelField, any> = { hour: null, minute: null, period: null };
+  private wheelGestureActive: Record<WheelField, boolean> = { hour: false, minute: false, period: false };
+  private dragStates: Partial<Record<WheelField, WheelDragState>> = {};
+  private suppressClickUntil = 0;
 
   onChange: any = () => {};
   onTouched: any = () => {};
@@ -156,6 +168,10 @@ export class SupermeTimepickerComponent implements ControlValueAccessor, OnDestr
   }
 
   ngOnDestroy(): void {
+    (Object.keys(this.scrollTimeouts) as WheelField[]).forEach(field => {
+      clearTimeout(this.scrollTimeouts[field]);
+      clearTimeout(this.wheelGestureTimeouts[field]);
+    });
     const overlay = this.overlayRef?.nativeElement;
     if (overlay?.parentNode === this.document.body) {
       overlay.remove();
@@ -201,6 +217,117 @@ export class SupermeTimepickerComponent implements ControlValueAccessor, OnDestr
     else el.scrollTop = index * this.rowHeight;
   }
 
+  private valuesFor(field: WheelField): Array<number | 'AM' | 'PM'> {
+    return field === 'hour' ? this.hoursList : field === 'minute' ? this.minutesList : this.periodsList;
+  }
+
+  private setWheelIndex(field: WheelField, index: number): number {
+    const list = this.valuesFor(field);
+    const safeIndex = Math.max(0, Math.min(list.length - 1, index));
+    const value = list[safeIndex];
+
+    if (field === 'hour') this.selectedHour = value as number;
+    else if (field === 'minute') this.selectedMinute = value as number;
+    else this.ampm = value as 'AM' | 'PM';
+
+    return safeIndex;
+  }
+
+  private commitWheelSelection(): void {
+    this.selectedDurationMinutes = null;
+    try { this.onChange(this.timeString); } catch (e) {}
+  }
+
+  private snapWheel(field: WheelField, el: HTMLDivElement, smooth = true): void {
+    const index = this.setWheelIndex(field, Math.round(el.scrollTop / this.rowHeight));
+    const target = index * this.rowHeight;
+    if (Math.abs(el.scrollTop - target) > 0.5) {
+      el.scrollTo({ top: target, behavior: smooth ? 'smooth' : 'auto' });
+    }
+    this.commitWheelSelection();
+  }
+
+  /** Enables precise mouse, pen and touch dragging without native-scroll momentum overshoot. */
+  onWheelPointerDown(field: WheelField, event: PointerEvent, el: HTMLDivElement): void {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+    clearTimeout(this.scrollTimeouts[field]);
+    this.dragStates[field] = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      startScrollTop: el.scrollTop,
+      moved: false,
+      tapIndex: this.getPointerItemIndex(event),
+    };
+    el.classList.add('dragging');
+    el.setPointerCapture?.(event.pointerId);
+  }
+
+  onWheelPointerMove(field: WheelField, event: PointerEvent, el: HTMLDivElement): void {
+    const state = this.dragStates[field];
+    if (!state || state.pointerId !== event.pointerId) return;
+
+    const delta = state.startY - event.clientY;
+    if (Math.abs(delta) > 3) state.moved = true;
+    el.scrollTop = state.startScrollTop + delta;
+    event.preventDefault();
+  }
+
+  onWheelPointerEnd(field: WheelField, event: PointerEvent, el: HTMLDivElement): void {
+    const state = this.dragStates[field];
+    if (!state || state.pointerId !== event.pointerId) return;
+
+    this.suppressClickUntil = Date.now() + 250;
+    delete this.dragStates[field];
+    el.classList.remove('dragging');
+    if (el.hasPointerCapture?.(event.pointerId)) el.releasePointerCapture(event.pointerId);
+    if (!state.moved && state.tapIndex !== null) {
+      const index = this.setWheelIndex(field, state.tapIndex);
+      el.scrollTo({ top: index * this.rowHeight, behavior: 'smooth' });
+      this.commitWheelSelection();
+    } else {
+      this.snapWheel(field, el);
+    }
+    if (state.moved) event.preventDefault();
+  }
+
+  private getPointerItemIndex(event: PointerEvent): number | null {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return null;
+    const item = target.closest<HTMLElement>('.wheel-item');
+    if (!item) return null;
+    const value = Number(item.dataset['wheelIndex']);
+    return Number.isInteger(value) ? value : null;
+  }
+
+  /** Mouse-wheel/trackpad input advances exactly one row per event. */
+  onWheelInput(field: WheelField, event: WheelEvent, el: HTMLDivElement): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.deltaY === 0) return;
+
+    clearTimeout(this.wheelGestureTimeouts[field]);
+    this.wheelGestureTimeouts[field] = setTimeout(() => {
+      this.wheelGestureActive[field] = false;
+    }, 120);
+    if (this.wheelGestureActive[field]) return;
+    this.wheelGestureActive[field] = true;
+
+    const current = Math.round(el.scrollTop / this.rowHeight);
+    const index = this.setWheelIndex(field, current + (event.deltaY > 0 ? 1 : -1));
+    el.scrollTop = index * this.rowHeight;
+    this.commitWheelSelection();
+  }
+
+  selectWheelValue(field: WheelField, index: number, el: HTMLDivElement, event: Event): void {
+    event.stopPropagation();
+    if (Date.now() < this.suppressClickUntil) return;
+
+    const safeIndex = this.setWheelIndex(field, index);
+    el.scrollTo({ top: safeIndex * this.rowHeight, behavior: 'smooth' });
+    this.commitWheelSelection();
+  }
+
   private computeTimeFromDuration(minutes: number): { hour: number; minute: number; period: 'AM' | 'PM' } {
     const base = this.parseSeedTime(this.seedTime) || { hour: this.selectedHour, minute: this.selectedMinute, period: this.ampm };
     let hour24 = base.hour % 12;
@@ -244,23 +371,16 @@ export class SupermeTimepickerComponent implements ControlValueAccessor, OnDestr
    * scrolling settles so validation doesn't run mid-drag.
    */
   onWheelScroll(field: WheelField, el: HTMLDivElement) {
-    const list: Array<number | 'AM' | 'PM'> =
-      field === 'hour' ? this.hoursList : field === 'minute' ? this.minutesList : this.periodsList;
-    const idx = Math.max(0, Math.min(list.length - 1, Math.round(el.scrollTop / this.rowHeight)));
-    const value = list[idx];
-
-    if (field === 'hour') this.selectedHour = value as number;
-    else if (field === 'minute') this.selectedMinute = value as number;
-    else this.ampm = value as 'AM' | 'PM';
+    this.setWheelIndex(field, Math.round(el.scrollTop / this.rowHeight));
 
     if (this.isProgrammaticScroll) return;
 
     // A manual scroll on any wheel overrides whatever quick-duration pill was selected.
     this.selectedDurationMinutes = null;
 
+    if (this.dragStates[field]) return;
+
     clearTimeout(this.scrollTimeouts[field]);
-    this.scrollTimeouts[field] = setTimeout(() => {
-      try { this.onChange(this.timeString); } catch (e) {}
-    }, 120);
+    this.scrollTimeouts[field] = setTimeout(() => this.snapWheel(field, el), 120);
   }
 }

@@ -44,7 +44,7 @@ describe('RoleSelectComponent', () => {
     tick();
 
     expect(sessionStorage.getItem('family_connected_ack')).toBe('Child');
-    expect(router.navigate).toHaveBeenCalledWith(['/authed/user-dashboard'], { replaceUrl: true });
+    expect(router.navigate).toHaveBeenCalledWith(['/home'], { replaceUrl: true });
   }));
 
   it('queues the Parent acknowledgment before opening Parent Home', async () => {

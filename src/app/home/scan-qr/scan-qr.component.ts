@@ -224,7 +224,7 @@ export class ScanQrComponent implements OnInit, OnDestroy {
     }
 
     if (this.userRole === 'child' || this.userRole === 'self') {
-      this.router.navigate(['/home/sign-up'], {
+      this.router.navigate(['/signup'], {
         queryParams: {
           step: 4,
           role: this.userRole,
@@ -256,7 +256,7 @@ export class ScanQrComponent implements OnInit, OnDestroy {
 
   navigateToDashboard(): void {
     const normalized = this.userRole?.toUpperCase?.() || '';
-    const dashboardRoute = normalized === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
+    const dashboardRoute = normalized === 'PARENT' ? '/authed/parent-account' : '/home';
     this.router.navigate([dashboardRoute]);
   }
 

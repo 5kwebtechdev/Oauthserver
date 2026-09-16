@@ -29,7 +29,7 @@ export class QuickAccessSectionComponent implements OnInit, OnDestroy {
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-        filter(event => event.urlAfterRedirects.startsWith('/authed/user-dashboard')),
+        filter(event => event.urlAfterRedirects.startsWith('/home')),
         takeUntil(this.destroy$)
       )
       .subscribe(() => this.refreshJournalAvailability());

@@ -579,7 +579,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (this.isOAuthSignup && (this.step === 0.2 || this.step === 0.3)) {
         const socialRole = this.onboardingState.getSignupRole();
         this.step = 2;
-        void this.router.navigate(['home/sign-up'], {
+        void this.router.navigate(['/signup'], {
           queryParams: {
             step: 2,
             ...(socialRole ? { role: socialRole } : {})
@@ -600,7 +600,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         && !this.signupCredentialState.getPassword()
       ) {
         this.step = 0.3;
-        void this.router.navigate(['home/sign-up'], {
+        void this.router.navigate(['/signup'], {
           queryParams: { step: 0.3, role: 'child', managedChild: true },
           replaceUrl: true
         });
@@ -762,12 +762,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (value.length < 3) return { usernameMinLength: true };
       if (value.length > 20) return { usernameMaxLength: true };
       if (/[A-Z]/.test(value)) return { usernameUppercase: true };
-      if (value.startsWith('_')) return { usernameStartsWithUnderscore: true };
-      if (value.includes('__')) return { usernameConsecutiveUnderscores: true };
       if (!/^[a-z0-9_]+$/.test(value)) return { usernameInvalidCharacters: true };
-      if (!/[a-z]/.test(value)) return { usernameMissingLetter: true };
-      if (this.reservedUsernames.has(value)) return { usernameReserved: true };
-      if (this.looksLikeRealName(value)) return { usernameLooksLikeRealName: true };
 
       return null;
     };
@@ -1442,7 +1437,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       queryParams['role'] = 'child';
       queryParams['managedChild'] = true;
     }
-    void this.navCtrl.navigateRoot('/home/sign-up', {
+    void this.navCtrl.navigateRoot('/signup', {
       queryParams,
       animated: false
     });
@@ -1591,7 +1586,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         // Parent Home refreshes the profile again after Unlock is tapped.
       }
     });
-    void this.navCtrl.navigateRoot('/home/sign-up', {
+    void this.navCtrl.navigateRoot('/signup', {
       queryParams: { step: 5, role: 'parent' },
       animated: false
     });
@@ -3107,7 +3102,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               }
               // After login, user session is set by AuthService
               // Navigate to appropriate dashboard with loader hidden
-              const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+              const route = this.authService.getDashboardRoute() || '/home';
               setTimeout(() => {
                 this.loadingService.forceHide();
                 this.navigateReplacing(route);
@@ -3163,7 +3158,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
                 });
                 return;
               }
-              const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+              const route = this.authService.getDashboardRoute() || '/home';
               setTimeout(() => {
                 this.loadingService.forceHide();
                 this.navigateReplacing(route);
@@ -3943,7 +3938,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.signupCredentialState.clear();
       this.registrationInProgress = false;
       this.loadingService.forceHide();
-      const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+      const route = this.authService.getDashboardRoute() || '/home';
       this.navigateReplacing(route);
       return;
     }
@@ -3971,7 +3966,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.clearDeferredParentWelcomeState();
       this.registrationInProgress = false;
       this.loadingService.forceHide();
-      const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+      const route = this.authService.getDashboardRoute() || '/home';
       this.navigateReplacing(route);
       return;
     }
@@ -4015,7 +4010,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           });
           return;
         }
-        const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+        const route = this.authService.getDashboardRoute() || '/home';
         this.navigateReplacing(route);
       },
       error: (error) => {
@@ -4111,7 +4106,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       console.warn('[Signup] Unable to prepare managed child signup', error);
     }
 
-    void this.navCtrl.navigateRoot('/home/sign-up', {
+    void this.navCtrl.navigateRoot('/signup', {
       queryParams: {
         step: 0.1,
         role: 'child',
@@ -4681,7 +4676,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (stepValue === 4) {
       const fallbackStep = 2;
       this.step = fallbackStep;
-      this.router.navigate(['home/sign-up'], {
+      this.router.navigate(['/signup'], {
         queryParams: { step: fallbackStep },
         replaceUrl: true
       });

@@ -47,7 +47,7 @@ export class InstituteDetailFillComponent {
   }
 
   goBack(): void {
-    this.router.navigate(['/authed/user-dashboard']).catch(() => this.router.navigateByUrl('/authed'));
+    this.router.navigate(['/home']).catch(() => this.router.navigateByUrl('/authed'));
   }
 
   // form field definitions

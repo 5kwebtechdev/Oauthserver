@@ -213,7 +213,7 @@ export class AppComponent implements OnInit, OnDestroy {
         // app just because its child route is changing.
         const skipNavigationLoader = !this.isNativePlatform
           || routePath.startsWith('/authed')
-          || routePath === '/home/reset-password';
+          || routePath === '/forgot-password';
 
         if (skipNavigationLoader) {
           return;

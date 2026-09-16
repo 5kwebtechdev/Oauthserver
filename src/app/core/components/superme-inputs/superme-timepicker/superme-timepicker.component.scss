@@ -117,7 +117,13 @@ $wheel-visible-rows: 3;
   scroll-snap-type: y mandatory;
   scrollbar-width: none;
   overscroll-behavior: contain;
-  touch-action: pan-y;
+  touch-action: none;
+  cursor: grab;
+
+  &.dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
+  }
 
   &::-webkit-scrollbar {
     display: none;
@@ -140,6 +146,8 @@ $wheel-visible-rows: 3;
   font-size: 17px;
   font-weight: 500;
   user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
 
   &.selected {
     color: #45456A;

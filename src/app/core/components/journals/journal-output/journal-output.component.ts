@@ -227,7 +227,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
   }
 
   goBack(): void {
-    void this.router.navigate(['/authed/user-dashboard']);
+    void this.router.navigate(['/home']);
   }
 
   private get entryDateSet(): Set<string> {

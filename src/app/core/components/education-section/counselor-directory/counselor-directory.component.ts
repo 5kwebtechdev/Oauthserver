@@ -253,10 +253,11 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
           if (requestVersion !== this.directoryRequestVersion) return;
           const refreshed = (Array.isArray(counselors) ? counselors : [])
             .filter(counselor => this.isActiveListing(counselor));
-          // Never replace the valid Home cache with an anomalous empty mobile
-          // response. A genuine empty directory still remains empty when no
-          // cached records exist.
-          if (refreshed.length || !this.counselors.length) this.counselors = refreshed;
+          // A successful filtered search may legitimately contain no matches.
+          // In that case the old unfiltered cards must not remain on screen.
+          if (this.educationFilters || refreshed.length || !this.counselors.length) {
+            this.counselors = refreshed;
+          }
           this.counselors.forEach(counselor => this.watchLikes(counselor));
           this.isLoading = false;
           this.cdr.detectChanges();

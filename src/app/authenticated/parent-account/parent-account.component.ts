@@ -521,7 +521,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         });
         // Redirect non-parent users
         if (!this.authService.isParentUser()) {
-            this.router.navigate(['/authed/user-dashboard'], { replaceUrl: true });
+            this.router.navigate(['/home'], { replaceUrl: true });
             return;
         }
 
@@ -1467,7 +1467,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             console.warn('[ParentAccount] Unable to prepare the child signup flow', error);
         }
 
-        this.router.navigate(['/home/sign-up'], {
+        this.router.navigate(['/signup'], {
             queryParams: { step: 0.1, role: 'child', managedChild: true }
         });
     }

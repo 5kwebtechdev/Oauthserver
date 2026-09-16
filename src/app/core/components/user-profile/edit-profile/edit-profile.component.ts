@@ -760,14 +760,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     this.avatarSuggestionError = null;
     this.avatarName = value || '';
     const v = (this.avatarName || '').toString();
-    // Inline validation: max 20 chars
-    if (v.length > 20) {
-      this.avatarNameError = 'Maximum limit is 20 characters';
-      this.showAvatarNameError = true;
-    } else {
-      this.avatarNameError = null;
-      this.showAvatarNameError = false;
-    }
+    this.validateAvatarUsername(v);
     if (v.trim().length >= 4) {
       this.avatarInput$.next(v.trim());
     } else {
@@ -782,9 +775,33 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     this.avatarSuggestions = [];
     this.showAvatarSuggestions = false;
     this.avatarSuggestionError = null;
-    // clear inline avatar validation when a suggestion is chosen
-    this.avatarNameError = null;
-    this.showAvatarNameError = false;
+    this.validateAvatarUsername(s);
+  }
+
+  /** Apply the PRD username rules while the user types in Edit Profile. */
+  private validateAvatarUsername(value: string): void {
+    if (!value) {
+      this.avatarNameError = 'Username is required.';
+      this.showAvatarNameError = true;
+    } else if (/\s/.test(value)) {
+      this.avatarNameError = "Spaces aren't allowed. Use _ instead";
+      this.showAvatarNameError = true;
+    } else if (value.length < 3) {
+      this.avatarNameError = 'Minimum 3 characters required.';
+      this.showAvatarNameError = true;
+    } else if (value.length > 20) {
+      this.avatarNameError = 'Maximum limit is 20 characters';
+      this.showAvatarNameError = true;
+    } else if (/[A-Z]/.test(value)) {
+      this.avatarNameError = 'Only lowercase letters allowed';
+      this.showAvatarNameError = true;
+    } else if (!/^[a-z0-9_]+$/.test(value)) {
+      this.avatarNameError = 'Only letters, numbers, and underscore are allowed.';
+      this.showAvatarNameError = true;
+    } else {
+      this.avatarNameError = null;
+      this.showAvatarNameError = false;
+    }
   }
 
   onFullNameChange(value: string | null): void {

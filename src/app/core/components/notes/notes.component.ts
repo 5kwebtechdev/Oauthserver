@@ -233,10 +233,10 @@ export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
       if (modal) {
         this.modalCtrl.dismiss();
       } else {
-        this.router.navigate(['/authed/user-dashboard']);
+        this.router.navigate(['/home']);
       }
     }).catch(() => {
-      this.router.navigate(['/authed/user-dashboard']);
+      this.router.navigate(['/home']);
     });
   }
 

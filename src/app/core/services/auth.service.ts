@@ -1171,7 +1171,7 @@ export class AuthService {
     }
 
     // Child and Self users go to user-dashboard
-    return '/authed/user-dashboard';
+    return '/home';
   }
 
   /**

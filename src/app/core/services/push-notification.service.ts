@@ -264,7 +264,7 @@ export class PushNotificationService {
 
     this.router.navigateByUrl(target, { replaceUrl: false }).catch(err => {
       console.warn('[FCM] Navigation failed, falling back to dashboard:', err);
-      this.router.navigate(['/authed/user-dashboard']);
+      this.router.navigate(['/home']);
     });
   }
 
@@ -273,7 +273,7 @@ export class PushNotificationService {
    *
    * actionScreen → route
    * ─────────────────────────────────────────────────────────
-   * HOME                  → /authed/user-dashboard
+   * HOME                  → /home
    * ADD_HABIT_TASK        → /authed/activity-input
    * VIEW_ALL_HABITS_TASKS → /authed/activity-page
    * VIEW_ALL_HABITS       → /authed/activity-page?tab=habits
@@ -288,7 +288,7 @@ export class PushNotificationService {
   private actionScreenToRoute(actionScreen: string, referenceId: string | null): string {
     switch (actionScreen) {
       case 'HOME':
-        return '/authed/user-dashboard';
+        return '/home';
 
       case 'ADD_HABIT_TASK':
         return '/authed/activity-input';
@@ -322,7 +322,7 @@ export class PushNotificationService {
 
       default:
         console.warn(`[FCM] Unknown actionScreen "${actionScreen}" — falling back to dashboard.`);
-        return '/authed/user-dashboard';
+        return '/home';
     }
   }
 }

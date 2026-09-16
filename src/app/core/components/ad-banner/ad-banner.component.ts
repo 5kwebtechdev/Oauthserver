@@ -38,7 +38,7 @@ interface AdItem {
 }
 
 const IN_APP_ROUTE_MAP: Record<string, string> = {
-  HOME:           '/authed/user-dashboard',
+  HOME:           '/home',
   HOME_PARENTS:   '/authed/parent-account',
   LEARNING:       '/authed/content',
   COLINS:         '/authed/content',

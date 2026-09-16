@@ -327,7 +327,7 @@ export class SocialMediaComponent implements OnInit {
           'Apple development mock verified. Live backend authentication was not called.'
         );
         this.router.navigate(
-          ['home/sign-up'],
+          ['/signup'],
           {
             queryParams: selectedRole ? { step: 2, role: selectedRole } : { step: 1 },
             replaceUrl: true

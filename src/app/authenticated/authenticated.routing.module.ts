@@ -14,12 +14,15 @@ const routes: Routes = [
     path: '',
     component: AuthenticatedComponent,
     children: [
-
       {
-        path: 'user-dashboard',
+        path: '',
         component: UserDashboardComponent,
         canActivate: [DashboardRedirectGuard],
         data: { allowedRoles: ['CHILD', 'SELF'] }
+      }, {
+        path: 'user-dashboard',
+        redirectTo: '/home',
+        pathMatch: 'full'
       }, {
         path: 'parent-account',
         loadComponent: () => import('./parent-account/parent-account.component').then(m => m.ParentAccountComponent),

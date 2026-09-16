@@ -12,9 +12,19 @@
           <span class="wheel-col-label">HOUR</span>
           <div class="wheel-viewport">
             <div class="wheel-highlight" aria-hidden="true"></div>
-            <div class="wheel-scroll" #hourWheel (scroll)="onWheelScroll('hour', hourWheel)">
+            <div class="wheel-scroll" #hourWheel role="listbox" aria-label="Hour"
+              (scroll)="onWheelScroll('hour', hourWheel)"
+              (wheel)="onWheelInput('hour', $event, hourWheel)"
+              (pointerdown)="onWheelPointerDown('hour', $event, hourWheel)"
+              (pointermove)="onWheelPointerMove('hour', $event, hourWheel)"
+              (pointerup)="onWheelPointerEnd('hour', $event, hourWheel)"
+              (pointercancel)="onWheelPointerEnd('hour', $event, hourWheel)"
+              (lostpointercapture)="onWheelPointerEnd('hour', $event, hourWheel)">
               <div class="wheel-spacer" aria-hidden="true"></div>
-              <div class="wheel-item" *ngFor="let h of hoursList" [class.selected]="h === selectedHour">{{ h }}</div>
+              <div class="wheel-item" *ngFor="let h of hoursList; let i = index" role="option"
+                [attr.data-wheel-index]="i"
+                [attr.aria-selected]="h === selectedHour" [class.selected]="h === selectedHour"
+                (click)="selectWheelValue('hour', i, hourWheel, $event)">{{ h }}</div>
               <div class="wheel-spacer" aria-hidden="true"></div>
             </div>
           </div>
@@ -26,9 +36,19 @@
           <span class="wheel-col-label">MINUTE</span>
           <div class="wheel-viewport">
             <div class="wheel-highlight" aria-hidden="true"></div>
-            <div class="wheel-scroll" #minuteWheel (scroll)="onWheelScroll('minute', minuteWheel)">
+            <div class="wheel-scroll" #minuteWheel role="listbox" aria-label="Minute"
+              (scroll)="onWheelScroll('minute', minuteWheel)"
+              (wheel)="onWheelInput('minute', $event, minuteWheel)"
+              (pointerdown)="onWheelPointerDown('minute', $event, minuteWheel)"
+              (pointermove)="onWheelPointerMove('minute', $event, minuteWheel)"
+              (pointerup)="onWheelPointerEnd('minute', $event, minuteWheel)"
+              (pointercancel)="onWheelPointerEnd('minute', $event, minuteWheel)"
+              (lostpointercapture)="onWheelPointerEnd('minute', $event, minuteWheel)">
               <div class="wheel-spacer" aria-hidden="true"></div>
-              <div class="wheel-item" *ngFor="let m of minutesList" [class.selected]="m === selectedMinute">{{
+              <div class="wheel-item" *ngFor="let m of minutesList; let i = index" role="option"
+                [attr.data-wheel-index]="i"
+                [attr.aria-selected]="m === selectedMinute" [class.selected]="m === selectedMinute"
+                (click)="selectWheelValue('minute', i, minuteWheel, $event)">{{
                 m.toString().padStart(2, '0') }}</div>
               <div class="wheel-spacer" aria-hidden="true"></div>
             </div>
@@ -41,9 +61,19 @@
           <span class="wheel-col-label">PERIOD</span>
           <div class="wheel-viewport">
             <div class="wheel-highlight" aria-hidden="true"></div>
-            <div class="wheel-scroll" #periodWheel (scroll)="onWheelScroll('period', periodWheel)">
+            <div class="wheel-scroll" #periodWheel role="listbox" aria-label="Period"
+              (scroll)="onWheelScroll('period', periodWheel)"
+              (wheel)="onWheelInput('period', $event, periodWheel)"
+              (pointerdown)="onWheelPointerDown('period', $event, periodWheel)"
+              (pointermove)="onWheelPointerMove('period', $event, periodWheel)"
+              (pointerup)="onWheelPointerEnd('period', $event, periodWheel)"
+              (pointercancel)="onWheelPointerEnd('period', $event, periodWheel)"
+              (lostpointercapture)="onWheelPointerEnd('period', $event, periodWheel)">
               <div class="wheel-spacer" aria-hidden="true"></div>
-              <div class="wheel-item" *ngFor="let p of periodsList" [class.selected]="p === ampm">{{ p }}</div>
+              <div class="wheel-item" *ngFor="let p of periodsList; let i = index" role="option"
+                [attr.data-wheel-index]="i"
+                [attr.aria-selected]="p === ampm" [class.selected]="p === ampm"
+                (click)="selectWheelValue('period', i, periodWheel, $event)">{{ p }}</div>
               <div class="wheel-spacer" aria-hidden="true"></div>
             </div>
           </div>

@@ -172,7 +172,7 @@ export class WebNavComponent implements OnInit {
   }
 
   get dashboardLink(): string {
-    return this.isParent ? '/authed/parent-account' : '/authed/user-dashboard';
+    return this.isParent ? '/authed/parent-account' : '/home';
   }
 
   goHome(event: Event): void {

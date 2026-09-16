@@ -1054,7 +1054,7 @@ export class RoleSelectComponent implements OnDestroy {
           if (isSelfRoleSwitch) this.queueFamilyConnectedAcknowledgment(relationship);
           await this.showToast("You're connected to your family", 'success');
 
-          const target = relationship === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
+          const target = relationship === 'PARENT' ? '/authed/parent-account' : '/home';
           this.router.navigate([target], { replaceUrl: true });
         },
         error: (error) => {
@@ -1063,7 +1063,7 @@ export class RoleSelectComponent implements OnDestroy {
           if (error.status === 200) {
             this.applyRoleConversionResponse({}, relationship, familyCode);
             if (isSelfRoleSwitch) this.queueFamilyConnectedAcknowledgment(relationship);
-            const target = relationship === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
+            const target = relationship === 'PARENT' ? '/authed/parent-account' : '/home';
             this.router.navigate([target], { replaceUrl: true });
             return;
           }

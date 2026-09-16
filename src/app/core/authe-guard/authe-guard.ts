@@ -53,7 +53,7 @@ export const startupGuard: CanActivateFn = () => {
  */
 export const retiredChildInstructionsGuard: CanActivateFn = () => {
     const router = inject(Router);
-    return router.createUrlTree(['/home/sign-up'], {
+    return router.createUrlTree(['/signup'], {
         queryParams: {
             step: 2,
             role: 'child',
@@ -165,7 +165,7 @@ export const guestGuard: CanActivateFn = (
     const isLoggedIn = authService.isLoggedIn();
     const isPendingChildDetailsBack = isLoggedIn
         && authService.isPendingChild()
-        && state.url.includes('/home/sign-up')
+        && state.url.includes('/signup')
         && route.queryParamMap.get('step') === '2'
         && route.queryParamMap.get('editOnboarding') === 'true';
     if (isPendingChildDetailsBack) {
@@ -197,7 +197,7 @@ export const guestGuard: CanActivateFn = (
     } else if (authService.isPendingChild()) {
         return router.parseUrl('/home/join-family');
     } else if (registrationResume) {
-        if (state.url.includes('/home/sign-up')) {
+        if (state.url.includes('/signup')) {
             return true;
         }
         return router.createUrlTree([registrationResume.url], {

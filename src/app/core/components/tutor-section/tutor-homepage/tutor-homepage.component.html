@@ -89,7 +89,7 @@
     <div class="title-tutor-list">
       <span *ngIf="!searchQuery">{{ isCounselorDirectory ? 'Counselors you can trust' : 'Top picks, trusted by many' }}</span>
       <span *ngIf="searchQuery">Search results for "{{ searchQuery }}"</span>
-      <span class="tutor-count" *ngIf="visibleTutors.length > 0">({{ visibleTutors.length }} {{ isCounselorDirectory ? 'counselors' : 'tutors' }})</span>
+      <span class="tutor-count" *ngIf="visibleTutors.length > 0">({{ lastAppliedFilters ? totalTutorCount : visibleTutors.length }} {{ isCounselorDirectory ? 'counselors' : 'tutors' }})</span>
     </div>
 
     

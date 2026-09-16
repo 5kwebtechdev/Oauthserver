@@ -596,7 +596,7 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
 
   backToHome(): void {
     this.view = 'choice';
-    void this.router.navigate(['/authed/user-dashboard']).catch(() => this.router.navigate(['/authed']));
+    void this.router.navigate(['/home']).catch(() => this.router.navigate(['/authed']));
   }
 
   openMyListings(): void {

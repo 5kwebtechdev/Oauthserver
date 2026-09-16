@@ -1281,7 +1281,7 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
     if (this.childSelfLearningViewAll && isChildOrSelf) {
       void this.router.navigate(['/authed/content'], {
         queryParams: { view: 'child-self' },
-        state: { source: this.source || '/authed/user-dashboard' }
+        state: { source: this.source || '/home' }
       });
       return;
     }

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthenticatedModule } from "./authenticated/authenticated.module";
 import { authGuard, guestGuard } from './core/authe-guard/authe-guard';
+import { DashboardRedirectGuard } from './core/guards/dashboard-redirect.guard';
 import { OurPoliciesComponent } from './core/components/user-profile/our-policies/our-policies.component';
 
 const routes: Routes = [
@@ -34,12 +35,26 @@ const routes: Routes = [
   },
   {
     path: 'signup',
-    redirectTo: 'home/sign-up',
-    pathMatch: 'full'
+    loadComponent: () =>
+      import('./home/signup/signup.component').then((m) => m.SignupComponent),
+    canActivate: [guestGuard]
   },
   {
     path: 'sign-up',
-    redirectTo: 'home/sign-up',
+    redirectTo: 'signup',
+    pathMatch: 'full'
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./home/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent)
+  },
+  // Canonical authenticated landing page. `pathMatch: full` leaves the
+  // existing /home/* onboarding compatibility routes available below.
+  {
+    path: 'home',
+    loadChildren: () => import('./authenticated/authenticated.module').then(m => m.AuthenticatedModule),
+    canActivate: [authGuard, DashboardRedirectGuard],
     pathMatch: 'full'
   },
   {

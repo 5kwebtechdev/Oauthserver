@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, catchError, map, of, tap } from 'rxjs';
+import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthApi } from './auth.api';
-import { TutorCategoriesResponse } from '../models/tutor.model';
+import { TutorCategoriesResponse, TutorSearchPage, TutorSearchRequest } from '../models/tutor.model';
 
 @Injectable({ providedIn: 'root' })
 export class TutorApi {
@@ -61,12 +61,14 @@ export class TutorApi {
      * @param filters Selected filter criteria
      * @returns Observable with matching tutors
      */
-    searchTutors(filters: any): Observable<any> {
+    searchTutors(filters: TutorSearchRequest): Observable<TutorSearchPage | any> {
         const url = `${this.base}/tutors/search`;
-        return this.http.post<any>(url, filters, { headers: this.headers() }).pipe(
+        return this.http.post<TutorSearchPage | any>(url, filters, { headers: this.headers() }).pipe(
             catchError(error => {
                 console.error('[TutorApi] Error searching tutors:', error);
-                return of({ tutors: [], total: 0 });
+                // Preserve the error so callers can distinguish a genuine
+                // zero-result search from an unavailable search endpoint.
+                return throwError(() => error);
             })
         );
     }

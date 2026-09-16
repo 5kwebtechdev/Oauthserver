@@ -246,7 +246,7 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
       all: 'habits', habit: 'habits', task: 'tasks', timetable: 'timetable'
     };
     const currentActive = map[this.selectedType] || 'habits';
-    const origin = this.router.url || '/authed/user-dashboard';
+    const origin = this.router.url || '/home';
     this.router.navigate(['/authed/activity-input'], { state: { currentActive, origin } });
   }
 

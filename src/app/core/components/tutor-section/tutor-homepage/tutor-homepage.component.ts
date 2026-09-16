@@ -15,7 +15,7 @@ import { FooterComponent } from '../../footer/footer.component';
 import { SupermePopupComponent } from '../../superme-popup/superme-popup.component';
 import { TutorService } from '../../../services/tutor.service';
 import { TutorApi } from '../../../api/tutor.api';
-import { TutorListItem, TutorSortOption } from '../../../models/tutor.model';
+import { SelectedFilters, TutorListItem, TutorSearchRequest, TutorSearchSort, TutorSortOption } from '../../../models/tutor.model';
 import { EduHubCitySelectorComponent } from '../../education-section/eduhub-city-selector/eduhub-city-selector.component';
 import { EduHubCityService } from '../../../services/eduhub-city.service';
 
@@ -45,6 +45,8 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   private directoryEntityType = '';
   lastAppliedFilters: any = null;
   showAllFilters = false;
+  totalTutorCount = 0;
+  private readonly searchPageSize = 100;
 
   /** Emitted when a tutor profile is requested */
   @Output() viewProfile = new EventEmitter<TutorListItem>();
@@ -107,7 +109,10 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     this.tutorService.tutors$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(tutors => { this.tutors = tutors; });
+      .subscribe(tutors => {
+        this.tutors = tutors;
+        if (!this.lastAppliedFilters) this.totalTutorCount = tutors.length;
+      });
 
     this.currentSort = this.tutorService.getCurrentSort();
   }
@@ -163,6 +168,7 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
     // Clear All pressed — refetch all tutors from API and reset filter state
     if (data?.clearAll) {
       this.lastAppliedFilters = null;
+      this.totalTutorCount = 0;
       this.tutorService.clearFilters();
       this.isLoading = true;
       this.tutorService.fetchTutors().pipe(takeUntil(this.destroy$)).subscribe({
@@ -174,42 +180,67 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     // Filters applied — search tutors with selected filters
     if (data?.filters) {
-      const sel = data.filters as any;
+      const sel = data.filters as SelectedFilters;
       this.lastAppliedFilters = sel;
-
-      this.tutorApi.searchTutors(sel).pipe(takeUntil(this.destroy$)).subscribe({
-        next: (resp: any) => {
-          const tutors = Array.isArray(resp) ? resp : (resp?.tutors ?? []);
-          if (tutors.length > 0) {
-            this.tutorService.setCacheAndApply(tutors);
-          } else {
-            this.applyLocalFilters(sel);
-          }
-        },
-        error: () => this.applyLocalFilters(sel)
-      });
+      this.searchWithBackend(sel);
     }
   }
 
-  private applyLocalFilters(sel: any): void {
-    const tf: any = {};
-    if (!sel?.filters) { return; }
-    Object.keys(sel.filters).forEach((fieldKey: string) => {
-      const values: string[] = sel.filters[fieldKey] || [];
-      const k = fieldKey.toLowerCase();
-      if (k.includes('subject')) { tf.subjects = values; }
-      else if (k.includes('level') || k.includes('class') || k.includes('grade')) { tf.levels = values; }
-      else if (k.includes('availability') || k.includes('day')) { tf.availability = values; }
-      else if (k.includes('contact') || k.includes('mode')) { tf.contactModes = values; }
-      else if (k.includes('location')) { tf.location = values[0]; }
-      else if (k.includes('experience')) { tf.experience = values[0]; }
-      else if (k.includes('fee') || k.includes('rate') || k.includes('price')) {
-        const nums = values.map(v => Number(String(v).replace(/[^0-9.]/g, ''))).filter(n => !isNaN(n));
-        if (nums.length === 1) { tf.minRate = nums[0]; }
-        else if (nums.length >= 2) { tf.minRate = Math.min(...nums); tf.maxRate = Math.max(...nums); }
-      } else { tf.subjects = tf.subjects ? [...tf.subjects, ...values] : values; }
+  private searchWithBackend(sel: SelectedFilters): void {
+    const request: TutorSearchRequest = {
+      categoryKey: sel.categoryKey,
+      filters: sel.filters,
+      page: 0,
+      size: this.searchPageSize,
+      sort: this.toBackendSort(this.currentSort)
+    };
+
+    this.isLoading = true;
+    this.tutorApi.searchTutors(request).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (resp: any) => {
+        const result = this.extractSearchResult(resp);
+        this.totalTutorCount = result.totalElements;
+        // An empty successful response is a valid filtered result and must
+        // clear the cards instead of restoring the unfiltered tutor cache.
+        this.tutorService.setCacheAndApply(result.tutors);
+        this.isLoading = false;
+      },
+      error: () => {
+        this.tutorService.applySelectedFilters(sel);
+        this.totalTutorCount = this.tutorService.countForSelectedFilters(sel);
+        this.isLoading = false;
+      }
     });
-    this.tutorService.setFilters(tf);
+  }
+
+  private extractSearchResult(resp: any): { tutors: any[]; totalElements: number } {
+    const candidates = [
+      resp,
+      resp?.tutors,
+      resp?.content,
+      resp?.data,
+      resp?.data?.tutors,
+      resp?.data?.content,
+      resp?.result,
+      resp?.result?.tutors,
+      resp?.result?.content
+    ];
+    const tutors = candidates.find(Array.isArray) ?? [];
+    const containers = [resp, resp?.data, resp?.result].filter(Boolean);
+    const total = containers
+      .map(container => Number(container?.totalElements ?? container?.total ?? container?.totalCount))
+      .find(value => Number.isFinite(value));
+    return { tutors, totalElements: total ?? tutors.length };
+  }
+
+  private toBackendSort(sort: TutorSortOption): TutorSearchSort {
+    const sortMap: Record<TutorSortOption, TutorSearchSort> = {
+      recent: 'RECENT',
+      alphabets: 'ALPHABETICAL',
+      mostLiked: 'MOST_LIKED',
+      experience: 'EXPERIENCE'
+    };
+    return sortMap[sort];
   }
 
   /**
@@ -268,6 +299,10 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   selectSort(option: TutorSortOption): void {
     this.currentSort = option;
     this.isSortOpen = false;
+    if (this.lastAppliedFilters) {
+      this.searchWithBackend(this.lastAppliedFilters as SelectedFilters);
+      return;
+    }
     this.tutors = this.sortTutors([...this.tutors], option);
     this.tutorService.setSort(option);
     this.cdr.detectChanges();

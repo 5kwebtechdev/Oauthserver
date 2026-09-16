@@ -99,7 +99,7 @@ export class DeepLinkService {
           sessionStorage.setItem('referralCodeLocked', 'true');
         } catch (e) {}
       }
-      return '/home/sign-up?step=0.1';
+      return '/signup?step=0.1';
     }
 
     if (path.startsWith('/authed/')) {
@@ -136,7 +136,7 @@ export class DeepLinkService {
       return `/authed/school-store/product${query}`;
     }
 
-    return deepLinks?.defaultPath || '/authed/user-dashboard';
+    return deepLinks?.defaultPath || '/home';
   }
 
   private getSchemePath(url: URL): string {

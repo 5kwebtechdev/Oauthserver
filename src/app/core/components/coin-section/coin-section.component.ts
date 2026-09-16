@@ -190,6 +190,28 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
 
     // ── Type helpers ──────────────────────────────────────────────────────────
 
+    getHistoryIcon(item: CoinItem): string | null {
+        const type = (item.type || '').toUpperCase();
+        const description = item.description || '';
+        if (/MILESTONE/.test(type) || /milestone/i.test(description)) return 'assets/Icons-Neutral/Icon-Trophy.webp';
+        if (/STREAK/.test(type) || /\bstreak\b/i.test(description)) return 'assets/Icons-Neutral/Icon-Streak.webp';
+        if (type === 'DAILY_LOGIN_BONUS') return 'assets/Icons-Neutral/Icon-Calendar.webp';
+        if (/JOURNAL/.test(type)) return 'assets/figma/child-home/quick-journal.webp';
+        if (/HABIT/.test(type)) return 'assets/icons/Habit.webp';
+        if (/TASK/.test(type)) return 'assets/icons/Task.webp';
+        if (type === 'HINT_USED' || item.count < 0) return 'assets/figma/parent-home/parenting-section/header-bulb.webp';
+        return null;
+    }
+
+    getHistoryDayBadge(item: CoinItem): string | null {
+        const text = `${item.type || ''} ${item.description || ''}`;
+        if (!/streak|milestone/i.test(text)) return null;
+        // Use the actual rewarded days, never a fixed sample number or coin amount.
+        const match = text.match(/(\d+)\s*[-_ ]?\s*days?\b/i)
+            || text.match(/(\d+)[-_ ]?DAY(?=[_\s]|$)/i);
+        return match ? match[1] : null;
+    }
+
     getTypeLetter(type: string): string {
         switch (type) {
             case 'DAILY_LOGIN_BONUS':       return 'D';

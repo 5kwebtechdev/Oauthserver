@@ -153,7 +153,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   goBack(): void {
     if (this.step > 1) {
       this.step--;
-      this.navCtrl.navigateBack(['/home/reset-password'], { queryParams: { step: this.step, mode: this.mode } });
+      this.navCtrl.navigateBack(['/forgot-password'], { queryParams: { step: this.step, mode: this.mode } });
     } else {
       this.navCtrl.navigateBack(['/login']);
     }
@@ -198,7 +198,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         try { sessionStorage.setItem('requestedIdentifier', identifier); } catch { }
         this.step = 2;
         this.startOtpTimer();
-        this.navCtrl.navigateForward(['/home/reset-password'], { queryParams: { step: 2, mode: this.mode } });
+        this.navCtrl.navigateForward(['/forgot-password'], { queryParams: { step: 2, mode: this.mode } });
       },
       error: (err) => {
         this.loading = false;
@@ -227,7 +227,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.clearOtpTimer();
         this.step = 3;
-        this.navCtrl.navigateForward(['/home/reset-password'], { queryParams: { step: 3, mode: this.mode } });
+        this.navCtrl.navigateForward(['/forgot-password'], { queryParams: { step: 3, mode: this.mode } });
       },
       error: (err) => {
         this.loading = false;

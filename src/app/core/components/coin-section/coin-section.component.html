@@ -79,18 +79,9 @@
 
                         <!-- Icon -->
                         <div class="item-icon-wrap">
-                            <ng-container *ngIf="item.count < 0; else earnedItemIcon">
-                                <span class="item-icon item-icon--spend" aria-hidden="true">
-                                    <img src="assets/Navigation/figma-logged-in/coin.webp" alt="">
-                                </span>
-                                <span class="spend-badge" aria-hidden="true">−</span>
-                            </ng-container>
-                            <ng-template #earnedItemIcon>
-                            <ng-container *ngIf="item.type === 'DAILY_LOGIN_BONUS'; else regularItemIcon">
-                                <img
-                                    src="assets/Navigation/figma-logged-in/coin.webp"
-                                    alt="SuperMe coin"
-                                    class="item-icon item-icon--coin">
+                            <ng-container *ngIf="getHistoryIcon(item) as icon; else regularItemIcon">
+                                <img [src]="icon" alt="" class="item-icon item-icon--category"
+                                     [style.background]="getTypeBg(item.type)">
                             </ng-container>
                             <ng-template #regularItemIcon>
                             <ng-container *ngIf="item.thumbnailUrl; else typeIcon">
@@ -107,9 +98,11 @@
                                 </div>
                             </ng-template>
                             </ng-template>
-                            </ng-template>
                             <!-- Bonus star badge -->
                             <span *ngIf="item.type === 'DAILY_LOGIN_BONUS'" class="bonus-badge">★</span>
+                            <span *ngIf="getHistoryDayBadge(item) as days" class="history-day-badge"
+                                  [attr.aria-label]="days + ' days'">{{ days }}</span>
+                            <span *ngIf="item.count < 0" class="spend-badge" aria-hidden="true">−</span>
                         </div>
 
                         <!-- Label + meta -->

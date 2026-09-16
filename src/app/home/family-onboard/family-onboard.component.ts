@@ -522,9 +522,9 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                 this.onboardingState.updateRegistrationDraft({ familyCode: enteredCode }, 5);
             }
 
-            const targetUrl = '/home/sign-up?step=2&role=child&editOnboarding=true';
+            const targetUrl = '/signup?step=2&role=child&editOnboarding=true';
             this.navigation.replaceHistory(targetUrl);
-            this.navigateWithoutHistory('/home/sign-up', {
+            this.navigateWithoutHistory('/signup', {
                 step: 2,
                 role: 'child',
                 editOnboarding: 'true'
@@ -533,8 +533,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         }
 
         const backRoutes: Record<ViewMode, string> = {
-            'instructions-parent': '/home/sign-up',
-            'join-family-child': '/home/sign-up',
+            'instructions-parent': '/signup',
+            'join-family-child': '/signup',
             'join-family-parent': '/home/instructions-for-parent'
         };
         const route = backRoutes[this.viewMode];
@@ -675,11 +675,11 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                 this.core.triggerToasrt(response?.message || 'Joined your family!', 'success');
 
                 if (sessionStorage.getItem(FamilyOnboardComponent.CHILD_POST_FAMILY_WELCOME_KEY) === 'true') {
-                    this.navigateWithoutHistory('/home/sign-up', { step: 4, role: 'child' });
+                    this.navigateWithoutHistory('/signup', { step: 4, role: 'child' });
                     return;
                 }
 
-                const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+                const route = this.authService.getDashboardRoute() || '/home';
                 this.navigateWithoutHistory(route);
             },
             error: (error) => {
@@ -703,7 +703,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             sessionStorage.removeItem(FamilyOnboardComponent.MANAGED_CHILD_SIGNUP_KEY);
             sessionStorage.removeItem(FamilyOnboardComponent.MANAGED_CHILD_FAMILY_CODE_KEY);
         } catch (e) {}
-        const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+        const route = this.authService.getDashboardRoute() || '/home';
         this.navigateWithoutHistory(route);
     }
 
@@ -807,7 +807,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         const signupRole = sessionStorage.getItem('signup_role');
         if (signupRole === 'parent') {
             // Navigate to signup step 2 (profile information) to continue parent signup
-            this.navigateWithoutHistory('/home/sign-up', { step: 2 });
+            this.navigateWithoutHistory('/signup', { step: 2 });
             return;
         }
 
@@ -974,7 +974,7 @@ Thank you!`;
             this.onboardingState.markExistingUser();
             this.clearOAuthSignupSession();
             try { sessionStorage.setItem('family_connected_ack', 'Parent'); } catch (e) {}
-            this.navigateWithoutHistory('/home/sign-up', { step: 5, role: 'parent' });
+            this.navigateWithoutHistory('/signup', { step: 5, role: 'parent' });
             return;
         }
 
@@ -1084,7 +1084,7 @@ Thank you!`;
 
         if (role === 'child' || role === 'self') {
             // Navigate to pet selection in signup flow
-            this.navigateWithoutHistory('/home/sign-up', { step: 4 });
+            this.navigateWithoutHistory('/signup', { step: 4 });
             return;
         }
 
@@ -1434,7 +1434,7 @@ Thank you!`;
                 }
 
                 this.clearOAuthSignupSession();
-                this.navigateWithoutHistory('/home/sign-up', { step: 5 });
+                this.navigateWithoutHistory('/signup', { step: 5 });
             },
             error: (err) => {
                 this.isLoading = false;
@@ -1565,7 +1565,7 @@ Thank you!`;
         }
 
         this.clearSignupSession();
-        this.navigateWithoutHistory('/home/sign-up', { step: 5 });
+        this.navigateWithoutHistory('/signup', { step: 5 });
     }
 
     private finishCompletedParentRegistration(response: any, payload: any, password: string): void {
@@ -1669,7 +1669,7 @@ Thank you!`;
             console.warn('[FamilyOnboard] Unable to persist child account handoff state', error);
         }
 
-        this.navigateWithoutHistory('/home/sign-up', {
+        this.navigateWithoutHistory('/signup', {
             step: 0.1,
             role: 'child',
             managedChild: true
