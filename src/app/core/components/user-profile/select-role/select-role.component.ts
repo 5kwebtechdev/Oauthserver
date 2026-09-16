@@ -20,8 +20,9 @@ import { QRCodeComponent } from 'angularx-qrcode';
   template: `
 <ion-content>
 	<div class="step step-1" *ngIf="currentStep === 1">
-		<superme-navigator heading="Select the role" backIcon="arrowSvg" (back)="goBack()"></superme-navigator>
-		<div class="d-flex flex-column gap-4">
+		<div class="role-flow-shell">
+			<superme-navigator heading="Select the role" backIcon="arrowSvg" (back)="goBack()"></superme-navigator>
+			<div class="role-options">
 			<div class="role-selector container p-0" *ngIf="shouldShowChildRole()" data-role="child" role="button" tabindex="0"
 				(click)="selectRole('child')" (keydown)="onKeySelect($event, 'child')"
 				[class.active]="selectedRole === 'child'" [attr.aria-pressed]="selectedRole === 'child'">
@@ -34,7 +35,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 						<h4 style="padding-left:10px;">Earn rewards together</h4>
 					</div>
 					<div class="col-6 p-l-0 child-role-image">
-						<img src="assets/Images-Transparent/Image-Role-Child.webp" alt="">
+						<img src="assets/Images-Transparent/Image-Role-Child.webp" alt="Child role">
 					</div>
 				</div>
 			</div>
@@ -45,7 +46,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 
 				<div class="row">
 					<div class="col-6 p-l-0 image-parent">
-						<img src="assets/Images-Transparent/Image-Role-Parent.webp" alt="">
+						<img src="assets/Images-Transparent/Image-Role-Parent.webp" alt="Parent role">
 					</div>
 
 					<div class="col-6">
@@ -75,13 +76,15 @@ import { QRCodeComponent } from 'angularx-qrcode';
 			<div>
 				<superme-button type="green" size="full" text="Save & Continue" [disabled]="!selectedRole" (click)="save()"></superme-button>
 			</div>
+			</div>
 		</div>
 	</div>
 
 	<div class="step step-2" *ngIf="currentStep === 2">
-		<superme-navigator heading="Instructions" backIcon="arrowSvg" (back)="prevStep()"></superme-navigator>
+		<div class="role-flow-shell instruction-flow-shell">
+			<superme-navigator heading="Instructions" backIcon="arrowSvg" (back)="prevStep()"></superme-navigator>
 
-		<div class="container" style="max-width:420px; margin: 16px auto;">
+		<div class="instruction-card">
 			<instructio-list
 				[heading]="selectedRole === 'child' ? 'Before Switching from Self to Child' : 'Before Switching from Self to Parent'"
 				[items]="selectedRole === 'child' ? childRoleInstructions : roleSelectionInstructions"
@@ -89,7 +92,9 @@ import { QRCodeComponent } from 'angularx-qrcode';
 			</instructio-list>
 		</div>
 
-		<profile-facts [faqs]="selectedRole === 'child' ? profileChildFaqs : profileParentFaqs"></profile-facts>
+		<div class="instruction-faqs">
+			<profile-facts [faqs]="selectedRole === 'child' ? profileChildFaqs : profileParentFaqs"></profile-facts>
+		</div>
 
 		<div class="role-switch-consent">
 			<ion-checkbox
@@ -99,8 +104,9 @@ import { QRCodeComponent } from 'angularx-qrcode';
 			<p>I have read and understood that switching roles affects account linkage and family access as described above.</p>
 		</div>
 
-		<div style="margin-top:20px; text-align:center;">
+		<div class="instruction-action">
 			<superme-button type="green" size="full" text="Next" [disabled]="!instructionConsentChecked" (click)="save()"></superme-button>
+		</div>
 		</div>
 	</div>
 
@@ -225,6 +231,40 @@ import { QRCodeComponent } from 'angularx-qrcode';
   padding: 16px;
 }
 
+.role-flow-shell {
+  width: min(100%, 900px);
+  margin: 0 auto;
+}
+
+.role-options {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 16px 8px 8px;
+}
+
+.instruction-card {
+  max-width: 680px;
+  margin: 24px auto 32px;
+  padding: 24px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 4px 22px rgba(107, 101, 106, 0.10);
+}
+
+.instruction-faqs,
+.role-switch-consent,
+.instruction-action {
+  width: min(100%, 680px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.instruction-action {
+  margin-top: 20px;
+  text-align: center;
+}
+
 .select-role {
   .select-role__container {
     max-width: 420px;
@@ -264,7 +304,8 @@ import { QRCodeComponent } from 'angularx-qrcode';
 /* Copied styles for steps 1-3 from signup component */
 .role-selector {
   overflow: hidden;
-  padding-top: 25px !important;
+  min-height: 210px;
+  padding-top: 0 !important;
   // padding-left: 15px !important;
   position: relative;
   border: 5px solid transparent;
@@ -476,7 +517,9 @@ import { QRCodeComponent } from 'angularx-qrcode';
   .row {
     display: flex;
     align-items: stretch;
+    min-height: 210px;
     height: 100%;
+    margin: 0;
   }
 
   .col-6 {
@@ -487,13 +530,14 @@ import { QRCodeComponent } from 'angularx-qrcode';
   }
 
   .col-6 img {
-    max-height: 150px;
-    width: auto;
-    max-width: 100%;
-    object-fit: cover;
-    margin-top: auto;
+    width: 100%;
+    height: 210px;
+    max-width: none;
+    object-fit: contain;
+    object-position: center bottom;
+    margin: auto 0 0;
     display: block;
-    align-self: flex-end;
+    align-self: center;
   }
 
   h2 {
@@ -626,7 +670,6 @@ font-weight: 600;
 }
 
 .role-switch-consent {
-  max-width: 420px;
   margin: 18px auto 0;
   display: flex;
   align-items: flex-start;
@@ -651,6 +694,74 @@ font-weight: 600;
     font-size: 13px;
     font-weight: 600;
     line-height: 1.35;
+  }
+}
+
+@media (max-width: 767px) {
+  .step-1,
+  .step-2,
+  .step-3 {
+    padding: 8px;
+  }
+
+  .role-options {
+    gap: 16px;
+    padding: 12px 4px 8px;
+  }
+
+  .role-selector,
+  .role-selector .row {
+    min-height: 156px;
+  }
+
+  .role-selector {
+    border-width: 3px;
+    border-radius: 22px;
+
+    &.active {
+      border-width: 3px;
+      border-radius: 22px;
+    }
+
+    .col-6 {
+      padding-inline: 10px;
+    }
+
+    .col-6 img {
+      height: 156px;
+    }
+
+    h2 {
+      font-size: 22px !important;
+    }
+
+    h4 {
+      font-size: 12px !important;
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+  }
+
+  .instruction-card {
+    margin: 16px 4px 24px;
+    padding: 18px 16px;
+    border-radius: 16px;
+  }
+
+  .instruction-faqs,
+  .role-switch-consent,
+  .instruction-action {
+    width: calc(100% - 8px);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .role-flow-shell {
+    width: min(100%, 760px);
+  }
+
+  .role-options {
+    padding-inline: 16px;
   }
 }
 `]
