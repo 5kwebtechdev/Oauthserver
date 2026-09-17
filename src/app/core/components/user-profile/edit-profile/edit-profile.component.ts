@@ -85,6 +85,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     email: new FormControl<string | null>(null, [Validators.required, Validators.email]),
   });
 
+  // `username` is the preferred in-app identity. Older profiles may not have
+  // one yet, so the username field falls back to the avatar name until it is
+  // created by the user.
+  username: string | null = null;
   avatarName: string | null = '';
   avatarImageName: string | null = '';  // New field for avatar image name (e.g., 'Avatar 8', 'Avatar 11')
   fullName: string | null = '';
@@ -117,6 +121,11 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     const val = this.profileForm.get('dob')?.value;
     return val == null ? undefined : val;
   }
+
+  /** Value shown in the Username field. Null is the only fallback signal. */
+  public get displayUsername(): string {
+    return this.username !== null ? this.username : (this.avatarName || '');
+  }
   // Account relationship: 'child' | 'parent' | 'self'
   accountType: 'child' | 'parent' | 'self' | null = null;
 
@@ -137,6 +146,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     phone: string | null;
     email: string | null;
     avatarSelected: any;
+    username: string | null;
     avatarName: string | null;
     selectedCountryCode: string;
   } | null = null;
@@ -274,7 +284,11 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       }
     }
 
-    // 7. Auto-fill the same avatar for every role using the shared mapping.
+    // 7. Prefer the server username in the identity field. A null username is
+    // an intentional legacy state, so keep the avatar name as its fallback.
+    this.username = userData.username != null ? String(userData.username) : null;
+
+    // 8. Auto-fill the same avatar for every role using the shared mapping.
     {
       const avatarInfo = userData.avatar || {};
       this.avatarName = userData.avatarName || avatarInfo.avatarName || this.avatarName;
@@ -311,15 +325,15 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       }
     }
 
-    // 8. Store current user data for reference
+    // 9. Store current user data for reference
     this.currentUserData = userData;
 
-    // 9. Validate age based on account type
+    // 10. Validate age based on account type
     if (userData.dateOfBirth || userData.dob) {
       this.validateAge();
     }
 
-    // 10. Store initial values for change detection
+    // 11. Store initial values for change detection
     this.storeInitialValues();
 
     console.log('[EditProfile] Profile autofill complete');
@@ -342,6 +356,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
     // Update with new values from payload
     if (payload.name !== undefined) updatedProfile.name = payload.name;
+    if (payload.username !== undefined) updatedProfile.username = payload.username;
     if (payload.email !== undefined) updatedProfile.email = payload.email;
     if (payload.phone !== undefined) updatedProfile.phone = payload.phone;
     if (payload.dateOfBirth !== undefined) updatedProfile.dob = payload.dateOfBirth;
@@ -381,6 +396,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       if (payload.phone !== undefined) updateData.phone = payload.phone;
       if (payload.dateOfBirth !== undefined) updateData.dateOfBirth = payload.dateOfBirth;
       if (payload.gender !== undefined) updateData.gender = payload.gender;
+      if (payload.username !== undefined) updateData.username = payload.username;
       
       // Handle avatar as nested object
       if (payload.avatarName !== undefined || payload.avatarImageName !== undefined) {
@@ -409,6 +425,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       phone: this.profileForm.get('phone')?.value || null,
       email: this.profileForm.get('email')?.value || null,
       avatarSelected: this.avatarSelected,
+      username: this.username,
       avatarName: this.avatarName,
       selectedCountryCode: this.selectedCountry.code
     };
@@ -528,8 +545,12 @@ export class EditProfileComponent implements OnInit, OnDestroy {
             if (response && typeof response === 'object') {
               // Response is a JSON object — sync profile from it
               const avatarImgName = response.avatarImageName || response.avatar?.avatarImageName;
+              if (response.username !== undefined) {
+                this.username = response.username != null ? String(response.username) : null;
+              }
               this.userService.updateUserProfile({
                 name: response.name,
+                username: response.username,
                 email: response.email,
                 phone: response.phone,
                 gender: this.normalizeStoredGender(response.gender),
@@ -584,6 +605,9 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         name: this.fullName?.trim(),
         gender: this.gender ? this.toApiGender(this.gender) : undefined,
         email: this.profileForm.get('email')!.value!.trim(),
+        ...(this.username !== null
+          ? { username: this.username.trim() }
+          : { avatarName: this.avatarName?.trim() || undefined }),
         ...(this.avatarSelected ? { avatarImageName: this.avatarService.getAvatarAsset(this.avatarSelected)?.imageName } : {}),
       };
       if (dobRaw) {
@@ -628,11 +652,18 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       if (sel) payload.avatarImageName = sel.imageName;
     }
 
-    // Always include avatarName if it changed
-    const currentAvatarName = this.avatarName?.trim() || '';
-    const initialAvatarName = this.initialValues.avatarName?.trim() || '';
-    if (currentAvatarName !== initialAvatarName) {
-      payload.avatarName = currentAvatarName;
+    // Persist the edited identity under the same field that was displayed.
+    // Legacy profiles (username === null) continue using avatarName.
+    const currentIdentity = this.displayUsername.trim();
+    const initialIdentity = this.initialValues.username !== null
+      ? (this.initialValues.username || '').trim()
+      : (this.initialValues.avatarName || '').trim();
+    if (currentIdentity !== initialIdentity) {
+      if (this.username !== null) {
+        payload.username = currentIdentity;
+      } else {
+        payload.avatarName = currentIdentity;
+      }
     }
 
     if (Object.keys(payload).length === 0) return null;
@@ -656,6 +687,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       const merged: any = {};
       if (response.id !== undefined) merged.id = response.id;
       if (response.name !== undefined) merged.name = response.name;
+      if (response.username !== undefined) merged.username = response.username;
       if (response.email !== undefined) merged.email = response.email;
       if (response.phone !== undefined) merged.phone = response.phone;
       if (response.dateOfBirth !== undefined) merged.dateOfBirth = response.dateOfBirth;
@@ -755,11 +787,15 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     }, 0);
   }
 
-  onAvatarNameChange(value: string | null): void {
+  onUsernameChange(value: string | null): void {
     // Clear any previous avatar-suggestion error when user types manually
     this.avatarSuggestionError = null;
-    this.avatarName = value || '';
-    const v = (this.avatarName || '').toString();
+    if (this.username !== null) {
+      this.username = value || '';
+    } else {
+      this.avatarName = value || '';
+    }
+    const v = (value || '').toString();
     this.validateAvatarUsername(v);
     if (v.trim().length >= 4) {
       this.avatarInput$.next(v.trim());
@@ -770,8 +806,17 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Backwards-compatible handler for any existing callers. */
+  onAvatarNameChange(value: string | null): void {
+    this.onUsernameChange(value);
+  }
+
   onSuggestionSelected(s: string): void {
-    this.avatarName = s;
+    if (this.username !== null) {
+      this.username = s;
+    } else {
+      this.avatarName = s;
+    }
     this.avatarSuggestions = [];
     this.showAvatarSuggestions = false;
     this.avatarSuggestionError = null;

@@ -7,7 +7,7 @@
     </div>
     <div class="eduhub-listings" *ngIf="!isLoading">
       <img [src]="listingVerifiedAsset" alt="" aria-hidden="true">
-      <strong>{{ totalListingCount }}<ng-container *ngIf="totalListingCount > 0">+</ng-container></strong>
+      <strong>{{ displayedListingCount }}</strong>
       <span>Listings</span>
     </div>
   </header>

@@ -32,6 +32,8 @@ export interface AuthResponse {
   user: {
     id: number;
     name: string;
+    /** In-app identity. Null means the avatar name is the identity fallback. */
+    username?: string;
     email: string;
     phone?: string;
     age?: number;
@@ -59,7 +61,9 @@ export interface AuthResponse {
       id: number;
       avatarName: string;
       gender: string | null;
-      url: string;
+      url: string | null;
+      avatarImageName?: string;
+      renamedByUser?: boolean;
     } | null;
     pet?: {
       id: number;

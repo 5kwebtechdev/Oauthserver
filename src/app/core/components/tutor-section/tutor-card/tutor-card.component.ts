@@ -87,6 +87,9 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   tutors: TutorListItem[] = [];
   listingCount = 0;
   isLoading = false;
+  // EduHub's headline is a product-wide trust signal, not the number loaded
+  // for the currently selected city/category preview.
+  readonly displayedListingCount = '1800+';
 
   readonly listingVerifiedAsset = 'assets/figma/eduhub-home/listing-verified.webp';
   readonly profileVerifiedAsset = 'assets/figma/eduhub-home/profile-verified.webp';
@@ -286,7 +289,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
           // Category artwork is navigation chrome, not a person's/listing's
           // profile image. Keep it as a fallback only for shop cards that
           // intentionally use branded category art; Workshops and Events must
-          // fall back to the initials component when no image was uploaded.
+          // fall back to the neutral empty image state when no image was uploaded.
           const fallbackImage = source.endpoint === 'shops'
             ? (this.categories.find(category => category.key === categoryKey)?.image || '')
             : '';
@@ -337,7 +340,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
               const preview = this.mapExternalPreview(item, fallbackImage);
               // The Stationery API currently returns the shared blue pouch
               // artwork as a successful image URL for every listing. Treat it
-              // as missing so each listing gets its own initials fallback.
+              // as missing so each listing gets the neutral empty image state.
               if (categoryKey === 'stationery') preview.image = '';
               return preview;
             });

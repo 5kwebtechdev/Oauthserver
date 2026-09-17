@@ -41,9 +41,16 @@ export const startupGuard: CanActivateFn = () => {
         return router.parseUrl('/login');
     }
 
-    // The legacy public HomePage is retired. Keep registration-resume routes
-    // above, then send every other signed-out visit to the current login page.
-    return router.parseUrl('/login');
+    // Returning guests who have already completed the walkthrough can go
+    // straight to signup. A brand-new install must render HomePage first so
+    // the four-slide splash/walkthrough is shown before any auth screen.
+    if (onboardingState.hasSeenSplash()) {
+        return router.createUrlTree(['/signup'], {
+            queryParams: { step: 1 }
+        });
+    }
+
+    return true;
 };
 
 /**

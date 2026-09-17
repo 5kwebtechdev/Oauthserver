@@ -119,17 +119,21 @@
                     <div class="counselor-card__identity">
                       <div class="counselor-card__name"><h3>{{ getName(counselor) }}</h3>
                         <img *ngIf="isVerified(counselor)" src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified"></div>
-                      <p class="counselor-card__specialization">{{ getSpecializationLabel(counselor) }}</p>
-                      <p class="counselor-card__stats"><span><img src="assets/Icons-Neutral/Tutor-Mode.webp" alt="" aria-hidden="true">{{ getAvailability(counselor) }}</span><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.webp" alt="" aria-hidden="true">{{ getExperience(counselor) }}</span></p>
+                      <p *ngIf="!isGuestView" class="counselor-card__specialization">{{ getSpecializationLabel(counselor) }}</p>
+                      <p *ngIf="!isGuestView" class="counselor-card__stats"><span><img src="assets/Icons-Neutral/Tutor-Mode.webp" alt="" aria-hidden="true">{{ getAvailability(counselor) }}</span><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.webp" alt="" aria-hidden="true">{{ getExperience(counselor) }}</span></p>
                     </div>
-                    <div class="counselor-card__actions">
+                    <div *ngIf="!isGuestView" class="counselor-card__actions">
                       <button type="button" class="counselor-action counselor-action--heart" [class.is-liked]="isLiked(counselor)" [attr.aria-label]="isLiked(counselor) ? 'Unlike ' + singularTitle.toLowerCase() : 'Like ' + singularTitle.toLowerCase()" (click)="toggleLike(counselor)"><span aria-hidden="true"></span></button>
                       <button type="button" class="counselor-action counselor-action--share" [attr.aria-label]="'Share ' + singularTitle.toLowerCase()" (click)="shareCounselor(counselor)"><img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true"></button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="counselor-card__footer"><span>{{ getFee(counselor) }}</span><button type="button" (click)="openProfile(counselor)">Check Profile</button></div>
+              <div *ngIf="!isGuestView" class="counselor-card__footer"><span>{{ getFee(counselor) }}</span><button type="button" (click)="openProfile(counselor)">Check Profile</button></div>
+              <div *ngIf="isGuestView" class="counselor-card__guest-cta">
+                <span>Log in to view more details</span>
+                <button type="button" (click)="openProfile(counselor)">Log in</button>
+              </div>
             </article>
             <ad-banner *ngIf="index === 2" class="counselor-ad" [screen]="eduAdScreen" variant="eduhub-inner" aria-label="Featured EduHub offers"></ad-banner>
           </ng-container>

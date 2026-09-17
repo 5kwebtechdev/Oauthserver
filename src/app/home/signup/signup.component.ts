@@ -1,6 +1,8 @@
-import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit, OnDestroy, NgZone } from '@angular/core';
-import { IonContent, NavController } from '@ionic/angular';
-import { Router, ActivatedRoute } from "@angular/router";
+import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit, OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { IonicModule, IonContent, NavController } from '@ionic/angular';
+import { Router, ActivatedRoute, RouterModule } from "@angular/router";
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 import { CoreService } from "../../core/services/core.service";
 import { AuthService } from '../../core/services/auth.service';
@@ -21,6 +23,11 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard, KeyboardInfo } from '@capacitor/keyboard';
 import { environment } from '../../../environments/environment';
 import { AvatarDefinition, AvatarService } from '../../core/services/avatar.service';
+import { SupermeInputsModule } from '../../core/components/superme-inputs/superme-inputs.module';
+import { SupermeNavigatorComponent } from '../../core/components/superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
+import { SocialMediaComponent } from '../../core/components/social-media/social-media.component';
+import { AuthBackButtonComponent } from '../../core/components/auth-back-button/auth-back-button.component';
 
 type SignupRole = 'child' | 'parent' | 'self';
 type SignupGender = StoredGender;
@@ -30,7 +37,20 @@ type SignupGender = StoredGender;
   selector: 'signup',
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    IonicModule,
+    SupermeInputsModule,
+    SupermeNavigatorComponent,
+    SupermeButtonComponent,
+    SocialMediaComponent,
+    AuthBackButtonComponent,
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   animations: [
     trigger('slideIn', [
       transition(':enter', [

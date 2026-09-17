@@ -6,8 +6,8 @@
       <div class="edit-details" *ngIf="accountType !== 'parent'">
         <profile-edit-input title="Username" description="Your in-app identity name" type="text"
           placeholder="Username"
-          [value]="avatarName"
-          (valueChange)="onAvatarNameChange($event)"
+          [value]="displayUsername"
+          (valueChange)="onUsernameChange($event)"
           [suggestions]="avatarSuggestions"
           [showSuggestions]="showAvatarSuggestions"
           [suggestionError]="avatarSuggestionError"

@@ -13,6 +13,8 @@ import { catchError } from 'rxjs/operators';
 export interface JournalOutputEntry {
   id?: string | number;
   date?: string | Date;
+  /** API creationTime (HH:mm:ss), displayed independently of the date. */
+  time?: string;
   text?: string;
   mood?: string;
   emoji?: string;
@@ -307,6 +309,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
       return {
         id: item.id,
         date: Number.isNaN(date.getTime()) ? undefined : date,
+        time: item.creationTime || item.time || undefined,
         text: item.notes || item.text || '',
         mood: item.emotions || item.mood || '',
         tags,

@@ -35,6 +35,10 @@ export class TutorListComponent implements OnChanges, OnDestroy {
     return this.adScreen ?? (this.authService.isParentUser() ? 'PARENT_TUTOR' : 'TUTOR_HOME');
   }
 
+  get isGuestView(): boolean {
+    return !this.authService.isLoggedIn();
+  }
+
   /** Emitted when user clicks View Profile. Payload: tutor object. */
   @Output() viewProfile = new EventEmitter<TutorListItem>();
 

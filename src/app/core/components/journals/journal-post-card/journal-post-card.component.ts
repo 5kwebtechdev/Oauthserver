@@ -5,6 +5,8 @@ import { IonicModule } from '@ionic/angular';
 export interface JournalEntry {
   id?: string | number;
   date?: string | Date;
+  /** API creationTime (HH:mm:ss), kept separate from the calendar date. */
+  time?: string;
   text?: string;
   mood?: string;
   emoji?: string;
@@ -164,7 +166,27 @@ export class JournalPostCardComponent implements OnInit {
 
   formatTime(date?: string | Date): string {
     if (!date) return '';
+    if (typeof date === 'string') {
+      const raw = date.trim();
+      // Journal APIs return creationTime separately (for example 18:22:56).
+      // Parse it as a local time instead of letting Date fall back to midnight.
+      const timeOnly = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(?:\s*(AM|PM))?$/i);
+      if (timeOnly) {
+        let hour = Number(timeOnly[1]);
+        const minute = Number(timeOnly[2]);
+        const period = timeOnly[4]?.toUpperCase();
+        if (period === 'PM' && hour < 12) hour += 12;
+        if (period === 'AM' && hour === 12) hour = 0;
+        if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+          const localTime = new Date();
+          localTime.setHours(hour, minute, 0, 0);
+          return localTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+      }
+    }
+
     const d = date instanceof Date ? date : new Date(date);
+    if (Number.isNaN(d.getTime())) return '';
     return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   }
 

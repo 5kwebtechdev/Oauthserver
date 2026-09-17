@@ -462,7 +462,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(profile => {
         if (profile) {
-          const profileUsername = profile.username ?? profile.userName ?? profile.avatarName;
+          const profileUsername = this.resolveGreetingUsername(profile);
           if (String(profileUsername || '').trim()) {
             this.userName = String(profileUsername).trim();
           } else if (!this.userName) {
@@ -1130,6 +1130,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         gender: userData.gender,
         relationship: userData.relationship,
         dob: userData.dateOfBirth || userData.dob,
+        username: userData.username ?? userData.userName ?? undefined,
         avatarName: userData.avatarName || userData.avatar?.avatarName,
         avatarImageName: userData.avatarImageName || userData.avatar?.avatarImageName
       });
@@ -1153,15 +1154,30 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   /**
    * The home greeting is the user's in-app identity, not their legal/full
-   * name. Older sessions may not have a username yet, so retain name as a
-   * fallback until the profile is refreshed.
+   * name. Older sessions may not have a username yet, so retain the avatar
+   * name (including the nested login-response shape) before the legal name.
+   * Parent accounts keep their regular name when this helper is ever used
+   * outside the child/self dashboard.
    */
   private resolveGreetingUsername(user: any): string {
-    const username = user?.username
-      ?? user?.userName
-      ?? user?.avatarName
-      ?? user?.avatar?.avatarName;
-    return String(username || user?.name || '').trim();
+    if (!user) return '';
+
+    const relationship = String(user.relationship ?? user.relationshipType ?? '').toUpperCase();
+    const childOrSelf = relationship === 'CHILD' || relationship === 'SELF'
+      || (!relationship && !this.authService.isParentUser());
+    if (childOrSelf) {
+      const username = user.username ?? user.userName;
+      if (username !== null && username !== undefined && String(username).trim()) {
+        return String(username).trim();
+      }
+
+      const avatarName = user.avatarName ?? user.avatar?.avatarName;
+      if (avatarName !== null && avatarName !== undefined && String(avatarName).trim()) {
+        return String(avatarName).trim();
+      }
+    }
+
+    return String(user.name ?? user.fullName ?? '').trim();
   }
 
   private checkStreakRestore(): void {

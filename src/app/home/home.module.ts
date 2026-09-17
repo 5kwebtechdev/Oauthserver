@@ -7,7 +7,6 @@ import { HomePage } from './home.page';
 
 import { HomePageRoutingModule } from './home-routing.module';
 import { LoginComponent } from "./login/login.component";
-import { SignupComponent } from "./signup/signup.component";
 import { SupermeSelectorsComponent } from "../core/components/superme-selectors/superme-selectors.component";
 import { SupermeNavigatorComponent } from "../core/components/superme-navigator/superme-navigator.component";
 import { SupermeInputsModule } from "../core/components/superme-inputs/superme-inputs.module";
@@ -40,8 +39,7 @@ import { AuthBackButtonComponent } from "../core/components/auth-back-button/aut
     QRCodeComponent
   ],
   declarations: [
-    HomePage,
-    SignupComponent
+    HomePage
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
 })

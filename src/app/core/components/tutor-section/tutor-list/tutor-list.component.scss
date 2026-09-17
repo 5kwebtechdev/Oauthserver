@@ -236,6 +236,33 @@
   border-top: 1px solid rgba(80, 93, 131, 0.1);
 }
 
+.tc__guest-cta {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #fbf1f8;
+  color: #5a347f;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tc__guest-cta button {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: #b32159;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 .tc__fees {
   display: flex;
   align-items: baseline;

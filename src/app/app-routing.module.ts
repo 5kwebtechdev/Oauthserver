@@ -6,6 +6,14 @@ import { DashboardRedirectGuard } from './core/guards/dashboard-redirect.guard';
 import { OurPoliciesComponent } from './core/components/user-profile/our-policies/our-policies.component';
 
 const routes: Routes = [
+  // The app entry point owns the first-launch walkthrough. Keep this route
+  // ahead of the public auth routes so a fresh browser/native install gets
+  // the same four-slide introduction as the mobile app before login/signup.
+  {
+    path: '',
+    loadChildren: () => import('./home/home.module').then(m => m.HomePageModule),
+    pathMatch: 'full'
+  },
   // Stable, readable logged-in URLs from the approved URL-structure sheet.
   { path: 'quiz', loadComponent: () => import('./core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent), canActivate: [authGuard], data: { category: 'quizzes' } },
   { path: 'puzzle', loadComponent: () => import('./core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent), canActivate: [authGuard], data: { category: 'puzzles' } },
@@ -79,11 +87,6 @@ const routes: Routes = [
     path: 'result-page',
     loadComponent: () => import('./core/components/learning-section/result-page/result-page.component').then(m => m.ResultPageComponent)
   },
-  {
-    path: '',
-    redirectTo: 'login',
-    pathMatch: 'full'
-  }
 ];
 
 @NgModule({

@@ -103,6 +103,7 @@ export class LoginComponent implements OnInit, OnDestroy {
               this.userService.setUserProfile({
                 userId: user.id,
                 name: user.name || '',
+                username: user.username ?? undefined,
                 email: user.email || undefined,
                 phone: user.phone || undefined,
                 dob,

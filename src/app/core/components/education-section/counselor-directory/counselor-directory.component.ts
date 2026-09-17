@@ -215,6 +215,11 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     return this.authService.isParentUser() ? 'EDUHUB_PARENTS' : 'EDUHUB';
   }
 
+  /** Public directory previews intentionally reveal only identity information. */
+  get isGuestView(): boolean {
+    return !this.authService.isLoggedIn();
+  }
+
   @HostListener('document:click')
   closeVerifiedMenu(): void {
     this.showVerifiedMenu = false;
@@ -490,6 +495,13 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   openProfile(counselor: Tutor): void {
+    if (this.isGuestView) {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url }
+      });
+      return;
+    }
+
     const profileBaseRoute = this.entityType === 'COUNSELOR' ? '/authed/counselors' : '/authed/tutors';
     void this.router.navigate([profileBaseRoute, counselor.id], {
       state: { tutor: counselor }

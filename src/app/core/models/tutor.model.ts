@@ -246,9 +246,8 @@ export function toTutorListItem(tutor: Tutor): TutorListItem {
     return {
         id: tutor.id,
         name: tutor.name,
-        // Do not substitute the generic diamond placeholder here. The shared
-        // profile image component intentionally renders the first two initials
-        // when a tutor has no photo.
+        // Do not substitute a generic artwork/initials placeholder here. The
+        // shared profile image component renders a neutral empty state instead.
         avatar: tutor.profilePicUrl || '',
         description: tutor.subjects?.length > 0
             ? tutor.subjects.join(', ')

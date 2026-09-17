@@ -190,16 +190,41 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
 
     // ── Type helpers ──────────────────────────────────────────────────────────
 
+    /** Daily-login records have used a few type names across API versions. */
+    private isDailyLoginType(type: string): boolean {
+        const normalized = (type || '').toUpperCase().replace(/[\s-]+/g, '_');
+        return normalized === 'DAILY_LOGIN_BONUS'
+            || normalized === 'DAILY_LOGIN'
+            || normalized === 'LOGIN_DAILY_BONUS';
+    }
+
+    isDailyLoginBonus(item: Pick<CoinItem, 'type' | 'description'>): boolean {
+        const type = (item.type || '').toUpperCase().replace(/[\s-]+/g, '_');
+        const description = item.description || '';
+        const isStreakReward = /\bstreak\b/i.test(`${type} ${description}`);
+        if (isStreakReward) return false;
+        return this.isDailyLoginType(type)
+            || /\bdaily[\s_-]+login(?:[\s_-]+bonus)?\b/i.test(description);
+    }
+
     getHistoryIcon(item: CoinItem): string | null {
         const type = (item.type || '').toUpperCase();
         const description = item.description || '';
+        // Daily login has its own star treatment in the template. Do not
+        // return the old calendar/check image here.
+        // Keep every streak reward on the current child-home flame artwork,
+        // including APIs that call it a milestone or use a longer description.
+        if (/STREAK/.test(type) || /\bstreak\b/i.test(description)) return 'assets/icons/child-home-streak-figma.webp';
         if (/MILESTONE/.test(type) || /milestone/i.test(description)) return 'assets/Icons-Neutral/Icon-Trophy.webp';
-        if (/STREAK/.test(type) || /\bstreak\b/i.test(description)) return 'assets/Icons-Neutral/Icon-Streak.webp';
-        if (type === 'DAILY_LOGIN_BONUS') return 'assets/Icons-Neutral/Icon-Calendar.webp';
         if (/JOURNAL/.test(type)) return 'assets/figma/child-home/quick-journal.webp';
-        if (/HABIT/.test(type)) return 'assets/icons/Habit.webp';
+        // Use the high-resolution habit artwork used by the activity glance.
+        // The legacy 24x20 `icons/Habit.webp` becomes visibly blurry at the
+        // larger transaction-row size.
+        if (/HABIT/.test(type)) return 'assets/figma/home-glance/tab-habit.webp';
         if (/TASK/.test(type)) return 'assets/icons/Task.webp';
-        if (type === 'HINT_USED' || item.count < 0) return 'assets/figma/parent-home/parenting-section/header-bulb.webp';
+        // Spend/hint transactions use the same bright bulb shown on the quiz
+        // hint card, instead of the legacy purple parenting bulb.
+        if (type === 'HINT_USED' || item.count < 0) return 'assets/figma/quiz-question/raw-1.webp';
         return null;
     }
 
@@ -213,8 +238,8 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
 
     getTypeLetter(type: string): string {
+        if (this.isDailyLoginType(type)) return 'D';
         switch (type) {
-            case 'DAILY_LOGIN_BONUS':       return 'D';
             case 'HABIT_COMPLETION':        return 'H';
             case 'TASK_COMPLETION':         return 'T';
             case 'LESSON_COMPLETED':        return 'L';
@@ -230,8 +255,8 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
 
     getTypeBg(type: string): string {
+        if (this.isDailyLoginType(type)) return '#FFF3CD';
         switch (type) {
-            case 'DAILY_LOGIN_BONUS':       return '#FFF3CD';
             case 'HABIT_COMPLETION':        return '#E8F5E9';
             case 'TASK_COMPLETION':         return '#E3F2FD';
             case 'LESSON_COMPLETED':        return '#F3E5F5';
@@ -240,7 +265,9 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             case 'HINT_USED':                return '#FFF3E0';
             case 'CHALLENGE_BATCH_REWARD':  return '#FCE4EC';
             case 'REFERRAL_BONUS':          return '#E0F7FA';
-            case 'STREAK_7DAY_BONUS':       return '#FFF3E0';
+            // The mobile streak reward uses the neutral icon tile; keep the
+            // flame readable without tinting its orange/blue artwork.
+            case 'STREAK_7DAY_BONUS':       return '#F3F3F3';
             case 'STREAK_RESTORE':          return '#EDE7F6';
             default:                        return '#F5F5F5';
         }
@@ -251,9 +278,9 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
         // even when its transaction type (for example LOGIN_STREAK_RESTORE)
         // is otherwise unknown and would fall through to Reward.
         if (Number(amount) < 0) return 'Spend';
+        if (this.isDailyLoginType(type)) return 'Daily Bonus';
 
         switch (type) {
-            case 'DAILY_LOGIN_BONUS':       return 'Daily Bonus';
             case 'HABIT_COMPLETION':        return 'Habit';
             case 'TASK_COMPLETION':         return 'Task';
             case 'LESSON_COMPLETED':        return 'Lesson';
@@ -269,8 +296,8 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
 
     private getLabelForItem(item: CoinHistoryItem): string {
+        if (this.isDailyLoginBonus(item)) return 'Daily Login Bonus';
         switch (item.type) {
-            case 'DAILY_LOGIN_BONUS':      return 'Daily Login Bonus';
             case 'STREAK_7DAY_BONUS':      return '7 Day Streak Bonus';
             case 'REFERRAL_BONUS':         return 'Referral Bonus';
             case 'STREAK_RESTORE': {

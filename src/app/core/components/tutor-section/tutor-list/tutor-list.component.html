@@ -24,8 +24,8 @@
 
           <div class="tc__info">
             <h3 class="tc__name">{{ t.name || ('Unknown ' + itemLabel) }}</h3>
-            <p class="tc__role">{{ t.description || t.qualification || 'Subject Expert' }}</p>
-            <p class="tc__levels">{{ formatLevelsDisplay(t.levels) || 'All Levels' }}</p>
+            <p *ngIf="!isGuestView" class="tc__role">{{ t.description || t.qualification || 'Subject Expert' }}</p>
+            <p *ngIf="!isGuestView" class="tc__levels">{{ formatLevelsDisplay(t.levels) || 'All Levels' }}</p>
           </div>
 
           <div class="tc__likes" [class.tc__likes--liked]="t.likedByUser">
@@ -35,7 +35,7 @@
         </div>
 
         <!-- Details row -->
-        <div class="tc__details">
+        <div *ngIf="!isGuestView" class="tc__details">
           <div class="tc__timing">
             <img src="assets/Icons-Neutral/Icon-Tutor-Timings.webp" alt="Timings" aria-hidden="true" />
             <span>{{ getTimingString(t) }}</span>
@@ -44,13 +44,17 @@
         </div>
 
         <!-- Bottom row: fees + CTA -->
-        <div class="tc__bottom">
+        <div *ngIf="!isGuestView" class="tc__bottom">
           <div class="tc__fees">
             <span class="tc__price">₹ {{ t.hourlyRate || 0 }}</span>
             <span class="tc__per">{{ t.feeLabel || '/hr' }}</span>
           </div>
           <superme-button type="columbian-blue" small [text]="'View Profile'" (click)="onViewProfile(t)"
             [attr.aria-label]="'View profile of ' + (t.name || itemLabel)"></superme-button>
+        </div>
+        <div *ngIf="isGuestView" class="tc__guest-cta">
+          <span>Log in to view more details</span>
+          <button type="button" (click)="onViewProfile(t)">Log in</button>
         </div>
       </article>
       </ng-container>

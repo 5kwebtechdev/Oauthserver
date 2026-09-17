@@ -86,9 +86,11 @@ export class UserProfileComponent implements OnInit, OnChanges {
         // If `user` wasn't provided as an Input, create it from the profile.
         if (!this.user || Object.keys(this.user).length === 0) {
           this.user = {
-            name: profile.avatarName || profile.name,
+            name: this.resolveDisplayIdentity(profile),
+            username: profile.username ?? profile.userName ?? null,
             avatarName: profile.avatarName,
             age: profile.age,
+            relationship: profile.relationship,
             avatarUrl: this.userAvatarUrl
           };
         } else {
@@ -111,11 +113,21 @@ export class UserProfileComponent implements OnInit, OnChanges {
     this.coreAuthService.userData$.subscribe(userData => {
       if (userData) {
         console.log('[UserProfile] User data updated from CoreAuthService:', userData.name);
+
+        // Preserve an explicit API null. It means this child/self account has
+        // no username and must use the avatar name, not a stale value from a
+        // previously logged-in account.
+        const hasUsernameField = Object.prototype.hasOwnProperty.call(userData, 'username')
+          || Object.prototype.hasOwnProperty.call(userData, 'userName');
+        const resolvedUsername = hasUsernameField
+          ? (userData.username ?? userData.userName ?? null)
+          : (this.user?.username ?? null);
         
         // Update user object with new data
         this.user = {
           ...this.user,
-          name: userData.avatarName || userData.avatar?.avatarName || userData.name || this.user?.name || 'User',
+          name: this.resolveDisplayIdentity(userData) || this.user?.name || 'User',
+          username: resolvedUsername,
           avatarName: userData.avatarName || userData.avatar?.avatarName || this.user?.avatarName,
           email: userData.email || this.user?.email,
           phone: userData.phone || this.user?.phone,
@@ -145,7 +157,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
       if (profile && this.user) {
         // Only update if not already set from CoreAuthService
         if (!this.user.name || this.user.name === 'User') {
-          this.user.name = profile.avatarName || profile.name || 'User';
+          this.user.name = this.resolveDisplayIdentity(profile) || 'User';
+          this.user.username = profile.username ?? profile.userName ?? this.user.username ?? null;
           this.user.avatarName = profile.avatarName || this.user.avatarName;
         }
       }
@@ -202,7 +215,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
         // Map basic user info but do NOT trust server-provided `avatar.url` for image display.
         // We will resolve avatar URL from `avatarImageName` using our resolver below.
         this.user = {
-          name: parsedData.avatarName || parsedData.avatar?.avatarName || parsedData.name || 'User',
+          name: this.resolveDisplayIdentity(parsedData) || 'User',
+          username: parsedData.username ?? parsedData.userName ?? null,
           avatarName: parsedData.avatarName || parsedData.avatar?.avatarName || '',
           email: parsedData.email,
           phone: parsedData.phone,
@@ -229,6 +243,39 @@ export class UserProfileComponent implements OnInit, OnChanges {
     } catch (e) {
       console.error('[UserProfile] Error loading user_data from localStorage:', e);
     }
+  }
+
+  /**
+   * Child and Self accounts use the in-app username as their visible identity.
+   * Accounts without one (the API returns `username: null`) fall back to the
+   * avatar name, including the nested login-response shape. Parent accounts
+   * continue showing their regular profile name.
+   */
+  private resolveDisplayIdentity(source: any): string {
+    if (!source) return '';
+
+    const relationship = String(source.relationship ?? source.relationshipType ?? '').toUpperCase();
+    const childOrSelf = relationship === 'CHILD' || relationship === 'SELF'
+      || (!relationship && !this.coreAuthService.isParentUser());
+    if (childOrSelf) {
+      const username = source.username ?? source.userName;
+      if (username !== null && username !== undefined && String(username).trim()) {
+        return String(username).trim();
+      }
+
+      const avatarName = source.avatarName ?? source.avatar?.avatarName;
+      if (avatarName !== null && avatarName !== undefined && String(avatarName).trim()) {
+        return String(avatarName).trim();
+      }
+    }
+
+    return String(source.name ?? source.fullName ?? '').trim();
+  }
+
+  /** Name rendered in the profile header. Kept as a method so all profile
+   * refresh paths follow the same username/avatar fallback rule. */
+  getDisplayIdentity(): string {
+    return this.resolveDisplayIdentity(this.user) || 'You';
   }
 
   /**

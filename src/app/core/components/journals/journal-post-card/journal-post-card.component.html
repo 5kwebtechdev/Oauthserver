@@ -2,7 +2,7 @@
   <div class="post-header">
     <div class="post-date">{{ formatHeaderDate(entry.date) }}</div>
     <div class="post-header__actions">
-      <div class="post-time">{{ formatTime(entry.date) }}</div>
+      <div class="post-time">{{ formatTime(entry.time || entry.date) }}</div>
       <button type="button" class="post-menu-trigger" aria-label="Journal entry options"
         [attr.aria-expanded]="actionsOpen" (click)="toggleActions($event)">
         <ion-icon name="ellipsis-vertical" aria-hidden="true"></ion-icon>

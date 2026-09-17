@@ -22,12 +22,12 @@
     <div class="reward-u-got">
       <div class="reward-item">
         <span class="plus">+</span>
-        <img src="assets/Icons-Neutral/Icons-Coins.webp" alt="Coins" class="reward-icon" />
+        <img [src]="rewardCoinIcon" alt="Coins" class="reward-icon" />
         <span class="reward-count">{{ coinsEarned }}</span>
       </div>
       <div class="reward-item">
         <span class="plus">+</span>
-        <img src="assets/Icons-Neutral/Icon-Trophy.webp" alt="Trophy" class="reward-icon" />
+        <img [src]="rewardTrophyIcon" alt="Trophy" class="reward-icon" />
         <span class="reward-count">{{ trophiesEarned }}</span>
       </div>
     </div>

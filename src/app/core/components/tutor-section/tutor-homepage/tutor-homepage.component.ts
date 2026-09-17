@@ -13,6 +13,7 @@ import { TutorListComponent } from '../tutor-list/tutor-list.component';
 import { TutorAllFilterComponent } from '../tutor-all-filter/tutor-all-filter.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePopupComponent } from '../../superme-popup/superme-popup.component';
+import { AuthService } from '../../../services/auth.service';
 import { TutorService } from '../../../services/tutor.service';
 import { TutorApi } from '../../../api/tutor.api';
 import { SelectedFilters, TutorListItem, TutorSearchRequest, TutorSearchSort, TutorSortOption } from '../../../models/tutor.model';
@@ -71,6 +72,7 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
     private tutorApi: TutorApi,
     private cdr: ChangeDetectorRef,
     private router: Router,
+    private authService: AuthService,
     private route: ActivatedRoute,
     private cityService: EduHubCityService
   ) { }
@@ -146,6 +148,13 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   }
 
   onViewProfile(tutor: TutorListItem): void {
+    if (!this.authService.isLoggedIn()) {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url }
+      });
+      return;
+    }
+
     const cachedTutor = this.tutorService.getTutorFromCache(tutor.id);
     void this.router.navigate(['/authed/tutors', tutor.id], {
       queryParams: this.lastAppliedFilters?.categoryKey

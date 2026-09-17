@@ -39,13 +39,12 @@
       position: fixed;
       inset: 0;
       z-index: 2147483647;
-      display: none;
+      /* Keep the first paint behind the branded splash on every platform. */
+      display: grid;
       place-items: center;
       overflow: hidden;
-      background:
-        radial-gradient(circle at 18% 18%, rgba(255, 205, 221, .82), transparent 34%),
-        radial-gradient(circle at 84% 24%, rgba(195, 224, 255, .82), transparent 36%),
-        linear-gradient(145deg, #fff8f4 0%, #f1edff 52%, #fff1f6 100%);
+      background: #ffffff;
+      isolation: isolate;
       opacity: 1;
       visibility: visible;
       transition: opacity .38s ease, visibility .38s ease;
@@ -64,17 +63,13 @@
       isolation: isolate;
     }
 
-    .superme-native-shell .superme-loader-orb,
-    .superme-native-shell .superme-loader-card,
-    .superme-native-shell .superme-loader-star {
+    #superme-web-loader .superme-loader-orb,
+    #superme-web-loader .superme-loader-card,
+    #superme-web-loader .superme-loader-star {
       display: none;
     }
 
     .superme-native-splash {
-      display: none;
-    }
-
-    .superme-native-shell .superme-native-splash {
       position: absolute;
       inset: 0;
       z-index: 2;

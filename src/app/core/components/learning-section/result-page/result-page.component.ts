@@ -29,6 +29,11 @@ import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
   styleUrls: ['./result-page.component.scss']
 })
 export class ResultPageComponent implements OnInit, OnDestroy {
+  // Keep result rewards aligned with the current Home/Insights icon set.
+  // The neutral coin/trophy artwork is legacy and no longer matches the app.
+  readonly rewardCoinIcon = 'assets/icons/child-home-coin-figma.webp';
+  readonly rewardTrophyIcon = 'assets/icons/child-home-trophy-figma.webp';
+
   // Results from submission
   submissionResult: ChallengeSubmissionResponse | null = null;
   badges: any[] = [];
@@ -157,11 +162,11 @@ export class ResultPageComponent implements OnInit, OnDestroy {
 
   getBadgeIconUrl(badge: any): string {
     const title = badge?.title || badge?.name || '';
-    return this.BADGE_ICON_MAP[title] || 'assets/Icons-Neutral/Icon-Trophy.webp';
+    return this.BADGE_ICON_MAP[title] || this.rewardTrophyIcon;
   }
 
   onBadgeImageError(event: Event, _badge: any): void {
-    (event.target as HTMLImageElement).src = 'assets/Icons-Neutral/Icon-Trophy.webp';
+    (event.target as HTMLImageElement).src = this.rewardTrophyIcon;
   }
 
   // Returns true if the badge was earned — tries multiple boolean field names

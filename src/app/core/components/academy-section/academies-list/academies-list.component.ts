@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { distinctUntilChanged, skip, Subscription } from 'rxjs';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
@@ -91,7 +91,8 @@ export class AcademiesListComponent implements OnInit, OnDestroy {
     private modalCtrl: ModalController,
     private cdr: ChangeDetectorRef,
     private cityService: EduHubCityService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -407,6 +408,13 @@ export class AcademiesListComponent implements OnInit, OnDestroy {
   }
 
   async onViewProfile(item: TutorListItem): Promise<void> {
+    if (!this.authService.isLoggedIn()) {
+      await this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url }
+      });
+      return;
+    }
+
     const academy = this.academies.find(candidate => candidate.id === item.id);
     if (!academy) return;
 

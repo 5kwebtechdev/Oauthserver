@@ -74,11 +74,16 @@
 
                     <!-- Items for this day -->
                     <div *ngFor="let item of group.items; let i = index; trackBy: trackByItem" class="coin-list-item"
-                         [class.coin-list-item--bonus]="item.type === 'DAILY_LOGIN_BONUS'"
+                         [class.coin-list-item--bonus]="isDailyLoginBonus(item)"
                          [style.--anim-delay]="(i * 70) + 'ms'">
 
                         <!-- Icon -->
                         <div class="item-icon-wrap">
+                            <ng-container *ngIf="isDailyLoginBonus(item); else regularHistoryIcon">
+                                <div class="item-icon item-icon--daily-login"
+                                     role="img" aria-label="Daily login bonus">⭐</div>
+                            </ng-container>
+                            <ng-template #regularHistoryIcon>
                             <ng-container *ngIf="getHistoryIcon(item) as icon; else regularItemIcon">
                                 <img [src]="icon" alt="" class="item-icon item-icon--category"
                                      [style.background]="getTypeBg(item.type)">
@@ -98,8 +103,7 @@
                                 </div>
                             </ng-template>
                             </ng-template>
-                            <!-- Bonus star badge -->
-                            <span *ngIf="item.type === 'DAILY_LOGIN_BONUS'" class="bonus-badge">★</span>
+                            </ng-template>
                             <span *ngIf="getHistoryDayBadge(item) as days" class="history-day-badge"
                                   [attr.aria-label]="days + ' days'">{{ days }}</span>
                             <span *ngIf="item.count < 0" class="spend-badge" aria-hidden="true">−</span>

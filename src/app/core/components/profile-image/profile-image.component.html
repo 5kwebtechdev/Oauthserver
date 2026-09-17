@@ -1,6 +1,7 @@
-<img *ngIf="showImage; else initialsFallback" [src]="src!" [alt]="alt || name || ''"
+<img *ngIf="showImage; else imageFallback" [src]="src!" [alt]="alt || name || ''"
   (error)="onImageError()">
 
-<ng-template #initialsFallback>
-  <span class="profile-image-initials" [attr.aria-label]="name || 'Profile image'">{{ getProfileImageInitials() }}</span>
+<ng-template #imageFallback>
+  <!-- Keep unavailable profile photos visually empty; never expose name initials as a substitute. -->
+  <span class="profile-image-placeholder" role="img" [attr.aria-label]="name ? name + ' profile image unavailable' : 'Profile image unavailable'"></span>
 </ng-template>
