@@ -166,7 +166,10 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
           : null;
 
         const navigationLabel = String(
-          history.state?.categoryLabel ?? params.get('label') ?? ''
+          history.state?.categoryLabel
+          ?? this.route.snapshot.data?.['listingCategory']
+          ?? params.get('label')
+          ?? ''
         ).trim();
 
         if (navigationLabel) {
@@ -515,7 +518,7 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     } catch {
       // Router state still supports the normal in-app navigation flow.
     }
-    void this.router.navigate(['/authed/education/shops', item.id], {
+    void this.router.navigate(['/app/education/shops', item.id], {
       state: { listing: item, categoryLabel: this.categoryLabel }
     });
   }

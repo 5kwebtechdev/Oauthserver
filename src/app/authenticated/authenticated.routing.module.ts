@@ -20,8 +20,72 @@ const routes: Routes = [
         canActivate: [DashboardRedirectGuard],
         data: { allowedRoles: ['CHILD', 'SELF'] }
       }, {
+        // Canonical website dashboard URL. The empty child route above is
+        // retained for native/legacy navigation compatibility.
+        path: 'home',
+        component: UserDashboardComponent,
+        canActivate: [DashboardRedirectGuard],
+        data: { allowedRoles: ['CHILD', 'SELF'] }
+      }, {
         path: 'user-dashboard',
-        redirectTo: '/home',
+        redirectTo: '/app/home',
+        pathMatch: 'full'
+      }, {
+        path: 'quiz',
+        loadComponent: () => import('../core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent),
+        data: { category: 'quizzes' }
+      }, {
+        path: 'puzzle',
+        loadComponent: () => import('../core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent),
+        data: { category: 'puzzles' }
+      }, {
+        path: 'article',
+        loadComponent: () => import('../core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent),
+        data: { category: 'articles' }
+      }, {
+        path: 'master-class',
+        loadComponent: () => import('../core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent),
+        data: { category: 'masterclass' }
+      }, {
+        path: 'journal',
+        loadComponent: () => import('../core/components/journals/journal-output/journal-output.component').then(m => m.JournalOutputComponent)
+      }, {
+        path: 'productivity-calendar',
+        loadComponent: () => import('../core/components/activity-section/activity-calendar/activity-calendar.component').then(m => m.ActivityCalendarComponent)
+      }, {
+        path: 'find-a-tutor',
+        loadComponent: () => import('../core/components/education-section/counselor-directory/counselor-directory.component').then(m => m.CounselorDirectoryComponent),
+        data: { entityType: 'INDIVIDUAL', title: 'Tutors', singularTitle: 'Tutor' }
+      }, {
+        path: 'stationery-shop',
+        loadComponent: () => import('../core/components/education-section/parent-eduhub-shop-listing/parent-eduhub-shop-listing.component').then(m => m.ParentEduHubShopListingComponent),
+        data: { listingCategory: 'Stationery' }
+      }, {
+        path: 'sationery-shop',
+        redirectTo: 'stationery-shop',
+        pathMatch: 'full'
+      }, {
+        path: 'book-store',
+        loadComponent: () => import('../core/components/education-section/parent-eduhub-shop-listing/parent-eduhub-shop-listing.component').then(m => m.ParentEduHubShopListingComponent),
+        data: { listingCategory: 'Book Store' }
+      }, {
+        path: 'sports-shop',
+        loadComponent: () => import('../core/components/education-section/parent-eduhub-shop-listing/parent-eduhub-shop-listing.component').then(m => m.ParentEduHubShopListingComponent),
+        data: { listingCategory: 'Sports' }
+      }, {
+        path: 'second-hand-books',
+        loadComponent: () => import('../core/components/second-hand-books/second-hand-books.component').then(m => m.SecondHandBooksComponent)
+      }, {
+        path: 'counselor',
+        loadComponent: () => import('../core/components/education-section/counselor-directory/counselor-directory.component').then(m => m.CounselorDirectoryComponent),
+        data: { entityType: 'COUNSELOR', title: 'Counselors', singularTitle: 'Counselor' }
+      }, {
+        path: 'event',
+        loadComponent: () => import('../core/components/education-section/eduhub-events/eduhub-events.component').then(m => m.EduHubEventsComponent),
+        data: { entityType: 'Events', title: 'Events' }
+      }, {
+        path: 'workshops',
+        redirectTo: '/workshops',
         pathMatch: 'full'
       }, {
         path: 'parent-account',
@@ -203,6 +267,30 @@ const routes: Routes = [
       }, {
         path: 'school-store',
         loadComponent: () => import('../core/components/school-store/school-store.components').then(m => m.SchoolStoreComponent)
+      }, {
+        path: 'school-uniform',
+        loadComponent: () => import('../core/components/school-store/school-store.components').then(m => m.SchoolStoreComponent),
+        data: { storeCategory: 'School Uniforms' }
+      }, {
+        path: 'school-unifrom',
+        redirectTo: 'school-uniform',
+        pathMatch: 'full'
+      }, {
+        path: 'textbook',
+        loadComponent: () => import('../core/components/school-store/school-store.components').then(m => m.SchoolStoreComponent),
+        data: { storeCategory: 'Textbook' }
+      }, {
+        path: 'stationery',
+        loadComponent: () => import('../core/components/school-store/school-store.components').then(m => m.SchoolStoreComponent),
+        data: { storeCategory: 'Stationery' }
+      }, {
+        path: 'entrance-exam-books',
+        loadComponent: () => import('../core/components/school-store/school-store.components').then(m => m.SchoolStoreComponent),
+        data: { storeCategory: 'Entrance Exam Books' }
+      }, {
+        path: 'general-books',
+        loadComponent: () => import('../core/components/school-store/school-store.components').then(m => m.SchoolStoreComponent),
+        data: { storeCategory: 'General Books' }
       }, {
         path: 'education/shops/:id',
         loadComponent: () => import('../core/components/education-section/parent-eduhub-shop-details/parent-eduhub-shop-details.component').then(m => m.ParentEduHubShopDetailsComponent),

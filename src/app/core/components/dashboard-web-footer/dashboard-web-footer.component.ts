@@ -90,8 +90,8 @@ export class DashboardWebFooterComponent implements OnInit {
   readonly supportSection: FooterSection = {
     title: 'SUPPORT',
     links: [
-      { label: "FAQ's", routerLink: '/authed/help-support' },
-      { label: 'Contact Us', routerLink: '/authed/bot-helpline' },
+      { label: "FAQ's", routerLink: '/app/help-support' },
+      { label: 'Contact Us', routerLink: '/app/bot-helpline' },
     ],
   };
 
@@ -109,15 +109,15 @@ export class DashboardWebFooterComponent implements OnInit {
     {
       title: 'EDUHUB',
       links: [
-        { label: 'Find a Tutor', routerLink: '/authed/tutors' },
-        { label: 'Find an Academy', routerLink: '/authed/academies' },
-        { label: 'Find a Stationery Shop', routerLink: '/authed/education/shops', queryParams: { label: 'Stationery' } },
-        { label: 'Find a Book Store', routerLink: '/authed/education/shops', queryParams: { label: 'Book Store' } },
-        { label: 'Find a Second-hand Book', routerLink: '/authed/second-hand-books' },
-        { label: 'Find a Sports Shop', routerLink: '/authed/education/shops', queryParams: { label: 'Sports' } },
-        { label: 'Find a Counselor', routerLink: '/authed/counselors' },
-        { label: 'Find an Event', routerLink: '/authed/education/events' },
-        { label: 'Find a Workshop', routerLink: '/authed/education/workshops' },
+        { label: 'Find a Tutor', routerLink: '/app/find-a-tutor' },
+        { label: 'Find an Academy', routerLink: '/app/academy' },
+        { label: 'Find a Stationery Shop', routerLink: '/app/stationery-shop' },
+        { label: 'Find a Book Store', routerLink: '/app/book-store' },
+        { label: 'Find a Second-hand Book', routerLink: '/app/second-hand-books' },
+        { label: 'Find a Sports Shop', routerLink: '/app/sports-shop' },
+        { label: 'Find a Counselor', routerLink: '/app/counselor' },
+        { label: 'Find an Event', routerLink: '/app/event' },
+        { label: 'Find a Workshop', routerLink: '/workshops' },
       ],
     },
     {
@@ -150,18 +150,18 @@ export class DashboardWebFooterComponent implements OnInit {
   readonly legalLinks: FooterLink[] = [
     {
       label: 'Privacy Policy',
-      routerLink: '/authed/our-policies',
+      routerLink: '/our-policies',
       queryParams: { tab: 'privacy' },
     },
     {
       label: 'Terms of Use',
-      routerLink: '/authed/our-policies',
+      routerLink: '/our-policies',
       queryParams: { tab: 'terms' },
     },
     { label: 'Child Safety', href: 'https://supermeapp.com/child-safety' },
     {
       label: 'Refund & Cancellation',
-      routerLink: '/authed/our-policies',
+      routerLink: '/our-policies',
       queryParams: { tab: 'refund' },
     },
   ];

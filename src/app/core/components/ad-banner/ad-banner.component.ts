@@ -45,15 +45,15 @@ const IN_APP_ROUTE_MAP: Record<string, string> = {
   COLINS_PARENTS: '/authed/content',
   // Keep the destination tab explicit. Without this, the Learning page falls
   // back to its default Puzzles tab when an Articles banner is selected.
-  ARTICLES:       '/authed/content?tab=articles',
-  ROCKS:          '/authed/reel-section',
-  ROCKS_PARENTS:  '/authed/reel-section',
-  TUTOR:          '/authed/tutors',
-  TUTOR_PARENTS:  '/authed/tutors',
-  PARENT_TUTOR:   '/authed/tutors',
-  ACCELERARY:     '/authed/academy',
-  EDUHUB:         '/authed/education',
-  EDUHUB_PARENTS: '/authed/education',
+  ARTICLES:       '/app/article',
+  ROCKS:          '/app/reels',
+  ROCKS_PARENTS:  '/app/reels',
+  TUTOR:          '/app/find-a-tutor',
+  TUTOR_PARENTS:  '/app/find-a-tutor',
+  PARENT_TUTOR:   '/app/find-a-tutor',
+  ACCELERARY:     '/app/academy',
+  EDUHUB:         '/app/education',
+  EDUHUB_PARENTS: '/app/education',
   STUDENT_STORE:  '/authed/school-store',
 };
 

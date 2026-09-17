@@ -24,7 +24,7 @@
 
     <header class="parent-header" *ngIf="hasLinkedChildren || showNoChildHome">
         <div class="parent-header__identity">
-          <a class="parent-avatar" [routerLink]="['/authed', 'user-profile']"
+          <a class="parent-avatar" [routerLink]="['/app', 'user-profile']"
             [attr.aria-label]="'Open ' + parentName + ' profile'">
             <img *ngIf="userAvatarUrl; else parentInitialAvatar" [src]="userAvatarUrl"
               [alt]="parentName + ' avatar'">
@@ -268,7 +268,7 @@
           [forUserId]="selectedChild?.id ?? null"
           [age]="selectedChildAge"
           (rewardSelected)="assignLearningReward($event)"
-          source="/authed/content?view=parent">
+          source="/app/content?view=parent">
         </learning-section>
       </section>
 
@@ -278,7 +278,7 @@
           subtitle="Learn • Reflect • Level Up"
           headerIcon="assets/figma/parent-home/parenting-section/header-bulb.webp"
           contentMode="parenting"
-          source="/authed/parent-account"
+          source="/app/parent-account"
           [parentLearningViewAll]="true">
         </learning-section>
       </section>
@@ -370,7 +370,7 @@
       </section>
 
       <section class="parent-learning-card" aria-label="Learning and skills">
-        <learning-section source="/authed/parent-account" [parentLearningViewAll]="true"></learning-section>
+        <learning-section source="/app/parent-account" [parentLearningViewAll]="true"></learning-section>
         <academy-section></academy-section>
       </section>
 

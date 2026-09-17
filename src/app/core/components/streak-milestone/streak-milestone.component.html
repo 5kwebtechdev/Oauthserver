@@ -28,7 +28,7 @@
     </section>
     <ng-template #broken>
       <section class="milestone-card broken-card">
-        <div class="broken-art"><img [src]="assets + 'broken.webp'" alt=""></div>
+        <div class="broken-art"><img [src]="assets + 'achievement.webp'" alt=""></div>
         <div><h3>Your streak is broken</h3><p>Don't worry, you can still get back on track.</p></div>
         <button type="button" class="restore-button" [disabled]="restoreDisabled" (click)="restore.emit()"><span><img class="inline-coin" [src]="assets + 'coin.webp'" alt="coins">{{ restoreCost }}</span>{{ restoring ? 'Restoring…' : 'Restore' }}</button>
       </section>

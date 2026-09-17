@@ -94,8 +94,9 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 	) { }
 
 	ngOnInit(): void {
+		const routeCategory = String(this.route.snapshot.data?.['storeCategory'] ?? '').trim();
 		this.categoryRouteSub = this.route.queryParamMap.subscribe(params => {
-			this.requestedCategory = params.get('category');
+			this.requestedCategory = params.get('category') || routeCategory || null;
 			this.openRequestedCategory();
 		});
 		this._cartSub = this.cartService.count$.subscribe(n => {

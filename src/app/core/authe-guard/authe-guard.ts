@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { CanActivateChildFn, CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { OnboardingStateService } from '../services/onboarding-state.service';
 
@@ -119,6 +119,16 @@ export const authGuard: CanActivateFn = (
 
         return false;
     }
+};
+
+/**
+ * Canonicalise the pre-URL-structure `/authed/*` links without breaking old
+ * bookmarks or links embedded in previously shipped web builds.
+ */
+export const legacyAuthedRedirectGuard: CanActivateChildFn = (_route, state) => {
+    const router = inject(Router);
+    const canonicalUrl = state.url.replace(/^\/authed(?=\/|$)/, '/app');
+    return router.parseUrl(canonicalUrl === '/app' ? '/app/home' : canonicalUrl);
 };
 
 /**

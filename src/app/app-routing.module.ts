@@ -1,8 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { AuthenticatedModule } from "./authenticated/authenticated.module";
 import { authGuard, guestGuard } from './core/authe-guard/authe-guard';
-import { DashboardRedirectGuard } from './core/guards/dashboard-redirect.guard';
+import { legacyAuthedRedirectGuard } from './core/authe-guard/authe-guard';
 import { OurPoliciesComponent } from './core/components/user-profile/our-policies/our-policies.component';
 
 const routes: Routes = [
@@ -15,23 +14,46 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   // Stable, readable logged-in URLs from the approved URL-structure sheet.
-  { path: 'quiz', loadComponent: () => import('./core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent), canActivate: [authGuard], data: { category: 'quizzes' } },
-  { path: 'puzzle', loadComponent: () => import('./core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent), canActivate: [authGuard], data: { category: 'puzzles' } },
-  { path: 'article', loadComponent: () => import('./core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent), canActivate: [authGuard], data: { category: 'articles' } },
-  { path: 'master-class', loadComponent: () => import('./core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent), canActivate: [authGuard], data: { category: 'masterclass' } },
-  { path: 'reels', redirectTo: 'authed/reels', pathMatch: 'full' },
-  { path: 'journal', redirectTo: 'authed/journal-output', pathMatch: 'full' },
-  { path: 'notes', redirectTo: 'authed/notes', pathMatch: 'full' },
-  { path: 'productivity-calendar', redirectTo: 'authed/activity-calendar', pathMatch: 'full' },
-  { path: 'find-a-tutor', redirectTo: 'authed/tutors', pathMatch: 'full' },
-  { path: 'academy', redirectTo: 'authed/academies', pathMatch: 'full' },
-  { path: 'sationery-shop', redirectTo: 'authed/education/shops', pathMatch: 'full' },
-  { path: 'stationery-shop', redirectTo: 'authed/education/shops', pathMatch: 'full' },
-  { path: 'book-store', redirectTo: 'authed/education/shops', pathMatch: 'full' },
-  { path: 'second-hand-books', redirectTo: 'authed/second-hand-books', pathMatch: 'full' },
-  { path: 'sports-shop', redirectTo: 'authed/education/shops', pathMatch: 'full' },
-  { path: 'counselor', redirectTo: 'authed/counselors', pathMatch: 'full' },
-  { path: 'event', redirectTo: 'authed/education/events', pathMatch: 'full' },
+  // Root aliases remain valid for old bookmarks, but canonical logged-in
+  // URLs now live under /app/.
+  { path: 'quiz', redirectTo: 'app/quiz', pathMatch: 'full' },
+  { path: 'puzzle', redirectTo: 'app/puzzle', pathMatch: 'full' },
+  { path: 'article', redirectTo: 'app/article', pathMatch: 'full' },
+  { path: 'master-class', redirectTo: 'app/master-class', pathMatch: 'full' },
+  { path: 'reels', redirectTo: 'app/reels', pathMatch: 'full' },
+  { path: 'journal', redirectTo: 'app/journal', pathMatch: 'full' },
+  { path: 'notes', redirectTo: 'app/notes', pathMatch: 'full' },
+  { path: 'productivity-calendar', redirectTo: 'app/productivity-calendar', pathMatch: 'full' },
+  // Public discovery pages keep their logged-out preview experience. The
+  // signed-in equivalents remain available under /app/ with the auth guard.
+  {
+    path: 'find-a-tutor',
+    loadComponent: () => import('./core/components/education-section/counselor-directory/counselor-directory.component').then(m => m.CounselorDirectoryComponent),
+    data: { entityType: 'INDIVIDUAL', title: 'Tutors', singularTitle: 'Tutor' }
+  },
+  { path: 'academy', redirectTo: 'app/academy', pathMatch: 'full' },
+  { path: 'sationery-shop', redirectTo: 'app/stationery-shop', pathMatch: 'full' },
+  { path: 'stationery-shop', redirectTo: 'app/stationery-shop', pathMatch: 'full' },
+  { path: 'book-store', redirectTo: 'app/book-store', pathMatch: 'full' },
+  { path: 'second-hand-books', redirectTo: 'app/second-hand-books', pathMatch: 'full' },
+  { path: 'sports-shop', redirectTo: 'app/sports-shop', pathMatch: 'full' },
+  {
+    path: 'counselor',
+    loadComponent: () => import('./core/components/education-section/counselor-directory/counselor-directory.component').then(m => m.CounselorDirectoryComponent),
+    data: { entityType: 'COUNSELOR', title: 'Counselors', singularTitle: 'Counselor' }
+  },
+  { path: 'event', redirectTo: 'app/event', pathMatch: 'full' },
+  {
+    path: 'workshops',
+    loadComponent: () => import('./core/components/education-section/eduhub-events/eduhub-events.component').then(m => m.EduHubEventsComponent),
+    data: { entityType: 'Workshop', title: 'Workshops' }
+  },
+  { path: 'school-unifrom', redirectTo: 'app/school-uniform', pathMatch: 'full' },
+  { path: 'school-uniform', redirectTo: 'app/school-uniform', pathMatch: 'full' },
+  { path: 'textbook', redirectTo: 'app/textbook', pathMatch: 'full' },
+  { path: 'stationery', redirectTo: 'app/stationery', pathMatch: 'full' },
+  { path: 'entrance-exam-books', redirectTo: 'app/entrance-exam-books', pathMatch: 'full' },
+  { path: 'general-books', redirectTo: 'app/general-books', pathMatch: 'full' },
   // Stable public entry points used by the separate SuperMe marketing site.
   // Keep these redirects at the root so the website does not need to know the
   // Ionic app's internal `/home/*` route structure.
@@ -61,8 +83,7 @@ const routes: Routes = [
   // existing /home/* onboarding compatibility routes available below.
   {
     path: 'home',
-    loadChildren: () => import('./authenticated/authenticated.module').then(m => m.AuthenticatedModule),
-    canActivate: [authGuard, DashboardRedirectGuard],
+    redirectTo: 'app/home',
     pathMatch: 'full'
   },
   {
@@ -70,17 +91,27 @@ const routes: Routes = [
     loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
   },
   {
-    path: 'authed',
+    path: 'app',
     loadChildren: () => import('./authenticated/authenticated.module').then(m => m.AuthenticatedModule),
     canActivate: [authGuard]
+  },
+  {
+    path: 'authed',
+    loadChildren: () => import('./authenticated/authenticated.module').then(m => m.AuthenticatedModule),
+    canActivate: [authGuard],
+    canActivateChild: [legacyAuthedRedirectGuard]
   },
   { 
     path: 'our-policies',
     component: OurPoliciesComponent
   },
   {
+    path: 'articles/:slug',
+    loadComponent: () => import('./core/components/learning-section/article-page/article-page.component').then(m => m.ArticlePageComponent)
+  },
+  {
     path: 'learning-description',
-    redirectTo: 'authed/content',
+    redirectTo: 'app/content',
     pathMatch: 'full'
   },
   {

@@ -282,12 +282,12 @@ export class LearningService {
     /**
      * Fetch a specific article by ID
      */
-    fetchArticleById(id: number, forUserId?: string | number | null): Observable<Article | null> {
+    fetchArticleById(id: number | string, forUserId?: string | number | null): Observable<Article | null> {
         let params = new HttpParams();
         if (forUserId != null && String(forUserId).trim()) {
             params = params.set('forUserId', String(forUserId));
         }
-        return this.http.get<Article>(`${this.apiUrl}/articles/${id}`, { headers: this.getHeaders(), params })
+        return this.http.get<Article>(`${this.apiUrl}/articles/${encodeURIComponent(String(id))}`, { headers: this.getHeaders(), params })
             .pipe(
                 map(article => article ? this.normalizeArticle(article) : null),
                 catchError(error => {

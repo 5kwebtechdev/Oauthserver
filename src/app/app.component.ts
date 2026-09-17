@@ -202,8 +202,9 @@ export class AppComponent implements OnInit, OnDestroy {
         // shared nav gets squeezed by whatever narrower cap the *current* child
         // page's own .ion-page/ion-router-outlet has. Toggled on the outer/app
         // level here, ahead of the route even resolving, so there's no flash of
-        // the narrow layout while navigating into /authed.
-        document.body.classList.toggle('authed-shell-active', routePath.startsWith('/authed'));
+        // the narrow layout while navigating into the authenticated app.
+        const isAuthenticatedPath = routePath.startsWith('/app') || routePath.startsWith('/authed');
+        document.body.classList.toggle('authed-shell-active', isAuthenticatedPath);
 
         // Authenticated screens render their own skeleton/empty/error states.
         // A second, full-screen navigation loader blocks the whole Android UI
@@ -212,7 +213,7 @@ export class AppComponent implements OnInit, OnDestroy {
         // loader for auth/onboarding transitions, but never cover the signed-in
         // app just because its child route is changing.
         const skipNavigationLoader = !this.isNativePlatform
-          || routePath.startsWith('/authed')
+          || isAuthenticatedPath
           || routePath === '/forgot-password';
 
         if (skipNavigationLoader) {
@@ -293,7 +294,7 @@ export class AppComponent implements OnInit, OnDestroy {
     localStorage.removeItem('family_parent_user_data');
     localStorage.removeItem('family_monitoring_state');
     this.loadMonitoringState();
-    this.router.navigate(['/authed/parent-account'], { replaceUrl: true });
+    this.router.navigate(['/app/parent-account'], { replaceUrl: true });
   }
 
   private loadMonitoringState(): void {
@@ -355,7 +356,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private isBadgePopupEligibleRoute(url: string): boolean {
-    if (!url.includes('/authed')) {
+    if (!url.includes('/app') && !url.includes('/authed')) {
       return false;
     }
 
@@ -500,7 +501,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     if (navigateToBadges) {
-      this.router.navigate(['/authed/badges']);
+      this.router.navigate(['/app/badges']);
     }
   }
 

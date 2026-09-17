@@ -299,7 +299,7 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
 
   openDetails(item: EduHubEventItem): void {
     this.saveItemForDetails(item);
-    void this.router.navigate(['/authed/education', this.routeSegment, item.id], {
+    void this.router.navigate(['/app/education', this.routeSegment, item.id], {
       state: { listing: item, entityType: this.entityType, title: this.title }
     });
   }

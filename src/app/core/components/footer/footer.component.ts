@@ -80,17 +80,17 @@ export class FooterComponent implements OnInit, OnDestroy {
     // Check education active
     this.currentUrl = this.router.url;
     this.isEducationActive = this.isAnyRouteActive([
-      '/authed/education',
-      '/authed/tutors',
-      '/authed/academies',
+      '/app/education',
+      '/app/tutors',
+      '/app/academies',
     ]);
     this.routerSub = this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.currentUrl = event.urlAfterRedirects || event.url;
         this.isEducationActive = this.isAnyRouteActive([
-          '/authed/education',
-          '/authed/tutors',
-          '/authed/academies',
+          '/app/education',
+          '/app/tutors',
+          '/app/academies',
         ]);
       }
     });
@@ -137,8 +137,8 @@ export class FooterComponent implements OnInit, OnDestroy {
 
   get primaryLink(): string {
     return this.isParentNavigation
-      ? '/authed/parent-learning'
-      : '/authed/content';
+      ? '/app/parent-learning'
+      : '/app/content';
   }
 
   get primaryLabel(): string {

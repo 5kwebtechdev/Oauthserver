@@ -1171,11 +1171,11 @@ export class AuthService {
 
     // Parent users go to parent-account page
     if (relationship === 'PARENT') {
-      return '/authed/parent-account';
+      return '/app/parent-account';
     }
 
     // Child and Self users go to user-dashboard
-    return '/home';
+    return '/app/home';
   }
 
   /**

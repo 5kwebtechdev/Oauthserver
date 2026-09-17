@@ -122,7 +122,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   ) {
     const navigationState = this.router.getCurrentNavigation()?.extras.state || history.state;
     const source = String(navigationState?.['source'] || '');
-    this.returnUrl = source.startsWith('/authed/') ? source : '/authed/content';
+    this.returnUrl = (source.startsWith('/app/') || source.startsWith('/authed/')) ? source : '/app/article';
     this.profileUserId = navigationState?.['ownProfile'] === true
       ? navigationState?.['forUserId'] ?? this.authService.getUserId()
       : null;
@@ -296,11 +296,12 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Get article ID from route parameters
-    const articleId = this.route.snapshot.paramMap.get('id');
-    console.log('Article ID from route:', articleId);
+    const articleId = this.route.snapshot.paramMap.get('id')
+      ?? this.route.snapshot.paramMap.get('slug');
+    console.log('Article identifier from route:', articleId);
 
     if (articleId) {
-      this.learningService.fetchArticleById(Number(articleId), this.profileUserId)
+      this.learningService.fetchArticleById(articleId, this.profileUserId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
         next: (article) => {
@@ -388,7 +389,9 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
   private getPublicArticleUrl(): string {
     const baseUrl = String(environment.publicWebUrl || 'https://supermeapp.com').replace(/\/+$/, '');
-    return `${baseUrl}/authed/content/article/${encodeURIComponent(String(this.article?.id || ''))}`;
+    const article = this.article as any;
+    const slug = String(article?.slug || article?.urlSlug || article?.slugName || '').trim();
+    return `${baseUrl}/articles/${encodeURIComponent(slug || String(article?.id || ''))}`;
   }
 
   private toArticleFeedback(value: HelpfulnessValue | null): ArticleFeedback | undefined {

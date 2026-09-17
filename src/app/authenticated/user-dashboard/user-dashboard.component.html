@@ -62,7 +62,7 @@
           <header class="profile-header" role="banner">
             <div class="user-info" role="group" aria-label="User info">
               <div class="user-avatar" aria-hidden="false">
-                <a [routerLink]="['/authed','user-profile']" aria-label="Open profile">
+                <a [routerLink]="['/app','user-profile']" aria-label="Open profile">
                   <app-img *ngIf="userAvatarUrl; else avatarInitial"
                     [src]="userAvatarUrl"
                     [alt]="avatarImageName ? avatarImageName : (userName + ' avatar')"
@@ -123,7 +123,7 @@
 
           <div class="header-stats-row" aria-label="Your stats">
             <span class="header-stats-label" aria-hidden="true">Today’s progress</span>
-            <button type="button" class="header-stat" [routerLink]="['/authed/streaks']"
+            <button type="button" class="header-stat" [routerLink]="['/app/streaks']"
               [attr.aria-label]="'Open streaks. Current streak: ' + userStreaks">
               <span class="header-stat-icon-frame header-stat-icon-frame--streak" aria-hidden="true">
                 <img src="assets/icons/child-home-streak-figma.webp" alt="" class="header-stat-icon">
@@ -131,7 +131,7 @@
               <span class="header-stat-value">{{ userStreaks }}</span>
             </button>
             <img class="header-stat-divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="" aria-hidden="true">
-            <button type="button" class="header-stat" [routerLink]="['/authed/trophies']"
+            <button type="button" class="header-stat" [routerLink]="['/app/trophies']"
               [attr.aria-label]="'Open trophies. Total trophies: ' + userDays">
               <span class="header-stat-icon-frame" aria-hidden="true">
                 <img src="assets/icons/child-home-trophy-figma.webp" alt="" class="header-stat-icon">
@@ -139,7 +139,7 @@
               <span class="header-stat-value">{{ userDays }}</span>
             </button>
             <img class="header-stat-divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="" aria-hidden="true">
-            <button type="button" class="header-stat" [routerLink]="['/authed/badges']"
+            <button type="button" class="header-stat" [routerLink]="['/app/badges']"
               [attr.aria-label]="'Open badges. Total badges: ' + userBadges">
               <span class="header-stat-icon-frame" aria-hidden="true">
                 <img src="assets/icons/child-home-badge-figma.webp" alt="" class="header-stat-icon">

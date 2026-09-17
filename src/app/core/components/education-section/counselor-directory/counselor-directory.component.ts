@@ -502,7 +502,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const profileBaseRoute = this.entityType === 'COUNSELOR' ? '/authed/counselors' : '/authed/tutors';
+    const profileBaseRoute = this.entityType === 'COUNSELOR' ? '/app/counselors' : '/app/tutors';
     void this.router.navigate([profileBaseRoute, counselor.id], {
       state: { tutor: counselor }
     });
