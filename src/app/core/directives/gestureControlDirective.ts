@@ -3,6 +3,7 @@ import {
   ElementRef,
   Input,
   AfterViewInit,
+  OnDestroy,
   NgZone,
   EventEmitter,
   Output
@@ -14,7 +15,7 @@ import { GestureController } from "@ionic/angular";
   selector: "[long-press]"
 })
 
-export class LongPressDirective implements AfterViewInit {
+export class LongPressDirective implements AfterViewInit, OnDestroy {
 
   @Output() tap = new EventEmitter();
   @Output() press = new EventEmitter();
@@ -33,6 +34,14 @@ export class LongPressDirective implements AfterViewInit {
   }
 
   private longPressActive = false;
+  private gesture?: ReturnType<GestureController['create']>;
+  private suppressClickUntil = 0;
+  private suppressClick = (event: Event) => {
+    if (Date.now() < this.suppressClickUntil) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  };
 
   constructor(
     private el: ElementRef,
@@ -41,7 +50,14 @@ export class LongPressDirective implements AfterViewInit {
   ) { }
 
   ngAfterViewInit() {
+    this.el.nativeElement.addEventListener('click', this.suppressClick, true);
     this.loadLongPressOnElement();
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.action);
+    this.gesture?.destroy();
+    this.el.nativeElement.removeEventListener('click', this.suppressClick, true);
   }
 
   loadLongPressOnElement() {
@@ -61,12 +77,17 @@ export class LongPressDirective implements AfterViewInit {
       },
       onMove: ev => {
         this.positions.current = { x: ev.currentX, y: ev.currentY };
+        if (Math.abs(ev.currentX - ev.startX) > 15 || Math.abs(ev.currentY - ev.startY) > 15) {
+          this.longPressActive = false;
+          clearTimeout(this.action);
+        }
       },
       onEnd: ev => {
         this.longPressActive = false;
       }
     });
     gesture.enable(true);
+    this.gesture = gesture;
   }
 
   private longPressAction() {
@@ -84,6 +105,7 @@ export class LongPressDirective implements AfterViewInit {
 
         if (this.longPressActive === true) {
           this.longPressActive = false;
+          this.suppressClickUntil = Date.now() + 1000;
           this.press.emit();
         } else {
           this.tap.emit();

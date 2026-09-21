@@ -294,7 +294,7 @@ export class AppComponent implements OnInit, OnDestroy {
     localStorage.removeItem('family_parent_user_data');
     localStorage.removeItem('family_monitoring_state');
     this.loadMonitoringState();
-    this.router.navigate(['/app/parent-account'], { replaceUrl: true });
+    this.router.navigate(['/parent-account'], { replaceUrl: true });
   }
 
   private loadMonitoringState(): void {
@@ -501,7 +501,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     if (navigateToBadges) {
-      this.router.navigate(['/app/badges']);
+      this.router.navigate(['/badges']);
     }
   }
 

@@ -177,6 +177,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   canRestoreStreak = false;
   restoreToStreak: number | null = null;
   restoreCost = 5;
+  isStreakRestoring = false;
 
   // Observable for shared toast service
   toast$: Observable<Toast | null>;
@@ -619,7 +620,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         if (Array.isArray(resp.habits)) {
           const today = new Date();
           const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-          let habitsData = resp.habits.map((item: any) => {
+          let habitsData = resp.habits
+            .filter((item: any) => !(item.today === true && item.expired === true))
+            .map((item: any) => {
             // For recurring items, use today's date to calculate correct timestamps
             const isRecurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
             const itemForTimestamp = isRecurring ? { ...item, startDate: todayStr, endDate: todayStr } : item;
@@ -683,7 +686,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         if (Array.isArray(resp.tasks)) {
           const today = new Date();
           const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-          let tasksData = resp.tasks.map((item: any) => {
+          let tasksData = resp.tasks
+            .filter((item: any) => !(item.today === true && item.expired === true))
+            .map((item: any) => {
             // For recurring items, use today's date to calculate correct timestamps
             const isRecurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
             const itemForTimestamp = isRecurring ? { ...item, startDate: todayStr, endDate: todayStr } : item;
@@ -1197,7 +1202,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         this.canRestoreStreak = status.canRestore;
         this.dailyStreakEligible = true;
         this.streakStatusResolved = true;
-        this.streakContinuityConfirmed = !status.canRestore;
+        // A broken streak is still eligible for the first-open celebration;
+        // the popup itself now contains the restore action.
+        this.streakContinuityConfirmed = true;
         this.restoreToStreak = status.restoreToStreak;
         this.nextMilestoneDay = status.nextMilestoneDay ?? null;
         this.nextMilestoneCoins = status.nextMilestoneCoins ?? null;
@@ -1248,6 +1255,30 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       // would just reopen to the same "not eligible" dead end.
       this.canRestoreStreak = false;
     }
+  }
+
+  restoreStreakFromPopup(): void {
+    if (this.isStreakRestoring || !this.canRestoreStreak) return;
+    const user = this.authService.getUserData();
+    const userId = Number(user?.id ?? user?.userId ?? this.authService.getUserId());
+    if (!Number.isFinite(userId) || userId <= 0) return;
+    this.isStreakRestoring = true;
+    this.streakRestoreApi.postRestoreStreak(userId).subscribe({
+      next: result => {
+        this.isStreakRestoring = false;
+        this.canRestoreStreak = false;
+        this.userCoins = Number(result?.coins ?? result?.userCoins ?? Math.max(0, this.userCoins - this.restoreCost));
+        this.toastService.success('Streak restored! 🔥');
+        this.dismissDailyStreakPopup();
+        this.checkStreakRestore();
+        this.loadUserStats();
+      },
+      error: error => {
+        this.isStreakRestoring = false;
+        const message = String(error?.error?.message || '').trim();
+        this.toastService.error(message || 'Unable to restore your streak right now. Please try again.');
+      }
+    });
   }
 
   // ── Overlay logic ────────────────────────────────────────────────────────────

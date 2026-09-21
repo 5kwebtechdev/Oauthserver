@@ -24,7 +24,7 @@ interface JournalSection {
 }
 
 interface UploadedJournalImage {
-  file: File;
+  file?: File;
   previewUrl: string;
 }
 
@@ -224,6 +224,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
       this.editingEntryId = entry.id;
       this.text = entry.text || entry.notes || '';
       this.restoreSelections(entry);
+      this.restoreImages(entry);
     } else {
       this.text = this.initialText || '';
     }
@@ -280,7 +281,9 @@ export class JournalInputComponent implements OnInit, OnDestroy {
       const selectedIndex = this.selected[section.key];
       if (selectedIndex != null) formData.append(section.key, section.options[selectedIndex].label.toLowerCase());
     });
-    this.uploadedImages.forEach(({ file }) => formData.append('files', file));
+    this.uploadedImages.forEach(({ file }) => {
+      if (file) formData.append('files', file);
+    });
 
     this.submitting = true;
     const request = this.editingEntryId != null
@@ -293,7 +296,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
         this.save.emit(this.text);
         this.resetForm();
         this.submitting = false;
-        void this.router.navigate(['/authed/journal-output']);
+        void this.router.navigate(['/journal-output']);
       },
       error: (error) => {
         console.error('Failed to add journal', error);
@@ -421,7 +424,19 @@ export class JournalInputComponent implements OnInit, OnDestroy {
     });
   }
 
+  private restoreImages(entry: any): void {
+    const source = entry?.images ?? entry?.attachments ?? entry?.imageUrls ?? [];
+    const images = Array.isArray(source) ? source : source ? [source] : [];
+    this.uploadedImages = images
+      .map((image: any) => String(image?.url ?? image?.fileUrl ?? image ?? '').trim())
+      .filter(Boolean)
+      .slice(0, JournalInputComponent.MAX_IMAGES)
+      .map(previewUrl => ({ previewUrl }));
+  }
+
   private revokePreviewUrls(): void {
-    this.uploadedImages.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+    this.uploadedImages.forEach(({ previewUrl }) => {
+      if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+    });
   }
 }

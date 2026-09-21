@@ -8,7 +8,7 @@
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  max-width: ads.$width;
+  max-width: ads.$slot-max-width;
   margin-inline: auto;
   min-width: 0;
 }
@@ -16,28 +16,38 @@
 .adb__scroll-track {
   position: relative;
   display: flex;
-  gap: 0;
+  gap: 12px;
   padding: 0;
   transition: transform .4s ease;
 }
 .adb__card {
   position: relative;
-  flex: 0 0 100%;
+  flex: 0 0 82%;
   min-width: 0;
-  width: 100%;
+  width: 82%;
   aspect-ratio: ads.$width / ads.$height;
+  border-radius: ads.$radius;
+  overflow: hidden;
+  clip-path: inset(0 round ads.$radius);
+  transform: translateZ(0);
   box-sizing: border-box;
   background: ads.$background;
   &--clickable { cursor: pointer; }
 }
 .adb__img {
+  position: absolute;
+  inset: 0;
+  margin: auto;
   display: block;
-  width: 100%;
-  height: 100%;
+  // Round the image's actual box, not a larger object-fit letterbox.
+  width: auto;
+  height: auto;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   object-position: center;
+  border-radius: inherit;
+  clip-path: inset(0 round ads.$radius);
   background: ads.$background;
 }
 .adb__dots {
@@ -49,7 +59,7 @@
 }
 .adb__counter {
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: 999px;
   background: #432477;
   color: #fff;
   font: 600 12px/1.4 var(--font-sans, 'Nunito', sans-serif);

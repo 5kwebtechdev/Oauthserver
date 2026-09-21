@@ -28,7 +28,7 @@ const routes: Routes = [
         data: { allowedRoles: ['CHILD', 'SELF'] }
       }, {
         path: 'user-dashboard',
-        redirectTo: '/app/home',
+        redirectTo: '/home',
         pathMatch: 'full'
       }, {
         path: 'quiz',
@@ -244,7 +244,8 @@ const routes: Routes = [
         data: { entityType: 'INDIVIDUAL', title: 'Tutors', singularTitle: 'Tutor' }
       }, {
         path: 'academy',
-        loadComponent: () => import('../core/components/academy-section/academy-home/academy-home.component').then(m => m.AcademyHomeComponent)
+        redirectTo: 'academies',
+        pathMatch: 'full'
       }, {
         path: 'academy/subject',
         loadComponent: () => import('../core/components/academy-section/academy-subject/academy-subject.component').then(m => m.AcademySubjectComponent)

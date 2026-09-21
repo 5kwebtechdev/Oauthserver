@@ -458,6 +458,7 @@ export class SocialMediaComponent implements OnInit {
               replaceUrl: true
             });
           } else {
+            this.onboardingState.clearRegistrationDraft();
             this.onboardingState.markExistingUser();
             this.clearOAuthSignupSession();
             this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });

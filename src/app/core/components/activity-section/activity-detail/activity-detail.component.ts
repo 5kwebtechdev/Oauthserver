@@ -124,22 +124,45 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     const state = history.state || {};
     const stateHabit = state['habit'];
 
-    const id = stateHabit?.id || this.route.snapshot.paramMap.get('id');
-    const type = (state['type'] || stateHabit?.type ||
-      this.route.snapshot.queryParamMap.get('type') || 'habits') as ActivityType;
+    const id = this.route.snapshot.paramMap.get('id') || stateHabit?.id;
+    const rawType = String(this.route.snapshot.queryParamMap.get('type') ||
+      state['type'] || stateHabit?.type || 'habits').toLowerCase();
+    const type: ActivityType = rawType.includes('task') ? 'tasks' :
+      rawType === 'timetable' ? 'timetable' : 'habits';
 
     // Planner schedules come from the calendar, not the habit/task endpoints.
     if (type === 'timetable') {
       if (stateHabit) {
         const entry = state['plannerEntry'] || stateHabit.activities?.[0] || {};
-        this.habit = this.normalizeResponse({
+        const plannerData = {
           ...stateHabit,
           title: entry.title || entry.name || entry.activityName || stateHabit.title || stateHabit.name || 'Planner',
           startTime: entry.startTime || entry.start_time || stateHabit.startTime,
           endTime: entry.endTime || entry.end_time || stateHabit.endTime,
           notes: entry.notes || entry.description || stateHabit.notes,
           description: entry.description || entry.notes || stateHabit.description,
-        }, 'timetable');
+        };
+        try {
+          this.habit = this.normalizeResponse(plannerData, 'timetable');
+        } catch {
+          // Planner entries can contain only calendar fields. Keep a usable
+          // detail model even when optional habit fields are absent.
+          this.habit = { ...plannerData, type: 'timetable', id: String(plannerData.id || id || '') } as Habit;
+          this.cdr.detectChanges();
+        }
+      } else if (id) {
+        // A direct URL/reload has no history.state. Hydrate the planner from
+        // the activity endpoint instead of leaving the detail view blank.
+        this.habitApi.getHabitById(+id).subscribe({
+          next: (response) => {
+            this.habit = this.normalizeResponse(response, 'timetable');
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.habit = { id: String(id), type: 'timetable', title: 'Planner' } as Habit;
+            this.cdr.detectChanges();
+          }
+        });
       }
       return;
     }
@@ -523,13 +546,13 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
   onEdit() {
     if (!this.habit) {
-      this.router.navigate(['/authed/activity-input'], {
+      this.router.navigate(['/activity-input'], {
         state: { origin: this.router.url || '/home' }
       });
       return;
     }
 
-    this.router.navigate(['/authed/activity-input'], {
+    this.router.navigate(['/activity-input'], {
       state: {
         habit: this.habit,
         type: this.habit.type,
@@ -546,6 +569,9 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     try {
       const currentUserId = this.authService?.getUserId?.();
       if (!currentUserId || !this.habit) return false;
+
+      const status = String(this.habit.status || '').toLowerCase();
+      if (status === 'completed' || this.habit.completed === true) return false;
 
       const createdBy = (this.habit as any).createdById ?? (this.habit as any).createdBy ?? (this.habit as any).createdByName;
       const isCreator = createdBy != null && String(createdBy) === String(currentUserId);

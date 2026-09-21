@@ -1,4 +1,5 @@
 import { Component, ViewChild, OnInit, AfterViewInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
@@ -51,7 +52,22 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
     private router: Router,
     private route: ActivatedRoute,
     private toast: CustomToastService
-  ) { }
+  ) {
+    this.notesService.sessionReset$.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.title = '';
+      this.text = '';
+      this.tagsInput = '';
+      this.selectedTagKeys = [];
+      this.tagOptions = [];
+      this._draftTags = [];
+      this.currentDraftId = null;
+      this.editId = null;
+      this.originalSnapshot = null;
+      this.editing = false;
+      this.isDraft = false;
+      this.showSupermePopup = false;
+    });
+  }
 
   ngOnInit(): void {
     this.loadTags();

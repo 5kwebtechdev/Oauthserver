@@ -19,6 +19,7 @@ export interface Habit {
   priority: 'low' | 'medium' | 'high';
   routine: string;
   status: 'pending' | 'ongoing' | 'completed' | 'skipped';
+  expired?: boolean;
   createdAt: Date;
   completionDate?: Date | null; // Add this line
   activities?: { name: string; startTime: string; endTime: string }[]; // For timetable type

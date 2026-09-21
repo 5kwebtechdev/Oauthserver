@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, Subject, defer, EMPTY } from 'rxjs';
+import { tap, takeUntil, filter } from 'rxjs/operators';
+import { AuthApi } from '../../api/auth.api';
 import { NoteTagDto, NotesApi } from '../../api/notes.api';
 
 export interface NoteModel {
@@ -24,7 +25,34 @@ export class NotesService {
   public notes$ = this.notesChanged.asObservable();
   public tags$ = this.tagsChanged.asObservable();
 
-  constructor(private notesApi: NotesApi) { }
+  private sessionEnded = new Subject<void>();
+  readonly sessionReset$ = this.sessionEnded.asObservable();
+  private sessionVersion = 0;
+  private owner: string | null = null;
+
+  constructor(private notesApi: NotesApi, private authApi: AuthApi) { }
+
+  private ensureOwner(): string | null {
+    const owner = this.authApi.getUserId();
+    const key = owner == null ? null : String(owner);
+    if (key !== this.owner) {
+      this.clear();
+      this.owner = key;
+    }
+    return key;
+  }
+
+  private forSession<T>(request: () => Observable<T>): Observable<T> {
+    const owner = this.ensureOwner();
+    const version = this.sessionVersion;
+    return defer(() => {
+      if (!owner || owner !== this.ensureOwner() || version !== this.sessionVersion) return EMPTY;
+      return request().pipe(
+        takeUntil(this.sessionEnded),
+        filter(() => owner === this.ensureOwner())
+      );
+    });
+  }
 
   private rawList(res: any): any[] {
     const raw = res && (res.data || res) ? (res.data || res) : [];
@@ -68,22 +96,16 @@ export class NotesService {
    * Call this once on app/login load to avoid refetching repeatedly.
    */
   initFromSession() {
-    try {
-      const raw = localStorage.getItem('notes_cache');
-      if (raw) {
-        const parsed = JSON.parse(raw) || [];
-        this.notes = parsed;
-        this.notesChanged.next(this.notes.slice());
-      }
-    } catch (e) {
-      // ignore parse errors and continue to empty state
-    }
+    this.ensureOwner();
+    // Legacy cache has no account owner and cannot be safely restored.
+    try { localStorage.removeItem('notes_cache'); } catch { /* unavailable storage */ }
   }
 
   /**
    * Add note locally
    */
   addLocal(note: NoteModel) {
+    if (!this.ensureOwner()) return;
     this.notes.unshift(note);
     // notify subscribers that notes changed
     this.notesChanged.next(this.notes.slice());
@@ -103,7 +125,7 @@ export class NotesService {
    * On success, update local cache with the created note (if backend returns it) or the local payload.
    */
   addNote(payload: any): Observable<any> {
-    return this.notesApi.addNote(payload).pipe(
+    return this.forSession(() => this.notesApi.addNote(payload)).pipe(
       tap((res: any) => {
         // If server returns the created note object, use it; otherwise use payload
         const created = res && (res.data || res) ? (res.data || res) : payload;
@@ -119,6 +141,7 @@ export class NotesService {
    * or revert on error.
    */
   addOptimistic(payload: any): Observable<any> {
+    if (!this.ensureOwner()) return EMPTY;
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
     const tempNote: NoteModel = {
       title: payload.title || 'Untitled',
@@ -135,7 +158,7 @@ export class NotesService {
 
     // call backend and patch/replace on success
     return new Observable<any>((subscriber) => {
-      this.notesApi.addNote(payload).subscribe({
+      this.forSession(() => this.notesApi.addNote(payload)).subscribe({
         next: (res: any) => {
           const created = res && (res.data || res) ? (res.data || res) : payload;
           const serverNote = this.mapNote(created, payload);
@@ -168,41 +191,23 @@ export class NotesService {
    */
   private persistToSession() {
     try {
-      localStorage.setItem('notes_cache', JSON.stringify(this.notes));
+      localStorage.removeItem('notes_cache');
     } catch (e) {
       // ignore storage errors (quota etc.)
     }
   }
 
   /**
-   * Fetch all notes from backend and merge with local cache.
-   * Server notes are updated/added; locally-cached notes the server does not
-   * return (e.g. from a previous month the backend filters) are preserved so
-   * they are never silently wiped. Returns observable so callers can react.
+   * The authenticated API response is the authoritative list, including [].
    */
   fetchAll(): Observable<NoteModel[]> {
     return new Observable<NoteModel[]>((subscriber) => {
-      this.notesApi.getAll().subscribe({
+      this.forSession(() => this.notesApi.getAll()).subscribe({
         next: (res: any) => {
           const raw = this.rawList(res);
           const serverNotes = raw.map((item: any) => this.mapNote(item));
 
-          // Build a set of real server IDs (skip temp IDs created optimistically)
-          const serverIds = new Set(
-            serverNotes.map(n => String(n.id || '')).filter(id => id && !id.startsWith('temp-'))
-          );
-
-          // Keep locally-cached notes that have a real server ID but were not
-          // included in this response (the backend may filter by current month).
-          // Notes explicitly deleted via deleteNote() are already removed from
-          // this.notes before fetchAll is called, so they won't reappear here.
-          const localOnlyNotes = this.notes.filter(n => {
-            const id = String(n.id || '');
-            return id && !id.startsWith('temp-') && !serverIds.has(id);
-          });
-
-          // Server notes first (most recent / authoritative), then any local-only ones
-          this.notes = [...serverNotes, ...localOnlyNotes];
+          this.notes = serverNotes;
           this.notesChanged.next(this.notes.slice());
           this.persistToSession();
           subscriber.next(this.notes.slice());
@@ -216,7 +221,8 @@ export class NotesService {
   }
 
   getAll(): NoteModel[] {
-    return this.notes;
+    this.ensureOwner();
+    return this.notes.slice();
   }
 
   /**
@@ -236,7 +242,7 @@ export class NotesService {
     const prev = this.notes.slice();
     this.deleteLocal(id);
     return new Observable<any>((subscriber) => {
-      this.notesApi.deleteNote(id).subscribe({
+      this.forSession(() => this.notesApi.deleteNote(id)).subscribe({
         next: (res: any) => {
           subscriber.next(res);
           subscriber.complete();
@@ -257,7 +263,7 @@ export class NotesService {
    */
   updateNote(id: any, payload: any): Observable<any> {
     return new Observable<any>((subscriber) => {
-      this.notesApi.updateNote(id, payload).subscribe({
+      this.forSession(() => this.notesApi.updateNote(id, payload)).subscribe({
         next: (res: any) => {
           const updated = res && (res.data || res) ? (res.data || res) : payload;
           // map server response to NoteModel shape
@@ -314,7 +320,7 @@ export class NotesService {
       this.persistToSession();
 
       // Kick off backend update but don't block the UI
-      this.notesApi.updateNote(id, payload).subscribe({
+      this.forSession(() => this.notesApi.updateNote(id, payload)).subscribe({
         next: (res: any) => {
           // map server response and replace note with authoritative data
           const updated = res && (res.data || res) ? (res.data || res) : payload;
@@ -352,7 +358,7 @@ export class NotesService {
 
   fetchByTag(tagName: string): Observable<NoteModel[]> {
     return new Observable<NoteModel[]>((subscriber) => {
-      this.notesApi.getByTag(tagName).subscribe({
+      this.forSession(() => this.notesApi.getByTag(tagName)).subscribe({
         next: (res: any) => {
           // Tag-filtered results: merge into cache rather than replace,
           // so notes outside the tag are not wiped from the local store.
@@ -375,7 +381,7 @@ export class NotesService {
 
   searchNotes(query: string): Observable<NoteModel[]> {
     return new Observable<NoteModel[]>((subscriber) => {
-      this.notesApi.searchNotes(query).subscribe({
+      this.forSession(() => this.notesApi.searchNotes(query)).subscribe({
         next: (res: any) => {
           // Return search results to the caller without overwriting the full notes cache,
           // since search results are a subset and would wipe notes not matching the query.
@@ -390,7 +396,7 @@ export class NotesService {
 
   fetchTags(): Observable<NoteTagDto[]> {
     return new Observable<NoteTagDto[]>((subscriber) => {
-      this.notesApi.getTags().subscribe({
+      this.forSession(() => this.notesApi.getTags()).subscribe({
         next: (tags) => {
           const normalized = Array.isArray(tags) ? tags : [];
           this.tagsChanged.next(normalized.slice());
@@ -404,7 +410,7 @@ export class NotesService {
 
   createTag(name: string): Observable<NoteTagDto> {
     return new Observable<NoteTagDto>((subscriber) => {
-      this.notesApi.createTag(name).subscribe({
+      this.forSession(() => this.notesApi.createTag(name)).subscribe({
         next: (tag) => {
           this.fetchTags().subscribe({ next: () => undefined, error: () => undefined });
           subscriber.next(tag);
@@ -417,7 +423,7 @@ export class NotesService {
 
   updateTag(tagId: any, name: string): Observable<NoteTagDto> {
     return new Observable<NoteTagDto>((subscriber) => {
-      this.notesApi.updateTag(tagId, name).subscribe({
+      this.forSession(() => this.notesApi.updateTag(tagId, name)).subscribe({
         next: (tag) => {
           this.fetchTags().subscribe({ next: () => undefined, error: () => undefined });
           subscriber.next(tag);
@@ -430,7 +436,7 @@ export class NotesService {
 
   deleteTag(tagId: any): Observable<{ message?: string }> {
     return new Observable<{ message?: string }>((subscriber) => {
-      this.notesApi.deleteTag(tagId).subscribe({
+      this.forSession(() => this.notesApi.deleteTag(tagId)).subscribe({
         next: (res) => {
           this.fetchTags().subscribe({ next: () => undefined, error: () => undefined });
           subscriber.next(res);
@@ -442,10 +448,17 @@ export class NotesService {
   }
 
   clear() {
+    this.sessionVersion++;
+    this.sessionEnded.next();
+    this.owner = null;
     this.notes = [];
     this.notesChanged.next(this.notes.slice());
+    this.tagsChanged.next([]);
     try {
       localStorage.removeItem('notes_cache');
+      for (const key of Object.keys(sessionStorage)) {
+        if (key.startsWith('notes-')) sessionStorage.removeItem(key);
+      }
     } catch (e) { /* ignore */ }
   }
 }

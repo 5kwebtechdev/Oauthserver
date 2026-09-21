@@ -247,7 +247,7 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
     };
     const currentActive = map[this.selectedType] || 'habits';
     const origin = this.router.url || '/home';
-    this.router.navigate(['/authed/activity-input'], { state: { currentActive, origin } });
+    this.router.navigate(['/activity-input'], { state: { currentActive, origin } });
   }
 
   async onTimetableLongPress(event: TimelineEvent): Promise<void> {

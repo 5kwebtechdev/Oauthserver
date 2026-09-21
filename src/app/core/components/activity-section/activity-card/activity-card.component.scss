@@ -505,7 +505,67 @@ h4 {
 
 .task-at-a-glance__dates {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+// Calendar cards keep the status compact without changing the Home layout.
+:host(.calendar-activity-card) .task-at-a-glance {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px 12px;
+
+  .task-at-a-glance__dates {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    max-width: 180px;
+  }
+
+  .task-at-a-glance__countdown {
+    padding: 5px 9px;
+    text-align: right;
+
+    strong {
+      white-space: normal;
+      font-size: 12px;
+    }
+  }
+
+  .task-at-a-glance__note {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-width: 0;
+    padding: 6px 9px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 420px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+:host(.calendar-activity-card) .habit-wrapper {
+  padding: 10px 12px 9px 16px;
+  gap: 2px;
+}
+
+:host(.calendar-activity-card) .task-at-a-glance {
+  gap: 6px 10px;
+  padding-top: 8px;
+}
+
+:host(.calendar-activity-card) .habit-footer-container {
+  margin-top: 6px !important;
+}
+
+:host(.calendar-activity-card) .reward-section {
+  gap: 20px;
+}
+
+:host(.calendar-activity-card) .footer-cta {
   gap: 8px;
 }
 

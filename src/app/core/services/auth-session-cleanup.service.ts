@@ -1,4 +1,5 @@
 import { Injectable, Injector } from '@angular/core';
+import { NotesService } from '../components/notes/notes.service';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { getApps } from 'firebase/app';
 import { getAuth, signOut as firebaseSignOut } from 'firebase/auth';
@@ -85,6 +86,7 @@ export class AuthSessionCleanupService {
    */
   clearInMemoryUserData(): void {
     const resets: Array<[string, () => void]> = [
+      ['notes', () => this.injector.get(NotesService).clear()],
       ['tasks/calendar', () => this.injector.get(TaskApi).clearCache()],
       ['user profile', () => this.injector.get(UserService).clearUserProfile()],
       ['selected child', () => this.injector.get(ProfileStoreService).reset()],

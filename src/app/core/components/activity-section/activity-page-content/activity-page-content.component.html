@@ -132,7 +132,7 @@
                     </header>
                     <div class="child-event-cards__rail">
                         <button type="button" class="child-event-card" *ngFor="let event of childEventItems"
-                            (click)="onCardTap(event)">
+                            (click)="onCardTap(event, undefined, $event)">
                             <img [src]="getChildEventIcon(event)" alt="" />
                             <span>
                                 <strong>{{ getChildItemTitle(event) }}</strong>
@@ -142,15 +142,15 @@
                     </div>
                 </section>
 
-                <ng-container *ngFor="let entry of childVisibleItems">
-                    <activity-card *ngIf="isChildActivityExpanded(entry.item, entry.type); else compactChildActivity"
+                <ng-container *ngFor="let entry of childVisibleItems; trackBy: trackChildActivity">
+                    <activity-card class="calendar-activity-card" *ngIf="isChildActivityExpanded(entry.item, entry.type); else compactChildActivity"
                         mode="single" [habit]="entry.item" [expanded]="true" [trackOnComplete]="true"
                         [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()">
                     </activity-card>
                     <ng-template #compactChildActivity>
                         <button type="button" class="child-activity-card"
                             [ngClass]="'child-activity-card--' + entry.type" long-press [delay]="700"
-                            (click)="onCardTap(entry.item, entry.type)" (press)="onCardLongPress(entry.item, entry.type)">
+                            (click)="onCardTap(entry.item, entry.type, $event)" (press)="onCardLongPress(entry.item, entry.type)">
                             <div class="child-card-copy">
                                 <strong>{{ getChildItemTitle(entry.item) }}</strong>
                                 <span>{{ getChildItemTime(entry.item) }}</span>
@@ -162,7 +162,8 @@
 
                 <section class="child-planner-cards" *ngIf="childCalendarTab === 'all' || childCalendarTab === 'planner'">
                     <article class="child-planner-card" *ngFor="let card of childPlannerCards; let i = index; trackBy: trackPlannerCard"
-                        [style.--planner-color]="card.color">
+                        [style.--planner-color]="card.color" long-press [delay]="700"
+                        (press)="editPlannerEntry(card.source, card.entries[0], $event)">
                         <button type="button" class="child-planner-card__header"
                             [attr.aria-expanded]="isPlannerExpanded(card, i)" (click)="togglePlannerCard(card, i)">
                             <span class="child-planner-card__heading">
@@ -179,7 +180,6 @@
                         <div class="child-planner-card__entries" *ngIf="isPlannerExpanded(card, i)">
                             <div class="child-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackPlannerEntry"
                                 role="button" tabindex="0" [attr.aria-label]="'Edit ' + getChildItemTitle(entry)"
-          long-press [delay]="1200" (press)="editPlannerEntry(card.source, entry, $event)"
           (click)="viewPlanner(card.source, entry, $event)"
           (keydown.enter)="viewPlanner(card.source, entry, $event)"
           (keydown.space)="$event.preventDefault(); viewPlanner(card.source, entry, $event)"

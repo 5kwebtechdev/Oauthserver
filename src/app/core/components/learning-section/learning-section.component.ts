@@ -1171,6 +1171,20 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
   private loadRequestId = 0;
   private wasOnSourceRoute = false;
   private routerEventsSubscription?: Subscription;
+  private readonly learningCompletedHandler = (event: Event) => {
+    const detail = (event as CustomEvent<{ id?: number | string; type?: string }>).detail;
+    const completedId = Number(detail?.id);
+    if (!Number.isFinite(completedId) || completedId <= 0) return;
+    this.items = this.items.filter(item => {
+      if (Number(item?.id) !== completedId) return true;
+      const itemType = String(item?.type || item?.category || '').toLowerCase();
+      const completedType = String(detail?.type || '').toLowerCase();
+      if (completedType === 'article') return itemType !== 'article';
+      if (completedType === 'challenge') return itemType !== 'quiz' && itemType !== 'puzzle';
+      return false;
+    });
+    this.activeIndex = Math.min(this.activeIndex, Math.max(0, this.items.length - 1));
+  };
 
   constructor(
     private renderer: Renderer2,
@@ -1189,6 +1203,9 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
   ngOnDestroy(): void {
     if (this.scrollHandler) this.scrollHandler();
     this.routerEventsSubscription?.unsubscribe();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('superme:learning-completed', this.learningCompletedHandler);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -1360,14 +1377,20 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
 
   ngOnInit(): void {
     this.initialized = true;
+    const sourceRoute = (this.source || '').split('?')[0].replace(/\/$/, '');
+    const initialRoute = this.router.url.split('?')[0].replace(/\/$/, '');
+    this.wasOnSourceRoute = !!sourceRoute && initialRoute === sourceRoute;
+    if (typeof window !== 'undefined') {
+      window.addEventListener('superme:learning-completed', this.learningCompletedHandler);
+    }
     this.routerEventsSubscription = this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(event => {
-        const sourceRoute = (this.source || '').split('?')[0].replace(/\/$/, '');
-        if (!sourceRoute) return;
+        const currentSourceRoute = (this.source || '').split('?')[0].replace(/\/$/, '');
+        if (!currentSourceRoute) return;
         const currentRoute = event.urlAfterRedirects.split('?')[0].replace(/\/$/, '');
-        const isOnSourceRoute = currentRoute === sourceRoute;
-        if (isOnSourceRoute && this.wasOnSourceRoute) {
+        const isOnSourceRoute = currentRoute === currentSourceRoute;
+        if (isOnSourceRoute && !this.wasOnSourceRoute) {
           // Ionic keeps this dashboard component alive while the quiz/result
           // routes are shown, so refresh the home rail on return.
           this.loadLatestFromService();

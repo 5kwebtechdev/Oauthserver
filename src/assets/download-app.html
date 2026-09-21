@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Download SuperMeApp</title>
+  <script>
+    (function () {
+      var ua = navigator.userAgent || '';
+      var isAppleMobile = /iPhone|iPad|iPod/i.test(ua)
+        || (/Macintosh|MacIntel/i.test(ua + ' ' + navigator.platform) && navigator.maxTouchPoints > 1);
+      if (isAppleMobile) {
+        window.location.replace('https://apps.apple.com/us/app/supermeapp/id6781971277');
+      } else if (/Android/i.test(ua)) {
+        window.location.replace('https://play.google.com/store/apps/details?id=com.superme.app');
+      }
+    })();
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #f7f2fc; color: #302047; font-family: system-ui, sans-serif; }
+    main { width: 100%; max-width: 420px; padding: 32px; border-radius: 24px; background: white; box-shadow: 0 12px 40px #58328f16; text-align: center; }
+    h1 { font-size: 26px; margin-top: 0; }
+    p { color: #655d70; line-height: 1.6; }
+    a { display: block; margin-top: 14px; padding: 15px; border-radius: 14px; background: #58328f; color: white; font-weight: 600; text-decoration: none; }
+    a:focus-visible { outline: 3px solid #ffb650; outline-offset: 4px; }
+    .web { background: #f0e8f8; color: #58328f; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Get SuperMeApp</h1>
+    <p>Choose your store below if it doesn't open automatically.</p>
+    <a href="https://apps.apple.com/us/app/supermeapp/id6781971277">Download on the App Store</a>
+    <a href="https://play.google.com/store/apps/details?id=com.superme.app">Get it on Google Play</a>
+    <a class="web" href="https://supermeapp.com/app/">Continue on desktop</a>
+  </main>
+</body>
+</html>

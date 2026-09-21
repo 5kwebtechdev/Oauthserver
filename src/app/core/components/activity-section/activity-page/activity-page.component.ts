@@ -139,7 +139,7 @@ export class ActivityPageComponent implements OnInit, OnDestroy {
       ? 'timetable'
       : (this.habitContent?.currentMainTab ?? 'habits');
     const origin = this.router.url || '/home';
-    this.router.navigate(['/authed/activity-input'], { state: { currentActive: currentTab, origin } }).catch(() => { });
+    this.router.navigate(['/activity-input'], { state: { currentActive: currentTab, origin } }).catch(() => { });
   }
 
   /**

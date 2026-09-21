@@ -1449,6 +1449,13 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             return;
         }
 
+        // Keep the authenticated Parent available while the separate Child
+        // account is created, so the success screen can safely return here.
+        if (!this.authService.beginManagedChildParentSession()) {
+            this.toastService.error('Unable to start Add Child. Please sign in again and retry.');
+            return;
+        }
+
         // The child must begin with an empty registration form. A Parent's
         // previous onboarding draft can include their email, name, avatar and
         // other personal data; SignupComponent restores that draft on init

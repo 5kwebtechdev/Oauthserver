@@ -249,7 +249,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     // A background request should not replace valid shared data with a loader.
     this.isLoading = !this.counselors.length;
     this.errorMessage = '';
-    const directoryRequest = this.educationFilters && this.entityType !== 'COUNSELOR'
+    const directoryRequest = this.entityType !== 'COUNSELOR' && this.educationFilters
       ? this.tutorService.searchDirectory(this.entityType, this.educationFilters)
       : this.getDirectoryWithFallback();
     this.subscriptions.add(
@@ -362,8 +362,12 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     this.showEducationFilters = false;
     document.body.classList.remove('tutor-filter-open');
     if (data?.clearAll || data?.filters) {
-      this.educationFilters = data.clearAll ? null : data.filters;
-      this.loadCounselors();
+      if (data.clearAll) {
+        this.clearFilters();
+      } else {
+        this.educationFilters = data.filters;
+        this.loadCounselors();
+      }
     }
   }
 
@@ -403,9 +407,21 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   clearFilters(): void {
+    this.educationFilters = null;
+    this.searchQuery = '';
+    this.verifiedOnly = false;
     this.selectedSpecializations.clear();
     this.selectedExperience.clear();
-    this.refreshSelections();
+
+    if (this.entityType === 'COUNSELOR') {
+      this.refreshSelections();
+      return;
+    }
+
+    // Reload the complete entity directory. An empty category search is not
+    // equivalent to the unfiltered directory on every backend version.
+    this.counselors = [];
+    this.loadCounselors();
   }
 
   applyFilters(): void {
@@ -502,7 +518,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const profileBaseRoute = this.entityType === 'COUNSELOR' ? '/app/counselors' : '/app/tutors';
+    const profileBaseRoute = this.entityType === 'COUNSELOR' ? '/counselors' : '/tutors';
     void this.router.navigate([profileBaseRoute, counselor.id], {
       state: { tutor: counselor }
     });

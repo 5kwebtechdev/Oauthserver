@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, catchError, map, of, tap, throwError } fro
 import { environment } from '../../../environments/environment';
 import { Challenge, Article, LearningCardData, LearningCategorySummary } from '../models/learning.models';
 import { AuthService } from '../../../package/api/auth.service';
+import { UserService } from './user.service';
 
 export interface ChallengeAssignmentResponse {
     challengeId: number;
@@ -40,7 +41,7 @@ export class LearningService {
     // Combined loading state
     public isLoading$ = new BehaviorSubject<boolean>(false);
 
-    constructor(private http: HttpClient, private authService: AuthService) { }
+    constructor(private http: HttpClient, private authService: AuthService, private userService: UserService) { }
 
     /**
      * Get HTTP headers with authorization token
@@ -174,6 +175,8 @@ export class LearningService {
         timeTaken: number,
         skippedQuestions: number[]
     }, forUserId?: string | number | null): Observable<any> {
+        const submittingUserId = localStorage.getItem('user_id');
+        const submittingToken = this.authService.getToken();
         const url = `${this.apiUrl}/challenges/${challengeId}/submit-all`;
         const requestPayload = forUserId != null && String(forUserId).trim()
             ? { ...payload, forUserId: String(forUserId) }
@@ -204,6 +207,16 @@ export class LearningService {
                         }
                     }
                     throw error;
+                }),
+                tap(response => {
+                    // A response for another profile or a previous login must
+                    // never change the signed-in user's displayed balance.
+                    if (!submittingUserId || submittingUserId !== localStorage.getItem('user_id')
+                        || submittingToken !== this.authService.getToken()
+                        || (forUserId != null && String(forUserId) !== submittingUserId)) return;
+                    const result = response?.data ?? response;
+                    if (result?.success === false) return;
+                    this.userService.updateCoinBalance(result?.totalCoins ?? result?.total_coins);
                 })
             );
     }

@@ -713,7 +713,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                 ? source.activities
                 : [entry]
         };
-        void this.router.navigate(['/authed/activity-input'], {
+        void this.router.navigate(['/activity-input'], {
             state: {
                 habit: planner,
                 currentActive: 'timetable',
@@ -731,7 +731,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     async viewPlanner(source: any, entry: any, event: Event): Promise<void> {
         event.stopPropagation();
         if (Date.now() - this.plannerHeldAt < 1000) return;
-        await this.router.navigate(['/authed/activity-detail', source.id], {
+        await this.router.navigate(['/activity-detail', source.id], {
             queryParams: { type: 'timetable' },
             state: { habit: { ...source, type: 'timetable' }, plannerEntry: entry, type: 'timetable', selectedDate: this.getSelectedDateString() }
         });
@@ -1263,7 +1263,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                         const timestamps = this.buttonLogic.calculateTimestamps(itemForTimestamp);
                         return {
                             ...t,
-                            type: t.type || 'tasks',
+                            type: 'tasks',
                             startTimeStamp: this.normalizeTimestamp(timestamps.startTimeStamp),
                             endTimeStamp: this.normalizeTimestamp(timestamps.endTimeStamp),
                             status: this.normalizeStatus(t.status, t),
@@ -1531,19 +1531,37 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     /**
      * Handle single tap on a habit/task card - open single mode view
      */
-    onCardTap(habit: any, entryType?: 'habit' | 'task'): void {
+    onCardTap(habit: any, entryType?: 'habit' | 'task', event?: Event): void {
+        const scrollX = typeof window !== 'undefined' ? window.scrollX : 0;
+        const scrollY = typeof window !== 'undefined' ? window.scrollY : 0;
+        event?.preventDefault();
         if (this.isChildCalendarDesign && entryType) {
             const key = this.getChildActivityKey(habit, entryType);
             if (this.lastChildActivityLongPress.key === key
                 && Date.now() - this.lastChildActivityLongPress.at < 800) return;
+            const status = String(habit?.status || '').toLowerCase();
+            if (status === 'completed' || habit?.completed === true) {
+                this.openActivityDetail(habit, entryType, false);
+                return;
+            }
             this.expandedChildActivityKey = key;
             try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
+            this.restoreScrollPosition(scrollX, scrollY);
             return;
         }
 
         this.singleModeHabit = habit;
         this.showSingleMode = true;
         try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
+        this.restoreScrollPosition(scrollX, scrollY);
+    }
+
+    private restoreScrollPosition(scrollX: number, scrollY: number): void {
+        if (typeof window === 'undefined') return;
+        requestAnimationFrame(() => {
+            window.scrollTo({ left: scrollX, top: scrollY, behavior: 'auto' });
+            requestAnimationFrame(() => window.scrollTo({ left: scrollX, top: scrollY, behavior: 'auto' }));
+        });
     }
 
     /** Open the full action/detail screen from the compact calendar cards. */
@@ -1561,6 +1579,12 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         return this.expandedChildActivityKey === this.getChildActivityKey(habit, entryType);
     }
 
+    readonly trackChildActivity = (_index: number, entry: { item: any; type: 'habit' | 'task' }): string => {
+        // The visible-list getter creates wrappers on each change detection.
+        // Keep card instances (and their open confirmations/timers) stable.
+        return `${this.getSelectedDateString()}:${this.getChildActivityKey(entry.item, entry.type)}`;
+    };
+
     private getChildActivityKey(habit: any, entryType: 'habit' | 'task'): string {
         return `${entryType}:${habit?.id ?? habit?.habitId ?? habit?.taskId ?? ''}`;
     }
@@ -1573,7 +1597,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
             ? 'tasks'
             : 'habits';
 
-        this.router.navigate(['/authed/activity-detail', itemId], {
+        this.router.navigate(['/activity-detail', itemId], {
             state: {
                 habit: { ...habit, type: activityType },
                 type: activityType,

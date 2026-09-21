@@ -134,8 +134,8 @@ export class HabitButtonLogicService {
   isDoneVisible(habit: any): boolean {
     if (!habit) return false;
     const status = habit.status?.toLowerCase();
-    // Completed items should not show Done
-    if (status === 'completed') return false;
+    // Terminal items cannot be completed again.
+    if (status === 'completed' || status === 'skipped') return false;
     // For all statuses, only show Done when the activity is scheduled for today
     const { startTimeStamp } = this.getTimestamps(habit);
     if (!startTimeStamp) return false;

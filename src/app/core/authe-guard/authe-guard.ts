@@ -128,7 +128,7 @@ export const authGuard: CanActivateFn = (
 export const legacyAuthedRedirectGuard: CanActivateChildFn = (_route, state) => {
     const router = inject(Router);
     const canonicalUrl = state.url.replace(/^\/authed(?=\/|$)/, '/app');
-    return router.parseUrl(canonicalUrl === '/app' ? '/app/home' : canonicalUrl);
+    return router.parseUrl(canonicalUrl === '/app' ? '/home' : canonicalUrl);
 };
 
 /**
@@ -142,13 +142,14 @@ export const guestGuard: CanActivateFn = (
     const router = inject(Router);
     const authService = inject(AuthService);
     const onboardingState = inject(OnboardingStateService);
+    const isSignupRoute = /^\/(?:sign-up|signup)(?:\?|$)/.test(state.url);
 
     // Allow OAuth new-user flow to access sign-up even when authenticated
     const isOAuthOnboarding = (
         sessionStorage.getItem('signup_via_google') === 'true'
         || sessionStorage.getItem('signup_via_oauth') === 'true'
     )
-        && state.url.includes('/sign-up');
+        && isSignupRoute;
     if (isOAuthOnboarding) {
         return true;
     }
@@ -156,7 +157,7 @@ export const guestGuard: CanActivateFn = (
     // A parent can intentionally create a separate Child account on the same
     // device after creating a family. Keep this narrowly scoped to signup.
     const isManagedChildSignup = sessionStorage.getItem('managed_child_signup') === 'true'
-        && state.url.includes('/sign-up');
+        && isSignupRoute;
     if (isManagedChildSignup) {
         return true;
     }
@@ -164,7 +165,7 @@ export const guestGuard: CanActivateFn = (
     // After a Parent creates a child during initial onboarding, allow the
     // one-time deferred Parent welcome/Unlock screen before Parent Home.
     const isManagedChildParentWelcome = sessionStorage.getItem('managed_child_parent_welcome_pending') === 'true'
-        && state.url.includes('/sign-up')
+        && isSignupRoute
         && route.queryParamMap.get('step') === '5';
     if (isManagedChildParentWelcome) {
         return true;
@@ -173,7 +174,7 @@ export const guestGuard: CanActivateFn = (
     // A newly registered child is already authenticated after linking their
     // family. Allow only the remaining Pet and welcome onboarding steps.
     const isPostFamilyOnboarding = sessionStorage.getItem('show_child_welcome_after_family') === 'true'
-        && state.url.includes('/sign-up')
+        && isSignupRoute
         && (state.url.includes('step=4') || state.url.includes('step=5'));
     if (isPostFamilyOnboarding) {
         return true;

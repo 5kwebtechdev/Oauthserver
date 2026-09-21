@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification resources are resolved by name by FCM and Capacitor. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/superme_ping,@drawable/ic_stat_notification" />

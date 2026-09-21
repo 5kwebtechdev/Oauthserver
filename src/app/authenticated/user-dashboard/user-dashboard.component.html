@@ -12,7 +12,10 @@
 <div *ngIf="showDailyStreakPopup && streakStatusResolved && !showFamilyAck"
      class="streak-milestone-overlay" role="dialog" aria-modal="true" aria-label="Streak Day"
      (keydown.escape)="dismissDailyStreakPopup()">
-  <app-streak-milestone [days]="loginStreakDays ?? userStreaks" [celebrateProgress]="true" (continue)="dismissDailyStreakPopup()"></app-streak-milestone>
+  <app-streak-milestone [days]="loginStreakDays ?? userStreaks" [celebrateProgress]="!canRestoreStreak"
+    [restoreMode]="canRestoreStreak" [restoreCost]="restoreCost" [restoreDisabled]="isStreakRestoring"
+    [restoring]="isStreakRestoring" (restore)="restoreStreakFromPopup()"
+    (continue)="dismissDailyStreakPopup()"></app-streak-milestone>
 </div>
 <div *ngIf="activeOverlay && activeOverlay !== 'daily-login' && activeOverlay !== 'streak-milestone'"
      class="home-overlay"
@@ -123,7 +126,7 @@
 
           <div class="header-stats-row" aria-label="Your stats">
             <span class="header-stats-label" aria-hidden="true">Today’s progress</span>
-            <button type="button" class="header-stat" [routerLink]="['/app/streaks']"
+            <button type="button" class="header-stat" [routerLink]="['/streaks']"
               [attr.aria-label]="'Open streaks. Current streak: ' + userStreaks">
               <span class="header-stat-icon-frame header-stat-icon-frame--streak" aria-hidden="true">
                 <img src="assets/icons/child-home-streak-figma.webp" alt="" class="header-stat-icon">
@@ -131,7 +134,7 @@
               <span class="header-stat-value">{{ userStreaks }}</span>
             </button>
             <img class="header-stat-divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="" aria-hidden="true">
-            <button type="button" class="header-stat" [routerLink]="['/app/trophies']"
+            <button type="button" class="header-stat" [routerLink]="['/trophies']"
               [attr.aria-label]="'Open trophies. Total trophies: ' + userDays">
               <span class="header-stat-icon-frame" aria-hidden="true">
                 <img src="assets/icons/child-home-trophy-figma.webp" alt="" class="header-stat-icon">
@@ -139,7 +142,7 @@
               <span class="header-stat-value">{{ userDays }}</span>
             </button>
             <img class="header-stat-divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="" aria-hidden="true">
-            <button type="button" class="header-stat" [routerLink]="['/app/badges']"
+            <button type="button" class="header-stat" [routerLink]="['/badges']"
               [attr.aria-label]="'Open badges. Total badges: ' + userBadges">
               <span class="header-stat-icon-frame" aria-hidden="true">
                 <img src="assets/icons/child-home-badge-figma.webp" alt="" class="header-stat-icon">
@@ -152,20 +155,6 @@
     </section>
 
     <div class="dashboard-content">
-
-      <!-- Streak Restore Banner -->
-      <div class="streak-restore-banner" *ngIf="canRestoreStreak" (click)="openStreakRestoreModal()" role="button" tabindex="0" (keyup.enter)="openStreakRestoreModal()">
-        <div class="streak-restore-banner__left">
-          <span class="streak-restore-banner__fire">🔥</span>
-          <div class="streak-restore-banner__text">
-            <strong>Restore your streak!</strong>
-            <span>Don't lose it — restore for {{ restoreCost }} coins</span>
-          </div>
-        </div>
-        <div class="streak-restore-banner__pill" *ngIf="restoreToStreak">
-          {{ restoreToStreak }} days
-        </div>
-      </div>
 
       <!--
         Current Week's API-backed streak is temporarily hidden across roles.

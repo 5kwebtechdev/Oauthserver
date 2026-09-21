@@ -165,10 +165,13 @@ export class TutorService {
      * `fetchTutorsByEntityType` deliberately retains its legacy empty-array
      * fallback for callers that predate inline error states.
      */
-    searchDirectory(entityType: string, filters: SelectedFilters): Observable<Tutor[]> {
+    searchDirectory(entityType: string, filters: SelectedFilters | null = null): Observable<Tutor[]> {
         const request: TutorSearchRequest = {
-            categoryKey: filters.categoryKey,
-            filters: filters.filters,
+            // The search endpoint treats an empty category and empty filter map
+            // as an unfiltered directory request. This is also used by Clear All
+            // so a previously selected category is not accidentally retained.
+            categoryKey: filters?.categoryKey ?? '',
+            filters: filters?.filters ?? {},
             page: 0,
             size: 100,
             sort: 'RECENT'

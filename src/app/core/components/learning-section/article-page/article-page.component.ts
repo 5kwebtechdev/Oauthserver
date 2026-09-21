@@ -122,7 +122,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   ) {
     const navigationState = this.router.getCurrentNavigation()?.extras.state || history.state;
     const source = String(navigationState?.['source'] || '');
-    this.returnUrl = (source.startsWith('/app/') || source.startsWith('/authed/')) ? source : '/app/article';
+    this.returnUrl = (source.startsWith('/') || source.startsWith('/authed/')) ? source : '/article';
     this.profileUserId = navigationState?.['ownProfile'] === true
       ? navigationState?.['forUserId'] ?? this.authService.getUserId()
       : null;
@@ -283,6 +283,11 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
         this.showMarkPopup = false;
         this.petAgeService.recordActivity('articles');
         this.badgePopupService.check();
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('superme:learning-completed', {
+            detail: { id: this.article?.id, type: 'article' }
+          }));
+        }
         void this.router.navigateByUrl(this.returnUrl);
       },
       error: (err) => {

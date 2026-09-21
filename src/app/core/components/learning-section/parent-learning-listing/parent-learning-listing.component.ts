@@ -223,7 +223,7 @@ export class ParentLearningListingComponent implements OnInit, OnDestroy {
     };
 
     if (item.type === 'article') {
-      void this.router.navigate(['/authed/content/article', item.id], extras);
+      void this.router.navigate(['/content/article', item.id], extras);
       return;
     }
     void this.router.navigate(['/authed/content/description', item.id], extras);

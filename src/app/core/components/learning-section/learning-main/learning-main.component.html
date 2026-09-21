@@ -142,7 +142,7 @@
                 <article class="parent-learning-card-item"
                   [class.parent-learning-card-item--course]="item.type === 'masterclass'"
                   [class.parent-learning-card-item--completed]="getParentItemStatus(item) === 'completed'">
-                  <div *ngIf="item.type === 'masterclass'; else openParentItem"
+                  <div *ngIf="item.type === 'masterclass' || isParentChallenge(item); else openParentItem"
                     class="parent-learning-card-item__media parent-learning-card-item__media--static"
                     [attr.aria-label]="item.title">
                     <app-img [src]="item.image" [fallback]="getCategoryFallbackImage()" [alt]="item.title"
@@ -175,7 +175,7 @@
                           <span class="parent-learning-card-item__bonus">+{{ bonus }} coins</span>
                         </ng-container>
                       </div>
-                      <button *ngIf="getParentItemStatus(item) === 'completed' || !isParentItemAssigned(item)"
+                      <button *ngIf="canShowParentLearningAction(item)"
                         type="button" (click)="onParentLearningAction(item)"
                         [disabled]="isParentCourseAssigning(item)"
                         [attr.aria-busy]="isParentCourseAssigning(item)">

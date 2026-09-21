@@ -25,13 +25,13 @@ export class DashboardRedirectGuard implements CanActivate {
 
         // If user is a parent and tries to access user-dashboard, redirect to parent-account
         if (userRole === 'PARENT' && requestedRoute.includes('/home')) {
-            this.router.navigate(['/app/parent-account'], { replaceUrl: true });
+            this.router.navigate(['/parent-account'], { replaceUrl: true });
             return false;
         }
 
         // If user is a child/self and tries to access parent-account, redirect to user-dashboard
         if ((userRole === 'CHILD' || userRole === 'SELF') && requestedRoute.includes('/parent-account')) {
-            this.router.navigate(['/app/home'], { replaceUrl: true });
+            this.router.navigate(['/home'], { replaceUrl: true });
             return false;
         }
 

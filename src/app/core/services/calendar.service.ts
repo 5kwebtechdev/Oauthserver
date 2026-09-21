@@ -27,8 +27,7 @@ export class CalendarService {
 
     private getCalendar(
         date: string | Date,
-        viewType: 'day' | 'week' | 'month',
-        includeExpiredCalendarEvents: boolean = false
+        viewType: 'day' | 'week' | 'month'
     ): Observable<CalendarResponse> {
         const dateStr = this.formatDateToYYYYMMDD(date);
         const url = `${this.apiUrl}/user-calendar?date=${dateStr}&viewType=${viewType}`;
@@ -42,24 +41,14 @@ export class CalendarService {
         return calendar$.pipe(
             map(calendar => ({
                 ...calendar,
-                // The calendar API marks finished records with `expired: true`.
-                // Exclude them before any screen builds its All/Habit/Task/Planner
-                // lists or day indicators. Missing `expired` remains compatible with
-                // older responses and is treated as active.
-                habits: this.excludeExpired(calendar.habits),
-                tasks: this.excludeExpired(calendar.tasks),
-                events: includeExpiredCalendarEvents
-                    ? (calendar.events || [])
-                    : this.excludeExpired(calendar.events)
+                // Expired means the scheduled time has passed, not that the
+                // record was deleted. Keep history for dots and selected-day
+                // lists, consistent with the totals returned by the API.
+                habits: calendar.habits || [],
+                tasks: calendar.tasks || [],
+                events: calendar.events || []
             }))
         );
-    }
-
-    private excludeExpired<T>(items: T[] | null | undefined): T[] {
-        return (items || []).filter((item: any) => {
-            const expired = item?.expired;
-            return expired !== true && String(expired).toLowerCase() !== 'true';
-        });
     }
 
     /** No-op kept for call-site compatibility */
@@ -98,11 +87,7 @@ export class CalendarService {
     }
 
     getUserPlannerCalendarWeek(date: string): Observable<CalendarResponse> {
-        // The full Planner page is a schedule history for the selected week.
-        // It must show every event returned by user-calendar, including entries
-        // whose time has already passed (`expired: true`). Habits and Tasks
-        // remain filtered by `excludeExpired` inside getCalendar.
-        return this.getCalendar(date, 'week', true);
+        return this.getCalendar(date, 'week');
     }
 
     transformToTimelineEvents(response: CalendarResponse): TimelineEvent[] {

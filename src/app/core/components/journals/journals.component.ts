@@ -427,7 +427,7 @@ export class JournalsComponent implements OnInit, OnDestroy {
   }
 
   onCreateNewEntry(): void {
-    this.router.navigate(['/authed/journal-input']).catch(() => { });
+    this.router.navigate(['/journal-input']).catch(() => { });
   }
 
   onViewAllEntries(): void {

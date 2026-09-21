@@ -146,7 +146,7 @@ export class LearningDescriptionComponent implements OnInit {
     this.isParentAssignment = typeof source === 'string'
       && (source.includes('view=parent') || source.includes('/parent-learning'))
       && this.parentAssignmentChildId !== null;
-    if (typeof source === 'string' && source.startsWith('/authed/content')) {
+    if (typeof source === 'string' && source.startsWith('/')) {
       this.returnUrl = source;
     }
 

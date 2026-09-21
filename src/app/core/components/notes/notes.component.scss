@@ -40,7 +40,7 @@
 
 	.note-container {
 		max-width: 720px;
-		margin-inline: auto;
+		margin: 16px auto 32px;
 	}
 }
 
@@ -92,7 +92,10 @@
 .note-container {
 
 	background: #fff;
-	padding: 16px;
+	padding: 20px;
+	margin: 16px auto 32px;
+	width: calc(100% - 32px);
+	border-radius: 20px;
 	/* ensure content sits above system safe area + extra 80px for fixed add button */
 	padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
 	box-sizing: border-box;

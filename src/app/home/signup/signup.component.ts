@@ -3342,16 +3342,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (familyCode) googlePayload.familyCode = familyCode;
     }
 
-    if (role !== 'parent' && includePet) {
+    if (role !== 'parent' && (includePet || unlockPotential)) {
       try {
         // Backend expects short pet name ("Dragon"), not the filename ("Dragon-Age1-Happy.webp")
-        const storedPet = sessionStorage.getItem('signup_pet') || this.currentImage?.apiName;
+        const storedPet = sessionStorage.getItem('signup_pet') || this.currentImage?.apiName || persistedDraft.petName;
         const foundPet = storedPet
           ? this.pets.find(p => p.apiName === storedPet || p.name === storedPet)
           : null;
         const petName = foundPet?.name;
         if (petName) googlePayload.petName = petName;
       } catch (e) {}
+      if (!googlePayload.petName) {
+        this.registrationInProgress = false;
+        this.loadingService.forceHide();
+        this.errorMessage = 'Please choose your pet to continue.';
+        this.core.triggerToasrt(this.errorMessage);
+        return;
+      }
     }
 
     if (unlockPotential) {
@@ -3381,13 +3388,24 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // short-lived provider credential in sessionStorage. In that case use the
     // existing authenticated profile-completion endpoint and never ask for a
     // password or OTP.
-    const onboardingRequest = hasProviderProof
+    // Google login establishes identity only. Profile, pet and activation
+    // updates must reach the authenticated completion endpoint even while
+    // the original Google credential is still available.
+    const onboardingRequest = provider === 'apple' && hasProviderProof
       ? this.authService.googleOAuthLogin(googlePayload)
       : this.authService.completeGoogleOnboarding(googlePayload);
 
     onboardingRequest.subscribe({
       next: (response) => {
         const responseStep = this.getResponseOnboardingStep(response);
+        const expectedStep = unlockPotential ? 7 : (includePet ? 6 : (role === 'parent' ? 4 : 5));
+        if (provider === 'google' && (!responseStep || responseStep < expectedStep)) {
+          this.registrationInProgress = false;
+          this.loadingService.forceHide();
+          this.errorMessage = 'Your profile update was not confirmed. Please try again. If this continues, contact support.';
+          this.core.triggerToasrt(this.errorMessage);
+          return;
+        }
         const resolvedStep = responseStep
           || (unlockPotential ? 7 : (includePet ? 6 : (role === 'parent' ? 4 : 5)));
         const responseUser = {
@@ -3426,7 +3444,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         // it. Keep its OAuth credentials until activation is complete, so the
         // Pet and Unlock steps update that same account instead of calling
         // /auth/register and triggering duplicate email/phone validation.
-        if (unlockPotential) {
+        if (unlockPotential || resolvedStep >= 7) {
           this.clearGoogleSignupSession();
           this.continueAfterUnlock(responseDraft);
           return;

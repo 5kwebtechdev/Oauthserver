@@ -14,7 +14,7 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
         <superme-card-header [title]="pageTitle" [subtitleMiddle]="'See wins • Know dates • Keep going'"
           [showBackArrow]="true" (backClick)="onBack()">
           <div superme-header-actions class="trophy-section">
-            <img class="trophy-icon" src="/assets/Icons-Neutral/Icon-Trophy.webp" alt="trophy" />
+            <img class="trophy-icon" src="assets/Icons-Neutral/Icon-Trophy.webp" alt="trophy" />
             <span class="trophy-count">{{ trophyCount }}</span>
           </div>
         </superme-card-header>
@@ -29,7 +29,7 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
 
         <!-- Error State -->
         <div class="error-state" *ngIf="errorMessage && !isLoading">
-          <img class="error-art" src="/assets/app-assets/error-icon.webp" alt="Error" />
+          <img class="error-art" src="assets/app-assets/error-icon.webp" alt="Error" />
           <h2 class="error-title">Oops!</h2>
           <p class="error-sub">{{ errorMessage }}</p>
           <button class="action-btn error-btn" (click)="loadTrophies()">Try Again</button>
@@ -38,7 +38,7 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
         <!-- Empty State -->
         <div class="empty-state" *ngIf="!isLoading && !errorMessage && !grouped.length">
           <div class="empty-art-wrap">
-            <img class="empty-art" src="/assets/Images-Transparent/Image-Trophies-Blank.webp" alt="No trophies yet" />
+            <img class="empty-art" src="assets/Images-Transparent/Image-Trophies-Blank.webp" alt="No trophies yet" />
           </div>
           <div class="empty-copy">
             <h2 class="empty-title">No Trophies Yet!</h2>
@@ -77,7 +77,7 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
 
                   <div class="trophy-side">
                     <div class="points">
-                      <img class="points-icon" src="/assets/Icons-Neutral/Icon-Trophy.webp" alt="trophy" />
+                      <img class="points-icon" src="assets/Icons-Neutral/Icon-Trophy.webp" alt="trophy" />
                       {{ trophy.points }}
                     </div>
                   </div>

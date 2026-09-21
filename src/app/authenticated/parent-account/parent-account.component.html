@@ -268,7 +268,7 @@
           [forUserId]="selectedChild?.id ?? null"
           [age]="selectedChildAge"
           (rewardSelected)="assignLearningReward($event)"
-          source="/app/content?view=parent">
+          source="/content?view=parent">
         </learning-section>
       </section>
 
@@ -278,7 +278,7 @@
           subtitle="Learn • Reflect • Level Up"
           headerIcon="assets/figma/parent-home/parenting-section/header-bulb.webp"
           contentMode="parenting"
-          source="/app/parent-account"
+          source="/parent-account"
           [parentLearningViewAll]="true">
         </learning-section>
       </section>
@@ -370,7 +370,7 @@
       </section>
 
       <section class="parent-learning-card" aria-label="Learning and skills">
-        <learning-section source="/app/parent-account" [parentLearningViewAll]="true"></learning-section>
+        <learning-section source="/parent-account" [parentLearningViewAll]="true"></learning-section>
         <academy-section></academy-section>
       </section>
 

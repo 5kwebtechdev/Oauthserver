@@ -41,12 +41,12 @@ export class DashboardWebFooterComponent implements OnInit {
     'assets/Landing/a545087c920a7aa3d0b8e311d8b60b7ded2efb74.webp';
   readonly appleStoreSrc = `${this.assetRoot}/store-apple.svg`;
   readonly desktopStoreSrc = `${this.assetRoot}/store-desktop.svg`;
-  readonly qrSrc = `${this.assetRoot}/download-qr.webp`;
+  readonly qrSrc = 'assets/download-app-qr.svg';
   readonly trustedShieldSrc = `${this.assetRoot}/trusted-shield.webp`;
   readonly featureDividerSrc = `${this.assetRoot}/feature-divider.svg`;
 
   readonly googlePlayUrl =
-    'https://play.google.com/store/apps/details?id=io.ionic.starter';
+    'https://play.google.com/store/apps/details?id=com.superme.app';
   readonly appleStoreUrl = APP_STORE_URL;
   readonly websiteUrl = 'https://supermeapp.com';
   isParent = false;
@@ -90,8 +90,8 @@ export class DashboardWebFooterComponent implements OnInit {
   readonly supportSection: FooterSection = {
     title: 'SUPPORT',
     links: [
-      { label: "FAQ's", routerLink: '/app/help-support' },
-      { label: 'Contact Us', routerLink: '/app/bot-helpline' },
+      { label: "FAQ's", routerLink: '/help-support' },
+      { label: 'Contact Us', routerLink: '/bot-helpline' },
     ],
   };
 
@@ -109,14 +109,14 @@ export class DashboardWebFooterComponent implements OnInit {
     {
       title: 'EDUHUB',
       links: [
-        { label: 'Find a Tutor', routerLink: '/app/find-a-tutor' },
-        { label: 'Find an Academy', routerLink: '/app/academy' },
-        { label: 'Find a Stationery Shop', routerLink: '/app/stationery-shop' },
-        { label: 'Find a Book Store', routerLink: '/app/book-store' },
-        { label: 'Find a Second-hand Book', routerLink: '/app/second-hand-books' },
-        { label: 'Find a Sports Shop', routerLink: '/app/sports-shop' },
-        { label: 'Find a Counselor', routerLink: '/app/counselor' },
-        { label: 'Find an Event', routerLink: '/app/event' },
+        { label: 'Find a Tutor', routerLink: '/find-a-tutor' },
+        { label: 'Find an Academy', routerLink: '/academies' },
+        { label: 'Find a Stationery Shop', routerLink: '/stationery-shop' },
+        { label: 'Find a Book Store', routerLink: '/book-store' },
+        { label: 'Find a Second-hand Book', routerLink: '/second-hand-books' },
+        { label: 'Find a Sports Shop', routerLink: '/sports-shop' },
+        { label: 'Find a Counselor', routerLink: '/counselor' },
+        { label: 'Find an Event', routerLink: '/event' },
         { label: 'Find a Workshop', routerLink: '/workshops' },
       ],
     },

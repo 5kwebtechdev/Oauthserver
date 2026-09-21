@@ -96,8 +96,8 @@
 
 <nav class="mobile-web-tabs" aria-label="Bottom navigation">
   <a [routerLink]="dashboardLink" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" ariaCurrentWhenActive="page"><ion-icon name="home-outline" aria-hidden="true"></ion-icon><span>Home</span></a>
-  <a [routerLink]="isParent ? '/app/parent-learning' : '/app/content'" routerLinkActive="active" ariaCurrentWhenActive="page"><ion-icon name="book-outline" aria-hidden="true"></ion-icon><span>{{ isParent ? 'Parenting' : 'Learning' }}</span></a>
-  <a routerLink="/app/school-store" routerLinkActive="active" ariaCurrentWhenActive="page"><ion-icon name="bag-outline" aria-hidden="true"></ion-icon><span>Shop</span></a>
-  <a routerLink="/app/education" routerLinkActive="active" ariaCurrentWhenActive="page"><ion-icon name="school-outline" aria-hidden="true"></ion-icon><span>EduHub</span></a>
+  <a [routerLink]="isParent ? '/parent-learning' : '/content'" routerLinkActive="active" ariaCurrentWhenActive="page"><ion-icon name="book-outline" aria-hidden="true"></ion-icon><span>{{ isParent ? 'Parenting' : 'Learning' }}</span></a>
+  <a routerLink="/school-store" routerLinkActive="active" ariaCurrentWhenActive="page"><ion-icon name="bag-outline" aria-hidden="true"></ion-icon><span>Shop</span></a>
+  <a routerLink="/education" routerLinkActive="active" ariaCurrentWhenActive="page"><ion-icon name="school-outline" aria-hidden="true"></ion-icon><span>EduHub</span></a>
   <button type="button" (click)="openMobileMenu()" aria-haspopup="dialog"><ion-icon name="menu-outline" aria-hidden="true"></ion-icon><span>More</span></button>
 </nav>

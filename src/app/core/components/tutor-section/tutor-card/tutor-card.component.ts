@@ -98,7 +98,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   readonly categories: EduHubCategory[] = [
     { key: 'tutors', label: 'Tutors', image: 'assets/figma/eduhub-home/category-tutors.webp', route: '/authed/tutors' },
-    { key: 'academies', label: 'Academies', image: 'assets/figma/eduhub-home/category-academies.webp', route: '/authed/academies' },
+    { key: 'academies', label: 'Academies', image: 'assets/figma/eduhub-home/category-academies.webp', route: '/academies' },
     { key: 'counselors', label: 'Counselors', image: 'assets/figma/eduhub-home/category-counselors.webp', route: '/authed/counselors' },
     { key: 'events', label: 'Events', image: 'assets/figma/eduhub-home/category-events.webp', route: '/authed/education/events' },
     { key: 'workshops', label: 'Workshops', image: 'assets/figma/eduhub-home/category-workshops.webp', route: '/authed/education/workshops' },
@@ -106,7 +106,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/eduhub-home/category-sports-shops.webp', route: '/authed/education/shops' },
     { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/eduhub-home/category-stationery.webp', route: '/authed/education/shops' },
     // Keep this existing destination available after the requested primary order.
-    { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/eduhub-home/category-second-hand-books.webp', route: '/authed/second-hand-books' }
+    { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/eduhub-home/category-second-hand-books.webp', route: '/second-hand-books' }
   ];
 
   selectedCategoryKey: CategoryKey = 'tutors';

@@ -13,17 +13,6 @@ const routes: Routes = [
     loadChildren: () => import('./home/home.module').then(m => m.HomePageModule),
     pathMatch: 'full'
   },
-  // Stable, readable logged-in URLs from the approved URL-structure sheet.
-  // Root aliases remain valid for old bookmarks, but canonical logged-in
-  // URLs now live under /app/.
-  { path: 'quiz', redirectTo: 'app/quiz', pathMatch: 'full' },
-  { path: 'puzzle', redirectTo: 'app/puzzle', pathMatch: 'full' },
-  { path: 'article', redirectTo: 'app/article', pathMatch: 'full' },
-  { path: 'master-class', redirectTo: 'app/master-class', pathMatch: 'full' },
-  { path: 'reels', redirectTo: 'app/reels', pathMatch: 'full' },
-  { path: 'journal', redirectTo: 'app/journal', pathMatch: 'full' },
-  { path: 'notes', redirectTo: 'app/notes', pathMatch: 'full' },
-  { path: 'productivity-calendar', redirectTo: 'app/productivity-calendar', pathMatch: 'full' },
   // Public discovery pages keep their logged-out preview experience. The
   // signed-in equivalents remain available under /app/ with the auth guard.
   {
@@ -31,29 +20,18 @@ const routes: Routes = [
     loadComponent: () => import('./core/components/education-section/counselor-directory/counselor-directory.component').then(m => m.CounselorDirectoryComponent),
     data: { entityType: 'INDIVIDUAL', title: 'Tutors', singularTitle: 'Tutor' }
   },
-  { path: 'academy', redirectTo: 'app/academy', pathMatch: 'full' },
-  { path: 'sationery-shop', redirectTo: 'app/stationery-shop', pathMatch: 'full' },
-  { path: 'stationery-shop', redirectTo: 'app/stationery-shop', pathMatch: 'full' },
-  { path: 'book-store', redirectTo: 'app/book-store', pathMatch: 'full' },
-  { path: 'second-hand-books', redirectTo: 'app/second-hand-books', pathMatch: 'full' },
-  { path: 'sports-shop', redirectTo: 'app/sports-shop', pathMatch: 'full' },
+  { path: 'sationery-shop', redirectTo: 'stationery-shop', pathMatch: 'full' },
   {
     path: 'counselor',
     loadComponent: () => import('./core/components/education-section/counselor-directory/counselor-directory.component').then(m => m.CounselorDirectoryComponent),
     data: { entityType: 'COUNSELOR', title: 'Counselors', singularTitle: 'Counselor' }
   },
-  { path: 'event', redirectTo: 'app/event', pathMatch: 'full' },
   {
     path: 'workshops',
     loadComponent: () => import('./core/components/education-section/eduhub-events/eduhub-events.component').then(m => m.EduHubEventsComponent),
     data: { entityType: 'Workshop', title: 'Workshops' }
   },
-  { path: 'school-unifrom', redirectTo: 'app/school-uniform', pathMatch: 'full' },
-  { path: 'school-uniform', redirectTo: 'app/school-uniform', pathMatch: 'full' },
-  { path: 'textbook', redirectTo: 'app/textbook', pathMatch: 'full' },
-  { path: 'stationery', redirectTo: 'app/stationery', pathMatch: 'full' },
-  { path: 'entrance-exam-books', redirectTo: 'app/entrance-exam-books', pathMatch: 'full' },
-  { path: 'general-books', redirectTo: 'app/general-books', pathMatch: 'full' },
+  { path: 'school-unifrom', redirectTo: 'school-uniform', pathMatch: 'full' },
   // Stable public entry points used by the separate SuperMe marketing site.
   // Keep these redirects at the root so the website does not need to know the
   // Ionic app's internal `/home/*` route structure.
@@ -79,21 +57,49 @@ const routes: Routes = [
     loadComponent: () =>
       import('./home/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent)
   },
-  // Canonical authenticated landing page. `pathMatch: full` leaves the
-  // existing /home/* onboarding compatibility routes available below.
+  // When the web bundle is hosted at /app/, the browser base path is already
+  // supplied by Angular. These routes therefore intentionally omit the
+  // leading `app` segment so `/app/home` does not become `/app/app/home`.
+  {
+    path: 'home/join-family',
+    loadComponent: () => import('./home/family-onboard/family-onboard.component').then(m => m.FamilyOnboardComponent),
+  },
+  {
+    path: 'home/join-family2',
+    loadComponent: () => import('./home/family-onboard/family-onboard.component').then(m => m.FamilyOnboardComponent),
+  },
+  {
+    path: 'home/instructions-for-child',
+    loadComponent: () => import('./home/family-onboard/family-onboard.component').then(m => m.FamilyOnboardComponent),
+  },
+  {
+    path: 'home/instructions-for-parent',
+    loadComponent: () => import('./home/family-onboard/family-onboard.component').then(m => m.FamilyOnboardComponent),
+  },
+  {
+    path: 'home/scan-qr',
+    loadComponent: () => import('./home/scan-qr/scan-qr.component').then(m => m.ScanQrComponent),
+  },
   {
     path: 'home',
-    redirectTo: 'app/home',
-    pathMatch: 'full'
+    loadChildren: () => import('./authenticated/authenticated.module').then(m => m.AuthenticatedModule),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'parent-account',
+    loadComponent: () => import('./authenticated/parent-account/parent-account.component').then(m => m.ParentAccountComponent),
+    canActivate: [authGuard],
   },
   {
     path: 'home',
     loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
   },
+  // The production document base is already /app/. Strip the legacy extra
+  // segment from cached links such as /app/app/stationery-shop.
   {
     path: 'app',
-    loadChildren: () => import('./authenticated/authenticated.module').then(m => m.AuthenticatedModule),
-    canActivate: [authGuard]
+    redirectTo: '',
+    pathMatch: 'prefix'
   },
   {
     path: 'authed',
@@ -111,12 +117,20 @@ const routes: Routes = [
   },
   {
     path: 'learning-description',
-    redirectTo: 'app/content',
+    redirectTo: 'content',
     pathMatch: 'full'
   },
   {
     path: 'result-page',
     loadComponent: () => import('./core/components/learning-section/result-page/result-page.component').then(m => m.ResultPageComponent)
+  },
+  // Mount the authenticated route tree at the document-base root. A child
+  // route such as `stationery-shop` is therefore published as
+  // /app/stationery-shop, never /app/app/stationery-shop.
+  {
+    path: '',
+    loadChildren: () => import('./authenticated/authenticated.module').then(m => m.AuthenticatedModule),
+    canActivate: [authGuard]
   },
 ];
 

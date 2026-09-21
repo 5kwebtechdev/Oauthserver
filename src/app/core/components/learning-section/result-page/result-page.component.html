@@ -32,6 +32,30 @@
       </div>
     </div>
 
+    <section class="result-details" *ngIf="hasSubmissionResult" aria-label="Challenge result summary">
+      <p class="completion-message">
+        {{ firstCompletion
+          ? 'First completion — rewards added!'
+          : challengeCompleted
+            ? 'Completed again — this attempt is saved.'
+            : 'Your attempt is saved.' }}
+      </p>
+      <div class="result-stats">
+        <div class="result-stat">
+          <span>Score</span>
+          <strong>{{ scorePercentage }}%</strong>
+        </div>
+        <div class="result-stat">
+          <span>Total coins</span>
+          <strong>{{ totalCoins }}</strong>
+        </div>
+        <div class="result-stat">
+          <span>Total trophies</span>
+          <strong>{{ totalTrophies }}</strong>
+        </div>
+      </div>
+    </section>
+
     <!-- Overall Feedback -->
     <!-- <div class="feedback-section" *ngIf="overallFeedback">
       <p class="feedback-text">{{ overallFeedback }}</p>

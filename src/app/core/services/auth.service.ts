@@ -639,7 +639,12 @@ export class AuthService {
 
   completeGoogleOnboarding(payload: any): Observable<any> {
     const url = `${this.apiUrl}/api/auth/complete-google-profile`;
-    return this.http.post<any>(url, payload);
+    // Update the signed-in account, never the child selected in the family UI.
+    const headers = new HttpHeaders({
+      'X-Skip-Profile-Selector': 'true',
+      'X-Skip-Auth-Handler': 'true'
+    });
+    return this.http.post<any>(url, payload, { headers });
   }
 
   sendLoginOtp(email: string): Observable<any> {
@@ -1171,11 +1176,11 @@ export class AuthService {
 
     // Parent users go to parent-account page
     if (relationship === 'PARENT') {
-      return '/app/parent-account';
+      return '/parent-account';
     }
 
     // Child and Self users go to user-dashboard
-    return '/app/home';
+    return '/home';
   }
 
   /**

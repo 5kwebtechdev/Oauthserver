@@ -77,6 +77,19 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   @Input()
   expanded: boolean = false;
 
+  @Input() autoExpand: boolean = false;
+
+  get isCardExpanded(): boolean {
+    if (!this.autoExpand) return this.expanded;
+    const status = this.getStatus();
+    if (status === 'completed' || status === 'skipped' || this.habit?.expired) return false;
+    const now = Date.now();
+    const start = Number(this.startTime);
+    const end = Number(this.endTime);
+    return Number.isFinite(start) && start > 0 && Number.isFinite(end) && end > start
+      && now >= start - 5 * 60_000 && now <= end;
+  }
+
   @Input({ transform: booleanAttribute })
   @CoerceBoolean()
   inProgress: boolean = false;
@@ -833,9 +846,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   onCompleteHabit() {
     if (!this.habit) return;
 
-    // Check if Done button is enabled (for non-skipped status)
+    // Skipped is a terminal state and must never be completed from a stale UI.
     const status = this.habit.status?.toLowerCase();
-    if (status !== 'skipped' && !this.isDoneEnabled()) {
+    if (status === 'skipped' || !this.isDoneEnabled()) {
       console.log('Done button is not enabled - need to click Let\'s Go first');
       return;
     }
@@ -1032,7 +1045,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       this.isEmpty = false;
 
       // Keep the child-friendly "Time left" copy current without requiring a refresh.
-      if (this.habit.type === 'tasks') {
+      if (this.habit.type === 'tasks' || this.autoExpand) {
         this.taskCountdownTimer = setInterval(() => this.cdr.markForCheck(), 30_000);
       }
     }
@@ -1266,7 +1279,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         const { startTimeStamp, endTimeStamp } = this.buttonLogic.calculateTimestamps(activity);
         if (!startTimeStamp || !endTimeStamp) return;
 
-        const letsGoWindowStart = startTimeStamp;
+        const letsGoWindowStart = this.autoExpand ? startTimeStamp - 5 * 60_000 : startTimeStamp;
         if (now < letsGoWindowStart) {
           upcomingEvents.push({ time: letsGoWindowStart, type: 'letsgo' });
         }
@@ -1467,9 +1480,16 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   async viewPlanner(source: any, entry: any, event: Event): Promise<void> {
     event.stopPropagation();
     if (Date.now() - this.plannerHeldAt < 1000) return;
-    await this.router.navigate(['/authed/activity-detail', source.id], {
+    // Match the calendar flow: keep the loaded schedule and clicked entry in
+    // navigation state instead of passing through the legacy redirect.
+    await this.router.navigate(['/activity-detail', source.id], {
       queryParams: { type: 'timetable' },
-      state: { habit: { ...source, type: 'timetable' }, plannerEntry: entry, type: 'timetable' }
+      state: {
+        habit: { ...source, type: 'timetable' },
+        plannerEntry: entry,
+        type: 'timetable',
+        selectedDate: this.selectedDate || this.formatDateForApi(new Date())
+      }
     });
   }
 
@@ -1526,7 +1546,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       : type === 'event'
       ? this.eventApi.deleteEvent(id)
       : type === 'timetable'
-      ? this.calendarApi.deleteTimetableEntry(id)
+      ? (Array.isArray(item.activities)
+        ? this.calendarApi.deleteCalendarEvent(String(item.id ?? item.calendarId))
+        : this.calendarApi.deleteTimetableEntry(id))
       : this.habitApi.deleteHabit(id);
 
     request$.subscribe({
@@ -1664,12 +1686,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   private openActivityDetail(fromLongPress: boolean): void {
-    if (!this.habit?.id) {
+    const itemId = Number(this.habit?.id ?? (this.habit as any)?.taskId ?? (this.habit as any)?.habitId);
+    if (!Number.isFinite(itemId) || itemId <= 0) {
       return;
     }
 
-    const itemType = this.habit.type || 'habits';
-    const itemId = Number(this.habit.id);
+    const rawType = String(this.habit?.type || 'habits').toLowerCase();
+    const itemType = rawType.includes('task') ? 'tasks' : rawType === 'timetable' ? 'timetable' : 'habits';
 
     // For timetable, open activity-input in edit mode
     if (itemType === 'timetable') {
@@ -1688,14 +1711,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     }
 
     // For habits and tasks, navigate to activity-detail page with date information
-    this.router.navigate(['/authed/activity-detail', itemId], {
+    this.router.navigate(['/activity-detail', itemId], {
       state: { 
-        habit: this.habit, 
+        habit: { ...this.habit, id: itemId, type: itemType },
         type: itemType, 
         fromLongPress,
         selectedDate: dateForApi 
       },
-      queryParams: { type: itemType }
+      queryParams: { type: itemType, date: dateForApi }
     }).catch(err => {
       console.error('Navigation to habit detail failed:', err);
     });
@@ -2013,6 +2036,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         }).length;
         
         this.tasks = rawTasks
+          .filter((task: any) => !(task.today === true && task.expired === true))
           .map((task: any) => {
             // Combine date and time to create proper timestamps
             // Always recalculate from date+time to ensure accuracy
@@ -2136,6 +2160,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         }).length;
 
         this.tasks = (rawTasks || [])
+          .filter((task: any) => !(task.today === true && task.expired === true))
           .map((task: any) => {
             const startTimeStr = task.startTime || '00:00:00';
             const endTimeStr = task.endTime || '23:59:59';

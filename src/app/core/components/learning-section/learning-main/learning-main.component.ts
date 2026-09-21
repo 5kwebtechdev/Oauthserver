@@ -423,6 +423,18 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     return 'Assign';
   }
 
+  /** Parents may assign quizzes and puzzles, but must never start them themselves. */
+  isParentChallenge(item: LearningCardData): boolean {
+    return item.type === 'quiz' || item.type === 'puzzle';
+  }
+
+  canShowParentLearningAction(item: LearningCardData): boolean {
+    if (this.isParentChallenge(item)) {
+      return !this.isParentItemAssigned(item) && this.getParentItemStatus(item) !== 'completed';
+    }
+    return this.getParentItemStatus(item) === 'completed' || !this.isParentItemAssigned(item);
+  }
+
   /** The "easy" green badge styling should also cover Beginner-level items. */
   isBeginnerDifficulty(difficulty: string): boolean {
     const normalized = (difficulty || '').toLowerCase();
@@ -480,6 +492,15 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
 
   /** "Assign" must remain in the parent flow and never open a child course. */
   onParentLearningAction(item: LearningCardData): void {
+    // This is a hard role boundary, not only a visual restriction: a parent
+    // can assign a challenge to the selected child but cannot launch it.
+    if (this.isParentChallenge(item)) {
+      if (!this.isParentItemAssigned(item) && this.getParentItemStatus(item) !== 'completed') {
+        this.assignChallengeToSelectedChild(item);
+      }
+      return;
+    }
+
     if (item.type === 'masterclass') {
       if (!this.isParentItemAssigned(item) && this.getParentItemStatus(item) !== 'completed') {
         this.assignCourseToSelectedChild(item);
@@ -488,9 +509,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
 
     if (!this.isParentItemAssigned(item) && this.getParentItemStatus(item) !== 'completed') {
-      if (item.type === 'quiz' || item.type === 'puzzle') {
-        this.assignChallengeToSelectedChild(item);
-      } else if (item.type === 'article') {
+      if (item.type === 'article') {
         this.assignArticleToSelectedChild(item);
       }
       return;
@@ -639,6 +658,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   openParentLearningItem(item: LearningCardData): void {
+    // Guard direct/programmatic calls as well as card clicks. Challenge play
+    // belongs to the child's Learning experience, never the parent view.
+    if (this.isParentChallenge(item)) return;
+
     const extras = {
       state: {
         source: '/authed/content?view=parent',
@@ -650,7 +673,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       return;
     }
     if (item.type === 'article') {
-      void this.router.navigate(['/authed/content/article', item.id], extras);
+      void this.router.navigate(['/content/article', item.id], extras);
       return;
     }
     void this.router.navigate(['/authed/content/description', item.id], extras);
@@ -663,7 +686,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       return;
     }
     if (item.type === 'article') {
-      void this.router.navigate(['/authed/content/article', item.id], extras);
+      void this.router.navigate(['/content/article', item.id], extras);
       return;
     }
     void this.router.navigate(['/authed/content/questions', item.id], extras);

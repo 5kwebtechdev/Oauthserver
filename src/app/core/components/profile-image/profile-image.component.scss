@@ -19,6 +19,11 @@ img {
 }
 
 .profile-image-placeholder {
-  /* Deliberately no text or icon: missing photos should not reveal initials. */
+  align-items: center;
+  justify-content: center;
   background: #e8f1f5;
+  color: #526b98;
+  font-size: clamp(20px, 35%, 42px);
+  font-weight: 800;
+  line-height: 1;
 }

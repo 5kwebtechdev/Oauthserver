@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { getProfileImageInitials } from '../../utils/profile-image.util';
 
 @Component({
   selector: 'app-profile-image',
@@ -22,6 +23,10 @@ export class ProfileImageComponent implements OnChanges {
     // existed. Treat that asset as missing so the neutral empty fallback is shown.
     const isGenericPlaceholder = /(?:Image-Tutor|Image-Academy|Image-Counsel(?:or|ler)|Image-Sports|Image-Book|Image-Station(?:e|ar)y|default-avatar|placeholder-avatar|category-counsel(?:ors?|lers?)|category-sports|category-book|category-station(?:e|ar)y|book-store|station(?:e|ar)y(?:-shop)?)[^/]*\.(?:png|jpe?g|webp|svg)(?:$|[?#])/i.test(source);
     return !!source && !isGenericPlaceholder && !this.imageFailed;
+  }
+
+  get initials(): string {
+    return getProfileImageInitials(this.name);
   }
 
   ngOnChanges(): void {

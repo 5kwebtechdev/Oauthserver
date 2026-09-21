@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, ViewWillEnter } from '@ionic/angular';
 import { RouterModule, Router } from '@angular/router';
@@ -63,11 +64,23 @@ export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
       // ignore storage errors
     }
     // subscribe to updates so the list refreshes when new notes are added
-    this.notesService.notes$.subscribe((list) => {
+    this.notesService.sessionReset$.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.notes = [];
+      this.drafts = [];
+      this.noteText = '';
+      this.noteTitle = '';
+      this.tags = [];
+      this.newTagName = '';
+      this.swipedNoteId = null;
+      this.removingIds.clear();
+      this.loadError = null;
+      this.loading = false;
+    });
+    this.notesService.notes$.pipe(takeUntilDestroyed()).subscribe((list) => {
       this.notes = list;
     });
     // refresh drafts when navigation returns to this page
-    this.router.events.subscribe(() => {
+    this.router.events.pipe(takeUntilDestroyed()).subscribe(() => {
       try {
         const raw = sessionStorage.getItem('notes-drafts');
         if (raw) {

@@ -193,12 +193,12 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
   }
 
   onAddClick(): void {
-    if (!this.hasEntryForToday) void this.router.navigate(['/authed/journal-input']);
+    if (!this.hasEntryForToday) void this.router.navigate(['/journal-input']);
   }
 
   onEditEntry(entry: JournalOutputEntry): void {
     if (entry.id == null) return;
-    void this.router.navigate(['/authed/journal-input'], { state: { journalEntry: entry } });
+    void this.router.navigate(['/journal-input'], { state: { journalEntry: entry } });
   }
 
   confirmDelete(entry: JournalOutputEntry): void {

@@ -149,9 +149,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       // Always pop the stack — never push a new route.
       // Using navigateByUrl(originUrl) was pushing Detail back on top of Input,
       // causing a back-button loop: Detail → Input → Detail → Input …
-      this.navigation.back();
+      this.returnToPreviousPage();
     }).catch(() => {
-      this.navigation.back();
+      this.returnToPreviousPage();
     });
   }
 
@@ -911,13 +911,16 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       // doesn't carry the Private-toggle state, so `h.isPrivate` is always undefined.
       // Use it only as a transient fallback while we fetch the authoritative value.
       this.isPrivate = !!h.isPrivate;
-      if (this.editingId && this.currentActive === 'habits') {
+      if (this.editingId && (this.currentActive === 'habits' || this.currentActive === 'tasks')) {
         const dateForLookup = stateSelectedDate || this.formatDateStr(new Date());
-        this.habitApi.getHabitByIdWithDate(Number(this.editingId), dateForLookup).subscribe({
+        const detailRequest = this.currentActive === 'tasks'
+          ? this.taskApi.getTaskByIdWithDate(Number(this.editingId), dateForLookup)
+          : this.habitApi.getHabitByIdWithDate(Number(this.editingId), dateForLookup);
+        detailRequest.subscribe({
           next: (res: any) => {
             const detail = res?.data && typeof res.data === 'object' ? res.data : res;
             // isToggleOn mirrors isPrivateToChild exactly: true = toggle ON/private.
-            this.isPrivate = !!res?.isToggleOn;
+            if (this.currentActive === 'habits') this.isPrivate = !!detail?.isToggleOn;
             if (res && ('reminderOffset' in res || 'reminder_offset' in res)) {
               this.reminderOffset = this.normalizeReminderOffset(res.reminderOffset ?? res.reminder_offset);
             }
@@ -929,7 +932,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
             const categoryId = detail?.categoryId ?? detail?.tagId ?? detail?.tag_id ?? categoryObject?.id ?? detail?.tag?.id;
             const categoryValue = categoryObject?.name ?? categoryObject?.value ?? categoryObject?.title
               ?? (typeof rawCategory === 'string' ? rawCategory : undefined)
-              ?? detail?.tag?.name;
+              ?? detail?.tag?.name ?? detail?.tag?.value ?? detail?.tag?.title
+              ?? (typeof detail?.tag === 'string' ? detail.tag : undefined);
             const responseTags = Array.isArray(detail?.tags) ? detail.tags : [];
             if (categoryId != null || categoryValue) {
               this.selectedTags = [{ key: String(categoryId ?? categoryValue), value: String(categoryValue ?? categoryId) }];
@@ -1016,7 +1020,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       const categoryValue = rawCategory && typeof rawCategory === 'object'
         ? (rawCategory.name ?? rawCategory.value ?? rawCategory.title)
         : rawCategory;
-      const categoryId = h.categoryId ?? h.tagId
+      const categoryId = h.categoryId ?? h.tagId ?? h.tag_id
         ?? (rawCategory && typeof rawCategory === 'object' ? rawCategory.id : undefined);
       if (h.tag && typeof h.tag === 'object' && (h.tag.id || h.tag.name || h.tag.value)) {
         this.selectedTags = [{ key: String(h.tag.id ?? h.tag.name ?? h.tag.value), value: h.tag.name ?? h.tag.value ?? h.tag.title }];
@@ -1033,9 +1037,13 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
           // Keep the name as the key until the API options resolve it to an ID.
           this.selectedTags = h.tags.map((t: string) => ({ key: String(t), value: t }));
         } else if (typeof first === 'object') {
-          this.selectedTags = h.tags.map((t: any, idx: number) => (t.key && (t.value || t.name || t.title)) ? { key: String(t.key), value: t.value || t.name || t.title, type: t.type } : { key: String(idx), value: t.value || t.name || t.title || JSON.stringify(t) });
+          this.selectedTags = h.tags.map((t: any) => ({
+            key: String(t.id ?? t.key ?? t.name ?? t.value ?? t.title ?? ''),
+            value: t.value ?? t.name ?? t.title ?? '', type: t.type
+          }));
         }
       }
+      this.syncSelectedTagsToComponent();
       // Pre-select the tag in the child component by ID once tagOptions are loaded
       try {
         if (this.tagsComponent && Array.isArray(this.selectedTags) && this.selectedTags.length) {
@@ -1807,29 +1815,25 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         return;
       }
 
-      // Not in a modal - always pop the stack, never push.
-      // If we came from activity-detail (editing), go back 2 levels to skip
-      // the stale detail page and land directly on the list.
-      const fromDetail = this.originUrl && String(this.originUrl).includes('/authed/activity-detail');
-      try {
-        const prev = this.navigation.getPreviousUrl && this.navigation.getPreviousUrl();
-        const prevIsDetail = prev && String(prev).includes('/authed/activity-detail');
-        if (fromDetail || prevIsDetail) {
-          this.navigation.backN(2);
-        } else {
-          this.navigation.back();
-        }
-      } catch (e) {
-        this.navigation.back();
-      }
+      this.returnToPreviousPage();
     }).catch(() => {
-      // Modal controller check failed, try navigation fallback
-      if (this.originUrl) {
-        this.router.navigateByUrl(this.originUrl).catch(() => { this.navigation.back(); });
-      } else {
-        this.navigation.back();
-      }
+      this.returnToPreviousPage();
     });
+  }
+
+  private returnToPreviousPage(): void {
+    // NavController.navigateBack changes the Ionic stack but can push a new
+    // browser entry. Pop the actual entry so Detail's Back cannot reopen Input.
+    const previous = this.originUrl || this.navigation.getPreviousUrl();
+    if (previous && window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    // Directly opened forms have no in-app page to return to.
+    this.router.navigate(['/activity-page'], {
+      queryParams: { tab: this.currentActive || 'habits' },
+      replaceUrl: true
+    }).catch(() => {});
   }
 
   // selectCoin / isCoinSelected removed
@@ -2280,24 +2284,16 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     }
 
     if (this.currentActive === 'timetable') {
-      this.calendarApi.deleteTimetableEntry(backendId).subscribe({
+      this.calendarApi.deleteCalendarEvent(backendId).subscribe({
         next: () => {
           console.log('Calendar event deleted successfully');
+          this.habitService.notifyPlannerDeleted();
           finalizeLocalDelete(this.editingId);
           this.deleting = false;
         },
         error: (err) => {
-          const isActualError = err?.status && err.status >= 400;
-
-          if (!isActualError) {
-            console.log('Treating as successful deletion (backend quirk)');
-            finalizeLocalDelete(this.editingId);
-            this.deleting = false;
-            return;
-          }
-
           console.error('Failed to delete timetable entry on server', err);
-          alert('Failed to delete timetable entry on server. Please try again.');
+          this.toastService.error('Could not delete this planner. Please try again.');
           this.deleting = false;
         }
       });

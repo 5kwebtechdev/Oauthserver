@@ -2,6 +2,8 @@ import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { FirebaseMessaging, Importance, Visibility } from '@capacitor-firebase/messaging';
 import { PushNotificationApi } from '../api/push-notification.api';
 import { CustomToastService } from './custom-toast.service';
@@ -13,6 +15,7 @@ const ANDROID_NOTIFICATION_CHANNEL_ID = 'superme_ping_v1';
 @Injectable({ providedIn: 'root' })
 export class PushNotificationService {
   private listenersReady = false;
+  private localNotificationId = Date.now() % 2147483647;
   private currentToken: string | null = null;
 
   constructor(
@@ -44,6 +47,7 @@ export class PushNotificationService {
         this.setupForegroundListener();
         this.setupTokenRefreshListener();
         this.setupNotificationTapListener();
+        this.setupLocalNotificationTapListener();
         this.listenersReady = true;
       }
 
@@ -143,9 +147,8 @@ export class PushNotificationService {
 
     try {
       await FirebaseMessaging.createChannel({
-        // Android notification-channel sound settings cannot be changed after
-        // a channel has been created on a device. Use a versioned channel ID
-        // so existing installations migrate from the old silent channel.
+        // Match the backend and manifest. Existing channel sound settings
+        // cannot be changed by recreating the same channel ID.
         id: ANDROID_NOTIFICATION_CHANNEL_ID,
         name: 'SuperMeApp',
         description: 'SuperMeApp notifications',
@@ -156,6 +159,12 @@ export class PushNotificationService {
         lights: true,
         lightColor: '#EE6621'
       });
+      const { channels } = await FirebaseMessaging.listChannels();
+      console.log('[FCM] Installed Android channels:', JSON.stringify(channels, null, 2));
+      const channel = channels.find(item => item.id === ANDROID_NOTIFICATION_CHANNEL_ID);
+      if (channel && (!channel.sound || (channel.importance !== undefined && channel.importance < Importance.Default))) {
+        console.warn('[FCM] Android channel is silent or low importance. Check this channel in Android notification settings.');
+      }
     } catch (error) {
       console.warn('[FCM] Default notification channel setup failed:', error);
     }
@@ -208,6 +217,7 @@ export class PushNotificationService {
         // the resolved screen just as a background tap would.
         const message = [title, body].filter(Boolean).join('\n') || 'New notification';
         this.toastService.show(message, 'info', 6000);
+        void this.showAndroidForegroundNotification(title, body, data);
 
         // Also navigate immediately for high-priority foreground actions
         // (only if the app is open and the user is already authenticated).
@@ -218,6 +228,45 @@ export class PushNotificationService {
         }
       });
     }).catch(err => console.warn('[FCM] foreground listener error:', err));
+  }
+
+  private async showAndroidForegroundNotification(
+    title: string | undefined,
+    body: string | undefined,
+    data: Record<string, any>
+  ): Promise<void> {
+    if (Capacitor.getPlatform() !== 'android') return;
+    try {
+      // Background notification messages are already displayed by FCM.
+      const { isActive } = await App.getState();
+      if (!isActive) return;
+      const permission = await LocalNotifications.checkPermissions();
+      if (permission.display !== 'granted') return;
+      await this.ensureDefaultAndroidChannel();
+      this.localNotificationId = (this.localNotificationId % 2147483646) + 1;
+      await LocalNotifications.schedule({
+        notifications: [{
+          id: this.localNotificationId,
+          title: title || 'SuperMe',
+          body: body || 'New notification',
+          channelId: ANDROID_NOTIFICATION_CHANNEL_ID,
+          sound: 'superme_ping.mp3',
+          smallIcon: 'ic_stat_notification',
+          iconColor: '#EE6621',
+          extra: data
+        }]
+      });
+    } catch (error) {
+      console.warn('[FCM] Foreground Android notification failed:', error);
+    }
+  }
+
+  private setupLocalNotificationTapListener(): void {
+    if (Capacitor.getPlatform() !== 'android') return;
+    LocalNotifications.addListener('localNotificationActionPerformed', event => {
+      const data: Record<string, any> = event.notification.extra ?? {};
+      this.zone.run(() => this.handleNavigation(data));
+    }).catch(error => console.warn('[FCM] Local notification tap listener failed:', error));
   }
 
   private setupTokenRefreshListener(): void {

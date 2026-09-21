@@ -14,6 +14,13 @@ import { PetMood } from '../../superme-pet/superme-pet.component';
 import { environment } from 'src/environments/environment';
 import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
 
+interface ResultNavigationState {
+  submissionResult?: ChallengeSubmissionResponse | Record<string, unknown>;
+  challenge?: Challenge;
+  timeTaken?: number;
+  source?: string;
+}
+
 @Component({
   selector: 'app-result-page',
   standalone: true,
@@ -29,6 +36,9 @@ import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
   styleUrls: ['./result-page.component.scss']
 })
 export class ResultPageComponent implements OnInit, OnDestroy {
+  private readonly resultStorageKey = 'superme.challenge-result';
+  private returnUrl = '/authed/content';
+
   // Keep result rewards aligned with the current Home/Insights icon set.
   // The neutral coin/trophy artwork is legacy and no longer matches the app.
   readonly rewardCoinIcon = 'assets/icons/child-home-coin-figma.webp';
@@ -54,6 +64,8 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   earnedNewBadge = false;
   newlyEarnedBadges: any[] = [];
   badgeCelebrationMessage = '';
+  challengeCompleted = false;
+  hasSubmissionResult = false;
 
   private backButtonSub?: Subscription;
 
@@ -65,16 +77,20 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   ) {
     // Get data from router state
     const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras?.state as {
-      submissionResult?: ChallengeSubmissionResponse;
-      challenge?: Challenge;
-      timeTaken?: number;
-    };
+    // `getCurrentNavigation()` can be unavailable by the time a lazy-loaded
+    // result route is constructed. Recover the same state from browser
+    // history, then session storage as a final WebView-safe fallback.
+    const state = this.getResultNavigationState(navigation?.extras?.state)
+      || this.getResultNavigationState(history.state)
+      || this.getStoredResultNavigationState();
 
     if (state?.submissionResult) {
-      this.submissionResult = state.submissionResult;
+      this.submissionResult = this.unwrapSubmissionResult(state.submissionResult);
       this.challenge = state.challenge || null;
       this.timeTaken = state.timeTaken || 0;
+      if (typeof state.source === 'string' && state.source.startsWith('/')) {
+        this.returnUrl = state.source;
+      }
     }
   }
 
@@ -83,21 +99,7 @@ export class ResultPageComponent implements OnInit, OnDestroy {
     // (covers cases where previous page left a loader token active)
     try { this.loadingService.reset(); } catch (e) { }
     if (this.submissionResult) {
-      // Map submission result to display properties
-      this.totalQuestions = this.submissionResult.totalQuestions;
-      this.correctAnswers = this.submissionResult.correctCount;
-      this.scorePercentage = this.submissionResult.percentageScore;
-      this.coinsEarned = this.submissionResult.coinsEarned;
-      this.trophiesEarned = this.submissionResult.trophiesEarned;
-      this.totalCoins = this.submissionResult.totalCoins;
-      this.totalTrophies = this.submissionResult.totalTrophies;
-      this.celebrationText = this.submissionResult.celebrationText;
-      this.overallFeedback = this.submissionResult.overallFeedback;
-      this.firstCompletion = this.submissionResult.firstCompletion;
-      this.earnedNewBadge = this.submissionResult.earnedNewBadge;
-      this.newlyEarnedBadges = this.submissionResult.newlyEarnedBadges || [];
-      this.badgeCelebrationMessage = this.submissionResult.badgeCelebrationMessage || '';
-      this.badges = Array.isArray(this.submissionResult.badges) ? this.submissionResult.badges : [];
+      this.applySubmissionResult(this.submissionResult);
       console.log('[ResultPage] badges from API:', JSON.stringify(this.badges, null, 2));
     } else {
       console.warn('No submission result found in router state');
@@ -133,13 +135,73 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   }
 
   private returnToUpdatedLearningList(): void {
+    this.clearStoredResult();
     const challengeId = Number(this.challenge?.challengeId ?? (this.challenge as any)?.id);
-    this.router.navigateByUrl('/authed/content', {
+    this.router.navigateByUrl(this.returnUrl, {
       replaceUrl: true,
       state: Number.isFinite(challengeId) && challengeId > 0
         ? { completedChallengeId: challengeId }
         : undefined
     });
+  }
+
+  private getResultNavigationState(value: unknown): ResultNavigationState | null {
+    if (!value || typeof value !== 'object') return null;
+    const state = value as ResultNavigationState;
+    return state.submissionResult ? state : null;
+  }
+
+  private getStoredResultNavigationState(): ResultNavigationState | null {
+    try {
+      const raw = sessionStorage.getItem(this.resultStorageKey);
+      return raw ? this.getResultNavigationState(JSON.parse(raw)) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private clearStoredResult(): void {
+    try {
+      sessionStorage.removeItem(this.resultStorageKey);
+    } catch {
+      // Storage can be disabled in private browsing; navigation still works.
+    }
+  }
+
+  private unwrapSubmissionResult(value: ChallengeSubmissionResponse | Record<string, unknown>): ChallengeSubmissionResponse {
+    const raw = value as Record<string, unknown>;
+    const nested = raw['data'] ?? raw['result'] ?? raw['payload'];
+    return (nested && typeof nested === 'object' ? nested : raw) as ChallengeSubmissionResponse;
+  }
+
+  private applySubmissionResult(result: ChallengeSubmissionResponse): void {
+    const raw = result as unknown as Record<string, unknown>;
+    const numberValue = (...keys: string[]): number => {
+      for (const key of keys) {
+        const value = Number(raw[key]);
+        if (Number.isFinite(value)) return value;
+      }
+      return 0;
+    };
+
+    this.hasSubmissionResult = true;
+    this.totalQuestions = numberValue('totalQuestions', 'total_questions');
+    this.correctAnswers = numberValue('correctCount', 'correct_count');
+    this.scorePercentage = numberValue('percentageScore', 'percentage_score');
+    this.coinsEarned = numberValue('coinsEarned', 'coins_earned');
+    this.trophiesEarned = numberValue('trophiesEarned', 'trophies_earned');
+    this.totalCoins = numberValue('totalCoins', 'total_coins');
+    this.totalTrophies = numberValue('totalTrophies', 'total_trophies');
+    this.celebrationText = String(raw['celebrationText'] ?? raw['celebration_text'] ?? '');
+    this.overallFeedback = String(raw['overallFeedback'] ?? raw['overall_feedback'] ?? '');
+    this.firstCompletion = Boolean(raw['firstCompletion'] ?? raw['first_completion']);
+    this.challengeCompleted = Boolean(raw['challengeCompleted'] ?? raw['challenge_completed']);
+    this.earnedNewBadge = Boolean(raw['earnedNewBadge'] ?? raw['earned_new_badge']);
+    this.newlyEarnedBadges = Array.isArray(raw['newlyEarnedBadges'])
+      ? raw['newlyEarnedBadges'] as any[]
+      : [];
+    this.badgeCelebrationMessage = String(raw['badgeCelebrationMessage'] ?? raw['badge_celebration_message'] ?? '');
+    this.badges = Array.isArray(raw['badges']) ? raw['badges'] as any[] : [];
   }
 
 

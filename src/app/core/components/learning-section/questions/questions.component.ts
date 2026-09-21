@@ -201,7 +201,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         const ownProfile = nav?.extras?.state?.['ownProfile'] ?? (history as any)?.state?.['ownProfile'];
         const stateUserId = nav?.extras?.state?.['forUserId'] ?? (history as any)?.state?.['forUserId'];
         this.profileUserId = ownProfile === true && stateUserId != null ? stateUserId : null;
-        if (typeof source === 'string' && source.startsWith('/authed/')) {
+        if (typeof source === 'string' && source.startsWith('/')) {
             this.returnUrl = source;
         }
 
@@ -699,16 +699,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             next: (response) => {
                 console.log('Submission successful:', response);
                 this.petAgeService.recordActivity(this.challenge?.category === 'QUIZ' ? 'quizzes' : 'puzzles');
-                // Navigate to result page with response data
-                this.router.navigate(['/authed/content/result'], {
-                    replaceUrl: true,
-                    state: {
-                        submissionResult: response,
-                        challenge: this.challenge,
-                        timeTaken: this.totalTimeSeconds - this.remainingTimeSeconds
-                    }
-                });
-                this.isSubmitting = false;
+                this.navigateToResult(response);
             },
             error: (error) => {
                 console.error('Submission failed:', error);
@@ -724,15 +715,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                             errorMessage = error.error.message;
                         } else if (error.error.celebrationText) {
                             // This looks like a successful response despite the 400 status
-                            // Navigate to result page with the error response data
-                            this.router.navigate(['/authed/content/result'], {
-                                replaceUrl: true,
-                                state: {
-                                    submissionResult: error.error,
-                                    challenge: this.challenge,
-                                    timeTaken: this.totalTimeSeconds - this.remainingTimeSeconds
-                                }
-                            });
+                            this.navigateToResult(error.error);
                             return;
                         }
                     } else {
@@ -741,15 +724,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                 } else if (error.status === 409) {
                     // Handle the case where challenge is already completed
                     if (error.error && error.error.celebrationText) {
-                        // Navigate to result page with the error response data
-                        this.router.navigate(['/authed/content/result'], {
-                            replaceUrl: true,
-                            state: {
-                                submissionResult: error.error,
-                                challenge: this.challenge,
-                                timeTaken: this.totalTimeSeconds - this.remainingTimeSeconds
-                            }
-                        });
+                        this.navigateToResult(error.error);
                         return;
                     }
                     errorMessage = 'Challenge already completed!';
@@ -760,6 +735,38 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                 // Show error popup or navigate anyway with local data
                 alert(errorMessage);
             }
+        });
+    }
+
+    /**
+     * Keep the completed challenge result available while the lazy result page
+     * initializes. Some browser/WebView navigations expose no
+     * `getCurrentNavigation()` state to that component, so router state alone
+     * would incorrectly render the default 0/0 result.
+     */
+    private navigateToResult(submissionResult: unknown): void {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('superme:learning-completed', {
+                detail: { id: this.challenge?.challengeId, type: 'challenge' }
+            }));
+        }
+        const resultState = {
+            submissionResult,
+            challenge: this.challenge,
+            timeTaken: this.totalTimeSeconds - this.remainingTimeSeconds,
+            source: this.returnUrl
+        };
+
+        try {
+            sessionStorage.setItem('superme.challenge-result', JSON.stringify(resultState));
+        } catch {
+            // Router/history state remains the primary transport if storage is unavailable.
+        }
+
+        this.isSubmitting = false;
+        this.router.navigate(['/authed/content/result'], {
+            replaceUrl: true,
+            state: resultState
         });
     }
 

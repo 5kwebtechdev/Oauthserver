@@ -45,7 +45,7 @@ export class CalendarApi {
     }
 
     deleteCalendarEvent(eventId: string): Observable<string> {
-        const url = `${this.base}/planner-data/timetable-entry/${eventId}`;
+        const url = `${this.base}/calendar/delete/${eventId}`;
         return this.http.delete(url, { headers: this.headers(), responseType: 'text' });
     }
 

@@ -51,7 +51,7 @@ export class QuickAccessSectionComponent implements OnInit, OnDestroy {
         next: response => {
           this.journalAvailable = response?.allowForTheDay === true;
           if (response?.allowForTheDay) {
-            this.router.navigate(['/authed/journal-input']).catch(() => { });
+            this.router.navigate(['/journal-input']).catch(() => { });
             return;
           }
           this.showJournalAlreadyAddedMessage();
@@ -61,7 +61,7 @@ export class QuickAccessSectionComponent implements OnInit, OnDestroy {
         // final server-side safeguard.
         error: () => {
           this.journalAvailable = true;
-          this.router.navigate(['/authed/journal-input']).catch(() => { });
+          this.router.navigate(['/journal-input']).catch(() => { });
         }
       });
   }

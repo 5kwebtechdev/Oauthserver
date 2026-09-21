@@ -71,6 +71,7 @@
         <span aria-hidden="true">🗑</span><em>Delete</em>
       </button>
       <article class="glance-planner-card" [style.--planner-color]="card.color"
+        long-press [delay]="700" (press)="openGlancePlannerEditor(card.source, card.entries[0], $event)"
         [style.transform]="'translateX(-' + getActionSwipeOffset('planner-' + card.id) + 'px)'">
       <button type="button" class="glance-planner-card__header"
         [attr.aria-expanded]="isGlancePlannerExpanded(card, i)" (click)="onPlannerCardTap(card, i)">
@@ -94,7 +95,6 @@
       <div class="glance-planner-card__entries" *ngIf="isGlancePlannerExpanded(card, i)">
         <div class="glance-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackGlancePlannerEntry"
           role="button" tabindex="0" [attr.aria-label]="'Edit ' + getGlancePlannerTitle(entry)"
-          long-press [delay]="1200" (press)="openGlancePlannerEditor(card.source, entry, $event)"
           (click)="viewPlanner(card.source, entry, $event)"
           (keydown.enter)="viewPlanner(card.source, entry, $event)"
           (keydown.space)="$event.preventDefault(); viewPlanner(card.source, entry, $event)"
@@ -242,7 +242,7 @@
   <!-- Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'habits' && hasHabits">
-    <activity-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem" [expanded]="true"
+    <activity-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem" [autoExpand]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
     </activity-card>
@@ -251,7 +251,7 @@
   <!-- Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'tasks' && hasTasks">
-    <activity-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem" [expanded]="true"
+    <activity-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem" [autoExpand]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
     </activity-card>
@@ -273,7 +273,7 @@
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
-      [expanded]="item.type === 'tasks' || item.type === 'habits'" mode="single">
+      [autoExpand]="item.type === 'tasks' || item.type === 'habits'" mode="single">
     </activity-card>
   </div>
 
@@ -426,7 +426,7 @@
   <!-- Recent Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'habits' && hasHabits">
-    <activity-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem" [expanded]="true"
+    <activity-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem" [autoExpand]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
     </activity-card>
@@ -435,7 +435,7 @@
   <!-- Recent Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'tasks' && hasTasks">
-    <activity-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem" [expanded]="true"
+    <activity-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem" [autoExpand]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
     </activity-card>
@@ -457,7 +457,7 @@
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
-      [expanded]="item.type === 'tasks' || item.type === 'habits'" mode="single">
+      [autoExpand]="item.type === 'tasks' || item.type === 'habits'" mode="single">
     </activity-card>
   </div>
 
@@ -509,7 +509,7 @@
     (keydown.space)="openCardContent($event)"
     [style.transform]="'translateX(-' + swipeOffset + 'px)'"
     [style.transition]="swipeTracking ? 'none' : 'transform 0.25s ease, translate 180ms ease, scale 180ms ease, box-shadow 180ms ease, filter 180ms ease'"
-    [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime, 'task': habit?.type === 'tasks', 'timetable': habit?.type === 'timetable'}">
+    [ngClass]="{'expanded': isCardExpanded, 'isRunningLate': isRunningLate,'missedTime': missedTime, 'task': habit?.type === 'tasks', 'timetable': habit?.type === 'timetable'}">
     <div *ngIf="habit?.type === 'timetable'" class="planner-home-card" long-press
       [delay]="1500" (press)="onLongPress()">
       <span class="planner-home-card__icon" aria-hidden="true">
@@ -556,24 +556,10 @@
       </div>
     </div>
     <!-- Expandable content wrapper with animation (timetable entries have no streak/coin/complete actions) -->
-    <div class="habit-expandable-content" [ngClass]="{'expanded': expanded}" *ngIf="habit?.type !== 'timetable'">
-      <section class="task-at-a-glance" *ngIf="habit?.type === 'tasks' || habit?.type === 'habits'"
+    <div class="habit-expandable-content" [ngClass]="{'expanded': isCardExpanded}" *ngIf="habit?.type !== 'timetable'">
+      <section class="task-at-a-glance" *ngIf="(habit?.type === 'tasks' || habit?.type === 'habits') && getTaskNote(habit)"
         [class.task-at-a-glance--habit]="habit?.type === 'habits'"
         [attr.aria-label]="habit?.type === 'tasks' ? 'Task details' : 'Habit details'">
-        <div class="task-at-a-glance__dates">
-          <span>
-            <small>Start</small>
-            <strong>{{ getTaskCardDate(habit?.startDate, habit?.startTimeStamp) }}</strong>
-          </span>
-          <span>
-            <small>{{ habit?.type === 'tasks' ? 'Due' : 'End' }}</small>
-            <strong>{{ getTaskCardDate(habit?.endDate, habit?.endTimeStamp) }}</strong>
-          </span>
-          <span class="task-at-a-glance__countdown">
-            <small>Time left</small>
-            <strong>{{ habit?.type === 'tasks' ? getTaskTimeLeft(habit) : getHabitTimeLeft(habit) }}</strong>
-          </span>
-        </div>
         <p class="task-at-a-glance__note" *ngIf="getTaskNote(habit) as taskNote">
           <span aria-hidden="true">📝</span>
           <span>{{ taskNote }}</span>
@@ -594,7 +580,7 @@
               <p class="score p-l-0">{{getCoinReward()}}</p>
             </div>
           </div>
-          <div class="d-flex footer-cta" *ngIf="getStatus() !== 'completed' && !isParent">
+          <div class="d-flex footer-cta" *ngIf="getStatus() !== 'completed' && getStatus() !== 'skipped' && !isParent">
             <!-- Show only while the current time is inside the scheduled activity window. -->
             <ng-container *ngIf="getStatus() !== 'ongoing' && isCurrentDateView && isLetsGoVisible()">
               <superme-button

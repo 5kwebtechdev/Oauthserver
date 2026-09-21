@@ -100,10 +100,10 @@ export class HabitApi {
         return this.taskApi.getCalendarByDate(date, force).pipe(
             map((resp: any) => {
                 if (!resp) return [];
-                // The calendar API includes a `today` flag per habit — only
-                // `today === false` should hide it from Home's "Today at a Glance";
-                // missing the field keeps older responses working as before.
-                const isToday = (i: any) => i?.today !== false;
+                // Home excludes other dates and today's expired habits.
+                // Missing flags keep older responses working as before.
+                const isToday = (i: any) => i?.today !== false
+                    && !(i?.today === true && i?.expired === true);
                 if (Array.isArray(resp.habits)) return resp.habits.filter(isToday);
                 if (Array.isArray(resp.data)) return resp.data.filter((i: any) => {
                     const t = (i?.type || '').toString().toLowerCase();

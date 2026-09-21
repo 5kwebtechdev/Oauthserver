@@ -34,7 +34,7 @@ export class LearningArticleCardComponent implements OnChanges {
         if (this.source) state['source'] = this.source;
         const childId = Number(this.forUserId);
         if (Number.isFinite(childId) && childId > 0) state['selectedChildId'] = childId;
-        this.router.navigate(['/authed/content/article', this.item.id], { state });
+        this.router.navigate(['/content/article', this.item.id], { state });
     }
 
     onCardAction(event: Event): void {

@@ -93,7 +93,7 @@ export class EducationMainPageComponent implements OnInit {
             label: 'Academies',
             image: 'assets/figma/parent-eduhub/academies.webp',
             kind: 'route',
-            route: '/authed/academies'
+            route: '/academies'
         }
     ];
 
@@ -286,7 +286,7 @@ export class EducationMainPageComponent implements OnInit {
             // always opens the buyer/seller/listings entry screen, rather than
             // the generic shop listing page.
             if (category.id === 'store-second-hand-books' || category.label.toLowerCase() === 'second-hand books') {
-                void this.router.navigate(['/authed/second-hand-books']);
+                void this.router.navigate(['/second-hand-books']);
                 return;
             }
 

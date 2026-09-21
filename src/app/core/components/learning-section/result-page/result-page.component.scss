@@ -182,6 +182,46 @@ h2{
   font-weight: 600;
 }
 
+.result-details {
+  width: min(100%, 360px);
+  margin: 0 auto 8px;
+  text-align: center;
+}
+
+.completion-message {
+  color: #326d39;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.result-stat {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: #f6fbf7;
+  color: #666;
+  font-family: var(--font-sans);
+  font-size: 11px;
+}
+
+.result-stat strong {
+  color: #282527;
+  font-size: 16px;
+  font-weight: 700;
+}
+
 .section-title {
   color: #282527;
   font-family: var(--font-sans);

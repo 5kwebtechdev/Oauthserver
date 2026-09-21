@@ -2,6 +2,5 @@
   (error)="onImageError()">
 
 <ng-template #imageFallback>
-  <!-- Keep unavailable profile photos visually empty; never expose name initials as a substitute. -->
-  <span class="profile-image-placeholder" role="img" [attr.aria-label]="name ? name + ' profile image unavailable' : 'Profile image unavailable'"></span>
+  <span class="profile-image-placeholder" role="img" [attr.aria-label]="name ? name + ' profile image unavailable' : 'Profile image unavailable'">{{ initials }}</span>
 </ng-template>

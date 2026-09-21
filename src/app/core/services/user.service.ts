@@ -48,6 +48,7 @@ export class UserService {
   private statsSubject = new BehaviorSubject<UserStats | null>(this.getUserStats());
   public stats$: Observable<UserStats | null> = this.statsSubject.asObservable();
   private statsRefresh$: Observable<UserStats | null> | null = null;
+  private statsRevision = 0;
 
   constructor(
     private http: HttpClient,
@@ -158,6 +159,8 @@ export class UserService {
    * Clear user profile (on logout)
    */
   clearUserProfile(): void {
+    this.statsRevision++;
+    this.statsSubject.next(null);
     this.userProfileSubject.next(null);
     try {
       localStorage.removeItem('user_profile');
@@ -201,14 +204,27 @@ export class UserService {
    * website shell both mounting on the same load) ride the same in-flight
    * request instead of firing duplicate HTTP calls.
    */
+  /** Publish the server's balance, never add earned coins to a cached total. */
+  updateCoinBalance(total: unknown): void {
+    if (total == null || total === '' || typeof total === 'boolean') return;
+    const coins = Number(total);
+    if (!Number.isFinite(coins) || coins < 0) return;
+    this.statsRevision++;
+    this.saveUserStats({
+      ...(this.statsSubject.value ?? { coins: 0, streaks: 0, days: 0, badges: 0 }),
+      coins
+    });
+  }
+
   refreshStats(): Observable<UserStats | null> {
     if (this.statsRefresh$) {
       return this.statsRefresh$;
     }
 
+    const revision = this.statsRevision;
     this.statsRefresh$ = this.moodService.getVibesDisplay().pipe(
       tap(data => {
-        if (data && data.length > 0) {
+        if (revision === this.statsRevision && data && data.length > 0) {
           const userStats = data[0];
           const stats: UserStats = {
             coins: userStats.coins || 0,

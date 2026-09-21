@@ -518,7 +518,7 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     } catch {
       // Router state still supports the normal in-app navigation flow.
     }
-    void this.router.navigate(['/app/education/shops', item.id], {
+    void this.router.navigate(['/education/shops', item.id], {
       state: { listing: item, categoryLabel: this.categoryLabel }
     });
   }
