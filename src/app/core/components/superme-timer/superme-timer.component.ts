@@ -1,122 +1,206 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SupermeButtonComponent } from '../superme-button/superme-button.component';
-import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
-import { ModalController, IonicModule } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
+import { Router } from '@angular/router';
+import { App } from '@capacitor/app';
+import { PluginListenerHandle } from '@capacitor/core';
+import { firstValueFrom } from 'rxjs';
+import { HabitApi } from '../../api/habit.api';
+import { TaskApi } from '../../api/task.api';
+import { HabitService } from '../activity-section/habit.service';
+import { AutoAbortService } from '../activity-section/auto-abort.service';
+import { BadgePopupService } from '../../services/badge-popup.service';
+import { PetAgeService } from '../../services/pet-age.service';
+import { CalendarService } from '../../services/calendar.service';
+import { SupermePopupComponent, SupermePopupConfig } from '../superme-popup/superme-popup.component';
+import { timerSnapshot } from './timer-state';
 
 @Component({
-    selector: 'app-superme-timer',
-    templateUrl: './superme-timer.component.html',
-    styleUrls: ['./superme-timer.component.scss'],
-    standalone: true,
-    imports: [IonicModule, CommonModule, SupermeButtonComponent, SupermeNavigatorComponent]
+  selector: 'app-superme-timer', standalone: true,
+  templateUrl: './superme-timer.component.html', styleUrls: ['./superme-timer.component.scss'],
+  imports: [IonicModule, CommonModule, SupermePopupComponent]
 })
 export class SupermeTimerComponent implements OnInit, OnDestroy {
-    // Optional display title (habit / task title)
-    @Input() title?: string;
+  @Input() title = '';
+  @Input() activityId = '';
+  @Input() activityType: 'habits' | 'tasks' = 'habits';
+  @Input() startTime = 0;
+  @Input() endTime = 0;
+  readonly assets = 'assets/figma/focus-timer/';
+  readonly sounds = [
+    { id: 'lofi', lines: ['Lo-Fi', 'Beats'], label: 'Lo-Fi Beats' },
+    { id: 'ocean', lines: ['Ocean', 'Waves'], label: 'Ocean Waves' },
+    { id: 'rain', lines: ['Rain', 'Drops'], label: 'Rain Drops' },
+    { id: 'forest', lines: ['Forest', 'Ambience'], label: 'Forest Ambience' }
+  ];
+  remainingSeconds = 0;
+  progress = 0;
+  playingSound: string | null = null;
+  audioError = '';
+  completionError = '';
+  busy = false;
+  completed = false;
+  confirmVisible = false;
+  confirmConfig: SupermePopupConfig = {};
+  private expired = false;
+  private presented = false;
+  private invalidSchedule = false;
+  private destroyed = false;
+  private frame = 0;
+  private lastFrame = 0;
+  private audio?: HTMLAudioElement;
+  private soundRequest = 0;
+  private appListener?: PluginListenerHandle;
+  private visibility = () => {
+    if (document.hidden) this.stopSound();
+    else this.zone.run(() => this.tick());
+  };
 
-    // Timestamps for habit/task time range
-    @Input() startTime?: number;
-    @Input() endTime?: number;
+  constructor(private modal: ModalController, private router: Router,
+    private zone: NgZone, private cd: ChangeDetectorRef,
+    private habitApi: HabitApi, private taskApi: TaskApi, private habits: HabitService,
+    private autoAbort: AutoAbortService, private badges: BadgePopupService,
+    private petAge: PetAgeService, private calendar: CalendarService) {}
 
-    // total duration in seconds (default 1 hour)
-    @Input() totalSeconds = 3600;
+  get formattedTime(): string {
+    return String(Math.floor(this.remainingSeconds / 60)).padStart(2, '0') + ':' + String(this.remainingSeconds % 60).padStart(2, '0');
+  }
+  get dotX(): number { return 126 + 118.5 * Math.sin(this.progress * 2 * Math.PI); }
+  get dotY(): number { return 126 - 118.5 * Math.cos(this.progress * 2 * Math.PI); }
+  get canRetryCompletion(): boolean { return this.expired && !this.busy && !this.completed; }
 
-    remainingSeconds = 0;
-    private intervalId: any = null;
-    private calculatedDuration = 0;
+  ionViewDidEnter(): void {
+    this.presented = true;
+    this.tick();
+    if (this.expired) void this.complete();
+  }
 
-    // SVG progress properties
-    radius = 130; // matches SVG viewBox sizing in template
-    stroke = 14;
-    circumference = 2 * Math.PI * this.radius;
-
-    // show as HH:MM:SS to match figma
-    get formattedTime(): string {
-        const hrs = Math.floor(this.remainingSeconds / 3600);
-        const mins = Math.floor((this.remainingSeconds % 3600) / 60);
-        const secs = Math.floor(this.remainingSeconds % 60);
-        const pad = (n: number) => n.toString().padStart(2, '0');
-        return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
-    }
-
-    // ticks for dial (12 marks)
-    ticks = new Array(12);
-
-    get progressPercent(): number {
-        const duration = this.calculatedDuration || this.totalSeconds;
-        if (duration <= 0) { return 0; }
-        return Math.min(100, Math.max(0, (duration - this.remainingSeconds) / duration * 100));
-    }
-
-    get dashOffset(): number {
-        return this.circumference * (1 - this.progressPercent / 100);
-    }
-
-    ngOnInit(): void {
-        // Calculate duration based on startTime and endTime if provided
-        this.calculatedDuration = this.calculateTimerDuration();
-        this.remainingSeconds = this.calculatedDuration;
-        this.start();
-    }
-
-    private calculateTimerDuration(): number {
-        // If startTime and endTime are provided, calculate based on them
-        if (this.startTime && this.endTime) {
-            const now = Date.now();
-
-            // If we're within the time range, countdown from now until end
-            if (now >= this.startTime && now <= this.endTime) {
-                const remaining = Math.floor((this.endTime - now) / 1000);
-                return remaining > 0 ? remaining : 60; // minimum 1 minute
-            }
-
-            // If we haven't started yet, use the full duration
-            if (now < this.startTime) {
-                const fullDuration = Math.floor((this.endTime - this.startTime) / 1000);
-                return fullDuration > 0 ? fullDuration : 3600;
-            }
-
-            // If time has passed, use the original duration
-            const fullDuration = Math.floor((this.endTime - this.startTime) / 1000);
-            return fullDuration > 0 ? fullDuration : 3600;
+  ngOnInit(): void {
+    // Own expiry while open so a delayed abort cannot race completion on resume.
+    this.autoAbort.cancelAutoAbort(this.activityId, this.activityType);
+    this.tick();
+    document.addEventListener('visibilitychange', this.visibility);
+    void App.addListener('appStateChange', ({ isActive }) => {
+      this.zone.run(() => { if (isActive) this.tick(); else this.stopSound(); });
+    }).then(handle => { if (this.destroyed) void handle.remove(); else this.appListener = handle; })
+      .catch(() => { /* Browser visibilitychange remains available. */ });
+    this.zone.runOutsideAngular(() => {
+      const animate = (now: number) => {
+        if (this.destroyed) return;
+        if (now - this.lastFrame >= 32 && !document.hidden) {
+          this.lastFrame = now;
+          this.zone.run(() => this.tick());
         }
+        if (!this.expired && !this.invalidSchedule) this.frame = requestAnimationFrame(animate);
+      };
+      if (!this.expired && !this.invalidSchedule) this.frame = requestAnimationFrame(animate);
+    });
+  }
 
-        // Fall back to totalSeconds input
-        return this.totalSeconds || 3600;
+  private tick(): void {
+    if (this.destroyed || this.expired) return;
+    const snapshot = timerSnapshot(this.startTime, this.endTime, Date.now());
+    if (!snapshot) {
+      this.invalidSchedule = true;
+      this.completionError = 'The activity schedule is unavailable. Please return and reopen the activity.';
+      return;
     }
-
-    ngOnDestroy(): void {
-        this.clearInterval();
+    this.remainingSeconds = snapshot.remainingSeconds;
+    this.progress = snapshot.progress;
+    this.cd.markForCheck();
+    if (snapshot.finished) {
+      this.expired = true;
+      this.stopSound();
+      if (this.presented) void this.complete();
     }
+  }
 
-    start() {
-        this.clearInterval();
-        this.intervalId = setInterval(() => {
-            if (this.remainingSeconds > 0) {
-                this.remainingSeconds -= 1;
-            } else {
-                this.clearInterval();
-            }
-        }, 1000);
+  async toggleSound(id: string): Promise<void> {
+    if (this.expired || this.invalidSchedule || !this.sounds.some(sound => sound.id === id)) return;
+    if (this.playingSound === id) { this.stopSound(); return; }
+    this.stopSound();
+    const request = this.soundRequest;
+    const audio = new Audio('assets/audio/focus/' + id + '.wav');
+    audio.loop = true;
+    audio.volume = 0.4;
+    this.audio = audio;
+    this.audioError = '';
+    try {
+      await audio.play();
+      if (request !== this.soundRequest || this.destroyed) { audio.pause(); return; }
+      this.playingSound = id;
+    } catch {
+      if (request === this.soundRequest) this.audioError = 'Unable to play this sound. Please try again.';
     }
+    this.cd.markForCheck();
+  }
 
-    private clearInterval() {
-        if (this.intervalId) {
-            clearInterval(this.intervalId);
-            this.intervalId = null;
-        }
+  private stopSound(): void {
+    this.soundRequest++;
+    this.audio?.pause();
+    if (this.audio) { this.audio.removeAttribute('src'); this.audio.load(); }
+    this.audio = undefined;
+    this.playingSound = null;
+  }
+
+  async complete(confirmed = false): Promise<void> {
+    if (this.busy || this.completed || this.destroyed || !this.presented || !this.expired || !this.activityId) return;
+    this.busy = true;
+    this.confirmVisible = false;
+    this.completionError = '';
+    try {
+      const result: any = await firstValueFrom(this.activityType === 'tasks'
+        ? this.taskApi.completeTask(this.activityId, confirmed)
+        : this.habitApi.completeHabit(this.activityId, confirmed));
+      if (result?.requiresConfirmation) {
+        this.confirmConfig = {
+          image: 'assets/Images-Transparent/Image-Home-GreatWork.webp', heading: 'Daily Coin Limit Reached',
+          subtitle: result.message || 'Mark this activity complete without additional coins?',
+          primaryCTA: { text: 'Yes, mark complete', buttonStyle: 'green', buttonMedium: true },
+          secondaryCTA: { text: 'Cancel', buttonStyle: 'bronze-transparent', buttonMedium: true },
+          showCloseButton: false, backdrop: true, ctaDirection: 'row'
+        };
+        this.confirmVisible = true;
+        return;
+      }
+      this.completed = true;
+      localStorage.removeItem('ongoing_' + this.activityType + '_' + this.activityId);
+      this.autoAbort.cancelAutoAbort(this.activityId, this.activityType);
+      this.calendar.clearCache();
+      this.taskApi.clearCache();
+      if (this.activityType === 'tasks') this.habits.notifyTaskCompleted();
+      else this.habits.completeHabit(this.activityId);
+      this.petAge.recordActivity(this.activityType);
+      await this.modal.dismiss({ completed: true }, 'completed');
+      this.badges.check();
+    } catch {
+      this.completionError = 'Your timer has finished, but completion could not be saved. Please try again.';
+    } finally {
+      this.busy = false;
+      if (!this.destroyed) this.cd.markForCheck();
     }
+  }
 
-    constructor(private modalCtrl: ModalController) { }
+  cancelConfirmation(): void {
+    this.confirmVisible = false;
+    this.completionError = 'Completion has not been saved. You can try again or return home.';
+  }
 
-    // CTA handler — dismiss the modal when back pressed
-    async onBack() {
-        try {
-            await this.modalCtrl.dismiss();
-        } catch (e) {
-            // fallback to history back
-            try { window.history.back(); } catch (err) { /* ignore */ }
-        }
+  async onBack(home = false): Promise<void> {
+    if (this.busy) return;
+    this.stopSound();
+    await this.modal.dismiss();
+    if (home) await this.router.navigate(['/home']);
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    cancelAnimationFrame(this.frame);
+    document.removeEventListener('visibilitychange', this.visibility);
+    void this.appListener?.remove();
+    this.stopSound();
+    if (!this.completed && this.endTime > Date.now()) {
+      this.autoAbort.scheduleAutoAbort({ id: this.activityId, type: this.activityType, endTimeStamp: this.endTime });
     }
+  }
 }

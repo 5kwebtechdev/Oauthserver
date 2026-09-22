@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 
 import { Habit } from '../habit.types';
+import { FocusTimerService } from '../../superme-timer/focus-timer.service';
 import { HabitService } from '../habit.service';
 import { AuthService } from '../../../services/auth.service';
 import { HabitApi } from 'src/app/core/api/habit.api';
@@ -73,7 +74,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     private habitService: HabitService,
     private autoAbortService: AutoAbortService,
     private badgePopupService: BadgePopupService,
-    private petAgeService: PetAgeService
+    private petAgeService: PetAgeService,
+    private focusTimer: FocusTimerService
   ) {}
 
   ngOnInit() {
@@ -214,6 +216,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         if (this.habit?.status?.toLowerCase() === 'ongoing') {
           this.percentageCompleted = this.calculateProgressPercentage();
           this.startProgress();
+          void this.openFocusTimer();
         } else {
           this.percentageCompleted = 0;
         }
@@ -747,6 +750,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
           endTimeStamp: this.habit!.endTimeStamp
         });
         this.startProgress();
+        void this.openFocusTimer();
         // Notify that activity was started so dashboard refreshes
         if (isTask) {
           this.habitService.notifyTaskStarted();
@@ -883,6 +887,14 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   handleAbortSecondary() {
     this.onAbortHabit();
     this.closeAbortPopup();
+  }
+
+  private async openFocusTimer(): Promise<void> {
+    if (!this.habit || this.isParent) return;
+    const activity = this.habit;
+    if (await this.focusTimer.open(activity)) {
+      this.loadDetail(Number(activity.id), activity.type as ActivityType, this.selectedDateFromState || undefined);
+    }
   }
 
   onCompleteHabit() {

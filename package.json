@@ -11,6 +11,7 @@
     "optimize:embedded-svg": "node scripts/optimize-embedded-svg-assets.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:focus": "ng test --ts-config tsconfig.focus-spec.json --include='src/app/core/components/superme-timer/*.spec.ts' --watch=false --browsers=ChromeHeadless",
     "lint": "ng lint",
     "build-android": "powershell -ExecutionPolicy Bypass -File ./rebuild-apk.ps1",
     "postinstall": "patch-package"

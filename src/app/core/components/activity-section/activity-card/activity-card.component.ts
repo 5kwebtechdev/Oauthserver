@@ -19,6 +19,7 @@ import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { AutoAbortService } from '../auto-abort.service';
 import { CoerceBoolean } from "../../../coerceBoolean.decorator";
 import { Habit } from '../habit.types';
+import { FocusTimerService } from '../../superme-timer/focus-timer.service';
 import { catchError, forkJoin, of, skip, Subscription } from 'rxjs';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
@@ -292,6 +293,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     private cdr: ChangeDetectorRef,
     private buttonLogic: HabitButtonLogicService,
     private autoAbortService: AutoAbortService,
+    private focusTimer: FocusTimerService,
     private profileSelectorService: ProfileSelectorService
   ) {
     this.habitCardService.lastToggled$.subscribe((data: any) => {
@@ -345,6 +347,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           // Start progress with proper initialization
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
+          void this.openTimer();
           // Show the short-lived start bubble for 3s
           if (!this.showStartBubble) {
             if (this.startBubbleTimer) {
@@ -391,6 +394,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           });
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
+          void this.openTimer();
           // Show the short-lived start bubble for 3s
           if (!this.showStartBubble) {
             if (this.startBubbleTimer) {
@@ -1749,6 +1753,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       void this.viewPlanner(this.habit, null, event);
       return;
     }
+    if (this.getStatus() === 'ongoing' && !this.isParent) { void this.openTimer(); return; }
     this.openActivityDetail(false);
   }
 
@@ -1820,18 +1825,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   async openTimer() {
-    if (!this.habit) return;
-
-    const { SupermeTimerComponent } = await import('../../superme-timer/superme-timer.component');
-    const modal = await this.modalCtrl.create({
-      component: SupermeTimerComponent,
-      componentProps: {
-        startTime: this.startTime || this.habit.startTimeStamp,
-        endTime: this.endTime || this.habit.endTimeStamp,
-        title: this.habit.title || ''
-      }
-    });
-    await modal.present();
+    if (!this.habit || this.isParent) return;
+    const activity = this.habit;
+    if (await this.focusTimer.open(activity)) {
+      this.trackCompletion(activity.type === 'tasks' ? 'tasks' : 'habits', activity.title || '');
+      this.habit = { ...activity, status: 'completed' };
+      this.showLocalTimer = false;
+      this.clearProgress();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {

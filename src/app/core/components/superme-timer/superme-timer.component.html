@@ -1,35 +1,35 @@
 <ion-content>
-    <superme-navigator [heading]="title || ''" (back)="onBack()"></superme-navigator>
-
-    <div class="superme-timer">
-        <div class="timer-wrap">
-            <!-- SVG ring for progress -->
-            <svg class="progress-ring" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feDropShadow dx="0" dy="2" stdDeviation="8" flood-color="#000" flood-opacity="0.18" />
-                    </filter>
-                </defs>
-                <circle class="ring-bg" cx="160" cy="160" [attr.r]="radius" [attr.stroke-width]="stroke" fill="none">
-                </circle>
-                <circle class="ring-progress" cx="160" cy="160" [attr.r]="radius" [attr.stroke-width]="stroke"
-                    stroke-linecap="round" fill="none" [attr.stroke-dasharray]="circumference"
-                    [attr.stroke-dashoffset]="dashOffset"></circle>
-            </svg>
-
-            <!-- inner face with gradient -->
-            <div class="face">
-                <div class="ticks">
-                    <span *ngFor="let t of ticks; let i = index" [style.transform]="'rotate('+ (i * 30) + 'deg)'"
-                        class="tick"></span>
-                </div>
-
-                <div class="time">{{ formattedTime }}</div>
-            </div>
-        </div>
-
-        <div class="cta">
-            <superme-button type="bronze" text="Back to home" large (click)="onBack()"></superme-button>
-        </div>
+  <main class="focus-screen">
+    <header class="focus-header">
+      <button class="back" type="button" aria-label="Back" (click)="onBack()" [disabled]="busy"><img [src]="assets + 'back.svg'" alt=""></button>
+      <h1><span *ngIf="activityType === 'habits'" class="habit-icon"><img [src]="assets + 'habit.png'" alt=""></span><img *ngIf="activityType === 'tasks'" class="task-icon" src="assets/icons/Task.svg" alt=""><span>{{ title }}</span></h1>
+    </header>
+    <div class="timer-wrap" role="timer" aria-label="Time remaining" aria-live="off">
+      <div class="pet-crop"><img [src]="assets + 'pet.png'" alt="Your focus companion"></div>
+      <img class="ring-track" [src]="assets + 'track.svg'" alt="">
+      <div class="ring-progress" [style.background]="'conic-gradient(#7341a7 ' + (progress * 360) + 'deg, transparent 0deg)'"></div>
+      <span class="ring-cap" *ngIf="progress > 0"></span>
+      <span class="ring-dot" [style.left.px]="dotX" [style.top.px]="dotY"></span>
+      <div class="time">{{ formattedTime }}</div>
     </div>
+    <section class="focus-sounds" aria-labelledby="focus-sounds-title">
+      <div class="sounds-heading"><img [src]="assets + 'headphones.svg'" alt=""><div><h2 id="focus-sounds-title">Focus Sounds</h2><p>Pick a sound to keep you in the zone</p></div></div>
+      <div class="sound-options">
+        <button type="button" *ngFor="let sound of sounds" class="sound" [class.playing]="playingSound === sound.id"
+          [attr.aria-pressed]="playingSound === sound.id" [attr.aria-label]="(playingSound === sound.id ? 'Pause ' : 'Play ') + sound.label"
+          [disabled]="remainingSeconds === 0" (click)="toggleSound(sound.id)">
+          <img class="sound-icon" [src]="assets + sound.id + '.svg'" alt="">
+          <span class="sound-name"><span *ngFor="let line of sound.lines">{{ line }}</span></span>
+          <img class="play-icon" [class.is-play]="playingSound !== sound.id" [src]="assets + (playingSound === sound.id ? 'pause.svg' : 'play.svg')" alt="">
+        </button>
+      </div>
+      <p *ngIf="audioError" class="message" role="alert">{{ audioError }}</p>
+    </section>
+    <div class="completion-status" aria-live="polite">
+      <p *ngIf="busy">Saving your completed activity…</p>
+      <ng-container *ngIf="completionError"><p>{{ completionError }}</p><button type="button" (click)="complete()" *ngIf="canRetryCompletion && activityId">Try again</button></ng-container>
+    </div>
+    <footer><button class="home" type="button" (click)="onBack(true)" [disabled]="busy"><img [src]="assets + 'home.svg'" alt="">Back to home</button></footer>
+  </main>
 </ion-content>
+<app-superme-popup [config]="confirmConfig" [isVisible]="confirmVisible" (primaryAction)="complete(true)" (secondaryAction)="cancelConfirmation()"></app-superme-popup>

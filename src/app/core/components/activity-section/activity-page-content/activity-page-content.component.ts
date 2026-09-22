@@ -15,6 +15,7 @@ import { AuthService } from '../../../services/auth.service';
 import { PetAgeService } from '../../../services/pet-age.service';
 import { CustomToastService, Toast } from '../../../services/custom-toast.service';
 import { Habit } from '../habit.types';
+import { FocusTimerService } from '../../superme-timer/focus-timer.service';
 import { CalendarService } from '../../../services/calendar.service';
 import { CalendarResponse } from '../../../models/calendar.model';
 import { EventApi } from '../../../api/event.api';
@@ -110,7 +111,8 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         private authService: AuthService,
         private petAgeService: PetAgeService,
         private cdr: ChangeDetectorRef,
-        private toastService: CustomToastService
+        private toastService: CustomToastService,
+        private focusTimer: FocusTimerService
     ) {
         this.toast$ = this.toastService.toast$;
     }
@@ -1540,6 +1542,10 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
             if (this.lastChildActivityLongPress.key === key
                 && Date.now() - this.lastChildActivityLongPress.at < 800) return;
             const status = String(habit?.status || '').toLowerCase();
+            if (status === 'ongoing' && !this.authService.isParentUser()) {
+                void this.focusTimer.open({ ...habit, type: entryType === 'task' ? 'tasks' : 'habits' });
+                return;
+            }
             if (status === 'completed' || habit?.completed === true) {
                 this.openActivityDetail(habit, entryType, false);
                 return;
