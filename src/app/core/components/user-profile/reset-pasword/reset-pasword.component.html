@@ -92,10 +92,4 @@
       [disabled]="loading || form.invalid" (click)="saveProfile()"></superme-button>
   </div>
 
-  <!-- Toast -->
-  <div class="mb-toast" *ngIf="(toast$ | async) as toast"
-    [ngClass]="{'mb-toast--error': toast.type === 'error', 'mb-toast--success': toast.type === 'success'}"
-    [style.display]="toast.visible ? 'flex' : 'none'">
-    <div class="mb-toast__text">{{ toast.message }}</div>
-  </div>
 </ion-content>

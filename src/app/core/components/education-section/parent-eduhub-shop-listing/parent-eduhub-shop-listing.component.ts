@@ -15,6 +15,7 @@ import { UserService } from '../../../services/user.service';
 import { EduHubEventsService } from '../../../services/eduhub-events.service';
 import { PetAgeService } from '../../../services/pet-age.service';
 import { EduHubCityService } from '../../../services/eduhub-city.service';
+import { ShareLinkService } from '../../../services/share-link.service';
 import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
@@ -137,7 +138,8 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     private readonly userService: UserService,
     private readonly eduHubEventsService: EduHubEventsService,
     private readonly petAgeService: PetAgeService,
-    private readonly cityService: EduHubCityService
+    private readonly cityService: EduHubCityService,
+    private readonly shareLinks: ShareLinkService
   ) {}
 
   /** Panda uses the same Figma artwork shown on Home/Coins/Learning instead of this page's decorative mascot. */
@@ -334,7 +336,7 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
       await Share.share({
         title: item.name,
         text: `View ${item.name}${location} on SuperMe EduHub.`,
-        url: this.currentShareUrl()
+        url: this.shareLinks.buildListingLink('shop', item.id)
       });
     } catch (error) {
       if (!this.isShareCancelled(error)) {
@@ -571,6 +573,7 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
           .filter(item => this.matchesSelectedCategory(item))
           .map(item => this.mapListing(item));
         this.loading = false;
+        this.openSharedListingIfAvailable();
       },
       error: () => {
         if (requestId !== this.listingsRequestId) return;
@@ -585,6 +588,14 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
       ? response
       : response?.content ?? response?.items ?? response?.data?.content ?? response?.data?.items ?? response?.data;
     return Array.isArray(candidates) ? candidates : [];
+  }
+
+  private openSharedListingIfAvailable(): void {
+    if (this.selectedListingId == null) return;
+    const listing = this.listings.find(item => item.id === this.selectedListingId);
+    if (!listing) return;
+    this.selectedListingId = null;
+    this.openListing(listing);
   }
 
   private isPublished(item: EduHubDirectoryResponse): boolean {
@@ -798,10 +809,6 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
   private extractApiError(error: HttpErrorResponse, fallback: string): string {
     const message = error?.error?.message ?? error?.error?.error ?? error?.message;
     return typeof message === 'string' && message.trim() ? message.trim() : fallback;
-  }
-
-  private currentShareUrl(): string {
-    return typeof window !== 'undefined' ? window.location.href : 'https://supermeapp.com';
   }
 
   private isShareCancelled(error: unknown): boolean {

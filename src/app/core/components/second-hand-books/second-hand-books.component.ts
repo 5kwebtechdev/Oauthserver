@@ -1,7 +1,7 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppLauncher } from '@capacitor/app-launcher';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
@@ -14,6 +14,7 @@ import { BookListing, BookListingCondition, BookListingCreateRequest, BookListin
 import { AuthService } from '../../services/auth.service';
 import { INDIA_STATES, INDIA_STATE_OPTIONS } from '../../constants/india-location-options';
 import { LocationService } from '../../services/location.service';
+import { ShareLinkService } from '../../services/share-link.service';
 import {
   COLLEGE_DEGREE_STREAM_OPTIONS,
   COLLEGE_YEAR_OPTIONS,
@@ -175,14 +176,20 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
   constructor(
     private readonly location: Location,
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
     private readonly bookListings: BookListingsService,
     private readonly locationService: LocationService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly shareLinks: ShareLinkService
   ) {}
 
   ngOnInit(): void {
     this.restorePreferences();
     this.prefillSellerContact();
+    const sharedId = Number(this.route.snapshot.queryParamMap.get('listingId'));
+    if (Number.isFinite(sharedId) && sharedId > 0) {
+      this.openSharedListing(sharedId);
+    }
   }
 
   ngOnDestroy(): void {
@@ -639,7 +646,7 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
       await Share.share({
         title: listing.title,
         text: `View ${listing.title} on SuperMe.`,
-        url: window.location.href
+        url: this.shareLinks.buildListingLink('book', listing.id)
       });
     } catch (error) {
       if (!this.isShareCancellation(error)) {
@@ -919,6 +926,24 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
       error: () => {
         this.listingDetailsLoading = false;
         this.listingDetailsError = 'Unable to load all book details. Please check your connection and retry.';
+      }
+    });
+  }
+
+  private openSharedListing(id: number): void {
+    this.view = 'book-details';
+    this.detailsOrigin = 'listings';
+    this.listingDetailsLoading = true;
+    this.listingDetailsError = '';
+    this.bookListings.get(id).subscribe({
+      next: listing => {
+        this.selectedListing = listing;
+        this.listings = [listing, ...this.listings.filter(item => item.id !== listing.id)];
+        this.listingDetailsLoading = false;
+      },
+      error: () => {
+        this.listingDetailsLoading = false;
+        this.listingDetailsError = 'Unable to load this book listing. Please check your connection and retry.';
       }
     });
   }

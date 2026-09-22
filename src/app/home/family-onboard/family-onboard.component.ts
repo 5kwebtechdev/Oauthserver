@@ -517,6 +517,13 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         }
 
         if (this.viewMode === 'join-family-child') {
+            const isChildOnboarding = this.authService.isPendingChild()
+                || sessionStorage.getItem(FamilyOnboardComponent.CHILD_POST_FAMILY_WELCOME_KEY) === 'true';
+            if (this.authService.isLoggedIn() && !isChildOnboarding) {
+                this.navigateWithoutHistory(this.authService.getDashboardRoute());
+                return;
+            }
+
             const enteredCode = String(this.codeForm.get('code')?.value || '').trim().toUpperCase();
             if (enteredCode) {
                 this.onboardingState.updateRegistrationDraft({ familyCode: enteredCode }, 5);

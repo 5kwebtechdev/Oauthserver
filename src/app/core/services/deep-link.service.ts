@@ -88,7 +88,11 @@ export class DeepLinkService {
 
     if (!isAllowedHttpLink && !isAllowedSchemeLink) return null;
 
-    const path = this.normalizePath(isAllowedSchemeLink ? this.getSchemePath(url) : url.pathname);
+    // Links copied from older web builds can contain the document base
+    // (`/app`). Angular routes are relative to that base, so normalize it
+    // before matching native deep-link destinations.
+    const rawPath = this.normalizePath(isAllowedSchemeLink ? this.getSchemePath(url) : url.pathname);
+    const path = rawPath.replace(/^\/app(?=\/|$)/, '') || '/';
     const query = url.search || '';
 
     if (path === '/referral') {
@@ -103,6 +107,10 @@ export class DeepLinkService {
     }
 
     if (path.startsWith('/authed/')) {
+      return `${path}${query}`;
+    }
+
+    if (path.startsWith('/share/')) {
       return `${path}${query}`;
     }
 

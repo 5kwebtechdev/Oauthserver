@@ -182,9 +182,11 @@ export const guestGuard: CanActivateFn = (
 
     const isLoggedIn = authService.isLoggedIn();
     const isPendingChildDetailsBack = isLoggedIn
-        && authService.isPendingChild()
-        && state.url.includes('/signup')
+        && (authService.isPendingChild()
+            || sessionStorage.getItem('show_child_welcome_after_family') === 'true')
+        && isSignupRoute
         && route.queryParamMap.get('step') === '2'
+        && route.queryParamMap.get('role') === 'child'
         && route.queryParamMap.get('editOnboarding') === 'true';
     if (isPendingChildDetailsBack) {
         return true;

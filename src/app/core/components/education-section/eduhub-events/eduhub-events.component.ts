@@ -14,6 +14,7 @@ import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { PetAgeService } from '../../../services/pet-age.service';
 import { EduHubCityService } from '../../../services/eduhub-city.service';
+import { ShareLinkService } from '../../../services/share-link.service';
 import {
   EduHubEventEntityType,
   EduHubEventItem,
@@ -53,6 +54,7 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
   // Active listings are the default catalogue. Verification is an optional
   // trust signal and must not hide an otherwise active event/workshop.
   activeFilter: ListingFilter = 'all';
+  private sharedItemId: number | null = null;
 
   private readonly pageSize = 20;
   private readonly likeInProgress = new Set<number>();
@@ -67,7 +69,8 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly core: CoreService,
     private readonly petAgeService: PetAgeService,
-    private readonly cityService: EduHubCityService
+    private readonly cityService: EduHubCityService,
+    private readonly shareLinks: ShareLinkService
   ) {}
 
   /** Panda uses the same Figma artwork shown on Home/Coins/Learning instead of this page's decorative mascot. */
@@ -79,6 +82,8 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
     const data = this.route.snapshot.data as EventListingRouteData;
     this.entityType = data.entityType === 'Workshop' ? 'Workshop' : 'Events';
     this.title = data.title === 'Workshops' ? 'Workshops' : 'Events';
+    const sharedId = Number(this.route.snapshot.queryParamMap.get('sharedId'));
+    this.sharedItemId = Number.isFinite(sharedId) && sharedId > 0 ? sharedId : null;
     const navigationCity = String(this.route.snapshot.queryParamMap.get('city') || '').trim();
     if (navigationCity) this.cityService.selectCity(navigationCity);
     this.loadFirstPage();
@@ -183,6 +188,7 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
         this.totalPages = this.safePage(response.totalPages, 0);
         this.totalElements = this.safePage(response.totalElements, this.items.length);
         this.isLoading = false;
+        this.openSharedItemIfAvailable();
       },
       error: () => {
         if (requestVersion !== this.requestVersion) return;
@@ -311,7 +317,7 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
       await Share.share({
         title: name,
         text: `View ${name}${location ? ` in ${location}` : ''} on SuperMe EduHub.`,
-        url: window.location.href
+        url: this.shareLinks.buildListingLink(this.entityType === 'Workshop' ? 'workshop' : 'event', item.id)
       });
     } catch (error) {
       if (!this.isShareCancelled(error)) {
@@ -402,6 +408,14 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
     } catch {
       // Router state still carries the listing during the normal navigation flow.
     }
+  }
+
+  private openSharedItemIfAvailable(): void {
+    if (this.sharedItemId == null) return;
+    const item = this.items.find(candidate => candidate.id === this.sharedItemId);
+    if (!item) return;
+    this.sharedItemId = null;
+    this.openDetails(item);
   }
 
   private isShareCancelled(error: unknown): boolean {

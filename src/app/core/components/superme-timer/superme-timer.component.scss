@@ -1,10 +1,10 @@
 :host { color: #432477; font-family: var(--font-sans, 'Nunito', sans-serif); }
-ion-content { --background: #fff; }
+ion-content { --background: #fff; --color: #432477; }
 * { box-sizing: border-box; }
 button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 button:focus-visible { outline: 2px solid #7341a7; outline-offset: 3px; }
 button:disabled { cursor: default; }
-.focus-screen { width: 100%; max-width: 425px; min-height: 100%; margin: auto; display: flex; flex-direction: column; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(12px + env(safe-area-inset-bottom, 0px)); }
+.focus-screen { width: 100%; max-width: 425px; min-height: 100%; margin: auto; display: flex; flex-direction: column; color: #432477; font-family: var(--font-sans, 'Nunito', sans-serif); padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(12px + env(safe-area-inset-bottom, 0px)); }
 .focus-header { position: relative; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .back { position: absolute; left: 0; top: 0; padding: 0; width: 40px; height: 40px; border: 0; border-radius: 56px; background: #ebe6f5; }
 .back img { width: 40px; height: 40px; }

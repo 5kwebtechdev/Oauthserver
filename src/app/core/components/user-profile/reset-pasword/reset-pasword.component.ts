@@ -7,8 +7,7 @@ import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validator
 import { HttpClient, HttpErrorResponse, HttpClientModule } from '@angular/common/http';
 import { NavController } from '@ionic/angular';
 import { environment } from 'src/environments/environment';
-import { CustomToastService, Toast } from '../../../services/custom-toast.service';
-import { Observable } from 'rxjs';
+import { CustomToastService } from '../../../services/custom-toast.service';
 import { Subject } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
@@ -65,8 +64,6 @@ export class ResetPaswordComponent implements OnDestroy {
     return 'strong';
   }
 
-  // Toast state from service
-  toast$: Observable<Toast | null> = this.toastService.toast$;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -87,13 +84,15 @@ export class ResetPaswordComponent implements OnDestroy {
         this.noCommonPasswordValidator()
       ]],
       retypeNewPassword: ['', [Validators.required]]
-    }, { validators: this.passwordsMatchValidator() });
+    }, { validators: [this.passwordsMatchValidator(), this.passwordsDifferentValidator()] });
   }
 
   onCurrentPasswordChange(value: string | null): void {
     this.currentPassword = value || '';
     this.form.patchValue({ currentPassword: value });
     this.validateCurrentPassword();
+    // The new password's cross-field rule must react when either field changes.
+    this.validateNewPassword();
   }
 
   onNewPasswordChange(value: string | null): void {
@@ -149,6 +148,8 @@ export class ResetPaswordComponent implements OnDestroy {
         this.newPasswordError = 'Password cannot be more than 12 characters.';
       } else if (control.hasError('commonPassword')) {
         this.newPasswordError = 'This password is too common. Please choose a stronger one.';
+      } else if (this.form.hasError('sameAsCurrentPassword') && value.length > 0) {
+        this.newPasswordError = 'New password must be different from current password';
       } else {
         this.newPasswordError = '';
       }
@@ -195,6 +196,14 @@ export class ResetPaswordComponent implements OnDestroy {
     };
   }
 
+  private passwordsDifferentValidator(): ValidatorFn {
+    return (control: AbstractControl) => {
+      const current = String(control.get('currentPassword')?.value || '');
+      const next = String(control.get('newPassword')?.value || '');
+      return current && next && current === next ? { sameAsCurrentPassword: true } : null;
+    };
+  }
+
   private showToast(message: string, type: 'success' | 'error' = 'error', duration = 3000): void {
     this.toastService.show(message, type, duration);
   }
@@ -227,8 +236,9 @@ export class ResetPaswordComponent implements OnDestroy {
       return;
     }
 
-    if (this.currentPassword === this.newPassword) {
-      this.showToast('New password must be different from current password', 'error', 3000);
+    if (this.form.hasError('sameAsCurrentPassword')) {
+      // This is also validated live on the new-password field. Keep the guard
+      // here for programmatic submissions, but avoid a second toast.
       return;
     }
 

@@ -10,6 +10,7 @@ import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { UserService } from '../../../services/user.service';
 import { EduHubEventEntityType, EduHubEventItem, EduHubEventsService } from '../../../services/eduhub-events.service';
+import { ShareLinkService } from '../../../services/share-link.service';
 
 interface EventDetailRouteData {
   entityType?: EduHubEventEntityType;
@@ -38,7 +39,8 @@ export class EduHubEventDetailsComponent implements OnInit {
     private readonly core: CoreService,
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly eventsService: EduHubEventsService
+    private readonly eventsService: EduHubEventsService,
+    private readonly shareLinks: ShareLinkService
   ) {}
 
   ngOnInit(): void {
@@ -168,7 +170,7 @@ export class EduHubEventDetailsComponent implements OnInit {
       await Share.share({
         title: this.displayName,
         text: `View ${this.displayName}${this.publicLocation ? ` in ${this.publicLocation}` : ''} on SuperMe EduHub.`,
-        url: window.location.href
+        url: this.shareLinks.buildListingLink(this.entityType === 'Workshop' ? 'workshop' : 'event', this.item.id)
       });
     } catch (error) {
       const message = String((error as { message?: string })?.message ?? error ?? '').toLowerCase();

@@ -15,6 +15,7 @@ import { CoreService } from '../../../services/core.service';
 import { PetAgeService } from '../../../services/pet-age.service';
 import { TutorLikeService } from '../../../services/tutor-like.service';
 import { TutorService } from '../../../services/tutor.service';
+import { ShareLinkService } from '../../../services/share-link.service';
 import { EduHubCityService } from '../../../services/eduhub-city.service';
 import { EduHubCitySelectorComponent } from '../eduhub-city-selector/eduhub-city-selector.component';
 import { ProfileImageComponent } from '../../profile-image/profile-image.component';
@@ -66,6 +67,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     private readonly core: CoreService,
     private readonly petAgeService: PetAgeService,
     private readonly cityService: EduHubCityService,
+    private readonly shareLinks: ShareLinkService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -454,16 +456,47 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     return !!counselor.likedByUser;
   }
 
-  toggleLike(counselor: Tutor): void {
-    const request = this.likeService.toggleLike(counselor);
-    if (!request) return;
-    void request.catch(() => this.core.triggerToasrt('Unable to update like. Please try again.', 'error'));
+  isLikePending(counselor: Tutor): boolean {
+    return !!(counselor as Tutor & { likePending?: boolean }).likePending;
+  }
+
+  toggleLike(event: Event, counselor: Tutor): void {
+    // The heart sits inside the listing card. Keep a mobile tap on the action
+    // from being interpreted by any surrounding navigation/container handler.
+    event.stopPropagation();
+    if (this.isLikePending(counselor)) return;
+
+    const previousLiked = !!counselor.likedByUser;
+    const previousCount = counselor.champsLiked;
+    counselor.likedByUser = !previousLiked;
+    (counselor as Tutor & { likePending?: boolean }).likePending = true;
+
+    const request = this.likeService.toggleLike(counselor, !previousLiked);
+    if (!request) {
+      counselor.likedByUser = previousLiked;
+      counselor.champsLiked = previousCount;
+      (counselor as Tutor & { likePending?: boolean }).likePending = false;
+      return;
+    }
+    void request.then(state => {
+      counselor.likedByUser = state.liked;
+      counselor.champsLiked = state.count;
+      (counselor as Tutor & { likePending?: boolean }).likePending = false;
+    }).catch(() => {
+      counselor.likedByUser = previousLiked;
+      counselor.champsLiked = previousCount;
+      (counselor as Tutor & { likePending?: boolean }).likePending = false;
+      this.core.triggerToasrt('Unable to update like. Please try again.', 'error');
+    });
   }
 
   async shareCounselor(counselor: Tutor): Promise<void> {
     const title = this.getName(counselor);
     const text = `View ${title} on SuperMe EduHub.`;
-    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const type = this.entityType === 'COUNSELOR'
+      ? 'counselor'
+      : (this.entityType === 'ACADEMY' ? 'academy' : 'tutor');
+    const url = this.shareLinks.buildListingLink(type, counselor.id);
 
     try {
       await Share.share({ title, text, url, dialogTitle: `Share ${title}` });

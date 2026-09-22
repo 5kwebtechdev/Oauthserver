@@ -868,6 +868,41 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     return fallback;
   }
 
+  /**
+   * The API exposes privacy using the two persisted flags rather than the
+   * form's legacy `isPrivate` field. Keep the toggle derived from those flags
+   * whenever both are present, while retaining compatibility with older
+   * responses that only returned `isToggleOn`/`isPrivate`.
+   */
+  private applyPrivacyState(activity: any): void {
+    if (!activity || typeof activity !== 'object') return;
+
+    const sharedWithParent = this.toBooleanFlag(activity.sharedWithParent);
+    const isPrivateToChild = this.toBooleanFlag(activity.isPrivateToChild);
+    if (sharedWithParent !== null && isPrivateToChild !== null) {
+      this.isPrivate = !sharedWithParent && isPrivateToChild;
+      return;
+    }
+
+    const toggleState = this.toBooleanFlag(activity.isToggleOn);
+    if (toggleState !== null) {
+      this.isPrivate = toggleState;
+      return;
+    }
+
+    const legacyState = this.toBooleanFlag(activity.isPrivate);
+    if (legacyState !== null) this.isPrivate = legacyState;
+  }
+
+  private toBooleanFlag(value: unknown): boolean | null {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value === 1 ? true : value === 0 ? false : null;
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'true' || normalized === '1') return true;
+    if (normalized === 'false' || normalized === '0') return false;
+    return null;
+  }
+
   private normalizeEventRecurrence(value: unknown): EventRecurrence {
     const normalized = String(value || '').trim().toUpperCase().replace(/[ -]+/g, '_');
     if (normalized === 'MONTHLY' || normalized === 'YEARLY') return normalized;
@@ -894,6 +929,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       this.resetPlannerModeDrafts();
       const h: any = stateHabit;
       this.originalHabit = h;
+      // Reset per-entry flags when Ionic reuses this component instance for a
+      // different edit screen; otherwise a previous private/parent-created
+      // value can leak into the next activity.
+      this.isPrivate = false;
+      this.isParentCreated = false;
       if (h.id) this.editingId = String(h.id);
       this.title = h.title || h.name || '';
       this.notes = h.notes ?? h.description ?? '';
@@ -907,10 +947,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       // Auto-switch to the appropriate tab based on: @Input() initialTab, explicit currentActive in state, or habit type
       // Reuse `stateCurrentActive` declared above and fall back to habit type when editing.
       this.currentActive = this.normalizeActivityTab(stateCurrentActive || h.type, this.currentActive);
-      // The habit object passed via navigation state (from the timeline/detail list)
-      // doesn't carry the Private-toggle state, so `h.isPrivate` is always undefined.
-      // Use it only as a transient fallback while we fetch the authoritative value.
-      this.isPrivate = !!h.isPrivate;
+      // Apply privacy immediately when the navigation state already contains
+      // the API flags, then refresh it from the authoritative detail request.
+      this.applyPrivacyState(h);
       if (this.editingId && (this.currentActive === 'habits' || this.currentActive === 'tasks')) {
         const dateForLookup = stateSelectedDate || this.formatDateStr(new Date());
         const detailRequest = this.currentActive === 'tasks'
@@ -918,9 +957,12 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
           : this.habitApi.getHabitByIdWithDate(Number(this.editingId), dateForLookup);
         detailRequest.subscribe({
           next: (res: any) => {
-            const detail = res?.data && typeof res.data === 'object' ? res.data : res;
-            // isToggleOn mirrors isPrivateToChild exactly: true = toggle ON/private.
-            if (this.currentActive === 'habits') this.isPrivate = !!detail?.isToggleOn;
+            const detail = res?.data?.data && typeof res.data.data === 'object'
+              ? res.data.data
+              : (res?.data && typeof res.data === 'object' ? res.data : res);
+            // For both habits and tasks, Private is ON only when the activity
+            // is hidden from the parent and explicitly private to the child.
+            this.applyPrivacyState(detail);
             if (res && ('reminderOffset' in res || 'reminder_offset' in res)) {
               this.reminderOffset = this.normalizeReminderOffset(res.reminderOffset ?? res.reminder_offset);
             }

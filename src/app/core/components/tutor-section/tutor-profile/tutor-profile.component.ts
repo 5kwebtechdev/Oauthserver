@@ -22,6 +22,7 @@ import { CustomToastService } from '../../../services/custom-toast.service';
 import { TutorLikeService } from '../../../services/tutor-like.service';
 import { TutorService } from '../../../services/tutor.service';
 import { UserService } from '../../../services/user.service';
+import { ShareLinkService } from '../../../services/share-link.service';
 import { FaqItem, PROFILE_FAQS, ProfileFactsComponent } from '../../user-profile/profile-facts/profile-facts.component';
 import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 
@@ -80,6 +81,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     private tutorApi: TutorApi,
     private route: ActivatedRoute,
     private router: Router,
+    private shareLinks: ShareLinkService,
     private tutorService: TutorService,
     private userService: UserService
   ) {}
@@ -233,7 +235,10 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
     const title = this.getDisplayName();
     const text = `View ${title} on SuperMe EduHub`;
-    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const type = this.isCounselorProfile
+      ? 'counselor'
+      : (this.isAcademyProfile() ? 'academy' : 'tutor');
+    const url = this.shareLinks.buildListingLink(type, this.tutor.id);
 
     try {
       await Share.share({ title, text, url, dialogTitle: `Share ${title}` });

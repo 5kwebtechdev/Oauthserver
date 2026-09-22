@@ -1402,15 +1402,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    if (this.isManagedChildSignup) {
-      this.navigateToSignupStep(4);
-      return;
-    }
-
     if (
       role === 'child'
       && this.isEditingPendingChildOnboarding
-      && this.authService.isPendingChild()
+      && this.authService.isLoggedIn()
+      && (this.authService.isPendingChild()
+        || sessionStorage.getItem(SignupComponent.CHILD_POST_FAMILY_WELCOME_KEY) === 'true')
     ) {
       // Back from Join Family is an edit/review action for an already-created
       // pending child. Preserve the edited draft and return directly without
@@ -1420,6 +1417,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         queryParams: { role: 'child' },
         animated: false
       });
+      return;
+    }
+
+    if (this.isManagedChildSignup) {
+      this.navigateToSignupStep(4);
       return;
     }
 

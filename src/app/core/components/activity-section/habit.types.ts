@@ -46,6 +46,7 @@ export interface Habit {
   createdByName?: string;
   createdBy?: string;
   sharedWithParent?: boolean;
+  isPrivateToChild?: boolean;
   completed?: boolean;
   rewardCoins?: number;
   familyId?: number | null;

@@ -116,16 +116,19 @@ export class TutorLikeService {
     return this.getSubject(tutorId).value.count;
   }
 
-  toggleLike(tutor: any): Promise<TutorLikeState> | null {
+  toggleLike(tutor: any, desiredLiked?: boolean): Promise<TutorLikeState> | null {
     if (!tutor || !tutor.id) return null;
     const id = String(tutor.id);
     const subj = this.getSubject(id);
     const prev = subj.value;
     if (prev.pending) return null; // avoid duplicate requests
 
+    const nextLiked = typeof desiredLiked === 'boolean' ? desiredLiked : !prev.liked;
     const newState: TutorLikeState = {
-      liked: !prev.liked,
-      count: prev.liked ? Math.max(0, prev.count - 1) : prev.count + 1,
+      liked: nextLiked,
+      count: nextLiked === prev.liked
+        ? prev.count
+        : (nextLiked ? prev.count + 1 : Math.max(0, prev.count - 1)),
       pending: true
     };
 

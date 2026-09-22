@@ -20,6 +20,13 @@ const routes: Routes = [
     loadComponent: () => import('./core/components/education-section/counselor-directory/counselor-directory.component').then(m => m.CounselorDirectoryComponent),
     data: { entityType: 'INDIVIDUAL', title: 'Tutors', singularTitle: 'Tutor' }
   },
+  // Native-safe listing share links. The component hands installed-app users
+  // to the authenticated detail route and sends browser users to the store.
+  {
+    path: 'share/:type/:id',
+    loadComponent: () => import('./core/components/shared-listing-redirect/shared-listing-redirect.component')
+      .then(m => m.SharedListingRedirectComponent)
+  },
   { path: 'sationery-shop', redirectTo: 'stationery-shop', pathMatch: 'full' },
   {
     path: 'counselor',
