@@ -2607,16 +2607,21 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const parentId = item?.timetableId ?? item?.timetable_id ?? item?.plannerId
       ?? item?.planner_id ?? item?.scheduleId ?? item?.schedule_id ?? item?.seriesId ?? item?.series_id;
     if (parentId !== null && parentId !== undefined && parentId !== '') return `schedule:${parentId}`;
+    // The calendar API always tags each row with its own `id`; trust that over a
+    // content match so two distinct rows that happen to share title/date/color
+    // (e.g. two separately-created "parentTT2" entries) aren't merged into one card.
+    const rowId = item?.id ?? item?.calendarId ?? item?.calendar_id;
+    if (rowId !== null && rowId !== undefined && rowId !== '') return `row:${rowId}`;
     const title = this.getGlancePlannerTitle(item).trim().toLowerCase();
     const start = String(item?.startDate ?? item?.start_date ?? '').slice(0, 10);
     const end = String(item?.endDate ?? item?.end_date ?? '').slice(0, 10);
     const color = String(item?.colorCode ?? item?.color_code ?? '').toLowerCase();
     const fallback = `${title}|${start}|${end}|${color}`;
-    return fallback.replace(/\|/g, '') ? `details:${fallback}` : `row:${item?.id ?? item?.calendarId ?? index}`;
+    return fallback.replace(/\|/g, '') ? `details:${fallback}` : `row:${index}`;
   }
 
   private glancePlannerEntryIdentity(entry: any, index: number): string {
-    const id = entry?.entryId ?? entry?.entry_id ?? entry?.activityId ?? entry?.activity_id;
+    const id = entry?.entryId ?? entry?.entry_id ?? entry?.activityId ?? entry?.activity_id ?? entry?.id;
     if (id !== null && id !== undefined && id !== '') return `entry:${id}`;
     const name = this.getGlancePlannerTitle(entry).trim().toLowerCase();
     const start = String(entry?.startTime ?? entry?.start_time ?? '');
@@ -2624,7 +2629,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const rawDays = entry?.daysOfWeek ?? entry?.days ?? [];
     const days = (Array.isArray(rawDays) ? rawDays : [rawDays]).map(String).sort().join(',');
     const fallback = `${name}|${start}|${end}|${days}`;
-    return fallback.replace(/\|/g, '') ? `details:${fallback}` : `row:${entry?.id ?? index}`;
+    return fallback.replace(/\|/g, '') ? `details:${fallback}` : `row:${index}`;
   }
 
   private glanceEntryOccursOnDate(entry: any, date: Date, inheritedDays?: any): boolean {

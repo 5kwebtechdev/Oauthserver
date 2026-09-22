@@ -1187,6 +1187,7 @@ Thank you!`;
                 relationship: 'PARENT',
                 familyCode: familyCode || '',
                 familyName: sessionStorage.getItem('familyName') || this.createdFamilyName || '',
+                referralCode: sessionStorage.getItem('referralCode') || null,
                 unlockPotential: false
             };
             // Parents aren't shown the avatar picker during signup, so

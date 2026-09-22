@@ -116,13 +116,10 @@ $theme-colors-dark: (
         background: $dark;
       }
 
-      .priority-toggle-control ::ng-deep .superme-toggle,
-      .everyday-toggle ::ng-deep .superme-toggle {
-        .track { background: rgba($color, 0.35) !important; }
-        .thumb { background: $dark !important; box-shadow: none !important; }
-
-        &[aria-checked="true"] .track { background: $color !important; }
-        &[aria-checked="true"] .thumb { background: $dark !important; }
+      .priority-toggle-control superme-toggle,
+      .everyday-toggle superme-toggle {
+        --sm-toggle-track-off: #{rgba($color, 0.35)};
+        --sm-toggle-track-on: #{$color};
       }
 
       .title-card-icon,
@@ -161,8 +158,6 @@ $theme-colors-dark: (
 
   // All form toggles use one geometry so Habit, Task, Timetable, and Event do
   // not jump in size when the active tab changes.
-  .priority-toggle-control ::ng-deep .superme-toggle,
-  .everyday-toggle ::ng-deep .superme-toggle,
   .event-toggle-control ::ng-deep .superme-toggle,
   .planner-event-priority ::ng-deep .superme-toggle {
     width: 40px !important;
@@ -222,41 +217,29 @@ $theme-colors-dark: (
   white-space: nowrap;
 }
 
-.header-toggle ::ng-deep .superme-toggle {
-  width: 38px;
-  height: 22px;
-}
-
-.header-toggle ::ng-deep .superme-toggle .track {
-  width: 38px;
-  height: 22px;
-  border-radius: 999px;
-  background: #C9C6DA;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.header-toggle ::ng-deep .superme-toggle .thumb {
-  width: 16px;
-  height: 16px;
-  background: #FFFFFF;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
-  transform: translateX(3px);
-}
-
-.header-toggle ::ng-deep .superme-toggle[aria-checked="true"] .thumb {
-  transform: translateX(19px);
-  background: #FFFFFF;
+/* Themed via the CSS custom properties superme-toggle exposes (--sm-toggle-*)
+   rather than ::ng-deep into its .track/.thumb — a ::ng-deep override ties in
+   specificity with the component's own checked-state rule, so which one wins
+   is order-dependent and isn't reliable across on/off states. Custom
+   properties set on the host inherit into the template with no such war. */
+.header-toggle superme-toggle {
+  --sm-toggle-w: 38px;
+  --sm-toggle-h: 22px;
+  --sm-toggle-thumb: 16px;
+  --sm-toggle-inset: 3px;
+  --sm-toggle-track-off: #C9C6DA;
+  --sm-toggle-track-on: #7C6FCF;
+  --sm-toggle-thumb-off: #FFFFFF;
+  --sm-toggle-thumb-on: #FFFFFF;
+  --sm-toggle-track-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  --sm-toggle-thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
 }
 
 /* Private toggle: tint per active tab (habits/tasks/planner) */
 @each $theme, $color in $theme-colors {
-  .header-toggle.#{$theme} ::ng-deep .superme-toggle {
-    .track { background: rgba($color, 0.35); }
-
-    &[aria-checked="true"] .track {
-      background: $color;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
-    }
+  .header-toggle.#{$theme} superme-toggle {
+    --sm-toggle-track-off: #{rgba($color, 0.35)};
+    --sm-toggle-track-on: #{$color};
   }
 }
 
@@ -264,13 +247,28 @@ $theme-colors-dark: (
    timetable and events tabs (see isPlannerActive in the .ts), which has no
    entry in $theme-colors — without this the toggle fell back to the default
    grey/white styling instead of matching the Planner tab's teal branding. */
-.header-toggle.planner ::ng-deep .superme-toggle {
-  .track { background: rgba(#89B3B6, 0.35); }
+.header-toggle.planner superme-toggle {
+  --sm-toggle-track-off: #{rgba(#89B3B6, 0.35)};
+  --sm-toggle-track-on: #89B3B6;
+}
 
-  &[aria-checked="true"] .track {
-    background: #89B3B6;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
-  }
+/* Higher Priority + Everyday toggles: same --sm-toggle-* theming as the
+   Private toggle above (pill container is set on .priority-toggle-control /
+   .everyday-toggle further down) so every toggle in this form reads as one
+   consistent control. Track color per active tab is set in the $theme-colors
+   loop further up. */
+.priority-toggle-control superme-toggle,
+.everyday-toggle superme-toggle {
+  --sm-toggle-w: 38px;
+  --sm-toggle-h: 22px;
+  --sm-toggle-thumb: 16px;
+  --sm-toggle-inset: 3px;
+  --sm-toggle-track-off: #C9C6DA;
+  --sm-toggle-track-on: #7C6FCF;
+  --sm-toggle-thumb-off: #FFFFFF;
+  --sm-toggle-thumb-on: #FFFFFF;
+  --sm-toggle-track-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  --sm-toggle-thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
 }
 
 
@@ -1086,7 +1084,12 @@ $theme-colors-dark: (
 .everyday-toggle {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(40, 37, 39, 0.04);
+  border: 1px solid rgba(40, 37, 39, 0.08);
+  width: fit-content;
 }
 
 .everyday-toggle .toggle-right {
@@ -1176,10 +1179,12 @@ $theme-colors-dark: (
 }
 
 .everyday-label-text {
-  color: #6B656A;
+  color: #57545c;
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
 }
 
 /* Start/End Time & Start/End Date picker cards */
@@ -1375,17 +1380,21 @@ $theme-colors-dark: (
 .priority-toggle-control {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  width: auto;
-  flex-direction: column;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(40, 37, 39, 0.04);
+  border: 1px solid rgba(40, 37, 39, 0.08);
+  width: fit-content;
 }
 
 .priority-toggle-label {
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
-  color: #282527;
+  color: #57545c;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
 }
 
 .priority-selection.invalid .priority-toggle-label {

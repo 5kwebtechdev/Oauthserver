@@ -22,9 +22,29 @@ import { CommonModule } from '@angular/common';
     </button>
   `,
   styles: [`
+    /*
+     * Colors/sizing are exposed as CSS custom properties (defaults below match
+     * the original hardcoded look) so consumers can theme a specific toggle by
+     * setting --sm-toggle-* on the <superme-toggle> host element instead of
+     * reaching in with ::ng-deep. A ::ng-deep override of .track/.thumb ties
+     * in specificity with the rules below (both end up equally specific once
+     * Angular's emulated-encapsulation attribute is added), so which one wins
+     * depends on stylesheet injection order and isn't reliable; custom
+     * properties inherit into this template regardless of that.
+     */
     :host {
       display: inline-flex;
       vertical-align: middle;
+      --sm-toggle-w: 50px;
+      --sm-toggle-h: 25px;
+      --sm-toggle-thumb: 24px;
+      --sm-toggle-inset: 4px;
+      --sm-toggle-track-off: #C9C6DA;
+      --sm-toggle-track-on: #7C6FCF;
+      --sm-toggle-thumb-off: #3F3D56;
+      --sm-toggle-thumb-on: #3F3D56;
+      --sm-toggle-track-shadow: none;
+      --sm-toggle-thumb-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
     }
 
     .superme-toggle {
@@ -35,8 +55,8 @@ import { CommonModule } from '@angular/common';
       background: transparent;
       border: none;
       cursor: pointer;
-      width: 50px;
-      height: 25px;
+      width: var(--sm-toggle-w);
+      height: var(--sm-toggle-h);
       padding: 0;
       border-radius: 999px;
       touch-action: manipulation;
@@ -55,11 +75,11 @@ import { CommonModule } from '@angular/common';
 
     .superme-toggle .track {
       position: relative;
-      width: 50px;
-      height: 31px;
-      border-radius: 20px;
-      background: #C9C6DA;
-      /* inactive track */
+      width: var(--sm-toggle-w);
+      height: var(--sm-toggle-h);
+      border-radius: 999px;
+      background: var(--sm-toggle-track-off);
+      box-shadow: var(--sm-toggle-track-shadow);
       transition: background 0.18s ease-in-out;
       display: flex;
       align-items: center;
@@ -69,27 +89,25 @@ import { CommonModule } from '@angular/common';
 
     .superme-toggle .thumb {
       position: relative;
-      width: 24px;
-      height: 24px;
+      width: var(--sm-toggle-thumb);
+      height: var(--sm-toggle-thumb);
       border-radius: 50%;
-      background: #3F3D56;
-      /* thumb color */
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
+      background: var(--sm-toggle-thumb-off);
+      box-shadow: var(--sm-toggle-thumb-shadow);
       transition: transform 0.18s ease-in-out, background 0.18s ease-in-out;
-      transform: translateX(4px);
+      transform: translateX(var(--sm-toggle-inset));
     }
 
     /* checked state: move thumb to right and change track */
     .superme-toggle[aria-checked="true"] .track,
     :host(.toggle-checked) .track {
-      background: #7C6FCF;
-      /* active track */
+      background: var(--sm-toggle-track-on);
     }
 
     .superme-toggle[aria-checked="true"] .thumb,
     :host(.toggle-checked) .thumb {
-      transform: translateX(22px);
-      background: #3F3D56;
+      transform: translateX(calc(var(--sm-toggle-w) - var(--sm-toggle-thumb) - var(--sm-toggle-inset)));
+      background: var(--sm-toggle-thumb-on);
     }
   `]
 })
