@@ -203,48 +203,73 @@ $theme-colors-dark: (
   line-height: 1.2;
 }
 
+.header-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(40, 37, 39, 0.04);
+  border: 1px solid rgba(40, 37, 39, 0.08);
+}
+
 .header-toggle-label {
   font-size: 13px;
-  color: black;
-  margin-right: 6px;
-  font-family:nunito;
-  font-weight:500;
-  margin-bottom:5px;
+  color: #57545c;
+  font-family: nunito;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
 }
 
 .header-toggle ::ng-deep .superme-toggle {
-  width: 40px;
-  height: 24px;
+  width: 38px;
+  height: 22px;
 }
 
 .header-toggle ::ng-deep .superme-toggle .track {
-  width: 40px;
-  height: 24px;
+  width: 38px;
+  height: 22px;
   border-radius: 999px;
   background: #C9C6DA;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .header-toggle ::ng-deep .superme-toggle .thumb {
-  width: 20px;
-  height: 20px;
-  background: #3F3D56;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
-  transform: translateX(2px);
+  width: 16px;
+  height: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
+  transform: translateX(3px);
 }
 
 .header-toggle ::ng-deep .superme-toggle[aria-checked="true"] .thumb {
-  transform: translateX(18px);
-  background: #3F3D56;
+  transform: translateX(19px);
+  background: #FFFFFF;
 }
 
-/* Private toggle: tint per active tab (habits/tasks/timetable) */
+/* Private toggle: tint per active tab (habits/tasks/planner) */
 @each $theme, $color in $theme-colors {
   .header-toggle.#{$theme} ::ng-deep .superme-toggle {
     .track { background: rgba($color, 0.35); }
-    .thumb { background: map.get($theme-colors-dark, $theme); }
 
-    &[aria-checked="true"] .track { background: $color; }
-    &[aria-checked="true"] .thumb { background: map.get($theme-colors-dark, $theme); }
+    &[aria-checked="true"] .track {
+      background: $color;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+    }
+  }
+}
+
+/* The compact child flow always applies the "planner" class for both the
+   timetable and events tabs (see isPlannerActive in the .ts), which has no
+   entry in $theme-colors — without this the toggle fell back to the default
+   grey/white styling instead of matching the Planner tab's teal branding. */
+.header-toggle.planner ::ng-deep .superme-toggle {
+  .track { background: rgba(#89B3B6, 0.35); }
+
+  &[aria-checked="true"] .track {
+    background: #89B3B6;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
   }
 }
 

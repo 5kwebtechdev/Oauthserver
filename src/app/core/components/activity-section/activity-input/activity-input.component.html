@@ -264,12 +264,10 @@
 <ion-content fullscreen>
   <superme-navigator [heading]="editingId ? 'Update Activity' : 'Create. Commit. Grow.'"
     [rightActions]="navigatorActions" (rightActionClick)="onNavigatorAction($event)" (back)="onNavigatorBack()">
-    <div *ngIf="isChild && !isParentCreated" slot="end" class="header-toggle d-flex flex-column "
+    <div *ngIf="isChild && !isParentCreated" slot="end" class="header-toggle"
       [ngClass]="isPlannerActive ? 'planner' : currentActive" aria-label="Private toggle">
-      <label class="header-toggle-label">Private</label>
-      <div class="toggle-right">
-        <superme-toggle [(checked)]="isPrivate" (checkedChange)="onPrivateChange($event)"></superme-toggle>
-      </div>
+      <span class="header-toggle-label">Private</span>
+      <superme-toggle [(checked)]="isPrivate" (checkedChange)="onPrivateChange($event)"></superme-toggle>
     </div>
   </superme-navigator>
   <div class="habit-input-root" [ngClass]="currentActive"
