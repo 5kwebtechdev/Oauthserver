@@ -94,7 +94,7 @@
 
         <div class="events-list" *ngIf="!isLoading && !errorMessage && visibleItems.length">
           <ng-container *ngFor="let item of visibleItems; let index = index; trackBy: trackItem">
-            <app-eduhub-event-card [item]="item" [entityType]="entityType" (viewDetails)="openDetails($event)"></app-eduhub-event-card>
+            <app-eduhub-event-card [item]="item" [entityType]="itemEntityType(item)" (viewDetails)="openDetails($event)"></app-eduhub-event-card>
 
             <ad-banner *ngIf="index === 2" class="events-ad" [screen]="eduAdScreen" variant="eduhub-inner"
               aria-label="Featured EduHub offers"></ad-banner>

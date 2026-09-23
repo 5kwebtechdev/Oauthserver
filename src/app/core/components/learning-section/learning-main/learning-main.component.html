@@ -306,8 +306,11 @@
 
             <ng-container *ngIf="!activeTabLoading && !tabErrors[selectedCategory]">
               <h2 *ngIf="selectedCategory === 'masterclass'" class="child-category-section__title">
-                Where do you want to grow today?
+                Choose a life skill to build today
               </h2>
+              <p *ngIf="selectedCategory === 'masterclass'" class="child-category-section__description">
+                Explore activities that help you learn, practice, and grow.
+              </p>
 
               <ad-banner *ngIf="selectedCategory !== 'masterclass'"
                 class="child-learning-ad child-learning-ad--categories" screen="LEARNING" fallbackScreen="HOME"

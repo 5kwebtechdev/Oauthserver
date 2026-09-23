@@ -146,6 +146,9 @@ const routes: Routes = [
         path: 'activity-detail/:id',
         component: ActivityDetailComponent
       }, {
+        path: 'event-detail/:id',
+        loadComponent: () => import('../core/components/activity-section/event-detail/event-detail.component').then(m => m.EventDetailComponent)
+      }, {
         path: 'activity-input',
         loadComponent: () => import('../core/components/activity-section/activity-input/activity-input.component').then(m => m.ActivityInputComponent)
       },

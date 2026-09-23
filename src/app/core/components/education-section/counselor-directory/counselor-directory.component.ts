@@ -8,7 +8,7 @@ import { Observable, Subscription, catchError, map, of, switchMap, take } from '
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
-import { Tutor, SelectedFilters, formatContactModes, formatExperience } from '../../../models/tutor.model';
+import { Tutor, SelectedFilters, formatContactModes, formatExperience, getExperienceYears } from '../../../models/tutor.model';
 import { TutorAllFilterComponent } from '../../tutor-section/tutor-all-filter/tutor-all-filter.component';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
@@ -18,14 +18,14 @@ import { TutorService } from '../../../services/tutor.service';
 import { ShareLinkService } from '../../../services/share-link.service';
 import { EduHubCityService } from '../../../services/eduhub-city.service';
 import { EduHubCitySelectorComponent } from '../eduhub-city-selector/eduhub-city-selector.component';
-import { ProfileImageComponent } from '../../profile-image/profile-image.component';
+import { CounselorCardComponent } from '../counselor-card/counselor-card.component';
 
 type FilterTab = 'specialization' | 'experience';
 
 @Component({
   selector: 'app-counselor-directory',
   standalone: true,
-  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, TutorAllFilterComponent, ProfileImageComponent],
+  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, TutorAllFilterComponent, CounselorCardComponent],
   templateUrl: './counselor-directory.component.html',
   styleUrls: ['./counselor-directory.component.scss']
 })
@@ -56,6 +56,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   private readonly subscriptions = new Subscription();
   private readonly likeSubscriptions = new Map<number, Subscription>();
   private directoryRequestVersion = 0;
+  private readonly unfilteredDirectories = new Map<string, Tutor[]>();
 
   constructor(
     private readonly location: Location,
@@ -182,22 +183,19 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
           (counselor as any).addressLine,
           (counselor as any).exactLocation
         ].filter(Boolean).join(' '))))
-        && (!this.selectedSpecializations.size || specializations.some(value => this.selectedSpecializations.has(value)))
+        && (!this.selectedSpecializations.size || specializations.some(value =>
+          Array.from(this.selectedSpecializations).some(selected => this.normalizeSpecialization(selected) === this.normalizeSpecialization(value))))
         && (!this.selectedExperience.size || this.selectedExperience.has(experience))
         && (!this.searchQuery.trim() || searchableText.includes(this.searchQuery.trim().toLocaleLowerCase()));
     });
   }
 
   get specializationOptions(): string[] {
-    const values = this.counselors.reduce<string[]>(
-      (all, counselor) => all.concat(this.getSpecializations(counselor)),
-      []
-    );
-    return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
+    return ['Mental health', 'Personality Development', 'Career counselling', 'College Admissions', 'Childhood Development'];
   }
 
   get experienceOptions(): string[] {
-    return [...new Set(this.counselors.map(counselor => this.getExperienceFilterValue(counselor)))];
+    return ['1–3 years', '3–5 years', '5–10 years', '10+ years'];
   }
 
   get activeFilterOptions(): string[] {
@@ -247,6 +245,11 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
 
   loadCounselors(): void {
     const requestVersion = ++this.directoryRequestVersion;
+    const requestedEntityType = this.entityType;
+    const isFilteredRequest = this.entityType !== 'COUNSELOR' && !!this.educationFilters;
+    if (!isFilteredRequest && this.counselors.length) {
+      this.unfilteredDirectories.set(requestedEntityType, [...this.counselors]);
+    }
     // Keep the Home-page results visible while refreshing this directory.
     // A background request should not replace valid shared data with a loader.
     this.isLoading = !this.counselors.length;
@@ -260,6 +263,9 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
           if (requestVersion !== this.directoryRequestVersion) return;
           const refreshed = (Array.isArray(counselors) ? counselors : [])
             .filter(counselor => this.isActiveListing(counselor));
+          if (!isFilteredRequest && refreshed.length) {
+            this.unfilteredDirectories.set(requestedEntityType, [...refreshed]);
+          }
           // A successful filtered search may legitimately contain no matches.
           // In that case the old unfiltered cards must not remain on screen.
           if (this.educationFilters || refreshed.length || !this.counselors.length) {
@@ -410,6 +416,9 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
 
   clearFilters(): void {
     this.educationFilters = null;
+    this.showEducationFilters = false;
+    document.body.classList.remove('tutor-filter-open');
+    this.errorMessage = '';
     this.searchQuery = '';
     this.verifiedOnly = false;
     this.selectedSpecializations.clear();
@@ -417,13 +426,17 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
 
     if (this.entityType === 'COUNSELOR') {
       this.refreshSelections();
+      this.cdr.detectChanges();
       return;
     }
 
     // Reload the complete entity directory. An empty category search is not
     // equivalent to the unfiltered directory on every backend version.
-    this.counselors = [];
+    this.counselors = [...(this.unfilteredDirectories.get(this.entityType) || [])];
     this.loadCounselors();
+    // Native modal callbacks can run outside Angular's normal event cycle.
+    // Render the cleared selection and restored cards immediately.
+    this.cdr.detectChanges();
   }
 
   applyFilters(): void {
@@ -554,6 +567,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
 
     const profileBaseRoute = this.entityType === 'COUNSELOR' ? '/counselors' : '/tutors';
     void this.router.navigate([profileBaseRoute, counselor.id], {
+      queryParams: this.educationFilters?.categoryKey ? { category: this.educationFilters.categoryKey } : undefined,
       state: { tutor: counselor }
     });
   }
@@ -609,7 +623,9 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   private getSpecializations(counselor: Tutor): string[] {
-    const direct = (counselor.subjects || []).map(value => String(value).trim()).filter(Boolean);
+    const raw = (counselor as Tutor & { specializations?: string[] | string }).specializations;
+    const direct = (Array.isArray(raw) ? raw : raw ? raw.split(',') : counselor.subjects || [])
+      .map(value => String(value).trim()).filter(Boolean);
     const configured = (counselor.categoryMappings || []).reduce<string[]>(
       (all, mapping) => all.concat(this.getMappedSpecializations(mapping.selectedFieldOptions)),
       []
@@ -636,12 +652,22 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   private getExperienceFilterValue(counselor: Tutor): string {
-    const years = Math.max(0, ...(counselor.categoryMappings || []).map(mapping => mapping.yearsOfExperience || 0));
+    const mappedYears = Math.max(0, ...(counselor.categoryMappings || []).map(mapping => Number(mapping.yearsOfExperience) || 0));
+    const experience = String(counselor.experience || '').toUpperCase();
+    const rangeLabels: Record<string, string> = {
+      RANGE_1_3: '1–3 years', RANGE_3_5: '3–5 years', RANGE_5_10: '5–10 years', RANGE_10_PLUS: '10+ years'
+    };
+    if (!mappedYears && rangeLabels[experience]) return rangeLabels[experience];
+    const years = mappedYears || getExperienceYears(experience) || Number(experience) || 0;
     if (years <= 0) return 'Fresher';
-    if (years <= 3) return '1-3 years';
-    if (years <= 5) return '3-5 years';
-    if (years <= 10) return '5-10 years';
-    return '10+ years';
+    if (years >= 10) return '10+ years';
+    if (years >= 5) return '5–10 years';
+    if (years >= 3) return '3–5 years';
+    return '1–3 years';
+  }
+
+  private normalizeSpecialization(value: string): string {
+    return value.toLowerCase().replace(/counseling/g, 'counselling').replace(/[^a-z0-9]/g, '');
   }
 
   private refreshSelections(): void {

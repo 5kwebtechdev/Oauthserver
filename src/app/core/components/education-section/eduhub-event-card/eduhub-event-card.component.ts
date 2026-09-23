@@ -36,11 +36,7 @@ export class EduHubEventCardComponent {
 
   getEventMeta(item: EduHubEventItem): string {
     const start = this.date(item.startDt);
-    const end = this.date(item.endDt);
-    const schedule = start && end && start !== end ? `${start} – ${end}` : start || end;
-    const venue = item.unlocked ? this.text(item.exactLocation, item.address, item.venue) : '';
-    const organizer = this.text(item.organizer);
-    return [schedule, venue, organizer ? `By ${organizer}` : ''].filter(Boolean).join(' • ');
+    return start;
   }
 
   getFeeLabel(item: EduHubEventItem): string {
@@ -48,7 +44,7 @@ export class EduHubEventCardComponent {
     if (item.fee == null) return 'Contact for pricing';
     const fee = Number(item.fee);
     if (!Number.isFinite(fee)) return 'Contact for pricing';
-    return fee === 0 ? 'FREE' : `₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)}`;
+    return fee === 0 ? 'FREE' : `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / Per Person`;
   }
 
   isFavourite(item: EduHubEventItem): boolean { return !!item.likedBySelf; }
@@ -96,6 +92,6 @@ export class EduHubEventCardComponent {
   private date(value?: string | null): string {
     if (!value) return '';
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? '' : new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+    return Number.isNaN(date.getTime()) ? '' : new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true }).format(date);
   }
 }

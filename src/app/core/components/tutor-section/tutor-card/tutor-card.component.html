@@ -27,48 +27,18 @@
   <ng-container *ngIf="!isSelectedCategoryLoading">
     <ng-container *ngIf="selectedCategoryKey === 'tutors'">
       <div class="eduhub-tutors" *ngIf="visibleTutors.length">
-        <article class="eduhub-tutor" *ngFor="let tutor of visibleTutors; trackBy: trackTutor" (click)="onViewProfile(tutor)" role="button" tabindex="0" (keyup.enter)="onViewProfile(tutor)">
-          <app-profile-image class="eduhub-tutor__avatar" [src]="tutor.avatar" [name]="tutor.name" [alt]="tutor.name"></app-profile-image>
-          <div class="eduhub-tutor__body">
-            <div class="eduhub-tutor__headline">
-              <div class="eduhub-tutor__identity">
-                <strong>{{ tutor.name }}</strong>
-                <img *ngIf="isVerified(tutor)" class="eduhub-tutor__verified" [src]="profileVerifiedAsset" alt="Verified">
-              </div>
-              <button type="button" class="eduhub-tutor__favorite" [class.is-liked]="tutor.likedByUser" [disabled]="isLikePending(tutor)" [attr.aria-label]="tutor.likedByUser ? 'Unlike ' + tutor.name : 'Like ' + tutor.name" [attr.aria-pressed]="tutor.likedByUser ? 'true' : 'false'" (click)="toggleLike($event, tutor)"><img [src]="favoriteAsset" alt="" aria-hidden="true"></button>
-            </div>
-            <p>{{ tutor.description }}</p>
-            <small class="eduhub-tutor__time" *ngIf="getTimeLabel(tutor) as timeLabel"><img [src]="onlineModeAsset" alt="" aria-hidden="true">{{ timeLabel }}</small>
-          </div>
-          <div class="eduhub-tutor__footer">
-            <span>{{ tutor.hourlyRate ? ('₹ ' + tutor.hourlyRate + ' / Hours') : 'Contact for pricing' }}</span>
-            <button type="button" (click)="onViewProfile(tutor); $event.stopPropagation()">Check Profile</button>
-          </div>
-        </article>
+        <ng-container *ngFor="let tutor of visibleTutors; trackBy: trackTutor">
+          <app-counselor-card *ngIf="getEducationProfile(tutor) as profile" class="eduhub-event-preview" [counselor]="profile" [education]="true" (viewProfile)="onViewProfile(tutor)"></app-counselor-card>
+        </ng-container>
       </div>
       <p class="eduhub-empty" *ngIf="!visibleTutors.length">No tutors available right now.</p>
     </ng-container>
 
     <ng-container *ngIf="selectedCategoryKey === 'academies'">
       <div class="eduhub-tutors" *ngIf="visibleAcademies.length">
-        <article class="eduhub-tutor" *ngFor="let academy of visibleAcademies; trackBy: trackTutor" (click)="onViewAcademyProfile(academy)" role="button" tabindex="0" (keyup.enter)="onViewAcademyProfile(academy)">
-          <app-profile-image class="eduhub-tutor__avatar" [src]="academy.avatar" [name]="academy.name" [alt]="academy.name"></app-profile-image>
-          <div class="eduhub-tutor__body">
-            <div class="eduhub-tutor__headline">
-              <div class="eduhub-tutor__identity">
-                <strong>{{ academy.name }}</strong>
-                <img *ngIf="isVerified(academy)" class="eduhub-tutor__verified" [src]="profileVerifiedAsset" alt="Verified">
-              </div>
-              <button type="button" class="eduhub-tutor__favorite" [class.is-liked]="academy.likedByUser" [disabled]="isLikePending(academy)" [attr.aria-label]="academy.likedByUser ? 'Unlike ' + academy.name : 'Like ' + academy.name" [attr.aria-pressed]="academy.likedByUser ? 'true' : 'false'" (click)="toggleLike($event, academy)"><img [src]="favoriteAsset" alt="" aria-hidden="true"></button>
-            </div>
-            <p>{{ academy.description }}</p>
-            <small class="eduhub-tutor__time" *ngIf="getTimeLabel(academy) as timeLabel"><img [src]="onlineModeAsset" alt="" aria-hidden="true">{{ timeLabel }}</small>
-          </div>
-          <div class="eduhub-tutor__footer">
-            <span>{{ academy.hourlyRate ? ('₹ ' + academy.hourlyRate + ' / Hours') : 'Contact for pricing' }}</span>
-            <button type="button" (click)="onViewAcademyProfile(academy); $event.stopPropagation()">Check Profile</button>
-          </div>
-        </article>
+        <ng-container *ngFor="let academy of visibleAcademies; trackBy: trackTutor">
+          <app-counselor-card *ngIf="getEducationProfile(academy) as profile" class="eduhub-event-preview" [counselor]="profile" [education]="true" (viewProfile)="onViewAcademyProfile(academy)"></app-counselor-card>
+        </ng-container>
       </div>
       <p class="eduhub-empty" *ngIf="!visibleAcademies.length">No academies available in this location right now.</p>
     </ng-container>
@@ -77,9 +47,17 @@
       <div class="eduhub-tutors">
         <ng-container *ngFor="let listing of visibleExternalPreviews; trackBy: trackPreview">
         <app-eduhub-event-card *ngIf="listing.event as event; else externalPreview" class="eduhub-event-preview"
-          [item]="event" [entityType]="selectedCategoryKey === 'workshops' ? 'Workshop' : 'Events'"
+          [item]="event" [entityType]="event.entityType.toLowerCase() === 'workshop' ? 'Workshop' : 'Events'"
           (viewDetails)="onViewExternalDetails(listing)"></app-eduhub-event-card>
         <ng-template #externalPreview>
+        <app-eduhub-shop-card *ngIf="listing.shop as shop; else genericPreview" class="eduhub-event-preview"
+          [item]="shop" (viewDetails)="onViewExternalDetails(listing)"
+          (favourite)="toggleShopLike(listing)" (share)="shareShop(listing)"
+          (directions)="openShopDirections(listing)" (contact)="openShopContact(listing)"></app-eduhub-shop-card>
+        <ng-template #genericPreview>
+        <app-counselor-card *ngIf="listing.counselor as counselor; else otherPreview" class="eduhub-event-preview"
+          [counselor]="counselor" (viewProfile)="onViewCounselorProfile($event)"></app-counselor-card>
+        <ng-template #otherPreview>
         <article class="eduhub-tutor"
           [class.eduhub-tutor--clickable]="true"
           role="button"
@@ -98,6 +76,8 @@
             <button type="button" *ngIf="listing.counselor as counselor" (click)="onViewCounselorProfile(counselor); $event.stopPropagation()">Check Profile</button>
           </div>
         </article>
+        </ng-template>
+        </ng-template>
         </ng-template>
         </ng-container>
       </div>

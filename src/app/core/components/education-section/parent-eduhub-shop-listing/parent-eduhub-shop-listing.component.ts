@@ -19,7 +19,7 @@ import { ShareLinkService } from '../../../services/share-link.service';
 import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
-import { ProfileImageComponent } from '../../profile-image/profile-image.component';
+import { EduHubShopCardComponent } from '../eduhub-shop-card/eduhub-shop-card.component';
 import { EduHubCitySelectorComponent } from '../eduhub-city-selector/eduhub-city-selector.component';
 
 type DirectorySort = 'verified' | 'nearest';
@@ -92,7 +92,7 @@ interface EduHubShopListing {
     AdBannerComponent,
     FooterComponent,
     SupermePetComponent,
-    ProfileImageComponent,
+    EduHubShopCardComponent,
     EduHubCitySelectorComponent
   ],
   templateUrl: './parent-eduhub-shop-listing.component.html',
@@ -595,6 +595,10 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     const listing = this.listings.find(item => item.id === this.selectedListingId);
     if (!listing) return;
     this.selectedListingId = null;
+    if (this.route.snapshot.queryParamMap.get('action') === 'contact') {
+      this.requestUnlock(listing);
+      return;
+    }
     this.openListing(listing);
   }
 

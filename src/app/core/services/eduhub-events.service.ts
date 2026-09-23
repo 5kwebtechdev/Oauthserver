@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, forkJoin, map } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
@@ -68,6 +68,21 @@ export type EduHubEventEntityType = 'Events' | 'Workshop';
 
 @Injectable({ providedIn: 'root' })
 export class EduHubEventsService {
+  getCombinedPage(page: number, size = 20, city?: string): Observable<EduHubEventPage> {
+    return forkJoin([
+      this.getPage('Events', page, size, city),
+      this.getPage('Workshop', page, size, city)
+    ]).pipe(map(([events, workshops]) => ({
+      // Interleave the two feeds so a short Home preview includes both types.
+      content: Array.from({ length: Math.max(events.content.length, workshops.content.length) }, (_, index) =>
+        [events.content[index], workshops.content[index]].filter(Boolean)
+      ).reduce((items, pair) => items.concat(pair), [] as EduHubEventItem[]),
+      page,
+      size: size * 2,
+      totalElements: events.totalElements + workshops.totalElements,
+      totalPages: Math.max(events.totalPages, workshops.totalPages)
+    })));
+  }
   constructor(
     private readonly http: HttpClient,
     private readonly authService: AuthService

@@ -361,17 +361,19 @@
 }
 
 .child-learning-tab__icon {
-	width: 42px;
-	height: 34px;
-	flex: 0 0 34px;
-	display: grid;
-	place-items: center;
+	width: 60px;
+	height: 36px;
+	flex: 0 0 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	overflow: visible;
 	line-height: 0;
 
 	img {
-		width: 100%;
-		height: 100%;
+		width: auto;
+		height: 36px;
+		flex: 0 0 auto;
 		max-width: none;
 		max-height: none;
 		display: block;
@@ -397,6 +399,15 @@
 	line-height: 1.4;
 }
 
+.child-category-section__description {
+	margin: -18px 0 0;
+	padding: 0 16px;
+	color: #6b656a;
+	font-family: var(--font-sans, 'Nunito', sans-serif);
+	font-size: 14px;
+	line-height: 1.4;
+}
+
 .child-learning-ad {
 	display: block;
 	width: 100%;
@@ -418,7 +429,9 @@
 	width: 100%;
 	height: 77px;
 	min-width: 0;
-	display: flex;
+	display: grid;
+	grid-template-columns: 48px minmax(0, 1fr);
+	column-gap: 8px;
 	align-items: center;
 	overflow: hidden;
 	padding: 4px;
@@ -438,13 +451,15 @@
 .child-category-card__image {
 	width: 48px;
 	height: 48px;
-	flex: 0 0 48px;
 	display: block;
 	overflow: hidden;
+	align-self: center;
+	justify-self: center;
 }
 
 .child-category-card__copy {
 	min-width: 0;
+	width: 100%;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -959,6 +974,10 @@
 			font-size: 22px;
 		}
 
+		.child-category-section__description {
+			padding-inline: 0;
+		}
+
 		.child-learning-ad .adb__scroll-track {
 			padding-left: 0;
 		}
@@ -971,6 +990,7 @@
 
 		.child-category-card {
 			height: 104px;
+			grid-template-columns: 64px minmax(0, 1fr);
 			padding: 12px;
 			border-radius: 18px;
 		}
@@ -1086,14 +1106,20 @@
 	}
 
 	.child-learning-tab__icon {
-		width: 34px;
-		height: 26px;
-		flex-basis: 26px;
+		width: 48px;
+		height: 30px;
+		flex-basis: 30px;
+		img { height: 30px; }
 	}
 
 	.child-category-grid {
 		column-gap: 10px;
 		padding-inline: 12px;
+	}
+
+	.child-category-card {
+		grid-template-columns: 40px minmax(0, 1fr);
+		column-gap: 6px;
 	}
 
 	.child-category-card__image {

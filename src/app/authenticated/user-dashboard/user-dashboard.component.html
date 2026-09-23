@@ -96,61 +96,9 @@
           </header>
         </div>
 
-        <section
-          class="profile-bottom-group"
-          [ngClass]="'home-period-' + homeTimePeriod"
-          [attr.data-home-period]="homeTimePeriod"
-          aria-label="Today's progress">
-          <div class="home-hero-message" role="status" aria-live="polite">
-            <img class="home-hero-message__shape" src="assets/icons/child-home-message-arrow-figma.svg" alt="" aria-hidden="true">
-            <div class="home-hero-message__content">
-              <p class="home-hero-message__title">Let’s get <strong>going!</strong></p>
-              <div class="home-hero-message__summary">
-                <img src="assets/icons/child-home-calendar-figma.svg" alt="" aria-hidden="true">
-                <p>
-                  You have
-                  <strong>{{ awaitingHabits }} {{ awaitingHabits === 1 ? 'habit' : 'habits' }}</strong>
-                  and
-                  <strong>{{ awaitingTasks }} {{ awaitingTasks === 1 ? 'task' : 'tasks' }}</strong>
-                  pending for today!
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div class="digital-pet" [class.digital-pet--panda]="isHomePanda" aria-hidden="false">
-            <img *ngIf="isHomePanda" class="digital-pet__panda-image"
-              src="assets/figma/child-learning/header-pet.webp" alt="Panda buddy">
-            <superme-pet *ngIf="!isHomePanda" [mood]="petMood" [size]="132"></superme-pet>
-          </div>
-
-          <div class="header-stats-row" aria-label="Your stats">
-            <span class="header-stats-label" aria-hidden="true">Today’s progress</span>
-            <button type="button" class="header-stat" [routerLink]="['/streaks']"
-              [attr.aria-label]="'Open streaks. Current streak: ' + userStreaks">
-              <span class="header-stat-icon-frame header-stat-icon-frame--streak" aria-hidden="true">
-                <img src="assets/icons/child-home-streak-figma.webp" alt="" class="header-stat-icon">
-              </span>
-              <span class="header-stat-value">{{ userStreaks }}</span>
-            </button>
-            <img class="header-stat-divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="" aria-hidden="true">
-            <button type="button" class="header-stat" [routerLink]="['/trophies']"
-              [attr.aria-label]="'Open trophies. Total trophies: ' + userDays">
-              <span class="header-stat-icon-frame" aria-hidden="true">
-                <img src="assets/icons/child-home-trophy-figma.webp" alt="" class="header-stat-icon">
-              </span>
-              <span class="header-stat-value">{{ userDays }}</span>
-            </button>
-            <img class="header-stat-divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="" aria-hidden="true">
-            <button type="button" class="header-stat" [routerLink]="['/badges']"
-              [attr.aria-label]="'Open badges. Total badges: ' + userBadges">
-              <span class="header-stat-icon-frame" aria-hidden="true">
-                <img src="assets/icons/child-home-badge-figma.webp" alt="" class="header-stat-icon">
-              </span>
-              <span class="header-stat-value">{{ userBadges }}</span>
-            </button>
-          </div>
-        </section>
+        <app-home-mood-header [mood]="homeHeaderMood" [period]="homeTimePeriod"
+          [streaks]="userStreaks" [trophies]="userDays" [badges]="userBadges"
+          (moodEdit)="editHeaderMood()"></app-home-mood-header>
       </div>
     </section>
 
@@ -166,7 +114,7 @@
       -->
 
       <div class="mood-selector w-full">
-        <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>
+        <mood-selector #homeMoodSelector [value]="selectedMood" (valueChange)="onMoodChange($event)" (confirmedMoodChange)="onConfirmedHomeMood($event)"></mood-selector>
       </div>
 
       <!-- activity Card -->

@@ -78,6 +78,14 @@
   box-shadow: 0 0 0 1px #bb2124;
 }
 
+.journal-question__hint {
+  margin: -8px 8px 8px 36px;
+  color: #432477;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .journal-options {
   --option-columns: 4;
   display: grid;

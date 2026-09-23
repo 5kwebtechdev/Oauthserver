@@ -17,6 +17,7 @@
         <img [src]="section.icon" alt="" aria-hidden="true" />
         <span>{{ section.title }}</span>
       </h2>
+      <p class="journal-question__hint" *ngIf="section.key === 'carrying'">Select upto 3</p>
 
       <div class="journal-options" [style.--option-columns]="section.columns">
         <button

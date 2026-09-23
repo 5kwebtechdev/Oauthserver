@@ -44,7 +44,7 @@
         <button type="button" class="glance-event-card"
           [style.transform]="'translateX(-' + getActionSwipeOffset('event-' + event.id) + 'px)'"
           [style.transition]="actionSwipeKey === 'event-' + event.id ? 'transform .2s ease' : null"
-          (click)="onUpcomingEventTap('event-' + event.id)">
+          (click)="onUpcomingEventTap(event)">
           <img [src]="getGlanceUpcomingEventIcon(event)" alt="" aria-hidden="true">
           <span>
             <strong>{{ getGlancePlannerTitle(event) }}</strong>

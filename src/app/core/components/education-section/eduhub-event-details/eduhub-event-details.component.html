@@ -16,7 +16,7 @@
             (click)="toggleFavourite()">
             <span class="detail-toolbar__heart" aria-hidden="true"></span>
           </button>
-          <button type="button" class="detail-toolbar__button detail-toolbar__button--round" aria-label="Share listing"
+          <button type="button" class="detail-toolbar__button detail-toolbar__button--round detail-toolbar__button--share" aria-label="Share listing"
             (click)="shareItem()">
             <span class="detail-toolbar__share" aria-hidden="true"></span>
           </button>
@@ -31,62 +31,56 @@
         </div>
         <div class="event-detail-intro__copy">
           <h1>{{ displayName }}</h1>
-          <p *ngIf="publicLocation">
-            <img src="assets/figma/parent-eduhub-inner/location.svg" alt="" aria-hidden="true">
-            {{ publicLocation }}
-          </p>
-          <span class="event-detail-intro__type">{{ title }}</span>
+          <p><span class="detail-likes-heart" aria-hidden="true">♡</span> {{ item.champsLiked || 0 }} likes</p>
         </div>
       </div>
     </header>
 
     <main class="event-detail-main" *ngIf="item; else unavailable">
       <section class="event-detail-card" aria-label="Listing details">
-        <div class="event-detail-row" *ngIf="venue">
-          <img src="assets/figma/parent-eduhub-inner/location.svg" alt="" aria-hidden="true">
-          <div>
-            <span>Venue</span>
-            <strong>{{ venue }}</strong>
-            <small *ngIf="!item.unlocked">Exact address is available after contact details are unlocked.</small>
+        <div class="event-detail-row">
+          <span class="detail-row-icon"><ion-icon name="calendar-outline"></ion-icon></span>
+          <span class="detail-row-label">Date &amp; Time</span>
+          <div><strong>{{ schedule || 'To be announced' }}</strong></div>
+        </div>
+        <div class="event-detail-row">
+          <span class="detail-row-icon"><ion-icon name="location-outline"></ion-icon></span>
+          <span class="detail-row-label">Venue</span>
+          <div><strong>{{ venue || (item.unlocked ? 'Venue unavailable' : '') }}</strong>
+            <small class="detail-hidden" *ngIf="!item.unlocked"><ion-icon name="lock-closed-outline"></ion-icon> Full address hidden</small>
           </div>
         </div>
-
-        <div class="event-detail-row" *ngIf="feeLabel">
-          <img src="assets/figma/parent-eduhub-inner/coin.webp" alt="" aria-hidden="true">
+        <div class="event-detail-row">
+          <span class="detail-row-icon"><ion-icon name="person-outline"></ion-icon></span>
+          <span class="detail-row-label">Organizer</span>
+          <div><strong>{{ organizer || 'Not provided' }}</strong></div>
+        </div>
+        <div class="event-detail-row">
+          <span class="detail-row-icon">₹</span>
+          <span class="detail-row-label">Fees</span>
+          <div><strong [class.is-free]="feeLabel === 'FREE'">{{ feeLabel }}</strong></div>
+        </div>
+        <div class="event-detail-row">
+          <span class="detail-row-icon"><ion-icon name="attach-outline"></ion-icon></span>
+          <span class="detail-row-label">Registration Link</span>
           <div>
-            <span>Fees</span>
-            <strong [class.is-free]="feeLabel === 'FREE'">{{ feeLabel }}</strong>
+            <a *ngIf="registrationUrl" [href]="registrationUrl" target="_blank" rel="noopener noreferrer">Link <ion-icon name="open-outline"></ion-icon></a>
+            <ng-container *ngIf="!item.unlocked"><span class="detail-link-label">Link <ion-icon name="open-outline"></ion-icon></span>
+              <small class="detail-hidden"><ion-icon name="lock-closed-outline"></ion-icon> Link hidden</small>
+            </ng-container>
+            <strong *ngIf="item.unlocked && !registrationUrl">Not provided</strong>
           </div>
         </div>
-
-        <div class="event-detail-row" *ngIf="schedule">
-          <img src="assets/figma/learning-details/schedule.svg" alt="" aria-hidden="true">
-          <div>
-            <span>Dates</span>
-            <strong>{{ schedule }}</strong>
-          </div>
-        </div>
-
-        <div class="event-detail-row" *ngIf="organizer">
-          <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
-          <div>
-            <span>Organizer</span>
-            <strong>{{ organizer }}</strong>
-          </div>
-        </div>
-
-        <div class="event-detail-row event-detail-row--about" *ngIf="description">
-          <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
-          <div>
-            <span>About</span>
-            <p>{{ description }}</p>
-          </div>
+        <div class="event-detail-row">
+          <span class="detail-row-icon"><ion-icon name="document-text-outline"></ion-icon></span>
+          <span class="detail-row-label">Description</span>
+          <div><p>{{ description || 'No description provided.' }}</p></div>
         </div>
 
         <div class="event-detail-row" *ngIf="item.unlocked && (item.phone || item.email)">
-          <img src="assets/figma/parent-eduhub-inner/call.svg" alt="" aria-hidden="true">
+          <span class="detail-row-icon"><ion-icon name="call-outline"></ion-icon></span>
+          <span class="detail-row-label">Contact</span>
           <div>
-            <span>Contact</span>
             <a *ngIf="item.phone" [href]="'tel:' + item.phone">{{ item.phone }}</a>
             <a *ngIf="item.email" [href]="'mailto:' + item.email">{{ item.email }}</a>
           </div>
@@ -98,9 +92,10 @@
           <img src="assets/figma/contact-unlock/card-illustration.webp" alt="" aria-hidden="true">
           <div class="contact-lock-card__copy">
             <h2>Unlock contact details</h2>
-            <p>Contact information and the exact address are protected by the organizer.</p>
+            <p>Spend coins to unlock address, phone number, and email to get in touch.</p>
           </div>
         </div>
+        <div class="contact-lock-card__benefits"><span *ngFor="let benefit of ['Venue Details', 'Phone Number', 'Email', 'Registration Link']"><ion-icon name="lock-closed-outline"></ion-icon>{{ benefit }}</span></div>
         <button type="button" [disabled]="unlockInProgress" (click)="unlockContactDetails()">
           <ion-spinner *ngIf="unlockInProgress" name="crescent"></ion-spinner>
           <ng-container *ngIf="!unlockInProgress">
@@ -112,6 +107,10 @@
             </span>
           </ng-container>
         </button>
+      </section>
+      <section class="event-detail-faqs" aria-label="Frequently asked questions">
+        <h2>FAQ’s</h2>
+        <details *ngFor="let faq of faqs"><summary>{{ faq.question }}</summary><p>{{ faq.answer }}</p></details>
       </section>
     </main>
 

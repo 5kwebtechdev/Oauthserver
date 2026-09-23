@@ -1,0 +1,77 @@
+:host { display: block; width: 100%; }
+.mood-header {
+  position: relative; width: 100%; height: 174px; overflow: hidden; border-radius: 24px;
+  background: center / cover url('../../../../assets/Images-Thumbnails/HeaderV2.webp');
+  font-family: var(--font-sans, 'Nunito', sans-serif); color: #282527;
+  &.home-period-evening { background-image: url('../../../../assets/Images-Thumbnails/HeaderV2-evening.webp'); }
+  &.home-period-night { background-image: url('../../../../assets/Images-Thumbnails/HeaderV2-night.webp'); }
+}
+.mood-message {
+  position: absolute; top: 8px; left: 8px; width: 245px; max-width: 68%; height: 74px;
+  border: 0; padding: 0; background: transparent; text-align: left;
+  &__shape { position: absolute; inset: 0; width: 100%; height: 100%; }
+  &__copy { position: absolute; top: 8px; left: 12px; width: calc(100% - 43px); font-size: 13px; font-weight: 600; line-height: 1.5; }
+  strong { color: #432477; font-weight: 700; }
+}
+.mood-pill {
+  position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 4px;
+  border: 0; border-radius: 36px; padding: 4px 8px; background: #ebe6f5;
+  box-shadow: 0 0 1px rgba(67,36,119,.5); font: 600 13px var(--font-sans, 'Nunito', sans-serif); color: #282527; cursor: pointer;
+  &__emoji { width: 22px; height: 24px; object-fit: contain; }
+  &__chevron { width: 16px; height: 16px; transform: rotate(-90deg); }
+}
+.mood-pet {
+  // The source artwork has transparent pixels below the grass. Let the header
+  // crop that padding so every pet's ground meets the bottom edge.
+  position: absolute; right: 0; bottom: -6px; width: 140px; height: 133px;
+  > img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: bottom center; }
+}
+.mood-stats { position: absolute; bottom: 8px; left: 16px; display: flex; align-items: center; gap: 16px; padding: 0 16px; border-radius: 12px; backdrop-filter: blur(4px); }
+.mood-stat {
+  display: flex; flex-direction: column; align-items: center; width: 40px; text-decoration: none; color: #282527;
+  > img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(40,37,39,.5)); }
+  strong { font-size: 13px; line-height: 18px; }
+  span { color: #6b656a; font-size: 11px; line-height: 14px; }
+}
+.mood-stats__divider { width: 1px; height: 42px; }
+.other-pet-art {
+  position: relative; display: block; width: 100%; height: 100%; overflow: hidden;
+  img { position: absolute; display: block; max-width: none; object-fit: contain; }
+  &--owl img { width: 83.57%; height: 100%; right: 0; bottom: 0; }
+  &--llama img { width: 77.14%; height: 100.15%; left: 11.43%; top: -0.08%; }
+  &--dragon img { width: 206.29%; height: 207.73%; left: -103.73%; top: -7.45%; }
+}
+// Render the original Figma source at its crop, not a 1x raster export.
+.panda-art {
+  display: block; position: relative; width: 100%; height: 100%; overflow: hidden;
+  img { position: absolute; max-width: none; width: 298.57%; height: 292.99%; left: -1.9%; top: -6.07%; }
+  &--excited img { left: -99.25%; }
+  &--calm img { height: 315.53%; left: -193.16%; top: -114.03%; }
+  &--default img { height: 322.98%; left: -101.78%; top: -219.42%; }
+  &--anxious, &--frustrated {
+    transform: scaleX(-1);
+    img { width: 178.53%; height: 174.41%; top: 0; left: 6.79%; }
+  }
+  &--frustrated img { left: -84.84%; }
+  &--sad img { width: 115.7%; height: 113.82%; left: -8.26%; top: -8.94%; }
+}
+.mood-stat__flame {
+  position: relative; display: block; width: 40px; height: 40px; overflow: hidden;
+  img { position: absolute; max-width: none; width: 205.07%; height: 140.08%; left: -53.4%; top: -15.46%; }
+}
+.home-period-evening, .home-period-night { .mood-stat { color: white; text-shadow: 0 1px 3px #282527; span { color: white; } } }
+button:focus-visible, a:focus-visible { outline: 2px solid #432477; outline-offset: 2px; }
+@media (max-width: 360px) {
+  .mood-message { height: 84px; }
+  .mood-message__copy { font-size: 12px; line-height: 1.45; }
+  .mood-pill { font-size: 12px; gap: 2px; padding-inline: 5px; }
+  .mood-stats { left: 8px; padding-inline: 8px; gap: 10px; }
+  .mood-pet { width: 125px; }
+}
+@media (min-width: 768px) {
+  .mood-header { height: 210px; }
+  .mood-message { left: auto; right: 156px; top: 24px; }
+  .mood-pill { top: 16px; right: 16px; }
+  .mood-pet { width: 160px; height: 160px; right: 0; }
+  .mood-stats { left: 32px; bottom: 24px; }
+}

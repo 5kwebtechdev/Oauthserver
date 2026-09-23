@@ -22,6 +22,7 @@ import { EventApi } from '../../../api/event.api';
 import { Observable, Subscription, filter, skip, take } from 'rxjs';
 import { LongPressDirective } from '../../../directives/gestureControlDirective';
 import { getEventTypeIcon } from '../event-type-icon';
+import { isHomePersonalEvent, isHomePlannerSchedule } from '../home-calendar-kind';
 
 interface PlannerScheduleCard {
     id: string;
@@ -584,6 +585,12 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         void this.router.navigate(['/authed/education/events']);
     }
 
+    openChildEventDetail(event: any): void {
+        void this.router.navigate(['/authed/event-detail', event.id], {
+            state: { event, origin: this.router.url }
+        });
+    }
+
     get childHabitCompletedCount(): number {
         return this.getHabitsForSelectedDate().filter(item => this.normalizedItemStatus(item) === 'completed').length;
     }
@@ -915,24 +922,11 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     private isPlannerSchedule(item: any): boolean {
-        const type = String(item?.type || item?.eventType || '').toUpperCase();
-        if (type.includes('TIMETABLE')
-            || type.includes('PLANNER')
-            || type.includes('SCHEDULE')
-            || Array.isArray(item?.activities)
-            || item?.timetableId != null || item?.timetable_id != null
-            || item?.plannerId != null || item?.planner_id != null
-            || item?.scheduleId != null || item?.schedule_id != null) return true;
-        if (type === 'EVENT' || item?.eventDate || item?.event_date || item?.allDay === true) return false;
-        return Boolean(item?.colorCode || item?.color_code || (item?.startTime && item?.endTime));
+        return isHomePlannerSchedule(item);
     }
 
     private isPersonalEventRecord(item: any): boolean {
-        const eventDate = item?.eventDate ?? item?.event_date;
-        const eventType = item?.eventType ?? item?.event_type;
-        return Boolean(String(eventDate || '').trim())
-            && Boolean(String(eventType || '').trim())
-            && !this.isPlannerSchedule(item);
+        return isHomePersonalEvent(item);
     }
 
     private plannerOccursOnSelectedDate(item: any): boolean {

@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { HomeMoodHeaderComponent, HomeMood, normalizeHomeMood } from '../../core/components/home-mood-header/home-mood-header.component';
 import { displayName } from '../../core/models/display-name';
 import { CommonModule } from "@angular/common";
 import { ModalController, RefresherCustomEvent } from '@ionic/angular';
@@ -7,6 +8,7 @@ import { StreakRestoreApi, StreakStatus, StreakStatusDay } from '../../core/api/
 import { StreakRestoreModalComponent } from '../../core/components/streak-restore/streak-restore-modal.component';
 import { StreakMilestoneComponent } from '../../core/components/streak-milestone/streak-milestone.component';
 import { ActivityCardComponent } from "../../core/components/activity-section/activity-card/activity-card.component";
+import { isHomePersonalEvent, isHomePlannerSchedule } from '../../core/components/activity-section/home-calendar-kind';
 import { LearningSectionComponent } from "../../core/components/learning-section/learning-section.component";
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
 import { TutorCardComponent } from "../../core/components/tutor-section/tutor-card/tutor-card.component";
@@ -77,6 +79,7 @@ type HomeTimePeriod = 'morning' | 'evening' | 'night';
     AcademySectionComponent,
     IonicModule,
     MoodSelectorComponent,
+    HomeMoodHeaderComponent,
     // WeekStreakSectionComponent is intentionally disabled with its template section.
     ReelPreviewSectionComponent,
     QuickAccessSectionComponent,
@@ -112,6 +115,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   // currently selected mood
   public selectedMood: string | null = null;
+  public homeHeaderMood: HomeMood | null = null;
+  @ViewChild('homeMoodSelector') private homeMoodSelector?: MoodSelectorComponent;
+  private headerMoodUserId = '';
   // Pet message and mood
   public currentPetMessage: PetMessage | undefined = undefined;
   public petMood: PetMood | 'anger' = 'happy';
@@ -431,6 +437,14 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.authService.userData$
       .pipe(takeUntil(this.destroy$))
       .subscribe(userData => {
+        const moodUserId = String(userData?.userId ?? userData?.id ?? userData?.memberId ?? '');
+        if (moodUserId !== this.headerMoodUserId) {
+          this.headerMoodUserId = moodUserId;
+          this.homeHeaderMood = null;
+          try {
+            if (moodUserId) this.homeHeaderMood = normalizeHomeMood(localStorage.getItem(`home_last_mood_${moodUserId}`));
+          } catch { /* The API still supplies mood when storage is unavailable. */ }
+        }
         if (userData) {
           console.log('[UserDashboard] User data updated from AuthService:', userData.name);
           this.userName = this.resolveGreetingUsername(userData);
@@ -747,15 +761,15 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         // contain expanded timetable entries or only the currently visible
         // records. Use the authoritative count for the Home subtitle.
         const plannerTotalForToday = Number(resp?.totalPlannerForTheday);
-        this.totalTimetables = Number.isFinite(plannerTotalForToday)
+        this.totalTimetables = Number.isFinite(plannerTotalForToday) && !resp?.events?.some(isHomePersonalEvent)
           ? Math.max(0, plannerTotalForToday)
-          : (Array.isArray(resp?.events) ? resp.events.length : 0);
+          : (Array.isArray(resp?.events) ? resp.events.filter(isHomePlannerSchedule).length : 0);
 
         // Process timetable entries (calendar events — no completion tracking/rewards, just scheduled blocks)
         if (Array.isArray(resp.events)) {
           const today = new Date();
           const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-          let timetableData = resp.events.map((item: any) => {
+          let timetableData = resp.events.filter(isHomePlannerSchedule).map((item: any) => {
             const isRecurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
             const itemForTimestamp = isRecurring ? { ...item, startDate: todayStr, endDate: todayStr } : item;
             const timestamps = this.buttonLogic.calculateTimestamps(itemForTimestamp);
@@ -770,6 +784,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
               startTimeStamp: timestamps.startTimeStamp,
               endTimeStamp: timestamps.endTimeStamp,
               type: 'timetable',
+              originalCalendarType: item.originalCalendarType || item.type || '',
               status: item.completed ? 'completed' : 'pending',
               tags: (() => {
                 const raw = Array.isArray(item.tags) ? item.tags : [];
@@ -1066,6 +1081,20 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   onMoodChange(mood: string) {
     this.selectedMood = mood;
     console.log('mood changed to', mood);
+  }
+
+  onConfirmedHomeMood(mood: string | null): void {
+    const normalized = normalizeHomeMood(mood);
+    if (!normalized) return;
+    this.homeHeaderMood = normalized;
+    try {
+      if (this.headerMoodUserId) localStorage.setItem(`home_last_mood_${this.headerMoodUserId}`, normalized);
+    } catch { /* Keep the current mood in memory when storage is unavailable. */ }
+  }
+
+  editHeaderMood(): void {
+    this.homeMoodSelector?.editMood();
+    document.querySelector('.dashboard-content .mood-selector')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   openNotifications() {

@@ -110,17 +110,10 @@ export class EducationMainPageComponent implements OnInit {
     private readonly parentActivityCategories: ParentEduHubCategory[] = [
         {
             id: 'events',
-            label: 'Events',
+            label: 'Events & Workshops',
             image: 'assets/figma/parent-eduhub/events.webp',
             kind: 'route',
-            route: '/authed/education/events'
-        },
-        {
-            id: 'workshops',
-            label: 'Workshops',
-            image: 'assets/figma/parent-eduhub/workshops.webp',
-            kind: 'route',
-            route: '/authed/education/workshops'
+            route: '/authed/education/events?combined=true'
         }
     ];
 

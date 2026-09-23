@@ -29,6 +29,7 @@ import { AuthApi } from '../../../api/auth.api';
 import { EventApi } from '../../../api/event.api';
 import { CalendarApi } from '../../../api/calendar.api';
 import { getEventTypeIcon } from '../event-type-icon';
+import { isHomePersonalEvent, isHomePlannerSchedule } from '../home-calendar-kind';
 import { CustomToastService } from '../../../services/custom-toast.service';
 
 @Component({
@@ -1443,12 +1444,15 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     this.actionSwipeTracking = false;
   }
 
-  onUpcomingEventTap(key: string): void {
+  onUpcomingEventTap(event: any): void {
+    const key = `event-${event.id}`;
     if (this.getActionSwipeOffset(key) > 0) {
       this.closeActionSwipe();
       return;
     }
-    this.openUpcomingEvents();
+    void this.router.navigate(['/authed/event-detail', event.id], {
+      state: { event, origin: this.router.url }
+    });
   }
 
   onPlannerCardTap(card: { id: string }, index: number): void {
@@ -2085,10 +2089,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         // Populate them here so list mode (including the parent home card) gets
         // the count and content without needing a second request.
         const rawTimetables = Array.isArray(resp?.events)
-          ? resp.events.filter((item: any) => item?.expired !== true)
+          ? resp.events.filter((item: any) => item?.expired !== true
+            && isHomePlannerSchedule(item)
+            && !this.glanceUpcomingEventRaw.some(event => this.matchesGlancePlannerRecord(event, item)))
           : [];
         const plannerTotalForToday = Number(resp?.totalPlannerForTheday);
-        this.totalTimetablesLoaded = Number.isFinite(plannerTotalForToday)
+        this.totalTimetablesLoaded = Number.isFinite(plannerTotalForToday) && !resp?.events?.some(isHomePersonalEvent)
           ? Math.max(0, plannerTotalForToday)
           : rawTimetables.length;
         this.timetables = rawTimetables
@@ -2256,21 +2262,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     }).subscribe({
       next: ({ calendar, events }: { calendar: any; events: any[] }) => {
         const calendarEvents = Array.isArray(calendar?.events) ? calendar.events : [];
-        // IDs from /calendar/user-calendar and /events/all belong to separate
-        // domains and can collide. Classify each calendar record from its own
-        // semantic fields instead of matching bare numeric IDs across APIs.
-        // /calendar/user-calendar is the timetable/planner source. Never feed
-        // records from it into Upcoming Events: older backend responses can
-        // attach event-like fields to timetable rows and make them look like
-        // personal events (for example a timetable activity named "Gym").
-        this.glancePlannerRaw = calendarEvents.filter((item: any) => this.isGlancePlannerSchedule(item));
-        // Some backend responses also expose timetable rows through /events/all.
-        // Exclude anything that matches a planner schedule before merging so a
-        // timetable entry can never leak into the Upcoming Events rail.
-        const personalEvents = (events || []).filter(event =>
-          !this.glancePlannerRaw.some(planner => this.matchesGlancePlannerRecord(event, planner))
+        // The calendar may contain both kinds. Preserve explicit event records
+        // and never discard a personal event because its title/time matches a planner.
+        const confirmedEvents = (events || []).filter(event => this.isGlancePersonalEventRecord(event));
+        this.glancePlannerRaw = calendarEvents.filter((item: any) =>
+          this.isGlancePlannerSchedule(item)
+          && !confirmedEvents.some(event => this.matchesGlancePlannerRecord(event, item))
         );
-        this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents([], personalEvents);
+        this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents(calendarEvents, events || []);
         this.finishGlancePlannerLoad();
       },
       error: () => {
@@ -2284,6 +2283,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   private finishGlancePlannerLoad(): void {
     this.glancePlannerLoading = false;
     this.glancePlannerLoaded = true;
+    if (this.mode === 'recent') this.hasTimetables = this.filteredRecentTimetables.length > 0;
+    if (this.mode === 'list') {
+      this.timetables = this.timetables.filter(item =>
+        !this.glanceUpcomingEventRaw.some(event => this.matchesGlancePlannerRecord(event, item))
+      );
+      this.hasTimetables = this.timetables.length > 0;
+    }
     this.refreshTimetableEmptyState();
     this.cdr.detectChanges();
 
@@ -2409,26 +2415,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   private isGlancePlannerSchedule(item: any): boolean {
-    const type = String(item?.originalCalendarType || item?.type || item?.eventType || '').toUpperCase();
-    // Planner evidence wins first: timetables are often recurring and must not
-    // be sent to Upcoming Events merely because `recurrence` is present.
-    if (type.includes('TIMETABLE')
-      || type.includes('PLANNER')
-      || type.includes('SCHEDULE')
-      || Array.isArray(item?.activities)
-      || item?.timetableId != null || item?.timetable_id != null
-      || item?.plannerId != null || item?.planner_id != null
-      || item?.scheduleId != null || item?.schedule_id != null) return true;
-
-    // Personal calendar events carry an explicit event classification/date.
-    if (type === 'EVENT' || item?.eventDate || item?.event_date || item?.allDay === true) return false;
-
-    // Older single-row planner responses may only expose their colour/time.
-    return Boolean(item?.colorCode || item?.color_code || (item?.startTime && item?.endTime));
+    return isHomePlannerSchedule(item);
   }
 
   private getGlanceUpcomingEventOccurrence(event: any, referenceDate: Date): Date | null {
-    const original = this.getGlanceLocalDate(event?.eventDate || event?.startDate || event?.start_date);
+    const original = this.getGlanceLocalDate(event?.eventDate || event?.event_date || event?.startDate || event?.start_date);
     if (!original) return null;
 
     const recurrence = String(event?.recurrence || '').toUpperCase();
@@ -2445,43 +2436,27 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   private mergeGlanceUpcomingEvents(calendarEvents: any[], personalEvents: any[]): any[] {
-    // Upcoming Events is intentionally strict. A genuine event created by the
-    // Event form always has both eventDate and eventType; timetable rows do not.
-    // The backend can expose both through /events/all, so endpoint membership
-    // alone must never be treated as proof that a record is a personal event.
-    const merged = [...(calendarEvents || []), ...(personalEvents || [])]
+    // Prefer the complete Event API record when the calendar also includes it.
+    const merged = [...(personalEvents || []), ...(calendarEvents || [])]
       .filter(event => this.isGlancePersonalEventRecord(event));
     const unique = new Map<string, any>();
     merged.forEach((event, index) => {
-      const key = String(event?.id ?? [
-        event?.name ?? event?.title ?? 'event',
-        event?.eventDate ?? event?.startDate ?? '',
-        event?.startTime ?? '',
-        index
-      ].join('|'));
+      // Numeric IDs belong to different API domains. Include name and date so
+      // an unrelated calendar event with the same ID is not lost.
+      const key = [
+        event?.id ?? index,
+        String(event?.name ?? event?.title ?? '').trim().toLowerCase(),
+        String(event?.eventDate ?? event?.event_date ?? event?.startDate ?? event?.start_date ?? '').slice(0, 10)
+      ].join('|');
       if (!unique.has(key)) unique.set(key, event);
     });
     return Array.from(unique.values());
   }
 
   private isGlancePersonalEventRecord(item: any): boolean {
-    const eventDate = item?.eventDate ?? item?.event_date;
-    const eventType = item?.eventType ?? item?.event_type;
-    // A genuine /events event uses `name` plus the event-only fields below.
-    // Calendar timetables use `title` and may be mirrored by older backends
-    // with eventDate/eventType added, so accepting title-only records leaks
-    // planner entries into the Home event rail.
-    const eventName = item?.name;
-    const hasEventPrivacyFlag = typeof item?.isPrivate === 'boolean'
-      || typeof item?.is_private === 'boolean';
-    const hasAllDayFlag = typeof item?.allDay === 'boolean'
-      || typeof item?.all_day === 'boolean';
-    return Boolean(String(eventName || '').trim())
-      && Boolean(String(eventDate || '').trim())
-      && Boolean(String(eventType || '').trim())
-      && hasEventPrivacyFlag
-      && hasAllDayFlag
-      && !this.isGlancePlannerSchedule(item);
+    return isHomePersonalEvent(item)
+      && Boolean(String(item?.name || item?.title || '').trim())
+      && Boolean(item?.eventDate || item?.event_date || item?.startDate || item?.start_date);
   }
 
   private matchesGlancePlannerRecord(candidate: any, planner: any): boolean {
@@ -3077,7 +3052,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     if (!this.recentTimetables) return [];
     return this.recentTimetables.filter(item => {
       const status = (item.status || '').toLowerCase();
-      return status !== 'completed' && status !== 'skipped' && this.isGlancePlannerSchedule(item);
+      return status !== 'completed' && status !== 'skipped'
+        && this.isGlancePlannerSchedule(item)
+        && !this.glanceUpcomingEventRaw.some(event => this.matchesGlancePlannerRecord(event, item));
     });
   }
 
@@ -3183,10 +3160,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   get glanceSubtitle(): string {
+    const plannerCount = this.glancePlannerLoaded && this.glanceUpcomingEventRaw.length
+      ? (this.mode === 'recent' ? Math.max(this.glancePlannerCards.length, this.filteredRecentTimetables.length)
+        : this.glancePlannerCards.length)
+      : this.totalTimetablesLoaded;
     const parts = [
       `${this.totalHabitsLoaded} Habit${this.totalHabitsLoaded === 1 ? '' : 's'}`,
       `${this.totalTasksLoaded} Task${this.totalTasksLoaded === 1 ? '' : 's'}`,
-      `${this.totalTimetablesLoaded} Planner${this.totalTimetablesLoaded === 1 ? '' : 's'}`
+      `${plannerCount} Planner${plannerCount === 1 ? '' : 's'}`
     ];
     return parts.join(' • ');
   }

@@ -1,0 +1,94 @@
+import { HomeMoodHeaderComponent, normalizeHomeMood } from './home-mood-header.component';
+import { PetAgeService, PetType } from '../../services/pet-age.service';
+import { MoodSelectorComponent } from '../mood-selector/mood-selector.component';
+import { Subject } from 'rxjs';
+
+describe('Header mood picker limits', () => {
+  function picker() {
+    const post = jasmine.createSpy('post').and.returnValue(new Subject());
+    const component = new MoodSelectorComponent(
+      { post } as any, { getToken: () => null } as any, {} as any,
+      { getUserRelationship: () => 'CHILD' } as any
+    );
+    component.presentation = 'dialog';
+    return { component, post };
+  }
+  it('opens only when requested and closes without saving', () => {
+    const { component, post } = picker();
+    expect(component.dialogOpen).toBeFalse();
+    component.editMood();
+    expect(component.dialogOpen).toBeTrue();
+    expect(component.showMoodPicker).toBeTrue();
+    component.closeDialog();
+    expect(component.dialogOpen).toBeFalse();
+    expect(post).not.toHaveBeenCalled();
+  });
+  it('shows the limit and prevents a third save', () => {
+    const { component, post } = picker();
+    (component as any).setsToday = 2;
+    spyOn(component, 'showBlockedTooltip');
+    component.editMood();
+    expect(component.dialogOpen).toBeTrue();
+    expect(component.dailyLimitReached).toBeTrue();
+    component.popupSelection = component.popupOptions[0].src;
+    component.setVibe();
+    expect(post).not.toHaveBeenCalled();
+  });
+  it('prevents duplicate save requests while saving', () => {
+    const { component, post } = picker();
+    component.popupSelection = component.popupOptions[0].src;
+    component.setVibe();
+    component.setVibe();
+    expect(post).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Home mood header', () => {
+  let pet: PetType;
+  let component: HomeMoodHeaderComponent;
+  beforeEach(() => {
+    pet = 'panda';
+    component = new HomeMoodHeaderComponent({ getCurrentPetType: () => pet } as PetAgeService);
+  });
+
+  it('keeps no mood distinct from a confirmed Calm selection', () => {
+    expect(normalizeHomeMood(null)).toBeNull();
+    expect(component.pandaImage).toContain('panda-moods-source.png');
+    expect(component.state.emphasis).toBe("I'll match it");
+    component.mood = normalizeHomeMood('NEUTRAL');
+    expect(component.state.label).toBe('Calm');
+    expect(component.pandaImage).toContain('panda-moods-source.png');
+  });
+
+  it('maps backend moods to all six Figma presentations', () => {
+    for (const [apiMood, mood] of [['VERY HAPPY', 'happy'], ['EXCITED', 'excited'], ['NERVOUS', 'anxious'], ['SAD', 'sad'], ['UPSET', 'frustrated'], ['NEUTRAL', 'calm']] as const) {
+      component.mood = normalizeHomeMood(apiMood);
+      expect(component.mood).toBe(mood);
+      const source = mood === 'sad' ? 'sad' : ['anxious', 'frustrated'].includes(mood) ? 'subtle' : 'moods';
+      expect(component.pandaImage).toContain(`panda-${source}-source.png`);
+      expect(component.state.label).toBeTruthy();
+    }
+  });
+
+  it('follows the selected pet and never changes the time period on mood changes', () => {
+    component.period = 'night';
+    component.mood = 'excited';
+    pet = 'dragon';
+    expect(component.pet).toBe('dragon');
+    expect(component.messageEnding).toContain('🐉');
+    expect(component.state.petMood).toBe('playful');
+    pet = 'owl';
+    expect(component.pet).toBe('owl');
+    expect(component.period).toBe('night');
+  });
+
+  it('uses the matching Figma ground artwork for each other pet', () => {
+    for (const [type, file] of [['owl', 'owl-ground.png'], ['dragon', 'dragon-ground-source.png'], ['llama', 'llama-ground.png']] as const) {
+      pet = type;
+      expect(component.otherPetImage).toContain(file);
+      component.mood = 'sad';
+      expect(component.otherPetImage).toContain(file);
+      expect(component.state.label).toBe('Sad');
+    }
+  });
+});

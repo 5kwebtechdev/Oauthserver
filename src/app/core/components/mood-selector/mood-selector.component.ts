@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
-import { ViewWillEnter } from '@ionic/angular';
+import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
@@ -15,11 +15,20 @@ type PopupMoodOption = { src: string; label: string; vibe: string; art: string }
 @Component({
   selector: 'mood-selector',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IonicModule],
   templateUrl: './mood-selector.component.html',
   styleUrls: ['./mood-selector.component.scss']
 })
 export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestroy {
+  @Input() presentation: 'inline' | 'dialog' = 'inline';
+  dialogOpen = false;
+  saving = false;
+  get dailyLimitReached(): boolean { return this.setsToday >= 2; }
+  closeDialog(): void {
+    this.dialogOpen = false;
+    this.pickerOpen = false;
+    this.popupSelection = null;
+  }
   @Input() options: MoodOption[] = [];
   @Input() value: string | null = null;
   /** When set (parent view), the mood-selector shows data for this specific child id */
@@ -28,12 +37,16 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   @Input() vibeOverride: VibesDisplayResponse | null = null;
   @Output() valueChange = new EventEmitter<string>();
   @Output() moodSaved = new EventEmitter<string>();
+  /** Confirmed API mood, distinct from the initial neutral placeholder. */
+  @Output() confirmedMoodChange = new EventEmitter<string | null>();
 
   vibes: VibesDisplayResponse[] = [];
   private setsToday = 0;
   /** Retains the most recently confirmed API mood while the display request refreshes. */
   private savedMoodKey: string | null = null;
   private dailyMoodStateSubscription?: Subscription;
+  private identitySubscription?: Subscription;
+  private moodRequestVersion = 0;
 
   // selection state
   popupSelection: string | null = null;
@@ -82,10 +95,23 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   ];
 
   ngOnInit() {
-    this.getTodayVibe();
-    this.loadDailySetCount();
+    let activeUserId = '';
+    this.identitySubscription = this.authService.userData$.subscribe(user => {
+      const userId = String(user?.userId ?? user?.id ?? user?.memberId ?? '');
+      if (userId === activeUserId && activeUserId) return;
+      activeUserId = userId;
+      this.moodRequestVersion++;
+      this.savedMoodKey = null;
+      this.setsToday = 0;
+      this.vibes = [];
+      this.loadDailySetCount();
+      this.confirmedMoodChange.emit(this.savedMoodKey);
+      this.getTodayVibe();
+    });
     this.dailyMoodStateSubscription = this.moodService.dailyMoodStateUpdated$.subscribe((update) => {
       if (update.storageKey !== this.dailyStateKey()) return;
+
+      this.moodRequestVersion++;
 
       this.setsToday = this.toDailyCount(update.count);
       this.savedMoodKey = String(update.mood || '').trim().toUpperCase() || null;
@@ -96,11 +122,14 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
       this.pickerOpen = false;
       this.limitInfoVisible = false;
       this.valueChange.emit(this.value || '');
+      this.confirmedMoodChange.emit(this.savedMoodKey);
     });
   }
 
   ngOnDestroy(): void {
     this.dailyMoodStateSubscription?.unsubscribe();
+    this.identitySubscription?.unsubscribe();
+    this.moodRequestVersion++;
   }
 
   ionViewWillEnter(): void {
@@ -138,8 +167,10 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
 
   // Fetch today's vibe via service
   getTodayVibe() {
+    const requestVersion = ++this.moodRequestVersion;
     this.moodService.getVibesDisplay().subscribe({
       next: (res) => {
+        if (requestVersion !== this.moodRequestVersion) return;
         console.debug('[MoodSelector] Vibes display:', res);
         this.vibes = Array.isArray(res) ? res : [];
 
@@ -176,8 +207,10 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
           this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
         }
         this.valueChange.emit(this.value || '');
+        this.confirmedMoodChange.emit(this.savedMoodKey);
       },
       error: (err) => {
+        if (requestVersion !== this.moodRequestVersion) return;
         console.error('Failed to fetch vibes display', err);
         this.vibes = [];
         // Keep the locally confirmed mood visible on an intermittent API
@@ -187,6 +220,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
         } else {
           this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
         }
+        this.confirmedMoodChange.emit(this.savedMoodKey);
       }
     });
   }
@@ -198,7 +232,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
 
   // Tapping a mood option — gated by the same daily-limit rule the submit button enforces
   choosePopup(src: string) {
-    if (this.isParent) return;
+    if (this.isParent || this.saving) return;
     if (this.setsToday >= 2) {
       this.showBlockedTooltip();
       return;
@@ -209,6 +243,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   /** Show the picker again without discarding the mood already saved by the API. */
   editMood(): void {
     if (this.isParent) return;
+    if (this.presentation === 'dialog') this.dialogOpen = true;
     if (this.setsToday >= 2) {
       this.showBlockedTooltip();
       return;
@@ -284,7 +319,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   ) { }
 
   setVibe() {
-    if (!this.popupSelection) return;
+    if (!this.popupSelection || this.saving || this.isParent) return;
 
     // Safety guard: if we already hit the daily limit, don't attempt network call
     if (this.setsToday >= 2) {
@@ -306,12 +341,16 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
     console.debug('[MoodSelector] sending vibe', body, 'token present?', !!token);
     if (token) headers = headers.set('Authorization', token.startsWith('Bearer ') ? token : `Bearer ${token}`);
 
+    this.saving = true;
     this.http.post(url, body, { headers }).subscribe({
       next: () => {
+        this.saving = false;
+        this.dialogOpen = false;
         // On success: update UI
-        this.value = 'asset:' + this.popupSelection;
+        this.value = 'asset:' + opt.src;
         this.valueChange.emit(this.value || '');
         this.savedMoodKey = vibeKey;
+        this.confirmedMoodChange.emit(vibeKey);
         this.incrementDailySetCount(vibeKey);
         this.moodSaved.emit(vibeKey);
         this.popupSelection = null;
@@ -322,6 +361,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
         this.getTodayVibe();
       },
       error: (err) => {
+        this.saving = false;
         console.error('Failed to set vibe', err);
         // Do NOT change mood on error; keep previous state
 

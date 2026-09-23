@@ -107,7 +107,14 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   get visibleCategoryCards(): LearningCategorySummary[] {
-    return this.isSearching ? this.searchItems : this.categoryItems[this.selectedCategory];
+    const categories = this.isSearching ? this.searchItems : this.categoryItems[this.selectedCategory];
+    return [...categories].sort((a, b) => {
+      const pendingDifference = this.toCategoryCount(b.pendingCount ?? b.count)
+        - this.toCategoryCount(a.pendingCount ?? a.count);
+      return pendingDifference || this.getCategoryTitle(a).trim().localeCompare(
+        this.getCategoryTitle(b).trim(), 'en', { sensitivity: 'base' }
+      );
+    });
   }
 
   get visibleCategoryContent(): LearningCardData[] {

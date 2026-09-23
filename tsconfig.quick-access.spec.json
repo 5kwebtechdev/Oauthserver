@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": ["src/app/core/components/quick-access-section/quick-access-section.component.spec.ts", "src/**/*.d.ts"]
+}

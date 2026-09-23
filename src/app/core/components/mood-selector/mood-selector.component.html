@@ -1,3 +1,14 @@
+<ng-container *ngIf="presentation === 'inline'" [ngTemplateOutlet]="moodContent"></ng-container>
+<ion-modal *ngIf="presentation === 'dialog'" class="home-mood-dialog" [isOpen]="dialogOpen" [backdropDismiss]="!saving" (didDismiss)="closeDialog()">
+  <ng-template>
+    <div class="home-mood-dialog__body">
+      <button class="home-mood-dialog__close" type="button" aria-label="Close mood picker" [disabled]="saving" (click)="closeDialog()">✕</button>
+      <p *ngIf="dailyLimitReached; else availablePicker" role="status">You’ve used both mood check-ins today (2/2). Come back tomorrow to update your mood.</p>
+      <ng-template #availablePicker><ng-container [ngTemplateOutlet]="moodContent"></ng-container></ng-template>
+    </div>
+  </ng-template>
+</ion-modal>
+<ng-template #moodContent>
 <div class="mood-card" [class.mood-card--saved]="!isParent && !showMoodPicker"
   [class.mood-card--picker]="!isParent && showMoodPicker" role="group" aria-label="Mood selector">
   <ng-container *ngIf="isParent">
@@ -70,8 +81,9 @@
     </span>
 
     <div class="mood-picker-actions">
-      <button type="button" class="mood-card-cta" [disabled]="!popupSelection" (click)="setVibe()">Set the Vibe</button>
+      <button type="button" class="mood-card-cta" [disabled]="!popupSelection || saving || dailyLimitReached" (click)="setVibe()">{{ saving ? 'Saving…' : 'Set the Vibe' }}</button>
       <span class="mood-set-count">{{ moodSetsLabel }}</span>
     </div>
   </ng-container>
 </div>
+</ng-template>

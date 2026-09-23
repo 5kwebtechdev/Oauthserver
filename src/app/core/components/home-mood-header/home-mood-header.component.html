@@ -1,0 +1,33 @@
+<section class="mood-header" [ngClass]="'home-period-' + period" [attr.data-home-period]="period" aria-label="Your mood and progress">
+  <div class="mood-message">
+    <img class="mood-message__shape" src="assets/figma/home-mood-header/speech-bubble.svg" alt="">
+    <span class="mood-message__copy" aria-live="polite">{{ state.before }}<strong>{{ state.emphasis }}</strong>{{ messageEnding }}</span>
+  </div>
+  <button type="button" class="mood-pill" (click)="moodEdit.emit()" [attr.aria-label]="mood ? 'Current mood: ' + state.label + '. Change mood' : 'Choose your mood'">
+    <img *ngIf="mood" class="mood-pill__emoji" [src]="emojiImage" alt=""><span>{{ mood ? state.label : 'Set mood' }}</span>
+    <img class="mood-pill__chevron" src="assets/figma/home-mood-header/chevron.svg" alt="">
+  </button>
+  <div class="mood-pet">
+    <span *ngIf="pet === 'panda'; else selectedPet" class="panda-art" [ngClass]="'panda-art--' + (mood || 'default')">
+      <img [src]="pandaImage" [alt]="mood ? 'Panda feeling ' + state.label.toLowerCase() : 'Panda asking how you feel'">
+    </span>
+    <ng-template #selectedPet>
+      <span class="other-pet-art" [ngClass]="'other-pet-art--' + pet">
+        <img [src]="otherPetImage" [alt]="pet + ' standing on a grassy patch'">
+      </span>
+    </ng-template>
+  </div>
+  <div class="mood-stats" aria-label="Your progress">
+    <a class="mood-stat" routerLink="/streaks" [attr.aria-label]="'Streak: ' + streaks">
+      <span class="mood-stat__flame"><img src="assets/icons/child-home-streak-figma.webp" alt=""></span><strong>{{ streaks }}</strong><span>Streak</span>
+    </a>
+    <img class="mood-stats__divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="">
+    <a class="mood-stat" routerLink="/trophies" [attr.aria-label]="'Trophies: ' + trophies">
+      <img src="assets/icons/child-home-trophy-figma.webp" alt=""><strong>{{ trophies }}</strong><span>Trophies</span>
+    </a>
+    <img class="mood-stats__divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="">
+    <a class="mood-stat" routerLink="/badges" [attr.aria-label]="'Badges: ' + badges">
+      <img src="assets/icons/child-home-badge-figma.webp" alt=""><strong>{{ badges }}</strong><span>Badges</span>
+    </a>
+  </div>
+</section>

@@ -3,6 +3,8 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Share } from '@capacitor/share';
 import { IonicModule } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { calendarOutline, locationOutline, personOutline, attachOutline, openOutline, documentTextOutline, lockClosedOutline, callOutline } from 'ionicons/icons';
 
 import { FooterComponent } from '../../footer/footer.component';
 import { ProfileImageComponent } from '../../profile-image/profile-image.component';
@@ -41,7 +43,9 @@ export class EduHubEventDetailsComponent implements OnInit {
     private readonly userService: UserService,
     private readonly eventsService: EduHubEventsService,
     private readonly shareLinks: ShareLinkService
-  ) {}
+  ) {
+    addIcons({ calendarOutline, locationOutline, personOutline, attachOutline, openOutline, documentTextOutline, lockClosedOutline, callOutline });
+  }
 
   ngOnInit(): void {
     const data = this.route.snapshot.data as EventDetailRouteData;
@@ -115,12 +119,29 @@ export class EduHubEventDetailsComponent implements OnInit {
   }
 
   get feeLabel(): string {
+    if (this.item?.isFree) return 'FREE';
+    if (this.item?.fee == null) return 'Contact for pricing';
     const fee = Number(this.item?.fee);
     if (!Number.isFinite(fee)) return '';
     return fee === 0
       ? 'FREE'
-      : `₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)}`;
+      : `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / Per Person`;
   }
+
+  get registrationUrl(): string {
+    if (!this.item?.unlocked || !this.item.regLink) return '';
+    try {
+      const url = new URL(this.item.regLink);
+      return ['https:', 'http:'].includes(url.protocol) ? url.href : '';
+    } catch { return ''; }
+  }
+
+  readonly faqs = [
+    { question: 'How do I register for an event or workshop?', answer: 'Unlock the listing to access its registration link and organizer contact details, when provided.' },
+    { question: 'Is the event or workshop online or in person?', answer: 'Check the venue and description for the format. Contact the organizer to confirm before registering.' },
+    { question: 'What does unlocking a listing include?', answer: 'Unlocking reveals the venue address, phone number, email, and registration link provided by the organizer.' },
+    { question: 'How do I contact the organizer?', answer: 'After unlocking, use the phone number or email shown in the Contact section.' }
+  ];
 
   /** Only render a coin cost when the API supplied a usable amount. */
   get unlockCost(): number | null {
@@ -228,7 +249,7 @@ export class EduHubEventDetailsComponent implements OnInit {
     const date = new Date(value);
     return Number.isNaN(date.getTime())
       ? ''
-      : new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+      : new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true }).format(date);
   }
 
   private firstText(...values: Array<string | null | undefined>): string {

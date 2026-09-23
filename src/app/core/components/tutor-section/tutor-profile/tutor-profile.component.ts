@@ -25,6 +25,7 @@ import { UserService } from '../../../services/user.service';
 import { ShareLinkService } from '../../../services/share-link.service';
 import { FaqItem, PROFILE_FAQS, ProfileFactsComponent } from '../../user-profile/profile-facts/profile-facts.component';
 import { ProfileImageComponent } from '../../profile-image/profile-image.component';
+import { teachingGroups, TeachingGroup } from '../../../models/teaching-display';
 
 type ContactMethod = 'call' | 'email' | 'whatsapp';
 
@@ -334,6 +335,13 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     return rows;
   }
 
+  getTeachingGroups(): TeachingGroup[] {
+    if (!this.tutor) return [];
+    const groups = teachingGroups(this.tutor, this.tutorCategories, this.categoryKey || '');
+    if (groups.length || this.tutor.categoryMappings?.length) return groups;
+    return this.getTeachingRows().length ? [{ key: 'legacy', title: '', rows: this.getTeachingRows() }] : [];
+  }
+
   getTeachingIcon(label: string): string {
     const normalized = label.toLowerCase();
     if (normalized.includes('language')) return 'assets/Icons-Neutral/Tutor-LanguageSpoken.webp';
@@ -364,6 +372,12 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       .reduce<string[]>((languages, row) => languages.concat(this.normalizeFieldValue(row.value)), []);
     const languages = [...new Set([...directLanguages, ...mappedLanguages])];
     return languages.length ? languages.join(', ') : (useFallback ? 'Not specified' : '');
+  }
+
+  getSpokenLanguages(): string {
+    const tutor = this.tutor as any;
+    const values = this.normalizeFieldValue(tutor?.languagesSpoken ?? tutor?.spokenLanguages ?? tutor?.languages ?? []);
+    return [...new Set(values)].join(', ') || 'Not specified';
   }
 
   getAboutText(): string {
@@ -421,7 +435,8 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   getHourlyRate(): number {
-    const mappingRate = (this.tutor?.categoryMappings || []).find(mapping => mapping.categoryHourlyRate > 0)?.categoryHourlyRate;
+    const category = this.findSelectedCategory(this.tutorCategories);
+    const mappingRate = (this.tutor?.categoryMappings || []).find(mapping => (!category || String(mapping.categoryId) === String(category.id)) && mapping.categoryHourlyRate > 0)?.categoryHourlyRate;
     return Number(mappingRate || this.tutor?.hourlyRate || this.tutor?.fees || 0);
   }
 
@@ -522,8 +537,9 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   getCounselorFee(): string {
     const fee = this.getHourlyRate();
+    const feeTypes: Record<string, string> = { PER_SESSION: 'Per Session', PER_HOUR: 'Per Hour', PER_MONTH: 'Per Month', PER_COURSE: 'Per Course', PER_SUBJECT: 'Per Subject' };
     return fee > 0
-      ? `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} ${this.getFeeTypeString()}`
+      ? `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / ${feeTypes[String(this.tutor?.feeType)] || 'Per Session'}`
       : 'Not specified';
   }
 

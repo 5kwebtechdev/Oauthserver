@@ -13,7 +13,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
   template: `
     <section class="content-section"
       [class.content-section--parent-home]="rewardMode || parentLearningViewAll"
-      [class.content-section--reward]="rewardMode"
+      [class.content-section--summary-cards]="contentMode !== 'parenting'"
       [class.content-section--parenting]="contentMode === 'parenting'"
       aria-label="Curiosity highlights">
       <header class="content-header">
@@ -33,7 +33,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
       </header>
 
       <div class="slides" #slides>
-        <div class="learning-slide-shell" [class.learning-slide-shell--reward]="rewardMode"
+        <div class="learning-slide-shell" [class.learning-slide-shell--reward]="contentMode !== 'parenting'"
           *ngFor="let item of items; trackBy: trackByFn; let i = index">
           <learning-card
             [item]="item"
@@ -42,11 +42,11 @@ import { AuthService } from 'src/app/core/services/auth.service';
             [forUserId]="forUserId"
             (cardClick)="onItemClick($event.item, $event.index)">
           </learning-card>
-          <span *ngIf="rewardMode && getDifficultyLabel(item)" class="reward-difficulty"
+          <span *ngIf="contentMode !== 'parenting' && getDifficultyLabel(item)" class="reward-difficulty"
             [attr.data-difficulty]="getDifficultyTone(item)">
             {{ getDifficultyLabel(item) }}
           </span>
-          <div *ngIf="rewardMode" class="reward-card-summary">
+          <div *ngIf="contentMode !== 'parenting'" class="reward-card-summary">
             <h3>{{ item?.title }}</h3>
             <div class="reward-card-summary__meta">
               <span>
@@ -620,10 +620,9 @@ import { AuthService } from 'src/app/core/services/auth.service';
         }
       }
 
-      // Parent home: exact Figma 23331:76223 treatment. Keeping this behind
-      // rewardMode prevents the compact card rules from leaking into the
-      // Child/Self learning and Parenting sections that share this component.
-      &.content-section--reward {
+      // Use the same image-and-summary card treatment for learning cards
+      // across Parent, Child and Self; Parenting content remains separate.
+      &.content-section--summary-cards {
         .content-header {
           align-items: center;
           gap: 8px;

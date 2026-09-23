@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
@@ -66,6 +66,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
     private readonly http: HttpClient,
     private readonly authApi: AuthApi,
     private readonly calendarService: CalendarService,
+    private readonly route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -77,6 +78,10 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
   }
 
   ionViewWillEnter(): void {
+    if (this.route.snapshot.queryParamMap.get('day') === 'today') {
+      this.currentMonthDate = new Date();
+      this.updateMonthLabel();
+    }
     this.loadEntriesFromApi(
       this.currentMonthDate.getMonth() + 1,
       this.currentMonthDate.getFullYear(),
@@ -295,9 +300,10 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
         const rawValue = item[key];
         if (rawValue === null || rawValue === undefined || rawValue === '') return;
         const values = Array.isArray(rawValue) ? rawValue : String(rawValue).split(',');
-        values.map((part: any) => typeof part === 'object' ? (part?.label ?? part?.name ?? part?.value ?? '') : String(part))
-          .map((part: string) => part.trim()).filter(Boolean).forEach((part) => {
-          tags.push(`${key.charAt(0).toUpperCase()}${key.slice(1)}: ${part}`);
+        const displayValues = values.map((part: any) => typeof part === 'object' ? (part?.label ?? part?.name ?? part?.value ?? '') : String(part))
+          .map((part: string) => part.trim()).filter(Boolean);
+        (key === 'carrying' ? [displayValues.join(', ')] : displayValues).filter(Boolean).forEach((part) => {
+          tags.push(`${key === 'carrying' ? 'Feeling' : key.charAt(0).toUpperCase() + key.slice(1)}: ${part}`);
         });
       });
 

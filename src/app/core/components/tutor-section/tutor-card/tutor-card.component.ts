@@ -14,6 +14,11 @@ import { EduHubEventItem, EduHubEventsService } from '../../../services/eduhub-e
 import { EduHubEventCardComponent } from '../../education-section/eduhub-event-card/eduhub-event-card.component';
 import { EduHubCityService } from '../../../services/eduhub-city.service';
 import { EduHubCitySelectorComponent } from '../../education-section/eduhub-city-selector/eduhub-city-selector.component';
+import { EduHubShopCard, EduHubShopCardComponent } from '../../education-section/eduhub-shop-card/eduhub-shop-card.component';
+import { Share } from '@capacitor/share';
+import { ShareLinkService } from '../../../services/share-link.service';
+import { CoreService } from '../../../services/core.service';
+import { CounselorCardComponent } from '../../education-section/counselor-card/counselor-card.component';
 
 type CategoryKey =
   | 'tutors'
@@ -61,9 +66,11 @@ interface EduHubDirectoryItem {
   accountStatus?: string | null;
   isActive?: boolean | null;
   verified?: boolean | null;
+  likedBySelf?: boolean | null;
 }
 
 interface EduHubPreview {
+  shop?: EduHubShopCard;
   event?: EduHubEventItem;
   id: string | number;
   name: string;
@@ -80,7 +87,7 @@ interface EduHubPreview {
   selector: 'tutor-card',
   templateUrl: './tutor-card.component.html',
   styleUrls: ['./tutor-card.component.scss'],
-  imports: [CommonModule, IonicModule, ProfileImageComponent, EduHubCitySelectorComponent, EduHubEventCardComponent],
+  imports: [CommonModule, IonicModule, ProfileImageComponent, EduHubCitySelectorComponent, EduHubEventCardComponent, EduHubShopCardComponent, CounselorCardComponent],
   standalone: true
 })
 export class TutorCardComponent implements OnInit, OnDestroy {
@@ -99,16 +106,13 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   readonly onlineModeAsset = 'assets/figma/eduhub-home/online-mode.svg';
 
   readonly categories: EduHubCategory[] = [
-    { key: 'tutors', label: 'Tutors', image: 'assets/figma/eduhub-home/category-tutors.webp', route: '/authed/tutors' },
-    { key: 'academies', label: 'Academies', image: 'assets/figma/eduhub-home/category-academies.webp', route: '/academies' },
-    { key: 'counselors', label: 'Counselors', image: 'assets/figma/eduhub-home/category-counselors.webp', route: '/authed/counselors' },
-    { key: 'events', label: 'Events', image: 'assets/figma/eduhub-home/category-events.webp', route: '/authed/education/events' },
-    { key: 'workshops', label: 'Workshops', image: 'assets/figma/eduhub-home/category-workshops.webp', route: '/authed/education/workshops' },
-    { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/eduhub-home/category-book-stores.webp', route: '/authed/education/shops' },
-    { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/eduhub-home/category-sports-shops.webp', route: '/authed/education/shops' },
-    { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/eduhub-home/category-stationery.webp', route: '/authed/education/shops' },
-    // Keep this existing destination available after the requested primary order.
-    { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/eduhub-home/category-second-hand-books.webp', route: '/second-hand-books' }
+    { key: 'tutors', label: 'Tutor', image: 'assets/figma/eduhub-home/category-tutors.webp', route: '/authed/tutors' },
+    { key: 'academies', label: 'Academy', image: 'assets/figma/eduhub-home/category-academies.webp', route: '/academies' },
+    { key: 'counselors', label: 'Counsellor', image: 'assets/figma/eduhub-home/category-counselors.webp', route: '/authed/counselors' },
+    { key: 'events', label: 'Events / Workshops', image: 'assets/figma/eduhub-home/category-events.webp', route: '/authed/education/events' },
+    { key: 'book-stores', label: 'Book Store', image: 'assets/figma/eduhub-home/category-book-stores.webp', route: '/authed/education/shops' },
+    { key: 'sports-shops', label: 'Sports Shop', image: 'assets/figma/eduhub-home/category-sports-shops.webp', route: '/authed/education/shops' },
+    { key: 'stationery', label: 'Stationery Shop', image: 'assets/figma/eduhub-home/category-stationery.webp', route: '/authed/education/shops' }
   ];
 
   selectedCategoryKey: CategoryKey = 'tutors';
@@ -147,7 +151,9 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private http: HttpClient,
     private readonly eduhubEventsService: EduHubEventsService,
-    private readonly cityService: EduHubCityService
+    private readonly cityService: EduHubCityService,
+    private readonly shareLinks: ShareLinkService,
+    private readonly core: CoreService
   ) { }
 
   ngOnInit(): void {
@@ -285,8 +291,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     // also the source used by their full listing pages, so Home cannot drift
     // to a different endpoint or silently miss the `content` payload.
     if (categoryKey === 'workshops' || categoryKey === 'events') {
-      const entityType = categoryKey === 'workshops' ? 'Workshop' : 'Events';
-      this.subscriptions.add(this.eduhubEventsService.getPage(entityType, 0, 20, this.cityService.city).subscribe({
+      this.subscriptions.add(this.eduhubEventsService.getCombinedPage(0, 20, this.cityService.city).subscribe({
         next: response => {
           // Category artwork is navigation chrome, not a person's/listing's
           // profile image. Keep it as a fallback only for shop cards that
@@ -344,6 +349,17 @@ export class TutorCardComponent implements OnInit, OnDestroy {
               // artwork as a successful image URL for every listing. Treat it
               // as missing so each listing gets the neutral empty image state.
               if (categoryKey === 'stationery') preview.image = '';
+              if (source.endpoint === 'shops') {
+                preview.shop = {
+                  name: preview.name,
+                  image: categoryKey === 'stationery' ? '' : String(item.imageUrls?.[0] || item.imageUrl || item.thumbnailUrl || ''),
+                  verified: !!item.verified,
+                  fullAddress: String(item.exactLocation?.trim() || item.address?.trim() || ''),
+                  unlocked: !!(item.unlocked ?? item.isUnlocked),
+                  unlockCost: Math.max(0, Number(item.contactUnlockCost ?? item.unlockCost ?? 10) || 0),
+                  likedBySelf: !!item.likedBySelf
+                };
+              }
               return preview;
             });
           this.externalPreviews.set(categoryKey, previews);
@@ -437,6 +453,56 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   /**
    * Load recent tutors from service
    */
+  private readonly shopLikesPending = new Set<string | number>();
+
+  toggleShopLike(listing: EduHubPreview): void {
+    const shop = listing.shop;
+    if (!shop || this.shopLikesPending.has(listing.id)) return;
+    const previous = shop.likedBySelf;
+    shop.likedBySelf = !previous;
+    this.shopLikesPending.add(listing.id);
+    this.subscriptions.add(this.eduhubEventsService.toggleLike(Number(listing.id), shop.likedBySelf).subscribe({
+      next: response => {
+        shop.likedBySelf = response.likedBySelf ?? shop.likedBySelf;
+        this.shopLikesPending.delete(listing.id);
+      },
+      error: () => {
+        shop.likedBySelf = previous;
+        this.shopLikesPending.delete(listing.id);
+        this.core.triggerToasrt('Unable to update like. Please try again.', 'error');
+      }
+    }));
+  }
+
+  async shareShop(listing: EduHubPreview): Promise<void> {
+    try {
+      await Share.share({ title: listing.name, text: `View ${listing.name} on SuperMe EduHub.`,
+        url: this.shareLinks.buildListingLink('shop', listing.id) });
+    } catch (error: any) {
+      if (!/cancel|dismiss/i.test(String(error?.message || error))) {
+        this.core.triggerToasrt('Unable to share this listing. Please try again.', 'error');
+      }
+    }
+  }
+
+  openShopDirections(listing: EduHubPreview): void {
+    if (!listing.shop?.unlocked) return;
+    const address = listing.shop.fullAddress;
+    if (!address) {
+      this.core.triggerToasrt('Directions are not available for this listing.', 'info');
+      return;
+    }
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank', 'noopener,noreferrer');
+  }
+
+  openShopContact(listing: EduHubPreview): void {
+    const source = this.externalCategorySources[this.selectedCategoryKey];
+    void this.router.navigate(['/authed/education/shops'], {
+      queryParams: { entityType: source?.entityType, label: this.selectedCategory.label,
+        city: this.cityService.city, listing: listing.id, action: 'contact' }
+    });
+  }
+
   private loadTutors(): void {
     this.isLoading = true;
 
@@ -671,7 +737,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     }
     if (this.selectedCategoryKey === 'workshops' || this.selectedCategoryKey === 'events') {
       void this.router.navigate([this.selectedCategory.route], {
-        queryParams: { city: this.cityService.city }
+        queryParams: { city: this.cityService.city, combined: 'true' }
       });
       return;
     }
@@ -698,9 +764,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     }
 
     if (this.selectedCategoryKey === 'workshops' || this.selectedCategoryKey === 'events') {
-      const routeSegment = this.selectedCategoryKey;
-      const entityType = this.selectedCategoryKey === 'workshops' ? 'Workshop' : 'Events';
-      const title = this.selectedCategoryKey === 'workshops' ? 'Workshops' : 'Events';
+      const isWorkshop = listing.event?.entityType?.toLowerCase() === 'workshop';
+      const routeSegment = isWorkshop ? 'workshops' : 'events';
+      const entityType = isWorkshop ? 'Workshop' : 'Events';
+      const title = isWorkshop ? 'Workshops' : 'Events';
       const source = listing.source;
 
       if (source) {
@@ -844,6 +911,12 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/authed/tutors', tutor.id], {
       state: cachedTutor ? { tutor: cachedTutor } : undefined
     });
+  }
+
+  getEducationProfile(item: TutorListItem): Tutor | undefined {
+    return this.selectedCategoryKey === 'academies'
+      ? this.academyProfiles.get(Number(item.id))
+      : this.tutorService.getTutorFromCache(item.id);
   }
 
   onViewAcademyProfile(item: TutorListItem): void {

@@ -1,32 +1,33 @@
 <section class="qa-section" aria-labelledby="qa-heading">
   <h3 class="qa-title" id="qa-heading">Quick Access</h3>
 
-  <a *ngIf="journalAvailable === true" class="qa-hero-card" role="button" tabindex="0"
-    [class.is-checking]="checkingJournalAvailability"
-    (click)="openJournal($event)" (keydown.enter)="openJournal($event)"
+  <div *ngIf="journalAvailable === true" class="qa-hero-card"
     [attr.aria-busy]="checkingJournalAvailability">
-    <img class="qa-hero-icon" src="assets/figma/child-home/quick-journal.webp" alt="" aria-hidden="true">
+    <span class="qa-hero-art"><img class="qa-hero-icon" src="assets/figma/home-quick-tools/journal.png" alt="" aria-hidden="true"></span>
     <span class="qa-hero-copy">
       <span class="qa-hero-kicker">Your Journal</span>
       <span class="qa-hero-title">How was your day?</span>
-      <span class="qa-hero-subtitle">Write your thoughts, track your mood,<br>and celebrate little wins</span>
+      <span class="qa-hero-subtitle">Write your thoughts, track your mood, and celebrate little wins</span>
     </span>
-    <span class="qa-write-btn">Write Now</span>
-  </a>
+    <span class="qa-hero-actions">
+      <a class="qa-view-btn" [routerLink]="['/authed/journal-output']">View Journal</a>
+      <button type="button" class="qa-write-btn" [disabled]="checkingJournalAvailability" (click)="openJournal($event)">Write Now</button>
+    </span>
+  </div>
 
   <div class="qa-shortcuts" [class.qa-shortcuts--with-journal]="journalAvailable === false">
     <a class="qa-shortcut-card qa-shortcut-notes" [routerLink]="['/authed/notes']">
-      <img src="assets/figma/child-home/quick-notes.webp" alt="" class="qa-shortcut-icon">
+      <img src="assets/figma/home-quick-tools/notes.png" alt="" class="qa-shortcut-icon">
       <span class="qa-shortcut-label">Notes</span>
     </a>
     <a class="qa-shortcut-card qa-shortcut-calendar" [routerLink]="['/authed/activity-page']"
       [queryParams]="{ tab: 'all' }">
-      <img src="assets/figma/child-home/quick-calendar.webp" alt="" class="qa-shortcut-icon">
+      <img src="assets/figma/home-quick-tools/calendar.png" alt="" class="qa-shortcut-icon">
       <span class="qa-shortcut-label">Calendar</span>
     </a>
     <a *ngIf="journalAvailable === false" class="qa-shortcut-card qa-shortcut-journal"
-      [routerLink]="['/authed/journal-output']">
-      <img src="assets/figma/child-home/quick-journal.webp" alt="" class="qa-shortcut-icon">
+      [routerLink]="['/authed/journal-output']" [queryParams]="{ day: 'today' }" aria-label="View today's journal">
+      <img src="assets/figma/home-quick-tools/journal.png" alt="" class="qa-shortcut-icon">
       <span class="qa-shortcut-label">Journal</span>
     </a>
   </div>

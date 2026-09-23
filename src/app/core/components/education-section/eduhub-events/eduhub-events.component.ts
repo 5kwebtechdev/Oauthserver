@@ -9,7 +9,6 @@ import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { EduHubCitySelectorComponent } from '../eduhub-city-selector/eduhub-city-selector.component';
-import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 import { EduHubEventCardComponent } from '../eduhub-event-card/eduhub-event-card.component';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
@@ -32,7 +31,7 @@ interface EventListingRouteData {
 @Component({
   selector: 'app-eduhub-events',
   standalone: true,
-  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, ProfileImageComponent, EduHubEventCardComponent],
+  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, EduHubEventCardComponent],
   templateUrl: './eduhub-events.component.html',
   styleUrls: ['./eduhub-events.component.scss']
 })
@@ -41,6 +40,7 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
 
   entityType: EduHubEventEntityType = 'Events';
   title = 'Events';
+  combined = false;
   items: EduHubEventItem[] = [];
   isLoading = true;
   isLoadingMore = false;
@@ -83,6 +83,8 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
     const data = this.route.snapshot.data as EventListingRouteData;
     this.entityType = data.entityType === 'Workshop' ? 'Workshop' : 'Events';
     this.title = data.title === 'Workshops' ? 'Workshops' : 'Events';
+    this.combined = this.route.snapshot.queryParamMap.get('combined') === 'true';
+    if (this.combined) this.title = 'Events & Workshops';
     const sharedId = Number(this.route.snapshot.queryParamMap.get('sharedId'));
     this.sharedItemId = Number.isFinite(sharedId) && sharedId > 0 ? sharedId : null;
     const navigationCity = String(this.route.snapshot.queryParamMap.get('city') || '').trim();
@@ -181,7 +183,7 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
     this.totalPages = 0;
     this.totalElements = 0;
 
-    this.eventsService.getPage(this.entityType, 0, this.pageSize, this.cityService.city).subscribe({
+    this.getListingPage(0).subscribe({
       next: response => {
         if (requestVersion !== this.requestVersion) return;
         this.items = this.normaliseItems(response.content);
@@ -209,7 +211,7 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
     this.isLoadingMore = true;
     this.paginationError = '';
 
-    this.eventsService.getPage(this.entityType, nextPage, this.pageSize, this.cityService.city).subscribe({
+    this.getListingPage(nextPage).subscribe({
       next: response => {
         const incoming = this.normaliseItems(response.content)
           .filter(item => !this.items.some(current => current.id === item.id));
@@ -306,8 +308,9 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
 
   openDetails(item: EduHubEventItem): void {
     this.saveItemForDetails(item);
-    void this.router.navigate(['/education', this.routeSegment, item.id], {
-      state: { listing: item, entityType: this.entityType, title: this.title }
+    const entityType = this.itemEntityType(item);
+    void this.router.navigate(['/education', entityType === 'Workshop' ? 'workshops' : 'events', item.id], {
+      state: { listing: item, entityType, title: entityType === 'Workshop' ? 'Workshops' : 'Events' }
     });
   }
 
@@ -318,7 +321,7 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
       await Share.share({
         title: name,
         text: `View ${name}${location ? ` in ${location}` : ''} on SuperMe EduHub.`,
-        url: this.shareLinks.buildListingLink(this.entityType === 'Workshop' ? 'workshop' : 'event', item.id)
+        url: this.shareLinks.buildListingLink(this.itemEntityType(item) === 'Workshop' ? 'workshop' : 'event', item.id)
       });
     } catch (error) {
       if (!this.isShareCancelled(error)) {
@@ -403,7 +406,7 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
   private saveItemForDetails(item: EduHubEventItem): void {
     try {
       sessionStorage.setItem(
-        `superme_eduhub_${this.entityType.toLowerCase()}_${item.id}`,
+        `superme_eduhub_${this.itemEntityType(item).toLowerCase()}_${item.id}`,
         JSON.stringify(item)
       );
     } catch {
@@ -417,6 +420,16 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
     if (!item) return;
     this.sharedItemId = null;
     this.openDetails(item);
+  }
+
+  itemEntityType(item: EduHubEventItem): EduHubEventEntityType {
+    return item.entityType?.toLowerCase() === 'workshop' ? 'Workshop' : 'Events';
+  }
+
+  private getListingPage(page: number) {
+    return this.combined
+      ? this.eventsService.getCombinedPage(page, this.pageSize, this.cityService.city)
+      : this.eventsService.getPage(this.entityType, page, this.pageSize, this.cityService.city);
   }
 
   private isShareCancelled(error: unknown): boolean {

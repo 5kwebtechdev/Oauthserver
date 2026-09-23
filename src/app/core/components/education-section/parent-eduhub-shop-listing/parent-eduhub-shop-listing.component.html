@@ -98,85 +98,10 @@
 
         <div class="directory-list" *ngIf="!loading && !loadError && visibleListings.length">
           <ng-container *ngFor="let item of visibleListings; let index = index; trackBy: trackListing">
-            <article class="listing-card listing-card--clickable" tabindex="0"
-              role="link" [attr.aria-label]="'Open ' + item.name"
-              (click)="openListing(item, $event)"
-              (keydown.enter)="openListing(item, $event)"
-              (keydown.space)="openListing(item, $event)">
-              <div class="listing-card__top">
-                <div class="listing-card__image" [class.listing-card__image--empty]="!item.image">
-                  <app-profile-image [src]="item.image" [name]="item.name" [alt]="item.name"></app-profile-image>
-                </div>
-
-                <div class="listing-card__details">
-                  <div class="listing-card__headline">
-                    <div class="listing-card__identity">
-                      <div class="listing-card__name">
-                        <h3>{{ item.name }}</h3>
-                        <img *ngIf="item.verified" src="assets/figma/parent-eduhub-inner/verified.svg"
-                          alt="Verified" title="Verified">
-                      </div>
-
-                      <p class="listing-card__location" *ngIf="item.publicLocation">
-                        <img src="assets/figma/parent-eduhub-inner/location.svg" alt="" aria-hidden="true">
-                        <span>{{ item.publicLocation }}</span>
-                        <small *ngIf="selectedSort === 'nearest' && item.distanceKm != null">
-                          {{ item.distanceKm | number:'1.0-1' }} km
-                        </small>
-                      </p>
-
-                      <p class="listing-card__address" [class.is-unlocked]="item.unlocked">
-                        <img [src]="item.unlocked
-                          ? 'assets/figma/parent-eduhub-inner/location.svg'
-                          : 'assets/figma/parent-eduhub-inner/lock.svg'" alt="" aria-hidden="true">
-                        <span>{{ item.unlocked ? (item.fullAddress || item.publicLocation) : 'Full Address hidden' }}</span>
-                      </p>
-                    </div>
-
-                    <div class="listing-card__quick-actions">
-                      <button type="button" class="quick-action quick-action--favourite"
-                        [class.is-selected]="isFavourite(item)"
-                        [attr.aria-label]="isFavourite(item) ? 'Remove from favourites' : 'Add to favourites'"
-                        (click)="$event.stopPropagation(); toggleFavourite(item)">
-                        <span class="quick-action__heart" aria-hidden="true"></span>
-                      </button>
-                      <button type="button" class="quick-action quick-action--share" aria-label="Share listing"
-                        (click)="$event.stopPropagation(); shareListing(item)">
-                        <img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true">
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="listing-card__footer">
-                <button type="button" class="listing-action listing-action--secondary"
-                  [disabled]="!item.unlocked"
-                  [attr.aria-label]="item.unlocked ? 'Get directions' : 'Unlock listing to get directions'"
-                  (click)="$event.stopPropagation(); openDirections(item)">
-                  Get Directions
-                </button>
-
-                <div class="listing-card__unlock-wrap">
-                  <button type="button" class="listing-action listing-action--primary"
-                    (click)="$event.stopPropagation(); requestUnlock(item)">
-                    <ng-container *ngIf="item.unlocked; else lockedAction">Contact</ng-container>
-                    <ng-template #lockedAction>
-                      <img class="listing-action__unlock-icon" src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
-                      <span>Unlock</span>
-                      <span class="listing-action__coins">
-                        <img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">
-                        {{ item.unlockCost }}
-                      </span>
-                    </ng-template>
-                  </button>
-                  <small *ngIf="!item.unlocked">
-                    <img src="assets/figma/parent-eduhub-inner/lock-muted.svg" alt="" aria-hidden="true">
-                    Unlocks address &amp; contact
-                  </small>
-                </div>
-              </div>
-            </article>
+            <app-eduhub-shop-card [item]="item"
+              (viewDetails)="openListing(item)" (favourite)="toggleFavourite(item)"
+              (share)="shareListing(item)" (directions)="openDirections(item)"
+              (contact)="requestUnlock(item)"></app-eduhub-shop-card>
 
             <ad-banner *ngIf="index === 2" class="directory-ad" screen="EDUHUB_PARENTS"
               variant="eduhub-inner" aria-label="Featured EduHub offers"></ad-banner>

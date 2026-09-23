@@ -132,7 +132,7 @@
                     </header>
                     <div class="child-event-cards__rail">
                         <button type="button" class="child-event-card" *ngFor="let event of childEventItems"
-                            (click)="onCardTap(event, undefined, $event)">
+                            (click)="openChildEventDetail(event)">
                             <img [src]="getChildEventIcon(event)" alt="" />
                             <span>
                                 <strong>{{ getChildItemTitle(event) }}</strong>

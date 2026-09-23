@@ -46,6 +46,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   private static readonly MAX_IMAGES = 3;
   text = '';
   selected: Record<string, number | null> = {};
+  selectedFeelings: number[] = [];
   uploadedImages: UploadedJournalImage[] = [];
   emotionError: string | null = null;
   imageUploadError: string | null = null;
@@ -150,7 +151,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   readonly age16PlusSections: JournalSection[] = [
     this.under16Sections[0],
     {
-      key: 'carrying', title: 'What are you carrying today?', icon: 'assets/figma/journal/adult/carrying.svg', columns: 4,
+      key: 'carrying', title: 'What are you feeling today?', icon: 'assets/figma/journal/adult/carrying.svg', columns: 4,
       options: [
         ['Relaxed', 'relaxed'], ['Bored', 'bored'], ['Tired', 'tired'], ['Angry', 'angry'],
         ['Stressed', 'stressed'], ['Desperate', 'desperate'], ['Depressed', 'depressed'], ['Lonely', 'lonely'],
@@ -247,11 +248,20 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   }
 
   selectOption(section: string, index: number): void {
+    if (section === 'carrying') {
+      if (this.selectedFeelings.includes(index)) {
+        this.selectedFeelings = this.selectedFeelings.filter(selectedIndex => selectedIndex !== index);
+      } else if (this.selectedFeelings.length < 3) {
+        this.selectedFeelings = [...this.selectedFeelings, index];
+      }
+      return;
+    }
     this.selected[section] = this.selected[section] === index ? null : index;
     if (section === 'emotions' && this.selected['emotions'] != null) this.emotionError = null;
   }
 
   isSelected(section: string, index: number): boolean {
+    if (section === 'carrying') return this.selectedFeelings.includes(index);
     return this.selected[section] === index;
   }
 
@@ -278,6 +288,12 @@ export class JournalInputComponent implements OnInit, OnDestroy {
     const formData = new FormData();
     formData.append('notes', this.text || '');
     this.sections.forEach((section) => {
+      if (section.key === 'carrying') {
+        if (this.selectedFeelings.length) {
+          formData.append('carrying', this.selectedFeelings.map(index => section.options[index].label.toLowerCase()).join(', '));
+        }
+        return;
+      }
       const selectedIndex = this.selected[section.key];
       if (selectedIndex != null) formData.append(section.key, section.options[selectedIndex].label.toLowerCase());
     });
@@ -396,6 +412,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
     this.revokePreviewUrls();
     this.text = '';
     this.selected = {};
+    this.selectedFeelings = [];
     this.uploadedImages = [];
     this.imageUploadError = null;
     this.emotionError = null;
@@ -418,6 +435,14 @@ export class JournalInputComponent implements OnInit, OnDestroy {
     };
 
     this.sections.forEach(section => {
+      if (section.key === 'carrying') {
+        const selectedValues = String(values['carrying'] ?? '').split(',').map(value => value.trim().toLowerCase());
+        this.selectedFeelings = selectedValues
+          .map(value => section.options.findIndex(option => option.label.toLowerCase() === value))
+          .filter((index, position, indices) => index >= 0 && indices.indexOf(index) === position)
+          .slice(0, 3);
+        return;
+      }
       const value = String(values[section.key] ?? '').split(',')[0].trim().toLowerCase();
       const index = section.options.findIndex(option => option.label.toLowerCase() === value);
       if (index >= 0) this.selected[section.key] = index;
