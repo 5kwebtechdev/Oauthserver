@@ -520,21 +520,22 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   async referCounselor(): Promise<void> {
     const listingType = this.singularTitle.trim().toLowerCase() || 'listing';
     const article = /^[aeiou]/i.test(listingType) ? 'an' : 'a';
-    const tutorReferral = 'Know a great tutor?\n\n👉 Refer them to get listed on SuperMeApp and grow their reach.\n\n🔗 https://bit.ly/Become-a-tutor';
-    const referralText = this.entityType === 'TUTOR'
-      ? tutorReferral
+    const isTutorListing = listingType === 'tutor';
+    const tutorFormUrl = 'https://supermeapp.com/become-a-tutor';
+    const referralText = isTutorListing
+      ? 'Know a tutor? Refer them to get listed on SuperMe EduHub.'
       : `Know ${article} ${listingType}? Refer them to get listed on SuperMe EduHub.`;
+    const referralUrl = isTutorListing ? tutorFormUrl : 'https://supermeapp.com';
+    const shareMessage = `${referralText} ${referralUrl}`;
     try {
       await Share.share({
-        title: 'Refer for listing',
-        text: referralText,
-        ...(this.entityType === 'TUTOR' ? {} : { url: 'https://supermeapp.com' })
+        text: shareMessage
       });
     } catch (error) {
       const message = String((error as { message?: string })?.message ?? error ?? '').toLowerCase();
       if (!message.includes('cancel') && !message.includes('dismiss')) {
         try {
-          await navigator.clipboard.writeText(referralText);
+          await navigator.clipboard.writeText(shareMessage);
           this.core.triggerToasrt('Referral message copied.', 'success');
         } catch {
           this.core.triggerToasrt('Unable to open sharing right now. Please try again.', 'error');

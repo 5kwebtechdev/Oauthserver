@@ -1,0 +1,47 @@
+            <article class="event-card">
+              <div class="event-card__top">
+                <div class="event-card__image" [class.event-card__image--empty]="!getImage(item)">
+                  <app-profile-image [src]="getImage(item)" [name]="getDisplayName(item)" [alt]="getDisplayName(item)"></app-profile-image>
+                </div>
+
+                <div class="event-card__details">
+                  <div class="event-card__header">
+                      <div class="event-card__identity">
+                        <div class="event-card__name-row">
+                        <h3>{{ getDisplayName(item) }}</h3>
+                        <img *ngIf="item.verified" class="event-card__verified"
+                          src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified">
+                      </div>
+                      <p *ngIf="getLocation(item)" class="event-card__location">
+                        <img src="assets/figma/parent-eduhub-inner/location.svg" alt="" aria-hidden="true">
+                        <span>{{ getLocation(item) }}</span>
+                      </p>
+                      <p *ngIf="getEventMeta(item)" class="event-card__meta">{{ getEventMeta(item) }}</p>
+                    </div>
+
+                    <div class="event-card__quick-actions">
+                      <button type="button" class="quick-action quick-action--favourite"
+                        [disabled]="likeInProgress" [attr.aria-pressed]="isFavourite(item)"
+                        [class.is-selected]="isFavourite(item)"
+                        [attr.aria-label]="isFavourite(item) ? 'Remove from favourites' : 'Add to favourites'"
+                        (click)="toggleFavourite(item)">
+                        <span class="quick-action__heart" aria-hidden="true"></span>
+                      </button>
+                      <button type="button" class="quick-action quick-action--share" aria-label="Share listing"
+                        (click)="shareItem(item)">
+                        <img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true">
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="event-card__footer">
+                <span *ngIf="getFeeLabel(item)" class="event-card__fee" [class.event-card__fee--free]="getFeeLabel(item) === 'FREE'">
+                  {{ getFeeLabel(item) }}
+                </span>
+                <button type="button" class="event-card__details-button" (click)="viewDetails.emit(item)">
+                  View Details
+                </button>
+              </div>
+            </article>

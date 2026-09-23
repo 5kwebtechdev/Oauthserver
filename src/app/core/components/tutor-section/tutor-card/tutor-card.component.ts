@@ -10,7 +10,8 @@ import { TutorLikeService } from '../../../services/tutor-like.service';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../../environments/environment';
 import { ProfileImageComponent } from '../../profile-image/profile-image.component';
-import { EduHubEventsService } from '../../../services/eduhub-events.service';
+import { EduHubEventItem, EduHubEventsService } from '../../../services/eduhub-events.service';
+import { EduHubEventCardComponent } from '../../education-section/eduhub-event-card/eduhub-event-card.component';
 import { EduHubCityService } from '../../../services/eduhub-city.service';
 import { EduHubCitySelectorComponent } from '../../education-section/eduhub-city-selector/eduhub-city-selector.component';
 
@@ -63,6 +64,7 @@ interface EduHubDirectoryItem {
 }
 
 interface EduHubPreview {
+  event?: EduHubEventItem;
   id: string | number;
   name: string;
   description: string;
@@ -78,7 +80,7 @@ interface EduHubPreview {
   selector: 'tutor-card',
   templateUrl: './tutor-card.component.html',
   styleUrls: ['./tutor-card.component.scss'],
-  imports: [CommonModule, IonicModule, ProfileImageComponent, EduHubCitySelectorComponent],
+  imports: [CommonModule, IonicModule, ProfileImageComponent, EduHubCitySelectorComponent, EduHubEventCardComponent],
   standalone: true
 })
 export class TutorCardComponent implements OnInit, OnDestroy {
@@ -295,7 +297,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
             : '';
           const previews = (response?.content || [])
             .filter(item => this.isActiveDirectoryListing(item as EduHubDirectoryItem))
-            .map(item => this.mapExternalPreview(item as EduHubDirectoryItem, fallbackImage));
+            .map(item => ({ ...this.mapExternalPreview(item as EduHubDirectoryItem, fallbackImage), event: item }));
           this.externalPreviews.set(categoryKey, previews);
           this.externalCounts.set(categoryKey, response?.totalElements ?? previews.length);
           this.externalLoading.delete(categoryKey);

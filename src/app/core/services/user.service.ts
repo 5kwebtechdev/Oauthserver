@@ -6,6 +6,8 @@ import { environment } from '../../../environments/environment';
 import { StoredGender } from '../models/gender.model';
 import { MoodService } from './mood.service';
 import { AvatarService } from './avatar.service';
+import { AuthService } from './auth.service';
+import { displayName } from '../models/display-name';
 
 export interface UserStats {
   coins: number;
@@ -53,10 +55,37 @@ export class UserService {
   constructor(
     private http: HttpClient,
     private moodService: MoodService,
-    private avatarService: AvatarService
+    private avatarService: AvatarService,
+    private authService: AuthService
   ) {
-    // Initialize user profile from storage
-    this.loadUserFromStorage();
+    // Follow account switches as well as profile edits. Never merge one
+    // family member's cached identity into another member's profile.
+    this.authService.userData$.subscribe(user => {
+      if (!user) {
+        this.clearUserProfile();
+        return;
+      }
+      const userId = user.userId ?? user.id ?? user.memberId;
+      const cached = this.userProfileSubject.value;
+      const sameUser = userId != null && cached?.userId != null
+        && String(userId) === String(cached.userId);
+      if (!sameUser) this.clearUserProfile();
+      this.setUserProfile({
+        ...(sameUser ? cached : {}),
+        userId,
+        name: displayName(user),
+        username: user.username ?? user.userName,
+        email: user.email,
+        phone: user.phone,
+        age: user.age,
+        dob: user.dateOfBirth ?? user.dob,
+        gender: user.gender,
+        relationship: user.relationship,
+        avatarUrl: user.avatarUrl,
+        avatarName: user.avatarName ?? user.avatar?.avatarName,
+        avatarImageName: user.avatarImageName ?? user.avatar?.avatarImageName
+      });
+    });
   }
 
   /**
@@ -160,6 +189,7 @@ export class UserService {
    */
   clearUserProfile(): void {
     this.statsRevision++;
+    this.statsRefresh$ = null;
     this.statsSubject.next(null);
     this.userProfileSubject.next(null);
     try {
@@ -222,7 +252,7 @@ export class UserService {
     }
 
     const revision = this.statsRevision;
-    this.statsRefresh$ = this.moodService.getVibesDisplay().pipe(
+    const refresh$ = this.moodService.getVibesDisplay().pipe(
       tap(data => {
         if (revision === this.statsRevision && data && data.length > 0) {
           const userStats = data[0];
@@ -236,11 +266,14 @@ export class UserService {
         }
       }),
       map(() => this.statsSubject.value),
-      finalize(() => { this.statsRefresh$ = null; }),
+      finalize(() => {
+        if (this.statsRefresh$ === refresh$) this.statsRefresh$ = null;
+      }),
       shareReplay(1)
     );
 
-    return this.statsRefresh$;
+    this.statsRefresh$ = refresh$;
+    return refresh$;
   }
 
   /**

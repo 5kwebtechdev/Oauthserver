@@ -152,6 +152,7 @@
           </ng-container>
 
           <p class="seller-flow__error" *ngIf="sellerValidationMessage || sellerSubmitError" role="alert">{{ sellerValidationMessage || sellerSubmitError }}</p>
+          <p class="seller-flow__requirement" *ngIf="!sellerValidationMessage && !sellerSubmitError && sellerStepRequirement" role="status">{{ sellerStepRequirement }}</p>
           <button type="button" class="seller-flow__cta" [disabled]="!isSellerStepReady || sellerSubmitInProgress" (click)="continueSellerFlow()">
             <ion-spinner *ngIf="sellerSubmitInProgress" name="crescent"></ion-spinner>
             <ng-container *ngIf="!sellerSubmitInProgress"><img *ngIf="sellerStep === 4" src="assets/figma/second-hand-books/seller/submit-check.svg" alt="" aria-hidden="true"><span>{{ sellerPrimaryActionLabel }}</span><img *ngIf="sellerStep !== 4" class="seller-flow__next-icon" src="assets/figma/second-hand-books/seller/chevron-left.svg" alt="" aria-hidden="true"></ng-container>

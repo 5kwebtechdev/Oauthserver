@@ -27,7 +27,7 @@
         <div class="event-detail-image" [class.event-detail-image--empty]="!image" role="button" tabindex="0" aria-label="View listing image full screen" (click)="openImage()" (keydown.enter)="openImage()" (keydown.space)="$event.preventDefault(); openImage()">
           <app-profile-image class="event-detail-image__photo" [src]="image" [name]="displayName" [alt]="displayName"></app-profile-image>
           <img *ngIf="item.verified" class="event-detail-image__verified"
-            src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified">
+            src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified">
         </div>
         <div class="event-detail-intro__copy">
           <h1>{{ displayName }}</h1>

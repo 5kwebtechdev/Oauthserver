@@ -297,11 +297,11 @@
             </div>
             <div class="parent-message__actions">
               <div>
-                <button type="button" [disabled]="isSendingMessage" (click)="sendQuickMessage('CELEBRATE')">
+                <button type="button" [disabled]="isSendingMessage" (click)="openMessageComposer('celebrate')">
                   <img src="assets/figma/parent-home/celebrate.svg" alt="" aria-hidden="true">
                   Celebrate
                 </button>
-                <button type="button" [disabled]="isSendingMessage" (click)="sendQuickMessage('ENCOURAGE')">
+                <button type="button" [disabled]="isSendingMessage" (click)="openMessageComposer('encourage')">
                   <img src="assets/figma/parent-home/encourage.svg" alt="" aria-hidden="true">
                   Encourage
                 </button>
@@ -390,7 +390,7 @@
     aria-describedby="message-composer-description" (click)="$event.stopPropagation()">
     <header class="message-composer-header">
       <h2 id="message-composer-title">Message to {{ selectedChildName }}</h2>
-      <p id="message-composer-description">{{ selectedChildName }} will receive this as a notification</p>
+      <p id="message-composer-description">Review or edit the exact message {{ selectedChildName }} will receive.</p>
     </header>
 
     <div class="message-composer-field">

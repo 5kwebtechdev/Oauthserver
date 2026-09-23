@@ -1574,6 +1574,9 @@ button {
     font-size: 13px;
     font-weight: 600;
     line-height: 1.4;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
   }
 }
 

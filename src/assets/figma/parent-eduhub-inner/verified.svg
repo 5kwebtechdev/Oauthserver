@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <defs>
+    <linearGradient id="badge" x1="5" y1="2" x2="19" y2="22" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#36C5F0"/>
+      <stop offset="1" stop-color="#1265D8"/>
+    </linearGradient>
+  </defs>
+  <path d="m12 1 2.5 1.67 3-.2 1.33 2.7 2.7 1.33-.2 3L23 12l-1.67 2.5.2 3-2.7 1.33-1.33 2.7-3-.2L12 23l-2.5-1.67-3 .2-1.33-2.7-2.7-1.33.2-3L1 12l1.67-2.5-.2-3 2.7-1.33 1.33-2.7 3 .2L12 1Z" fill="url(#badge)"/>
+  <path d="m7.5 12 3 3 6-6" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

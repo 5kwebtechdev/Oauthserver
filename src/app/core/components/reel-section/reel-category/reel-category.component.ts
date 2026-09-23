@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { ReelsExpandComponent } from '../reel-expand/reels-expand.component';
 import { ReelService, YoutubeReel } from '../../../services/reel.service';
@@ -64,6 +64,7 @@ export class ReelCategoryComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
     private readonly reelService: ReelService,
     private readonly reelBookmarks: ReelBookmarksService
   ) {}
@@ -154,6 +155,12 @@ export class ReelCategoryComponent implements OnInit, OnDestroy {
     this.reelService.getReels().subscribe({
       next: reels => {
         this.slides = reels.map(reel => this.toReelItem(reel));
+        const requestedReelId = Number(this.route.snapshot.queryParamMap.get('reel'));
+        const requestedReel = this.slides.find(reel => reel.id === requestedReelId);
+        if (requestedReel) {
+          // Wait for the player component to finish registering its open event.
+          setTimeout(() => this.openReel(requestedReel), 0);
+        }
       },
       error: () => {
         this.slides = [];

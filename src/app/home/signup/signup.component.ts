@@ -1010,7 +1010,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return this.step === 4
       && this.currentRole === 'child'
       && this.authService.isLoggedIn()
-      && sessionStorage.getItem(SignupComponent.CHILD_POST_FAMILY_WELCOME_KEY) === 'true';
+      && this.authService.getUserRelationship() === 'CHILD';
   }
 
   get hasSelectedPet(): boolean {
@@ -1228,8 +1228,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         sessionStorage.setItem('signup_pet', selectedPetName);
         this.onboardingState.updateRegistrationDraft({
           petName: selectedPetName,
-          onboardingStep: 5
-        }, 5);
+          ...(this.isPostFamilyChildPetStep ? {} : { onboardingStep: 5 })
+        }, this.isPostFamilyChildPetStep ? undefined : 5);
       } else {
         this.core.triggerToasrt('Please choose your pet to continue.');
         return;
@@ -1244,7 +1244,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
 
       if (this.isPostFamilyChildPetStep) {
-        this.registerChildOrSelfFromSession('child', true);
+        this.savePostFamilyChildPet(selectedPetName);
         return;
       }
 
@@ -1700,6 +1700,37 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.registrationInProgress = false;
       this.loadingService.hide(loaderToken);
     }
+  }
+
+  private savePostFamilyChildPet(selectedPetName: string): void {
+    if (this.registrationInProgress) return;
+
+    this.registrationInProgress = true;
+    this.errorMessage = null;
+    const loaderToken = this.loadingService.show('Saving your pet...', {
+      delayMs: 0,
+      minVisibleMs: 300
+    });
+
+    this.authService.updatePetSelection(selectedPetName).subscribe({
+      next: () => {
+        this.authService.updateUserData({ onboardingStep: 6 });
+        this.onboardingState.updateRegistrationDraft({
+          petName: selectedPetName,
+          relationship: 'CHILD',
+          onboardingStep: 6
+        }, 6);
+        this.registrationInProgress = false;
+        this.loadingService.hide(loaderToken);
+        this.navigateToSignupStep(5);
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message
+          || 'Could not save your pet. Please try again.';
+        this.registrationInProgress = false;
+        this.loadingService.hide(loaderToken);
+      }
+    });
   }
 
   private buildManagedChildRegistrationPayload(selectedPetName: string): any | null {
@@ -4460,6 +4491,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
     if (this.isEditingPendingChildOnboarding && this.step === 2) return;
+    if (this.isPostFamilyChildPetStep || (
+      this.step === 5
+      && this.currentRole === 'child'
+      && this.authService.getUserRelationship() === 'CHILD'
+      && this.onboardingState.getRegistrationState()?.onboardingStep === 6
+    )) return;
 
     const localResume = this.onboardingState.getResumeNavigation(this.authService.getUserData());
     if (!localResume) return;

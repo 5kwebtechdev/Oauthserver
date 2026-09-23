@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import { displayName } from '../../models/display-name';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
@@ -245,31 +246,9 @@ export class UserProfileComponent implements OnInit, OnChanges {
     }
   }
 
-  /**
-   * Child and Self accounts use the in-app username as their visible identity.
-   * Accounts without one (the API returns `username: null`) fall back to the
-   * avatar name, including the nested login-response shape. Parent accounts
-   * continue showing their regular profile name.
-   */
+  /** Use the same complete name as the family list and Home greeting. */
   private resolveDisplayIdentity(source: any): string {
-    if (!source) return '';
-
-    const relationship = String(source.relationship ?? source.relationshipType ?? '').toUpperCase();
-    const childOrSelf = relationship === 'CHILD' || relationship === 'SELF'
-      || (!relationship && !this.coreAuthService.isParentUser());
-    if (childOrSelf) {
-      const username = source.username ?? source.userName;
-      if (username !== null && username !== undefined && String(username).trim()) {
-        return String(username).trim();
-      }
-
-      const avatarName = source.avatarName ?? source.avatar?.avatarName;
-      if (avatarName !== null && avatarName !== undefined && String(avatarName).trim()) {
-        return String(avatarName).trim();
-      }
-    }
-
-    return String(source.name ?? source.fullName ?? '').trim();
+    return displayName(source);
   }
 
   /** Name rendered in the profile header. Kept as a method so all profile

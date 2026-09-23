@@ -209,6 +209,7 @@
 }
 
 .eduhub-tutor {
+  // Non-event previews retain their existing compact layout.
   flex: 0 0 min(280px, calc(100vw - 64px));
   display: grid;
   grid-template-columns: 70px minmax(0, 1fr);
@@ -224,6 +225,11 @@
   box-shadow: 0 2px 5px rgba(18, 63, 180, 0.12);
   scroll-snap-align: start;
   cursor: pointer;
+}
+
+.eduhub-event-preview {
+  flex: 0 0 min(400px, calc(100vw - 48px));
+  scroll-snap-align: start;
 }
 
 .eduhub-tutor__avatar {

@@ -283,9 +283,8 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
     if (this.sellerStep === 2) return !!this.seller.condition;
 
     if (this.sellerStep === 3) {
-      const hasPhotos = this.sellerPhotos.every(photo => photo instanceof File);
       const originalPrice = Number(this.seller.originalPrice);
-      if (!hasPhotos || !Number.isFinite(originalPrice) || originalPrice <= 0) return false;
+      if (!this.hasRequiredSellerPhotos || !Number.isFinite(originalPrice) || originalPrice <= 0) return false;
       if (this.seller.listingType === 'donate') return true;
       const sellingPrice = Number(this.seller.sellingPrice);
       return Number.isFinite(sellingPrice) && sellingPrice > 0 && sellingPrice <= originalPrice;
@@ -298,6 +297,19 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
 
   get sellerProgress(): number {
     return this.sellerStep * 25;
+  }
+
+  private get hasRequiredSellerPhotos(): boolean {
+    // Cordova replaces window.File on mobile; input-selected browser files
+    // therefore need to be checked without instanceof File.
+    return this.sellerPhotoSlots.every((_, index) => {
+      const photo = this.sellerPhotos[index];
+      return !!photo && photo.size > 0 && photo.type.startsWith('image/');
+    });
+  }
+
+  get sellerStepRequirement(): string {
+    return this.sellerStep >= 3 && !this.isSellerStepReady ? this.sellerValidationError() : '';
   }
 
   get sellerPrimaryActionLabel(): string {
@@ -554,8 +566,8 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
     input.value = '';
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      this.sellerValidationMessage = 'Please choose a valid image file.';
+    if (!file.type.startsWith('image/') || file.size === 0) {
+      this.sellerValidationMessage = 'Please choose a valid, non-empty image file.';
       return;
     }
 
@@ -1113,12 +1125,18 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
     if (this.sellerStep === 1) return 'Complete the required book details to continue.';
     if (this.sellerStep === 2) return 'Choose the book condition to continue.';
     if (this.sellerStep === 3) {
-      if (this.sellerPhotos.some(photo => photo === null)) return 'Add all three required book photos to continue.';
-      return this.seller.listingType === 'sell'
-        ? 'Enter a valid original and selling price to continue.'
-        : 'Enter the original price to continue.';
+      if (!this.hasRequiredSellerPhotos) return 'Add all three required book photos to continue.';
+      const originalPrice = Number(this.seller.originalPrice);
+      if (!Number.isFinite(originalPrice) || originalPrice <= 0) return 'Enter an original price greater than ₹0 to continue.';
+      const sellingPrice = Number(this.seller.sellingPrice);
+      if (!Number.isFinite(sellingPrice) || sellingPrice <= 0) return 'Enter a selling price greater than ₹0, or choose Donate.';
+      return 'Selling price cannot be higher than the original price.';
     }
-    return 'Add your location, a valid contact number, and confirm the details to submit.';
+    if (!this.seller.state) return 'Select your state to continue.';
+    if (!this.seller.city) return 'Select your city to continue.';
+    if (!this.seller.address.trim()) return 'Enter your address to continue.';
+    if (this.seller.contactNumber.replace(/\D/g, '').length !== 10) return 'Enter a valid 10-digit contact number.';
+    return 'Confirm that your book details and condition are accurate to submit.';
   }
 
   private prefillSellerContact(): void {

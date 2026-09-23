@@ -1,0 +1,222 @@
+:host { display: block; min-width: 0; --event-text: #282527; --event-muted: #6b656a; --event-blue: #1432a8; }
+.event-card {
+  width: 100%;
+  padding: 8px;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+  box-sizing: border-box;
+}
+
+.event-card__top {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.event-card__image {
+  width: 94px;
+  height: 91px;
+  flex: 0 0 94px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #979494;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.event-card__details {
+  min-width: 0;
+  flex: 1;
+  padding-left: 8px;
+}
+
+.event-card__header {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.event-card__identity {
+  min-width: 0;
+  flex: 1;
+}
+
+.event-card__name-row {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 4px;
+
+  h3 {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    color: var(--event-text);
+    font-family: var(--font-sans, 'Nunito', sans-serif);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.18;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+.event-card__verified {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  object-fit: contain;
+}
+
+.event-card__location {
+  display: flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0 0;
+  color: var(--event-muted);
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+
+  img {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+  }
+
+  span {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+.event-card__meta {
+  display: -webkit-box;
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: var(--event-muted);
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.event-card__quick-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.quick-action {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 8px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  img {
+    display: block;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.quick-action--favourite {
+  background: #fff;
+  box-shadow: 0 0 2px 1px rgba(178, 191, 242, 0.5);
+}
+
+.quick-action__heart {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: var(--event-blue);
+  mask: url('/assets/figma/parent-eduhub-inner/favorite.svg') center / contain no-repeat;
+  -webkit-mask: url('/assets/figma/parent-eduhub-inner/favorite.svg') center / contain no-repeat;
+}
+
+.quick-action--favourite.is-selected .quick-action__heart {
+  background: #e53935;
+  // favorite.svg is an outline heart (a hollow ring); swap to a solid
+  // silhouette so "liked" reads as a fully filled heart, not just a red ring.
+  mask: url('/assets/figma/parent-eduhub-inner/favorite-filled.svg') center / contain no-repeat;
+  -webkit-mask: url('/assets/figma/parent-eduhub-inner/favorite-filled.svg') center / contain no-repeat;
+}
+
+.quick-action--share {
+  background: var(--event-blue);
+}
+
+.event-card__footer {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #d9d6d8;
+}
+
+.event-card__fee {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: 1px solid #719ee3;
+  border-radius: 10px;
+  color: #3158a8;
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.event-card__fee--free {
+  border-color: #49a867;
+  color: #238343;
+}
+
+.event-card__details-button {
+  display: inline-flex;
+  min-width: 140px;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #1432a8 0%, #3158a8 100%);
+  color: #fff;
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+
+button:focus-visible { outline: 2px solid #1432a8; outline-offset: 3px; }
+

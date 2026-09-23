@@ -1721,7 +1721,8 @@
   input { width: 20px; height: 20px; flex: 0 0 20px; margin: 0; accent-color: #1432a8; }
 }
 
-.seller-flow__error {
+.seller-flow__error,
+.seller-flow__requirement {
   margin: 16px 0 0;
   color: #c83c50;
   font-family: var(--font-sans, 'Nunito', sans-serif);
@@ -1730,6 +1731,8 @@
   line-height: 18px;
   text-align: center;
 }
+
+.seller-flow__requirement { color: #64616b; }
 
 .seller-flow__cta,
 .seller-primary-button {

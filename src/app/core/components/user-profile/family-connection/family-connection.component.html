@@ -90,7 +90,7 @@
                             </div>
 
                             <div class="f-head">
-                                <h1>{{ creator.name }}</h1>
+                                <h1>{{ displayName(creator) }}</h1>
                                 <p>{{ creator.age }} years old</p>
 
                                 <div class="relationship-badge" [class.child]="creator.relationship === 'Child'"
@@ -120,7 +120,7 @@
 
                                 </div>
                                 <div class="name-age">
-                                    <h1>{{ m.name }}</h1>
+                                    <h1>{{ displayName(m) }}</h1>
                                     <p>{{ m.age }} years old</p>
                                 </div>
                             </div>

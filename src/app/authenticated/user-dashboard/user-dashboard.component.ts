@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { displayName } from '../../core/models/display-name';
 import { CommonModule } from "@angular/common";
 import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
@@ -458,13 +459,15 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         this.userBadges = stats.badges;
       });
 
-    // Load user profile from service (secondary source for additional profile info)
+    // A secondary cache must never replace the active account's identity.
     this.userService.getUserProfile$()
       .pipe(takeUntil(this.destroy$))
       .subscribe(profile => {
-        if (profile) {
+        const activeUser = this.authService.getUserData();
+        const activeId = activeUser?.userId ?? activeUser?.id ?? activeUser?.memberId;
+        if (profile && activeId != null && String(profile.userId) === String(activeId)) {
           const profileUsername = this.resolveGreetingUsername(profile);
-          if (String(profileUsername || '').trim()) {
+          if (!this.resolveGreetingUsername(activeUser) && String(profileUsername || '').trim()) {
             this.userName = String(profileUsername).trim();
           } else if (!this.userName) {
             this.userName = this.resolveGreetingUsername(profile);
@@ -1129,7 +1132,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       this.avatarImageName = resolved.alt || null;
 
       this.userService.updateUserProfile({
-        name: userData.name,
+        userId: userData.userId ?? userData.id ?? userData.memberId,
+        name: displayName(userData),
         email: userData.email,
         phone: userData.phone,
         gender: userData.gender,
@@ -1157,32 +1161,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.petMood = this.currentPetMessage.mood;
   }
 
-  /**
-   * The home greeting is the user's in-app identity, not their legal/full
-   * name. Older sessions may not have a username yet, so retain the avatar
-   * name (including the nested login-response shape) before the legal name.
-   * Parent accounts keep their regular name when this helper is ever used
-   * outside the child/self dashboard.
-   */
+  /** Use the full name from the current account throughout the dashboard. */
   private resolveGreetingUsername(user: any): string {
-    if (!user) return '';
-
-    const relationship = String(user.relationship ?? user.relationshipType ?? '').toUpperCase();
-    const childOrSelf = relationship === 'CHILD' || relationship === 'SELF'
-      || (!relationship && !this.authService.isParentUser());
-    if (childOrSelf) {
-      const username = user.username ?? user.userName;
-      if (username !== null && username !== undefined && String(username).trim()) {
-        return String(username).trim();
-      }
-
-      const avatarName = user.avatarName ?? user.avatar?.avatarName;
-      if (avatarName !== null && avatarName !== undefined && String(avatarName).trim()) {
-        return String(avatarName).trim();
-      }
-    }
-
-    return String(user.name ?? user.fullName ?? '').trim();
+    return displayName(user);
   }
 
   private checkStreakRestore(): void {

@@ -1,11 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { ReelService } from '../../../services/reel.service';
-import { ReelBookmarksService } from '../../../services/reel-bookmarks.service';
-import { ReelsExpandComponent } from '../reel-expand/reels-expand.component';
 
 export interface ReelPreviewItem {
   id: string | number;
@@ -23,7 +21,7 @@ export interface ReelPreviewItem {
 @Component({
   selector: 'reel-preview-section',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReelsExpandComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './reel-preview.component.html',
   styleUrls: ['./reel-preview.component.scss']
 })
@@ -39,7 +37,7 @@ export class ReelPreviewSectionComponent implements OnInit {
 
   constructor(
     private readonly reelService: ReelService,
-    private readonly reelBookmarks: ReelBookmarksService
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
@@ -59,30 +57,7 @@ export class ReelPreviewSectionComponent implements OnInit {
   openReel(item: ReelPreviewItem, event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-
-    const slides = this.items.map(reel => ({
-      id: reel.id,
-      videoId: reel.videoId || '',
-      image: reel.thumbnailUrl || this.fallbackThumbnailUrl,
-      avatar: reel.authorAvatarUrl || 'assets/figma/reels/avatar.webp',
-      author: reel.author || 'SuperMe Creator',
-      title: reel.title || 'YouTube Reel',
-      category: reel.category || '',
-      tags: '',
-      video: '',
-      duration: '',
-      liked: Boolean(reel.liked),
-      saved: this.reelBookmarks.isSaved(reel.id),
-      likeCount: reel.likeCount || 0,
-      likes: String(reel.likeCount || 0),
-      commentCount: reel.commentCount || 0,
-      link: reel.videoId ? `https://www.youtube.com/watch?v=${encodeURIComponent(reel.videoId)}` : undefined
-    }));
-    const startIndex = this.items.findIndex(reel => reel.id === item.id);
-
-    window.dispatchEvent(new CustomEvent('openReelPlayAll', {
-      detail: { slides, startIndex: Math.max(0, startIndex) }
-    }));
+    this.router.navigate(['/authed/reel-section'], { queryParams: { reel: item.id } });
   }
 
   private loadReels(): void {

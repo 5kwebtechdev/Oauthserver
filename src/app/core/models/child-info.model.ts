@@ -2,6 +2,8 @@
  * Typed interface for child/family member profile data.
  * Single source of truth for child selection across the app.
  */
+import { displayName } from './display-name';
+
 export interface ChildInfo {
   id: string | number | null;
   name: string;
@@ -72,7 +74,7 @@ export function mapVibeToChildInfo(d: any, avatarUrl: string): ChildInfo {
   const ageFromDateOfBirth = calculateAgeFromDateOfBirth(dateOfBirth);
   return {
     id,
-    name: d?.userName || d?.name || profile?.userName || profile?.name || 'Child',
+    name: displayName({ fullName: d?.fullName || profile?.fullName, name: d?.name || profile?.name, username: d?.username || profile?.username, userName: d?.userName || profile?.userName }) || 'Child',
     avatarUrl: avatarUrl || 'assets/figma/avatars/below-11-male-1.webp',
     relationship: d?.relationship || profile?.relationship || 'Child',
     // DOB belongs to the actual member and is more reliable than the age on

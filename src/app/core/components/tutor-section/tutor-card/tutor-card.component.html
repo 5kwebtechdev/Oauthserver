@@ -75,7 +75,12 @@
 
     <ng-container *ngIf="visibleExternalPreviews.length">
       <div class="eduhub-tutors">
-        <article class="eduhub-tutor" *ngFor="let listing of visibleExternalPreviews; trackBy: trackPreview"
+        <ng-container *ngFor="let listing of visibleExternalPreviews; trackBy: trackPreview">
+        <app-eduhub-event-card *ngIf="listing.event as event; else externalPreview" class="eduhub-event-preview"
+          [item]="event" [entityType]="selectedCategoryKey === 'workshops' ? 'Workshop' : 'Events'"
+          (viewDetails)="onViewExternalDetails(listing)"></app-eduhub-event-card>
+        <ng-template #externalPreview>
+        <article class="eduhub-tutor"
           [class.eduhub-tutor--clickable]="true"
           role="button"
           tabindex="0"
@@ -93,6 +98,8 @@
             <button type="button" *ngIf="listing.counselor as counselor" (click)="onViewCounselorProfile(counselor); $event.stopPropagation()">Check Profile</button>
           </div>
         </article>
+        </ng-template>
+        </ng-container>
       </div>
     </ng-container>
 

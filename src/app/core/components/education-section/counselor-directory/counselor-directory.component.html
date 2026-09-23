@@ -118,7 +118,7 @@
                   <div class="counselor-card__headline">
                     <div class="counselor-card__identity">
                       <div class="counselor-card__name"><h3>{{ getName(counselor) }}</h3>
-                        <img *ngIf="isVerified(counselor)" src="assets/figma/parent-eduhub-inner/verified.webp" alt="Verified" title="Verified"></div>
+                        <img *ngIf="isVerified(counselor)" src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified"></div>
                       <p *ngIf="!isGuestView" class="counselor-card__specialization">{{ getSpecializationLabel(counselor) }}</p>
                       <p *ngIf="!isGuestView" class="counselor-card__stats"><span><img src="assets/Icons-Neutral/Tutor-Mode.webp" alt="" aria-hidden="true">{{ getAvailability(counselor) }}</span><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.webp" alt="" aria-hidden="true">{{ getExperience(counselor) }}</span></p>
                     </div>

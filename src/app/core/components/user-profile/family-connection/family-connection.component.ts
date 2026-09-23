@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { displayName } from '../../../models/display-name';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,6 +29,7 @@ import { Clipboard } from '@capacitor/clipboard';
   styleUrls: ['./family-connection.component.scss']
 })
 export class FamilyConnectionComponent implements OnInit, OnDestroy {
+  readonly displayName = displayName;
   familyName: string = 'Your Family';
   familyStatus: string = 'ACTIVE';
   createdOn: string = '';
@@ -918,7 +920,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
         // not from the parent's cached profile.  Reusing parentUserData here
         // made the child profile lose its own avatar, age and contact details.
         const childResponse = response?.user || response?.member || response?.profile || response || {};
-        const childName = childResponse?.name || member.name || 'Child';
+        const childName = displayName({ ...member, ...childResponse, name: childResponse?.name || member.name }) || 'Child';
         const childId = childResponse?.id || childResponse?.userId || childResponse?.memberId || memberId;
         const childUserData = {
           ...member,

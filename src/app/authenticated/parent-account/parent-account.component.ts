@@ -1,4 +1,5 @@
 import { Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { displayName } from '../../core/models/display-name';
 import { Platform, ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from "@angular/common";
 import { Router, RouterModule } from '@angular/router';
@@ -549,7 +550,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.userService.getUserProfile$().pipe(takeUntil(this.destroy$)).subscribe(profile => {
             if (profile) {
                 this.currentProfile = profile;
-                this.parentName = profile.name || 'Parent';
+                this.parentName = displayName(profile) || 'Parent';
                 this.userName = this.parentName;
                 // Parent Home is role-specific. Force the Parent audience here
                 // so older cached profiles that do not contain `relationship`
@@ -678,7 +679,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         if (!session) return;
 
         const parent = session?.user ?? session?.data?.user ?? session?.data ?? session;
-        this.parentName = parent?.name || this.parentName;
+        this.parentName = displayName(parent) || this.parentName;
         this.userName = this.parentName;
 
         const coinCandidates = [
@@ -1010,7 +1011,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                     // them, otherwise Learning can accidentally use parent age.
                     age: child.age ?? stats.age,
                     dateOfBirth: child.dateOfBirth || stats.dateOfBirth,
-                    name: stats.name || child.name,
+                    name: child.name || stats.name,
                     avatarUrl: stats.avatarUrl || child.avatarUrl
                 }
                 : child;
@@ -1038,7 +1039,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     /** Use parent display when no children */
     private useParentAsDefault(): void {
-        this.parentName = this.currentProfile?.name || this.parentName || 'Parent';
+        this.parentName = displayName(this.currentProfile) || this.parentName || 'Parent';
         this.userName = this.parentName;
         this.parentInitial = this.parentName.charAt(0) || 'P';
         const isFemale = (this.currentProfile?.gender || '').toLowerCase() === 'female';
@@ -1523,29 +1524,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     onMessageInput(event: Event): void {
         const value = (event.target as HTMLTextAreaElement).value || '';
         this.messageDraft = value.slice(0, this.messageMaxLength);
-    }
-
-    sendQuickMessage(messageType: 'CELEBRATE' | 'ENCOURAGE'): void {
-        if (this.isSendingMessage) return;
-
-        const childId = this.getSelectedChildReceiverId();
-        if (childId === null) {
-            this.toastService.error('Please select a child before sending a message.');
-            return;
-        }
-
-        this.isSendingMessage = true;
-        this.sendMessageToChild(childId, messageType).subscribe({
-            next: () => {
-                this.isSendingMessage = false;
-                this.toastService.success('Message sent successfully.');
-            },
-            error: (error) => {
-                this.isSendingMessage = false;
-                console.warn('[ParentAccount] Unable to send family message:', error);
-                this.toastService.error('Unable to send message. Please try again.');
-            }
-        });
     }
 
     closeMessageComposer(): void {
