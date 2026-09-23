@@ -49,10 +49,9 @@ export class PetMessageApiService {
 
   // ── Home overlay ────────────────────────────────────────────────────────────
   /** GET /v1/pet-message/home/overlay */
-  getHomeOverlay(): Observable<PetMessageApiResponse> {
-    return this.http
-      .get<PetMessageApiResponse>(`${this.base}/pet-message/home/overlay`, { headers: this.headers() })
-      .pipe(catchError(() => of({ message: '', hasOverlay: false, overlayType: 'NONE' as ApiOverlayType })));
+  getHomeOverlay(strict = false): Observable<PetMessageApiResponse> {
+    const request = this.http.get<PetMessageApiResponse>(`${this.base}/pet-message/home/overlay`, { headers: this.headers() });
+    return strict ? request : request.pipe(catchError(() => of({ message: '', hasOverlay: false, overlayType: 'NONE' as ApiOverlayType })));
   }
 
   /** POST /v1/pet-message/home/overlay/dismiss?type=<overlayType> */

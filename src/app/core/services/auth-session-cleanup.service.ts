@@ -59,6 +59,12 @@ export class AuthSessionCleanupService {
           persistentDevicePreferences.set(key, value);
         }
       });
+      // Keep today's account-scoped presentation receipts across logout/login.
+      // These contain no session credentials or profile data.
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      Object.keys(localStorage).filter(key => key.startsWith('superme_entry_seen_') && key.includes(`:${today}:`))
+        .forEach(key => persistentDevicePreferences.set(key, localStorage.getItem(key)!));
     } catch (error) {
       console.warn('[AuthSessionCleanup] Unable to read persistent device preferences:', error);
     }

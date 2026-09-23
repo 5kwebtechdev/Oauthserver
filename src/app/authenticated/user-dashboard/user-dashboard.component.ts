@@ -1012,26 +1012,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   private maybeShowDailyStreakPopup(): void {
-    if (!this.authService.isFirstLoggedForTheDay()) {
-      this.showDailyStreakPopup = false;
-      return;
-    }
-
-    if (!this.dailyStreakEligible
-      || !this.streakStatusResolved
-      || !this.streakContinuityConfirmed
-      || !this.homeOverlayFlowComplete
-      || this.activeOverlay
-      || this.showFamilyAck
-      || this.showDailyStreakPopup) {
-      return;
-    }
-
-    const today = this.getLocalDateKey(new Date());
-    if (this.hasShownDailyStreakToday(today)) return;
-
-    this.markDailyStreakShown(today);
-    this.showDailyStreakPopup = true;
+    // DailyEntryComponent owns the flow globally, including notification destinations.
+    this.showDailyStreakPopup = false;
   }
 
   private hasShownDailyStreakToday(today: string): boolean {
@@ -1268,7 +1250,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   buildOverlayQueue(): void {
     if (this.overlayQueueBuilt) return;
     this.overlayQueueBuilt = true;
-    this.pollHomeOverlay();
+    this.homeOverlayFlowComplete = true;
+    this.loadHomeHeader();
   }
 
   /** Call GET /overlay, apply result. Re-called after every dismiss/mood-save. */

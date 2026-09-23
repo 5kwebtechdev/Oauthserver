@@ -9,13 +9,14 @@
     <section class="milestone-card" [class.celebrating]="celebrating" *ngIf="!restoreMode; else broken" aria-label="Streak Day milestones">
       <ng-container *ngIf="milestones as state">
         <div class="milestone-heading">
-          <div class="streak-art" [class.achievement]="state.latest"><img [src]="assets + (state.latest ? 'achievement.webp' : 'streak.webp')" alt=""></div>
+          <div class="streak-art" [class.achievement]="state.reachedToday"><img [src]="assets + (state.reachedToday ? 'achievement.webp' : 'streak.webp')" alt=""></div>
           <div aria-live="polite">
-            <h3>Streak : <span class="streak-count">{{ state.completedDays }}</span>{{ state.completedDays === 1 ? ' day' : ' days' }}</h3>
-            <p *ngIf="state.latest">You earned <img class="inline-coin" [src]="assets + 'coin.webp'" alt="coins"> <b>+{{ state.latest.coins }}</b></p>
+            <h3 *ngIf="state.reachedToday; else regularDay">You completed {{ state.completedDays }} days!</h3>
+            <ng-template #regularDay><h3>Streak : <span class="streak-count">{{ state.completedDays }}</span>{{ state.completedDays === 1 ? ' day' : ' days' }}</h3></ng-template>
+            <p *ngIf="state.reachedToday as reward">You earned <img class="inline-coin" [src]="assets + 'coin.webp'" alt="coins"> <b>+{{ reward.coins }}</b></p>
           </div>
         </div>
-        <div class="progress-cheer" *ngIf="celebrateProgress" role="status">{{ celebrating ? (state.latest?.days === state.completedDays ? 'Milestone reached! You did it!' : 'Another day. A little stronger!') : '' }}</div>
+        <div class="progress-cheer" *ngIf="celebrateProgress" role="status">{{ celebrating ? (state.reachedToday ? 'Milestone reached! You did it!' : 'Another day. A little stronger!') : '' }}</div>
         <span class="sparkles" *ngIf="celebrating" aria-hidden="true"><i>✦</i><i>✦</i><i>✦</i><i>✦</i><i>✦</i></span>
         <ol class="milestone-track">
           <li *ngFor="let milestone of state.visible" [class.just-reached]="celebrating && milestone.days === state.completedDays" [class.completed]="milestone.days <= state.completedDays" [attr.aria-label]="milestone.days + ' days, ' + milestone.coins + ' coins, ' + (milestone.days <= state.completedDays ? 'completed' : 'upcoming')">

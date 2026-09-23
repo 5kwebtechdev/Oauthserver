@@ -27,6 +27,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   /** Direct vibe data override — takes priority over API vibes array (used by parent view) */
   @Input() vibeOverride: VibesDisplayResponse | null = null;
   @Output() valueChange = new EventEmitter<string>();
+  @Output() moodSaved = new EventEmitter<string>();
 
   vibes: VibesDisplayResponse[] = [];
   private setsToday = 0;
@@ -312,6 +313,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
         this.valueChange.emit(this.value || '');
         this.savedMoodKey = vibeKey;
         this.incrementDailySetCount(vibeKey);
+        this.moodSaved.emit(vibeKey);
         this.popupSelection = null;
         this.pickerOpen = false;
         this.limitInfoVisible = false;

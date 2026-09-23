@@ -11,6 +11,7 @@
 
   <app-superme-loading *ngIf="isNativePlatform"></app-superme-loading>
   <app-network-issue></app-network-issue>
+  <app-daily-entry [blocked]="isAppUpdateBlocked || isMonitoringChild || showBadgePopup"></app-daily-entry>
 
   <div *ngIf="isUpdateCheckPending" class="app-update-check-gate" role="status"
     aria-label="Checking app version">

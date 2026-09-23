@@ -105,11 +105,9 @@ export class HabitButtonLogicService {
    */
   isDoneEnabled(habit: any, hasOtherOngoing: boolean = false): boolean {
     if (!habit) return false;
-    // Server marked this occurrence's window as expired; it can no longer be completed.
-    if (habit.expired) return false;
     if (hasOtherOngoing) return false;
     const status = habit.status?.toLowerCase();
-    const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
+    const { startTimeStamp } = this.getTimestamps(habit);
     // No Done action for past/future dates
     if (!this.isToday(startTimeStamp)) return false;
 
@@ -135,8 +133,6 @@ export class HabitButtonLogicService {
    */
   isDoneVisible(habit: any): boolean {
     if (!habit) return false;
-    // Server marked this occurrence's window as expired; hide Done rather than showing it disabled.
-    if (habit.expired) return false;
     const status = habit.status?.toLowerCase();
     // Terminal items cannot be completed again.
     if (status === 'completed' || status === 'skipped') return false;

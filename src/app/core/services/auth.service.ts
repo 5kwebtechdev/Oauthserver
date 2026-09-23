@@ -335,7 +335,10 @@ export class AuthService {
   /** Whether the login API confirmed this is the user's first login today. */
   isFirstLoggedForTheDay(): boolean {
     try {
-      return sessionStorage.getItem(this.FIRST_LOGGED_FOR_DAY_KEY) === 'true';
+      const today = new Date().toLocaleDateString('en-CA');
+      return sessionStorage.getItem(this.FIRST_LOGGED_FOR_DAY_KEY) === 'true'
+        && sessionStorage.getItem(this.FIRST_LOGGED_FOR_DAY_KEY + '_date') === today
+        && sessionStorage.getItem(this.FIRST_LOGGED_FOR_DAY_KEY + '_user') === String(this.getUserId());
     } catch {
       return false;
     }
@@ -344,12 +347,8 @@ export class AuthService {
   private setFirstLoggedForTheDay(value: boolean, userId: number): void {
     try {
       sessionStorage.setItem(this.FIRST_LOGGED_FOR_DAY_KEY, String(value));
-
-      // The backend is authoritative. If it reports the first login, discard
-      // a stale client-side seen marker so today's celebration can appear.
-      if (value) {
-        localStorage.removeItem(`superme_daily_streak_seen_${userId}`);
-      }
+      sessionStorage.setItem(this.FIRST_LOGGED_FOR_DAY_KEY + '_date', new Date().toLocaleDateString('en-CA'));
+      sessionStorage.setItem(this.FIRST_LOGGED_FOR_DAY_KEY + '_user', String(userId));
     } catch {
       // Storage restrictions should safely result in no automatic popup.
     }

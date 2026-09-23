@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
 import { AppComponent } from './app.component';
+import { DailyEntryComponent } from './core/components/daily-entry/daily-entry.component';
 import { SupermeLoadingComponent } from './core/components/superme-loading/superme-loading.component';
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
@@ -24,7 +25,7 @@ import { SupermePopupComponent } from './core/components/superme-popup/superme-p
     AppComponent,
   ],
 
-  imports: [BrowserModule, CommonModule, IonicModule.forRoot(), AppRoutingModule, BrowserAnimationsModule, HttpClientModule, SupermeLoadingComponent, NetworkIssueComponent, SupermeButtonComponent, SupermePopupComponent],
+  imports: [BrowserModule, CommonModule, IonicModule.forRoot(), AppRoutingModule, BrowserAnimationsModule, HttpClientModule, SupermeLoadingComponent, NetworkIssueComponent, SupermeButtonComponent, SupermePopupComponent, DailyEntryComponent],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

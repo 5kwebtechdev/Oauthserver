@@ -83,7 +83,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   get isCardExpanded(): boolean {
     if (!this.autoExpand) return this.expanded;
     const status = this.getStatus();
-    if (status === 'completed' || status === 'skipped' || this.habit?.expired) return false;
+    if (status === 'completed' || status === 'skipped') return false;
     const now = Date.now();
     const start = Number(this.startTime);
     const end = Number(this.endTime);
@@ -1955,13 +1955,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
             const s = (h.status || '').toString().toLowerCase();
             return s !== 'completed' && s !== 'skipped';
           })
-          // Hide expired items: if endTime has passed and status is not ongoing, exclude them
-          .filter((h: Habit) => {
-            const endTime = Number(h.endTimeStamp || 0) < 1e12 ? Number(h.endTimeStamp || 0) * 1000 : Number(h.endTimeStamp || 0);
-            const isOngoing = (h.status || '').toString().toLowerCase() === 'ongoing';
-            // Keep item if end time hasn't passed yet, or if it's ongoing (show during grace period)
-            return endTime > now || isOngoing;
-          })
           // Sort by absolute difference between start time and now (closest to now first)
           .sort((a: Habit, b: Habit) => {
             const aStart = Number(a.startTimeStamp || 0) < 1e12 ? Number(a.startTimeStamp || 0) * 1000 : Number(a.startTimeStamp || 0);
@@ -1978,32 +1971,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         // Re-setup auto-reload timers after loading new habits
         this.setupAutoReloadTimers();
 
-        // Schedule grace removal timers for ongoing habits:
-        const fiveMinutes = 5 * 60 * 1000;
-        this.habits.forEach(h => {
-          try {
-            if (!h || !h.endTimeStamp) return;
-            const now2 = Date.now();
-            // Only apply grace when habit was started (ongoing)
-            if ((h.status || '').toLowerCase() === 'ongoing') {
-              const graceExpiry = h.endTimeStamp + fiveMinutes;
-              if (now2 >= graceExpiry) {
-                // Grace already expired - enforce removal immediately
-                this.handleGraceRemoval(h);
-              } else if (now2 >= h.endTimeStamp) {
-                // End time passed, schedule removal at end + 5min
-                const delay = graceExpiry - now2;
-                setTimeout(() => this.handleGraceRemoval(h), delay);
-              } else {
-                // End time still in future - schedule removal at end + 5min
-                const delay = (h.endTimeStamp + fiveMinutes) - now2;
-                setTimeout(() => this.handleGraceRemoval(h), delay);
-              }
-            }
-          } catch (e) {
-            console.error('Error scheduling grace removal:', e);
-          }
-        });
       },
       error: (error) => {
         console.error('Error fetching habits:', error);
@@ -2037,7 +2004,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         }).length;
         
         this.tasks = rawTasks
-          .filter((task: any) => !(task.today === true && task.expired === true))
           .map((task: any) => {
             // Combine date and time to create proper timestamps
             // Always recalculate from date+time to ensure accuracy
@@ -2066,13 +2032,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
             const s = (t.status || '').toString().toLowerCase();
             return s !== 'completed' && s !== 'skipped';
           })
-          // Hide expired items: if endTime has passed and status is not ongoing, exclude them
+          // This API returns all tasks; keep only today's occurrences on Home.
           .filter((t: any) => {
-            const endTimeRaw = t.endTimeStamp || 0;
-            const endTime = Number(endTimeRaw) < 1e12 ? Number(endTimeRaw) * 1000 : Number(endTimeRaw);
-            const isOngoing = (t.status || '').toString().toLowerCase() === 'ongoing';
-            // Keep item if end time hasn't passed yet, or if it's ongoing
-            return endTime > now || isOngoing;
+            const start = new Date(t.startTimeStamp);
+            const today = new Date(now);
+            return t.today === true || (start.getFullYear() === today.getFullYear()
+              && start.getMonth() === today.getMonth() && start.getDate() === today.getDate());
           })
           // Sort by upcoming logic: treat items as active until their endTimeStamp passes
           .sort((a: any, b: any) => {
@@ -2161,7 +2126,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         }).length;
 
         this.tasks = (rawTasks || [])
-          .filter((task: any) => !(task.today === true && task.expired === true))
           .map((task: any) => {
             const startTimeStr = task.startTime || '00:00:00';
             const endTimeStr = task.endTime || '23:59:59';
@@ -2184,13 +2148,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           .filter((t: any) => {
             const s = (t.status || '').toString().toLowerCase();
             return s !== 'completed' && s !== 'skipped';
-          })
-          // Hide expired items: if endTime has passed and status is not ongoing, exclude them
-          .filter((t: any) => {
-            const endTime = this.normalizePossibleTimestamp(t.endTimeStamp || 0);
-            const isOngoing = (t.status || '').toString().toLowerCase() === 'ongoing';
-            // Keep item if end time hasn't passed yet, or if it's ongoing
-            return endTime > now || isOngoing;
           })
           // Sort by upcoming logic: treat items as active until their endTimeStamp passes
           .sort((a: any, b: any) => {
@@ -3408,37 +3365,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    */
   isLetsGoVisible(): boolean {
     return this.buttonLogic.isLetsGoVisible(this.habit);
-  }
-
-  /**
-   * Handle grace-period removal for an ongoing habit when end time + grace has passed
-   */
-  private handleGraceRemoval(habit: Habit): void {
-    if (!habit) return;
-    try {
-      // Get current habit from service to ensure latest status
-      const current = this.habitService.getHabitById(habit.id as string) as Habit | undefined;
-      const target = current || habit;
-
-      // If already completed or skipped, nothing to do
-      const s = (target.status || '').toString().toLowerCase();
-      if (s === 'completed' || s === 'skipped') return;
-
-      // Only apply grace-removal if it was started (ongoing) and still not completed
-      if (s === 'ongoing') {
-        // Set status -> pending for the day (user can still mark done via history or other flows)
-        const updated = { ...target, status: 'pending' } as Habit;
-        this.habitService.updateHabit(updated);
-
-        // Remove from the local Home display (so it disappears from Home)
-        this.habits = (this.habits || []).filter(h => h.id !== (habit.id));
-        this.hasHabits = this.habits.length > 0;
-        this.updateEmptyState();
-        this.cdr.detectChanges();
-      }
-    } catch (e) {
-      console.error('Error in handleGraceRemoval:', e);
-    }
   }
 
   /**
