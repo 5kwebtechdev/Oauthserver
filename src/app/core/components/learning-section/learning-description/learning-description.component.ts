@@ -23,7 +23,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
 
       <div class="meta-cards">
         <div class="row">
-          <div class="col-6" style="padding:12px;">
+          <div class="col-6">
             <div class="meta">
               <div class="meta-value">
                 <svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -34,7 +34,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
               <div class="meta-label">Duration</div>
             </div>
           </div>
-          <div class="col-6" style="padding:12px;">
+          <div class="col-6">
             <div class="meta">
               <div class="meta-value">
                 <svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="14" viewBox="0 0 10 14" fill="none">
@@ -45,7 +45,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
               <div class="meta-label">Questions</div>
             </div>
           </div>
-          <div class="col-6" style="padding:12px;">
+          <div class="col-6">
             <div class="meta">
               <div class="meta-value">
                 <svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="12" viewBox="0 0 14 12" fill="none">
@@ -56,10 +56,10 @@ import { Challenge } from 'src/app/core/models/learning.models';
               <div class="meta-label">Difficulty</div>
             </div>
           </div>
-          <div class="col-6" style="padding:12px;">
+          <div class="col-6">
             <div class="meta">
               <div class="meta-value">
-                <img src="/assets/figma/parent-child-learning/coin.webp" alt="coin" class="meta-icon" />
+                <img src="assets/figma/parent-child-learning/coin.webp" alt="" class="meta-icon" />
                 {{challenge.coinsForCorrectAnswer || challenge.coins || 5}} coins
               </div>
               <div class="meta-label">For Correct Answer</div>
@@ -101,21 +101,31 @@ import { Challenge } from 'src/app/core/models/learning.models';
     }
     /* This routed screen does not use ion-content, so it must provide its
        own single safe-area inset for the navigator on notched devices. */
-    .content-description-screen { width: 100%; padding: calc(var(--sat, 0px) + 12px) 16px 16px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
-    .content-description-screen .back-title { display: flex; justify-content: center; align-items: center; gap: 12px; }
-    .content-description-screen .desc-image { width: 100%; aspect-ratio: 16 / 9; margin: 8px 0 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px; background: #f6f4f4; }
-    .content-description-screen .desc-image .hero-image { display: block; width: 100%; max-width: 100%; height: 100%; object-fit: contain; object-position: center; }
-    .content-description-screen .meta-cards { display: flex; padding: 8px; align-items: flex-start; gap: 24px; align-self: stretch; }
-    .content-description-screen .meta-cards .meta { display: flex; padding: 12px; flex-direction: column; align-items: flex-start; gap: 2px; border-radius: 12px; border-bottom: 3px solid #E1527C; background: #FFF; box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10); }
+    .content-description-screen { width: min(100%, 960px); margin: 0 auto; padding: calc(var(--sat, 0px) + 12px) 20px 32px; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; gap: 20px; }
+    .content-description-screen .back-title { display: flex; align-items: center; min-width: 0; }
+    .content-description-screen .desc-image { width: 100%; height: clamp(200px, 27vw, 320px); display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 16px; background: #f6f4f4; }
+    .content-description-screen .desc-image .hero-image { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; }
+    .content-description-screen .meta-cards { width: 100%; }
+    .content-description-screen .meta-cards .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; width: 100%; margin: 0; }
+    .content-description-screen .meta-cards .col-6 { width: auto; max-width: none; min-width: 0; padding: 0; }
+    .content-description-screen .meta-cards .meta { display: flex; height: 100%; box-sizing: border-box; padding: 14px; flex-direction: column; align-items: flex-start; gap: 4px; border-radius: 12px; border-bottom: 3px solid #E1527C; background: #FFF; box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10); }
     .content-description-screen .meta-cards .meta-value { display: flex; align-items: center; gap: 8px; font-family: Nunito; font-weight: 700; font-size: 18px; color: #282527; }
     .content-description-screen .meta-cards .meta-icon { width: 18px; height: 18px; object-fit: contain; display: inline-block; }
     .content-description-screen .meta-cards .meta-label { color: #282527; font-family: Nunito; font-size: 13px; font-weight: 600; line-height: 140%; opacity: 0.7; }
-    .content-description-screen .description { color: #282527; font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 600; line-height: 140%; opacity: 0.7; }
+    .content-description-screen .description { color: #282527; font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 600; line-height: 140%; opacity: 0.7; overflow-wrap: anywhere; }
+    .content-description-screen .description p { margin: 0; }
     .content-description-screen .start-journey { display: flex; height: 56px; color: #FFF; padding: 10px; justify-content: center; align-items: center; gap: 8px; flex-shrink: 0; border-radius: 8px; border: 1px solid #CF3359; background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%); box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20); font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 700; line-height: 140%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: pointer; }
     .w-100 { width: 100%; }
     .assignment-error { width: 100%; margin: -8px 0 0; color: #b42318; font-size: 13px; text-align: center; }
     .assignment-coin-reward { display: inline-flex; align-items: center; gap: 4px; }
     .assignment-coin-reward img { width: 20px; height: 20px; object-fit: contain; vertical-align: middle; }
+    @media (max-width: 700px) {
+      .content-description-screen { padding-inline: 16px; gap: 16px; }
+      .content-description-screen .desc-image { height: clamp(190px, 54vw, 260px); }
+      .content-description-screen .meta-cards .row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .content-description-screen .meta-cards .meta { padding: 12px; }
+      .content-description-screen .meta-cards .meta-value { font-size: 16px; }
+    }
     `
   ]
 })

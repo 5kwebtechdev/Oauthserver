@@ -28,10 +28,14 @@
         </div>
         <div class="input-container">
           <superme-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
+            [disabled]="dobChangeLocked || dobStatusLoading || dobStatusUnavailable"
             [variant]="'figma-purple'" [initialDate]="birthdayInitialDate" style="width: 100%">
-            <input class="dob-input" [ngClass]="{ 'invalid': ageError }" type="text" formControlName="dob"
-              (click)="openBirthdayPickerNow()" placeholder="Date of Birth" readonly />
+            <input class="dob-input" [ngClass]="{ 'invalid': ageError, 'locked': dobChangeLocked }" type="text" formControlName="dob"
+              (click)="openBirthdayPickerNow()" [attr.aria-disabled]="dobChangeLocked" [attr.aria-describedby]="dobChangeLocked ? 'dob-lock-message' : null"
+              placeholder="Date of Birth" readonly />
           </superme-birthdaypicker>
+          <div id="dob-lock-message" class="dob-lock-message" *ngIf="dobChangeLocked">Your date of birth has already been changed once and can’t be changed again. If it’s incorrect, please contact support.</div>
+          <div class="dob-lock-message" *ngIf="!dobChangeLocked && !dobStatusLoading && !dobStatusUnavailable">You can change your date of birth only once. Please check it carefully before saving.</div>
           <div class="error-message" *ngIf="ageError">{{ ageError }}</div>
         </div>
       </div>
@@ -165,6 +169,22 @@
 
     </div>
   </form>
+
+  <div class="dob-confirm-backdrop" *ngIf="showDobConfirmation" (click)="cancelDobConfirmation()"></div>
+  <div class="dob-confirm-dialog" *ngIf="showDobConfirmation" role="dialog" aria-modal="true" aria-labelledby="dob-confirm-title" aria-describedby="dob-confirm-description" (keydown.escape)="cancelDobConfirmation()">
+    <div class="dob-confirm-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+        <path d="M7 3v4M17 3v4M3 10h18M8 15h3"></path>
+      </svg>
+    </div>
+    <h2 id="dob-confirm-title">Are you sure you want to change your Date of Birth?</h2>
+    <p id="dob-confirm-description">Once confirmed, you cannot change it again.</p>
+    <div class="dob-confirm-actions">
+      <button type="button" class="dob-confirm-cancel" (click)="cancelDobConfirmation()" autofocus>Cancel</button>
+      <button type="button" class="dob-confirm-accept" (click)="confirmDobChange()">Confirm change</button>
+    </div>
+  </div>
 
   <!-- OTP Verification Modal (inlined) -->
   <div *ngIf="showPhoneOtpModal || showEmailOtpModal">

@@ -23,10 +23,12 @@ interface ParentEduHubCategory {
     route?: string;
     storeCategoryId?: number;
     requiresSchoolClass?: boolean;
+    description?: string;
+    displayTitle?: string;
 }
 
 interface ParentEduHubSection {
-    key: 'learning-support' | 'shops' | 'guidance' | 'activities';
+    key: 'learning-support' | 'pre-loved' | 'shops' | 'guidance' | 'activities' | 'living';
     label: string;
     icon: string;
     categories: ParentEduHubCategory[];
@@ -163,34 +165,68 @@ export class EducationMainPageComponent implements OnInit {
     }
 
     get parentEduHubSections(): ParentEduHubSection[] {
-        return [
+        const sections: ParentEduHubSection[] = [
             {
                 key: 'learning-support',
                 label: 'Learning Support',
-                icon: 'assets/figma/parent-eduhub/learning-support.svg',
+                icon: 'assets/figma/eduhub-categories/learning.svg',
                 categories: this.parentLearningCategories
+            },
+            {
+                key: 'pre-loved',
+                label: 'Pre-Loved Finds',
+                icon: 'assets/figma/eduhub-categories/pre-loved.svg',
+                categories: this.parentShopCategories.filter(category => category.id === 'store-second-hand-books'),
+                loading: this.parentShopCategoriesLoading,
+                error: this.parentShopCategoriesError
+            },
+            {
+                key: 'shops',
+                label: 'Shops',
+                icon: 'assets/figma/eduhub-categories/shops.svg',
+                categories: ['store-stationery-shops', 'store-book-stores', 'store-sports-shop']
+                    .map(id => this.parentShopCategories.find(category => category.id === id))
+                    .filter((category): category is ParentEduHubCategory => !!category),
+                loading: this.parentShopCategoriesLoading,
+                error: this.parentShopCategoriesError
             },
             {
                 key: 'guidance',
                 label: 'Guidance & Well-Being',
-                icon: 'assets/figma/parent-eduhub/guidance.svg',
+                icon: 'assets/figma/eduhub-categories/guidance.svg',
                 categories: this.parentGuidanceCategories
             },
             {
                 key: 'activities',
                 label: 'Activities & Events',
-                icon: 'assets/figma/parent-eduhub/activities.svg',
+                icon: 'assets/figma/eduhub-categories/activities.svg',
                 categories: this.parentActivityCategories
             },
             {
-                key: 'shops',
-                label: 'Shops',
-                icon: 'assets/figma/parent-eduhub/shops.svg',
-                categories: this.parentShopCategories,
-                loading: this.parentShopCategoriesLoading,
-                error: this.parentShopCategoriesError
+                key: 'living',
+                label: 'Stay & Living',
+                icon: 'assets/figma/eduhub-categories/living.svg',
+                categories: [{ id: 'hostels', label: 'PG / Hostels', image: 'assets/figma/eduhub-categories/hostels.png', kind: 'route', route: '/authed/education/pg-hostels' }]
             }
         ];
+        // Presentation-only metadata from Figma 25657:18007. Preserve the
+        // category IDs, API metadata and navigation labels used by click handlers.
+        const presentation: Record<string, { image: string; description: string; displayTitle?: string }> = {
+            tutors: { image: 'tutor', description: 'Get 1 : 1 with trusted tutors' },
+            academies: { image: 'academy', description: 'Explore courses and programs' },
+            'store-second-hand-books': { image: 'second-hand', displayTitle: 'Second-hand books', description: 'Pre-loved books in great condition, at prices that make room for the next one.' },
+            'store-stationery-shops': { image: 'stationery', displayTitle: 'Stationery\nShops', description: 'Notebooks, pens & more' },
+            'store-book-stores': { image: 'books', displayTitle: 'Book\nStores', description: 'Story, Frictions books & more' },
+            'store-sports-shop': { image: 'sports', description: 'Gear up for a healthier you.' },
+            counselors: { image: 'counselors', description: 'Talk, share, and get guidance from trusted professionals.' },
+            events: { image: 'events', description: 'Find events and workshops near you. Discover new skills every time.' },
+            hostels: { image: 'hostels', description: 'Verified PGs and hostels near you. Safe, affordable stays for students.' }
+        };
+        return sections.map(section => ({ ...section, categories: section.categories.map(category => {
+            const visual = presentation[category.id];
+            const image = `assets/figma/eduhub-categories/${visual.image}.png`;
+            return { ...category, ...visual, image, fallbackImage: image };
+        }) }));
     }
 
     get filteredParentEduHubSections(): ParentEduHubSection[] {

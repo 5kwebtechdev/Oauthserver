@@ -96,9 +96,15 @@
           </header>
         </div>
 
-        <app-home-mood-header [mood]="homeHeaderMood" [period]="homeTimePeriod"
-          [streaks]="userStreaks" [trophies]="userDays" [badges]="userBadges"
-          (moodEdit)="editHeaderMood()"></app-home-mood-header>
+        <div class="hero-mood-anchor">
+          <app-home-mood-header [mood]="homeHeaderMood" [period]="homeTimePeriod"
+            [streaks]="userStreaks" [trophies]="userDays" [badges]="userBadges"
+            [canEditMood]="!homeMoodSelector.dailyLimitReached"
+            [moodPickerOpen]="homeMoodSelector.dialogOpen"
+            (moodEdit)="editHeaderMood()"></app-home-mood-header>
+          <mood-selector #homeMoodSelector class="hero-mood-picker" presentation="dropdown" [value]="selectedMood"
+            (valueChange)="onMoodChange($event)" (confirmedMoodChange)="onConfirmedHomeMood($event)"></mood-selector>
+        </div>
       </div>
     </section>
 
@@ -112,10 +118,6 @@
           [currentStreak]="userStreaks" [nextMilestoneDay]="nextMilestoneDay"
           [daysToNextMilestone]="daysToNextMilestone" [nextMilestoneCoins]="nextMilestoneCoins"></week-streak-section>
       -->
-
-      <div class="mood-selector w-full">
-        <mood-selector #homeMoodSelector [value]="selectedMood" (valueChange)="onMoodChange($event)" (confirmedMoodChange)="onConfirmedHomeMood($event)"></mood-selector>
-      </div>
 
       <!-- activity Card -->
       <activity-card class="home-glance-card" mode="recent" [recentHabits]="recentHabits"

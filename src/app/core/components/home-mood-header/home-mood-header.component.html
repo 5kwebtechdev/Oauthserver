@@ -3,9 +3,9 @@
     <img class="mood-message__shape" src="assets/figma/home-mood-header/speech-bubble.svg" alt="">
     <span class="mood-message__copy" aria-live="polite">{{ state.before }}<strong>{{ state.emphasis }}</strong>{{ messageEnding }}</span>
   </div>
-  <button type="button" class="mood-pill" (click)="moodEdit.emit()" [attr.aria-label]="mood ? 'Current mood: ' + state.label + '. Change mood' : 'Choose your mood'">
+  <button type="button" class="mood-pill" [disabled]="!canEditMood" (click)="moodEdit.emit()" [attr.aria-expanded]="canEditMood ? moodPickerOpen : null" [attr.aria-label]="mood ? 'Current mood: ' + state.label + (canEditMood ? '. Change mood' : '') : 'Choose your mood'">
     <img *ngIf="mood" class="mood-pill__emoji" [src]="emojiImage" alt=""><span>{{ mood ? state.label : 'Set mood' }}</span>
-    <img class="mood-pill__chevron" src="assets/figma/home-mood-header/chevron.svg" alt="">
+    <img *ngIf="canEditMood" class="mood-pill__chevron" src="assets/figma/home-mood-header/chevron.svg" alt="">
   </button>
   <div class="mood-pet">
     <span *ngIf="pet === 'panda'; else selectedPet" class="panda-art" [ngClass]="'panda-art--' + (mood || 'default')">

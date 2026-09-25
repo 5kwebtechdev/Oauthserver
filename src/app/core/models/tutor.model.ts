@@ -127,6 +127,16 @@ export type EntityType = 'SELF' | 'SCHOOL' | 'TUITION' | 'COLLEGE' | 'COACHING' 
 export type FeeType = 'PER_HOUR' | 'PER_MONTH' | 'PER_SESSION' | 'PER_COURSE' | 'PER_SUBJECT';
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
 export type ContactMode = 'VIDEO_CALL' | 'IN_PERSON' | 'PHONE_CALL' | 'CHAT' | 'HYBRID';
+export type TeachingMode = 'ONLINE' | 'OFFLINE' | 'HYBRID';
+
+export function formatTeachingMode(mode: TeachingMode | null | undefined): string {
+    switch (mode) {
+        case 'ONLINE': return 'Online';
+        case 'OFFLINE': return 'Offline';
+        case 'HYBRID': return 'Hybrid';
+        default: return '';
+    }
+}
 
 export interface Tutor {
     id: number;
@@ -156,6 +166,7 @@ export interface Tutor {
     hourlyRate: number;
     availability: DayOfWeek[];
     contactModes: ContactMode[];
+    teachingMode?: TeachingMode | null;
     createdAt: string;
     updatedAt: string;
     isActive: boolean;
@@ -201,6 +212,7 @@ export interface TutorListItem {
     startTime: string;
     endTime: string;
     contactModes: string[];
+    teachingMode?: TeachingMode | null;
     createdAt: string;
     totalStudents: number;
 }

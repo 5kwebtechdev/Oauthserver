@@ -74,6 +74,16 @@
   cursor: pointer;
 }
 .adb__dot:focus-visible { outline: 2px solid #432477; outline-offset: 3px; }
+:host-context(app-education-main-page) .adb--eduhub-parent {
+  max-width: none;
+  gap: 8px;
+  .adb__track-clip { width: calc(100% - 16px); margin-left: 16px; }
+  .adb__scroll-track { gap: 8px; }
+  .adb__card { flex: 0 0 min(305px, calc(100% - 48px)); width: min(305px, calc(100% - 48px)); aspect-ratio: 305 / 182; border-radius: 16px; clip-path: inset(0 round 16px); }
+  .adb__dots { gap: 6px; min-height: 22px; }
+  .adb__counter { border-radius: 4px; background: #90214d; font-size: 13px; line-height: 18px; }
+  .adb__dot { width: 8px; height: 8px; background: url('../../../../assets/figma/eduhub-categories/dot.svg') center no-repeat; }
+}
 @media (prefers-reduced-motion: reduce) {
   .adb__scroll-track { transition: none; }
 }

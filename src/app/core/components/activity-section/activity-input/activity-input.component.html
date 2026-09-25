@@ -430,7 +430,7 @@
             <input [(ngModel)]="entry.name" maxlength="40" placeholder="Subject/Label"
               (ngModelChange)="onPlannerEntryChanged()"
               [attr.aria-label]="'Time table entry ' + (i + 1) + ' label'">
-            <button type="button" class="planner-entry-remove" (click)="removePlannerEntry(i)"
+            <button *ngIf="activities.length > 1" type="button" class="planner-entry-remove" (click)="removePlannerEntry(i)"
               [attr.aria-label]="'Remove time table entry ' + (i + 1)">
               <img src="assets/figma/child-planner/close.svg" alt="" aria-hidden="true">
             </button>
@@ -551,7 +551,14 @@
         *ngTemplateOutlet="submitSection; context: {btnType: 'aqua', btnTypeFaded: 'aqua-light', itemType: 'Time Table'}"></ng-container>
     </div>
 
-    <div *ngIf="currentActive === 'events'" class="form-card event-form">
+    <div *ngIf="currentActive === 'events' && loadingEditEvent" class="form-card event-form" role="status">
+      Loading event for editing…
+    </div>
+    <div *ngIf="currentActive === 'events' && eventEditLoadFailed" class="form-card event-form">
+      <p class="field-error" role="alert">{{ serverErrorMessage }}</p>
+      <button type="button" (click)="retryLoadEditEvent()">Try again</button>
+    </div>
+    <div *ngIf="currentActive === 'events' && !loadingEditEvent && !eventEditLoadFailed" class="form-card event-form">
       <section *ngIf="eventInfoVisible && !isChildPlannerFlow" class="event-info"
         aria-label="Calendar information">
         <span class="event-info__copy">

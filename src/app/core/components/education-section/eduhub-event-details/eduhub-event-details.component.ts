@@ -125,7 +125,7 @@ export class EduHubEventDetailsComponent implements OnInit {
     if (!Number.isFinite(fee)) return '';
     return fee === 0
       ? 'FREE'
-      : `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / Per Person`;
+      : `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / Person`;
   }
 
   get registrationUrl(): string {

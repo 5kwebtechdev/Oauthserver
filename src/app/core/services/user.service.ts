@@ -246,6 +246,20 @@ export class UserService {
     });
   }
 
+  /** Publish a completed login-streak restore to every Home stats consumer. */
+  updateStreakAfterRestore(streak: unknown, remainingCoins: unknown): void {
+    const count = Number(streak);
+    if (streak == null || !Number.isFinite(count) || count < 0) return;
+    const coins = Number(remainingCoins);
+    const current = this.statsSubject.value ?? { coins: 0, streaks: 0, days: 0, badges: 0 };
+    this.statsRevision++;
+    this.saveUserStats({
+      ...current,
+      streaks: count,
+      coins: remainingCoins != null && Number.isFinite(coins) && coins >= 0 ? coins : current.coins
+    });
+  }
+
   refreshStats(): Observable<UserStats | null> {
     if (this.statsRefresh$) {
       return this.statsRefresh$;

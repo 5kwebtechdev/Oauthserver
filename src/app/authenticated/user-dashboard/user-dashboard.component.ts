@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { HomeMoodHeaderComponent, HomeMood, normalizeHomeMood } from '../../core/components/home-mood-header/home-mood-header.component';
 import { displayName } from '../../core/models/display-name';
+import { greetingUsername, messageWithUsername } from '../../core/models/greeting-username';
 import { CommonModule } from "@angular/common";
 import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
@@ -481,7 +482,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         const activeId = activeUser?.userId ?? activeUser?.id ?? activeUser?.memberId;
         if (profile && activeId != null && String(profile.userId) === String(activeId)) {
           const profileUsername = this.resolveGreetingUsername(profile);
-          if (!this.resolveGreetingUsername(activeUser) && String(profileUsername || '').trim()) {
+          if (!String(activeUser?.username ?? activeUser?.userName ?? '').trim() && profileUsername !== 'there') {
             this.userName = String(profileUsername).trim();
           } else if (!this.userName) {
             this.userName = this.resolveGreetingUsername(profile);
@@ -838,7 +839,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       next: (resp) => {
         if (resp.message) {
           this.currentPetMessage = {
-            message: resp.message,
+            message: messageWithUsername(resp.message, this.authService.getUserData()),
             mood: resp.petMood ? this.petMessageApi.normaliseMood(resp.petMood) : 'happy',
             displayType: 'header',
           };
@@ -1093,8 +1094,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   editHeaderMood(): void {
+    if (this.homeMoodSelector?.dailyLimitReached) return;
     this.homeMoodSelector?.editMood();
-    document.querySelector('.dashboard-content .mood-selector')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   openNotifications() {
@@ -1172,9 +1173,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.petMood = this.currentPetMessage.mood;
   }
 
-  /** Use the full name from the current account throughout the dashboard. */
+  /** Use the public username for self/child greetings. */
   private resolveGreetingUsername(user: any): string {
-    return displayName(user);
+    return greetingUsername(user);
   }
 
   private checkStreakRestore(): void {
@@ -1236,11 +1237,11 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     const { data } = await modal.onDidDismiss();
     if (data?.success) {
       this.userCoins = data.userCoins ?? this.userCoins;
+      this.userService.updateStreakAfterRestore(data.currentStreak ?? this.restoreToStreak, this.userCoins);
       this.canRestoreStreak = false;
       this.toastService.success('Streak restored! 🔥');
       // Refresh streak count
       this.checkStreakRestore();
-      this.loadUserStats();
     } else if (data?.notEligible) {
       // The modal's latest status check disagreed with the dashboard's
       // earlier status response — trust it and stop offering a restore that
@@ -1260,10 +1261,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         this.isStreakRestoring = false;
         this.canRestoreStreak = false;
         this.userCoins = Number(result?.coins ?? result?.userCoins ?? Math.max(0, this.userCoins - this.restoreCost));
+        this.userService.updateStreakAfterRestore(result?.currentStreak ?? this.restoreToStreak, this.userCoins);
         this.toastService.success('Streak restored! 🔥');
         this.dismissDailyStreakPopup();
         this.checkStreakRestore();
-        this.loadUserStats();
       },
       error: error => {
         this.isStreakRestoring = false;
@@ -1292,6 +1293,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           // Map API overlay type → internal activeOverlay key
           const typeMap: Record<ApiOverlayType, typeof this.activeOverlay> = {
             BONUS_COINS:      'bonus-coins',
+            // Referral events are owned by the shared daily-entry queue.
+            REFERRAL_RECEIVED: null,
+            REFERRAL_JOINED:   null,
             MOOD_PROMPT:      'mood-prompt',
             DAILY_LOGIN:      'daily-login',
             STREAK_MILESTONE: 'streak-milestone',
@@ -1340,7 +1344,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           }
 
           if (resp.message) {
-            this.overlayMessage = resp.message;
+            this.overlayMessage = messageWithUsername(resp.message, this.authService.getUserData());
           } else {
             // Fallback to local message if API returns empty text
             const locMap: Record<string, any> = {
@@ -1380,7 +1384,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       next: (resp) => {
         if (resp.message) {
           this.currentPetMessage = {
-            message: resp.message,
+            message: messageWithUsername(resp.message, this.authService.getUserData()),
             mood: resp.petMood ? this.petMessageApi.normaliseMood(resp.petMood) : 'happy',
             displayType: 'header',
           };

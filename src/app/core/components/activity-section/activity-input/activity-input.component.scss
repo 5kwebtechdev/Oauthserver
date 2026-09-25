@@ -2147,32 +2147,17 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   height: 24px;
 }
 
-.event-toggle-control ::ng-deep .superme-toggle .track,
-.planner-event-priority ::ng-deep .superme-toggle .track {
-  width: 40px;
-  height: 24px;
-  border-radius: 28px;
-  background: #bbd2d4;
-}
-
-.event-toggle-control ::ng-deep .superme-toggle .thumb,
-.planner-event-priority ::ng-deep .superme-toggle .thumb {
-  width: 20px;
-  height: 20px;
-  transform: translateX(2px);
-  background: #3e5a60;
-  box-shadow: none;
-}
-
-.event-toggle-control ::ng-deep .superme-toggle[aria-checked='true'] .track,
-.planner-event-priority ::ng-deep .superme-toggle[aria-checked='true'] .track {
-  background: #89b3b6;
-}
-
-.event-toggle-control ::ng-deep .superme-toggle[aria-checked='true'] .thumb,
-.planner-event-priority ::ng-deep .superme-toggle[aria-checked='true'] .thumb {
-  transform: translateX(18px);
-  background: #3e5a60;
+.event-toggle-control superme-toggle,
+.planner-event-priority superme-toggle {
+  --sm-toggle-w: 40px;
+  --sm-toggle-h: 24px;
+  --sm-toggle-thumb: 20px;
+  --sm-toggle-inset: 2px;
+  --sm-toggle-track-off: #bbd2d4;
+  --sm-toggle-track-on: #89b3b6;
+  --sm-toggle-thumb-off: #3e5a60;
+  --sm-toggle-thumb-on: #3e5a60;
+  --sm-toggle-thumb-shadow: none;
 }
 
 .event-date-time-card {

@@ -1,10 +1,39 @@
 <ng-container *ngIf="presentation === 'inline'" [ngTemplateOutlet]="moodContent"></ng-container>
+<ng-container *ngIf="presentation === 'entry'" [ngTemplateOutlet]="compactMoodPicker"></ng-container>
+<ng-container *ngIf="presentation === 'dropdown' && dialogOpen">
+  <button type="button" class="home-mood-dropdown__backdrop" aria-label="Close mood choices" [disabled]="saving" (click)="closeDialog()"></button>
+  <div class="home-mood-dropdown" role="group" aria-label="Choose your mood">
+    <p class="home-mood-dropdown__title">How are you feeling?</p>
+    <ng-container [ngTemplateOutlet]="compactMoodPicker"></ng-container>
+  </div>
+</ng-container>
+<!-- The header picker and entry popup share one compact selector and save action. -->
+<ng-template #compactMoodPicker><div class="entry-mood-content">
+  <div class="entry-mood-options" role="group" aria-label="Choose your mood">
+    <button *ngFor="let p of popupOptions; trackBy: trackByMood" type="button" class="entry-mood-option"
+      [class.selected]="popupSelection === p.src"
+      [class.entry-mood-option--previous]="hasSavedMood && displayAssetSrc === p.src && popupSelection !== p.src"
+      [attr.aria-pressed]="popupSelection === p.src" (click)="choosePopup(p.src)">
+      <span class="entry-mood-art"><img [src]="p.src" [alt]="p.label"></span>
+      <span class="entry-mood-label">{{ p.art === 'frustrated' ? 'Frustrated' : p.label }}</span>
+    </button>
+  </div>
+  <span *ngIf="blockedTooltipVisible" class="blocked-tooltip" role="status">You can only input your mood twice a day</span>
+  <button type="button" class="entry-mood-submit" [disabled]="!popupSelection || saving || dailyLimitReached"
+    (click)="setVibe()">{{ saving ? 'Saving…' : 'Set the Vibe' }}</button>
+</div></ng-template>
 <ion-modal *ngIf="presentation === 'dialog'" class="home-mood-dialog" [isOpen]="dialogOpen" [backdropDismiss]="!saving" (didDismiss)="closeDialog()">
   <ng-template>
     <div class="home-mood-dialog__body">
-      <button class="home-mood-dialog__close" type="button" aria-label="Close mood picker" [disabled]="saving" (click)="closeDialog()">✕</button>
+      <button class="home-mood-dialog__close" type="button" aria-label="Close mood picker" [disabled]="saving" (click)="closeDialog()">
+        <img src="assets/figma/mood-popup/close.svg" alt="">
+      </button>
+      <header class="home-mood-dialog__heading">
+        <h2>How are you feeling now?</h2>
+        <p>Select a mood to update your vibe.</p>
+      </header>
       <p *ngIf="dailyLimitReached; else availablePicker" role="status">You’ve used both mood check-ins today (2/2). Come back tomorrow to update your mood.</p>
-      <ng-template #availablePicker><ng-container [ngTemplateOutlet]="moodContent"></ng-container></ng-template>
+      <ng-template #availablePicker><ng-container [ngTemplateOutlet]="compactMoodPicker"></ng-container></ng-template>
     </div>
   </ng-template>
 </ion-modal>

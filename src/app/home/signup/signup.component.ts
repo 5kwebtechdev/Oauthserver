@@ -265,32 +265,34 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     'https://picsum.photos/id/1025/600/400',
   ];
 
+  // Onboarding artwork exported from Figma 25714:60361. Keep API names and
+  // record order independent of these presentation-only image paths.
   pets: any[] = [{
     displayName: 'Bao the Mindful Panda',
     name: 'Panda',
     apiName: 'Panda-Age1-Happy.webp',
-    image: 'assets/Images-Pet/Panda-Age1-Happy.webp',
+    image: 'assets/figma/onboarding-pet-selection/bao-panda.png',
     cardImage: 'assets/Images-Pet/selection-cards/Panda-selection-card.webp',
     text: ['Your gentle guide to inner peace', 'Celebrates small acts of kindness']
   }, {
     displayName: 'Luna the Wise Owl',
     name: 'Owl',
     apiName: 'Owl-Age1-Happy.webp',
-    image: 'assets/Images-Pet/Owl-Age1-Happy.webp',
+    image: 'assets/figma/onboarding-pet-selection/luna-owl.png',
     cardImage: 'assets/Images-Pet/selection-cards/Owl-selection-card.webp',
     text: ['Your midnight study buddy', 'Celebrates "aha!" moments']
   }, {
     displayName: 'Koda the Chill Llama',
     name: 'Llama',
     apiName: 'Llama-Age1-Happy.webp',
-    image: 'assets/Images-Pet/Llama-Age1-Happy.webp',
+    image: 'assets/figma/onboarding-pet-selection/koda-llama.png',
     cardImage: 'assets/Images-Pet/selection-cards/Llama-selection-card.webp',
     text: ['Master of staying cool under pressure', 'Loves colorful, quirky adventures']
   }, {
     displayName: 'Zuki the Fierce Dragon',
     name: 'Dragon',
     apiName: 'Dragon-Age1-Happy.webp',
-    image: 'assets/Images-Pet/Dragon-Age1-Happy.webp',
+    image: 'assets/figma/onboarding-pet-selection/zuki-dragon.png',
     cardImage: 'assets/Images-Pet/selection-cards/Dragon-selection-card.webp',
     text: ['Loves big ideas and bold moves', 'Celebrates when you go on streaks']
   }]
@@ -1193,6 +1195,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   proceedWithAvatar() {
+    if (this.registrationInProgress) return;
+
     if (this.step === 4 && !this.hasSelectedPet) {
       this.core.triggerToasrt('Please choose your pet to continue.');
       return;
@@ -1237,7 +1241,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
       // Self registers here. A fresh Child account is already registered and
       // linked to a family before this post-family Pet step is shown.
-      const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
+      const role = this.currentRole;
       if (this.isManagedChildSignup) {
         void this.createManagedChildAccount(selectedPetName);
         return;
@@ -1248,13 +1252,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         return;
       }
 
-      if (role === 'self') {
-        this.registerChildOrSelfFromSession('self', true);
+      if (role === 'self' || role === 'child') {
+        // An unlinked Child still has relationship SELF (asChild: true).
+        // Save the pet through the existing registration/OAuth completion
+        // flow before advancing, just as for Self signup. Navigating alone
+        // leaves backend step 5 unchanged and resumes at this same screen.
+        this.registerChildOrSelfFromSession(role, true);
         return;
       }
 
-      // Navigate to welcome step (step 5) for other flows
-      this.navigateToSignupStep(5);
+      this.errorMessage = 'Please select who is using the app before continuing.';
       return;
     }
 
@@ -1922,6 +1929,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    * never calls the registration API; that only happens on "Next".
    */
   selectPet(index: number): void {
+    if (this.registrationInProgress) return;
     const pet = this.pets[index];
     if (!pet) return;
 

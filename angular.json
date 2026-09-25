@@ -31,6 +31,13 @@
                 "input": "src/assets",
                 "output": "assets",
                 "ignore": [
+                  "figma/avatars/11-13-*.webp",
+                  "figma/avatars/14-15-*.webp",
+                  "figma/avatars/16-17-*.webp",
+                  "figma/avatars/below-11-female-*.webp",
+                  "figma/avatars/below-11-male-[2-6].webp",
+                  "figma/avatars/18-plus-female-*.webp",
+                  "figma/avatars/18-plus-male-[2-6].webp",
                   "figma/child-planner/superme-planner-habit.png",
                   "figma/child-planner/superme-planner-tab.png",
                   "figma/child-planner/superme-planner-task.png",

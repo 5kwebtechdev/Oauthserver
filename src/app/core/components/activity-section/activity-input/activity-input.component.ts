@@ -16,7 +16,7 @@ import { CalendarApi } from '../../../api/calendar.api';
 import { EventApi, EventPayload, EventTypeDto } from '../../../api/event.api';
 import { TagsApi } from '../../../api/tags.api';
 import { Habit, ReminderOffset } from '../habit.types';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NavigationService } from '../../../services/navigation.service';
 import { AuthService } from '../../../services/auth.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
@@ -398,6 +398,14 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   private _tagsSynced: boolean = false;
 
   editingId?: string;
+  loadingEditEvent = false;
+  eventEditLoadFailed = false;
+  private loadingEditEventId: string | null = null;
+  private resolvedEditEvent: any = null;
+
+  retryLoadEditEvent(): void {
+    this.applyStateForActivity();
+  }
   originalHabit: any = null;
   isSubmitting = false;
   attemptedSubmit = false;
@@ -510,6 +518,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     private modalCtrl: ModalController,
     private habitService: HabitService,
     private router: Router,
+    private route: ActivatedRoute,
     private taskApi: TaskApi,
     private calendarApi: CalendarApi,
     private eventApi: EventApi,
@@ -699,11 +708,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   }
 
   removePlannerEntry(index: number): void {
-    if (this.activities.length === 1) {
-      this.activities[0] = this.createEmptyPlannerEntry();
-      this.onPlannerEntryChanged();
-      return;
-    }
+    if (this.activities.length <= 1) return;
     this.activities.splice(index, 1);
     this.onPlannerEntryChanged();
   }
@@ -909,18 +914,49 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     return 'ONE_TIME';
   }
 
-  private applyStateForActivity(): void {
+  private applyStateForActivity(eventFromApi?: any): void {
     try {
       // First check @Input() properties (used when opened via modal componentProps)
       // Then fall back to router navigation state or history.state
       const nav = this.router.getCurrentNavigation();
       const stateOrigin = nav?.extras?.state?.['origin'] ?? (history && (history.state as any)?.origin);
       this.originUrl = stateOrigin || null;
-      const stateHabit = this.editingHabit ?? nav?.extras?.state?.['habit'] ?? (history && (history.state as any)?.habit);
+      const eventId = this.route.snapshot.queryParamMap.get('editEventId');
+      const navigationHabit = this.editingHabit ?? nav?.extras?.state?.['habit'] ?? (history && (history.state as any)?.habit);
+      const savedEvent = eventId && String(this.resolvedEditEvent?.id ?? '') === eventId
+        ? this.resolvedEditEvent : null;
+      // A direct/reused Ionic route may lose history.state. The URL keeps the
+      // event identity so Edit never silently becomes a new Habit form.
+      if (eventId && !eventFromApi && !savedEvent && String(navigationHabit?.id ?? '') !== eventId) {
+        this.currentActive = 'events';
+        if (this.loadingEditEventId === eventId) return;
+        this.loadingEditEventId = eventId;
+        this.loadingEditEvent = true;
+        this.eventEditLoadFailed = false;
+        this.serverErrorMessage = '';
+        this.eventApi.getEvent(eventId).subscribe({
+          next: event => {
+            this.loadingEditEventId = null;
+            this.loadingEditEvent = false;
+            this.resolvedEditEvent = event;
+            this.applyStateForActivity(event);
+          },
+          error: () => {
+            this.loadingEditEventId = null;
+            this.loadingEditEvent = false;
+            this.eventEditLoadFailed = true;
+            this.currentActive = 'events';
+            this.serverErrorMessage = 'Could not load this event for editing. Please go back and try again.';
+          }
+        });
+        return;
+      }
+      const stateHabit = eventFromApi ?? savedEvent ?? navigationHabit;
+      this.eventEditLoadFailed = false;
       const stateSelectedDate = nav?.extras?.state?.['selectedDate'] ?? (history && (history.state as any)?.selectedDate) ?? null;
       // Respect an explicit initialTab passed via componentProps or navigation state even when
       // no `habit` object is provided (creating a new activity). Use habit type as a fallback.
-      const stateCurrentActive = this.initialTab ?? nav?.extras?.state?.['currentActive'] ?? (history && (history.state as any)?.currentActive);
+      const stateCurrentActive = eventId ? 'events' : this.initialTab ?? nav?.extras?.state?.['currentActive'] ?? (history && (history.state as any)?.currentActive);
       this.currentActive = this.normalizeActivityTab(stateCurrentActive || stateHabit?.type, this.currentActive);
       if (!stateHabit) {
         this.resetForNewEntry();
@@ -936,7 +972,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       this.isParentCreated = false;
       if (h.id) this.editingId = String(h.id);
       this.title = h.title || h.name || '';
-      this.notes = h.notes ?? h.description ?? '';
+      this.notes = h.note ?? h.notes ?? h.description ?? '';
       this.startDate = h.startDate ? new Date(h.startDate) : (h.startDateEpoch ? new Date(Number(h.startDateEpoch)) : null);
       this.endDate = h.endDate ? new Date(h.endDate) : (h.endDateEpoch ? new Date(Number(h.endDateEpoch)) : null);
       // Convert times to 12-hour format for the timepicker component

@@ -79,6 +79,7 @@ export class EventDetailComponent implements OnInit {
   edit(): void {
     if (!this.event) return;
     void this.router.navigate(['/authed/activity-input'], {
+      queryParams: { editEventId: this.event.id },
       state: {
         habit: { ...this.event, type: 'events' },
         currentActive: 'events',

@@ -3,15 +3,12 @@
 
   <div class="policies-container">
     <div class="policies-tabs" role="tablist" aria-label="Policies">
-      <button type="button" role="tab" class="policies-tab" [class.active]="selectedTab==='terms'" (click)="selectTab('terms')">
-        Terms of Use
-      </button>
-      <button type="button" role="tab" class="policies-tab" [class.active]="selectedTab==='privacy'" (click)="selectTab('privacy')">
-        Privacy Policy
+      <button *ngFor="let tab of tabs" type="button" role="tab" class="policies-tab" [class.active]="selectedTab===tab.id" [attr.aria-selected]="selectedTab===tab.id" (click)="selectTab(tab.id)">
+        {{ tab.title }}
       </button>
     </div>
 
-    <div class="policy-card" *ngIf="selectedTab==='terms'">
+    <div class="policy-card" *ngIf="selectedTab==='terms' && !showFullPolicy">
       <div class="policy-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2L4 5V11C4 16.55 7.84 21.74 12 23C16.16 21.74 20 16.55 20 11V5L12 2Z" stroke="#90214D" stroke-width="1.8" stroke-linejoin="round"/>
@@ -20,11 +17,11 @@
       </div>
       <h1>Know the rules</h1>
       <p class="policy-desc">These terms outline your rights, responsibilities, and what you can expect when using SuperMe.</p>
-      <p class="policy-updated">Last Updated: January 15, 2026</p>
+      <p class="policy-updated">Last Updated: October 15, 2025</p>
       <superme-view-all text="Read the complete Terms of Use" (clicked)="openFullPolicies('terms')"></superme-view-all>
     </div>
 
-    <div class="policy-card" *ngIf="selectedTab==='privacy'">
+    <div class="policy-card" *ngIf="selectedTab==='privacy' && !showFullPolicy">
       <div class="policy-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="5" y="10" width="14" height="11" rx="2" stroke="#90214D" stroke-width="1.8"/>
@@ -34,9 +31,11 @@
       </div>
       <h1>Your privacy, our promise</h1>
       <p class="policy-desc">Learn how we collect, use, and protect your personal information to keep you and your family safe.</p>
-      <p class="policy-updated">Last Updated: January 15, 2026</p>
+      <p class="policy-updated">Last Updated: October 15, 2025</p>
       <superme-view-all text="Read the complete Privacy Policy" (clicked)="openFullPolicies('privacy')"></superme-view-all>
     </div>
+
+    <article *ngIf="showFullPolicy" class="policy-card policy-document" [attr.aria-label]="policyTitle" [innerHTML]="policyContent" (click)="onPolicyClick($event)"></article>
 
     <div class="policy-support-card" role="button" tabindex="0" (click)="onContactSupport()" (keyup.enter)="onContactSupport()">
       <div class="policy-support-icon" aria-hidden="true">💬</div>

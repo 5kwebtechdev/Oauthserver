@@ -13,6 +13,7 @@ import {
   TutorCategory,
   formatAvailability,
   formatContactModes,
+  formatTeachingMode,
   formatExperience,
   formatLevels,
   getExperienceYears
@@ -358,6 +359,9 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   getContactModesString(): string {
+    if (this.tutor?.entityType === 'ACADEMY' && this.tutor.teachingMode) {
+      return formatTeachingMode(this.tutor.teachingMode);
+    }
     const configuredModes = this.findFieldValues(['mode', 'teaching_mode', 'class_mode']);
     if (configuredModes.length) return configuredModes.map(value => this.formatEnumValue(value)).join(', ');
     if (this.tutor?.contactModes?.length) return formatContactModes(this.tutor.contactModes);
@@ -442,13 +446,13 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   getFeeTypeString(): string {
     const labels: Record<string, string> = {
-      PER_HOUR: '/per hour',
-      PER_MONTH: '/per month',
-      PER_SESSION: '/per session',
-      PER_COURSE: '/per course',
-      PER_SUBJECT: '/per subject'
+      PER_HOUR: '/Hour',
+      PER_MONTH: '/Month',
+      PER_SESSION: '/Session',
+      PER_COURSE: '/Course',
+      PER_SUBJECT: '/Subject'
     };
-    return labels[String(this.tutor?.feeType || '')] || '/per hour';
+    return labels[String(this.tutor?.feeType || '')] || '/Hour';
   }
 
   isChildUser(): boolean {
@@ -537,9 +541,9 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   getCounselorFee(): string {
     const fee = this.getHourlyRate();
-    const feeTypes: Record<string, string> = { PER_SESSION: 'Per Session', PER_HOUR: 'Per Hour', PER_MONTH: 'Per Month', PER_COURSE: 'Per Course', PER_SUBJECT: 'Per Subject' };
+    const feeTypes: Record<string, string> = { PER_SESSION: 'Session', PER_HOUR: 'Hour', PER_MONTH: 'Month', PER_COURSE: 'Course', PER_SUBJECT: 'Subject' };
     return fee > 0
-      ? `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / ${feeTypes[String(this.tutor?.feeType)] || 'Per Session'}`
+      ? `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / ${feeTypes[String(this.tutor?.feeType)] || 'Session'}`
       : 'Not specified';
   }
 

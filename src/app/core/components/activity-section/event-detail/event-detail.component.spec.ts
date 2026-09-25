@@ -31,6 +31,7 @@ describe('Event detail actions', () => {
     expect(component.eventName).toBe('test event');
     component.edit();
     expect(router.navigate).toHaveBeenCalledWith(['/authed/activity-input'], jasmine.objectContaining({
+      queryParams: { editEventId: 43 },
       state: jasmine.objectContaining({
         currentActive: 'events',
         habit: jasmine.objectContaining({ id: 43, type: 'events' })

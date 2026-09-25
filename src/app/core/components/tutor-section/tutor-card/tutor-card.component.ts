@@ -19,6 +19,8 @@ import { Share } from '@capacitor/share';
 import { ShareLinkService } from '../../../services/share-link.service';
 import { CoreService } from '../../../services/core.service';
 import { CounselorCardComponent } from '../../education-section/counselor-card/counselor-card.component';
+import { PgHostel, PgHostelsService } from '../../../services/pg-hostels.service';
+import { PgHostelCardComponent } from '../../education-section/pg-hostels/pg-hostel-card.component';
 
 type CategoryKey =
   | 'tutors'
@@ -29,6 +31,7 @@ type CategoryKey =
   | 'book-stores'
   | 'counselors'
   | 'second-hand-books'
+  | 'hostels'
   | 'sports-shops';
 
 interface EduHubCategory {
@@ -79,6 +82,7 @@ interface EduHubPreview {
   fee: number | null;
   location: string;
   counselor?: Tutor;
+  hostel?: PgHostel;
   /** Preserve the API record so details pages can render immediately. */
   source?: EduHubDirectoryItem;
 }
@@ -87,7 +91,7 @@ interface EduHubPreview {
   selector: 'tutor-card',
   templateUrl: './tutor-card.component.html',
   styleUrls: ['./tutor-card.component.scss'],
-  imports: [CommonModule, IonicModule, ProfileImageComponent, EduHubCitySelectorComponent, EduHubEventCardComponent, EduHubShopCardComponent, CounselorCardComponent],
+  imports: [CommonModule, IonicModule, ProfileImageComponent, EduHubCitySelectorComponent, EduHubEventCardComponent, EduHubShopCardComponent, CounselorCardComponent, PgHostelCardComponent],
   standalone: true
 })
 export class TutorCardComponent implements OnInit, OnDestroy {
@@ -106,13 +110,15 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   readonly onlineModeAsset = 'assets/figma/eduhub-home/online-mode.svg';
 
   readonly categories: EduHubCategory[] = [
-    { key: 'tutors', label: 'Tutor', image: 'assets/figma/eduhub-home/category-tutors.webp', route: '/authed/tutors' },
-    { key: 'academies', label: 'Academy', image: 'assets/figma/eduhub-home/category-academies.webp', route: '/academies' },
-    { key: 'counselors', label: 'Counsellor', image: 'assets/figma/eduhub-home/category-counselors.webp', route: '/authed/counselors' },
-    { key: 'events', label: 'Events / Workshops', image: 'assets/figma/eduhub-home/category-events.webp', route: '/authed/education/events' },
-    { key: 'book-stores', label: 'Book Store', image: 'assets/figma/eduhub-home/category-book-stores.webp', route: '/authed/education/shops' },
-    { key: 'sports-shops', label: 'Sports Shop', image: 'assets/figma/eduhub-home/category-sports-shops.webp', route: '/authed/education/shops' },
-    { key: 'stationery', label: 'Stationery Shop', image: 'assets/figma/eduhub-home/category-stationery.webp', route: '/authed/education/shops' }
+    { key: 'tutors', label: 'Tutors', image: 'assets/figma/eduhub-navigation/tutors.png', route: '/authed/tutors' },
+    { key: 'academies', label: 'Academies', image: 'assets/figma/eduhub-navigation/academies.png', route: '/academies' },
+    { key: 'counselors', label: 'Counselors', image: 'assets/figma/eduhub-navigation/counselors.png', route: '/authed/counselors' },
+    { key: 'events', label: 'Events & Workshops', image: 'assets/figma/eduhub-navigation/events.png', route: '/authed/education/events' },
+    { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/eduhub-navigation/book-stores.png', route: '/authed/education/shops' },
+    { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/eduhub-navigation/sports-shops.png', route: '/authed/education/shops' },
+    { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/eduhub-navigation/stationery.png', route: '/authed/education/shops' },
+    { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/eduhub-navigation/second-hand-books.png', route: '/second-hand-books' },
+    { key: 'hostels', label: 'PG / Hostels', image: 'assets/figma/eduhub-navigation/hostels.png', route: '/authed/education/pg-hostels' }
   ];
 
   selectedCategoryKey: CategoryKey = 'tutors';
@@ -129,13 +135,14 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   private academyLoaded = false;
   private academyLoading = false;
 
-  private readonly externalCategorySources: Partial<Record<CategoryKey, { endpoint: 'events' | 'shops' | 'tutors'; entityType: string }>> = {
+  private readonly externalCategorySources: Partial<Record<CategoryKey, { endpoint: 'events' | 'shops' | 'tutors' | 'pg-hostels'; entityType: string }>> = {
     workshops: { endpoint: 'events', entityType: 'Workshop' },
     events: { endpoint: 'events', entityType: 'Events' },
     'book-stores': { endpoint: 'shops', entityType: 'bookstore' },
     stationery: { endpoint: 'shops', entityType: 'stationary' },
     'sports-shops': { endpoint: 'shops', entityType: 'sports' },
-    counselors: { endpoint: 'tutors', entityType: 'COUNSELOR' }
+    counselors: { endpoint: 'tutors', entityType: 'COUNSELOR' },
+    hostels: { endpoint: 'pg-hostels', entityType: '' }
   };
   private readonly externalPreviews = new Map<CategoryKey, EduHubPreview[]>();
   private readonly externalCounts = new Map<CategoryKey, number>();
@@ -153,7 +160,8 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     private readonly eduhubEventsService: EduHubEventsService,
     private readonly cityService: EduHubCityService,
     private readonly shareLinks: ShareLinkService,
-    private readonly core: CoreService
+    private readonly core: CoreService,
+    private readonly pgHostels: PgHostelsService
   ) { }
 
   ngOnInit(): void {
@@ -194,8 +202,12 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   }
 
   get visibleExternalPreviews(): EduHubPreview[] {
-    return (this.externalPreviews.get(this.selectedCategoryKey) || [])
-      .filter(item => this.matchesSelectedCity(item.location))
+    const items = this.externalPreviews.get(this.selectedCategoryKey) || [];
+    // PG / Hostels is already filtered by `city` on the dedicated API.
+    // Some list responses omit display city, so do not hide valid records.
+    return (this.selectedCategoryKey === 'hostels'
+      ? items
+      : items.filter(item => this.matchesSelectedCity(item.location)))
       .slice(0, this.maxTutors);
   }
 
@@ -218,6 +230,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   /** Keep the category CTA available whenever the selected preview has data. */
   get showViewAll(): boolean {
     if (this.isSelectedCategoryLoading) return false;
+    if (this.selectedCategoryKey === 'hostels') return true;
     if (this.selectedCategoryKey === 'tutors') return this.visibleTutors.length > 0;
     if (this.selectedCategoryKey === 'academies') return this.visibleAcademies.length > 0;
     if (this.isExternalCategory(this.selectedCategoryKey)) return this.visibleExternalPreviews.length > 0;
@@ -262,6 +275,28 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     if (!source || this.externalLoading.has(categoryKey) || this.externalPreviews.has(categoryKey)) return;
 
     this.externalLoading.add(categoryKey);
+    if (categoryKey === 'hostels') {
+      this.subscriptions.add(this.pgHostels.list(0, 20, { city: this.cityService.city }).subscribe({
+        next: page => {
+          this.externalPreviews.set(categoryKey, page.content.map(hostel => ({
+            id: hostel.id,
+            name: hostel.name || hostel.title || 'PG / Hostel',
+            description: [hostel.accommodationType, hostel.suitableFor].filter(Boolean).join(' · '),
+            image: hostel.imageUrls?.[0] || hostel.imageUrl || hostel.thumbnailUrl || '',
+            fee: hostel.monthlyRent ?? hostel.rent ?? hostel.price ?? null,
+            location: [hostel.city, hostel.state].filter(Boolean).join(', '),
+            hostel
+          })));
+          this.externalCounts.set(categoryKey, page.totalElements);
+          this.externalLoading.delete(categoryKey);
+        },
+        error: () => {
+          this.externalPreviews.delete(categoryKey);
+          this.externalLoading.delete(categoryKey);
+        }
+      }));
+      return;
+    }
     if (categoryKey === 'counselors') {
       // Use the same API and normalization as the full counselor directory.
       this.subscriptions.add(this.tutorService.getTutorsByEntityType('COUNSELOR').subscribe({
@@ -656,6 +691,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       startTime: a?.startTime ?? '',
       endTime: a?.endTime ?? '',
       contactModes: Array.isArray(a?.contactModes) ? a.contactModes : [],
+      teachingMode: a?.teachingMode ?? null,
       createdAt: a?.createdAt ?? '',
       totalStudents: Number(a?.totalStudents ?? a?.studentCount ?? 0)
     };
@@ -698,6 +734,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   }
 
   onViewAll(): void {
+    if (this.selectedCategoryKey === 'hostels') {
+      void this.router.navigate(['/authed/education/pg-hostels'], { queryParams: { city: this.cityService.city } });
+      return;
+    }
     if (this.selectedCategoryKey === 'tutors') {
       const visibleProfiles = this.visibleTutors
         .map(tutor => this.tutorService.getTutorFromCache(tutor.id))
@@ -758,6 +798,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   }
 
   onViewExternalDetails(listing: EduHubPreview): void {
+    if (this.selectedCategoryKey === 'hostels' && listing.hostel) {
+      void this.router.navigate(['/authed/education/pg-hostels', listing.hostel.id]);
+      return;
+    }
     if (this.selectedCategoryKey === 'counselors' && listing.counselor) {
       this.onViewCounselorProfile(listing.counselor);
       return;

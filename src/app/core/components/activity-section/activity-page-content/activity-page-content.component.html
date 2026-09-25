@@ -171,7 +171,7 @@
                                 <strong>{{ getChildItemTitle(card.source) }}</strong>
                             </span>
                             <span class="child-planner-card__actions">
-                                <em>{{ card.entries.length }} today</em>
+                                <em>{{ card.entries.length }} today<span *ngIf="card.totalEntries > card.entries.length"> · {{ card.totalEntries }} total</span></em>
                                 <img src="assets/figma/planner-daily/planner-chevron.svg" alt=""
                                     [class.is-collapsed]="!isPlannerExpanded(card, i)" />
                             </span>
@@ -188,6 +188,18 @@
                                 <strong>{{ getChildItemTitle(entry) }}</strong>
                                 <em *ngIf="getPlannerEntryCountdown(entry) as countdown">{{ countdown }}</em>
                             </div>
+                            <ng-container *ngIf="card.otherEntries.length">
+                                <span class="child-planner-card__other-label">Other days in this timetable</span>
+                                <div class="child-planner-entry child-planner-entry--other-day" *ngFor="let entry of card.otherEntries; trackBy: trackPlannerEntry"
+                                    role="button" tabindex="0" [attr.aria-label]="'Edit ' + getChildItemTitle(entry)"
+                                    (click)="viewPlanner(card.source, entry, $event)"
+                                    (keydown.enter)="viewPlanner(card.source, entry, $event)"
+                                    (keydown.space)="$event.preventDefault(); viewPlanner(card.source, entry, $event)">
+                                    <time>{{ getPlannerEntryTime(entry) }}</time>
+                                    <strong>{{ getChildItemTitle(entry) }}</strong>
+                                    <em>{{ getPlannerEntryDaysLabel(entry, card.source) }}</em>
+                                </div>
+                            </ng-container>
                         </div>
                     </article>
                 </section>

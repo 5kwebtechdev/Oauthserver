@@ -5,7 +5,7 @@
                 <div class="parent-eduhub-toolbar">
                     <div class="parent-eduhub-toolbar__identity">
                         <button type="button" class="parent-eduhub-back" aria-label="Back" (click)="goBack()">
-                            <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
+                            <img src="assets/figma/eduhub-categories/back.svg" alt="" aria-hidden="true">
                         </button>
                         <div>
                             <h1>EduHub</h1>
@@ -14,7 +14,7 @@
                     </div>
                     <button type="button" class="parent-eduhub-search" aria-label="Search EduHub"
                         [attr.aria-expanded]="parentSearchOpen" (click)="toggleParentSearch()">
-                        <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
+                        <img src="assets/figma/eduhub-categories/search.svg" alt="" aria-hidden="true">
                     </button>
                 </div>
                 <div class="parent-eduhub-search-panel" *ngIf="parentSearchOpen">
@@ -26,11 +26,11 @@
                 </div>
                 <div class="parent-eduhub-hero-copy">
                     <div>
-                        <h2>Your growth network,<br>All in one place</h2>
+                        <h2>Your all in one growth hub</h2>
                         <p>Explore trusted tutors, academies, shops, counselors, and more in one place.</p>
                         <aside>We just connect you with the lister and we are not liable for anything beyond that.</aside>
                     </div>
-                    <img src="assets/figma/parent-eduhub/header-hero.webp" alt="" aria-hidden="true">
+                    <div class="parent-eduhub-hero-art" aria-hidden="true"><img src="assets/figma/eduhub-categories/hero.png" alt=""></div>
                 </div>
             </header>
 
@@ -41,6 +41,7 @@
             <div class="parent-eduhub-sections">
                 <section class="parent-eduhub-section"
                     *ngFor="let section of filteredParentEduHubSections; trackBy: trackSection"
+                    [attr.data-section]="section.key"
                     [attr.aria-busy]="section.loading ? 'true' : null"
                     [attr.aria-labelledby]="'parent-eduhub-' + section.key">
                     <header class="parent-eduhub-section__header">
@@ -63,6 +64,7 @@
                         *ngIf="!section.loading && !section.error && section.categories.length">
                         <button type="button"
                             class="parent-eduhub-card"
+                            [attr.data-category]="category.id"
                             *ngFor="let category of section.categories; trackBy: trackCategory"
                             [class.is-selected]="selectedParentCategoryId === category.id"
                             [attr.aria-label]="'Open ' + category.label"
@@ -71,7 +73,10 @@
                                 <img [src]="category.image" alt="" loading="lazy"
                                     (error)="onCategoryImageError($event, category)">
                             </span>
-                            <span class="parent-eduhub-card__label">{{ category.label }}</span>
+                            <span class="parent-eduhub-card__copy">
+                                <span class="parent-eduhub-card__label">{{ category.displayTitle || category.label }}</span>
+                                <span class="parent-eduhub-card__description">{{ category.description }}</span>
+                            </span>
                         </button>
                     </div>
 

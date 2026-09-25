@@ -18,6 +18,7 @@ span, p, h1, h2, h3 {
 // ── Segmented pill tabs ──────────────────────────────────────────────────────
 .policies-tabs {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 4px;
     padding: 4px;
@@ -140,4 +141,21 @@ span, p, h1, h2, h3 {
 
 .policy-support-chev {
     flex-shrink: 0;
+}
+
+// Policy HTML uses the app's typography, without the old website navigation.
+:host ::ng-deep .policy-document {
+    display: block;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+    color: #282527;
+    font-family: var(--font-sans);
+    h1 { font-size: 26px; margin: 0 0 16px; }
+    h2 { font-size: 20px; margin: 28px 0 12px; color: #90214D; }
+    h3 { font-size: 17px; margin: 18px 0 8px; }
+    p { margin: 0 0 14px; }
+    ul, ol { padding-left: 24px; }
+    li { margin-bottom: 6px; }
+    a { color: #90214D; text-decoration: underline; cursor: pointer; }
+    [id] { scroll-margin-top: 24px; }
 }

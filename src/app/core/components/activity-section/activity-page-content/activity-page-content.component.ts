@@ -29,6 +29,8 @@ interface PlannerScheduleCard {
     source: any;
     color: string;
     entries: any[];
+    otherEntries: any[];
+    totalEntries: number;
 }
 
 @Component({
@@ -525,12 +527,18 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     get childPlannerCards(): PlannerScheduleCard[] {
         return this.mergeDuplicatePlannerSchedules(this.childPlannerItems)
             .filter(item => this.plannerOccursOnSelectedDate(item))
-            .map((source, index) => ({
-                id: String(source?.id ?? source?.calendarId ?? source?.title ?? index),
-                source,
-                color: this.getPlannerColor(source),
-                entries: this.getPlannerEntriesForSelectedDate(source)
-            }))
+            .map((source, index) => {
+                const allEntries = this.getPlannerEntries(source);
+                const entries = this.getPlannerEntriesForSelectedDate(source, allEntries);
+                return {
+                    id: String(source?.id ?? source?.calendarId ?? source?.title ?? index),
+                    source,
+                    color: this.getPlannerColor(source),
+                    entries,
+                    otherEntries: allEntries.filter(entry => !entries.includes(entry)),
+                    totalEntries: allEntries.length
+                };
+            })
             .filter(card => card.entries.length > 0)
             .sort((left, right) => this.getPlannerStartTimestamp(left.source) - this.getPlannerStartTimestamp(right.source));
     }
@@ -951,22 +959,40 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         return entries.some((entry: any) => this.entryOccursOnDate(entry, candidate, item?.daysOfWeek));
     }
 
-    private getPlannerEntriesForSelectedDate(item: any): any[] {
+    private getPlannerEntries(item: any): any[] {
         const entries = Array.isArray(item?.activities) && item.activities.length ? item.activities : [item];
-        const parentStart = this.getLocalDate(item?.startDate || item?.start_date);
-        const parentEnd = this.getLocalDate(item?.endDate || item?.end_date) || parentStart;
-        const isExactSingleDate = !!parentStart && !!parentEnd
-            && this.dateKey(parentStart) === this.dateKey(parentEnd)
-            && this.dateKey(parentStart) === this.getSelectedDateString();
         const uniqueEntries = new Map<string, any>();
         entries.forEach((entry: any, index: number) => {
             const key = this.plannerEntryIdentity(entry, index);
             if (!uniqueEntries.has(key)) uniqueEntries.set(key, entry);
         });
         return Array.from(uniqueEntries.values())
-            .filter((entry: any) => isExactSingleDate
-                || this.entryOccursOnDate(entry, this.selectedDate, item?.daysOfWeek))
             .sort((left: any, right: any) => this.getPlannerEntryTimestamp(left, 'start') - this.getPlannerEntryTimestamp(right, 'start'));
+    }
+
+    private getPlannerEntriesForSelectedDate(item: any, allEntries = this.getPlannerEntries(item)): any[] {
+        const parentStart = this.getLocalDate(item?.startDate || item?.start_date);
+        const parentEnd = this.getLocalDate(item?.endDate || item?.end_date) || parentStart;
+        const isExactSingleDate = !!parentStart && !!parentEnd
+            && this.dateKey(parentStart) === this.dateKey(parentEnd)
+            && this.dateKey(parentStart) === this.getSelectedDateString();
+        return allEntries
+            .filter((entry: any) => isExactSingleDate
+                || this.entryOccursOnDate(entry, this.selectedDate, item?.daysOfWeek));
+    }
+
+    getPlannerEntryDaysLabel(entry: any, source: any): string {
+        const rawDays = entry?.daysOfWeek ?? entry?.days ?? source?.daysOfWeek;
+        const days = Array.isArray(rawDays) ? rawDays : [];
+        const labels: Record<string, string> = {
+            SUNDAY: 'Sun', MONDAY: 'Mon', TUESDAY: 'Tue', WEDNESDAY: 'Wed',
+            THURSDAY: 'Thu', FRIDAY: 'Fri', SATURDAY: 'Sat'
+        };
+        const result = days.map((value: any) => {
+            const day = String(value || '').trim().toUpperCase();
+            return labels[day] || (day === 'TH' ? 'Thu' : day === 'SA' ? 'Sat' : day.slice(0, 3));
+        }).filter(Boolean);
+        return result.length ? result.join(', ') : 'Other day';
     }
 
     /**

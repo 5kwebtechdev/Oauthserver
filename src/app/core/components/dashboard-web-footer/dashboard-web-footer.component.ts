@@ -48,7 +48,6 @@ export class DashboardWebFooterComponent implements OnInit {
   readonly googlePlayUrl =
     'https://play.google.com/store/apps/details?id=com.superme.app';
   readonly appleStoreUrl = APP_STORE_URL;
-  readonly websiteUrl = 'https://supermeapp.com';
   isParent = false;
 
   readonly socialLinks = [
@@ -158,7 +157,7 @@ export class DashboardWebFooterComponent implements OnInit {
       routerLink: '/our-policies',
       queryParams: { tab: 'terms' },
     },
-    { label: 'Child Safety', href: 'https://supermeapp.com/child-safety' },
+    { label: 'Child Safety', routerLink: '/our-policies', queryParams: { tab: 'child-safety' } },
     {
       label: 'Refund & Cancellation',
       routerLink: '/our-policies',

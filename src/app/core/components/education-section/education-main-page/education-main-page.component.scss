@@ -1,871 +1,120 @@
-:host {
-    display: block;
-    width: 100%;
-}
-
+:host { display: block; width: 100%; }
 ion-content {
-    --background: #ffffff;
-    // The footer is fixed, so reserve room in Ionic's actual scroll area.
-    // This keeps the final EduHub section reachable on small devices.
-    --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 80px);
+    --background: #fff;
+    --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)));
 }
-
 .parent-eduhub-page {
     display: flex;
     flex-direction: column;
-    gap: 16px;
     width: 100%;
-    max-width: 393px;
-    min-height: 100%;
+    max-width: 960px;
     margin: 0 auto;
-    padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 48px);
-    overflow-x: hidden;
-    background: #ffffff;
-    box-sizing: border-box;
+    background: #fff;
+    color: #282527;
+    font-family: var(--font-sans, 'Nunito', sans-serif);
 }
-
-// Native phones and tablets should use every available horizontal pixel.
-// The 393px value above is the design reference width, not a viewport cap.
-:host-context(html.plt-capacitor) .parent-eduhub-page {
-    max-width: none;
-    margin-inline: 0;
-}
-
 .parent-eduhub-header {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    width: 100%;
-    min-height: 292px;
-    margin: 0 auto;
-    padding: 12px 16px 12px;
-    overflow: hidden;
-    color: #ffffff;
-    background: linear-gradient(150deg, #1432a8 22%, #3158a8 78%);
-    box-sizing: border-box;
-
-    h1 {
-        margin: 0;
-        color: #ffffff;
-        font-family: var(--font-heading, 'Fredoka', sans-serif);
-        font-size: 20px;
-        font-style: normal;
-        font-weight: 500;
-        line-height: 1.4;
-    }
+    padding: 8px 0 12px;
+    color: #fff;
+    background: linear-gradient(-25.1867deg, #3158a8 21.988%, #1432a8 78.012%);
+    h1 { margin: 0; color: #fff; font: 500 20px/26px var(--font-heading, 'Fredoka', sans-serif); }
 }
-
-.parent-eduhub-toolbar,
-.parent-eduhub-toolbar__identity {
-    display: flex;
-    align-items: center;
+.parent-eduhub-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
+.parent-eduhub-toolbar__identity { display: flex; align-items: center; gap: 4px; min-width: 0; > div { display: flex; flex-direction: column; } }
+.parent-eduhub-back, .parent-eduhub-search {
+    display: grid; place-items: center; flex-shrink: 0; border: 0; padding: 0; cursor: pointer;
 }
-
-.parent-eduhub-toolbar {
-    justify-content: space-between;
-    width: 100%;
-}
-
-.parent-eduhub-toolbar__identity {
-    gap: 4px;
-
-    > div {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-    }
-}
-
-.parent-eduhub-search {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: #ffffff;
-
-    img { width: 24px; height: 24px; }
-}
-
-.parent-eduhub-search-panel {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    min-height: 48px;
-    padding: 4px 6px 4px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    border-radius: 16px;
-    background: #ffffff;
-    box-shadow: 0 8px 20px rgba(7, 25, 92, 0.2);
-    box-sizing: border-box;
-
-    > img {
-        width: 22px;
-        height: 22px;
-        flex: 0 0 22px;
-    }
-
-    input {
-        min-width: 0;
-        flex: 1;
-        border: 0;
-        outline: 0;
-        background: transparent;
-        color: #282527;
-        font: 600 15px/1.3 var(--font-sans, 'Nunito', sans-serif);
-
-        &::placeholder { color: #817a80; opacity: 1; }
-        &::-webkit-search-cancel-button { display: none; }
-    }
-
-    button {
-        width: 38px;
-        height: 38px;
-        flex: 0 0 38px;
-        border: 0;
-        border-radius: 50%;
-        background: #eef3fc;
-        color: #3158a8;
-        font: 500 25px/1 var(--font-sans, 'Nunito', sans-serif);
-    }
-}
-
+.parent-eduhub-back { width: 48px; height: 48px; background: transparent; }
+.parent-eduhub-search { width: 40px; height: 40px; border-radius: 50%; background: #fff; }
+.parent-eduhub-back img, .parent-eduhub-search img { display: block; }
 .parent-eduhub-hero-copy {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 150px;
-    align-items: end;
-    width: 100%;
-    min-height: 180px;
-
-    > div { position: relative; z-index: 1; padding-left: 8px; }
-
-    h2 {
-        margin: 0 0 6px;
-        color: #ffffff;
-        font: 700 20px/1.2 var(--font-sans, 'Nunito', sans-serif);
-    }
-
-    p {
-        margin: 0;
-        color: #d9d6d8;
-        font: 500 12px/1.3 var(--font-sans, 'Nunito', sans-serif);
-    }
-
-    aside {
-        margin-top: 6px;
-        padding: 5px 8px;
-        border-radius: 8px;
-        background: #d9e5f9;
-        color: #282527;
-        font: 500 12px/1.25 var(--font-sans, 'Nunito', sans-serif);
-    }
-
-    > img {
-        width: 174px;
-        height: 174px;
-        margin-left: -24px;
-        object-fit: contain;
-        object-position: center bottom;
-    }
-}
-
-.parent-eduhub-back {
-    width: 48px;
-    height: 48px;
-    flex: 0 0 48px;
-    display: grid;
-    place-items: center;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-
-    img {
-        display: block;
-        width: 40px;
-        height: 40px;
-        object-fit: contain;
-        // The EduHub hero sits on a blue surface; keep the navigation affordance
-        // high contrast while preserving the shared SVG asset.
-        filter: brightness(0) invert(1);
-    }
-
-    &:active {
-        background: rgba(40, 37, 39, 0.05);
-        transform: scale(0.96);
-    }
-
-    &:focus-visible {
-        outline: 2px solid rgba(144, 33, 77, 0.4);
-        outline-offset: 1px;
-    }
-}
-
-.parent-eduhub-ad {
-    display: block;
-    width: 100%;
+    grid-template-columns: minmax(0, 255fr) minmax(0, 122fr);
     padding-left: 16px;
-    overflow: hidden;
-    box-sizing: border-box;
+    > div:first-child { min-width: 0; }
+    h2 { margin: 0 0 6px 8px; color: #fff; font: 700 20px/24px var(--font-sans, 'Nunito', sans-serif); }
+    p { margin: 0 0 0 8px; color: #d9d6d8; font-size: 12px; font-weight: 500; line-height: 16px; }
+    aside { margin-top: 6px; padding: 4px 8px; border-radius: 8px; background: #d9e5f9; color: #282527; font-size: 12px; font-weight: 500; line-height: 16px; }
 }
-
-.parent-eduhub-sections {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-    width: 100%;
-    margin-top: 8px;
-    /* The footer is fixed above the Ionic scroll viewport.  Keep a real
-       end-of-list safe zone so the last Events/Workshops cards never finish
-       beneath it, including devices with the raised centre navigation icon. */
-    padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 32px);
-    scroll-margin-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 32px);
-    box-sizing: border-box;
+.parent-eduhub-hero-art {
+    position: relative; min-width: 0; min-height: 108px; align-self: stretch;
+    img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
+    &::after { content: ''; position: absolute; inset: 0 6px 0 4px; background: linear-gradient(to bottom, transparent 78.273%, #3158a8 93.554%); }
 }
-
+.parent-eduhub-search-panel {
+    display: flex; align-items: center; gap: 8px; margin: 0 16px; padding: 6px 12px;
+    border-radius: 16px; background: #fff;
+    img { width: 24px; height: 24px; }
+    input { flex: 1; min-width: 0; border: 0; color: #282527; background: transparent; font: inherit; }
+    button { width: 36px; height: 36px; background: transparent; color: #282527; font-size: 24px; }
+}
+.parent-eduhub-ad { display: block; margin-top: 16px; }
+.parent-eduhub-sections { display: flex; flex-direction: column; gap: 32px; margin-top: 28px; padding-bottom: 24px; }
 .parent-eduhub-section {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
+    --category-bg: #ebe6f5;
+    display: flex; flex-direction: column; gap: 8px;
+    &[data-section="pre-loved"] { --category-bg: #fef2db; }
+    &[data-section="shops"] { --category-bg: #e1f8ee; }
+    &[data-section="guidance"] { --category-bg: #fde1ea; }
+    &[data-section="activities"] { --category-bg: #d9e5f9; }
+    &[data-section="living"] { --category-bg: #e4f2f8; }
 }
-
 .parent-eduhub-section__header {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 32px;
-    padding: 0 16px;
-    box-sizing: border-box;
-
-    h2 {
-        min-width: 0;
-        margin: 0;
-        color: #282527;
-        font-family: var(--font-sans, 'Nunito', sans-serif);
-        font-size: 17px;
-        font-style: normal;
-        font-weight: 600;
-        line-height: 1.25;
-        text-transform: capitalize;
-    }
+    display: flex; align-items: center; gap: 6px; padding: 0 16px;
+    h2 { margin: 0; color: #282527; font: 700 17px/23px var(--font-sans, 'Nunito', sans-serif); }
 }
-
 .parent-eduhub-section__icon {
-    width: 32px;
-    height: 32px;
-    flex: 0 0 32px;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    border-radius: 27px;
-
-    img {
-        display: block;
-        width: 24px;
-        height: 24px;
-        object-fit: contain;
-    }
+    display: grid; place-items: center; flex: 0 0 40px; height: 40px; border-radius: 50%; background: var(--category-bg);
+    img { display: block; }
 }
-
-.parent-eduhub-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 16px;
-    row-gap: 12px;
-    width: 100%;
-    padding: 0 16px;
-    box-sizing: border-box;
-}
-
+.parent-eduhub-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 8px; padding: 0 16px; }
 .parent-eduhub-card {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    min-width: 0;
-    min-height: 76px;
-    margin: 0;
-    padding: 0 14px 0 8px;
-    overflow: hidden;
-    border: 1px solid transparent;
-    border-radius: 16px;
-    background: #b2caf2;
-    color: #282527;
-    box-shadow: 0 0 2px 1px rgba(49, 88, 168, 0.5);
-    cursor: pointer;
-    box-sizing: border-box;
-    transition: background-color 140ms ease, border-color 140ms ease, transform 120ms ease;
+    display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; min-height: 72px;
+    margin: 0; padding: 8px; border: 0; border-radius: 16px; background: var(--category-bg);
+    color: #282527; text-align: left; cursor: pointer; box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
-
-    &:active {
-        border-color: #3158a8;
-        background: #a5c0ec;
-        transform: scale(0.98);
-    }
-
-    &.is-selected {
-        border-color: transparent;
-        background: #b2caf2;
-        box-shadow: 0 0 2px 1px rgba(49, 88, 168, 0.18);
-        transform: none;
-    }
-
-    &:focus-visible {
-        border-color: #3158a8;
-        outline: 2px solid rgba(49, 88, 168, 0.32);
-        outline-offset: 2px;
-    }
+    &:active { transform: scale(.98); }
+    &:focus-visible { outline: 2px solid #432477; outline-offset: 3px; }
 }
-
+.parent-eduhub-section:not([data-section="learning-support"]):not([data-section="shops"]) .parent-eduhub-card,
+.parent-eduhub-card[data-category="store-sports-shop"] { grid-column: 1 / -1; }
+.parent-eduhub-card[data-category="store-stationery-shops"],
+.parent-eduhub-card[data-category="store-book-stores"] { align-items: flex-start; min-height: 90px; }
 .parent-eduhub-card__image {
-    width: 50px;
-    height: 50px;
-    flex: 0 0 50px;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-
-    img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
+    position: relative; display: block; flex: 0 0 56px; width: 56px; height: 56px; overflow: hidden;
+    img { display: block; width: 56px; height: 56px; object-fit: cover; }
 }
-
-.parent-eduhub-card__label {
-    flex: 1 1 auto;
-    min-width: 0;
-    color: #282527;
-    font-family: var(--font-sans, 'Nunito', sans-serif);
-    font-size: 15px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 1.2;
-    text-align: left;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: clip;
-    font-size: clamp(12px, 1.7vw, 16px);
+[data-category="tutors"] .parent-eduhub-card__image {
+    flex-basis: 57px; width: 57px;
+    img { width: 57px; height: 102%; }
+    &::after { content: ''; position: absolute; bottom: 0; left: 2px; width: 57px; height: 21px; background: linear-gradient(to bottom, transparent 72.698%, #ebe6f5); }
 }
-
-.parent-eduhub-grid--loading {
-    row-gap: 12px;
+.parent-eduhub-card__copy { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
+.parent-eduhub-card__label { color: #282527; font: 700 15px/20px var(--font-sans, 'Nunito', sans-serif); white-space: pre-line; overflow-wrap: anywhere; }
+.parent-eduhub-card__description { color: #6b656a; font: 600 13px/16px var(--font-sans, 'Nunito', sans-serif); overflow-wrap: anywhere; }
+.parent-eduhub-card-skeleton { min-height: 72px; border-radius: 16px; background: var(--category-bg); }
+.parent-eduhub-section-state { margin: 0; padding: 8px 16px; color: #6b656a; font-size: 13px; }
+.parent-eduhub-section-state--error { display: flex; align-items: center; justify-content: space-between; button { padding: 8px 16px; border-radius: 8px; background: #ebe6f5; color: #432477; } }
+.parent-eduhub-no-results { margin: 0 16px; padding: 24px; border-radius: 16px; background: #ebe6f5; text-align: center; }
+:host ::ng-deep .parent-eduhub-toolbar {
+    .eduhub-city-selector { min-height: 19px; }
+    .eduhub-city-selector__pin { display: none; }
+    .eduhub-city-selector__value { padding-right: 13px; }
+    .eduhub-city-selector__chevron { width: 8.942px; height: 5.22px; border: 0; transform: none; background: url('../../../../../assets/figma/eduhub-categories/chevron.svg') center / contain no-repeat; }
 }
-
-.parent-eduhub-card-skeleton {
-    min-height: 52px;
-    overflow: hidden;
-    border-radius: 16px;
-    background: linear-gradient(100deg, #dce7f8 25%, #eef4fc 45%, #dce7f8 65%);
-    background-size: 220% 100%;
-    box-shadow: 0 0 2px 1px rgba(49, 88, 168, 0.16);
-    animation: parentEduHubShimmer 1.2s linear infinite;
+@media (max-width: 374px) {
+    .parent-eduhub-hero-copy { grid-template-columns: minmax(0, 1fr) 100px; }
+    .parent-eduhub-hero-copy h2 { font-size: 18px; }
+    .parent-eduhub-hero-art img { object-fit: contain; object-position: center bottom; }
+    .parent-eduhub-card { gap: 4px; }
+    .parent-eduhub-card__image { flex-basis: 40px; width: 40px; height: 40px; img { width: 40px; height: 40px; } }
+    [data-category="tutors"] .parent-eduhub-card__image { flex-basis: 41px; width: 41px; img { width: 41px; } }
 }
-
-@keyframes parentEduHubShimmer {
-    to {
-        background-position-x: -220%;
-    }
-}
-
-.parent-eduhub-section-state {
-    margin: 0;
-    padding: 8px 16px;
-    color: #6b656a;
-    font-family: var(--font-sans, 'Nunito', sans-serif);
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.4;
-}
-
-.parent-eduhub-section-state--error {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-
-    p {
-        margin: 0;
-    }
-
-    button {
-        min-height: 34px;
-        padding: 7px 18px;
-        border: 1px solid #90214d;
-        border-radius: 12px;
-        background: #ffffff;
-        color: #90214d;
-        font-family: var(--font-sans, 'Nunito', sans-serif);
-        font-size: 13px;
-        font-weight: 700;
-    }
-}
-
-.parent-eduhub-no-results {
-    margin: 8px 16px 24px;
-    padding: 24px 18px;
-    border-radius: 20px;
-    background: #f4f7fd;
-    color: #282527;
-    text-align: center;
-
-    span { font-size: 34px; }
-    h2 { margin: 8px 0 4px; font: 600 18px/1.3 var(--font-heading, 'Fredoka', sans-serif); }
-    p { margin: 0; color: #6b656a; font: 500 13px/1.4 var(--font-sans, 'Nunito', sans-serif); }
-}
-
-// Existing Child/Self EduHub remains unchanged.
-.education-main-page-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 20px;
-    padding: 16px 16px 0;
-    box-sizing: border-box;
-}
-
-.edu-ad-wrap {
-    width: calc(100% + 32px);
-    margin-left: -16px;
-}
-
-.edu-heading {
-    margin: 0;
-    padding: 4px 0;
-    color: #282527;
-    font-family: var(--font-heading);
-    font-size: 22px;
-    font-weight: 500;
-    text-align: center;
-}
-
-.edu-item-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-    width: 100%;
-    align-items: stretch;
-    padding: 0 0 calc(90px + env(safe-area-inset-bottom, 0px));
-}
-
-.edu-item-cards {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    padding: 14px 10px;
-    border-radius: 16px;
-    background: #ffffff;
-    color: inherit;
-    box-shadow: 0 1px 6px rgba(107, 101, 106, 0.12);
-    text-decoration: none;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-
-    &:active {
-        transform: scale(0.97);
-        box-shadow: 0 0 3px rgba(107, 101, 106, 0.15);
-    }
-
-    h1 {
-        margin: 0;
-        color: #282527;
-        font-family: var(--font-sans);
-        font-size: 15px;
-        font-weight: 600;
-        text-align: center;
-    }
-}
-
-.edu-item-cards img,
-.edu-item-cards app-img {
-    display: block;
-    width: 100%;
-    height: 110px;
-    max-height: 130px;
-    object-fit: contain;
-}
-
-@media (max-width: 359px) {
-    .parent-eduhub-header,
-    .parent-eduhub-section__header,
-    .parent-eduhub-grid {
-        padding-right: 12px;
-        padding-left: 12px;
-    }
-
-    .parent-eduhub-ad {
-        padding-left: 12px;
-    }
-
-    .parent-eduhub-card {
-        gap: 4px;
-        min-height: 48px;
-        padding-right: 5px;
-    }
-
-    .parent-eduhub-card__image {
-        width: 44px;
-        height: 44px;
-        flex-basis: 44px;
-    }
-
-    .parent-eduhub-card__label {
-        font-size: 14px;
-    }
-}
-
-@media (min-width: 480px) {
-    .edu-item-list {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
-}
-
-@media (min-width: 480px) and (max-width: 767.98px) {
-    .parent-eduhub-page {
-        max-width: 600px;
-    }
-
-    .parent-eduhub-grid {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 16px;
-        padding-inline: 24px;
-    }
-
-    .parent-eduhub-header,
-    .parent-eduhub-section__header {
-        padding-inline: 24px;
-    }
-}
-
 @media (min-width: 768px) {
-    .parent-eduhub-page {
-        max-width: 960px;
-    }
-
-    .parent-eduhub-grid {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-        padding-inline: 32px;
-    }
-
-    .parent-eduhub-header,
-    .parent-eduhub-section__header {
-        padding-inline: 32px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .parent-eduhub-card,
-    .parent-eduhub-card-skeleton {
-        transition: none;
-        animation: none;
-    }
-}
-
-/* Web-only EduHub discovery dashboard. Capacitor keeps the mobile Figma UI. */
-@media (min-width: 768px) {
-    :host-context(html:not(.plt-capacitor)) {
-        ion-content.parent-eduhub-content {
-            --background: linear-gradient(135deg, #f5f1ff 0%, #fff8f1 46%, #eefafb 100%);
-            --padding-bottom: 56px;
-        }
-
-        .parent-eduhub-page {
-            width: min(calc(100% - 48px), 1240px);
-            max-width: none;
-            min-height: calc(100vh - 130px);
-            margin: 108px auto 54px;
-            padding: 24px 28px 72px;
-            gap: 30px;
-            overflow: visible;
-            border: 1px solid rgba(91, 55, 143, .09);
-            border-radius: 30px;
-            background: rgba(255, 255, 255, .9);
-            box-shadow: 0 22px 60px rgba(65, 42, 87, .1);
-            backdrop-filter: blur(12px);
-        }
-
-        .parent-eduhub-header {
-            position: relative;
-            min-height: 300px;
-            padding: 20px 28px 0;
-            border-radius: 24px;
-            background:
-                radial-gradient(circle at 76% 18%, rgba(114, 160, 255, .42), transparent 28%),
-                linear-gradient(135deg, #1736b4 0%, #315fae 100%);
-            box-shadow: 0 18px 36px rgba(30, 62, 151, .22);
-
-            h1 {
-                font-size: clamp(26px, 2.4vw, 34px);
-                font-weight: 600;
-            }
-        }
-
-        .parent-eduhub-toolbar {
-            position: relative;
-            z-index: 3;
-        }
-
-        .parent-eduhub-search {
-            width: 48px;
-            height: 48px;
-            cursor: pointer;
-            box-shadow: 0 8px 18px rgba(7, 25, 92, .2);
-            transition: transform 160ms ease, box-shadow 160ms ease;
-
-            &:hover,
-            &:focus-visible {
-                outline: 3px solid rgba(255, 255, 255, .42);
-                transform: translateY(-2px) scale(1.03);
-                box-shadow: 0 12px 24px rgba(7, 25, 92, .28);
-            }
-        }
-
-        .parent-eduhub-hero-copy {
-            grid-template-columns: minmax(360px, 1fr) minmax(250px, 390px);
-            align-items: center;
-            flex: 1;
-            min-height: 210px;
-            padding: 0 38px;
-
-            > div {
-                max-width: 620px;
-                padding: 0;
-            }
-
-            h2 {
-                margin-bottom: 10px;
-                font-size: clamp(30px, 3vw, 42px);
-                line-height: 1.06;
-                letter-spacing: -.02em;
-            }
-
-            p {
-                max-width: 590px;
-                font-size: clamp(15px, 1.35vw, 18px);
-                line-height: 1.45;
-            }
-
-            aside {
-                width: fit-content;
-                max-width: 610px;
-                margin-top: 14px;
-                padding: 9px 14px;
-                border-radius: 12px;
-                font-size: 14px;
-                line-height: 1.35;
-            }
-
-            > img {
-                width: min(100%, 330px);
-                height: 220px;
-                margin: 0 auto;
-                filter: drop-shadow(0 14px 16px rgba(8, 25, 78, .25));
-            }
-        }
-
-        .parent-eduhub-back {
-            border-radius: 16px;
-            transition: background-color 180ms ease, transform 180ms ease;
-
-            &:hover,
-            &:focus-visible {
-                background: #f6f0fc;
-                transform: translateX(-3px);
-                outline: none;
-            }
-        }
-
-        .parent-eduhub-ad {
-            width: 100%;
-            padding: 0;
-            overflow: hidden;
-            border-radius: 24px;
-            background: linear-gradient(135deg, #fff4fa, #f7f2ff);
-            box-shadow: 0 16px 34px rgba(70, 48, 83, .12);
-        }
-
-        .parent-eduhub-sections {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            align-items: start;
-            gap: 24px;
-            margin-top: 4px;
-            padding: 0;
-        }
-
-        .parent-eduhub-section {
-            min-height: 214px;
-            gap: 18px;
-            padding: 22px;
-            border: 1px solid rgba(49, 88, 168, .1);
-            border-radius: 24px;
-            background: linear-gradient(145deg, rgba(245, 248, 255, .96), rgba(255, 255, 255, .96));
-            box-shadow: 0 12px 28px rgba(56, 69, 99, .08);
-        }
-
-        .parent-eduhub-section:nth-child(2) {
-            background: linear-gradient(145deg, #fff9f3, #fff);
-            border-color: rgba(246, 172, 114, .2);
-        }
-
-        .parent-eduhub-section:nth-child(3) {
-            background: linear-gradient(145deg, #f8f4ff, #fff);
-            border-color: rgba(139, 141, 203, .2);
-        }
-
-        .parent-eduhub-section:nth-child(4) {
-            background: linear-gradient(145deg, #f2fbfb, #fff);
-            border-color: rgba(137, 179, 182, .22);
-        }
-
-        .parent-eduhub-section__header {
-            gap: 10px;
-            min-height: 42px;
-            padding: 0;
-
-            h2 {
-                font-family: var(--font-heading, 'Fredoka', sans-serif);
-                font-size: 21px;
-                font-weight: 500;
-            }
-        }
-
-        .parent-eduhub-section__icon {
-            width: 42px;
-            height: 42px;
-            flex-basis: 42px;
-            background: rgba(255, 255, 255, .8);
-            box-shadow: 0 6px 16px rgba(57, 48, 72, .08);
-
-            img {
-                width: 28px;
-                height: 28px;
-            }
-        }
-
-        .parent-eduhub-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-            padding: 0;
-        }
-
-        .parent-eduhub-card {
-            min-height: 82px;
-            gap: 10px;
-            padding: 8px 14px 8px 8px;
-            border-color: rgba(49, 88, 168, .12);
-            border-radius: 18px;
-            background: linear-gradient(135deg, #dbe8fc, #c4d7f7);
-            box-shadow: 0 8px 18px rgba(49, 88, 168, .12);
-            transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
-
-            &:hover,
-            &:focus-visible {
-                border-color: rgba(49, 88, 168, .42);
-                box-shadow: 0 15px 26px rgba(49, 88, 168, .2);
-                transform: translateY(-4px);
-                outline: none;
-            }
-        }
-
-        .parent-eduhub-card__image {
-            width: 52px;
-            height: 52px;
-            flex-basis: 52px;
-            transition: transform 220ms ease;
-        }
-
-        .parent-eduhub-card:hover .parent-eduhub-card__image,
-        .parent-eduhub-card:focus-visible .parent-eduhub-card__image {
-            transform: scale(1.08) rotate(-2deg);
-        }
-
-        .parent-eduhub-card__label {
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .parent-eduhub-card-skeleton {
-            min-height: 72px;
-            border-radius: 18px;
-        }
-
-        .parent-eduhub-section-state {
-            padding: 12px 0;
-            font-size: 14px;
-        }
-
-        .parent-eduhub-section-state--error button {
-            cursor: pointer;
-            transition: background-color 180ms ease, color 180ms ease;
-
-            &:hover,
-            &:focus-visible {
-                background: #90214d;
-                color: #fff;
-                outline: none;
-            }
-        }
-    }
-}
-
-@media (min-width: 768px) and (max-width: 980px) {
-    :host-context(html:not(.plt-capacitor)) {
-        .parent-eduhub-page {
-            width: calc(100% - 32px);
-            margin-top: 92px;
-            padding-inline: 18px;
-        }
-
-        .parent-eduhub-header {
-            min-height: 280px;
-            padding-inline: 20px;
-        }
-
-        .parent-eduhub-hero-copy {
-            grid-template-columns: minmax(0, 1fr) 240px;
-            padding-inline: 20px;
-
-            > img {
-                width: 230px;
-                height: 190px;
-            }
-        }
-
-        .parent-eduhub-sections {
-            grid-template-columns: 1fr;
-        }
-
-        .parent-eduhub-grid {
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        }
-    }
-}
-
-@media (min-width: 768px) and (max-width: 820px) {
-    :host-context(html:not(.plt-capacitor)) {
-        .parent-eduhub-hero-copy {
-            grid-template-columns: minmax(0, 1fr) 190px;
-
-            h2 { font-size: 28px; }
-            p { font-size: 14px; }
-            > img { width: 190px; height: 170px; }
-        }
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    :host-context(html:not(.plt-capacitor)) .parent-eduhub-page * {
-        transition-duration: .01ms !important;
-    }
+    :host-context(html:not(.plt-capacitor)) .parent-eduhub-page { margin-top: 100px; }
+    .parent-eduhub-hero-copy { grid-template-columns: minmax(0, 1fr) 160px; }
+    .parent-eduhub-hero-copy > div:first-child { align-self: center; }
 }

@@ -20,6 +20,7 @@
   &__emoji { width: 22px; height: 24px; object-fit: contain; }
   &__chevron { width: 16px; height: 16px; transform: rotate(-90deg); }
 }
+.mood-pill:disabled { opacity: 1; cursor: default; }
 .mood-pet {
   // The source artwork has transparent pixels below the grass. Let the header
   // crop that padding so every pet's ground meets the bottom edge.

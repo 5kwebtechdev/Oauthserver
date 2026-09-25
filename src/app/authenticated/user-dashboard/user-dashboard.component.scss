@@ -1057,6 +1057,19 @@ ion-content {
   gap: 16px;
 }
 
+.hero-mood-anchor {
+  position: relative;
+  width: 100%;
+}
+
+mood-selector.hero-mood-picker {
+  position: absolute;
+  z-index: 50;
+  top: 44px;
+  right: 8px;
+  width: min(324px, calc(100% - 16px));
+}
+
 .profile-content {
   padding: 0;
   gap: 0;

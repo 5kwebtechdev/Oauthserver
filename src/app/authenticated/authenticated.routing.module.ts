@@ -210,6 +210,12 @@ const routes: Routes = [
         path: 'reel-expand',
         loadComponent: () => import('../core/components/reel-section/reel-expand/reels-expand.component').then(m => m.ReelsExpandComponent)
       }, {
+        path: 'education/pg-hostels/:id',
+        loadComponent: () => import('../core/components/education-section/pg-hostels/pg-hostel-details.component').then(m => m.PgHostelDetailsComponent)
+      }, {
+        path: 'education/pg-hostels',
+        loadComponent: () => import('../core/components/education-section/pg-hostels/pg-hostels.component').then(m => m.PgHostelsComponent)
+      }, {
         path: 'education/events/:id',
         loadComponent: () => import('../core/components/education-section/eduhub-event-details/eduhub-event-details.component').then(m => m.EduHubEventDetailsComponent),
         data: { entityType: 'Events', title: 'Events' }

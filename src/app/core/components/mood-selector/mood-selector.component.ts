@@ -20,7 +20,7 @@ type PopupMoodOption = { src: string; label: string; vibe: string; art: string }
   styleUrls: ['./mood-selector.component.scss']
 })
 export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestroy {
-  @Input() presentation: 'inline' | 'dialog' = 'inline';
+  @Input() presentation: 'inline' | 'dialog' | 'entry' | 'dropdown' = 'inline';
   dialogOpen = false;
   saving = false;
   get dailyLimitReached(): boolean { return this.setsToday >= 2; }
@@ -243,11 +243,15 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   /** Show the picker again without discarding the mood already saved by the API. */
   editMood(): void {
     if (this.isParent) return;
-    if (this.presentation === 'dialog') this.dialogOpen = true;
     if (this.setsToday >= 2) {
       this.showBlockedTooltip();
       return;
     }
+    if (this.presentation === 'dropdown' && this.dialogOpen) {
+      this.closeDialog();
+      return;
+    }
+    if (this.presentation === 'dialog' || this.presentation === 'dropdown') this.dialogOpen = true;
     this.popupSelection = null;
     this.limitInfoVisible = false;
     this.pickerOpen = true;

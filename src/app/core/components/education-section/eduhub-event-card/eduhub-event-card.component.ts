@@ -44,7 +44,7 @@ export class EduHubEventCardComponent {
     if (item.fee == null) return 'Contact for pricing';
     const fee = Number(item.fee);
     if (!Number.isFinite(fee)) return 'Contact for pricing';
-    return fee === 0 ? 'FREE' : `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / Per Person`;
+    return fee === 0 ? 'FREE' : `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / Person`;
   }
 
   isFavourite(item: EduHubEventItem): boolean { return !!item.likedBySelf; }

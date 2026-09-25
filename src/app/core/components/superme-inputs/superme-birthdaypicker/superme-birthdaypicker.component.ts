@@ -28,6 +28,9 @@ export class SupermeBirthdaypickerComponent implements ControlValueAccessor, Aft
   @Input()
   public showTrigger: boolean = false;
 
+  @Input()
+  public disabled: boolean = false;
+
   /**
    * Variant class for the picker. Example: 'white-green' to get white main layout and
    * green date selection area as provided by the designer.
@@ -100,6 +103,7 @@ export class SupermeBirthdaypickerComponent implements ControlValueAccessor, Aft
   registerOnTouched(fn: any) { this.onTouched = fn; }
 
   open() {
+    if (this.disabled) return;
     this.show = true;
     setTimeout(() => this.scrollToSelected(), 100);
   }

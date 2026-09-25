@@ -15,6 +15,7 @@
   <nav class="eduhub-categories" aria-label="Education categories">
     <button *ngFor="let category of categories; trackBy: trackCategory" type="button" class="eduhub-category"
       [class.active]="selectedCategoryKey === category.key"
+      [attr.data-category]="category.key"
       [attr.aria-pressed]="selectedCategoryKey === category.key ? 'true' : 'false'"
       (click)="selectCategory(category)">
       <span class="eduhub-category__image" aria-hidden="true"><img [src]="category.image" alt=""></span>
@@ -56,8 +57,11 @@
           (directions)="openShopDirections(listing)" (contact)="openShopContact(listing)"></app-eduhub-shop-card>
         <ng-template #genericPreview>
         <app-counselor-card *ngIf="listing.counselor as counselor; else otherPreview" class="eduhub-event-preview"
-          [counselor]="counselor" (viewProfile)="onViewCounselorProfile($event)"></app-counselor-card>
+          [counselor]="counselor" [homePreview]="true" (viewProfile)="onViewCounselorProfile($event)"></app-counselor-card>
         <ng-template #otherPreview>
+        <app-pg-hostel-card *ngIf="listing.hostel as hostel; else standardPreview" class="eduhub-event-preview"
+          [item]="hostel" (viewDetails)="onViewExternalDetails(listing)"></app-pg-hostel-card>
+        <ng-template #standardPreview>
         <article class="eduhub-tutor"
           [class.eduhub-tutor--clickable]="true"
           role="button"
@@ -76,6 +80,7 @@
             <button type="button" *ngIf="listing.counselor as counselor" (click)="onViewCounselorProfile(counselor); $event.stopPropagation()">Check Profile</button>
           </div>
         </article>
+        </ng-template>
         </ng-template>
         </ng-template>
         </ng-template>

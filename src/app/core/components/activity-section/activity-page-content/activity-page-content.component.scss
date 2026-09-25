@@ -861,6 +861,17 @@
     padding: 2px 0 0 20px;
 }
 
+.child-planner-card__other-label {
+    color: var(--child-muted);
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 6px;
+}
+
+.child-planner-entry--other-day {
+    opacity: .8;
+}
+
 .child-planner-entry {
     align-items: center;
     display: grid;

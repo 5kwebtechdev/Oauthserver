@@ -1,12 +1,29 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AuthApi } from '../api/auth.api';
 import { PetMood } from './pet-messages.service';
 
-export type ApiOverlayType = 'BONUS_COINS' | 'MOOD_PROMPT' | 'DAILY_LOGIN' | 'STREAK_MILESTONE' | 'NONE';
+export type ReferralOverlayType = 'REFERRAL_RECEIVED' | 'REFERRAL_JOINED';
+export type ApiOverlayType = 'BONUS_COINS' | 'MOOD_PROMPT' | 'DAILY_LOGIN' | 'STREAK_MILESTONE' | 'NONE' | ReferralOverlayType;
+export function isReferralOverlay(type: unknown): type is ReferralOverlayType {
+  return type === 'REFERRAL_RECEIVED' || type === 'REFERRAL_JOINED';
+}
+
+export interface ReferralRelatedUser {
+  id: number;
+  name: string | null;
+  username: string | null;
+  relationship: string | null;
+  avatar: {
+    id?: number;
+    avatarName?: string | null;
+    avatarImageName?: string | null;
+    url?: string | null;
+  } | null;
+}
 export type ApiPetMoodRaw = 'HAPPINESS' | 'PLAYFUL' | 'BASE' | 'TIRED' | 'CURIOUS';
 
 export interface PetMessageApiResponse {
@@ -16,6 +33,10 @@ export interface PetMessageApiResponse {
   overlayType?: ApiOverlayType;
   hasOverlay?: boolean;
   streakMilestone?: number | null;
+  eventId?: string | number | null;
+  amount?: number | null;
+  bothRewarded?: boolean;
+  relatedUser?: ReferralRelatedUser | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -50,18 +71,29 @@ export class PetMessageApiService {
   // ── Home overlay ────────────────────────────────────────────────────────────
   /** GET /v1/pet-message/home/overlay */
   getHomeOverlay(strict = false): Observable<PetMessageApiResponse> {
-    const request = this.http.get<PetMessageApiResponse>(`${this.base}/pet-message/home/overlay`, { headers: this.headers() });
+    // Entry overlays belong to the signed-in account, never the child selected in the dashboard.
+    const request = this.http.get<PetMessageApiResponse>(`${this.base}/pet-message/home/overlay`, {
+      headers: this.headers().set('X-Skip-Profile-Selector', 'true'),
+    });
     return strict ? request : request.pipe(catchError(() => of({ message: '', hasOverlay: false, overlayType: 'NONE' as ApiOverlayType })));
   }
 
   /** POST /v1/pet-message/home/overlay/dismiss?type=<overlayType> */
-  dismissHomeOverlay(type: ApiOverlayType): Observable<any> {
-    return this.http
+  dismissHomeOverlay(type: ApiOverlayType, eventId?: string | number | null, strict = false): Observable<any> {
+    let params = new HttpParams().set('type', type);
+    if (isReferralOverlay(type)) {
+      if (eventId == null || !String(eventId).trim()) {
+        return throwError(() => new Error('A referral eventId is required for dismissal.'));
+      }
+      params = params.set('eventId', String(eventId));
+    }
+    const request = this.http
       .post(`${this.base}/pet-message/home/overlay/dismiss`, null, {
-        headers: this.headers(),
-        params: new HttpParams().set('type', type),
-      })
-      .pipe(catchError(() => of(null)));
+        headers: this.headers().set('X-Skip-Profile-Selector', 'true'),
+        params,
+      });
+    // Referral acknowledgements must report failure so the UI can retry.
+    return isReferralOverlay(type) || strict ? request : request.pipe(catchError(() => of(null)));
   }
 
   // ── Home header ─────────────────────────────────────────────────────────────

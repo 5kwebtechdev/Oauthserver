@@ -112,6 +112,12 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   // Birthday picker control
   openBirthdayPicker = false;
+  dobChangeLocked = false;
+  dobStatusLoading = true;
+  dobStatusUnavailable = false;
+  showDobConfirmation = false;
+  private pendingDobPayload: any | null = null;
+  readonly dobLockedMessage = 'Your date of birth can only be changed once. It has already been updated. If it is incorrect, please contact support.';
 
   /**
    * Provide a null-safe initial date for the birthday picker.
@@ -217,9 +223,12 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         next: (data) => {
           console.log('[EditProfile] Loaded profile from API:', data);
           this.prefillFormFromUserData(data);
+          this.dobStatusLoading = false;
         },
         error: (err) => {
           console.error('[EditProfile] Failed to load profile from API:', err);
+          this.dobStatusLoading = false;
+          this.dobStatusUnavailable = true;
         }
       })
     );
@@ -232,6 +241,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     if (!userData) return;
 
     console.log('[EditProfile] Prefilling form with user data:', userData);
+    if (userData.dobChanged === true) {
+      this.dobChangeLocked = true;
+      this.openBirthdayPicker = false;
+    }
 
     // 1. Auto-fill Full Name
     if (userData.name) {
@@ -480,6 +493,18 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
   saveProfile(): void {
+    if (this.isSubmitting || this.showDobConfirmation) return;
+    const currentDob = this.formatDateForBackend(this.profileForm.get('dob')?.value || '');
+    const originalDob = this.initialValues?.dob ? this.formatDateForBackend(this.initialValues.dob) : '';
+    if ((this.dobStatusLoading || this.dobStatusUnavailable) && currentDob !== originalDob) {
+      this.coreService.triggerToasrt('We couldn’t verify whether your date of birth can be changed. Please try again shortly.');
+      return;
+    }
+    if (this.dobChangeLocked && currentDob !== originalDob) {
+      this.profileForm.patchValue({ dob: this.initialValues?.dob || null });
+      this.coreService.triggerToasrt(this.dobLockedMessage);
+      return;
+    }
     // Validate required fields (avatarName is optional now)
     if (!this.fullName?.trim()) {
       this.coreService.triggerToasrt('Please enter your full name');
@@ -518,14 +543,34 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (payload.dateOfBirth !== undefined) {
+      this.pendingDobPayload = { ...payload };
+      this.showDobConfirmation = true;
+      return;
+    }
+
+    this.submitProfileUpdate(payload);
+  }
+
+  cancelDobConfirmation(): void {
+    this.showDobConfirmation = false;
+    this.pendingDobPayload = null;
+  }
+
+  confirmDobChange(): void {
+    if (!this.showDobConfirmation || !this.pendingDobPayload || this.isSubmitting) return;
+    if (this.dobChangeLocked || this.dobStatusLoading || this.dobStatusUnavailable) {
+      this.cancelDobConfirmation();
+      this.coreService.triggerToasrt(this.dobChangeLocked ? this.dobLockedMessage : 'We couldn’t verify whether your date of birth can be changed. Please try again shortly.');
+      return;
+    }
+    const payload = this.pendingDobPayload;
+    this.cancelDobConfirmation();
+    this.submitProfileUpdate(payload);
+  }
+
+  private submitProfileUpdate(payload: any): void {
     console.log('[EditProfile] Sending only changed fields:', payload);
-
-    // Update localStorage immediately before sending API request
-    this.updateUserDataInLocalStorage(payload);
-
-    // Update UserService immediately to notify subscribers
-    this.updateUserServiceImmediately(payload);
-          // this.router.navigate(['/authed/user-profile']);
 
     // Submit to backend
     this.isSubmitting = true;
@@ -535,6 +580,13 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (rawResponse) => {
             this.coreService.triggerToasrt('Profile updated successfully!', 'success');
+            this.updateUserDataInLocalStorage(payload);
+            this.updateUserServiceImmediately(payload);
+            if (payload.dateOfBirth !== undefined) {
+              this.dobChangeLocked = true;
+              this.openBirthdayPicker = false;
+              this.coreAuthService.updateUserData({ dobChanged: true });
+            }
 
             // Backend may return plain text instead of JSON — parse safely
             let response: any = rawResponse;
@@ -543,6 +595,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
             }
 
             if (response && typeof response === 'object') {
+              if (payload.dateOfBirth !== undefined) response.dobChanged = true;
               // Response is a JSON object — sync profile from it
               const avatarImgName = response.avatarImageName || response.avatar?.avatarImageName;
               if (response.username !== undefined) {
@@ -572,6 +625,15 @@ export class EditProfileComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Profile update error:', error);
+            const apiMessage = this.getApiErrorMessage(error, '');
+            if (payload.dateOfBirth !== undefined && /(?:date of birth|\bdob\b)/i.test(apiMessage) && /(?:once|already|change|update)/i.test(apiMessage)) {
+              this.dobChangeLocked = true;
+              this.openBirthdayPicker = false;
+              this.profileForm.patchValue({ dob: this.initialValues?.dob || null });
+              this.coreAuthService.updateUserData({ dobChanged: true });
+              this.coreService.triggerToasrt(this.dobLockedMessage);
+              return;
+            }
 
             if (error?.status === 400 && error?.error?.message === 'Avatar name can be changed only once') {
               this.avatarSuggestionError = error.error.message || 'Avatar name can be changed only once';
@@ -610,7 +672,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
           : { avatarName: this.avatarName?.trim() || undefined }),
         ...(this.avatarSelected ? { avatarImageName: this.avatarService.getAvatarAsset(this.avatarSelected)?.imageName } : {}),
       };
-      if (dobRaw) {
+      if (dobRaw && !this.dobChangeLocked && !this.dobStatusLoading && !this.dobStatusUnavailable) {
         base.dateOfBirth = this.formatDateForBackend(dobRaw);
       }
       if (phoneRaw) {
@@ -629,7 +691,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     // DOB (normalize to YYYY-MM-DD)
     const currentDob = this.formatDateForBackend(this.profileForm.get('dob')?.value || '');
     const initialDob = this.initialValues.dob ? this.formatDateForBackend(this.initialValues.dob) : '';
-    if (currentDob && currentDob !== initialDob) payload.dateOfBirth = currentDob;
+    if (currentDob && currentDob !== initialDob && !this.dobChangeLocked && !this.dobStatusLoading && !this.dobStatusUnavailable) payload.dateOfBirth = currentDob;
 
     // Gender
     const currentGender = this.gender || null;
@@ -691,6 +753,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       if (response.email !== undefined) merged.email = response.email;
       if (response.phone !== undefined) merged.phone = response.phone;
       if (response.dateOfBirth !== undefined) merged.dateOfBirth = response.dateOfBirth;
+      if (response.dobChanged !== undefined) merged.dobChanged = response.dobChanged;
       if (response.gender !== undefined) merged.gender = response.gender;
       if (response.avatar !== undefined) merged.avatar = response.avatar;
       if (response.avatarImageName !== undefined) merged.avatarImageName = response.avatarImageName;
@@ -942,6 +1005,18 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   openBirthdayPickerNow(): void {
+    if (this.dobStatusUnavailable) {
+      this.coreService.triggerToasrt('We couldn’t verify whether your date of birth can be changed. Please try again shortly.');
+      return;
+    }
+    if (this.dobStatusLoading) {
+      this.coreService.triggerToasrt('Checking your date of birth settings. Please try again in a moment.');
+      return;
+    }
+    if (this.dobChangeLocked) {
+      this.coreService.triggerToasrt(this.dobLockedMessage);
+      return;
+    }
     this.openBirthdayPicker = true;
   }
 
@@ -954,6 +1029,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   birthdayChanged(date: any): void {
+    if (this.dobChangeLocked || this.dobStatusLoading || this.dobStatusUnavailable) {
+      this.openBirthdayPicker = false;
+      return;
+    }
     const parsedDate = new Date(date);
     if (isNaN(parsedDate.getTime())) {
       return;

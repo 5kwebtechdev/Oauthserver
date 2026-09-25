@@ -32,6 +32,8 @@ export class HomeMoodHeaderComponent {
   @Input() streaks = 0;
   @Input() trophies = 0;
   @Input() badges = 0;
+  @Input() canEditMood = true;
+  @Input() moodPickerOpen = false;
   @Output() moodEdit = new EventEmitter<void>();
   constructor(private readonly pets: PetAgeService) {}
   get state(): MoodPresentation { return STATES[this.mood ?? 'default']; }

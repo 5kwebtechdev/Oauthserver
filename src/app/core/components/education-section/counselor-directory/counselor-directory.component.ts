@@ -8,7 +8,7 @@ import { Observable, Subscription, catchError, map, of, switchMap, take } from '
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
-import { Tutor, SelectedFilters, formatContactModes, formatExperience, getExperienceYears } from '../../../models/tutor.model';
+import { Tutor, SelectedFilters, formatContactModes, formatExperience, formatTeachingMode, getExperienceYears } from '../../../models/tutor.model';
 import { TutorAllFilterComponent } from '../../tutor-section/tutor-all-filter/tutor-all-filter.component';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
@@ -588,6 +588,9 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   getAvailability(counselor: Tutor): string {
+    if (this.entityType === 'ACADEMY' && counselor.teachingMode) {
+      return formatTeachingMode(counselor.teachingMode);
+    }
     const modes = counselor.contactModes?.length ? formatContactModes(counselor.contactModes) : '';
     return modes || 'Availability not specified';
   }
@@ -602,9 +605,11 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     const fee = Number(mappingFee || counselor.hourlyRate || counselor.fees || 0);
     if (!Number.isFinite(fee) || fee <= 0) return 'Pricing on request';
     const labels: Record<string, string> = {
-      PER_SESSION: 'Per Session',
-      PER_HOUR: 'Per Hour',
-      PER_MONTH: 'Per Month'
+      PER_SESSION: 'Session',
+      PER_HOUR: 'Hour',
+      PER_MONTH: 'Month',
+      PER_COURSE: 'Course',
+      PER_SUBJECT: 'Subject'
     };
     return `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / ${labels[String(counselor.feeType)] || 'Session'}`;
   }

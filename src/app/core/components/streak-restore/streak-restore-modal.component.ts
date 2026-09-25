@@ -88,7 +88,7 @@ export class StreakRestoreModalComponent implements OnInit {
         const remainingCoins = result.coins
           ?? result.userCoins
           ?? Math.max(0, this.userCoins - this.restoreCost);
-        this.dismiss({ success: true, userCoins: remainingCoins });
+        this.dismiss({ success: true, userCoins: remainingCoins, currentStreak: result.currentStreak });
       },
       error: (err) => {
         this.isRestoring = false;

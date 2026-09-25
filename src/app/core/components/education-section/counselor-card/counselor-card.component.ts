@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Share } from '@capacitor/share';
-import { Tutor, TutorCategory, formatContactModes, formatExperience } from '../../../models/tutor.model';
+import { Tutor, TutorCategory, formatContactModes, formatExperience, formatTeachingMode } from '../../../models/tutor.model';
 import { teachingSummary } from '../../../models/teaching-display';
 import { TeachingDisplayService } from '../../../services/teaching-display.service';
 import { TutorLikeService } from '../../../services/tutor-like.service';
@@ -14,6 +14,7 @@ export class CounselorCardComponent implements OnChanges, OnDestroy {
   @Input({ required:true }) counselor!: Tutor;
   @Input() guest = false;
   @Input() education = false;
+  @Input() homePreview = false;
   @Input() categoryKey = '';
   private categories: TutorCategory[] = [];
   private categorySubscription?: Subscription;
@@ -58,8 +59,15 @@ export class CounselorCardComponent implements OnChanges, OnDestroy {
   }
 
   getAvailability(counselor: Tutor): string {
+    if (counselor.entityType === 'ACADEMY' && counselor.teachingMode) {
+      return formatTeachingMode(counselor.teachingMode);
+    }
     const modes = counselor.contactModes?.length ? formatContactModes(counselor.contactModes) : '';
     return modes;
+  }
+
+  getHomeMode(counselor: Tutor): string {
+    return this.getAvailability(counselor) || 'Ask about session mode';
   }
 
   getExperience(counselor: Tutor): string {
@@ -72,15 +80,19 @@ export class CounselorCardComponent implements OnChanges, OnDestroy {
     const fee = Number(mappingFee || counselor.hourlyRate || counselor.fees || 0);
     if (!Number.isFinite(fee) || fee <= 0) return 'Pricing on request';
     const labels: Record<string, string> = {
-      PER_SESSION: 'Per Session',
-      PER_HOUR: 'Per Hour',
-      PER_MONTH: 'Per Month'
+      PER_SESSION: 'Session',
+      PER_HOUR: 'Hour',
+      PER_MONTH: 'Month',
+      PER_COURSE: 'Course',
+      PER_SUBJECT: 'Subject'
     };
-    return `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / ${labels[String(counselor.feeType)] || (this.education ? 'Per Hour' : 'Per Session')}`;
+    return `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / ${labels[String(counselor.feeType)] || (this.education ? 'Hour' : 'Session')}`;
   }
 
   private getSpecializations(counselor: Tutor): string[] {
-    const direct = ((counselor as Tutor & { specializations?: string[] }).specializations || counselor.subjects || []).map(value => String(value).trim()).filter(Boolean);
+    const raw = (counselor as Tutor & { specializations?: string[] | string }).specializations;
+    const direct = (Array.isArray(raw) ? raw : raw ? raw.split(',') : counselor.subjects || [])
+      .map(value => String(value).trim()).filter(Boolean);
     const configured = (counselor.categoryMappings || []).reduce<string[]>(
       (all, mapping) => all.concat(this.getMappedSpecializations(mapping.selectedFieldOptions)),
       []

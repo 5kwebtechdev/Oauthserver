@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/core/components/daily-entry/*.spec.ts",
+    "src/app/core/services/pet-message-api.service.spec.ts",
+    "src/app/core/interceptors/app-check.interceptor.spec.ts",
+    "src/app/core/interceptors/profile-selector.interceptor.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}
