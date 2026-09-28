@@ -6,7 +6,8 @@ import { SupermeButtonComponent } from "../../superme-button/superme-button.comp
 import { SupermePopupComponent, SupermePopupConfig, SupermePopupCTA } from '../../superme-popup/superme-popup.component';
 
 import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
-import { EmptyStateComponent } from '../../empty-state/empty-state.component';
+import { GlanceBlankStateComponent } from './glance-blank-state.component';
+import { GlanceBlankState, GlanceDailyData, GlanceTab, resolveGlanceBlankState } from './glance-blank-state';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -20,6 +21,7 @@ import { AutoAbortService } from '../auto-abort.service';
 import { CoerceBoolean } from "../../../coerceBoolean.decorator";
 import { Habit } from '../habit.types';
 import { FocusTimerService } from '../../superme-timer/focus-timer.service';
+import { focusSchedule, timerSnapshot } from '../../superme-timer/timer-state';
 import { catchError, forkJoin, of, skip, Subscription } from 'rxjs';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
@@ -48,7 +50,7 @@ import { CustomToastService } from '../../../services/custom-toast.service';
     SupermeCardHeaderComponent,
     RouterModule,
     SupermePopupComponent,
-    EmptyStateComponent,
+    GlanceBlankStateComponent,
     IonicModule,
   ]
 })
@@ -76,10 +78,86 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   @Input()
   recentTimetables: any[] = [];
 
+  /** Unfiltered daily calendar records, before Home truncates/hides cards. */
+  @Input() glanceDailyData: GlanceDailyData | null = null;
+  private loadedDailyHabits: any[] | null = null;
+  private loadedDailyTasks: any[] | null = null;
+  private loadedDailyPlanners: any[] = [];
+
+  get glanceBlankState(): GlanceBlankState | null {
+    if (this.mode === 'single' || this.glancePlannerLoading) return null;
+    const data = this.glanceDailyData || (this.mode === 'list' && this.loadedDailyHabits && this.loadedDailyTasks
+      ? { habits: this.loadedDailyHabits, tasks: this.loadedDailyTasks, planners: this.loadedDailyPlanners }
+      : null);
+    if (!data) return null;
+    const today = this.glanceDateKey(new Date());
+    const classify = (item: any, planner = false, habit = false) => {
+      const status = String(item?.status || '').toLowerCase();
+      const recurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
+      const timestamps = this.buttonLogic.calculateTimestamps(recurring
+        ? { ...item, startDate: today, endDate: today } : item);
+      const end = this.normalizePossibleTimestamp(timestamps.endTimeStamp);
+      return {
+        completed: status === 'completed' || item.completed === true,
+        // Home already grants habits/tasks five minutes after the session end.
+        // An explicitly expired calendar record is already hidden by Home,
+        // even when the backend has also marked the habit skipped.
+        passed: item.expired === true || (!(habit && status === 'skipped') && (planner
+          ? this.isGlancePlannerEntryPassed(item)
+          : end > 0 && Date.now() > end + 5 * 60_000))
+      };
+    };
+    // Grouped schedules contain the complete set of today's slots, without
+    // counting a second copy of the flat calendar records.
+    const planners = this.hasGlancePlannerCards
+      ? this.glancePlannerCards.reduce<any[]>((items, card) => items.concat(card.entries.map(entry => ({ ...entry,
+          completed: entry.completed ?? card.source.completed,
+          status: entry.status ?? card.source.status }))), [])
+      : data.planners.filter(item => isHomePlannerSchedule(item)
+        && !this.glanceUpcomingEventRaw.some(event => this.matchesGlancePlannerRecord(event, item)));
+    return resolveGlanceBlankState(this.currentActive as GlanceTab, {
+      habits: data.habits.map(item => classify(item, false, true)),
+      tasks: data.tasks.map(item => classify(item)),
+      timetable: planners.map(item => classify(item, true))
+    });
+  }
+
+  openBlankStateSecondary(state: GlanceBlankState): void {
+    if (state.secondaryRoute === 'calendar') void this.router.navigate(['/authed/activity-calendar']);
+    else void this.openHabitPage();
+  }
+
   @Input()
   expanded: boolean = false;
 
   @Input() autoExpand: boolean = false;
+
+  /** The simplified Figma presentation is exclusive to Home Habit items. */
+  @Input() homeHabitCard = false;
+  @Input() homeTaskCard = false;
+
+  get isCompactHomeHabit(): boolean {
+    return this.homeHabitCard && this.habit?.type === 'habits';
+  }
+
+  get isCompactHomeActivity(): boolean {
+    return this.isCompactHomeHabit || (this.homeTaskCard && this.habit?.type === 'tasks');
+  }
+
+  get habitRemainingLabel(): string {
+    const now = Date.now();
+    const schedule = focusSchedule(this.habit, now);
+    const snapshot = timerSnapshot(schedule.start, schedule.end, now);
+    if (!snapshot) return '';
+    const seconds = snapshot.remainingSeconds;
+    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')} left`;
+  }
+
+  /** Figma's compact clock notation; scheduling still uses the original values. */
+  compactHabitTime(value: string | undefined, timestamp: number): string {
+    const formatted = this.formatTimeString(value) || this.getFormattedTime(timestamp);
+    return formatted.replace(/^0?(\d{1,2}):(\d{2})$/, '$1.$2');
+  }
 
   get isCardExpanded(): boolean {
     if (!this.autoExpand) return this.expanded;
@@ -1035,6 +1113,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     // a fresh component instance) must not reopen the previously active type.
     if (this.mode === 'recent' || this.mode === 'list') {
       this.currentActive = 'all';
+      // Re-evaluate time-gone presentation as the clock advances without API polling.
+      this.taskCountdownTimer = setInterval(() => this.cdr.markForCheck(), 30_000);
     }
 
     // If habit is provided, set properties from it
@@ -1050,8 +1130,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       this.isEmpty = false;
 
       // Keep the child-friendly "Time left" copy current without requiring a refresh.
-      if (this.habit.type === 'tasks' || this.autoExpand) {
-        this.taskCountdownTimer = setInterval(() => this.cdr.markForCheck(), 30_000);
+      if (this.habit.type === 'tasks' || this.autoExpand || this.isCompactHomeHabit) {
+        this.taskCountdownTimer = setInterval(() => this.cdr.markForCheck(), this.isCompactHomeActivity ? 1000 : 30_000);
       }
     }
 
@@ -1104,6 +1184,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           this.habits = [];
           this.tasks = [];
           this.timetables = [];
+          this.loadedDailyHabits = null;
+          this.loadedDailyTasks = null;
+          this.loadedDailyPlanners = [];
           // force=true bypasses HabitApi's date-keyed cache, which otherwise
           // has no notion of "which user" and would keep serving whichever
           // account's response was cached first for today's date.
@@ -1946,6 +2029,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           }));
         
         this.totalHabitsLoaded = allHabits.length;
+        this.loadedDailyHabits = allHabits;
         
         // Count how many habits are actually completed/skipped (from raw data)
         this.totalHabitsCompleted = allHabits.filter((h: Habit) => {
@@ -2084,6 +2168,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     this.calendarService.getUserCalendar(formatted, 'day').subscribe({
       next: (resp: any) => {
         const rawTasks = Array.isArray(resp?.tasks) ? resp.tasks : [];
+        this.loadedDailyTasks = rawTasks;
+        this.loadedDailyPlanners = Array.isArray(resp?.events) ? resp.events.filter(isHomePlannerSchedule) : [];
 
         // The same calendar response also contains planner/time-table entries.
         // Populate them here so list mode (including the parent home card) gets
@@ -3167,7 +3253,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const parts = [
       `${this.totalHabitsLoaded} Habit${this.totalHabitsLoaded === 1 ? '' : 's'}`,
       `${this.totalTasksLoaded} Task${this.totalTasksLoaded === 1 ? '' : 's'}`,
-      `${plannerCount} Planner${plannerCount === 1 ? '' : 's'}`
+      this.glanceBlankState ? `${plannerCount} Time Table${plannerCount === 1 ? '' : 's'}`
+        : `${plannerCount} Planner${plannerCount === 1 ? '' : 's'}`
     ];
     return parts.join(' • ');
   }

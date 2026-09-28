@@ -135,6 +135,7 @@ export class LearningDescriptionComponent implements OnInit {
   isLoading = true;
   private isNavigating = false;
   private returnUrl = '/authed/content';
+  private profileUserId: string | number | null = null;
   isParentAssignment = false;
   isAssigningToChild = false;
   assignmentComplete = false;
@@ -151,6 +152,9 @@ export class LearningDescriptionComponent implements OnInit {
     const navigation = this.router.getCurrentNavigation();
     const navigationState = navigation?.extras?.state || (history as any)?.state || {};
     const source = navigationState?.['source'];
+    this.profileUserId = navigationState?.['ownProfile'] === true
+      ? navigationState?.['forUserId'] ?? null
+      : null;
     const selectedChildId = Number(navigationState?.['selectedChildId']);
     this.parentAssignmentChildId = Number.isFinite(selectedChildId) && selectedChildId > 0 ? selectedChildId : null;
     this.isParentAssignment = typeof source === 'string'
@@ -190,7 +194,13 @@ export class LearningDescriptionComponent implements OnInit {
     this.isNavigating = true;
     if (this.challenge) {
       this.router.navigate(['/authed/content/questions', this.challenge.challengeId], {
-        state: { challenge: this.challenge, source: this.returnUrl }
+        state: {
+          challenge: this.challenge,
+          source: this.returnUrl,
+          ...(this.profileUserId != null
+            ? { forUserId: this.profileUserId, ownProfile: true }
+            : {})
+        }
       });
     } else {
       this.router.navigate(['/authed/content/questions']);

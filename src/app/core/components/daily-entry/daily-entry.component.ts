@@ -31,7 +31,7 @@ import { messageWithUsername } from '../../models/greeting-username';
         [restoreMode]="canRestore" [restoreCost]="restoreCost" [restoreDisabled]="busy" [restoring]="busy"
         [notice]="notice" (restore)="restore()"
         (continue)="dismiss()"></app-streak-milestone>
-      <ng-template #prompt><section *ngIf="active === 'MOOD_PROMPT'; else otherPrompt" class="entry-mood-sheet" aria-labelledby="entry-mood-title">
+      <ng-template #prompt><section *ngIf="active === 'MOOD_PROMPT'" class="entry-mood-sheet" aria-labelledby="entry-mood-title">
         <button class="entry-mood-close" type="button" aria-label="Close mood popup" [disabled]="busy" (click)="dismiss()">
           <img src="assets/figma/mood-popup/close.svg" alt="">
         </button>
@@ -40,11 +40,6 @@ import { messageWithUsername } from '../../models/greeting-username';
           <p>Select a mood to update your vibe.</p>
         </header>
         <mood-selector presentation="entry" (moodSaved)="moodSaved()"></mood-selector>
-      </section></ng-template>
-      <ng-template #otherPrompt><section class="entry-prompt">
-        <h2>Welcome!</h2>
-        <p>{{ message }}</p>
-        <button type="button" (click)="dismiss()">Continue</button>
       </section></ng-template>
       </ng-template>
     </div>`,
@@ -55,7 +50,7 @@ import { messageWithUsername } from '../../models/greeting-username';
     .entry-backdrop--referral-joined { align-items:flex-end; padding:0; }
     app-streak-milestone { width:min(100%,480px); max-height:calc(100dvh - 12px); overflow:auto; }
     .entry-mood-sheet { position:relative; box-sizing:border-box; width:min(100%,393px); padding:12px 16px max(12px,env(safe-area-inset-bottom));
-      border-radius:44px 44px 24px 24px; overflow:hidden; display:flex; flex-direction:column; align-items:center; gap:12px;
+      border-radius:44px 44px 0 0; overflow:hidden; display:flex; flex-direction:column; align-items:center; gap:12px;
       background:linear-gradient(180deg,#ebe6f5 0%,#fff 45.545%); color:#432477;
       box-shadow:inset 0 2px 2px .5px rgba(255,255,255,.5); font-family:var(--font-sans,'Nunito',sans-serif); }
     .entry-mood-heading { width:100%; padding:2px 28px 0; text-align:center; }
@@ -70,10 +65,6 @@ import { messageWithUsername } from '../../models/greeting-username';
     @media(max-width:350px) { .entry-mood-heading { padding-inline:20px; }
       .entry-mood-heading h2 { font-size:clamp(16px,5vw,20px); }
       .entry-mood-close { right:10px; } }
-    .entry-prompt { width:min(100%,480px); max-height:90dvh; overflow:auto; padding:24px 20px calc(24px + env(safe-area-inset-bottom));
-      border-radius:28px 28px 0 0; background:#f4eefb; color:#492581; text-align:center; }
-    h2 { font-size:22px; } p { white-space:pre-line; }
-    button { border:0; border-radius:24px; padding:12px 28px; margin-top:16px; background:#512b83; color:white; }
   `]
 })
 export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
@@ -171,9 +162,10 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
         if (this.destroyed || this.blocked || this.context() !== key) return;
         let type = response.hasOverlay ? response.overlayType : null;
         const isParent = String(this.auth.getUserData()?.relationship).toUpperCase() === 'PARENT';
-        // Parents do not display child/self daily prompts, but those higher-priority
-        // overlays must be acknowledged before a pending referral can be returned.
-        if (isParent && type && type !== 'NONE' && !isReferralOverlay(type)) {
+        // Bonus coins are already celebrated by the reward/streak popup. Acknowledge
+        // the queued overlay without showing a second Welcome sheet, then fetch the next.
+        // Parents also skip other child/self daily prompts.
+        if (type === 'BONUS_COINS' || (isParent && type && type !== 'NONE' && !isReferralOverlay(type))) {
           await firstValueFrom(this.api.dismissHomeOverlay(type, undefined, true).pipe(timeout(15_000)));
           if (this.destroyed || this.blocked || this.context() !== key) return;
           this.markSeen(type);

@@ -78,10 +78,10 @@ describe('Daily entry flow', () => {
     expect(component.notice).toContain('try again');
     expect(storage.size).toBe(0);
     api.dismissHomeOverlay.and.returnValue(of({}));
-    api.getHomeOverlay.and.returnValue(of({ hasOverlay: true, overlayType: 'BONUS_COINS' }));
+    api.getHomeOverlay.and.returnValue(of({ hasOverlay: false, overlayType: 'NONE' }));
     await component.dismiss();
     await Promise.resolve();
-    expect(component.active).toBe('BONUS_COINS');
+    expect(component.active).toBeNull();
   });
 
   it('sends only one request for repeated close clicks and one for a retry', async () => {
@@ -166,6 +166,19 @@ describe('Daily entry flow', () => {
     expect(api.dismissHomeOverlay).toHaveBeenCalledWith('REFERRAL_RECEIVED', 'parent-event');
     expect(api.getHomeOverlay.calls.count()).toBe(3);
     expect(component.active).toBeNull();
+  });
+
+  it('skips the duplicate child BONUS_COINS sheet and continues to the next overlay', async () => {
+    api.getHomeOverlay.and.returnValues(
+      of({ hasOverlay: true, overlayType: 'BONUS_COINS', eventId: null }),
+      of({ hasOverlay: true, overlayType: 'REFERRAL_JOINED', eventId: 'child-event', amount: 100 })
+    );
+
+    await component.check();
+    expect(api.dismissHomeOverlay).toHaveBeenCalledOnceWith('BONUS_COINS', undefined, true);
+    expect(api.getHomeOverlay.calls.count()).toBe(2);
+    expect(component.active).toBe('REFERRAL_JOINED');
+    expect(component.referralEvent?.eventId).toBe('child-event');
   });
 
   it('keeps a failed parent BONUS_COINS dismissal retryable instead of advancing the queue', async () => {

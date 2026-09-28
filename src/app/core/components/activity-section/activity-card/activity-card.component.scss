@@ -1,5 +1,56 @@
 @use 'sass:color';
 
+// Figma 25779:53144: scoped to the ten Home blank states.
+.glance-card.glance-card--blank {
+  border-radius: 32px;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, .1);
+  padding: 16px;
+  background: #ebe6f5;
+  --blank-primary: #432477;
+  --blank-accent: #524f84;
+  --blank-border: #8b8dcb;
+
+  &.glance-card--habits { background: #e8ecf7; --blank-primary: #7471ba; --glance-tab-active: #8b8dcb; }
+  &.glance-card--tasks { background: #fdead7; --blank-primary: #ee6621; --blank-accent: #e04d16; --blank-border: #f6ac72; --glance-tab-active: #f6ac72; }
+  &.glance-card--timetable { background: #eaf2f3; --blank-primary: #6e9ea2; --blank-accent: #537c81; --glance-tab-active: #85b1b5; }
+
+  .day-at-glance-container { display: flex; flex-direction: column; gap: 16px; padding: 0; width: 100%; }
+  .glance-heading-block { height: 64px; gap: 16px; }
+  superme-card-header { flex: 0 0 48px; }
+  .glance-done-pill { background: transparent; min-width: 0; padding: 7px 15px; border-radius: 24px; }
+  .glance-progress-track { flex-shrink: 0; height: 6px; margin-bottom: -6px; transform: translateY(-3px); }
+  .glance-tabs-shell { margin: 0; padding: 0; }
+  .glance-tabs { display: grid; grid-template-columns: 65.25fr 97.25fr 97.25fr 97.25fr; height: 44px; min-height: 44px; box-sizing: border-box; }
+  .glance-tab { height: 40px; min-height: 40px; padding: 8px 0; gap: 4px; font: 700 17px/24px var(--font-sans); color: #432477; }
+  .glance-tab:nth-child(2) { color: #524f84; }
+  .glance-tab:nth-child(3) { color: #e04d16; }
+  .glance-tab:nth-child(4) { color: #537c81; gap: 2px; }
+  .glance-tab.active { color: white; }
+  ::ng-deep .superme-card-header { margin: 0; padding: 0; min-height: 48px; }
+  ::ng-deep .superme-card-header__title { font: 500 20px/28px var(--font-heading); margin: 0; }
+  ::ng-deep .superme-card-header__tagline .tag { font: 500 13px/18px var(--font-sans); }
+  ::ng-deep .superme-card-header__tagline { margin-top: 2px; }
+  ::ng-deep .superme-card-header__left { min-width: 0; }
+
+  .blank-tab-art { position: relative; width: 16px; height: 16px; flex: 0 0 16px; overflow: hidden; }
+  .blank-tab-art img { position: absolute; max-width: none; width: 100%; height: 100%; }
+  .blank-tab-art--habit { width: 19px; flex-basis: 19px; }
+  .blank-tab-art--habit img { width: 177.22%; height: 317.36%; left: -40.53%; top: -102.89%; }
+  .blank-tab-art--habit:not(.selected) img { width: 189.28%; height: 339.82%; left: -51.2%; top: -121.02%; }
+  .blank-tab-art--task img { width: 133.33%; height: 133.33%; left: -16.67%; top: -16.67%; }
+  .blank-tab-art--task.selected { width: 19px; flex-basis: 19px; }
+  .blank-tab-art--task.selected img { height: 160%; left: -14.58%; top: -30%; }
+  .blank-tab-art--planner img { width: 150%; height: 150%; left: -25%; top: -25%; }
+  .blank-tab-art--planner.selected { width: 17px; flex-basis: 17px; }
+  .blank-tab-art--planner.selected img { width: 141.18%; left: -19.12%; }
+  @media (max-width: 359px) {
+    .glance-tab { font-size: 14px; gap: 2px; }
+    ::ng-deep .superme-card-header__title { font-size: 18px; }
+    ::ng-deep .superme-card-header__tagline .tag { font-size: 11px; }
+    .glance-done-pill { padding-inline: 8px; }
+  }
+}
+
 // ── "Today at a Glance" premium palette ──────────────────────────────────────
 :host {
   --glance-bg: #F6F5FF;
@@ -550,6 +601,12 @@ h4 {
 :host(.calendar-activity-card) .habit-wrapper {
   padding: 10px 12px 9px 16px;
   gap: 2px;
+}
+
+// View All uses the same compact Habit/Task presentation as Home.
+:host(.calendar-activity-card) .habit-wrapper.habit-wrapper--compact {
+  padding: 8px 12px 12px 24px;
+  gap: 0;
 }
 
 :host(.calendar-activity-card) .task-at-a-glance {
@@ -1396,14 +1453,14 @@ h4 {
   background: #FFFFFF;
   border: 0;
   border-radius: 16px;
-  box-shadow: 0 0 2px .5px rgba(83, 124, 129, .5);
+  box-shadow: inset 4px 0 #89b3b6, 0 0 2px 2px rgba(107, 101, 106, .1);
   color: #282527;
   cursor: pointer;
   display: flex;
   flex: 0 0 100%;
   gap: 8px;
-  min-height: 54px;
-  padding: 8px;
+  min-height: 86px;
+  padding: 10px 12px 10px 16px;
   scroll-snap-align: start;
   text-align: left;
   -webkit-tap-highlight-color: transparent;
@@ -1421,6 +1478,7 @@ h4 {
 
   > span {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     min-width: 0;
   }
@@ -1430,16 +1488,14 @@ h4 {
   strong,
   em {
     font-family: var(--font-sans);
-    line-height: 1.25;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
   }
 
   strong {
-    color: #282527;
-    font-size: 15px;
-    font-weight: 600;
+    color: #3e5a60;
+    font-size: 16px;
+    font-weight: 700;
   }
 
   em {
@@ -1448,6 +1504,10 @@ h4 {
     font-style: normal;
     font-weight: 600;
   }
+}
+
+.glance-upcoming__list .glance-action-swipe {
+  flex-basis: min(260px, 78vw);
 }
 
 @media (max-width: 360px) {
@@ -1470,7 +1530,7 @@ h4 {
   // Only compact event cards need a fixed horizontal carousel width. Applying
   // this flex-basis to Planner wrappers fixes their *height* in the vertical
   // list, leaving the red delete layer exposed below collapsed cards.
-  .glance-upcoming__list .glance-action-swipe { flex-basis: min(176px, 68vw); }
+  .glance-upcoming__list .glance-action-swipe { flex-basis: min(260px, 78vw); }
   .glance-action-swipe--planner { flex-basis: auto; }
 }
 
@@ -1485,11 +1545,10 @@ h4 {
 .glance-planner-card {
   background: #fff;
   border: 0;
-  border-left: 4px solid var(--planner-color, #537C81);
   border-radius: 16px;
-  box-shadow: 0 0 2px 2px rgba(107, 101, 106, .1);
+  box-shadow: inset 4px 0 var(--planner-color, #537C81), 0 0 2px 2px rgba(107, 101, 106, .1);
   overflow: hidden;
-  padding: 8px 12px 12px 24px;
+  padding: 8px 12px 12px 16px;
   position: relative;
 }
 
@@ -1593,7 +1652,7 @@ h4 {
 
 .glance-planner-card > p {
   color: #537C81;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
   margin: 0 0 8px 20px;
@@ -1602,7 +1661,7 @@ h4 {
 .glance-planner-card__entries {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
   padding: 2px 0 0 20px;
 }
 
@@ -1613,8 +1672,8 @@ h4 {
   display: grid;
   gap: 8px;
   grid-template-columns: minmax(72px, .9fr) minmax(0, 1fr) auto;
-  border-top: 1px solid #D9D6D8;
-  min-height: 48px;
+  border-top: 1px solid #e8eced;
+  min-height: 40px;
   transition: opacity 180ms ease, color 180ms ease;
 
   time,
@@ -1659,9 +1718,15 @@ h4 {
 
 @media (max-width: 360px) {
   .glance-planner-entry {
-    grid-template-columns: minmax(58px, .8fr) minmax(0, 1fr) auto;
-    gap: 5px;
+    grid-template-areas: 'time countdown' 'title title';
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 3px 6px;
+    padding-block: 6px;
   }
+
+  .glance-planner-entry time { grid-area: time; }
+  .glance-planner-entry strong { grid-area: title; white-space: normal; }
+  .glance-planner-entry em { grid-area: countdown; }
 
   .glance-planner-entry time,
   .glance-planner-entry strong {
@@ -1672,4 +1737,91 @@ h4 {
     font-size: 11px;
     padding: 2px 5px;
   }
+}
+
+// Home only: QGcoYbzI4MWkh3aQvRGEPt / 1:79, 1:127, 1:103.
+.compact-habit-container { container-type: inline-size; }
+// Same compact Home layout, with the existing Task palette only.
+.habit-wrapper.habit-wrapper--compact.habit-wrapper--compact-task {
+  box-shadow: inset 4px 0 #f6ac72, 0 0 2px 2px rgba(107, 101, 106, .1);
+  .compact-habit__header h3 { color: #e04d16; }
+  .compact-habit__category { color: #e04d16; border-color: #f6ac72; background: #fdead7; }
+  .compact-habit__time { color: #ee6621; }
+  .compact-habit__start {
+    border-color: #f28745;
+    background: linear-gradient(103deg, #f6ac72 .27%, #ee6621 99.73%);
+    color: #fff;
+    box-shadow: inset 0 -2px 2px #fad2ae;
+  }
+  .compact-habit__timer, .compact-habit__hint { background: #fdead7; }
+  .compact-habit__hint { color: #e04d16; border-color: #f28745; }
+  .compact-habit__hint::before { background: #fdead7; border-color: #f28745; }
+}
+.habit-wrapper.habit-wrapper--compact {
+  min-height: 86px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px 12px 24px;
+  border: 0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: inset 4px 0 #8b8dcb, 0 0 2px 2px rgba(107, 101, 106, .1);
+  gap: 0;
+  &:hover { translate: none; scale: none; filter: none; }
+}
+.compact-habit {
+  width: 100%;
+  min-width: 0;
+  font-family: 'Nunito', sans-serif;
+  color: #524f84;
+
+  &__header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; min-height: 24px; }
+  &__header h3 { margin: 0; min-width: 0; font: 700 16px/1.4 'Nunito', sans-serif; color: #524f84; overflow-wrap: anywhere; }
+  &__category { flex: 0 1 auto; max-width: 45%; border: 1px solid #524f84; border-radius: 16px; padding: 4px 16px; background: #e8ecf7; font: 600 10px/14px 'Nunito', sans-serif; text-align: center; overflow-wrap: anywhere; }
+  &__body { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; min-height: 34px; }
+  &__details { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; color: #7471ba; font-size: 13px; font-weight: 600; line-height: 1.4; }
+  &__time { white-space: nowrap; }
+  &__reward { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; color: #282527; }
+  &__reward img { width: 20px; height: 20px; object-fit: contain; flex: 0 0 20px; }
+  &__actions { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
+  &__actions button {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 34px; padding: 8px 12px; border: 1px solid; border-radius: 12px;
+    font: 700 10px/14px 'Nunito', sans-serif; color: #282527; white-space: nowrap;
+    box-shadow: inset 0 -2px 2px rgba(255, 255, 255, .65); cursor: pointer;
+    &:disabled { opacity: .4; cursor: default; }
+  }
+  &__actions .compact-habit__start { width: 62px; border-color: #8b8dcb; background: radial-gradient(ellipse at center, #a1a7d8, #8b8dcb); }
+  &__actions .compact-habit__done { width: 54px; border-color: #4caf50; background: radial-gradient(ellipse at center, #81c784, #4caf50); }
+  &__actions .compact-habit__abort { border-color: #bb2124; background: #bb2124; color: #fff; box-shadow: none; }
+  button:focus-visible { outline: 2px solid #432477; outline-offset: 3px; }
+  &__running { flex: 1 1 auto; min-width: 0; max-width: 193px; }
+  &__timer-row { display: flex; align-items: center; gap: 8px; min-height: 24px; }
+  &__remaining { white-space: nowrap; color: #282527; font: 700 13px/1.4 'Nunito', sans-serif; }
+  &__timer { flex: 0 0 24px; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; padding: 4px; background: #ebe6f5; border: 0; border-radius: 50%; cursor: pointer; }
+  &__timer:disabled { opacity: .4; cursor: default; }
+  &__timer img { width: 16px; height: 16px; object-fit: contain; }
+  &__hint { position: relative; padding: 3px 8px; border: 1px solid #432477; border-radius: 8px; background: #ebe6f5; color: #432477; font: 400 10px/14px 'Nunito', sans-serif; text-align: center; }
+  &__hint::before { content: ''; position: absolute; left: -4px; top: calc(50% - 3px); width: 5px; height: 5px; border-left: 1px solid #432477; border-bottom: 1px solid #432477; background: #ebe6f5; transform: rotate(45deg); }
+  &__progress { height: 4px; border-radius: 4px; overflow: hidden; margin-top: 6px; background: #e2e6e6; }
+  &__progress span { display: block; height: 100%; border-radius: inherit; background: #4caf50; transition: width .3s linear; }
+}
+
+// Preserve readable controls at narrower card widths without wrapping buttons.
+@container (max-width: 330px) {
+  .habit-wrapper.habit-wrapper--compact { padding-left: 16px; padding-right: 10px; }
+  .compact-habit__details { gap: 4px; font-size: 12px; }
+  .compact-habit__reward img { width: 16px; height: 16px; flex-basis: 16px; }
+  .compact-habit__actions { gap: 4px; }
+  .compact-habit__actions .compact-habit__start { width: 56px; padding-inline: 8px; }
+  .compact-habit__actions .compact-habit__done { width: 48px; padding-inline: 8px; }
+  .compact-habit__hint { font-size: 8px; padding-inline: 3px; }
+  .compact-habit__timer-row { gap: 4px; }
+  .compact-habit__remaining { font-size: 12px; }
+}
+@container (max-width: 280px) {
+  .compact-habit__time { flex-basis: 100%; }
+  .compact-habit__category { padding-inline: 8px; }
+  .compact-habit__timer-row { flex-wrap: wrap; }
+  .compact-habit__hint { margin-left: 4px; }
 }

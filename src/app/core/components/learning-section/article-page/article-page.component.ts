@@ -416,7 +416,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
   openRelatedChallenge(relatedChallenge: LearningCardData): void {
     if (!relatedChallenge?.id) return;
-    void this.router.navigate(['/authed/content/questions', relatedChallenge.id], {
+    void this.router.navigate(['/authed/content/description', relatedChallenge.id], {
       state: {
         source: this.router.url,
         ...(this.profileUserId != null

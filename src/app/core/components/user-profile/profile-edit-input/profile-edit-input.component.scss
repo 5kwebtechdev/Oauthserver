@@ -54,6 +54,12 @@
   opacity: 0.5;
 }
 
+.profile-input:disabled {
+  background: #f3f4f6;
+  color: #55515a;
+  cursor: not-allowed;
+}
+
 .error {
   color: #BB2124; /* Figma error color */
   font-family: var(--font-sans);

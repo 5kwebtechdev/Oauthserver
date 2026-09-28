@@ -603,8 +603,6 @@
     <div *ngIf="step === 3" [@slideIn]>
       <div class="container w-full p-0" style="display: flex; justify-content: center; align-items: center;">
         <div class="container w-full p-0" style="padding: 0px 0px 50px!important;">
-          <small class="helper-text">Only for login and safety</small>
-
           <form [formGroup]="signupForm">
             <ng-container *ngIf="loginMode === 'email'">
               <div class="input-group">

@@ -48,6 +48,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
   familyCanSwitchRoles = false;
   familyAgeLocked = false;
   familyHasFamily = false;
+  isCurrentUserCoParent = false;
   isSwitchingMember = false;
   copyFeedbackMessage = '';
   copyFeedbackIsError = false;
@@ -468,8 +469,18 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
       this.familyName = f.familyName || this.familyName;
       this.familyStatus = f.status || this.familyStatus;
       this.createdOn = this.formatCreatedOn(f.createdOn) || this.createdOn;
-      this.creator = f.creator || null;
-      this.members = Array.isArray(f.members) ? f.members : [];
+      const currentUserId = Number(this.coreAuthService.getUserData()?.id || localStorage.getItem('user_id') || 0);
+      const familyMembers: FamilyMember[] = [f.creator, ...(Array.isArray(f.members) ? f.members : [])]
+        .filter(Boolean)
+        .map(member => this.normalizeFamilyStatusMember(member, currentUserId));
+      this.creator = familyMembers.find(member => this.isParentRelationship(member.relationship) && member.coParent === false)
+        || familyMembers.find(member => this.isParentRelationship(member.relationship) && member.coParent !== true)
+        || null;
+      const creatorKey = this.creator ? this.memberIdentity(this.creator) : null;
+      this.members = creatorKey
+        ? familyMembers.filter(member => this.memberIdentity(member) !== creatorKey)
+        : familyMembers;
+      this.isCurrentUserCoParent = familyMembers.some(member => member.you && member.coParent === true);
       this.familyCode = f.familyCode || (response as any).familyCode || this.familyCode;
     } else if (response && (response as any).familyCode) {
       this.familyCode = (response as any).familyCode;
@@ -526,16 +537,16 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
     const normalizedMembers = Array.isArray(response?.members)
       ? response.members.map((member: any) => this.normalizeFamilyStatusMember(member, currentUserId))
       : [];
-    const creator =
-      normalizedMembers.find((member: FamilyMember) => this.isParentRelationship(member.relationship) && member.you) ||
-      normalizedMembers.find((member: FamilyMember) => this.isParentRelationship(member.relationship)) ||
-      null;
+    const creator = normalizedMembers.find((member: FamilyMember) => this.isParentRelationship(member.relationship) && member.coParent === false)
+      || normalizedMembers.find((member: FamilyMember) => this.isParentRelationship(member.relationship) && member.coParent !== true)
+      || null;
     const creatorKey = creator ? this.memberIdentity(creator) : null;
 
     this.familyName = response?.familyName || this.familyName;
     this.familyStatus = response?.status || 'ACTIVE';
     this.createdOn = this.formatCreatedOn(response?.createdOn || response?.createdAt);
     this.creator = creator;
+    this.isCurrentUserCoParent = normalizedMembers.some((member: FamilyMember) => member.you && member.coParent === true);
     this.members = creatorKey
       ? normalizedMembers.filter((member: FamilyMember) => this.memberIdentity(member) !== creatorKey)
       : normalizedMembers;
@@ -553,8 +564,10 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
 
   private normalizeFamilyStatusMember(member: any, currentUserId: number): FamilyMember {
     const rawRelationship = (member?.relationship || '').toString().toUpperCase();
-    const relationship = rawRelationship === 'PARENT' || rawRelationship === 'CO_PARENT' || rawRelationship === 'CO-PARENT'
-      ? 'Parent'
+    const relationship = member?.coParent === true || rawRelationship === 'CO_PARENT' || rawRelationship === 'CO-PARENT'
+      ? 'Co-Parent'
+      : rawRelationship === 'PARENT'
+        ? 'Parent'
       : rawRelationship === 'CHILD'
         ? 'Child'
         : this.titleCase(member?.relationship || 'Child');
@@ -658,6 +671,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
     this.familyStatus = '';
     this.createdOn = '';
     this.creator = null;
+    this.isCurrentUserCoParent = false;
     this.members = [];
     this.familyCode = '';
     this.qrCodeData = '';
@@ -678,6 +692,9 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
   }
 
   getBadgeText(member: FamilyMember): string {
+    if (member.coParent === true || member.relationship === 'Co-Parent') {
+      return member.you ? 'Co-Parent / You' : 'Co-Parent';
+    }
     if (member.you) {
       return (member.relationship === 'Parent' || member.relationship === 'Co-Parent') ? 'Parent / You' : 'Child / You';
     }
@@ -724,8 +741,16 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
   /**
    * Open the remove member confirmation popup.
    */
+  canRemoveMember(member: FamilyMember): boolean {
+    if (!this.isParentUser() || member.you) return false;
+    if (this.isChildMember(member)) return true;
+    // Only the main parent may remove an explicitly identified co-parent.
+    // A co-parent must never be able to remove the family creator.
+    return !this.isCurrentUserCoParent && member.coParent === true;
+  }
+
   removeMember(member: FamilyMember): void {
-    if (!this.isParentUser()) return;
+    if (!this.canRemoveMember(member)) return;
     this.memberToRemove = member;
     this.showRemovePopup = true;
   }
@@ -734,7 +759,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
    * Confirm and proceed with removing the member from the family.
    */
   confirmRemoveMember(): void {
-    if (!this.memberToRemove) return;
+    if (!this.memberToRemove || !this.canRemoveMember(this.memberToRemove)) return;
 
     const member = this.memberToRemove;
     const memberId = member.userId ?? member.id;

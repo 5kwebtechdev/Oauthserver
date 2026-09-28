@@ -112,6 +112,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   // Birthday picker control
   openBirthdayPicker = false;
+  usernameChangeLocked = false;
+  usernameStatusLoading = true;
+  usernameStatusUnavailable = false;
+  readonly usernameLockedMessage = 'Your username can only be changed once. It has already been updated. If it is incorrect, please contact support.';
   dobChangeLocked = false;
   dobStatusLoading = true;
   dobStatusUnavailable = false;
@@ -223,10 +227,14 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         next: (data) => {
           console.log('[EditProfile] Loaded profile from API:', data);
           this.prefillFormFromUserData(data);
+          this.usernameStatusLoading = false;
+          this.usernameStatusUnavailable = typeof data?.usernameChanged !== 'boolean';
           this.dobStatusLoading = false;
         },
         error: (err) => {
           console.error('[EditProfile] Failed to load profile from API:', err);
+          this.usernameStatusLoading = false;
+          this.usernameStatusUnavailable = true;
           this.dobStatusLoading = false;
           this.dobStatusUnavailable = true;
         }
@@ -241,6 +249,13 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     if (!userData) return;
 
     console.log('[EditProfile] Prefilling form with user data:', userData);
+    if (userData.usernameChanged === true) {
+      this.usernameChangeLocked = true;
+      this.avatarSuggestions = [];
+      this.showAvatarSuggestions = false;
+      this.avatarNameError = null;
+      this.showAvatarNameError = false;
+    }
     if (userData.dobChanged === true) {
       this.dobChangeLocked = true;
       this.openBirthdayPicker = false;
@@ -494,6 +509,20 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
   saveProfile(): void {
     if (this.isSubmitting || this.showDobConfirmation) return;
+    const currentUsername = this.displayUsername.trim();
+    const originalUsername = this.initialValues?.username !== null
+      ? (this.initialValues?.username || '').trim()
+      : (this.initialValues?.avatarName || '').trim();
+    if (currentUsername !== originalUsername) {
+      if (this.usernameChangeLocked || this.usernameStatusLoading || this.usernameStatusUnavailable) {
+        this.username = this.initialValues?.username ?? null;
+        this.avatarName = this.initialValues?.avatarName ?? null;
+        this.coreService.triggerToasrt(this.usernameChangeLocked ? this.usernameLockedMessage : 'We couldn’t verify whether your username can be changed. Please try again shortly.');
+        return;
+      }
+      this.validateAvatarUsername(currentUsername);
+      if (this.showAvatarNameError) return;
+    }
     const currentDob = this.formatDateForBackend(this.profileForm.get('dob')?.value || '');
     const originalDob = this.initialValues?.dob ? this.formatDateForBackend(this.initialValues.dob) : '';
     if ((this.dobStatusLoading || this.dobStatusUnavailable) && currentDob !== originalDob) {
@@ -587,6 +616,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
               this.openBirthdayPicker = false;
               this.coreAuthService.updateUserData({ dobChanged: true });
             }
+            if (payload.username !== undefined) {
+              this.usernameChangeLocked = true;
+              this.coreAuthService.updateUserData({ usernameChanged: true });
+            }
 
             // Backend may return plain text instead of JSON — parse safely
             let response: any = rawResponse;
@@ -596,6 +629,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
             if (response && typeof response === 'object') {
               if (payload.dateOfBirth !== undefined) response.dobChanged = true;
+              if (payload.username !== undefined) response.usernameChanged = true;
               // Response is a JSON object — sync profile from it
               const avatarImgName = response.avatarImageName || response.avatar?.avatarImageName;
               if (response.username !== undefined) {
@@ -632,6 +666,14 @@ export class EditProfileComponent implements OnInit, OnDestroy {
               this.profileForm.patchValue({ dob: this.initialValues?.dob || null });
               this.coreAuthService.updateUserData({ dobChanged: true });
               this.coreService.triggerToasrt(this.dobLockedMessage);
+              return;
+            }
+            if (payload.username !== undefined && /username/i.test(apiMessage) && /(?:once|already|change|update)/i.test(apiMessage)) {
+              this.usernameChangeLocked = true;
+              this.username = this.initialValues?.username ?? null;
+              this.avatarName = this.initialValues?.avatarName ?? null;
+              this.coreAuthService.updateUserData({ usernameChanged: true });
+              this.coreService.triggerToasrt(this.usernameLockedMessage);
               return;
             }
 
@@ -714,18 +756,14 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       if (sel) payload.avatarImageName = sel.imageName;
     }
 
-    // Persist the edited identity under the same field that was displayed.
-    // Legacy profiles (username === null) continue using avatarName.
+    // Edits to the visible identity are username changes, including on legacy
+    // profiles whose username was missing and displayed an avatar-name fallback.
     const currentIdentity = this.displayUsername.trim();
     const initialIdentity = this.initialValues.username !== null
       ? (this.initialValues.username || '').trim()
       : (this.initialValues.avatarName || '').trim();
     if (currentIdentity !== initialIdentity) {
-      if (this.username !== null) {
-        payload.username = currentIdentity;
-      } else {
-        payload.avatarName = currentIdentity;
-      }
+      payload.username = currentIdentity;
     }
 
     if (Object.keys(payload).length === 0) return null;
@@ -750,6 +788,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       if (response.id !== undefined) merged.id = response.id;
       if (response.name !== undefined) merged.name = response.name;
       if (response.username !== undefined) merged.username = response.username;
+      if (response.usernameChanged !== undefined) merged.usernameChanged = response.usernameChanged;
       if (response.email !== undefined) merged.email = response.email;
       if (response.phone !== undefined) merged.phone = response.phone;
       if (response.dateOfBirth !== undefined) merged.dateOfBirth = response.dateOfBirth;
@@ -851,13 +890,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   onUsernameChange(value: string | null): void {
+    if (this.usernameChangeLocked || this.usernameStatusLoading || this.usernameStatusUnavailable) return;
     // Clear any previous avatar-suggestion error when user types manually
     this.avatarSuggestionError = null;
-    if (this.username !== null) {
-      this.username = value || '';
-    } else {
-      this.avatarName = value || '';
-    }
+    this.username = value || '';
     const v = (value || '').toString();
     this.validateAvatarUsername(v);
     if (v.trim().length >= 4) {
@@ -875,11 +911,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   onSuggestionSelected(s: string): void {
-    if (this.username !== null) {
-      this.username = s;
-    } else {
-      this.avatarName = s;
-    }
+    if (this.usernameChangeLocked || this.usernameStatusLoading || this.usernameStatusUnavailable) return;
+    this.username = s;
     this.avatarSuggestions = [];
     this.showAvatarSuggestions = false;
     this.avatarSuggestionError = null;

@@ -143,21 +143,11 @@
                 </section>
 
                 <ng-container *ngFor="let entry of childVisibleItems; trackBy: trackChildActivity">
-                    <activity-card class="calendar-activity-card" *ngIf="isChildActivityExpanded(entry.item, entry.type); else compactChildActivity"
-                        mode="single" [habit]="entry.item" [expanded]="true" [trackOnComplete]="true"
+                    <activity-card class="calendar-activity-card" mode="single" [habit]="entry.item"
+                        [homeHabitCard]="entry.type === 'habit'" [homeTaskCard]="entry.type === 'task'"
+                        [trackOnComplete]="true"
                         [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()">
                     </activity-card>
-                    <ng-template #compactChildActivity>
-                        <button type="button" class="child-activity-card"
-                            [ngClass]="'child-activity-card--' + entry.type" long-press [delay]="700"
-                            (click)="onCardTap(entry.item, entry.type, $event)" (press)="onCardLongPress(entry.item, entry.type)">
-                            <div class="child-card-copy">
-                                <strong>{{ getChildItemTitle(entry.item) }}</strong>
-                                <span>{{ getChildItemTime(entry.item) }}</span>
-                            </div>
-                            <em *ngIf="getChildItemTag(entry.item) as tag">{{ tag }}</em>
-                        </button>
-                    </ng-template>
                 </ng-container>
 
                 <section class="child-planner-cards" *ngIf="childCalendarTab === 'all' || childCalendarTab === 'planner'">

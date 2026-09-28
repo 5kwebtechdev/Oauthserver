@@ -62,7 +62,25 @@
     height: 24px;
 }
 
+.quiz-share-button {
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    justify-self: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #432477;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.quiz-share-button img { width: 24px; height: 24px; object-fit: contain; }
+
 .quiz-close-button:focus-visible,
+.quiz-share-button:focus-visible,
 .quiz-option:focus-visible,
 .quiz-visual-option:focus-visible,
 .quiz-hint-card:focus-visible,

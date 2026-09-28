@@ -7,14 +7,18 @@
         <profile-edit-input title="Username" description="Your in-app identity name" type="text"
           placeholder="Username"
           [value]="displayUsername"
+          [disabled]="usernameChangeLocked || usernameStatusLoading || usernameStatusUnavailable"
           (valueChange)="onUsernameChange($event)"
           [suggestions]="avatarSuggestions"
-          [showSuggestions]="showAvatarSuggestions"
+          [showSuggestions]="!usernameChangeLocked && showAvatarSuggestions"
           [suggestionError]="avatarSuggestionError"
           [errorMessage]="avatarNameError"
           [showError]="showAvatarNameError"
           (suggestionSelected)="onSuggestionSelected($event)">
         </profile-edit-input>
+        <div class="dob-lock-message" *ngIf="usernameChangeLocked">Your username has already been changed once and can’t be changed again. If it’s incorrect, please contact support.</div>
+        <div class="dob-lock-message" *ngIf="!usernameChangeLocked && !usernameStatusLoading && !usernameStatusUnavailable">You can change your username only once. Please check it carefully before saving.</div>
+        <div class="dob-lock-message" *ngIf="!usernameChangeLocked && usernameStatusUnavailable">Username editing is temporarily unavailable because its change status could not be verified. Please try again later.</div>
       </div>
       <div class="edit-details">
         <profile-edit-input title="Full Name" description="Just for setup. Never shown" type="text"
@@ -81,7 +85,6 @@
       <div class="edit-details">
         <div class="input-heading">
           <h2 class="heading-text">Phone number</h2>
-          <div class="validation-text">Only for login and safety</div>
         </div>
         <!--phone number input-->
         <div class="input-container">

@@ -145,6 +145,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   // Recent habits and tasks
   public recentHabits: Habit[] = [];
+  public glanceDailyData: { habits: any[]; tasks: any[]; planners: any[] } | null = null;
   public recentTasks: any[] = [];
   public recentTimetables: any[] = [];
 
@@ -633,6 +634,13 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.calendarService.getUserCalendar(formatted, 'day', forceReload).subscribe({
       next: (resp: any) => {
         if (!resp) return;
+
+        // Preserve full daily data for blank/completed/passed presentation.
+        this.glanceDailyData = {
+          habits: Array.isArray(resp.habits) ? resp.habits : [],
+          tasks: Array.isArray(resp.tasks) ? resp.tasks : [],
+          planners: Array.isArray(resp.events) ? resp.events.filter(isHomePlannerSchedule) : []
+        };
 
         // Process habits
         if (Array.isArray(resp.habits)) {

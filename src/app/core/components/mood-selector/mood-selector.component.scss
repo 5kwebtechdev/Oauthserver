@@ -638,7 +638,7 @@
 :host ion-modal.home-mood-dialog {
   --width: min(393px, 100%);
   --height: auto;
-  --border-radius: 44px 44px 24px 24px;
+  --border-radius: 44px 44px 0 0;
 }
 .home-mood-dialog__body {
   position: relative;

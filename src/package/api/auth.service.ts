@@ -496,6 +496,7 @@ export interface FamilyMember {
     age: number;
     dateOfBirth?: string;
     you: boolean;
+    coParent?: boolean;
 }
 
 export interface FamilyInfo {

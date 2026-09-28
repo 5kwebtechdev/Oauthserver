@@ -59,7 +59,7 @@
 <!-- Planner tab: grouped schedule cards with expand/collapse, shared by List and Recent modes -->
 <ng-template #plannerCards>
   <section class="glance-planner-cards"
-    *ngIf="(currentActive === 'all' || currentActive === 'timetable') && hasGlancePlannerCards">
+    *ngIf="!glanceBlankState && (currentActive === 'all' || currentActive === 'timetable') && hasGlancePlannerCards">
     <div class="glance-action-swipe glance-action-swipe--planner"
       *ngFor="let card of glancePlannerCards; let i = index; trackBy: trackGlancePlannerCard"
       [class.is-swipe-open]="getActionSwipeOffset('planner-' + card.id) > 0"
@@ -92,6 +92,18 @@
         </span>
       </button>
       <p>{{ getGlancePlannerDateRange(card.source) }}</p>
+      <div class="glance-planner-card__entries" *ngIf="!isGlancePlannerExpanded(card, i) && card.entries.length">
+        <div class="glance-planner-entry glance-planner-entry--preview"
+          role="button" tabindex="0" [attr.aria-label]="'View ' + getGlancePlannerTitle(card.entries[0])"
+          (click)="viewPlanner(card.source, card.entries[0], $event)"
+          (keydown.enter)="viewPlanner(card.source, card.entries[0], $event)"
+          (keydown.space)="$event.preventDefault(); viewPlanner(card.source, card.entries[0], $event)"
+          [class.is-passed]="isGlancePlannerEntryPassed(card.entries[0])">
+          <time>{{ getGlancePlannerEntryTime(card.entries[0]) }}</time>
+          <strong>{{ getGlancePlannerTitle(card.entries[0]) }}</strong>
+          <em *ngIf="getGlancePlannerEntryCountdown(card.entries[0]) as countdown">{{ countdown }}</em>
+        </div>
+      </div>
       <div class="glance-planner-card__entries" *ngIf="isGlancePlannerExpanded(card, i)">
         <div class="glance-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackGlancePlannerEntry"
           role="button" tabindex="0" [attr.aria-label]="'Edit ' + getGlancePlannerTitle(entry)"
@@ -111,138 +123,54 @@
 </ng-template>
 
 <div *ngIf="mode === 'list'" class="d-flex flex-column gap-2 glance-card"
-  [ngClass]="'glance-card--' + currentActive" [attr.data-active-tab]="currentActive">
+  [class.glance-card--blank]="!!glanceBlankState" [ngClass]="'glance-card--' + currentActive" [attr.data-active-tab]="currentActive">
   <ng-container *ngTemplateOutlet="upcomingEvents"></ng-container>
   <div class="day-at-glance-container">
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Keep category navigation visible in loading, empty and completed states. -->
-    <div class="container w-full glance-tabs-shell">
+    <div class="container w-full glance-tabs-shell" *ngIf="!(glanceBlankState && currentActive === 'all')">
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [class.is-active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-all.webp" alt="" aria-hidden="true">
+          <span *ngIf="glanceBlankState; else allNormalIcon" class="blank-tab-art blank-tab-art--all" [class.selected]="currentActive === 'all'"><img [src]="'assets/figma/home-blank-states/tab-all' + '' + '.png'" alt=""></span>
+          <ng-template #allNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-all.webp" alt="" aria-hidden="true"></ng-template>
           <span>All</span>
         </button>
         <button type="button" class="glance-tab glance-tab--habit" role="tab" [class.active]="currentActive === 'habits'"
           [class.is-active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-habit.webp" alt="" aria-hidden="true">
+          <span *ngIf="glanceBlankState; else habitNormalIcon" class="blank-tab-art blank-tab-art--habit" [class.selected]="currentActive === 'habits'"><img [src]="'assets/figma/home-blank-states/tab-habit' + (currentActive === 'habits' ? '-selected' : '') + '.png'" alt=""></span>
+          <ng-template #habitNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-habit.webp" alt="" aria-hidden="true"></ng-template>
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
           [class.is-active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-task.webp" alt="" aria-hidden="true">
+          <span *ngIf="glanceBlankState; else taskNormalIcon" class="blank-tab-art blank-tab-art--task" [class.selected]="currentActive === 'tasks'"><img [src]="'assets/figma/home-blank-states/tab-task' + (currentActive === 'tasks' ? '-selected' : '') + '.png'" alt=""></span>
+          <ng-template #taskNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-task.webp" alt="" aria-hidden="true"></ng-template>
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
           [class.is-active]="currentActive === 'timetable'"
           [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
-          <img class="glance-tab-icon" [src]="plannerTabIcon" alt="" aria-hidden="true">
+          <span *ngIf="glanceBlankState; else plannerNormalIcon" class="blank-tab-art blank-tab-art--planner" [class.selected]="currentActive === 'timetable'"><img [src]="'assets/figma/home-blank-states/tab-planner' + (currentActive === 'timetable' ? '-selected' : '') + '.png'" alt=""></span>
+          <ng-template #plannerNormalIcon><img class="glance-tab-icon" [src]="plannerTabIcon" alt="" aria-hidden="true"></ng-template>
           <span>{{ plannerTabLabel }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Empty State (uses shared EmptyStateComponent) -->
-    <!-- Task-specific: all tasks completed (taskCompletionRate === 100 AND totalHabits > 0) -->
-    <empty-state *ngIf="currentActive === 'tasks' && taskCompletionRate === 100 && totalTasksLoaded > 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No tasks available illustration"
-      leadText="All tasks done!"
-      subText="Your tasks can be reviewed in the main habits screen. You can even mark them done from there."
-      buttonText="">
-    </empty-state>
-
-    <!-- Task-specific: no tasks at all (totalTasks === 0 AND habitCompletionRate < 100) -->
-    <empty-state *ngIf="currentActive === 'tasks' && totalTasksLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No tasks illustration"
-      leadText="No tasks lined up for today"
-      subText="No tasks are scheduled for today. Add one to start building your streak and earn coins."
-      buttonText="">
-    </empty-state>
-
-    <!-- Task-specific: tasks existed but all cards hidden (end time passed, not all completed) -->
-    <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && totalTasksLoaded > 0 && taskCompletionRate < 100"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No tasks available illustration"
-      leadText="Check pending items"
-      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
-      buttonText="">
-    </empty-state>
-
-    <!-- Habit-specific: all habits completed (habitCompletionRate === 100 AND totalTasks > 0) -->
-    <empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalHabitsLoaded > 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No habits available illustration"
-      leadText="All habits done!"
-      subText="Your habits can be reviewed in the main habits screen. You can even mark them done from there."
-      buttonText="">
-    </empty-state>
-
-    <!-- Habit-specific: no habits at all (totalHabits === 0 AND taskCompletionRate < 100) -->
-    <empty-state *ngIf="currentActive === 'habits' && totalHabitsLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No habits illustration"
-      leadText="No habit lined up for today"
-      subText="No habits are scheduled for today. Add one to start building your streak and earn coins."
-      buttonText="">
-    </empty-state>
-
-    <!-- Habit-specific: habits existed but all cards hidden (end time passed, not all completed) -->
-    <empty-state *ngIf="currentActive === 'habits' && !hasHabits && totalHabitsLoaded > 0 && habitCompletionRate < 100"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No habits available illustration"
-      leadText="Check pending items"
-      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
-      buttonText="">
-    </empty-state>
-
-    <!-- Timetable-specific: no time table entries for today -->
-    <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables && !hasGlancePlannerCards && !glancePlannerLoading"
-      imageSrc="/assets/Images-Transparent/Image-Calendar-Blank.webp"
-      imageAlt="No planner entries illustration"
-      leadText="No planner entries for today"
-      subText="Nothing scheduled yet. Add a time block to plan out your day."
-      buttonText="">
-    </empty-state>
-
-    <!-- Pending state for All tab: items existed but all cards hidden (end time passed, not all completed) -->
-    <empty-state *ngIf="currentActive === 'all' && isEmpty && (totalHabitsLoaded > 0 || totalTasksLoaded > 0 || totalTimetablesLoaded > 0) && !isAllLoadedContentCompleted"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No activities available illustration"
-      leadText="Check pending items"
-      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
-      buttonText="">
-    </empty-state>
-
-    <!-- Generic blank empty state when nothing exists at all (totalTasks === 0 AND totalHabits === 0) -->
-    <empty-state *ngIf="currentActive === 'all' && isEmpty && totalHabitsLoaded === 0 && totalTasksLoaded === 0 && totalTimetablesLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="Empty day illustration"
-      leadText="Your day's a blank slate!"
-      subText="Add habits and tasks to earn coins and level up your day. Don't miss out!"
-      buttonText="">
-    </empty-state>
-
-    <!-- Completed State: show when both completion rates are 100% (taskCompletionRate === 100 AND habitCompletionRate === 100) -->
-    <empty-state *ngIf="currentActive === 'all' && isAllLoadedContentCompleted"
-      imageSrc="/assets/Images-Transparent/Image-Home-Completed.webp"
-      imageAlt="Completed illustration"
-      leadText="Great progress today!"
-      subText="Your tasks and habits can be reviewed in the main tasks and habits screen. You can even mark them done from there."
-      buttonText="">
-    </empty-state>
+    <glance-blank-state *ngIf="glanceBlankState as blank" [state]="blank"
+      (primary)="openHabitInput()" (secondary)="openBlankStateSecondary(blank)"></glance-blank-state>
 
   </div>
 
   <!-- Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'habits' && hasHabits">
-    <activity-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem" [autoExpand]="true"
+    *ngIf="!glanceBlankState && currentActive === 'habits' && hasHabits">
+    <activity-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem" [autoExpand]="true" [homeHabitCard]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
     </activity-card>
@@ -250,8 +178,8 @@
 
   <!-- Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'tasks' && hasTasks">
-    <activity-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem" [autoExpand]="true"
+    *ngIf="!glanceBlankState && currentActive === 'tasks' && hasTasks">
+    <activity-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem" [autoExpand]="true" [homeTaskCard]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
     </activity-card>
@@ -260,7 +188,7 @@
   <!-- Grouped planner cards use the same layout in Planner and All. -->
   <ng-container *ngTemplateOutlet="plannerCards"></ng-container>
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
+    *ngIf="!glanceBlankState && currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
     <activity-card *ngFor="let ttItem of timetables.slice(0, maxItemsToShow)" [habit]="ttItem"
       [startTime]="ttItem.startTimeStamp || 0" [endTime]="ttItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
@@ -269,24 +197,16 @@
 
   <!-- Combined Items (when all tab is active - sorted by closest start time) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
+    *ngIf="!glanceBlankState && currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
-      [autoExpand]="item.type === 'tasks' || item.type === 'habits'" mode="single">
+      [autoExpand]="item.type === 'tasks' || item.type === 'habits'" [homeHabitCard]="true" [homeTaskCard]="true" mode="single">
     </activity-card>
   </div>
 
   <!-- CTA Buttons -->
-  <div class="add-button-container empty-action-container" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
-    <button class="text-view-all" (click)="openHabitPage()">
-      {{ viewActionLabel }}
-    </button>
-    <button class="add-new-pill" (click)="openHabitInput()">
-      {{ addActionLabel }}
-    </button>
-  </div>
-  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
+  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!glanceBlankState && !isEmpty">
     <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">
       {{ viewActionLabel }}
     </button>
@@ -298,135 +218,54 @@
 
 <!-- Recent Mode -->
 <div *ngIf="mode === 'recent'" class="d-flex flex-column gap-2 glance-card"
-  [ngClass]="'glance-card--' + currentActive" [attr.data-active-tab]="currentActive">
+  [class.glance-card--blank]="!!glanceBlankState" [ngClass]="'glance-card--' + currentActive" [attr.data-active-tab]="currentActive">
   <ng-container *ngTemplateOutlet="upcomingEvents"></ng-container>
   <div class="day-at-glance-container">
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Keep category navigation visible in loading, empty and completed states. -->
-    <div class="container w-full glance-tabs-shell">
+    <div class="container w-full glance-tabs-shell" *ngIf="!(glanceBlankState && currentActive === 'all')">
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [class.is-active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-all.webp" alt="" aria-hidden="true">
+          <span *ngIf="glanceBlankState; else allNormalIcon" class="blank-tab-art blank-tab-art--all" [class.selected]="currentActive === 'all'"><img [src]="'assets/figma/home-blank-states/tab-all' + '' + '.png'" alt=""></span>
+          <ng-template #allNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-all.webp" alt="" aria-hidden="true"></ng-template>
           <span>All</span>
         </button>
         <button type="button" class="glance-tab glance-tab--habit" role="tab" [class.active]="currentActive === 'habits'"
           [class.is-active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-habit.webp" alt="" aria-hidden="true">
+          <span *ngIf="glanceBlankState; else habitNormalIcon" class="blank-tab-art blank-tab-art--habit" [class.selected]="currentActive === 'habits'"><img [src]="'assets/figma/home-blank-states/tab-habit' + (currentActive === 'habits' ? '-selected' : '') + '.png'" alt=""></span>
+          <ng-template #habitNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-habit.webp" alt="" aria-hidden="true"></ng-template>
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
           [class.is-active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-task.webp" alt="" aria-hidden="true">
+          <span *ngIf="glanceBlankState; else taskNormalIcon" class="blank-tab-art blank-tab-art--task" [class.selected]="currentActive === 'tasks'"><img [src]="'assets/figma/home-blank-states/tab-task' + (currentActive === 'tasks' ? '-selected' : '') + '.png'" alt=""></span>
+          <ng-template #taskNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-task.webp" alt="" aria-hidden="true"></ng-template>
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
           [class.is-active]="currentActive === 'timetable'"
           [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
-          <img class="glance-tab-icon" [src]="plannerTabIcon" alt="" aria-hidden="true">
+          <span *ngIf="glanceBlankState; else plannerNormalIcon" class="blank-tab-art blank-tab-art--planner" [class.selected]="currentActive === 'timetable'"><img [src]="'assets/figma/home-blank-states/tab-planner' + (currentActive === 'timetable' ? '-selected' : '') + '.png'" alt=""></span>
+          <ng-template #plannerNormalIcon><img class="glance-tab-icon" [src]="plannerTabIcon" alt="" aria-hidden="true"></ng-template>
           <span>{{ plannerTabLabel }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Empty State (uses shared EmptyStateComponent) -->
-    <!-- Task-specific: all tasks completed/skipped (taskCompletionRate === 100 AND totalHabits > 0) -->
-    <empty-state *ngIf="currentActive === 'tasks' && taskCompletionRate === 100 && totalTasksLoaded > 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No tasks available illustration"
-      leadText="All tasks done!"
-      subText="Your tasks can be reviewed in the main habits screen."
-      buttonText="">
-    </empty-state>
+    <glance-blank-state *ngIf="glanceBlankState as blank" [state]="blank"
+      (primary)="openHabitInput()" (secondary)="openBlankStateSecondary(blank)"></glance-blank-state>
 
-    <!-- Task-specific: no tasks at all (totalTasks === 0 AND habitCompletionRate < 100) -->
-    <empty-state *ngIf="currentActive === 'tasks' && totalTasksLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No tasks illustration"
-      leadText="No tasks lined up for today"
-      subText="No tasks are scheduled for today. Add one to start building your streak and earn coins."
-      buttonText="">
-    </empty-state>
-
-    <!-- Task-specific: tasks existed but all cards hidden (end time passed, not all completed) -->
-    <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && totalTasksLoaded > 0 && taskCompletionRate < 100"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No tasks available illustration"
-      leadText="Check pending items"
-      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
-      buttonText="">
-    </empty-state>
-
-    <!-- Habit-specific: all habits completed/skipped (habitCompletionRate === 100 AND totalTasks > 0) -->
-    <empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalHabitsLoaded > 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No habits available illustration"
-      leadText="All habits done!"
-      subText="Your habits can be reviewed in the main habits screen."
-      buttonText="">
-    </empty-state>
-
-    <!-- Habit-specific: no habits at all (totalHabits === 0 AND taskCompletionRate < 100) -->
-    <empty-state *ngIf="currentActive === 'habits' && totalHabitsLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No habits illustration"
-      leadText="No habit lined up for today"
-      subText="No habits are scheduled for today. Add one to start building your streak and earn coins."
-      buttonText="">
-    </empty-state>
-    <!-- Habit-specific: habits existed but all cards hidden (end time passed, not all completed) -->
-    <empty-state *ngIf="currentActive === 'habits' && !hasHabits && totalHabitsLoaded > 0 && habitCompletionRate < 100"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No habits available illustration"
-      leadText="Check pending items"
-      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
-      buttonText="">
-    </empty-state>
-
-    <!-- Timetable-specific: no time table entries for today -->
-    <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables && !hasGlancePlannerCards && !glancePlannerLoading"
-      imageSrc="/assets/Images-Transparent/Image-Calendar-Blank.webp"
-      imageAlt="No planner entries illustration"
-      leadText="No planner entries for today"
-      subText="Nothing scheduled yet. Add a time block to plan out your day."
-      buttonText="">
-    </empty-state>
-
-    <!-- Pending state for All tab: items existed but all cards hidden (end time passed, not all completed) -->
-    <empty-state *ngIf="currentActive === 'all' && isEmpty && (totalHabitsLoaded > 0 || totalTasksLoaded > 0 || totalTimetablesLoaded > 0) && !isAllLoadedContentCompleted"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="No activities available illustration"
-      leadText="Check pending items"
-      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
-      buttonText="">
-    </empty-state>
-    <!-- Generic blank empty state when nothing exists at all (totalTasks === 0 AND totalHabits === 0) -->
-    <empty-state *ngIf="currentActive === 'all' && isEmpty && totalHabitsLoaded === 0 && totalTasksLoaded === 0 && totalTimetablesLoaded === 0"
-      imageSrc="/assets/Images-Transparent/Image-Home-Blank.webp"
-      imageAlt="Empty day illustration"
-      leadText="Your day’s a blank slate!"
-      subText="Add habits and tasks to earn coins and level up your day. Don’t miss out!"
-      buttonText="">
-    </empty-state>
-
-    <!-- Completed State: show when both completion rates are 100% OR when only one category exists with 100% -->
-    <empty-state *ngIf="currentActive === 'all' && isAllLoadedContentCompleted"
-      imageSrc="/assets/Images-Transparent/Image-Home-Completed.webp"
-      imageAlt="Completed illustration"
-      leadText="Great progress today!"
-      subText="Your tasks and habits can be reviewed in the main tasks and habits screen."
-      buttonText="">
-    </empty-state>
   </div>
 
   <!-- Recent Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'habits' && hasHabits">
-    <activity-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem" [autoExpand]="true"
+    *ngIf="!glanceBlankState && currentActive === 'habits' && hasHabits">
+    <activity-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem" [autoExpand]="true" [homeHabitCard]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
     </activity-card>
@@ -434,8 +273,8 @@
 
   <!-- Recent Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'tasks' && hasTasks">
-    <activity-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem" [autoExpand]="true"
+    *ngIf="!glanceBlankState && currentActive === 'tasks' && hasTasks">
+    <activity-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem" [autoExpand]="true" [homeTaskCard]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
     </activity-card>
@@ -444,7 +283,7 @@
   <!-- Grouped planner cards use the same layout in Planner and All. -->
   <ng-container *ngTemplateOutlet="plannerCards"></ng-container>
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
+    *ngIf="!glanceBlankState && currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
     <activity-card *ngFor="let ttItem of filteredRecentTimetables" [habit]="ttItem"
       [startTime]="ttItem.startTimeStamp || 0" [endTime]="ttItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
@@ -453,24 +292,16 @@
 
   <!-- Recent Combined Items (when all tab is active - sorted by closest start time) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
+    *ngIf="!glanceBlankState && currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
-      [autoExpand]="item.type === 'tasks' || item.type === 'habits'" mode="single">
+      [autoExpand]="item.type === 'tasks' || item.type === 'habits'" [homeHabitCard]="true" [homeTaskCard]="true" mode="single">
     </activity-card>
   </div>
 
   <!-- CTA Buttons -->
-  <div class="add-button-container empty-action-container" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
-    <button class="text-view-all" (click)="openHabitPage()">
-      {{ viewActionLabel }}
-    </button>
-    <button class="add-new-pill" (click)="openHabitInput()">
-      {{ addActionLabel }}
-    </button>
-  </div>
-  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
+  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!glanceBlankState && !isEmpty">
     <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">
       {{ viewActionLabel }}
     </button>
@@ -481,7 +312,7 @@
 </div>
 
 <!-- activity-task-card -->
-<div *ngIf="mode === 'single'" class="container w-full h-full p-0">
+<div *ngIf="mode === 'single'" class="container w-full h-full p-0" [class.compact-habit-container]="isCompactHomeActivity">
   <!-- Swipe backdrop: tapping it closes the reveal -->
   <div *ngIf="isSwipedOpen" class="swipe-backdrop" (click)="closeSwipe()"></div>
   <div class="swipe-container" [class.is-swipe-open]="isSwipedOpen || swipeOffset > 0"
@@ -501,6 +332,8 @@
       </button>
     </div>
   <div class="habit-wrapper"
+    [class.habit-wrapper--compact]="isCompactHomeActivity"
+    [class.habit-wrapper--compact-task]="isCompactHomeActivity && habit?.type === 'tasks'"
     role="button"
     tabindex="0"
     [attr.aria-label]="'Open ' + (habit?.title || habit?.type || 'activity')"
@@ -520,7 +353,52 @@
         <span>Today</span>
       </span>
     </div>
-    <div *ngIf="habit?.type !== 'timetable'" class="habit-header-container clickable" long-press [delay]="1500" (press)="onLongPress()">
+    <section *ngIf="isCompactHomeActivity" class="compact-habit" long-press [delay]="1500" (press)="onLongPress()">
+      <div class="compact-habit__header">
+        <h3>{{ habit?.title || (habit?.type === 'tasks' ? 'Task' : 'Habit') }}</h3>
+        <span class="compact-habit__category" *ngIf="getTagOrRoutine() as tag">{{ tag }}</span>
+      </div>
+      <div class="compact-habit__body">
+        <div class="compact-habit__running" *ngIf="getStatus() === 'ongoing'; else habitReadyDetails">
+          <div class="compact-habit__timer-row">
+            <span class="compact-habit__remaining" role="timer">{{ habitRemainingLabel }}</span>
+            <button type="button" class="compact-habit__timer" aria-label="Start focus timer"
+              [disabled]="isParent" [title]="isParent ? 'Only the child can start a focus timer' : null"
+              (click)="$event.stopPropagation(); openTimer()">
+              <img src="assets/Icons-Neutral/Icon-Timer.webp" alt="" width="16" height="16">
+            </button>
+            <span *ngIf="!isParent && showStartBubble" class="compact-habit__hint">Start focus timer</span>
+          </div>
+          <div class="compact-habit__progress" role="progressbar" [attr.aria-label]="habit?.type === 'tasks' ? 'Task progress' : 'Habit progress'" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="percentageCompleted">
+            <span [style.width.%]="percentageCompleted"></span>
+          </div>
+        </div>
+        <ng-template #habitReadyDetails>
+          <div class="compact-habit__details">
+            <span class="compact-habit__time" [style.color]="getStatus() === 'completed' || getStatus() === 'skipped' ? getTimeColor(habit) : null">{{ compactHabitTime(habit?.startTime, startTime) }}-{{ compactHabitTime(habit?.endTime, endTime) }}</span>
+            <span class="compact-habit__reward" [attr.aria-label]="getStreak() + ' day streak'">
+              <img src="assets/figma/parent-home/streak.webp" alt="" width="20" height="20">{{ getStreak() }}
+            </span>
+            <span class="compact-habit__reward" *ngIf="getCoinReward() > 0" [attr.aria-label]="getCoinReward() + ' coins'">
+              <img src="assets/figma/parent-home/coin.webp" alt="" width="20" height="20">{{ getCoinReward() }}
+            </span>
+          </div>
+        </ng-template>
+        <div class="compact-habit__actions" *ngIf="getStatus() !== 'completed' && getStatus() !== 'skipped' && isCurrentDateView">
+          <button *ngIf="getStatus() !== 'ongoing'" type="button" class="compact-habit__start"
+            [disabled]="isParent || !isLetsGoVisible() || !isLetsGoEnabled()"
+            [title]="isParent ? 'Only the child can start this activity' : null" (click)="openStartPopup($event)">Let's Go</button>
+          <button *ngIf="getStatus() === 'ongoing'" type="button" class="compact-habit__abort"
+            [disabled]="isParent" [title]="isParent ? 'Only the child can abort this activity' : null"
+            (click)="$event.stopPropagation(); openAbortPopup()">Abort</button>
+          <button *ngIf="isDoneVisible()" type="button" class="compact-habit__done"
+            [disabled]="isParent || !isDoneEnabled()"
+            [title]="isParent ? 'Only the child can complete this activity' : null"
+            (click)="$event.stopPropagation(); openCompletePopup()">Done?</button>
+        </div>
+      </div>
+    </section>
+    <div *ngIf="habit?.type !== 'timetable' && !isCompactHomeActivity" class="habit-header-container clickable" long-press [delay]="1500" (press)="onLongPress()">
       <div class="container w-full p-0">
         <div class="d-flex justify-content-between">
           <h3 class="habit-title">{{habit?.title || 'Habit'}}</h3>
@@ -556,7 +434,7 @@
       </div>
     </div>
     <!-- Expandable content wrapper with animation (timetable entries have no streak/coin/complete actions) -->
-    <div class="habit-expandable-content" [ngClass]="{'expanded': isCardExpanded}" *ngIf="habit?.type !== 'timetable'">
+    <div class="habit-expandable-content" [ngClass]="{'expanded': isCardExpanded}" *ngIf="habit?.type !== 'timetable' && !isCompactHomeActivity">
       <section class="task-at-a-glance" *ngIf="(habit?.type === 'tasks' || habit?.type === 'habits') && getTaskNote(habit)"
         [class.task-at-a-glance--habit]="habit?.type === 'habits'"
         [attr.aria-label]="habit?.type === 'tasks' ? 'Task details' : 'Habit details'">

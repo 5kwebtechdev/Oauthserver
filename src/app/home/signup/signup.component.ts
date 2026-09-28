@@ -1969,8 +1969,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // close the picker after choosing a date
     this.openBirthdayPicker = false;
 
-    // Don't show popup automatically when birthday changes
-    // Only show popup when user clicks Save & Continue with invalid age
+    // Give immediate feedback at the DOB field instead of waiting until the
+    // user has completed the rest of the profile and taps Save & Continue.
+    const age = this.calculateAge(parsedDate);
+    this.showAccessRestrictedModal = age !== null && age < 8;
   }
 
   private calculateAge(dob: Date): number | null {

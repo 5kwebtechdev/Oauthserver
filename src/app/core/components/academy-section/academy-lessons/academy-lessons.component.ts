@@ -373,7 +373,9 @@ export class AcademyLessonsComponent implements OnInit, OnDestroy {
     }
     this.clearFocusTimer();
     this.modalCtrl.dismiss({ completed: this.doneClicked, lessonId: this.lesson?.id })
-      .then(() => this.router.navigate(['/authed/content/questions', quizId]));
+      .then(() => this.router.navigate(['/authed/content/description', quizId], {
+        state: { source: this.router.url }
+      }));
   }
 
   retryLoad(): void {

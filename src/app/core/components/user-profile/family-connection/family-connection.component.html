@@ -95,7 +95,7 @@
 
                                 <div class="relationship-badge" [class.child]="creator.relationship === 'Child'"
                                     [class.parent]="creator.relationship === 'Parent' || creator.relationship === 'Co-Parent'">
-                                    {{ (creator.relationship === 'Co-Parent' ? 'Parent' : creator.relationship) + ' / Creator' + (creator.you ? ' / You' : '') }}
+                                    {{ 'Parent / Creator' + (creator.you ? ' / You' : '') }}
                                 </div>
 
                             </div>
@@ -136,7 +136,7 @@
                                     [attr.aria-label]="'View as ' + m.name">
                                     View
                                 </button>
-                                <button type="button" class="member-action remove"
+                                <button *ngIf="canRemoveMember(m)" type="button" class="member-action remove"
                                     (click)="removeMember(m)"
                                     [attr.aria-label]="'Remove ' + m.name + ' from family'">
                                     Remove

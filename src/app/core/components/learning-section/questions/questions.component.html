@@ -7,7 +7,9 @@
                 </button>
 
                 <h1 [title]="quizTitle">{{ quizTitle }}</h1>
-                <span class="quiz-header-spacer" aria-hidden="true"></span>
+                <button class="quiz-share-button" type="button" aria-label="Share quiz" (click)="shareQuiz()">
+                    <img src="assets/figma/learning-details/share.svg" alt="" aria-hidden="true" />
+                </button>
             </header>
 
             <section class="quiz-status-card" aria-label="Quiz progress">

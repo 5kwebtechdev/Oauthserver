@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 import { HttpClientModule } from '@angular/common/http';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 import { Challenge, ChallengeQuestion, QuestionOption } from 'src/app/core/models/learning.models';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
+import { environment } from 'src/environments/environment';
 
 interface Question {
     id: number;
@@ -48,6 +50,22 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
     // Heading shown in the navigator
     quizTitle = 'Apple Orchard Math Challenge';
+
+    async shareQuiz(): Promise<void> {
+        if (!this.challenge?.challengeId) return;
+        const title = this.challenge.name || this.quizTitle;
+        const baseUrl = String(environment.publicWebUrl || 'https://supermeapp.com').replace(/\/+$/, '');
+        try {
+            await Share.share({
+                title,
+                text: `Try ${title} on SuperMe!`,
+                url: `${baseUrl}/authed/content/description/${encodeURIComponent(this.challenge.challengeId)}`,
+                dialogTitle: `Share ${title}`
+            });
+        } catch (error: any) {
+            if (error?.name !== 'AbortError') console.warn('Quiz share is unavailable:', error);
+        }
+    }
 
     /** Zero-based index of the current question (used by the progress bar binding) */
     currentQuestionIndex = 0;
