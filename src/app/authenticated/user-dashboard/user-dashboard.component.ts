@@ -647,7 +647,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           const today = new Date();
           const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
           let habitsData = resp.habits
-            .filter((item: any) => !(item.today === true && item.expired === true))
             .map((item: any) => {
             // For recurring items, use today's date to calculate correct timestamps
             const isRecurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
@@ -664,8 +663,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
               eventDate: item.eventDate || item.startDate || '',
               recurrence: item.recurrence || '',
               allDay: item.allDay === true,
-              startDate: item.startDate ? new Date(item.startDate) : new Date(),
-              endDate: item.endDate ? new Date(item.endDate) : new Date(),
+              startDate: isRecurring ? todayStr : (item.startDate ? new Date(item.startDate) : new Date()),
+              endDate: isRecurring ? todayStr : (item.endDate ? new Date(item.endDate) : new Date()),
               startTime: item.startTime || '07:00:00',
               endTime: item.endTime || '08:00:00',
               startTimeStamp: start.startTimeStamp,
@@ -688,17 +687,13 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
             };
           });
 
-          // Completed habits disappear from Home. Keep skipped habits visible so
-          // a backend-marked missed habit is not presented as an empty day.
+          // Completed habits disappear immediately; other habits respect Home's deadline.
           const now = Date.now();
-          const fiveMinMs = 5 * 60 * 1000;
           habitsData = habitsData.filter((h: any) => {
             const status = (h.status || '').toLowerCase();
             if (status === 'completed') return false;
-            if (status === 'skipped') return true;
-            // Hide card if current time > endTime + 5 minutes
-            const endTs = Number(h.endTimeStamp || 0);
-            if (endTs > 0 && now > endTs + fiveMinMs) return false;
+            // Hide card immediately after endTime + 10 minutes
+            if (!this.buttonLogic.homeTiming(h, now).visible) return false;
             return true;
           })
           .sort((a: any, b: any) => this.sortByUpcoming(a, b))
@@ -713,7 +708,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           const today = new Date();
           const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
           let tasksData = resp.tasks
-            .filter((item: any) => !(item.today === true && item.expired === true))
             .map((item: any) => {
             // For recurring items, use today's date to calculate correct timestamps
             const isRecurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
@@ -723,8 +717,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
               id: item.id || '',
               title: item.title || '',
               notes: item.description || '',
-              startDate: item.startDate ? new Date(item.startDate) : new Date(),
-              endDate: item.endDate ? new Date(item.endDate) : new Date(),
+              startDate: isRecurring ? todayStr : (item.startDate ? new Date(item.startDate) : new Date()),
+              endDate: isRecurring ? todayStr : (item.endDate ? new Date(item.endDate) : new Date()),
               startTime: item.startTime || '07:00:00',
               endTime: item.endTime || '08:00:00',
               startTimeStamp: timestamps.startTimeStamp,
@@ -747,15 +741,13 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
             };
           });
 
-          // Filter out completed/skipped and items 5 min past their endTime
+          // Filter out completed/skipped and items more than 10 min past their endTime
           const nowMs = Date.now();
-          const fiveMin = 5 * 60 * 1000;
           tasksData = tasksData.filter((t: any) => {
             const status = (t.status || '').toLowerCase();
             if (status === 'completed' || status === 'skipped') return false;
-            // Hide card if current time > endTime + 5 minutes
-            const endTs = Number(t.endTimeStamp || 0);
-            if (endTs > 0 && nowMs > endTs + fiveMin) return false;
+            // Hide card immediately after endTime + 10 minutes
+            if (!this.buttonLogic.homeTiming(t, nowMs).visible) return false;
             return true;
           })
           .sort((a: any, b: any) => this.sortByUpcoming(a, b))

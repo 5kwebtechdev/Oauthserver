@@ -733,6 +733,13 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   ionViewWillEnter(): void {
+    // Ionic caches Learning: refresh the authoritative balance after quizzes
+    // (including hint spending/repeat attempts), not just the category list.
+    if (!this.parentView) {
+      this.userService.refreshStats()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ error: () => undefined });
+    }
     // Refresh the open category listing as well as its summary when returning
     // from a quiz/puzzle. Ionic keeps this component alive in the navigation
     // stack, so without this refresh the completed item remains in Pending

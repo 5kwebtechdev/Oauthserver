@@ -3,6 +3,7 @@ import { of, Subject, throwError } from 'rxjs';
 import { QuickAccessSectionComponent } from './quick-access-section.component';
 import { JournalAvailabilityService } from '../../services/journal-availability.service';
 import { RefreshService } from '../../services/refresh.service';
+import { JournalOutputComponent } from '../journals/journal-output/journal-output.component';
 
 describe('Home Journal entry point', () => {
   let component: QuickAccessSectionComponent;
@@ -39,6 +40,35 @@ describe('Home Journal entry point', () => {
     availability.and.returnValue(of({ allowForTheDay: false }));
     component.openJournal(new Event('click'));
     expect(navigate).toHaveBeenCalledWith(['/authed/journal-output'], { queryParams: { day: 'today' } });
+  });
+
+  it('restores the full-width journal state after deleting today’s last entry', () => {
+    availability.and.returnValue(of({ allowForTheDay: false }));
+    component.ngOnInit();
+    const pending = new Subject<{ allowForTheDay: boolean }>();
+    availability.and.returnValue(pending);
+    events.next(new NavigationEnd(1, '/home', '/home'));
+    const journal = new JournalOutputComponent(null!,
+      { delete: () => of({}) } as any, { getToken: () => '' } as any,
+      null!, null!, refresh);
+    journal.entries = [{ id: 1, date: new Date() }];
+    journal.entryPendingDelete = journal.entries[0];
+    journal.deleteEntry();
+    pending.next({ allowForTheDay: false });
+    expect(component.journalAvailable).toBeTrue();
+    expect(journal.entries).toEqual([]);
+  });
+
+  it('does not restore the empty state when another entry still exists today', () => {
+    availability.and.returnValue(of({ allowForTheDay: false }));
+    component.ngOnInit();
+    const journal = new JournalOutputComponent(null!,
+      { delete: () => of({}) } as any, { getToken: () => '' } as any,
+      null!, null!, refresh);
+    journal.entries = [{ id: 1, date: new Date() }, { id: 2, date: new Date() }];
+    journal.entryPendingDelete = journal.entries[0];
+    journal.deleteEntry();
+    expect(component.journalAvailable).toBeFalse();
   });
 
   it('opens the existing add flow when writing is allowed', () => {

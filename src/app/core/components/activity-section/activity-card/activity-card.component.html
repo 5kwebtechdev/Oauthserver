@@ -1,3 +1,33 @@
+<ng-template #glanceTabs>
+    <div class="container w-full glance-tabs-shell">
+      <div class="glance-tabs" role="tablist" aria-label="Filter by type">
+        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
+          [class.is-active]="currentActive === 'all'"
+          [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
+          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-all.webp" alt="" aria-hidden="true">
+          <span>All</span>
+        </button>
+        <button type="button" class="glance-tab glance-tab--habit" role="tab" [class.active]="currentActive === 'habits'"
+          [class.is-active]="currentActive === 'habits'"
+          [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
+          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-habit.webp" alt="" aria-hidden="true">
+          <span>Habit</span>
+        </button>
+        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
+          [class.is-active]="currentActive === 'tasks'"
+          [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
+          <img class="glance-tab-icon" src="assets/figma/home-glance/tab-task.webp" alt="" aria-hidden="true">
+          <span>Task</span>
+        </button>
+        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
+          [class.is-active]="currentActive === 'timetable'"
+          [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
+          <img class="glance-tab-icon" [src]="plannerTabIcon" alt="" aria-hidden="true">
+          <span>{{ plannerTabLabel }}</span>
+        </button>
+      </div>
+    </div>
+</ng-template>
 <!-- List Mode -->
 <!-- Shared header used by both list and recent modes -->
 <ng-template #dayHeader>
@@ -129,38 +159,7 @@
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Keep category navigation visible in loading, empty and completed states. -->
-    <div class="container w-full glance-tabs-shell" *ngIf="!(glanceBlankState && currentActive === 'all')">
-      <div class="glance-tabs" role="tablist" aria-label="Filter by type">
-        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
-          [class.is-active]="currentActive === 'all'"
-          [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <span *ngIf="glanceBlankState; else allNormalIcon" class="blank-tab-art blank-tab-art--all" [class.selected]="currentActive === 'all'"><img [src]="'assets/figma/home-blank-states/tab-all' + '' + '.png'" alt=""></span>
-          <ng-template #allNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-all.webp" alt="" aria-hidden="true"></ng-template>
-          <span>All</span>
-        </button>
-        <button type="button" class="glance-tab glance-tab--habit" role="tab" [class.active]="currentActive === 'habits'"
-          [class.is-active]="currentActive === 'habits'"
-          [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <span *ngIf="glanceBlankState; else habitNormalIcon" class="blank-tab-art blank-tab-art--habit" [class.selected]="currentActive === 'habits'"><img [src]="'assets/figma/home-blank-states/tab-habit' + (currentActive === 'habits' ? '-selected' : '') + '.png'" alt=""></span>
-          <ng-template #habitNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-habit.webp" alt="" aria-hidden="true"></ng-template>
-          <span>Habit</span>
-        </button>
-        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
-          [class.is-active]="currentActive === 'tasks'"
-          [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <span *ngIf="glanceBlankState; else taskNormalIcon" class="blank-tab-art blank-tab-art--task" [class.selected]="currentActive === 'tasks'"><img [src]="'assets/figma/home-blank-states/tab-task' + (currentActive === 'tasks' ? '-selected' : '') + '.png'" alt=""></span>
-          <ng-template #taskNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-task.webp" alt="" aria-hidden="true"></ng-template>
-          <span>Task</span>
-        </button>
-        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
-          [class.is-active]="currentActive === 'timetable'"
-          [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
-          <span *ngIf="glanceBlankState; else plannerNormalIcon" class="blank-tab-art blank-tab-art--planner" [class.selected]="currentActive === 'timetable'"><img [src]="'assets/figma/home-blank-states/tab-planner' + (currentActive === 'timetable' ? '-selected' : '') + '.png'" alt=""></span>
-          <ng-template #plannerNormalIcon><img class="glance-tab-icon" [src]="plannerTabIcon" alt="" aria-hidden="true"></ng-template>
-          <span>{{ plannerTabLabel }}</span>
-        </button>
-      </div>
-    </div>
+    <ng-container *ngTemplateOutlet="glanceTabs"></ng-container>
 
     <glance-blank-state *ngIf="glanceBlankState as blank" [state]="blank"
       (primary)="openHabitInput()" (secondary)="openBlankStateSecondary(blank)"></glance-blank-state>
@@ -170,7 +169,7 @@
   <!-- Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="!glanceBlankState && currentActive === 'habits' && hasHabits">
-    <activity-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem" [autoExpand]="true" [homeHabitCard]="true"
+    <activity-card *ngFor="let habitItem of filteredRecentHabits.slice(0, maxItemsToShow)" [habit]="habitItem" [autoExpand]="true" [homeTiming]="true" [homeHabitCard]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
     </activity-card>
@@ -179,7 +178,7 @@
   <!-- Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="!glanceBlankState && currentActive === 'tasks' && hasTasks">
-    <activity-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem" [autoExpand]="true" [homeTaskCard]="true"
+    <activity-card *ngFor="let taskItem of filteredRecentTasks.slice(0, maxItemsToShow)" [habit]="taskItem" [autoExpand]="true" [homeTiming]="true" [homeTaskCard]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
     </activity-card>
@@ -201,7 +200,7 @@
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
-      [autoExpand]="item.type === 'tasks' || item.type === 'habits'" [homeHabitCard]="true" [homeTaskCard]="true" mode="single">
+      [autoExpand]="item.type === 'tasks' || item.type === 'habits'" [homeTiming]="item.type === 'tasks' || item.type === 'habits'" [homeHabitCard]="true" [homeTaskCard]="true" mode="single">
     </activity-card>
   </div>
 
@@ -224,38 +223,7 @@
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Keep category navigation visible in loading, empty and completed states. -->
-    <div class="container w-full glance-tabs-shell" *ngIf="!(glanceBlankState && currentActive === 'all')">
-      <div class="glance-tabs" role="tablist" aria-label="Filter by type">
-        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
-          [class.is-active]="currentActive === 'all'"
-          [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <span *ngIf="glanceBlankState; else allNormalIcon" class="blank-tab-art blank-tab-art--all" [class.selected]="currentActive === 'all'"><img [src]="'assets/figma/home-blank-states/tab-all' + '' + '.png'" alt=""></span>
-          <ng-template #allNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-all.webp" alt="" aria-hidden="true"></ng-template>
-          <span>All</span>
-        </button>
-        <button type="button" class="glance-tab glance-tab--habit" role="tab" [class.active]="currentActive === 'habits'"
-          [class.is-active]="currentActive === 'habits'"
-          [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <span *ngIf="glanceBlankState; else habitNormalIcon" class="blank-tab-art blank-tab-art--habit" [class.selected]="currentActive === 'habits'"><img [src]="'assets/figma/home-blank-states/tab-habit' + (currentActive === 'habits' ? '-selected' : '') + '.png'" alt=""></span>
-          <ng-template #habitNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-habit.webp" alt="" aria-hidden="true"></ng-template>
-          <span>Habit</span>
-        </button>
-        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
-          [class.is-active]="currentActive === 'tasks'"
-          [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <span *ngIf="glanceBlankState; else taskNormalIcon" class="blank-tab-art blank-tab-art--task" [class.selected]="currentActive === 'tasks'"><img [src]="'assets/figma/home-blank-states/tab-task' + (currentActive === 'tasks' ? '-selected' : '') + '.png'" alt=""></span>
-          <ng-template #taskNormalIcon><img class="glance-tab-icon" src="assets/figma/home-glance/tab-task.webp" alt="" aria-hidden="true"></ng-template>
-          <span>Task</span>
-        </button>
-        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
-          [class.is-active]="currentActive === 'timetable'"
-          [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
-          <span *ngIf="glanceBlankState; else plannerNormalIcon" class="blank-tab-art blank-tab-art--planner" [class.selected]="currentActive === 'timetable'"><img [src]="'assets/figma/home-blank-states/tab-planner' + (currentActive === 'timetable' ? '-selected' : '') + '.png'" alt=""></span>
-          <ng-template #plannerNormalIcon><img class="glance-tab-icon" [src]="plannerTabIcon" alt="" aria-hidden="true"></ng-template>
-          <span>{{ plannerTabLabel }}</span>
-        </button>
-      </div>
-    </div>
+    <ng-container *ngTemplateOutlet="glanceTabs"></ng-container>
 
     <glance-blank-state *ngIf="glanceBlankState as blank" [state]="blank"
       (primary)="openHabitInput()" (secondary)="openBlankStateSecondary(blank)"></glance-blank-state>
@@ -265,7 +233,7 @@
   <!-- Recent Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="!glanceBlankState && currentActive === 'habits' && hasHabits">
-    <activity-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem" [autoExpand]="true" [homeHabitCard]="true"
+    <activity-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem" [autoExpand]="true" [homeTiming]="true" [homeHabitCard]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
     </activity-card>
@@ -274,7 +242,7 @@
   <!-- Recent Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="!glanceBlankState && currentActive === 'tasks' && hasTasks">
-    <activity-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem" [autoExpand]="true" [homeTaskCard]="true"
+    <activity-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem" [autoExpand]="true" [homeTiming]="true" [homeTaskCard]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
     </activity-card>
@@ -296,7 +264,7 @@
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
-      [autoExpand]="item.type === 'tasks' || item.type === 'habits'" [homeHabitCard]="true" [homeTaskCard]="true" mode="single">
+      [autoExpand]="item.type === 'tasks' || item.type === 'habits'" [homeTiming]="item.type === 'tasks' || item.type === 'habits'" [homeHabitCard]="true" [homeTaskCard]="true" mode="single">
     </activity-card>
   </div>
 

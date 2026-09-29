@@ -3,6 +3,36 @@ import { HabitButtonLogicService } from './habit-button-logic.service';
 describe('HabitButtonLogicService', () => {
   const logic = new HabitButtonLogicService();
 
+  for (const type of ['habits', 'tasks']) {
+    for (const [offset, visible, letsGo, done] of [
+      [-300001, true, false, false],
+      [-300000, true, true, false],
+      [599999, true, true, false],
+      [600000, true, false, true],
+      [600001, true, false, true],
+      [5099999, true, false, true],
+      [5100000, true, false, true],
+      [5100001, false, false, false],
+    ] as const) {
+      it(`uses exact Home boundaries for ${type} at offset ${offset}`, () => {
+        const start = new Date(2026, 8, 29, 8).getTime();
+        const timing = logic.homeTiming({ type, startTimeStamp: start,
+          endTimeStamp: start + 75 * 60_000, expired: true }, start + offset);
+        expect([timing.visible, timing.letsGo, timing.done]).toEqual([visible, letsGo, done]);
+      });
+    }
+  }
+
+  it('normalizes seconds and anchors recurring Home dates to today', () => {
+    const start = new Date(2026, 8, 29, 8).getTime();
+    const seconds = logic.homeTiming({ startTimeStamp: start / 1000,
+      endTimeStamp: (start + 75 * 60_000) / 1000 }, start);
+    const recurring = logic.homeTiming({ everyday: true, startDate: '2026-01-01',
+      endDate: '2026-01-01', startTime: '08:00', endTime: '09:15' }, start);
+    expect(seconds).toEqual(recurring);
+    expect(seconds.letsGo).toBeTrue();
+  });
+
   function item(type: 'habits' | 'tasks', start: Date, expired = true) {
     return { type, status: 'pending', expired, startTimeStamp: start.getTime() };
   }

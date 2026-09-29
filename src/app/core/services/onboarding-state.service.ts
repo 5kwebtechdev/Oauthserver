@@ -59,6 +59,11 @@ export interface OnboardingResumeNavigation {
   providedIn: 'root'
 })
 export class OnboardingStateService {
+  private readonly existingGoogleHomeKey = 'superme_existing_google_home_user';
+
+  allowExistingGoogleAccountHome(userId: number): void {
+    sessionStorage.setItem(this.existingGoogleHomeKey, String(userId));
+  }
   private readonly legacyOnboardingKey = 'onboardingComplete';
   // The backend uses step 6 for the final "Unlock My Potential" action and
   // returns step 7 only after that action has completed successfully.
@@ -155,6 +160,17 @@ export class OnboardingStateService {
   }
 
   getResumeNavigation(source?: RegistrationDraftData | null): OnboardingResumeNavigation | null {
+    // A Google login can return a legacy Parent at step 4 despite an existing
+    // family. Its successful account login must not loop through signup.
+    if (source?.relationship === 'PARENT' && (source['family'] as any)?.id) {
+      try {
+        if (String(source['id'] || source.userId || '') === sessionStorage.getItem(this.existingGoogleHomeKey)) {
+          return null;
+        }
+      } catch {
+        // Restricted storage keeps the normal onboarding route available.
+      }
+    }
     const state = this.getRegistrationState();
     const savedData = this.sanitizeDraftData({
       ...(state?.savedData || {}),

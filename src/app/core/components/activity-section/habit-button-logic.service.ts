@@ -6,6 +6,26 @@ import { Injectable } from '@angular/core';
  */
 @Injectable({ providedIn: 'root' })
 export class HabitButtonLogicService {
+  /** Home boundaries: start opens inclusively, hands off to Done, then expires after grace. */
+  homeTiming(item: any, now = Date.now()) {
+    const today = new Date(now);
+    const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const recurring = item?.daysOfWeek?.length || item?.everyday || item?.everyWeekend;
+    const dated = { ...item, startDate: item?.startDate || date, endDate: item?.endDate || item?.startDate || date };
+    const times = this.calculateTimestamps(recurring ? { ...dated, startDate: date, endDate: date } : dated);
+    const normalize = (value: number) => value > 0 && value < 1e12 ? value * 1000 : value;
+    const start = normalize(times.startTimeStamp);
+    const end = normalize(times.endTimeStamp);
+    const opens = start - 5 * 60_000;
+    const handoff = start + 10 * 60_000;
+    const closes = end + 10 * 60_000;
+    const valid = Number.isFinite(start) && start > 0 && Number.isFinite(end) && end >= start;
+    const visible = valid && now <= closes;
+    return { opens, handoff, closes, valid, visible,
+      letsGo: visible && now >= opens && now < handoff,
+      done: visible && now >= handoff };
+  }
+
   private static readonly LETS_GO_WINDOW_MS = 5 * 60 * 1000;
   /**
    * Combine date string (YYYY-MM-DD) with time string (HH:MM:SS or HH:MM) to create timestamp

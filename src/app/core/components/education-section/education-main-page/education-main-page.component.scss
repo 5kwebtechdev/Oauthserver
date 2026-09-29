@@ -100,12 +100,14 @@ ion-content {
 .parent-eduhub-section-state--error { display: flex; align-items: center; justify-content: space-between; button { padding: 8px 16px; border-radius: 8px; background: #ebe6f5; color: #432477; } }
 .parent-eduhub-no-results { margin: 0 16px; padding: 24px; border-radius: 16px; background: #ebe6f5; text-align: center; }
 @media (max-width: 767px) {
-    // The navigation is fixed over ion-content. Keep the final PG / Hostels
-    // card scrollable completely above it, including the device safe area.
-    ion-content.parent-eduhub-content { --padding-bottom: 0px; }
+    // The navigation is fixed over ion-content. Reserve its full height in
+    // Ionic's actual scroll area so every final category can scroll above it.
+    ion-content.parent-eduhub-content {
+        --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 24px);
+    }
     .parent-eduhub-page {
         box-sizing: border-box;
-        padding-bottom: calc(var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px) + 24px);
+        padding-bottom: 24px;
     }
 }
 :host ::ng-deep .parent-eduhub-toolbar {

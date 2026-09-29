@@ -90,21 +90,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       ? { habits: this.loadedDailyHabits, tasks: this.loadedDailyTasks, planners: this.loadedDailyPlanners }
       : null);
     if (!data) return null;
-    const today = this.glanceDateKey(new Date());
-    const classify = (item: any, planner = false, habit = false) => {
+    const classify = (item: any, planner = false) => {
       const status = String(item?.status || '').toLowerCase();
-      const recurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
-      const timestamps = this.buttonLogic.calculateTimestamps(recurring
-        ? { ...item, startDate: today, endDate: today } : item);
-      const end = this.normalizePossibleTimestamp(timestamps.endTimeStamp);
       return {
         completed: status === 'completed' || item.completed === true,
-        // Home already grants habits/tasks five minutes after the session end.
-        // An explicitly expired calendar record is already hidden by Home,
-        // even when the backend has also marked the habit skipped.
-        passed: item.expired === true || (!(habit && status === 'skipped') && (planner
-          ? this.isGlancePlannerEntryPassed(item)
-          : end > 0 && Date.now() > end + 5 * 60_000))
+        // Use the same Home deadline as card visibility, including end-time grace.
+        passed: planner ? (item.expired === true || this.isGlancePlannerEntryPassed(item))
+          : !this.buttonLogic.homeTiming(item).visible
       };
     };
     // Grouped schedules contain the complete set of today's slots, without
@@ -116,14 +108,16 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       : data.planners.filter(item => isHomePlannerSchedule(item)
         && !this.glanceUpcomingEventRaw.some(event => this.matchesGlancePlannerRecord(event, item)));
     return resolveGlanceBlankState(this.currentActive as GlanceTab, {
-      habits: data.habits.map(item => classify(item, false, true)),
+      habits: data.habits.map(item => classify(item)),
       tasks: data.tasks.map(item => classify(item)),
       timetable: planners.map(item => classify(item, true))
     });
   }
 
   openBlankStateSecondary(state: GlanceBlankState): void {
-    if (state.secondaryRoute === 'calendar') void this.router.navigate(['/authed/activity-calendar']);
+    if (state.secondaryRoute === 'calendar') {
+      void this.router.navigate(['/authed/activity-page'], { queryParams: { tab: 'all' } });
+    }
     else void this.openHabitPage();
   }
 
@@ -135,6 +129,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   /** The simplified Figma presentation is exclusive to Home Habit items. */
   @Input() homeHabitCard = false;
   @Input() homeTaskCard = false;
+  @Input() homeTiming = false;
 
   get isCompactHomeHabit(): boolean {
     return this.homeHabitCard && this.habit?.type === 'habits';
@@ -426,7 +421,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           // Start progress with proper initialization
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
-          void this.openTimer();
           // Show the short-lived start bubble for 3s
           if (!this.showStartBubble) {
             if (this.startBubbleTimer) {
@@ -473,7 +467,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           });
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
-          void this.openTimer();
           // Show the short-lived start bubble for 3s
           if (!this.showStartBubble) {
             if (this.startBubbleTimer) {
@@ -1346,8 +1339,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   /**
    * Set up timers to automatically reload habits/tasks at key time points:
-   * 1. When the API-provided activity start time is reached
-   * 2. Immediately after the API-provided activity end time
+   * Home refreshes at start - 5m, start + 10m, and immediately after end + 10m.
+   * Other views retain their existing refresh boundaries.
    */
   private setupAutoReloadTimers(): void {
     // Clear any existing timers
@@ -1367,6 +1360,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         const { startTimeStamp, endTimeStamp } = this.buttonLogic.calculateTimestamps(activity);
         if (!startTimeStamp || !endTimeStamp) return;
 
+        if (this.mode !== 'single' || this.homeTiming) {
+          const timing = this.buttonLogic.homeTiming(activity, now);
+          for (const time of [timing.opens, timing.handoff, timing.closes + 1]) {
+            if (timing.valid && time > now) upcomingEvents.push({ time, type: 'letsgo' });
+          }
+          return;
+        }
         const letsGoWindowStart = this.autoExpand ? startTimeStamp - 5 * 60_000 : startTimeStamp;
         if (now < letsGoWindowStart) {
           upcomingEvents.push({ time: letsGoWindowStart, type: 'letsgo' });
@@ -1840,7 +1840,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       void this.viewPlanner(this.habit, null, event);
       return;
     }
-    if (this.getStatus() === 'ongoing' && !this.isParent) { void this.openTimer(); return; }
     this.openActivityDetail(false);
   }
 
@@ -2041,7 +2040,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           // Exclude completed and skipped items from Home (completed disappear instantly)
           .filter((h: Habit) => {
             const s = (h.status || '').toString().toLowerCase();
-            return s !== 'completed' && s !== 'skipped';
+            return s !== 'completed' && s !== 'skipped' && this.buttonLogic.homeTiming(h).visible;
           })
           // Sort by absolute difference between start time and now (closest to now first)
           .sort((a: Habit, b: Habit) => {
@@ -2118,7 +2117,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           // Exclude completed and skipped items
           .filter((t: any) => {
             const s = (t.status || '').toString().toLowerCase();
-            return s !== 'completed' && s !== 'skipped';
+            return s !== 'completed' && s !== 'skipped' && this.buttonLogic.homeTiming(t).visible;
           })
           // This API returns all tasks; keep only today's occurrences on Home.
           .filter((t: any) => {
@@ -2239,7 +2238,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           // Exclude completed and skipped items
           .filter((t: any) => {
             const s = (t.status || '').toString().toLowerCase();
-            return s !== 'completed' && s !== 'skipped';
+            return s !== 'completed' && s !== 'skipped' && this.buttonLogic.homeTiming(t).visible;
           })
           // Sort by upcoming logic: treat items as active until their endTimeStamp passes
           .sort((a: any, b: any) => {
@@ -3113,10 +3112,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    * item so users can review or complete it instead of seeing an empty state.
    */
   get filteredRecentHabits(): Habit[] {
-    if (!this.recentHabits) return [];
-    return this.recentHabits.filter(habit => {
+    return (this.mode === 'list' ? this.habits : this.recentHabits || []).filter(habit => {
       const status = (habit.status || '').toLowerCase();
-      return status !== 'completed';
+      return status !== 'completed' && this.buttonLogic.homeTiming(habit).visible;
     });
   }
 
@@ -3124,10 +3122,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    * Get filtered recent tasks excluding completed and skipped ones
    */
   get filteredRecentTasks(): any[] {
-    if (!this.recentTasks) return [];
-    return this.recentTasks.filter(task => {
+    return (this.mode === 'list' ? this.tasks : this.recentTasks || []).filter(task => {
       const status = (task.status || '').toLowerCase();
-      return status !== 'completed' && status !== 'skipped';
+      return status !== 'completed' && status !== 'skipped' && this.buttonLogic.homeTiming(task).visible;
     });
   }
 
@@ -3155,7 +3152,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       // entries again in All, otherwise the same planner appears twice and
       // with the generic Habit/Task card layout.
       const timetableItems = this.hasGlancePlannerCards ? [] : (this.timetables || []);
-      const combined = [...(this.habits || []), ...(this.tasks || []), ...timetableItems];
+      const combined = [...this.filteredRecentHabits, ...this.filteredRecentTasks, ...timetableItems];
       return combined.sort((a, b) => {
         // Sort by start time: closest to current time first
         const aStart = a.startTimeStamp || 0;
@@ -3167,7 +3164,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     // For recent mode, combine recent habits, tasks and timetable entries
     if (this.mode === 'recent') {
       const timetableItems = this.hasGlancePlannerCards ? [] : this.filteredRecentTimetables;
-      const combined = [...(this.recentHabits || []), ...(this.recentTasks || []), ...timetableItems];
+      const combined = [...this.filteredRecentHabits, ...this.filteredRecentTasks, ...timetableItems];
       return combined.sort((a, b) => {
         // Sort by start time: closest to current time first
         const aStart = a.startTimeStamp || 0;
@@ -3425,6 +3422,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    * Check if "Let's Go" button should be enabled
    */
   isLetsGoEnabled(): boolean {
+    if (this.homeTiming) return this.buttonLogic.homeTiming(this.habit).letsGo
+      && this.getStatus() === 'pending' && !this.hasOtherOngoingActivity();
     return this.buttonLogic.isLetsGoEnabled(this.habit, this.hasOtherOngoingActivity());
   }
 
@@ -3432,6 +3431,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    * Check if "Let's Go" button should be visible
    */
   isLetsGoVisible(): boolean {
+    if (this.homeTiming) return this.getStatus() === 'pending';
     return this.buttonLogic.isLetsGoVisible(this.habit);
   }
 
@@ -3446,6 +3446,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    * Check if "Done" button should be enabled
    */
   isDoneEnabled(): boolean {
+    if (this.homeTiming) return this.buttonLogic.homeTiming(this.habit).done
+      && ['pending', 'ongoing'].includes(this.getStatus()) && !this.hasOtherOngoingActivity();
     return this.buttonLogic.isDoneEnabled(this.habit, this.hasOtherOngoingActivity());
   }
 
@@ -3453,6 +3455,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    * Check if "Done" button should be visible (uses button logic service)
    */
   isDoneVisible(): boolean {
+    if (this.homeTiming) return ['pending', 'ongoing'].includes(this.getStatus());
     return this.buttonLogic.isDoneVisible(this.habit);
   }
 

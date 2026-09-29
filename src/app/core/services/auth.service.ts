@@ -637,13 +637,8 @@ export class AuthService {
   }
 
   completeGoogleOnboarding(payload: any): Observable<any> {
-    const url = `${this.apiUrl}/api/auth/complete-google-profile`;
-    // Update the signed-in account, never the child selected in the family UI.
-    const headers = new HttpHeaders({
-      'X-Skip-Profile-Selector': 'true',
-      'X-Skip-Auth-Handler': 'true'
-    });
-    return this.http.post<any>(url, payload, { headers });
+    // The backend handles OAuth profile updates through mobile-login too.
+    return this.googleOAuthLogin(payload);
   }
 
   sendLoginOtp(email: string): Observable<any> {

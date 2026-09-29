@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "124581866222-kgg99hqv2fcmac8rfra4mslsuqcb40kq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.superme.app",
+            "certificate_hash": "546a1c3bbea4de454ab538afa5e2e25cd512fc5c"
+          }
+        },
+        {
           "client_id": "124581866222-lh40gkcbfp5blkdpa1v0d9pg0q227i7h.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -61,6 +69,13 @@
             {
               "client_id": "124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "124581866222-gsff4sl4ff07rr4btsah7u91gtkh30n0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.supermeapp.app"
+              }
             }
           ]
         }

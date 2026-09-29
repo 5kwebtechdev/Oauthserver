@@ -72,7 +72,8 @@
       <!-- Status dot for habit detail calendar (shown when no mood toggle) -->
       <div *ngIf="!showMoodToggle && hasStatusData(date)" class="status-dot"
         [class.status-completed]="getStatusForDate(date) === 'COMPLETED'"
-        [class.status-skipped]="getStatusForDate(date) === 'SKIPPED'">
+        [class.status-skipped]="getStatusForDate(date) === 'SKIPPED'"
+        [class.status-pending]="getStatusForDate(date) === 'PENDING'">
         <img *ngIf="useActivityDetailStyle && getStatusForDate(date) !== 'PENDING'" aria-hidden="true" alt=""
           [src]="'assets/app-assets/activity-detail/' + (getStatusForDate(date) === 'COMPLETED' ? 'check-' : 'close-') + activityDetailTheme + '.svg'" />
       </div>

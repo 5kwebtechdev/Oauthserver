@@ -8,7 +8,8 @@ import { AuthService } from '../../services/auth.service';
 import { ParentAnalyticsService, InsightsResponseDto } from '../../services/parent-analytics.service';
 import { ProfileStoreService } from '../../services/profile-store.service';
 import { ChildInfo } from '../../models/child-info.model';
-import { MOOD_EMOJI_MAP, MoodTransition } from '../../models/mood.model';
+import { MoodTransition } from '../../models/mood.model';
+import { normalizeHomeMood } from '../home-mood-header/home-mood-header.component';
 import { FooterComponent } from '../footer/footer.component';
 import { environment } from '../../../../environments/environment';
 import { MoodService } from '../../services/mood.service';
@@ -91,7 +92,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   activityBreakdown: ActivityBreakdownSegment[] = this.emptyActivityBreakdown();
   primaryMood: PrimaryMood = {
     label: 'No data',
-    icon: 'assets/Images-Transparent/Mood-emoji-neutral-home.webp',
+    icon: 'assets/figma/child-home/moods/Calm.svg',
   };
 
   private readonly destroy$ = new Subject<void>();
@@ -309,7 +310,6 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
         title: 'Knowledge Gained',
         metrics: [
           this.metric('quizzes', 'Quizzes', this.periodValues(insights.knowledgeGained?.quizzes).month, 'Quizzes conquered so far', 'assets/figma/parent-insights/quiz.webp', 'knowledge', 'quiz'),
-          this.metric('puzzles', 'Puzzles', this.periodValues(insights.knowledgeGained?.puzzles).month, 'Puzzles cracked since you started', 'assets/figma/parent-insights/puzzle.webp', 'knowledge', 'puzzle'),
           this.metric('articles', 'Articles', this.periodValues(insights.knowledgeGained?.articles).month, 'Ideas absorbed since you joined', 'assets/figma/parent-insights/article.webp', 'knowledge', 'article'),
           this.metric('lessons', 'Lessons', this.periodValues(insights.knowledgeGained?.lessons).month, 'Lessons progress since you started', 'assets/figma/parent-insights/lesson.webp', 'knowledge', 'lesson'),
         ],
@@ -469,7 +469,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     transitions.forEach(transition => {
       const date = new Date(transition.date);
       if (Number.isNaN(date.getTime()) || date < monthStart || date > now) return;
-      const mood = String(transition.toMood || '').trim().replace(/[_-]+/g, ' ');
+      const mood = normalizeHomeMood(transition.toMood);
       if (!mood) return;
       const label = mood.replace(/\b\w/g, character => character.toUpperCase());
       counts.set(label, (counts.get(label) || 0) + 1);
@@ -477,9 +477,8 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
 
     const label = [...counts.entries()]
       .sort((first, second) => second[1] - first[1])[0]?.[0] || 'No data';
-    const icon = label === 'Excited'
-      ? 'assets/figma/child-self-insights/excited.webp'
-      : MOOD_EMOJI_MAP[label] || 'assets/Images-Transparent/Mood-emoji-neutral-home.webp';
+    const mood = normalizeHomeMood(label) || 'calm';
+    const icon = `assets/figma/child-home/moods/${mood === 'calm' ? 'Calm' : mood}.svg`;
 
     return { label, icon };
   }

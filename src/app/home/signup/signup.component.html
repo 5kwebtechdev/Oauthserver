@@ -466,7 +466,6 @@
                   class="profile-field-hint profile-field-purpose">
                   To show personalized content
                 </span>
-                <span *ngIf="isOAuthSignup" class="profile-optional-badge">Optional</span>
                 <span *ngIf="computedAge !== null" class="profile-field-hint age-count">
                   {{ computedAge }} years old
                 </span>
@@ -593,7 +592,7 @@
       <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
       <div class="profile-button-wrapper">
         <button type="button" class="details-next-button"
-          [disabled]="isProfileStepInvalid || registrationInProgress || referralValidationStatus === 'pending'"
+          [disabled]="isProfileStepInvalid || registrationInProgress || profileContinueInProgress || referralValidationStatus === 'pending'"
           (click)="registerOrProceed()">Next</button>
       </div>
 

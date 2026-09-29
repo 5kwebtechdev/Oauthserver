@@ -13,7 +13,7 @@ import {
   OAuthProvider,
   UserCredential
 } from 'firebase/auth';
-import { timeout } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
@@ -173,15 +173,7 @@ export class SocialMediaComponent implements OnInit {
       // fails silently if Firebase is not yet initialized.
       await this.registerWithFirebaseAuth(googleUser);
 
-      // The OAuth endpoint is the single authority for both existing and new
-      // accounts. An email-exists preflight races with private relay emails and
-      // can create two different navigation paths for the same provider user.
-      this.storeOAuthSignupSession('google', googleProfile);
-      this.loginWithOAuthProfile(
-        this.withSelectedSignupRole(googleProfile),
-        loading,
-        'google'
-      );
+      await this.continueGoogleAuthentication(googleProfile, loading);
     } catch (err: any) {
       await this.finishSocialLogin(loading);
       const normalizedError = this.normalizeGoogleSignInError(err);
@@ -227,12 +219,7 @@ export class SocialMediaComponent implements OnInit {
 
       const result = await signInPromise;
       const googleProfile = await this.buildWebGoogleOAuthProfile(result);
-      this.storeOAuthSignupSession('google', googleProfile);
-      this.loginWithOAuthProfile(
-        this.withSelectedSignupRole(googleProfile),
-        loading,
-        'google'
-      );
+      await this.continueGoogleAuthentication(googleProfile, loading);
     } catch (err: any) {
       await this.finishSocialLogin(loading);
       const normalizedError = this.normalizeGoogleSignInError(err);
@@ -248,6 +235,45 @@ export class SocialMediaComponent implements OnInit {
         await this.presentToast(normalizedError.userMessage);
       }
     }
+  }
+
+  private async continueGoogleAuthentication(profile: GoogleOAuthProfile, loading: any): Promise<void> {
+    // Google authentication supplies proof only. This read-only lookup does
+    // not create a SuperMe account; mobile-login remains the token verifier.
+    const result = await firstValueFrom(
+      this.authService.checkEmailExists(profile.email).pipe(timeout({ first: 20_000 }))
+    );
+    if (typeof result?.exists !== 'boolean') {
+      throw new Error('Unable to check your account. Please try Google sign-in again.');
+    }
+    this.storeOAuthSignupSession('google', profile);
+    if (result.exists) {
+      sessionStorage.removeItem('oauth_signup_pending_submission');
+      this.loginWithOAuthProfile(this.withSelectedSignupRole(profile), loading, 'google');
+      return;
+    }
+
+    const selectedRole = this.getSelectedSignupRole();
+    sessionStorage.setItem('oauth_signup_pending_submission', 'true');
+    this.onboardingState.clearRegistrationDraft();
+    this.onboardingState.saveRegistrationDraft({
+      email: profile.email,
+      name: profile.name,
+      authProvider: 'google',
+      socialProviderId: profile.providerId,
+      socialOnboarding: true,
+      socialDetailsCompleted: false,
+      socialRolePending: !selectedRole,
+      selectedSignupRole: selectedRole || undefined,
+      relationship: selectedRole?.toUpperCase(),
+      asChild: selectedRole === 'child',
+      onboardingStep: 3
+    }, 3, 'EMAIL');
+    await this.router.navigate(['/signup'], {
+      queryParams: selectedRole ? { step: 2, role: selectedRole } : { step: 1 },
+      replaceUrl: true
+    });
+    await this.finishSocialLogin(loading);
   }
 
   private async buildWebGoogleOAuthProfile(result: UserCredential): Promise<GoogleOAuthProfile> {
@@ -417,6 +443,16 @@ export class SocialMediaComponent implements OnInit {
           this.analytics.logLogin(provider);
           this.analytics.setUserId(String(userId));
 
+          if (provider === 'google' && responseUser.relationship === 'PARENT'
+            && responseUser.family?.id) {
+            this.onboardingState.clearRegistrationDraft();
+            this.onboardingState.allowExistingGoogleAccountHome(userId);
+            this.onboardingState.markExistingUser();
+            this.clearOAuthSignupSession();
+            this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });
+            return;
+          }
+
           if (onboardingStep !== null && onboardingStep < 7) {
             // Keep the exact Apple private-relay email and the one-time Apple
             // name. Returning Apple users fall back to the backend/cached name.
@@ -561,7 +597,7 @@ export class SocialMediaComponent implements OnInit {
         'oauth_signup_access_token', 'oauth_signup_server_auth_code',
         'oauth_signup_identity_token', 'oauth_signup_authorization_code',
         'oauth_signup_raw_nonce', 'oauth_signup_client_id',
-        'oauth_signup_is_development_mock', 'requestedIdentifier'
+        'oauth_signup_is_development_mock', 'oauth_signup_pending_submission', 'requestedIdentifier'
       ].forEach(key => sessionStorage.removeItem(key));
     } catch {
       // Session storage is a convenience layer; the authenticated backend

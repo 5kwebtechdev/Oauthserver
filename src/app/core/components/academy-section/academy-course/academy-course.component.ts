@@ -75,8 +75,15 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
     private coinService: CoinService
   ) { }
 
-  // navigate back using history-aware NavigationService
+  // Return to the Learning screen that opened this course. The global history
+  // can contain unrelated pages (such as Notes) after app/session navigation.
   goBack(): void {
+    const source = this.router.getCurrentNavigation()?.extras.state?.['source']
+      ?? (history.state as any)?.source;
+    if (typeof source === 'string' && source.startsWith('/authed/content')) {
+      this.navigation.navigateReplacingCurrent(source);
+      return;
+    }
     this.navigation.back();
   }
 

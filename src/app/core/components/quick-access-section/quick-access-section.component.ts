@@ -42,6 +42,10 @@ export class QuickAccessSectionComponent implements OnInit, OnDestroy {
     });
     this.refreshService.refresh$.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.refreshJournalAvailability());
+    this.refreshService.journalTodayCleared$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.availabilityRequest?.unsubscribe();
+      this.journalAvailable = true;
+    });
   }
 
   ngOnDestroy(): void {

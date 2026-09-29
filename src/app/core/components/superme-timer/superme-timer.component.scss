@@ -8,12 +8,12 @@ button:disabled { cursor: default; }
 .focus-header { position: relative; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .back { position: absolute; left: 0; top: 0; padding: 0; width: 40px; height: 40px; border: 0; border-radius: 56px; background: #ebe6f5; }
 .back img { width: 40px; height: 40px; }
-h1 { margin: 0 44px; display: flex; align-items: center; justify-content: center; gap: 4px; font: 500 20px/1.2 var(--font-heading, 'Fredoka', sans-serif); color: #282527; min-width: 0; }
-h1 > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+h1 { margin: 28px 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; font: 500 clamp(26px, 7vw, 30px)/1.25 var(--font-heading, 'Fredoka', sans-serif); color: #282527; min-width: 0; flex-shrink: 0; text-align: center; }
+h1 > span:last-child { min-width: 0; overflow-wrap: anywhere; }
 .habit-icon { position: relative; overflow: hidden; width: 29px; height: 24px; flex-shrink: 0; }
 .task-icon { width: 24px; height: 24px; flex-shrink: 0; }
 .habit-icon img { position: absolute; width: 189.28%; height: 339.82%; max-width: none; left: -51.2%; top: -121.02%; }
-.timer-wrap { position: relative; width: 252px; height: 252px; flex-shrink: 0; margin: 80px auto 32px; }
+.timer-wrap { position: relative; width: 252px; height: 252px; flex-shrink: 0; margin: 20px auto 32px; }
 .ring-track, .ring-progress { position: absolute; inset: 0; border-radius: 50%; width: 252px; height: 252px; }
 .ring-progress { mask: radial-gradient(farthest-side, transparent calc(100% - 15px), #000 calc(100% - 14.5px)); }
 .ring-cap { position: absolute; top: 0; left: 118.5px; width: 15px; height: 15px; border-radius: 50%; background: #7341a7; }

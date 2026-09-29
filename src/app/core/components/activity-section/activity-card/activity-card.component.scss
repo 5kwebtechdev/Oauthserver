@@ -10,41 +10,22 @@
   --blank-accent: #524f84;
   --blank-border: #8b8dcb;
 
-  &.glance-card--habits { background: #e8ecf7; --blank-primary: #7471ba; --glance-tab-active: #8b8dcb; }
-  &.glance-card--tasks { background: #fdead7; --blank-primary: #ee6621; --blank-accent: #e04d16; --blank-border: #f6ac72; --glance-tab-active: #f6ac72; }
-  &.glance-card--timetable { background: #eaf2f3; --blank-primary: #6e9ea2; --blank-accent: #537c81; --glance-tab-active: #85b1b5; }
+  &.glance-card--habits { background: #e8ecf7; --blank-primary: #7471ba; }
+  &.glance-card--tasks { background: #fdead7; --blank-primary: #ee6621; --blank-accent: #e04d16; --blank-border: #f6ac72; }
+  &.glance-card--timetable { background: #eaf2f3; --blank-primary: #6e9ea2; --blank-accent: #537c81; }
 
   .day-at-glance-container { display: flex; flex-direction: column; gap: 16px; padding: 0; width: 100%; }
   .glance-heading-block { height: 64px; gap: 16px; }
   superme-card-header { flex: 0 0 48px; }
   .glance-done-pill { background: transparent; min-width: 0; padding: 7px 15px; border-radius: 24px; }
   .glance-progress-track { flex-shrink: 0; height: 6px; margin-bottom: -6px; transform: translateY(-3px); }
-  .glance-tabs-shell { margin: 0; padding: 0; }
-  .glance-tabs { display: grid; grid-template-columns: 65.25fr 97.25fr 97.25fr 97.25fr; height: 44px; min-height: 44px; box-sizing: border-box; }
-  .glance-tab { height: 40px; min-height: 40px; padding: 8px 0; gap: 4px; font: 700 17px/24px var(--font-sans); color: #432477; }
-  .glance-tab:nth-child(2) { color: #524f84; }
-  .glance-tab:nth-child(3) { color: #e04d16; }
-  .glance-tab:nth-child(4) { color: #537c81; gap: 2px; }
-  .glance-tab.active { color: white; }
   ::ng-deep .superme-card-header { margin: 0; padding: 0; min-height: 48px; }
   ::ng-deep .superme-card-header__title { font: 500 20px/28px var(--font-heading); margin: 0; }
   ::ng-deep .superme-card-header__tagline .tag { font: 500 13px/18px var(--font-sans); }
   ::ng-deep .superme-card-header__tagline { margin-top: 2px; }
   ::ng-deep .superme-card-header__left { min-width: 0; }
 
-  .blank-tab-art { position: relative; width: 16px; height: 16px; flex: 0 0 16px; overflow: hidden; }
-  .blank-tab-art img { position: absolute; max-width: none; width: 100%; height: 100%; }
-  .blank-tab-art--habit { width: 19px; flex-basis: 19px; }
-  .blank-tab-art--habit img { width: 177.22%; height: 317.36%; left: -40.53%; top: -102.89%; }
-  .blank-tab-art--habit:not(.selected) img { width: 189.28%; height: 339.82%; left: -51.2%; top: -121.02%; }
-  .blank-tab-art--task img { width: 133.33%; height: 133.33%; left: -16.67%; top: -16.67%; }
-  .blank-tab-art--task.selected { width: 19px; flex-basis: 19px; }
-  .blank-tab-art--task.selected img { height: 160%; left: -14.58%; top: -30%; }
-  .blank-tab-art--planner img { width: 150%; height: 150%; left: -25%; top: -25%; }
-  .blank-tab-art--planner.selected { width: 17px; flex-basis: 17px; }
-  .blank-tab-art--planner.selected img { width: 141.18%; left: -19.12%; }
   @media (max-width: 359px) {
-    .glance-tab { font-size: 14px; gap: 2px; }
     ::ng-deep .superme-card-header__title { font-size: 18px; }
     ::ng-deep .superme-card-header__tagline .tag { font-size: 11px; }
     .glance-done-pill { padding-inline: 8px; }

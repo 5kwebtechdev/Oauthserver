@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": ["src/app/core/components/learning-section/learning-main/learning-coins-refresh.spec.ts", "src/**/*.d.ts"]
+}

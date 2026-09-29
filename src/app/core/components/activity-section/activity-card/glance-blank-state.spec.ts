@@ -61,6 +61,34 @@ describe('Home Today at a Glance Figma states', () => {
     return fixture;
   }
 
+  it('applies Home CTA boundaries and removes expired rows from All and category lists', () => {
+    const c = render('all', empty()).componentInstance;
+    spyOn(c as any, 'hasOtherOngoingActivity').and.returnValue(false);
+    c.homeTiming = true;
+    for (const type of ['habits', 'tasks'] as const) {
+      const activity = { id: 'timing', type, status: 'pending', startTimeStamp: now,
+        endTimeStamp: now + 75 * 60_000 } as any;
+      c.habit = activity;
+      c.recentHabits = type === 'habits' ? [activity] : [];
+      c.recentTasks = type === 'tasks' ? [activity] : [];
+      for (const [offset, visible, go, done] of [
+        [-300001, true, false, false], [-300000, true, true, false],
+        [599999, true, true, false], [600000, true, false, true],
+        [5100000, true, false, true], [5100001, false, false, false]
+      ] as const) {
+        (Date.now as jasmine.Spy).and.returnValue(now + offset);
+        expect(c.isLetsGoEnabled()).toBe(go);
+        expect(c.isDoneEnabled()).toBe(done);
+        expect(c.combinedAndSortedItems.length).toBe(visible ? 1 : 0);
+        expect((type === 'habits' ? c.filteredRecentHabits : c.filteredRecentTasks).length).toBe(visible ? 1 : 0);
+      }
+      activity.status = 'completed';
+      (Date.now as jasmine.Spy).and.returnValue(now + 600000);
+      expect(c.isDoneEnabled()).toBeFalse();
+      expect(c.combinedAndSortedItems.length).toBe(0);
+    }
+  });
+
   const cases: Array<[string, GlanceTab, GlanceDailyData]> = [
     ['habits-empty', 'habits', empty()],
     ['habits-completed', 'habits', { ...empty(), habits: [done] }],
@@ -85,7 +113,7 @@ describe('Home Today at a Glance Figma states', () => {
       expect(element.querySelector('.primary')?.textContent).toBe(GLANCE_BLANK_STATES[key].primary);
       expect(element.querySelector('.primary--attention')).toBeTruthy();
       expect(element.querySelector('.secondary.primary--attention')).toBeNull();
-      expect(element.querySelectorAll('[role="tab"]').length).toBe(tab === 'all' ? 0 : 4);
+      expect(element.querySelectorAll('[role="tab"]').length).toBe(4);
       const add = spyOn(fixture.componentInstance, 'openHabitInput');
       (element.querySelector('.primary') as HTMLButtonElement).click();
       expect(add).toHaveBeenCalledTimes(1);
@@ -94,7 +122,10 @@ describe('Home Today at a Glance Figma states', () => {
         const route = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
         secondary.click();
         const calendar = GLANCE_BLANK_STATES[key].secondaryRoute === 'calendar';
-        expect(route.calls.mostRecent().args[0]).toEqual([calendar ? '/authed/activity-calendar' : '/authed/activity-page']);
+        expect(route.calls.mostRecent().args[0]).toEqual(['/authed/activity-page']);
+        if (calendar) {
+          expect(route).toHaveBeenCalledOnceWith(['/authed/activity-page'], { queryParams: { tab: 'all' } });
+        }
       }
     });
   }
@@ -103,6 +134,7 @@ describe('Home Today at a Glance Figma states', () => {
   });
   it('keeps the highlighted Add CTA inside the card at mobile widths', () => {
     const f = render('all', empty());
+    // Geometry needs a visible, attached host in the headless test runner.
     for (const width of [320, 360, 375, 390, 414, 430]) {
       f.nativeElement.style.width = `${width}px`;
       const card = f.nativeElement.querySelector('.glance-card') as HTMLElement;
@@ -126,6 +158,37 @@ describe('Home Today at a Glance Figma states', () => {
   it('shows No Planner while Habits exist', () => {
     expect(render('timetable', { ...empty(), habits: [active] }).componentInstance.glanceBlankState?.key).toBe('timetable-empty');
   });
+  it('keeps the updated Planner artwork and both actions readable at mobile widths', async () => {
+    const f = render('timetable', empty());
+    const host = f.nativeElement as HTMLElement;
+    const bodyDisplay = document.body.style.display;
+    document.body.style.display = 'block';
+    document.body.appendChild(host);
+    try {
+      const art = host.querySelector('.art') as HTMLElement;
+      const image = art.querySelector('img')!;
+      await image.decode();
+      expect(image.naturalWidth).toBeGreaterThan(0);
+      expect(host.querySelector('.secondary')?.textContent).toBe('View Calendar');
+      for (const width of [320, 360, 375, 390, 414, 430]) {
+        host.style.width = `${width}px`;
+        const card = host.querySelector('.glance-card') as HTMLElement;
+        const actions = host.querySelector('.actions') as HTMLElement;
+        const primary = host.querySelector('.primary') as HTMLElement;
+        const secondary = host.querySelector('.secondary') as HTMLElement;
+        expect(card.clientWidth).toBeGreaterThan(0);
+        expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth);
+        expect(art.getBoundingClientRect().width).toBeLessThanOrEqual(card.clientWidth);
+        expect(primary.getBoundingClientRect().left).toBeGreaterThanOrEqual(secondary.getBoundingClientRect().right);
+        expect(actions.scrollWidth).toBeLessThanOrEqual(actions.clientWidth);
+        expect(getComputedStyle(primary).backgroundColor).toBe('rgb(110, 158, 162)');
+        expect(getComputedStyle(primary).animationName).toBe('none');
+      }
+    } finally {
+      host.remove();
+      document.body.style.display = bodyDisplay;
+    }
+  });
   it('keeps mixed completed/pending habits active', () => {
     expect(render('habits', { ...empty(), habits: [done, active] }).componentInstance.glanceBlankState).toBeNull();
   });
@@ -135,8 +198,8 @@ describe('Home Today at a Glance Figma states', () => {
   it('uses all daily records, including active items beyond the four-card limit', () => {
     expect(render('habits', { ...empty(), habits: [done, done, passed, passed, active] }).componentInstance.glanceBlankState).toBeNull();
   });
-  it('preserves the exact five-minute grace boundary and seconds normalization', () => {
-    const f = render('tasks', { ...empty(), tasks: [{ status: 'pending', endTimeStamp: (now - 300000) / 1000 }] });
+  it('preserves the exact ten-minute grace boundary and seconds normalization', () => {
+    const f = render('tasks', { ...empty(), tasks: [{ status: 'pending', endTimeStamp: (now - 600000) / 1000 }] });
     expect(f.componentInstance.glanceBlankState).toBeNull();
     f.componentInstance.glanceDailyData!.tasks[0].endTimeStamp -= .001;
     expect(f.componentInstance.glanceBlankState?.key).toBe('tasks-passed');
@@ -145,8 +208,8 @@ describe('Home Today at a Glance Figma states', () => {
     expect(render('tasks', { ...empty(), tasks: [{ ...active, status: 'SKIPPED' }] }).componentInstance.glanceBlankState).toBeNull();
     expect(render('tasks', { ...empty(), tasks: [{ ...passed, status: 'SKIPPED' }] }).componentInstance.glanceBlankState?.key).toBe('tasks-passed');
   });
-  it('keeps skipped habits visible after their end, as the Home list does', () => {
-    expect(render('habits', { ...empty(), habits: [{ ...passed, status: 'SKIPPED' }] }).componentInstance.glanceBlankState).toBeNull();
+  it('shows time over for skipped habits after the Home deadline', () => {
+    expect(render('habits', { ...empty(), habits: [{ ...passed, status: 'SKIPPED' }] }).componentInstance.glanceBlankState?.key).toBe('habits-passed');
   });
   it('shows Habit time Over for explicitly expired skipped habits hidden by Home', () => {
     const data = { ...empty(), habits: [{ ...passed, status: 'SKIPPED', today: true, expired: true }] };
@@ -188,7 +251,9 @@ describe('Home Today at a Glance Figma states', () => {
   // Optional local visual runner: real Angular template/styles, no account writes.
   it('provides the eleven fixtures for optional browser comparison', async () => {
     expect(cases.length).toBe(11);
-    if (!(window as any).__GLANCE_VISUAL__) return;
+    const previewParams = new URLSearchParams(location.hash.slice(1));
+    const preview = previewParams.get('glance-preview');
+    if (!(window as any).__GLANCE_VISUAL__ && !preview) return;
     let fixture: ReturnType<typeof render> | undefined;
     (window as any).renderGlanceVisual = (key: string, width = 390) => {
       fixture?.destroy();
@@ -196,10 +261,15 @@ describe('Home Today at a Glance Figma states', () => {
       fixture = render(selected[1], selected[2]);
       fixture.nativeElement.style.width = `${width}px`;
       fixture.nativeElement.setAttribute('data-visual-fixture', key);
+      document.body.appendChild(fixture.nativeElement);
       document.body.style.margin = '0';
+      document.body.style.display = 'block';
       document.body.style.background = '#f5f5f5';
       fixture.detectChanges();
     };
+    if (preview === 'timetable-empty') {
+      (window as any).renderGlanceVisual(preview, Number(previewParams.get('width')) || 390);
+    }
     await new Promise<void>(resolve => (window as any).finishGlanceVisual = resolve);
   }, 300000);
 });

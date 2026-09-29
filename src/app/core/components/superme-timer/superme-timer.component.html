@@ -2,8 +2,8 @@
   <main class="focus-screen">
     <header class="focus-header">
       <button class="back" type="button" aria-label="Back" (click)="onBack()" [disabled]="busy"><img [src]="assets + 'back.svg'" alt=""></button>
-      <h1><span *ngIf="activityType === 'habits'" class="habit-icon"><img [src]="assets + 'habit.png'" alt=""></span><img *ngIf="activityType === 'tasks'" class="task-icon" src="assets/icons/Task.svg" alt=""><span>{{ title }}</span></h1>
     </header>
+    <h1><span *ngIf="activityType === 'habits'" class="habit-icon"><img [src]="assets + 'habit.png'" alt=""></span><img *ngIf="activityType === 'tasks'" class="task-icon" src="assets/icons/Task.svg" alt=""><span>{{ title }}</span></h1>
     <div class="timer-wrap" role="timer" aria-label="Time remaining" aria-live="off">
       <div class="pet-crop"><img [src]="assets + 'pet.png'" alt="Your focus companion"></div>
       <img class="ring-track" [src]="assets + 'track.svg'" alt="">

@@ -177,6 +177,17 @@ export class NavigationService {
     this.saveHistory(this.isRemovedRoute(url) ? [] : [url]);
   }
 
+  /** Replace the current app-history entry when a screen has a known source. */
+  navigateReplacingCurrent(url: string): void {
+    if (this.isRemovedRoute(url)) return;
+    const history = this.getStoredHistory();
+    if (history.length) history[history.length - 1] = url;
+    else history.push(url);
+    this.isGoingBack = false;
+    this.saveHistory(history);
+    void this.router.navigateByUrl(url, { replaceUrl: true });
+  }
+
   /** Clear history — call on logout. */
   clearHistory(): void {
     sessionStorage.removeItem(this.STORAGE_KEY);

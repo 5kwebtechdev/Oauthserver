@@ -52,6 +52,14 @@ export class RefreshService {
     this.journalAddedSubject.next();
   }
 
+  /** Today's last entry was successfully deleted; Home can offer writing again. */
+  private journalTodayClearedSubject = new Subject<void>();
+  journalTodayCleared$ = this.journalTodayClearedSubject.asObservable();
+
+  notifyJournalTodayCleared(): void {
+    this.journalTodayClearedSubject.next();
+  }
+
   /**
    * Called by the authenticated shell after it validates the session.
    * Runs **all** currently-registered handlers in parallel and waits

@@ -1424,7 +1424,9 @@ Thank you!`;
         }
 
         this.isLoading = true;
-        this.authService.googleOAuthLogin(googlePayload).subscribe({
+        // Submit family details for the same OAuth provider identity.
+        const request = this.authService.googleOAuthLogin(googlePayload);
+        request.subscribe({
             next: (response) => {
                 this.isLoading = false;
                 const userId = response.user?.id;
@@ -1514,7 +1516,7 @@ Thank you!`;
             'oauth_signup_access_token', 'oauth_signup_server_auth_code',
             'oauth_signup_identity_token', 'oauth_signup_authorization_code',
             'oauth_signup_raw_nonce', 'oauth_signup_client_id',
-            'oauth_signup_is_development_mock',
+            'oauth_signup_is_development_mock', 'oauth_signup_pending_submission',
             'signup_profile', 'signup_role', 'signup_avatar',
             'requestedIdentifier', 'familyCode', 'familyName', 'familyCreator',
             'referralCode', 'referralCodeLocked'

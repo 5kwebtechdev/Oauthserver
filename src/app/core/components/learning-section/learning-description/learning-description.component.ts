@@ -194,6 +194,8 @@ export class LearningDescriptionComponent implements OnInit {
     this.isNavigating = true;
     if (this.challenge) {
       this.router.navigate(['/authed/content/questions', this.challenge.challengeId], {
+        // Keep the introduction out of the completed quiz's back history.
+        replaceUrl: true,
         state: {
           challenge: this.challenge,
           source: this.returnUrl,
@@ -203,7 +205,7 @@ export class LearningDescriptionComponent implements OnInit {
         }
       });
     } else {
-      this.router.navigate(['/authed/content/questions']);
+      this.router.navigate(['/authed/content/questions'], { replaceUrl: true });
     }
   }
 

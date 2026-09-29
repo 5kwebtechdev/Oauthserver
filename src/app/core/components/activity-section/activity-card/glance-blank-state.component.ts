@@ -81,6 +81,10 @@ import { GlanceBlankState } from './glance-blank-state';
       .primary--attention::after { animation: none; opacity: .8; }
     }
     .secondary { border: 1.5px solid transparent; background: linear-gradient(white,white) padding-box, linear-gradient(120deg,var(--blank-border,#8b8dcb),#f6ac72,#85b1b5,#eb4b84) border-box; color: var(--blank-accent,#524f84); text-transform: capitalize; }
+    .blank[data-blank-state="timetable-empty"] button { box-sizing: border-box; height: 34.2px; padding: 0 16px; line-height: 1.4; }
+    .blank[data-blank-state="timetable-empty"] .primary--attention { animation: none; transform: none; box-shadow: none; }
+    .blank[data-blank-state="timetable-empty"] .primary--attention::before,
+    .blank[data-blank-state="timetable-empty"] .primary--attention::after { content: none; }
     button:focus-visible { outline: 2px solid #432477; outline-offset: 3px; }
     @media(max-width: 359px) { h4 { font-size: 18px; } }
   `]

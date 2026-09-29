@@ -9,6 +9,7 @@ import { JournalPostCardComponent } from '../journal-post-card/journal-post-card
 import { CalendarService } from '../../../services/calendar.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { RefreshService } from '../../../services/refresh.service';
 
 export interface JournalOutputEntry {
   id?: string | number;
@@ -67,6 +68,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
     private readonly authApi: AuthApi,
     private readonly calendarService: CalendarService,
     private readonly route: ActivatedRoute,
+    private readonly refreshService: RefreshService,
   ) {}
 
   ngOnInit(): void {
@@ -222,6 +224,11 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
     this.http.delete(`${environment.apiUrl}/journal/${encodeURIComponent(String(entry.id))}`, this.authOptions()).subscribe({
       next: () => {
         this.entries = this.entries.filter(item => String(item.id) !== String(entry.id));
+        const deletedDate = this.entryDate(entry);
+        const todayKey = this.dateKey(new Date());
+        if (deletedDate && this.dateKey(deletedDate) === todayKey && !this.entryDateSet.has(todayKey)) {
+          this.refreshService.notifyJournalTodayCleared();
+        }
         this.entryPendingDelete = null;
         this.deleting = false;
       },

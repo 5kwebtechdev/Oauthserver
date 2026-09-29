@@ -72,9 +72,9 @@ export const GLANCE_BLANK_STATES: Record<string, GlanceBlankState> = {
   'timetable-empty': {
     key: 'timetable-empty', frame: '25776:52931', title: 'No Plan lined up for today!',
     description: 'Plans help you manage your time better. Add one to stay organized.',
-    image: base + 'planner.png', width: 305, height: 137,
-    crop: crop('100.33%', '111.68%', '-0.16%', '-5.84%'), textWidth: 255,
-    primary: 'Add a Plan', capitalize: true
+    image: base + 'planner.png', width: 305, height: 161,
+    crop: crop('112.02%', '122.78%', '-7.54%', '-16.99%'), textWidth: 255,
+    primary: 'Add a Plan', secondary: 'View Calendar', secondaryRoute: 'calendar', capitalize: true
   },
   'all-empty': {
     key: 'all-empty', frame: '25776:52979', title: 'Your day is wide open',

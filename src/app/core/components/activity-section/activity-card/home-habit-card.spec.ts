@@ -1,7 +1,7 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { EMPTY } from 'rxjs';
+import { EMPTY, Subject } from 'rxjs';
 import { ModalController } from '@ionic/angular';
 import { ActivityCardComponent } from './activity-card.component';
 import { HabitCardService } from './activity-card.service';
@@ -95,6 +95,48 @@ describe('Compact Home Habit card', () => {
     button(f, 'timer').click(); button(f, 'abort').click(); button(f, 'done').click();
     expect(focus).toHaveBeenCalledTimes(1); expect(abort).toHaveBeenCalledTimes(1); expect(done).toHaveBeenCalledTimes(1);
   });
+  for (const type of ['habits', 'tasks'] as const) {
+    it(`starts ${type} with inline progress and opens focus only from the timer icon`, fakeAsync(() => {
+      const f = render({ type }, true, true);
+      const c = f.componentInstance;
+      const response = new Subject<any>();
+      const api: any = type === 'tasks' ? TestBed.inject(TaskApi) : TestBed.inject(HabitApi);
+      const start = jasmine.createSpy('start activity').and.returnValue(response);
+      api[type === 'tasks' ? 'letsGoTask' : 'letsGoHabit'] = start;
+      const habits = TestBed.inject(HabitService) as any;
+      habits.updateHabit = jasmine.createSpy('updateHabit');
+      habits.notifyTaskStarted = jasmine.createSpy('notifyTaskStarted');
+      (TestBed.inject(AutoAbortService) as any).scheduleAutoAbort = jasmine.createSpy('scheduleAutoAbort');
+      (TestBed.inject(CalendarService) as any).clearCache = jasmine.createSpy('clearCache');
+      spyOn<any>(c, 'saveOngoingState');
+      spyOn(c, 'loadHabits');
+      spyOn(c, 'loadTodayTasks');
+      const progress = spyOn(c, 'startProgress').and.callFake(() => { c.percentageCompleted = 25; });
+      const focus = spyOn(c, 'openTimer');
+      const details = spyOn<any>(c, 'openActivityDetail');
+
+      button(f, 'start').click();
+      c.handlePopupPrimary();
+      expect(start).toHaveBeenCalledOnceWith('test-habit');
+      expect(focus).not.toHaveBeenCalled();
+      expect(c.getStatus()).toBe('pending');
+      response.next({});
+      response.complete();
+      f.detectChanges();
+      expect(c.getStatus()).toBe('ongoing');
+      expect(progress).toHaveBeenCalledTimes(1);
+      expect(f.nativeElement.querySelector('[role="progressbar"]').getAttribute('aria-valuenow')).toBe('25');
+      expect(button(f, 'timer')).toBeTruthy();
+      expect(focus).not.toHaveBeenCalled();
+      (f.nativeElement.querySelector('.habit-wrapper') as HTMLElement).click();
+      expect(focus).not.toHaveBeenCalled();
+      expect(details).toHaveBeenCalledTimes(1);
+      button(f, 'timer').click();
+      expect(focus).toHaveBeenCalledTimes(1);
+      expect(details).toHaveBeenCalledTimes(1);
+      tick(10000);
+    }));
+  }
   it('uses the focus timer occurrence instead of counting down an entire recurring series', () => {
     const f = render({ status: 'ongoing', everyday: true, startTime: '11:00', endTime: '13:00',
       startTimeStamp: now - 86400000, endTimeStamp: now + 30 * 86400000 });

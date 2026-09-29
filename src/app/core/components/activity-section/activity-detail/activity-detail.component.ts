@@ -428,7 +428,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
     api$.subscribe({
       next: (res) => {
-        this.calendarStatusData = {};
+        this.calendarStatusData = this.getFutureScheduledStatuses(monthDate);
         (res.monthlyCompletion || []).forEach((item: any) => {
           if (item.date && item.status) this.calendarStatusData[item.date] = item.status;
         });
@@ -438,11 +438,36 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       },
       error: (err) => {
         console.error('Error loading monthly completion:', err);
-        this.calendarStatusData = {};
+        this.calendarStatusData = this.getFutureScheduledStatuses(monthDate);
         this.completedDays = 0;
         this.skippedDays = 0;
       }
     });
+  }
+
+  private getFutureScheduledStatuses(monthDate: Date): Record<string, 'PENDING'> {
+    const statuses: Record<string, 'PENDING'> = {};
+    if (!this.habit?.startDate) return statuses;
+    const start = new Date(this.habit.startDate);
+    const end = new Date(this.habit.endDate || this.habit.startDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const selectedDays = this.habit.daysOfWeek?.length ? this.habit.daysOfWeek : this.habit.selectedDays;
+    const repeats = new Set((selectedDays || []).map(day => day.trim().slice(0, 3).toUpperCase()));
+    const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+    while (date.getMonth() === monthDate.getMonth()) {
+      if (date > today && date >= start && date <= end &&
+          (this.habit.everyday || repeats.has(weekdays[date.getDay()]) ||
+            (!repeats.size && date.getTime() === start.getTime()))) {
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        statuses[key] = 'PENDING';
+      }
+      date.setDate(date.getDate() + 1);
+    }
+    return statuses;
   }
 
   onCalendarMonthChange(newMonth: Date): void {

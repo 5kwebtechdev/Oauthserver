@@ -168,6 +168,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public otpVerifyInProgress: boolean = false;
   public otpResendInProgress: boolean = false;
   public registrationInProgress: boolean = false;
+  public profileContinueInProgress = false;
   public managedChildSignup = false;
   public managedChildSuccessEmail = '';
   public expandedManagedChildFaq: number | null = null;
@@ -1328,6 +1329,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    * Called from profile Save & Continue when user should be registered immediately
    */
   async registerOrProceed(): Promise<void> {
+    if (this.profileContinueInProgress || this.registrationInProgress) return;
+    this.profileContinueInProgress = true;
+    try {
+      await this.submitProfileDetails();
+    } finally {
+      this.profileContinueInProgress = false;
+    }
+  }
+
+  private async submitProfileDetails(): Promise<void> {
     if (
       this.registrationInProgress
       || (this.showReferral && this.referralCheckInProgress)
@@ -1429,6 +1440,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     if (this.isManagedChildSignup) {
       this.navigateToSignupStep(4);
+      return;
+    }
+
+    // A new Google account is created only after the completed details form.
+    // Include parents here so family setup uses the resulting session too.
+    if (sessionStorage.getItem('oauth_signup_pending_submission') === 'true') {
+      this.completeGoogleOnboardingFlow(role);
       return;
     }
 
@@ -3253,6 +3271,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     unlockPotential = false,
     includePet = false
   ): void {
+    if (this.registrationInProgress) return;
     this.registrationInProgress = true;
     this.errorMessage = null;
     this.loadingService.show();
@@ -3420,33 +3439,36 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       });
     }
 
-    const hasProviderProof = !!(
-      idToken
-      || accessToken
-      || serverAuthCode
-      || identityToken
-      || authorizationCode
-    );
-    // A resumed authenticated onboarding session may no longer have the
-    // short-lived provider credential in sessionStorage. In that case use the
-    // existing authenticated profile-completion endpoint and never ask for a
-    // password or OTP.
-    // Google login establishes identity only. Profile, pet and activation
-    // updates must reach the authenticated completion endpoint even while
-    // the original Google credential is still available.
-    const onboardingRequest = provider === 'apple' && hasProviderProof
-      ? this.authService.googleOAuthLogin(googlePayload)
-      : this.authService.completeGoogleOnboarding(googlePayload);
+    const pendingGoogleSignup = provider === 'google'
+      && sessionStorage.getItem('oauth_signup_pending_submission') === 'true';
+    if (pendingGoogleSignup && (!idToken || !providerId || !email)) {
+      this.registrationInProgress = false;
+      this.loadingService.forceHide();
+      this.errorMessage = 'Please sign in with Google again to continue setting up your account.';
+      this.core.triggerToasrt(this.errorMessage);
+      return;
+    }
+    // The backend uses the same OAuth endpoint for initial profile submission
+    // and each later onboarding action on this provider identity.
+    const onboardingRequest = this.authService.googleOAuthLogin(googlePayload);
 
     onboardingRequest.subscribe({
       next: (response) => {
         const responseStep = this.getResponseOnboardingStep(response);
         const expectedStep = unlockPotential ? 7 : (includePet ? 6 : (role === 'parent' ? 4 : 5));
-        if (provider === 'google' && (!responseStep || responseStep < expectedStep)) {
-          this.registrationInProgress = false;
-          this.loadingService.forceHide();
-          this.errorMessage = 'Your profile update was not confirmed. Please try again. If this continues, contact support.';
-          this.core.triggerToasrt(this.errorMessage);
+        const returnedRelationship = String(response?.user?.relationship || '').toLowerCase();
+        const returnedRole = returnedRelationship === 'self' && response?.user?.asChild === true
+          ? 'child' : returnedRelationship;
+        const differentAccountRole = ['child', 'parent', 'self'].includes(returnedRole)
+          && returnedRole !== role;
+        // mobile-login may authenticate an existing provider account instead
+        // of applying the submitted signup details. Accept its valid session
+        // and resume the returned account, never replace it with the draft.
+        if (provider === 'google' && response?.token && response?.user?.id
+          && ((returnedRole === 'parent' && response.user.family?.id)
+            || differentAccountRole
+            || (!pendingGoogleSignup && (!responseStep || responseStep < expectedStep)))) {
+          this.resumeReturnedGoogleAccount(response, providerId, returnedRole, responseStep);
           return;
         }
         const resolvedStep = responseStep
@@ -3456,11 +3478,19 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           onboardingStep: resolvedStep
         };
         const userId = responseUser.id;
+        if (pendingGoogleSignup && (!response.token || !userId)) {
+          this.registrationInProgress = false;
+          this.loadingService.forceHide();
+          this.errorMessage = 'Sign-up failed: invalid server response. Please try again.';
+          this.core.triggerToasrt(this.errorMessage);
+          return;
+        }
         if (response.token && userId) {
           this.authService.setSession(
             { token: response.token, userId, expiresIn: response.expiresIn, user: responseUser },
             false
           );
+          if (pendingGoogleSignup) sessionStorage.removeItem('oauth_signup_pending_submission');
         } else if (Object.keys(responseUser).length) {
           this.authService.updateUserData(responseUser);
         }
@@ -3472,7 +3502,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           relationship: String(
             responseData.relationship || role
           ).toUpperCase(),
-          asChild: role === 'child',
+          asChild: responseData.asChild ?? (role === 'child'),
           authProvider: provider,
           socialProviderId: providerId,
           socialOnboarding: true,
@@ -3483,8 +3513,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         };
         this.onboardingState.saveRegistrationDraft(responseDraft, resolvedStep, 'EMAIL');
 
-        // An OAuth account already exists as soon as Apple/Google authenticates
-        // it. Keep its OAuth credentials until activation is complete, so the
+        // The successful OAuth submission established this account. Keep
+        // its credentials until activation is complete, so the
         // Pet and Unlock steps update that same account instead of calling
         // /auth/register and triggering duplicate email/phone validation.
         if (unlockPotential || resolvedStep >= 7) {
@@ -3548,6 +3578,54 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     });
   }
 
+  private resumeReturnedGoogleAccount(
+    response: any,
+    providerId: string,
+    returnedRole: string,
+    responseStep: number | null
+  ): void {
+    const user = response.user;
+    this.authService.setSession({
+      token: response.token, userId: user.id, expiresIn: response.expiresIn, user
+    }, false);
+    this.registrationInProgress = false;
+    this.loadingService.forceHide();
+    this.errorMessage = null;
+    // Remove profile values and role selection from the unsuccessful draft.
+    // In particular, a returned Parent must not enter a Child join-family flow.
+    this.onboardingState.clearRegistrationDraft();
+    ['oauth_signup_pending_submission', 'signup_profile', 'signup_avatar', 'signup_pet',
+      'signup_role', 'show_child_welcome_after_family'].forEach(key => sessionStorage.removeItem(key));
+    const role = ['child', 'parent', 'self'].includes(returnedRole)
+      ? returnedRole as SignupRole : undefined;
+    if (role) sessionStorage.setItem('signup_role', role);
+    this.roleSelected = role;
+    if (role === 'parent' && user.family?.id) {
+      this.onboardingState.allowExistingGoogleAccountHome(user.id);
+      this.clearGoogleSignupSession();
+      this.onboardingState.markExistingUser();
+      this.navigateReplacing(this.authService.getDashboardRoute());
+      return;
+    }
+    if (responseStep && responseStep < 7) {
+      this.onboardingState.saveRegistrationDraft({
+        ...this.getRegistrationResponseDraft(response),
+        authProvider: 'google', socialProviderId: providerId,
+        socialOnboarding: true, socialDetailsCompleted: responseStep >= 5,
+        socialRolePending: !role, selectedSignupRole: role,
+        asChild: user.asChild === true, onboardingStep: responseStep
+      }, responseStep, 'EMAIL');
+    }
+    const resume = this.onboardingState.getResumeNavigation(user);
+    if (resume) {
+      void this.navCtrl.navigateRoot(resume.url, { queryParams: resume.queryParams, animated: false });
+    } else {
+      this.clearGoogleSignupSession();
+      this.onboardingState.markExistingUser();
+      this.navigateReplacing(this.authService.getDashboardRoute());
+    }
+  }
+
   private clearGoogleSignupSession(): void {
     try {
       ['signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
@@ -3556,7 +3634,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         'oauth_signup_id_token', 'oauth_signup_access_token', 'oauth_signup_server_auth_code',
         'oauth_signup_identity_token', 'oauth_signup_authorization_code',
         'oauth_signup_raw_nonce', 'oauth_signup_client_id',
-        'oauth_signup_is_development_mock',
+        'oauth_signup_is_development_mock', 'oauth_signup_pending_submission',
         'signup_profile',
         'signup_role', 'signup_avatar', 'signup_pet', 'requestedIdentifier',
         'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
