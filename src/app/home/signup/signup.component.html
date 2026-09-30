@@ -374,7 +374,7 @@
         <form [formGroup]="profileForm">
           <ng-container *ngIf="!isOAuthSignup; else oauthIdentityProvided">
             <h4 class="profile-field-heading">
-              <span class="profile-field-title">Full Name</span>
+              <span class="profile-field-title">Full Name <span class="profile-required-marker" aria-label="required">*</span></span>
             </h4>
             <div class="input-group">
               <input [ngClass]="{'error' : name?.invalid && (name?.dirty || name?.touched)}" formControlName="name" type="text"
@@ -405,7 +405,7 @@
 
           <ng-container *ngIf="currentRole !== 'parent'">
           <h4 class="profile-field-heading">
-            <span class="profile-field-title">{{ isOAuthSignup ? 'Choose a SuperMe username' : 'Username' }}</span>
+            <span class="profile-field-title">{{ isOAuthSignup ? 'Choose a SuperMe username' : 'Username' }} <span class="profile-required-marker" aria-label="required">*</span></span>
           </h4>
           <div class="input-group username-field">
             <div class="username-input-shell"
@@ -460,7 +460,7 @@
 
           <section class="profile-dob-field">
             <h4 class="profile-field-heading">
-              <span class="profile-field-title">Date of Birth</span>
+              <span class="profile-field-title">Date of Birth <span *ngIf="!isOAuthSignup" class="profile-required-marker" aria-label="required">*</span></span>
               <span class="profile-field-meta">
                 <span *ngIf="currentRole === 'self' || currentRole === 'child'"
                   class="profile-field-hint profile-field-purpose">
@@ -524,7 +524,7 @@
         </form>
         <section class="profile-avatar-section" aria-labelledby="choose-avatar-heading">
             <h4 id="choose-avatar-heading" class="profile-field-heading profile-avatar-heading">
-              <span class="profile-field-title">Choose an Avatar</span>
+              <span class="profile-field-title">Choose an Avatar <span class="profile-required-marker" aria-label="required">*</span></span>
               <span class="profile-field-hint">Pick one that you like</span>
             </h4>
             <div class="row details-avatar-grid">

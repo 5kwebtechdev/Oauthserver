@@ -53,19 +53,18 @@ describe('Home mood header', () => {
 
   it('keeps no mood distinct from a confirmed Calm selection', () => {
     expect(normalizeHomeMood(null)).toBeNull();
-    expect(component.pandaImage).toContain('panda-moods-source.png');
+    expect(component.petMoodImage).toContain('panda-latest-moods.png');
     expect(component.state.emphasis).toBe("I'll match it");
     component.mood = normalizeHomeMood('NEUTRAL');
     expect(component.state.label).toBe('Calm');
-    expect(component.pandaImage).toContain('panda-moods-source.png');
+    expect(component.petMoodImage).toContain('panda-latest-moods.png');
   });
 
   it('maps backend moods to all six Figma presentations', () => {
     for (const [apiMood, mood] of [['VERY HAPPY', 'happy'], ['EXCITED', 'excited'], ['NERVOUS', 'anxious'], ['SAD', 'sad'], ['UPSET', 'frustrated'], ['NEUTRAL', 'calm']] as const) {
       component.mood = normalizeHomeMood(apiMood);
       expect(component.mood).toBe(mood);
-      const source = mood === 'sad' ? 'sad' : ['anxious', 'frustrated'].includes(mood) ? 'subtle' : 'moods';
-      expect(component.pandaImage).toContain(`panda-${source}-source.png`);
+      expect(component.petMoodImage).toContain('panda-latest-moods.png');
       expect(component.state.label).toBeTruthy();
     }
   });
@@ -82,13 +81,14 @@ describe('Home mood header', () => {
     expect(component.period).toBe('night');
   });
 
-  it('uses the matching Figma ground artwork for each other pet', () => {
-    for (const [type, file] of [['owl', 'owl-ground.png'], ['dragon', 'dragon-ground-source.png'], ['llama', 'llama-ground.png']] as const) {
+  it('uses the latest Figma mood sheet for all six moods of each pet', () => {
+    for (const type of ['panda', 'owl', 'dragon', 'llama'] as const) {
       pet = type;
-      expect(component.otherPetImage).toContain(file);
-      component.mood = 'sad';
-      expect(component.otherPetImage).toContain(file);
-      expect(component.state.label).toBe('Sad');
+      for (const mood of ['happy', 'excited', 'anxious', 'sad', 'frustrated', 'calm'] as const) {
+        component.mood = mood;
+        expect(component.petMoodImage).toContain(`${type}-latest-moods.png`);
+        expect(component.state.label.toLowerCase()).toBe(mood);
+      }
     }
   });
 });

@@ -5,7 +5,7 @@
     </header>
     <h1><span *ngIf="activityType === 'habits'" class="habit-icon"><img [src]="assets + 'habit.png'" alt=""></span><img *ngIf="activityType === 'tasks'" class="task-icon" src="assets/icons/Task.svg" alt=""><span>{{ title }}</span></h1>
     <div class="timer-wrap" role="timer" aria-label="Time remaining" aria-live="off">
-      <div class="pet-crop"><img [src]="assets + 'pet.png'" alt="Your focus companion"></div>
+      <div class="pet-crop" [ngClass]="'pet-crop--' + timerPet"><img [src]="assets + timerPetImages[timerPet]" [alt]="(timerPet | titlecase) + ' focus companion'"></div>
       <img class="ring-track" [src]="assets + 'track.svg'" alt="">
       <div class="ring-progress" [style.background]="'conic-gradient(#7341a7 ' + (progress * 360) + 'deg, transparent 0deg)'"></div>
       <span class="ring-cap" *ngIf="progress > 0"></span>

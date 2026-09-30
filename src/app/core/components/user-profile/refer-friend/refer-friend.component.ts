@@ -1,8 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
-import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
-import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
+import { FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { AuthService, ReferralCodeResponse } from '../../../services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -11,7 +10,7 @@ import { environment } from '../../../../../environments/environment';
 @Component({
   standalone: true,
   selector: 'refer-friend',
-  imports: [CommonModule, SupermeNavigatorComponent, SupermeButtonComponent, IonicModule, ProfileFactsComponent],
+  imports: [CommonModule, SupermeNavigatorComponent, IonicModule],
   templateUrl: './refer-friend.component.html',
   styleUrls: ['./refer-friend.component.scss']
 })

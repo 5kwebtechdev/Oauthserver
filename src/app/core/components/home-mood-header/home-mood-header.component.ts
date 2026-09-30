@@ -38,15 +38,8 @@ export class HomeMoodHeaderComponent {
   constructor(private readonly pets: PetAgeService) {}
   get state(): MoodPresentation { return STATES[this.mood ?? 'default']; }
   get pet(): string { return this.pets.getCurrentPetType() || 'panda'; }
-  get otherPetImage(): string {
-    const assets: Record<string, string> = {
-      owl: 'owl-ground.png', dragon: 'dragon-ground-source.png', llama: 'llama-ground.png'
-    };
-    return `assets/figma/home-mood-header/${assets[this.pet] || assets['owl']}`;
-  }
-  get pandaImage(): string {
-    const source = this.mood === 'sad' ? 'sad' : ['anxious', 'frustrated'].includes(this.mood || '') ? 'subtle' : 'moods';
-    return `assets/figma/home-mood-header/panda-${source}-source.png`;
+  get petMoodImage(): string {
+    return `assets/figma/home-mood-header/${this.pet}-latest-moods.png`;
   }
   get emojiImage(): string { return `assets/figma/child-home/moods/${this.mood === 'calm' ? 'Calm' : this.mood}.svg`; }
   get messageEnding(): string {

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { EMPTY } from 'rxjs';
+import { EMPTY, of } from 'rxjs';
 import { ModalController } from '@ionic/angular';
 import { ActivityCardComponent } from './activity-card.component';
 import { HabitCardService } from './activity-card.service';
@@ -230,6 +230,93 @@ describe('Home Today at a Glance Figma states', () => {
     expect(f.componentInstance.glanceBlankState?.key).toBe('all-passed');
     f.componentInstance.currentActive = 'timetable';
     expect(f.componentInstance.glanceBlankState).toBeNull();
+  });
+  it('shows a calendar timetable in Planner, not Upcoming Events, despite an EVENT label', () => {
+    const f = render('timetable', empty());
+    const c = f.componentInstance;
+    const today = new Date();
+    const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const viva = {
+      id: 42, type: 'EVENT', title: 'Viva', startDate: date, endDate: date,
+      activities: [{ name: 'Viva', startTime: '00:00', endTime: '23:59' }]
+    };
+    (c as any).calendarService = { getUserPlannerCalendarMonth: () => of({ events: [viva] }) };
+    (c as any).eventApi = { getEvents: () => of([]), getCachedEvent: () => null };
+
+    c.loadGlancePlannerCards(true);
+
+    expect(c.glancePlannerCards.length).toBe(1);
+    expect(c.glanceUpcomingEvents.length).toBe(0);
+    expect(c.glanceBlankState).toBeNull();
+
+    const emptyRowsViva = {
+      ...viva, activities: [], eventDate: date, eventType: 'OTHER', startTime: '00:00', endTime: '23:59'
+    };
+    (c as any).calendarService = { getUserPlannerCalendarMonth: () => of({ events: [emptyRowsViva] }) };
+    c.loadGlancePlannerCards(true);
+    expect(c.glancePlannerCards.length).toBe(1);
+    expect(c.glanceUpcomingEvents.length).toBe(0);
+    expect(c.glanceBlankState).toBeNull();
+
+    const flatViva: any = { ...emptyRowsViva };
+    delete flatViva.activities;
+    (c as any).calendarService = { getUserPlannerCalendarMonth: () => of({ events: [flatViva] }) };
+    c.loadGlancePlannerCards(true);
+    expect(c.glancePlannerCards.length).toBe(1);
+    expect(c.glanceUpcomingEvents.length).toBe(0);
+    expect(c.glanceBlankState).toBeNull();
+
+    // A genuinely separate Event with the same name must remain an Event.
+    (c as any).eventApi = { getEvents: () => of([{
+      id: 99, name: 'Viva', eventDate: date, eventType: 'OTHER', isPrivate: false, allDay: true
+    }]), getCachedEvent: () => null };
+    c.loadGlancePlannerCards(true);
+    expect(c.glancePlannerCards.length).toBe(1);
+    expect(c.glanceUpcomingEvents.length).toBe(1);
+
+    c.glancePlannerRaw = [];
+    c.totalTimetablesLoaded = 1;
+    expect(c.glanceSubtitle).toMatch(/1 (Planner|Time Table)/);
+  });
+  it('shows Upcoming Event cards without swipe-delete controls', () => {
+    const f = render('all', empty());
+    const c = f.componentInstance;
+    const today = new Date();
+    const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    (c as any).eventApi = { getCachedEvent: () => null };
+    c.glanceUpcomingEventRaw = [{ id: 7, name: 'Birthday', eventDate: date, eventType: 'BIRTHDAY', isPrivate: false, allDay: true }];
+    const open = spyOn(c, 'onUpcomingEventTap');
+    f.detectChanges();
+
+    const eventCard: HTMLButtonElement = f.nativeElement.querySelector('.glance-event-card');
+    expect(eventCard).toBeTruthy();
+    expect(f.nativeElement.querySelector('[aria-label="Delete event"]')).toBeNull();
+    eventCard.click();
+    expect(open).toHaveBeenCalledOnceWith(jasmine.objectContaining({ id: 7 }));
+  });
+  it('keeps confirmed personal Events out of Planner cards and count', () => {
+    const c = render('timetable', empty()).componentInstance;
+    const today = new Date();
+    const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const planner = { id: 1, type: 'TIMETABLE', title: 'PlannerOneUpdated', startDate: date, endDate: date,
+      activities: [{ title: 'Entries', startTime: '18:18', endTime: '18:20' }] };
+    const birthday = { id: 2, type: 'EVENT', title: 'Birthday', startDate: date, endDate: date,
+      startTime: '00:00', endTime: '23:59', activities: [] };
+    const sasa = { id: 3, type: 'EVENT', title: 'sasa', startDate: date, endDate: date,
+      startTime: '18:30', endTime: '18:32', activities: [] };
+    (c as any).calendarService = { getUserPlannerCalendarMonth: () => of({ events: [planner, birthday, sasa] }) };
+    (c as any).eventApi = { getEvents: () => of([
+      { id: 2, name: 'Birthday', eventDate: date, eventType: 'BIRTHDAY', isPrivate: false, allDay: true },
+      { id: 3, name: 'sasa', eventDate: date, eventType: 'OTHER', isPrivate: false, allDay: false,
+        startTime: '18:30', endTime: '18:32' }
+    ]), getCachedEvent: () => null };
+    c.totalTimetablesLoaded = 3;
+
+    c.loadGlancePlannerCards(true);
+
+    expect(c.glancePlannerCards.map(card => card.source.title)).toEqual(['PlannerOneUpdated']);
+    expect(c.glanceUpcomingEvents.map(event => event.name)).toEqual(['Birthday', 'sasa']);
+    expect(c.glanceSubtitle).toContain('1 Planner');
   });
   it('does not display an empty state before daily data arrives or while planner loads', () => {
     const f = render('all', empty());

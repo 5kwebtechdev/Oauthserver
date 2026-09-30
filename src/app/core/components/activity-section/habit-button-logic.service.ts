@@ -26,7 +26,8 @@ export class HabitButtonLogicService {
       done: visible && now >= handoff };
   }
 
-  private static readonly LETS_GO_WINDOW_MS = 5 * 60 * 1000;
+  private static readonly LETS_GO_EARLY_MS = 10 * 60 * 1000;
+  private static readonly LETS_GO_LATE_MS = 5 * 60 * 1000;
   /**
    * Combine date string (YYYY-MM-DD) with time string (HH:MM:SS or HH:MM) to create timestamp
    */
@@ -61,12 +62,12 @@ export class HabitButtonLogicService {
     };
   }
 
-  /** Check whether the current time is in the five-minute start window. */
+  /** Check whether the current time is from ten minutes before to five minutes after start. */
   isWithinLetsGoWindow(startTimeStamp: number): boolean {
     if (!startTimeStamp) return false;
     const now = Date.now();
-    return now >= startTimeStamp - HabitButtonLogicService.LETS_GO_WINDOW_MS
-      && now <= startTimeStamp + HabitButtonLogicService.LETS_GO_WINDOW_MS;
+    return now >= startTimeStamp - HabitButtonLogicService.LETS_GO_EARLY_MS
+      && now <= startTimeStamp + HabitButtonLogicService.LETS_GO_LATE_MS;
   }
 
   /**
@@ -86,7 +87,7 @@ export class HabitButtonLogicService {
   }
 
   /**
-   * Enable "Let's Go" only from five minutes before through five minutes
+   * Enable "Let's Go" only from ten minutes before through five minutes
    * after the scheduled start time.
    */
   isLetsGoEnabled(habit: any, hasOtherOngoing: boolean = false): boolean {
@@ -98,7 +99,7 @@ export class HabitButtonLogicService {
   }
 
   /**
-   * Show "Let's Go" only during the five-minute start window.
+   * Show "Let's Go" only during the start window.
    */
   isLetsGoVisible(habit: any): boolean {
     if (!habit) return false;
@@ -138,10 +139,10 @@ export class HabitButtonLogicService {
     if (status === 'ongoing') return true;
 
     // For pending: Let’s Go has priority around start time. Once that
-    // five-minute grace window closes, Done becomes the available action.
+    // five-minute grace window closes, Done remains available through today.
     if (status === 'pending') {
       if (!startTimeStamp) return false;
-      return Date.now() > startTimeStamp + HabitButtonLogicService.LETS_GO_WINDOW_MS;
+      return Date.now() > startTimeStamp + HabitButtonLogicService.LETS_GO_LATE_MS;
     }
 
     return false;

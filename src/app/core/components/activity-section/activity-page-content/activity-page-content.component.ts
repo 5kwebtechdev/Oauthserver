@@ -19,7 +19,7 @@ import { FocusTimerService } from '../../superme-timer/focus-timer.service';
 import { CalendarService } from '../../../services/calendar.service';
 import { CalendarResponse } from '../../../models/calendar.model';
 import { EventApi } from '../../../api/event.api';
-import { Observable, Subscription, filter, skip, take } from 'rxjs';
+import { Observable, Subscription, filter, skip, take, forkJoin } from 'rxjs';
 import { LongPressDirective } from '../../../directives/gestureControlDirective';
 import { getEventTypeIcon } from '../event-type-icon';
 import { isHomePersonalEvent, isHomePlannerSchedule } from '../home-calendar-kind';
@@ -804,23 +804,37 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         const selectedDateString = this.getSelectedDateString();
         const requestId = ++this.plannerRequestId;
         const contextKey = this.getPlannerContextKey(selectedDateString);
+        const visibleMonths = new Map<string, Date>();
+        [this.selectedDate, ...this.childWeekDates].forEach(date => {
+            const month = new Date(date.getFullYear(), date.getMonth(), 1);
+            visibleMonths.set(this.dateKey(month), month);
+        });
+        const months = [...visibleMonths.values()];
         this.plannerLoading = true;
         this.subscriptions.add(
-            // Dot indicators need the whole month, not only the currently
-            // selected week. A week response caused dots to appear/disappear
-            // whenever the user moved between weeks or months.
-            this.calendarService.getUserPlannerCalendarMonth(selectedDateString).subscribe({
-                next: (response: CalendarResponse) => {
+            // A seven-day window can cross a month/year boundary. Fetch each
+            // represented month once, including the selected month's details.
+            forkJoin(months.map(month => this.calendarService.getUserPlannerCalendarMonth(
+                month.getFullYear() === this.selectedDate.getFullYear()
+                    && month.getMonth() === this.selectedDate.getMonth()
+                    ? selectedDateString : this.dateKey(month)
+            ))).subscribe({
+                next: (responses: CalendarResponse[]) => {
                     if (!this.isCurrentPlannerRequest(requestId, contextKey, selectedDateString)) return;
+                    const response = responses[0];
                     const allEvents = response.events || [];
                     const plannerItems = allEvents.filter(item => this.isPlannerSchedule(item));
                     const eventItems = allEvents.filter(item => this.isPersonalEventRecord(item));
 
-                    const monthActivities: Record<string, { habit?: boolean; task?: boolean; planner?: boolean }> = {};
-                    this.recordChildCalendarActivities(response.habits || [], 'habit', monthActivities);
-                    this.recordChildCalendarActivities(response.tasks || [], 'task', monthActivities);
-                    this.recordChildCalendarActivities(plannerItems, 'planner', monthActivities);
-                    this.replaceChildCalendarMonth(monthActivities);
+                    responses.forEach((monthResponse, index) => {
+                        if (monthResponse.loadError) return;
+                        const monthActivities: Record<string, { habit?: boolean; task?: boolean; planner?: boolean }> = {};
+                        const month = months[index];
+                        this.recordChildCalendarActivities(monthResponse.habits || [], 'habit', monthActivities, month);
+                        this.recordChildCalendarActivities(monthResponse.tasks || [], 'task', monthActivities, month);
+                        this.recordChildCalendarActivities((monthResponse.events || []).filter(item => this.isPlannerSchedule(item)), 'planner', monthActivities, month);
+                        this.replaceChildCalendarMonth(monthActivities, month);
+                    });
                     this.childPlannerItems = this.mergeDuplicatePlannerSchedules(plannerItems);
                     this.childEventItems = eventItems
                         .filter(event => this.eventOccursOnSelectedDate(event, selectedDateString))
@@ -846,17 +860,18 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     private recordChildCalendarActivities(
         items: any[],
         type: 'habit' | 'task' | 'planner',
-        target: Record<string, { habit?: boolean; task?: boolean; planner?: boolean }> = this.childDateActivities
+        target: Record<string, { habit?: boolean; task?: boolean; planner?: boolean }> = this.childDateActivities,
+        month: Date = this.selectedDate
     ): void {
         items.forEach(item => {
-            this.getItemCalendarDates(item).forEach(date => {
+            this.getItemCalendarDates(item, month).forEach(date => {
                 target[date] = { ...target[date], [type]: true };
             });
         });
     }
 
-    private replaceChildCalendarMonth(monthActivities: Record<string, { habit?: boolean; task?: boolean; planner?: boolean }>): void {
-        const prefix = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-`;
+    private replaceChildCalendarMonth(monthActivities: Record<string, { habit?: boolean; task?: boolean; planner?: boolean }>, month: Date = this.selectedDate): void {
+        const prefix = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}-`;
         const retained: Record<string, { habit?: boolean; task?: boolean; planner?: boolean }> = {};
         Object.entries(this.childDateActivities).forEach(([date, activities]) => {
             if (!date.startsWith(prefix)) retained[date] = activities;
@@ -879,9 +894,9 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         if (available) this.childStatusFilter = available;
     }
 
-    private getItemCalendarDates(item: any): string[] {
-        const selectedMonth = this.selectedDate.getMonth();
-        const selectedYear = this.selectedDate.getFullYear();
+    private getItemCalendarDates(item: any, month: Date = this.selectedDate): string[] {
+        const selectedMonth = month.getMonth();
+        const selectedYear = month.getFullYear();
         const monthStart = new Date(selectedYear, selectedMonth, 1);
         const monthEnd = new Date(selectedYear, selectedMonth + 1, 0);
         const explicitCandidates = item?.completionDate ?? item?.completion_date ?? item?.completions;

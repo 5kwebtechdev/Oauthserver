@@ -112,7 +112,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   readonly categories: EduHubCategory[] = [
     { key: 'tutors', label: 'Tutors', image: 'assets/figma/eduhub-navigation/tutors.png', route: '/authed/tutors' },
     { key: 'academies', label: 'Academies', image: 'assets/figma/eduhub-navigation/academies.png', route: '/academies' },
-    { key: 'counselors', label: 'Counselors', image: 'assets/figma/eduhub-navigation/counselors.png', route: '/authed/counselors' },
+    { key: 'counselors', label: 'Counselors', image: 'assets/figma/eduhub-home/counselors.png', route: '/authed/counselors' },
     { key: 'events', label: 'Events & Workshops', image: 'assets/figma/eduhub-navigation/events.png', route: '/authed/education/events' },
     { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/eduhub-navigation/book-stores.png', route: '/authed/education/shops' },
     { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/eduhub-navigation/sports-shops.png', route: '/authed/education/shops' },
@@ -227,10 +227,17 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       || this.selectedCategoryKey === 'sports-shops';
   }
 
+  get showEmptyState(): boolean {
+    if (this.isSelectedCategoryLoading) return false;
+    if (this.selectedCategoryKey === 'tutors') return this.visibleTutors.length === 0;
+    if (this.selectedCategoryKey === 'academies') return this.visibleAcademies.length === 0;
+    return this.visibleExternalPreviews.length === 0;
+  }
+
   /** Keep the category CTA available whenever the selected preview has data. */
   get showViewAll(): boolean {
     if (this.isSelectedCategoryLoading) return false;
-    if (this.selectedCategoryKey === 'hostels') return true;
+    if (this.selectedCategoryKey === 'hostels') return this.visibleExternalPreviews.length > 0;
     if (this.selectedCategoryKey === 'tutors') return this.visibleTutors.length > 0;
     if (this.selectedCategoryKey === 'academies') return this.visibleAcademies.length > 0;
     if (this.isExternalCategory(this.selectedCategoryKey)) return this.visibleExternalPreviews.length > 0;

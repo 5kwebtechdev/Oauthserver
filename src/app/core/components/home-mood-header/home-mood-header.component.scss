@@ -22,10 +22,13 @@
 }
 .mood-pill:disabled { opacity: 1; cursor: default; }
 .mood-pet {
-  // The source artwork has transparent pixels below the grass. Let the header
-  // crop that padding so every pet's ground meets the bottom edge.
-  position: absolute; right: 0; bottom: -6px; width: 140px; height: 133px;
-  > img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: bottom center; }
+  position: absolute; right: 16px; bottom: 0; width: var(--pet-width); height: var(--pet-height);
+  overflow: hidden; pointer-events: none;
+  > img {
+    position: absolute; display: block; max-width: none;
+    width: var(--sprite-width); height: var(--sprite-height);
+    left: var(--sprite-left); top: var(--sprite-top);
+  }
 }
 .mood-stats { position: absolute; bottom: 8px; left: 16px; display: flex; align-items: center; gap: 16px; padding: 0 16px; border-radius: 12px; backdrop-filter: blur(4px); }
 .mood-stat {
@@ -34,26 +37,42 @@
   strong { font-size: 13px; line-height: 18px; }
 }
 .mood-stats__divider { width: 1px; height: 42px; }
-.other-pet-art {
-  position: relative; display: block; width: 100%; height: 100%; overflow: hidden;
-  img { position: absolute; display: block; max-width: none; object-fit: contain; }
-  &--owl img { width: 83.57%; height: 100%; right: 0; bottom: 0; }
-  &--llama img { width: 77.14%; height: 100.15%; left: 11.43%; top: -0.08%; }
-  &--dragon img { width: 206.29%; height: 207.73%; left: -103.73%; top: -7.45%; }
+// Each crop is the matching pet layer from Figma's six-state mood sheet.
+.mood-pet--panda {
+  --pet-width: 109px; --pet-height: 140px; --sprite-width: 302.44%; --sprite-height: 234.83%;
+  &.mood-pet--happy { --pet-width: 102px; --sprite-width: 323.2%; --sprite-left: -4.12%; --sprite-top: -18.73%; }
+  &.mood-pet--excited { --sprite-left: -100.8%; --sprite-top: -18.73%; }
+  &.mood-pet--anxious { --sprite-left: -202.31%; --sprite-top: -17.47%; }
+  &.mood-pet--sad { --sprite-left: 0.22%; --sprite-top: -129.03%; }
+  &.mood-pet--frustrated { --sprite-left: -100.54%; --sprite-top: -129.03%; }
+  &.mood-pet--calm { --sprite-left: -199.18%; --sprite-top: -129.03%; }
 }
-// Render the original Figma source at its crop, not a 1x raster export.
-.panda-art {
-  display: block; position: relative; width: 100%; height: 100%; overflow: hidden;
-  img { position: absolute; max-width: none; width: 298.57%; height: 292.99%; left: -1.9%; top: -6.07%; }
-  &--excited img { left: -99.25%; }
-  &--calm img { height: 315.53%; left: -193.16%; top: -114.03%; }
-  &--default img { height: 322.98%; left: -101.78%; top: -219.42%; }
-  &--anxious, &--frustrated {
-    transform: scaleX(-1);
-    img { width: 178.53%; height: 174.41%; top: 0; left: 6.79%; }
-  }
-  &--frustrated img { left: -84.84%; }
-  &--sad img { width: 115.7%; height: 113.82%; left: -8.26%; top: -8.94%; }
+.mood-pet--owl {
+  --pet-width: 106px; --pet-height: 140px; --sprite-width: 321.2%; --sprite-height: 242.55%;
+  &.mood-pet--happy { --pet-width: 101px; --sprite-width: 337.1%; --sprite-left: -11.83%; --sprite-top: -29.59%; }
+  &.mood-pet--excited { --sprite-left: -107.1%; --sprite-top: -29.59%; }
+  &.mood-pet--anxious { --sprite-left: -213.39%; --sprite-top: -29.59%; }
+  &.mood-pet--sad { --sprite-left: -10.8%; --sprite-top: -132.21%; }
+  &.mood-pet--frustrated { --sprite-left: -115.22%; --sprite-top: -132.21%; }
+  &.mood-pet--calm { --sprite-left: -218.67%; --sprite-top: -132.21%; }
+}
+.mood-pet--dragon {
+  --pet-width: 104px; --pet-height: 140px; --sprite-width: 310.4%; --sprite-height: 230.94%;
+  &.mood-pet--happy { --sprite-left: -8.17%; --sprite-top: -15.84%; }
+  &.mood-pet--excited { --sprite-left: -112.14%; --sprite-top: -15.84%; }
+  &.mood-pet--anxious { --sprite-left: -216.9%; --sprite-top: -15.84%; }
+  &.mood-pet--sad { --sprite-left: -7.4%; --sprite-top: -122.06%; }
+  &.mood-pet--frustrated { --sprite-left: -108.57%; --sprite-top: -120.94%; }
+  &.mood-pet--calm { --sprite-left: -213.64%; --sprite-top: -120.94%; }
+}
+.mood-pet--llama {
+  --pet-width: 89px; --pet-height: 142px; --sprite-width: 347.37%; --sprite-height: 218.82%;
+  &.mood-pet--happy { --pet-height: 140px; --sprite-height: 221.95%; --sprite-left: -7.76%; --sprite-top: -14.69%; }
+  &.mood-pet--excited { --sprite-left: -123.67%; --sprite-top: -13.78%; }
+  &.mood-pet--anxious { --sprite-left: -242.54%; --sprite-top: -13.78%; }
+  &.mood-pet--sad { --sprite-left: -13.29%; --sprite-top: -121.66%; }
+  &.mood-pet--frustrated { --pet-width: 91px; --sprite-width: 339.73%; --sprite-left: -126.37%; --sprite-top: -121.66%; }
+  &.mood-pet--calm { --pet-width: 91px; --sprite-width: 339.73%; --sprite-left: -239.82%; --sprite-top: -121.66%; }
 }
 .mood-stat__flame {
   position: relative; display: block; width: 40px; height: 40px; overflow: hidden;
@@ -66,12 +85,12 @@ button:focus-visible, a:focus-visible { outline: 2px solid #432477; outline-offs
   .mood-message__copy { font-size: 12px; line-height: 1.45; }
   .mood-pill { font-size: 12px; gap: 2px; padding-inline: 5px; }
   .mood-stats { left: 8px; padding-inline: 8px; gap: 10px; }
-  .mood-pet { width: 125px; }
+  .mood-pet { right: 8px; }
 }
 @media (min-width: 768px) {
   .mood-header { height: 210px; }
   .mood-message { left: auto; right: 156px; top: 24px; }
   .mood-pill { top: 16px; right: 16px; }
-  .mood-pet { width: 160px; height: 160px; right: 0; }
+  .mood-pet { right: 24px; transform: scale(1.14); transform-origin: bottom right; }
   .mood-stats { left: 32px; bottom: 24px; }
 }

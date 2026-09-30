@@ -986,11 +986,13 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     }
     if (!this.habit) return;
 
-    const { startTimeStamp, endTimeStamp } = this.buttonLogic.calculateTimestamps(this.getHabitForButtonLogic());
+    const { startTimeStamp } = this.buttonLogic.calculateTimestamps(this.getHabitForButtonLogic());
     const now = Date.now();
-    const nextBoundary = now < startTimeStamp
-      ? startTimeStamp
-      : (now <= endTimeStamp ? endTimeStamp + 1 : 0);
+    const startDate = new Date(startTimeStamp);
+    const midnight = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 1).getTime();
+    const nextBoundary = [startTimeStamp - 10 * 60_000, startTimeStamp + 5 * 60_000 + 1, midnight]
+      .filter(boundary => Number.isFinite(boundary) && boundary > now)
+      .sort((a, b) => a - b)[0] || 0;
     if (!nextBoundary) return;
 
     const delay = Math.min(Math.max(nextBoundary - now + 25, 25), 2_147_483_647);

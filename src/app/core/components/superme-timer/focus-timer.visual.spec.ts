@@ -28,7 +28,7 @@ if (new URLSearchParams(location.search).has('focus-preview')) {
           { provide: HabitService, useValue: { completeHabit: noop, notifyTaskCompleted: noop } },
           { provide: AutoAbortService, useValue: { cancelAutoAbort: noop, scheduleAutoAbort: noop } },
           { provide: BadgePopupService, useValue: { check: noop } },
-          { provide: PetAgeService, useValue: { recordActivity: noop } },
+          { provide: PetAgeService, useValue: { recordActivity: noop, getCurrentPetType: () => 'panda' } },
           { provide: CalendarService, useValue: { clearCache: noop } }
         ]
       }).overrideProvider(ModalController, { useValue: { dismiss: async () => true } }).compileComponents();

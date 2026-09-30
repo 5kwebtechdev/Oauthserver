@@ -63,7 +63,7 @@ describe('SupermeTimerComponent', () => {
     habitApi = { completeHabit: jasmine.createSpy().and.returnValue(of({})) };
     abort = { cancelAutoAbort: jasmine.createSpy(), scheduleAutoAbort: jasmine.createSpy() };
     badges = { check: jasmine.createSpy() };
-    pet = { recordActivity: jasmine.createSpy() };
+    pet = { recordActivity: jasmine.createSpy(), getCurrentPetType: jasmine.createSpy().and.returnValue('panda') };
     sounds = [];
     spyOn(window, 'Audio').and.callFake(function () {
       const sound: any = { play: jasmine.createSpy().and.resolveTo(), pause: jasmine.createSpy(), removeAttribute: jasmine.createSpy(), load: jasmine.createSpy() };
@@ -98,6 +98,29 @@ describe('SupermeTimerComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.sound').length).toBe(4);
     expect(component.dotX).toBeCloseTo(244.5);
     expect(component.dotY).toBeCloseTo(126);
+  });
+
+  it('shows the selected Figma Timer pet without changing the timer controls', () => {
+    const pets: Record<string, { image: string; width: number; height: number; left: number; top: number }> = {
+      panda: { image: 'pet.png', width: 110, height: 101, left: 71, top: 144 },
+      owl: { image: 'other-pets.png', width: 100, height: 105, left: 74, top: 137 },
+      dragon: { image: 'other-pets.png', width: 110, height: 102, left: 71, top: 140 },
+      llama: { image: 'llama.png', width: 100, height: 116, left: 76, top: 126 }
+    };
+    for (const [type, expected] of Object.entries(pets)) {
+      pet.getCurrentPetType.and.returnValue(type);
+      fixture.detectChanges();
+      const crop: HTMLElement = fixture.nativeElement.querySelector('.pet-crop');
+      const petImage: HTMLImageElement = crop.querySelector('img')!;
+      expect(crop.classList.contains('pet-crop--' + type)).toBeTrue();
+      expect(petImage.getAttribute('src')).toBe('assets/figma/focus-timer/' + expected.image);
+      const style = getComputedStyle(crop);
+      expect(parseFloat(style.width)).toBe(expected.width);
+      expect(parseFloat(style.height)).toBe(expected.height);
+      expect(parseFloat(style.left)).toBe(expected.left);
+      expect(parseFloat(style.top)).toBe(expected.top);
+      expect(fixture.nativeElement.querySelectorAll('.sound').length).toBe(4);
+    }
   });
 
   it('switches sounds exclusively, toggles pause, and keeps counting during audio', async () => {

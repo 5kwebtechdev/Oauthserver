@@ -11,6 +11,7 @@
   ],
   "include": [
     "src/**/*.d.ts",
-    "src/app/core/components/education-section/parent-eduhub-shop-details/**/*.ts"
+    "src/app/core/components/education-section/parent-eduhub-shop-details/**/*.ts",
+    "src/app/core/components/education-section/pg-hostels/**/*.ts"
   ]
 }

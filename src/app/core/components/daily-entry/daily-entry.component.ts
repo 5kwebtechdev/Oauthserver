@@ -46,8 +46,7 @@ import { messageWithUsername } from '../../models/greeting-username';
   styles: [`
     .entry-backdrop { position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.35);
       display:flex; align-items:flex-end; justify-content:center; padding-top:12px; }
-    .entry-backdrop--referral-received { align-items:center; padding:12px 16px; }
-    .entry-backdrop--referral-joined { align-items:flex-end; padding:0; }
+    .entry-backdrop--referral-received, .entry-backdrop--referral-joined { align-items:center; padding:12px 16px; }
     app-streak-milestone { width:min(100%,480px); max-height:calc(100dvh - 12px); overflow:auto; }
     .entry-mood-sheet { position:relative; box-sizing:border-box; width:min(100%,393px); padding:12px 16px max(12px,env(safe-area-inset-bottom));
       border-radius:44px 44px 0 0; overflow:hidden; display:flex; flex-direction:column; align-items:center; gap:12px;

@@ -25,6 +25,11 @@ export interface PgHostel {
   price?: number | null;
   phone?: string | null;
   email?: string | null;
+  verified?: boolean | null;
+  isVerified?: boolean | null;
+  roomOccupancy?: string | string[] | null;
+  amenities?: string | string[] | null;
+  likesCount?: number | null;
 }
 
 export interface PgHostelFilters {

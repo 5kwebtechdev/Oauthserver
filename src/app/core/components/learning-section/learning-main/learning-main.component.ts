@@ -1164,11 +1164,22 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     request.pipe(takeUntil(this.destroy$), takeUntil(this.childRequestCancel$)).subscribe({
       next: items => {
         if (this.parentView && String(requestChildId) !== String(this.selectedChildId)) return;
+        if (this.selectedCategoryItem !== item) return;
         this.categoryContentItems = items;
+        // The category summary may still report the total (pending + read).
+        // Once the user-scoped listing arrives, use the same status calculation
+        // as the Pending tab for both the detail heading and the outer card.
+        const pendingCount = items.filter(entry => this.getParentItemStatus(entry) === 'pending').length;
+        const updatedCategory = { ...item, pendingCount, count: pendingCount };
+        this.selectedCategoryItem = updatedCategory;
+        this.categoryItems[this.selectedCategory] = this.categoryItems[this.selectedCategory].map(category =>
+          category.id === item.id ? updatedCategory : category
+        );
         this.categoryContentLoading = false;
       },
       error: () => {
         if (this.parentView && String(requestChildId) !== String(this.selectedChildId)) return;
+        if (this.selectedCategoryItem !== item) return;
         this.categoryContentItems = [];
         this.categoryContentLoading = false;
         this.categoryContentError = true;

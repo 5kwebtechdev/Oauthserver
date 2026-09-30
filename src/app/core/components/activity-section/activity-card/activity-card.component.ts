@@ -31,7 +31,7 @@ import { AuthApi } from '../../../api/auth.api';
 import { EventApi } from '../../../api/event.api';
 import { CalendarApi } from '../../../api/calendar.api';
 import { getEventTypeIcon } from '../event-type-icon';
-import { isHomePersonalEvent, isHomePlannerSchedule } from '../home-calendar-kind';
+import { isCalendarMirrorOfPersonalEvent, isHomePersonalEvent, isHomePlannerSchedule } from '../home-calendar-kind';
 import { CustomToastService } from '../../../services/custom-toast.service';
 
 @Component({
@@ -105,8 +105,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       ? this.glancePlannerCards.reduce<any[]>((items, card) => items.concat(card.entries.map(entry => ({ ...entry,
           completed: entry.completed ?? card.source.completed,
           status: entry.status ?? card.source.status }))), [])
-      : data.planners.filter(item => isHomePlannerSchedule(item)
-        && !this.glanceUpcomingEventRaw.some(event => this.matchesGlancePlannerRecord(event, item)));
+      : data.planners.filter(item => isHomePlannerSchedule(item) && !this.isConfirmedEventMirror(item));
     return resolveGlanceBlankState(this.currentActive as GlanceTab, {
       habits: data.habits.map(item => classify(item)),
       tasks: data.tasks.map(item => classify(item)),
@@ -1528,11 +1527,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   onUpcomingEventTap(event: any): void {
-    const key = `event-${event.id}`;
-    if (this.getActionSwipeOffset(key) > 0) {
-      this.closeActionSwipe();
-      return;
-    }
     void this.router.navigate(['/authed/event-detail', event.id], {
       state: { event, origin: this.router.url }
     });
@@ -2168,15 +2162,15 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       next: (resp: any) => {
         const rawTasks = Array.isArray(resp?.tasks) ? resp.tasks : [];
         this.loadedDailyTasks = rawTasks;
-        this.loadedDailyPlanners = Array.isArray(resp?.events) ? resp.events.filter(isHomePlannerSchedule) : [];
+        this.loadedDailyPlanners = Array.isArray(resp?.events)
+          ? resp.events.filter((item: any) => isHomePlannerSchedule(item) && !this.isConfirmedEventMirror(item)) : [];
 
         // The same calendar response also contains planner/time-table entries.
         // Populate them here so list mode (including the parent home card) gets
         // the count and content without needing a second request.
         const rawTimetables = Array.isArray(resp?.events)
           ? resp.events.filter((item: any) => item?.expired !== true
-            && isHomePlannerSchedule(item)
-            && !this.glanceUpcomingEventRaw.some(event => this.matchesGlancePlannerRecord(event, item)))
+            && isHomePlannerSchedule(item) && !this.isConfirmedEventMirror(item))
           : [];
         const plannerTotalForToday = Number(resp?.totalPlannerForTheday);
         this.totalTimetablesLoaded = Number.isFinite(plannerTotalForToday) && !resp?.events?.some(isHomePersonalEvent)
@@ -2193,6 +2187,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
             return {
               ...item,
               type: 'timetable',
+              originalCalendarType: item.originalCalendarType || item.type || '',
               title: item.title || item.name || 'Planner',
               notes: item.description || item.notes || '',
               startTimeStamp: timestamps.startTimeStamp,
@@ -2282,6 +2277,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   public glanceUpcomingEventRaw: any[] = [];
   public glancePlannerLoading = false;
   public glancePlannerLoaded = false;
+  private glancePlannerLoadError = false;
+  private glancePlannerExcludedEventMirrors = false;
   private glancePlannerReloadPending = false;
   private readonly glancePlannerExpansion = new Map<string, boolean>();
 
@@ -2339,27 +2336,29 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     this.glancePlannerLoading = true;
-    // Planner schedules and personal events intentionally use separate backend
-    // endpoints. Keep them separate here too, then render them in one Figma card.
+    // Compare both existing endpoints before rendering calendar rows as Planner.
     forkJoin({
       calendar: this.calendarService.getUserPlannerCalendarMonth(formatted),
       events: this.eventApi.getEvents().pipe(catchError(() => of([])))
     }).subscribe({
       next: ({ calendar, events }: { calendar: any; events: any[] }) => {
         const calendarEvents = Array.isArray(calendar?.events) ? calendar.events : [];
-        // The calendar may contain both kinds. Preserve explicit event records
-        // and never discard a personal event because its title/time matches a planner.
-        const confirmedEvents = (events || []).filter(event => this.isGlancePersonalEventRecord(event));
-        this.glancePlannerRaw = calendarEvents.filter((item: any) =>
-          this.isGlancePlannerSchedule(item)
-          && !confirmedEvents.some(event => this.matchesGlancePlannerRecord(event, item))
-        );
-        this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents(calendarEvents, events || []);
+        // The calendar endpoint supplies Planner schedules, while /events/all
+        // supplies personal Events. Calendar timetable rows may have event-like
+        // fields, so do not feed them into Upcoming Events.
+        this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents([], events || []);
+        const eventMirrors = calendarEvents.filter((item: any) => this.isConfirmedEventMirror(item));
+        const plannerCandidates = calendarEvents.filter((item: any) => this.isGlancePlannerSchedule(item));
+        this.glancePlannerRaw = plannerCandidates.filter((item: any) => !this.isConfirmedEventMirror(item));
+        this.glancePlannerExcludedEventMirrors = eventMirrors.length > 0;
+        this.glancePlannerLoadError = !!calendar?.loadError;
         this.finishGlancePlannerLoad();
       },
       error: () => {
         this.glancePlannerRaw = [];
         this.glanceUpcomingEventRaw = [];
+        this.glancePlannerLoadError = true;
+        this.glancePlannerExcludedEventMirrors = false;
         this.finishGlancePlannerLoad();
       }
     });
@@ -2370,9 +2369,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     this.glancePlannerLoaded = true;
     if (this.mode === 'recent') this.hasTimetables = this.filteredRecentTimetables.length > 0;
     if (this.mode === 'list') {
-      this.timetables = this.timetables.filter(item =>
-        !this.glanceUpcomingEventRaw.some(event => this.matchesGlancePlannerRecord(event, item))
-      );
+      this.timetables = this.timetables.filter(item => !this.isConfirmedEventMirror(item));
       this.hasTimetables = this.timetables.length > 0;
     }
     this.refreshTimetableEmptyState();
@@ -2503,6 +2500,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     return isHomePlannerSchedule(item);
   }
 
+  private isConfirmedEventMirror(item: any): boolean {
+    return this.glanceUpcomingEventRaw.some(event => isCalendarMirrorOfPersonalEvent(item, event));
+  }
+
   private getGlanceUpcomingEventOccurrence(event: any, referenceDate: Date): Date | null {
     const original = this.getGlanceLocalDate(event?.eventDate || event?.event_date || event?.startDate || event?.start_date);
     if (!original) return null;
@@ -2539,42 +2540,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   private isGlancePersonalEventRecord(item: any): boolean {
+    // These fields are required by the personal Event API contract. A calendar
+    // timetable mirrored as an event-shaped row must not enter Upcoming Events.
     return isHomePersonalEvent(item)
-      && Boolean(String(item?.name || item?.title || '').trim())
-      && Boolean(item?.eventDate || item?.event_date || item?.startDate || item?.start_date);
-  }
-
-  private matchesGlancePlannerRecord(candidate: any, planner: any): boolean {
-    const normalize = (value: any) => String(value ?? '').trim().toLowerCase();
-    const candidateName = normalize(candidate?.name ?? candidate?.title ?? candidate?.label);
-    if (!candidateName) return false;
-
-    const plannerRows = [planner, ...(Array.isArray(planner?.activities) ? planner.activities : [])];
-    const matchingRows = plannerRows.filter(row =>
-      [row?.label, row?.plannerLabel, row?.activityLabel, row?.name, row?.title]
-        .some(value => normalize(value) === candidateName)
-    );
-    if (!matchingRows.length) return false;
-
-    const candidateDate = this.getGlanceLocalDate(candidate?.eventDate ?? candidate?.event_date
-      ?? candidate?.startDate ?? candidate?.start_date);
-    const plannerStart = this.getGlanceLocalDate(planner?.startDate ?? planner?.start_date);
-    const plannerEnd = this.getGlanceLocalDate(planner?.endDate ?? planner?.end_date) || plannerStart;
-    if (candidateDate && plannerStart && plannerEnd) {
-      const day = this.glanceStartOfDay(candidateDate).getTime();
-      if (day < this.glanceStartOfDay(plannerStart).getTime()
-        || day > this.glanceStartOfDay(plannerEnd).getTime()) return false;
-    }
-
-    const candidateStart = normalize(candidate?.startTime ?? candidate?.start_time).slice(0, 5);
-    const candidateEnd = normalize(candidate?.endTime ?? candidate?.end_time).slice(0, 5);
-    if (!candidateStart && !candidateEnd) return true;
-    return matchingRows.some(row => {
-      const rowStart = normalize(row?.startTime ?? row?.start_time).slice(0, 5);
-      const rowEnd = normalize(row?.endTime ?? row?.end_time).slice(0, 5);
-      return (!candidateStart || !rowStart || candidateStart === rowStart)
-        && (!candidateEnd || !rowEnd || candidateEnd === rowEnd);
-    });
+      && Boolean(String(item?.name || '').trim())
+      && Boolean(String(item?.eventDate || item?.event_date || '').trim())
+      && Boolean(String(item?.eventType || item?.event_type || '').trim())
+      && typeof (item?.isPrivate ?? item?.is_private) === 'boolean'
+      && typeof (item?.allDay ?? item?.all_day) === 'boolean';
   }
 
   private glancePlannerOccursOnDate(item: any, date: Date): boolean {
@@ -3136,8 +3109,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     return this.recentTimetables.filter(item => {
       const status = (item.status || '').toLowerCase();
       return status !== 'completed' && status !== 'skipped'
-        && this.isGlancePlannerSchedule(item)
-        && !this.glanceUpcomingEventRaw.some(event => this.matchesGlancePlannerRecord(event, item));
+        && this.isGlancePlannerSchedule(item) && !this.isConfirmedEventMirror(item);
     });
   }
 
@@ -3243,10 +3215,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   get glanceSubtitle(): string {
-    const plannerCount = this.glancePlannerLoaded && this.glanceUpcomingEventRaw.length
-      ? (this.mode === 'recent' ? Math.max(this.glancePlannerCards.length, this.filteredRecentTimetables.length)
-        : this.glancePlannerCards.length)
-      : this.totalTimetablesLoaded;
+    // Personal Events do not determine the Planner count. Keep the daily
+    // calendar total even when Upcoming Events has items of its own.
+    const plannerCount = this.glancePlannerLoaded && !this.glancePlannerLoadError
+      && this.glancePlannerExcludedEventMirrors
+      ? this.glancePlannerCards.length
+      : Math.max(this.totalTimetablesLoaded, this.glancePlannerLoaded ? this.glancePlannerCards.length : 0);
     const parts = [
       `${this.totalHabitsLoaded} Habit${this.totalHabitsLoaded === 1 ? '' : 's'}`,
       `${this.totalTasksLoaded} Task${this.totalTasksLoaded === 1 ? '' : 's'}`,

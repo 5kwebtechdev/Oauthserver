@@ -528,7 +528,7 @@ export class LearningService {
         return (categories || [])
             .filter(category => (category.status || 'ACTIVE').toUpperCase() === 'ACTIVE')
             .map(category => {
-                const pendingCount = this.resolvePendingCategoryCount(category);
+                const pendingCount = this.resolvePendingCategoryCount(category, type);
                 return {
                     ...category,
                     type,
@@ -543,20 +543,26 @@ export class LearningService {
             });
     }
 
-    private resolvePendingCategoryCount(category: LearningCategorySummary): number {
-        const pending = category.pending
+    private resolvePendingCategoryCount(
+        category: LearningCategorySummary,
+        type: LearningCategorySummary['type']
+    ): number {
+        // Prefer the content-specific count when an API response also includes
+        // a generic total in `pending`/`pendingCount`.
+        const specificPending = type === 'article' ? category.pendingArticleCount
+            : type === 'masterclass' ? category.pendingCourseCount
+                : category.pendingQuizCount;
+        const pending = specificPending
             ?? category.pendingCount
-            ?? category.pendingQuizCount
-            ?? category.pendingArticleCount
-            ?? category.pendingCourseCount;
+            ?? category.pending;
 
         if (pending != null) return this.toCategoryCount(pending);
 
         const total = category.totalCount ?? category.count;
-        const completed = category.completedCount
-            ?? category.completedQuizCount
-            ?? category.completedArticleCount
-            ?? category.completedCourseCount;
+        const specificCompleted = type === 'article' ? category.completedArticleCount
+            : type === 'masterclass' ? category.completedCourseCount
+                : category.completedQuizCount;
+        const completed = specificCompleted ?? category.completedCount;
 
         if (total != null && completed != null) {
             return Math.max(0, this.toCategoryCount(total) - this.toCategoryCount(completed));

@@ -1,0 +1,34 @@
+<ion-content class="page">
+  <main>
+    <header class="hero">
+      <div class="hero-top">
+        <button class="back" type="button" aria-label="Back to EduHub" (click)="back()"><img [src]="asset + 'listing-back.svg'" alt=""></button>
+        <div class="hero-title"><h1>PG/Hostel</h1><eduhub-city-selector></eduhub-city-selector></div>
+        <span class="search-icon" aria-hidden="true"><img [src]="asset + 'listing-search.svg'" alt=""></span>
+      </div>
+      <div class="hero-art"><div class="speech"><p>Find trusted <span>PG/ Hostels</span> around you.</p></div><img [src]="asset + 'listing-pet.png'" alt="" aria-hidden="true"></div>
+    </header>
+
+    <div class="refer-banner"><img [src]="asset + 'listing-frame44236.png'" alt=""><div class="refer-copy"><strong>Know a PG/Hostel?</strong><span>Refer them to get listed on Eduhub.</span></div><span class="refer-label">Refer for listing</span></div>
+
+    <section class="results" aria-live="polite">
+      <div class="results-heading"><div><h2>PG/Hostels near you</h2><p>Classifieds listings only. Contact sellers directly to enquire or buy.</p></div><span class="verified-chip">Verified <img [src]="asset + 'listing-chevron-left.svg'" alt=""></span></div>
+      <button class="filter-trigger" type="button" (click)="openFilters()" [attr.aria-label]="hasActiveFilters ? 'Filters applied. Open filters' : 'Open filters'"><img [src]="asset + 'listing-page-info.svg'" alt="">Filters <img class="chevron" [src]="asset + 'listing-chevron-left.svg'" alt=""></button>
+      <p class="state" *ngIf="loading">Loading PG / Hostels…</p>
+      <div class="state" *ngIf="!loading && error"><p>{{ error }}</p><button type="button" (click)="load()">Try again</button></div>
+      <p class="state" *ngIf="!loading && !error && !items.length">No PG / Hostels match these filters. Try changing the city or clearing a filter.</p>
+      <div class="cards" *ngIf="!loading && !error && items.length"><app-pg-hostel-card *ngFor="let item of items; trackBy: trackItem" [item]="item" (viewDetails)="openDetails($event)"></app-pg-hostel-card></div>
+      <div class="pages" *ngIf="!loading && !error && totalPages > 1"><button type="button" [disabled]="page === 0" (click)="changePage(page - 1)">Previous</button><span>Page {{ page + 1 }} of {{ totalPages }}</span><button type="button" [disabled]="page + 1 >= totalPages" (click)="changePage(page + 1)">Next</button></div>
+    </section>
+  </main>
+</ion-content>
+
+<div class="sheet-backdrop" *ngIf="sheetOpen" (click)="closeFilters()"></div>
+<section class="filter-sheet" *ngIf="sheetOpen" role="dialog" aria-modal="true" aria-labelledby="pg-filters-title">
+  <div class="sheet-header"><h2 id="pg-filters-title">Filters</h2><button type="button" aria-label="Close filters" (click)="closeFilters()"><img [src]="asset + 'filter-close.svg'" alt=""></button></div>
+  <div class="sheet-body">
+    <nav class="filter-categories" aria-label="Filter categories"><button *ngFor="let category of categories" type="button" [class.active]="activeCategory === category.key" (click)="activeCategory = category.key"><img [src]="asset + category.icon" alt=""><span>{{ category.label }}</span></button></nav>
+    <div class="filter-options"><label *ngFor="let option of options[activeCategory]"><span>{{ option }}</span><input type="checkbox" [checked]="isSelected(option)" (change)="toggleOption(option)"></label></div>
+  </div>
+  <div class="sheet-actions"><button type="button" class="clear" (click)="clearFilters()">Clear all</button><button type="button" class="show" (click)="applyFilters()">Show results</button></div>
+</section>

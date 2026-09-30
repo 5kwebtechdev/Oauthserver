@@ -21,6 +21,12 @@ h1 > span:last-child { min-width: 0; overflow-wrap: anywhere; }
 .time { position: absolute; top: 64px; width: 100%; text-align: center; font: 800 40px/1.2 var(--font-sans, 'Nunito', sans-serif); font-variant-numeric: tabular-nums; }
 .pet-crop { position: absolute; width: 110px; height: 101px; left: 71px; top: 144px; overflow: hidden; }
 .pet-crop img { position: absolute; width: 107.41%; height: 116.94%; max-width: none; left: -3.7%; top: -8.06%; }
+.pet-crop--owl { width: 100px; height: 105px; left: 74px; top: 137px; }
+.pet-crop--owl img { width: 214.73%; height: 204.9%; left: -56.68%; top: 0; }
+.pet-crop--dragon { width: 110px; height: 102px; left: 71px; top: 140px; }
+.pet-crop--dragon img { width: 195.21%; height: 210.93%; left: 1.09%; top: -102.51%; }
+.pet-crop--llama { width: 100px; height: 116px; left: 76px; top: 126px; }
+.pet-crop--llama img { width: 100%; height: 100%; left: 0; top: 0; object-fit: cover; }
 .focus-sounds { padding: 8px 16px; border-radius: 24px; background: linear-gradient(180deg, #ebe6f5 15.4%, #fff 100%); box-shadow: 0 0 2px .5px rgba(67,36,119,.5); }
 .sounds-heading { display: flex; gap: 8px; margin-bottom: 12px; }
 .sounds-heading > img { width: 32px; height: 32px; }

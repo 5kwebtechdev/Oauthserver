@@ -1,59 +1,58 @@
-<ion-content>
-  <superme-navigator heading="Refer a friend" backIcon="arrowSvg"></superme-navigator>
-
+<ion-content class="rf-content">
   <div class="rf-page">
-    <!-- Hero -->
-    <div class="rf-hero">
-      <img class="rf-hero__img" src="assets/Images-Transparent/Image-Profile-Refer.webp" alt="Refer a Friend" />
-      <h2 class="rf-hero__tag">Refer and Earn</h2>
-      <p class="rf-hero__sub">Share your code and you both get <strong>100 coins!</strong></p>
-    </div>
+    <div class="rf-waves rf-waves--left" aria-hidden="true"><img src="assets/figma/refer-friend/waves.png" alt=""></div>
+    <div class="rf-waves rf-waves--right" aria-hidden="true"><img src="assets/figma/refer-friend/waves.png" alt=""></div>
 
-    <!-- Referral Code Card -->
-    <div class="rf-code-card">
-      <p class="rf-code-card__label">Your Referral Code</p>
-      <div class="rf-code-card__row" (click)="copyCode($event)">
-        <span class="rf-code-card__code">{{ referralCode || '—' }}</span>
-        <button type="button" class="rf-code-card__copy" aria-label="Copy code">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M16 1H4C2.9 1 2 1.9 2 3v14h2V3h12V1zm3 4H8C6.9 5 6 5.9 6 7v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="currentColor"/>
-          </svg>
-          Copy
-        </button>
-      </div>
-      <p class="rf-code-card__hint" *ngIf="copied">✓ Copied to clipboard!</p>
-    </div>
+    <main class="rf-main">
+      <superme-navigator class="rf-nav" heading="" backIcon="arrowSvg"></superme-navigator>
 
-    <!-- How it works -->
-    <div class="rf-steps">
-      <h3 class="rf-steps__title">How it works</h3>
-      <div class="rf-step">
-        <div class="rf-step__num">1</div>
-        <div class="rf-step__body">
-          <p class="rf-step__name">Copy Your Code</p>
-          <p class="rf-step__desc">Copy the code above — it's your golden ticket!</p>
+      <section class="rf-hero" aria-labelledby="rf-title">
+        <div class="rf-hero__copy">
+          <h1 id="rf-title"><span>Invite Friends</span><strong>Get Rewarded!</strong></h1>
+          <p><span>Your friend joins, you both</span><span>earn <strong>500 coins!</strong></span></p>
         </div>
-      </div>
-      <div class="rf-step">
-        <div class="rf-step__num">2</div>
-        <div class="rf-step__body">
-          <p class="rf-step__name">Share with Friends</p>
-          <p class="rf-step__desc">Send your referral code to friends and family.</p>
-        </div>
-      </div>
-      <div class="rf-step">
-        <div class="rf-step__num">3</div>
-        <div class="rf-step__body">
-          <p class="rf-step__name">Both Earn Instantly</p>
-          <p class="rf-step__desc">You + friend each get 100 coins when they sign up!</p>
-        </div>
-      </div>
-    </div>
+        <div class="rf-hero__gift"><img src="assets/figma/refer-friend/gift-box.png" alt="Gift box filled with reward coins"></div>
+      </section>
 
-    <!-- CTA -->
-    <superme-button type="green" text="Invite via WhatsApp" size="full" (click)="shareNow()"></superme-button>
+      <section class="rf-code-card" [class.rf-code-card--long]="referralCode.length > 6" aria-label="Your referral code">
+        <p class="rf-code-card__label">Your Referral Code</p>
+        <div class="rf-code-card__row">
+          <div class="rf-code-card__code-wrap" (click)="copyCode($event)">
+            <span class="rf-code-card__code">{{ referralCode || '—' }}</span>
+            <button type="button" class="rf-code-card__copy" (click)="copyCode($event)" aria-label="Copy referral code">
+              <img src="assets/figma/refer-friend/copy-white.svg" alt="">Copy
+            </button>
+          </div>
+          <span class="rf-code-card__divider" aria-hidden="true"><img src="assets/figma/refer-friend/code-divider.svg" alt=""></span>
+          <button type="button" class="rf-code-card__share" (click)="shareNow()" aria-label="Share referral code on WhatsApp">
+            <img src="assets/figma/refer-friend/whatsapp.svg" alt=""><span>Share</span>
+          </button>
+        </div>
+        <img class="rf-code-card__rays rf-code-card__rays--left" src="assets/figma/refer-friend/rays-left.svg" alt="" aria-hidden="true">
+        <img class="rf-code-card__rays rf-code-card__rays--right" src="assets/figma/refer-friend/rays-right.svg" alt="" aria-hidden="true">
+        <p class="rf-code-card__hint" *ngIf="copied" role="status">✓ Copied to clipboard!</p>
+      </section>
 
-    <!-- FAQs -->
-    <profile-facts [faqs]="faqs"></profile-facts>
+      <section class="rf-steps" aria-labelledby="rf-steps-title">
+        <h2 id="rf-steps-title">How it works</h2>
+        <div class="rf-steps__list">
+          <div class="rf-step">
+            <div class="rf-step__number">1<img src="assets/figma/refer-friend/step-divider.svg" alt="" aria-hidden="true"></div>
+            <span class="rf-step__icon"><img src="assets/figma/refer-friend/copy-purple.svg" alt=""></span>
+            <div class="rf-step__copy"><h3>Copy or share your code</h3><p>Tap to copy your referral code or share the link with your friends.</p></div>
+          </div>
+          <div class="rf-step">
+            <div class="rf-step__number">2<img src="assets/figma/refer-friend/step-divider.svg" alt="" aria-hidden="true"></div>
+            <span class="rf-step__icon"><img src="assets/figma/refer-friend/users.svg" alt=""></span>
+            <div class="rf-step__copy"><h3>Your friend joins</h3><p>They download the app and sign up with your referral code or link.</p></div>
+          </div>
+          <div class="rf-step">
+            <div class="rf-step__number">3</div>
+            <span class="rf-step__icon"><img src="assets/figma/refer-friend/users.svg" alt=""></span>
+            <div class="rf-step__copy"><h3>Both earns instantly</h3><p>You and your friend get 500 coins when they sign up!</p></div>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 </ion-content>

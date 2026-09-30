@@ -10,7 +10,7 @@ import { TaskApi } from '../../api/task.api';
 import { HabitService } from '../activity-section/habit.service';
 import { AutoAbortService } from '../activity-section/auto-abort.service';
 import { BadgePopupService } from '../../services/badge-popup.service';
-import { PetAgeService } from '../../services/pet-age.service';
+import { PetAgeService, PetType } from '../../services/pet-age.service';
 import { CalendarService } from '../../services/calendar.service';
 import { SupermePopupComponent, SupermePopupConfig } from '../superme-popup/superme-popup.component';
 import { timerSnapshot } from './timer-state';
@@ -27,11 +27,17 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
   @Input() startTime = 0;
   @Input() endTime = 0;
   readonly assets = 'assets/figma/focus-timer/';
+  readonly timerPetImages: Record<PetType, string> = {
+    panda: 'pet.png',
+    owl: 'other-pets.png',
+    dragon: 'other-pets.png',
+    llama: 'llama.png'
+  };
   readonly sounds = [
-    { id: 'lofi', lines: ['Lo-Fi', 'Beats'], label: 'Lo-Fi Beats' },
-    { id: 'ocean', lines: ['Ocean', 'Waves'], label: 'Ocean Waves' },
-    { id: 'rain', lines: ['Rain', 'Drops'], label: 'Rain Drops' },
-    { id: 'forest', lines: ['Forest', 'Ambience'], label: 'Forest Ambience' }
+    { id: 'lofi', lines: ['Sound', 'healing'], label: 'Sound healing', file: 'Sound healing.mp3' },
+    { id: 'ocean', lines: ['On the', 'beach'], label: 'On the beach', file: 'On the beach.mp3' },
+    { id: 'rain', lines: ['Morning', 'Sunlight'], label: 'Morning Sunlight', file: 'Morning Sunlight.mp3' },
+    { id: 'forest', lines: ['In the', 'nature'], label: 'In the nature', file: 'In the nature.mp3' }
   ];
   remainingSeconds = 0;
   progress = 0;
@@ -68,6 +74,7 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
   get dotX(): number { return 126 + 118.5 * Math.sin(this.progress * 2 * Math.PI); }
   get dotY(): number { return 126 - 118.5 * Math.cos(this.progress * 2 * Math.PI); }
   get canRetryCompletion(): boolean { return this.expired && !this.busy && !this.completed; }
+  get timerPet(): PetType { return this.petAge.getCurrentPetType() ?? 'panda'; }
 
   ionViewDidEnter(): void {
     this.presented = true;
@@ -116,11 +123,12 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
   }
 
   async toggleSound(id: string): Promise<void> {
-    if (this.expired || this.invalidSchedule || !this.sounds.some(sound => sound.id === id)) return;
+    const sound = this.sounds.find(sound => sound.id === id);
+    if (this.expired || this.invalidSchedule || !sound) return;
     if (this.playingSound === id) { this.stopSound(); return; }
     this.stopSound();
     const request = this.soundRequest;
-    const audio = new Audio('assets/audio/focus/' + id + '.wav');
+    const audio = new Audio('assets/audio/focus/' + encodeURIComponent(sound.file));
     audio.loop = true;
     audio.volume = 0.4;
     this.audio = audio;

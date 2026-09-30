@@ -22,7 +22,7 @@ import { RefreshService } from '../../../services/refresh.service';
       [style.padding]="usesPlannerActivityDesign ? '0' : '0 16px'"></activity-page-content>
 
     <button *ngIf="usesPlannerActivityDesign" type="button" class="child-activity-add" (click)="onAddHabit()"
-      aria-label="Add planner activity">
+      [attr.aria-label]="habitContent.childCalendarTab === 'habit' ? 'Add habit' : habitContent.childCalendarTab === 'task' ? 'Add task' : 'Add planner activity'">
       <img src="assets/figma/planner-daily/add.svg" alt="" />
     </button>
 
@@ -132,11 +132,11 @@ export class ActivityPageComponent implements OnInit, OnDestroy {
   }
 
   onAddHabit(): void {
-    // The Figma floating action is specifically “Add Planner”, independent of
-    // the tab currently used to browse the day. Reuse the existing timetable
-    // creation route rather than introducing a second Planner form.
+    // The shared calendar layout does not determine the activity being added.
+    // Follow the selected category, retaining Planner as the All-tab default.
+    const selectedTab = this.habitContent?.childCalendarTab;
     const currentTab = this.usesPlannerActivityDesign
-      ? 'timetable'
+      ? (selectedTab === 'habit' ? 'habits' : selectedTab === 'task' ? 'tasks' : 'timetable')
       : (this.habitContent?.currentMainTab ?? 'habits');
     const origin = this.router.url || '/home';
     this.router.navigate(['/activity-input'], { state: { currentActive: currentTab, origin } }).catch(() => { });

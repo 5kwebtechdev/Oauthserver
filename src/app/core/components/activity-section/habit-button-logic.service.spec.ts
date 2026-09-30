@@ -49,6 +49,26 @@ describe('HabitButtonLogicService', () => {
     });
   }
 
+  it('opens Let’s Go ten minutes before start and closes it five minutes after', () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12).getTime();
+    const activity = { status: 'pending', startTimeStamp: start };
+    const clock = spyOn(Date, 'now');
+
+    clock.and.returnValue(start - 10 * 60_000 - 1);
+    expect(logic.isLetsGoEnabled(activity)).toBeFalse();
+    clock.and.returnValue(start - 10 * 60_000);
+    expect(logic.isLetsGoEnabled(activity)).toBeTrue();
+    clock.and.returnValue(start + 5 * 60_000);
+    expect(logic.isLetsGoEnabled(activity)).toBeTrue();
+    expect(logic.isDoneEnabled(activity)).toBeFalse();
+    clock.and.returnValue(start + 5 * 60_000 + 1);
+    expect(logic.isLetsGoEnabled(activity)).toBeFalse();
+    expect(logic.isDoneEnabled(activity)).toBeTrue();
+    clock.and.returnValue(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime());
+    expect(logic.isDoneEnabled(activity)).toBeTrue();
+  });
+
   it('does not allow a past-day item to be marked done', () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);

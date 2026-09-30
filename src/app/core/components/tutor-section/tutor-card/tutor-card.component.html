@@ -1,4 +1,4 @@
-<section class="eduhub-section" aria-labelledby="eduhub-title">
+<section class="eduhub-section" [class.eduhub-section--empty]="showEmptyState" aria-labelledby="eduhub-title">
   <header class="eduhub-header">
     <div>
       <h3 id="eduhub-title"><span>Edu</span><span>Hub</span></h3>
@@ -32,7 +32,7 @@
           <app-counselor-card *ngIf="getEducationProfile(tutor) as profile" class="eduhub-event-preview" [counselor]="profile" [education]="true" (viewProfile)="onViewProfile(tutor)"></app-counselor-card>
         </ng-container>
       </div>
-      <p class="eduhub-empty" *ngIf="!visibleTutors.length">No tutors available right now.</p>
+      <ng-container *ngIf="!visibleTutors.length" [ngTemplateOutlet]="eduhubEmptyState"></ng-container>
     </ng-container>
 
     <ng-container *ngIf="selectedCategoryKey === 'academies'">
@@ -41,7 +41,7 @@
           <app-counselor-card *ngIf="getEducationProfile(academy) as profile" class="eduhub-event-preview" [counselor]="profile" [education]="true" (viewProfile)="onViewAcademyProfile(academy)"></app-counselor-card>
         </ng-container>
       </div>
-      <p class="eduhub-empty" *ngIf="!visibleAcademies.length">No academies available in this location right now.</p>
+      <ng-container *ngIf="!visibleAcademies.length" [ngTemplateOutlet]="eduhubEmptyState"></ng-container>
     </ng-container>
 
     <ng-container *ngIf="visibleExternalPreviews.length">
@@ -89,9 +89,21 @@
     </ng-container>
 
     <ng-container *ngIf="selectedCategoryKey !== 'tutors' && selectedCategoryKey !== 'academies' && !visibleExternalPreviews.length">
-      <p class="eduhub-empty">No {{ selectedCategory.label.toLowerCase() }} available right now.</p>
+      <ng-container [ngTemplateOutlet]="eduhubEmptyState"></ng-container>
     </ng-container>
   </ng-container>
+
+  <ng-template #eduhubEmptyState>
+    <div class="eduhub-empty" role="status">
+      <div class="eduhub-empty__art" aria-hidden="true">
+        <img src="assets/figma/eduhub-home/empty-location.png" alt="">
+      </div>
+      <div class="eduhub-empty__copy">
+        <h4>We haven't landed here yet!</h4>
+        <p>Listings are on their way, good things take a little time. Switch to a nearby city or try a different category while we catch up.</p>
+      </div>
+    </div>
+  </ng-template>
 
   <button class="eduhub-view-all" type="button" *ngIf="showViewAll" [attr.aria-label]="'View all ' + selectedCategory.label" (click)="onViewAll()">View all {{ selectedCategory.label }}</button>
 </section>

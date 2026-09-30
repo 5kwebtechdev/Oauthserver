@@ -7,15 +7,8 @@
     <img *ngIf="mood" class="mood-pill__emoji" [src]="emojiImage" alt=""><span>{{ mood ? state.label : 'Set mood' }}</span>
     <img *ngIf="canEditMood" class="mood-pill__chevron" src="assets/figma/home-mood-header/chevron.svg" alt="">
   </button>
-  <div class="mood-pet">
-    <span *ngIf="pet === 'panda'; else selectedPet" class="panda-art" [ngClass]="'panda-art--' + (mood || 'default')">
-      <img [src]="pandaImage" [alt]="mood ? 'Panda feeling ' + state.label.toLowerCase() : 'Panda asking how you feel'">
-    </span>
-    <ng-template #selectedPet>
-      <span class="other-pet-art" [ngClass]="'other-pet-art--' + pet">
-        <img [src]="otherPetImage" [alt]="pet + ' standing on a grassy patch'">
-      </span>
-    </ng-template>
+  <div class="mood-pet" [ngClass]="['mood-pet--' + pet, 'mood-pet--' + (mood || 'happy')]">
+    <img [src]="petMoodImage" [alt]="mood ? pet + ' feeling ' + state.label.toLowerCase() : pet + ' asking how you feel'">
   </div>
   <div class="mood-stats" aria-label="Your progress">
     <a class="mood-stat" routerLink="/streaks" [attr.aria-label]="'Streak: ' + streaks">
