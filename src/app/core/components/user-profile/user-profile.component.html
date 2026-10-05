@@ -18,13 +18,39 @@
             <div class="user-age" *ngIf="user?.age">{{ user.age }} yrs</div>
           </div>
         </div>
-        <div class="user-stats">
+        <div class="parent-family-tree" *ngIf="isParentProfile(); else rewardStats" aria-label="My Family" role="group">
+          <h2>My Family</h2>
+          <ng-container *ngIf="creator; else noFamilyDetails">
+            <div class="parent-family-tree__creator">
+              <div class="parent-family-tree__avatar">
+                <img *ngIf="getMemberAvatar(creator)?.url as avatar; else creatorInitial" [src]="avatar" [alt]="familyMemberName(creator) + ' avatar'">
+                <ng-template #creatorInitial>{{ getInitial(creator.name) }}</ng-template>
+              </div>
+              <strong>{{ familyMemberName(creator) }}</strong>
+              <span *ngIf="creator.age">{{ creator.age }} years old</span>
+              <small>{{ familyMemberRole(creator, true) }}</small>
+            </div>
+            <div class="parent-family-tree__members" *ngIf="members.length">
+              <div class="parent-family-tree__member" *ngFor="let member of members">
+                <div class="parent-family-tree__avatar">
+                  <img *ngIf="getMemberAvatar(member)?.url as avatar; else memberInitial" [src]="avatar" [alt]="familyMemberName(member) + ' avatar'">
+                  <ng-template #memberInitial>{{ getInitial(member.name) }}</ng-template>
+                </div>
+                <strong>{{ familyMemberName(member) }}</strong>
+                <span *ngIf="member.age">{{ member.age }} years old</span>
+                <small [class.is-child]="familyMemberRole(member) === 'Child'">{{ familyMemberRole(member) }}</small>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #noFamilyDetails><p>Family details are not available yet.</p></ng-template>
+        </div>
+        <ng-template #rewardStats><div class="user-stats">
           <superme-coins-stats [userCoins]="userCoins" [userStreaks]="userStreaks" [userDays]="userDays"
-            [userBadges]="userBadges" coinsIcon="assets/icons/child-home-coin-figma.webp"
+            [userBadges]="userBadges" coinsIcon="assets/icons/superme-coin.webp"
             streakIcon="assets/icons/child-home-streak-figma.webp"
             badgesIcon="assets/icons/child-home-badge-figma.webp">
           </superme-coins-stats>
-        </div>
+        </div></ng-template>
       </div>
 
     </section>

@@ -335,7 +335,7 @@
               <ng-container *ngIf="!contactUnlockInProgress">
                 <img class="book-contact-unlock__lock" src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
                 <span>Unlock Now</span>
-                <ng-container *ngIf="selectedListingUnlockCost as cost"><img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true"><span>{{ cost }}</span></ng-container>
+                <ng-container *ngIf="selectedListingUnlockCost as cost"><img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true"><span>{{ cost }}</span></ng-container>
               </ng-container>
             </button>
           </section>
@@ -382,6 +382,7 @@
                 <button type="button" class="books-action-card" (click)="openSellerFlow()"><span class="books-action-card__art"><img src="assets/figma/second-hand-books/seller-latest.webp" alt=""></span><span class="books-action-card__content"><strong>I am a seller</strong><span>List your books and reach interested buyers.</span></span><span class="books-action-card__arrow"><ion-icon name="arrow-forward"></ion-icon></span></button>
                 <button type="button" class="books-action-card" (click)="openMyListings()"><span class="books-action-card__art"><img src="assets/figma/second-hand-books/my-listings-latest.webp" alt=""></span><span class="books-action-card__content"><strong>My Listings</strong><span>View and manage the books you have listed.</span></span><span class="books-action-card__arrow"><ion-icon name="arrow-forward"></ion-icon></span></button>
               </div>
+              <profile-facts [faqs]="secondHandBookFaqs" heading="FAQ's"></profile-facts>
             </section>
           </ng-container>
 

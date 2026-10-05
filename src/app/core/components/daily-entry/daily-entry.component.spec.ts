@@ -20,7 +20,8 @@ describe('Daily entry flow', () => {
     auth = { getUserData: () => ({ id: 94, relationship: 'CHILD' }), isLoggedIn: () => true,
       isFirstLoggedForTheDay: () => false };
     api = {
-      getHomeOverlay: jasmine.createSpy().and.returnValue(of({ hasOverlay: true, overlayType: 'DAILY_LOGIN' })),
+      getHomeOverlay: jasmine.createSpy().and.returnValue(of({ hasOverlay: true, overlayType: 'DAILY_LOGIN', eventId: 'reward-1' })),
+      claimRewardOverlay: jasmine.createSpy().and.returnValue(of({ eventId: 'reward-1', claimed: true, type: 'DAILY_LOGIN', dailyCoins: 5, milestoneDay: null, milestoneCoins: null })),
       dismissHomeOverlay: jasmine.createSpy().and.returnValue(of({}))
     };
     status = { getStreakStatus: jasmine.createSpy().and.returnValue(of({ currentStreak: 7, canRestore: false })) };
@@ -33,6 +34,38 @@ describe('Daily entry flow', () => {
     await component.check();
     expect(component.active).toBe('DAILY_LOGIN');
     expect(component.days).toBe(7);
+    expect(api.claimRewardOverlay).toHaveBeenCalledOnceWith('reward-1');
+  });
+
+  it('shows nothing when another device wins the reward claim', async () => {
+    api.claimRewardOverlay.and.returnValue(of({ eventId: 'reward-1', claimed: false, type: null,
+      dailyCoins: null, milestoneDay: null, milestoneCoins: null }));
+    await component.check();
+    expect(component.active).toBeNull();
+    expect(status.getStreakStatus).not.toHaveBeenCalled();
+    expect(api.dismissHomeOverlay).not.toHaveBeenCalled();
+    expect(Array.from(storage.keys()).some(key => key.includes('reward_claim_skipped'))).toBeTrue();
+  });
+
+  it('does not show or locally acknowledge a reward when its claim fails', async () => {
+    api.claimRewardOverlay.and.returnValue(throwError(() => new Error('timeout')));
+    await component.check();
+    expect(component.active).toBeNull();
+    expect(status.getStreakStatus).not.toHaveBeenCalled();
+    expect(Array.from(storage.keys()).some(key => key.includes('reward_claim_skipped'))).toBeTrue();
+  });
+
+  it('uses the claimed milestone event and passes its ID on dismissal', async () => {
+    api.getHomeOverlay.and.returnValue(of({ hasOverlay: true, overlayType: 'STREAK_MILESTONE', eventId: 'milestone-7' }));
+    api.claimRewardOverlay.and.returnValue(of({ eventId: 'milestone-7', claimed: true,
+      type: 'STREAK_MILESTONE', dailyCoins: 5, milestoneDay: 7, milestoneCoins: 40 }));
+    await component.check();
+    expect(component.active).toBe('STREAK_MILESTONE');
+    expect(component.days).toBe(7);
+    expect(component.rewardMilestoneCoins).toBe(40);
+    api.getHomeOverlay.and.returnValue(of({ hasOverlay: false, overlayType: 'NONE' }));
+    await component.dismiss();
+    expect(api.dismissHomeOverlay).toHaveBeenCalledWith('STREAK_MILESTONE', 'milestone-7');
   });
 
   it('shows both referral directions and dismisses the exact event', async () => {
@@ -117,7 +150,7 @@ describe('Daily entry flow', () => {
     Object.defineProperty(component, 'referralTestUiEnabled', { value: false });
     api.getHomeOverlay.and.returnValues(
       of({ hasOverlay: true, overlayType: 'REFERRAL_JOINED', eventId: 17 }),
-      of({ hasOverlay: true, overlayType: 'DAILY_LOGIN' })
+      of({ hasOverlay: true, overlayType: 'DAILY_LOGIN', eventId: 'reward-1' })
     );
     await component.check();
     expect(api.dismissHomeOverlay).toHaveBeenCalledOnceWith('REFERRAL_JOINED', 17);
@@ -137,7 +170,7 @@ describe('Daily entry flow', () => {
     api.getHomeOverlay.and.returnValue(of({ hasOverlay: true, overlayType: 'REFERRAL_JOINED', eventId: 20 }));
     await component.check();
     expect(component.active).toBe('REFERRAL_JOINED');
-    api.getHomeOverlay.and.returnValue(of({ hasOverlay: true, overlayType: 'DAILY_LOGIN' }));
+    api.getHomeOverlay.and.returnValue(of({ hasOverlay: true, overlayType: 'DAILY_LOGIN', eventId: 'reward-1' }));
     await component.dismiss();
     await Promise.resolve();
     expect(component.active).toBeNull();
@@ -217,7 +250,7 @@ describe('Daily entry flow', () => {
     api.getHomeOverlay.and.returnValue(of({ hasOverlay: false, overlayType: 'NONE' }));
     await component.check();
     jasmine.clock().mockDate(new Date(2026, 8, 24, 12));
-    api.getHomeOverlay.and.returnValue(of({ hasOverlay: true, overlayType: 'DAILY_LOGIN' }));
+    api.getHomeOverlay.and.returnValue(of({ hasOverlay: true, overlayType: 'DAILY_LOGIN', eventId: 'reward-1' }));
     await component.check();
     expect(component.active).toBe('DAILY_LOGIN');
   });
@@ -227,7 +260,7 @@ describe('Daily entry flow', () => {
     await component.check();
     expect(storage.size).toBe(0);
     jasmine.clock().tick(30_000);
-    api.getHomeOverlay.and.returnValue(of({ hasOverlay: true, overlayType: 'DAILY_LOGIN' }));
+    api.getHomeOverlay.and.returnValue(of({ hasOverlay: true, overlayType: 'DAILY_LOGIN', eventId: 'reward-1' }));
     await component.check();
     expect(component.active).toBe('DAILY_LOGIN');
   });
@@ -295,11 +328,12 @@ describe('Daily entry flow', () => {
     expect(component.active).toBe('MOOD_PROMPT');
   });
 
-  it('uses a fresh first-login flag as a fallback when no overlay is returned', async () => {
+  it('does not show a reward from a per-device login flag after the server reports no overlay', async () => {
     auth.isFirstLoggedForTheDay = () => true;
     api.getHomeOverlay.and.returnValue(of({ hasOverlay: false, overlayType: 'NONE' }));
     await component.check();
-    expect(component.active).toBe('DAILY_LOGIN');
+    expect(component.active).toBeNull();
+    expect(status.getStreakStatus).not.toHaveBeenCalled();
   });
 
   it('does not invent a reward when neither API confirms one', async () => {

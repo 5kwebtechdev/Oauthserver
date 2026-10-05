@@ -73,7 +73,7 @@
             <strong>{{ relatedChallenge.title }}</strong>
             <span class="learning-details-related__meta">
               <span>
-                <img src="assets/figma/learning-details/coin.webp" alt="" aria-hidden="true">
+                <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
                 {{ relatedChallenge.coins || 0 }}
               </span>
               <span *ngIf="getRelatedDuration(relatedChallenge) as duration">
@@ -94,7 +94,7 @@
             <img src="assets/figma/learning-details/thumb-up.svg" alt="" aria-hidden="true">
             <span>{{ isArticleRead ? 'Already Read' : 'Read This' }}</span>
             <span class="learning-details-action__reward" *ngIf="articleCoins > 0">
-              <img src="assets/figma/learning-details/coin.webp" alt="" aria-hidden="true">
+              <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
               {{ articleCoins }}
             </span>
           </ng-container>
@@ -109,13 +109,13 @@
         <p class="learning-details-action__error" *ngIf="actionError" role="alert">{{ actionError }}</p>
       </section>
       <section class="learning-details-action learning-details-action--parent" *ngIf="isParentAssignment">
-        <button type="button" class="learning-details-action__button" (click)="assignToChild()"
-          [disabled]="isAssigningToChild || parentAssignmentComplete">
+        <button type="button" class="learning-details-action__button" [class.learning-details-action__button--complete]="parentAssignmentComplete" (click)="assignToChild()"
+          [disabled]="isAssigningToChild || parentAssignmentComplete || !parentAssignmentChildId">
           <ion-spinner *ngIf="isAssigningToChild" name="crescent"></ion-spinner>
           <ng-container *ngIf="!isAssigningToChild">
             <span>{{ parentAssignmentComplete ? 'Assigned' : 'Assign' }}</span>
-            <span class="learning-details-action__reward">
-              <img src="assets/figma/learning-details/coin.webp" alt="" aria-hidden="true"> 20
+            <span class="learning-details-action__reward" *ngIf="!parentAssignmentComplete">
+              <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true"> {{ assignmentCoins }}
             </span>
           </ng-container>
         </button>

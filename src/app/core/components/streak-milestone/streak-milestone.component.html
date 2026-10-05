@@ -4,7 +4,7 @@
     <header><h2>Great Start!</h2><p>You're making progress, one day at a time.</p></header>
     <section class="daily-reward" aria-label="Daily reward coins">
       <div class="daily-image"><img [src]="assets + 'daily-coins.webp'" alt=""></div>
-      <div><h3>Daily reward coins</h3><strong>+5 coins</strong><p>You have earned 5 coins today for logging into the SuperMeApp.</p></div>
+      <div><h3>Daily reward coins</h3><strong>+{{ dailyCoins }} coins</strong><p>You have earned {{ dailyCoins }} coins today for logging into the SuperMeApp.</p></div>
     </section>
     <section class="milestone-card" [class.celebrating]="celebrating" *ngIf="!restoreMode; else broken" aria-label="Streak Day milestones">
       <ng-container *ngIf="milestones as state">
@@ -13,7 +13,7 @@
           <div aria-live="polite">
             <h3 *ngIf="state.reachedToday; else regularDay">You completed {{ state.completedDays }} days!</h3>
             <ng-template #regularDay><h3>Streak : <span class="streak-count">{{ state.completedDays }}</span>{{ state.completedDays === 1 ? ' day' : ' days' }}</h3></ng-template>
-            <p *ngIf="state.reachedToday as reward">You earned <img class="inline-coin" [src]="assets + 'coin.webp'" alt="coins"> <b>+{{ reward.coins }}</b></p>
+            <p *ngIf="state.reachedToday as reward">You earned <img class="inline-coin" src="assets/icons/superme-coin.webp" alt="coins"> <b>+{{ milestoneCoins ?? reward.coins }}</b></p>
           </div>
         </div>
         <div class="progress-cheer" *ngIf="celebrateProgress" role="status">{{ celebrating ? (state.reachedToday ? 'Milestone reached! You did it!' : 'Another day. A little stronger!') : '' }}</div>
@@ -22,7 +22,7 @@
           <li *ngFor="let milestone of state.visible" [class.just-reached]="celebrating && milestone.days === state.completedDays" [class.completed]="milestone.days <= state.completedDays" [attr.aria-label]="milestone.days + ' days, ' + milestone.coins + ' coins, ' + (milestone.days <= state.completedDays ? 'completed' : 'upcoming')">
             <span class="marker"><span class="marker-icon"><img [src]="assets + (milestone.days <= state.completedDays ? 'flame.webp' : 'lock.svg')" alt=""></span></span>
             <span>{{ milestone.days }} Days</span>
-            <span class="coins"><img [src]="assets + 'coin.webp'" alt="">{{ milestone.coins }}</span>
+            <span class="coins"><img src="assets/icons/superme-coin.webp" alt="">{{ milestone.coins }}</span>
           </li>
         </ol>
       </ng-container>
@@ -31,7 +31,7 @@
       <section class="milestone-card broken-card">
         <div class="broken-art"><img [src]="assets + 'achievement.webp'" alt=""></div>
         <div><h3>Your streak is broken</h3><p>Don't worry, you can still get back on track.</p></div>
-        <button type="button" class="restore-button" [disabled]="restoreDisabled" (click)="restore.emit()"><span><img class="inline-coin" [src]="assets + 'coin.webp'" alt="coins">{{ restoreCost }}</span>{{ restoring ? 'Restoring…' : 'Restore' }}</button>
+        <button type="button" class="restore-button" [disabled]="restoreDisabled" (click)="restore.emit()"><span><img class="inline-coin" src="assets/icons/superme-coin.webp" alt="coins">{{ restoreCost }}</span>{{ restoring ? 'Restoring…' : 'Restore' }}</button>
       </section>
     </ng-template>
     <p class="notice" *ngIf="notice" role="status">{{ notice }}</p>

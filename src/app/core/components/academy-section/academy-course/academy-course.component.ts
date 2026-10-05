@@ -55,7 +55,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
   readonly fallbackLessonImage = 'assets/Images-Transparent/Academy-Course-Thubmnail2.webp';
   // Learning pages use this gold star coin. Keeping one asset for the wallet,
   // lesson rewards and course reward makes every value immediately recognisable.
-  readonly learningCoinAsset = 'assets/figma/learning-details/coin.webp';
+  readonly learningCoinAsset = 'assets/icons/superme-coin.webp';
   walletCoins = 0;
   private readonly fallbackLessonImages = [
     'assets/Images-Transparent/Academy-Course-Thubmnail1.webp',

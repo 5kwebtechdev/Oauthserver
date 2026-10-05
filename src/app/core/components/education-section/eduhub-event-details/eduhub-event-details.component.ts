@@ -12,6 +12,7 @@ import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { UserService } from '../../../services/user.service';
 import { EduHubEventEntityType, EduHubEventItem, EduHubEventsService } from '../../../services/eduhub-events.service';
+import { EDUHUB_FAQS } from '../eduhub-faqs';
 import { ShareLinkService } from '../../../services/share-link.service';
 
 interface EventDetailRouteData {
@@ -136,12 +137,7 @@ export class EduHubEventDetailsComponent implements OnInit {
     } catch { return ''; }
   }
 
-  readonly faqs = [
-    { question: 'How do I register for an event or workshop?', answer: 'Unlock the listing to access its registration link and organizer contact details, when provided.' },
-    { question: 'Is the event or workshop online or in person?', answer: 'Check the venue and description for the format. Contact the organizer to confirm before registering.' },
-    { question: 'What does unlocking a listing include?', answer: 'Unlocking reveals the venue address, phone number, email, and registration link provided by the organizer.' },
-    { question: 'How do I contact the organizer?', answer: 'After unlocking, use the phone number or email shown in the Contact section.' }
-  ];
+  readonly faqs = EDUHUB_FAQS['eventsWorkshops'];
 
   /** Only render a coin cost when the API supplied a usable amount. */
   get unlockCost(): number | null {

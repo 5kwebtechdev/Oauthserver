@@ -39,6 +39,15 @@ export interface PetMessageApiResponse {
   relatedUser?: ReferralRelatedUser | null;
 }
 
+export interface RewardOverlayClaimResponse {
+  eventId: string | number;
+  claimed: boolean;
+  type: 'DAILY_LOGIN' | 'STREAK_MILESTONE' | null;
+  dailyCoins: number | null;
+  milestoneDay: number | null;
+  milestoneCoins: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PetMessageApiService {
   private readonly base = environment.apiUrl;
@@ -78,6 +87,14 @@ export class PetMessageApiService {
     return strict ? request : request.pipe(catchError(() => of({ message: '', hasOverlay: false, overlayType: 'NONE' as ApiOverlayType })));
   }
 
+  /** Atomically reserve a daily/streak reward for this account before displaying it. */
+  claimRewardOverlay(eventId: string | number): Observable<RewardOverlayClaimResponse> {
+    return this.http.post<RewardOverlayClaimResponse>(`${this.base}/pet-message/home/overlay/claim`, null, {
+      headers: this.headers().set('X-Skip-Profile-Selector', 'true'),
+      params: new HttpParams().set('eventId', String(eventId)),
+    });
+  }
+
   /** POST /v1/pet-message/home/overlay/dismiss?type=<overlayType> */
   dismissHomeOverlay(type: ApiOverlayType, eventId?: string | number | null, strict = false): Observable<any> {
     let params = new HttpParams().set('type', type);
@@ -85,8 +102,8 @@ export class PetMessageApiService {
       if (eventId == null || !String(eventId).trim()) {
         return throwError(() => new Error('A referral eventId is required for dismissal.'));
       }
-      params = params.set('eventId', String(eventId));
     }
+    if (eventId != null && String(eventId).trim()) params = params.set('eventId', String(eventId));
     const request = this.http
       .post(`${this.base}/pet-message/home/overlay/dismiss`, null, {
         headers: this.headers().set('X-Skip-Profile-Selector', 'true'),

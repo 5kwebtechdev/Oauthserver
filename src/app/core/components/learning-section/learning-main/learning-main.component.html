@@ -170,7 +170,7 @@
                     </ng-template>
                     <div class="parent-learning-card-item__footer">
                       <div class="parent-learning-card-item__rewards">
-                        <span><img src="assets/figma/parent-child-learning/coin.webp" alt="Coins">{{ item.coins || 0 }}</span>
+                        <span><img src="assets/icons/superme-coin.webp" alt="Coins">{{ item.coins || 0 }}</span>
                         <ng-container *ngIf="isParentItemAssigned(item) && getParentBonusCoins(item) as bonus">
                           <span class="parent-learning-card-item__bonus">+{{ bonus }} coins</span>
                         </ng-container>
@@ -181,7 +181,7 @@
                         [attr.aria-busy]="isParentCourseAssigning(item)">
                         {{ isParentCourseAssigning(item) ? 'Assigning...' : getParentActionLabel(item) }}
                         <ng-container *ngIf="getParentItemStatus(item) === 'pending' && !isParentItemAssigned(item)">
-                          <img src="assets/figma/parent-child-learning/coin.webp" alt="">{{ getParentAssignmentCoins(item) }}
+                          <img src="assets/icons/superme-coin.webp" alt="">{{ getParentAssignmentCoins(item) }}
                         </ng-container>
                       </button>
                     </div>
@@ -230,7 +230,7 @@
               <div class="child-learning-hero__actions">
                 <button type="button" class="child-learning-coins" (click)="openCoinPage()"
                   [attr.aria-label]="'Open coins. ' + childCoins + ' coins'">
-                  <img src="assets/figma/parent-child-learning/coin.webp" alt="" aria-hidden="true">
+                  <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
                   <strong>{{ childCoins }}</strong>
                 </button>
                 <button type="button" class="child-learning-search-toggle" (click)="toggleParentSearch()"
@@ -246,7 +246,7 @@
               <h1>Learnings</h1>
               <button type="button" class="child-learning-coins" (click)="openCoinPage()"
                 [attr.aria-label]="'Open coins. ' + childCoins + ' coins'">
-                <img src="assets/figma/parent-child-learning/coin.webp" alt="" aria-hidden="true">
+                <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
                 <strong>{{ childCoins }}</strong>
               </button>
             </ng-template>
@@ -398,7 +398,7 @@
                     <strong>{{ item.title }}</strong>
                     <span *ngIf="getParentItemDetail(item) as detail" class="child-learning-item__detail">{{ detail }}</span>
                     <span class="child-learning-item__rewards">
-                      <span><img src="assets/figma/parent-child-learning/coin.webp" alt="Coins">{{ item.coins || 0 }}</span>
+                      <span><img src="assets/icons/superme-coin.webp" alt="Coins">{{ item.coins || 0 }}</span>
                       <ng-container *ngIf="isParentItemAssigned(item) && getParentBonusCoins(item) as bonus">
                         <span class="child-learning-item__bonus">+{{ bonus }} coins</span>
                       </ng-container>

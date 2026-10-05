@@ -10,8 +10,8 @@ describe('HabitButtonLogicService', () => {
       [599999, true, true, false],
       [600000, true, false, true],
       [600001, true, false, true],
-      [5099999, true, false, true],
-      [5100000, true, false, true],
+      [4499999, true, false, true],
+      [4500000, false, false, false],
       [5100001, false, false, false],
     ] as const) {
       it(`uses exact Home boundaries for ${type} at offset ${offset}`, () => {
@@ -75,6 +75,21 @@ describe('HabitButtonLogicService', () => {
     const activity = item('tasks', yesterday);
     expect(logic.isDoneVisible(activity)).toBeFalse();
     expect(logic.isDoneEnabled(activity)).toBeFalse();
+  });
+
+  it('allows unfinished activities through 23:59 but not from the next midnight', () => {
+    const start = new Date(2026, 9, 5, 15).getTime();
+    const activity = { type: 'habits', status: 'ongoing', startTimeStamp: start,
+      endTimeStamp: start + 3 * 60_000 };
+    jasmine.clock().install();
+    try {
+      jasmine.clock().mockDate(new Date(2026, 9, 5, 23, 59, 59));
+      expect(logic.isDoneEnabled(activity)).toBeTrue();
+      jasmine.clock().mockDate(new Date(2026, 9, 6, 0, 0));
+      expect(logic.isDoneEnabled(activity)).toBeFalse();
+    } finally {
+      jasmine.clock().uninstall();
+    }
   });
 
   it('does not show Done for a completed item', () => {

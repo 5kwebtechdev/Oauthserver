@@ -40,6 +40,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
             [index]="i"
             [source]="source"
             [forUserId]="forUserId"
+            [parentPreviewOnly]="rewardMode && (item.type === 'quiz' || item.type === 'puzzle')"
             (cardClick)="onItemClick($event.item, $event.index)">
           </learning-card>
           <span *ngIf="contentMode !== 'parenting' && getDifficultyLabel(item)" class="reward-difficulty"
@@ -50,7 +51,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
             <h3>{{ item?.title }}</h3>
             <div class="reward-card-summary__meta">
               <span>
-                <img src="assets/icons/child-home-coin-figma.webp" alt="">
+                <img src="assets/icons/superme-coin.webp" alt="">
                 {{ getItemCoins(item) }}
               </span>
               <span *ngIf="getItemTrophies(item) !== null">
@@ -74,7 +75,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
             <h3>{{ item?.title }}</h3>
             <div class="parenting-card-summary__meta">
               <span>
-                <img src="assets/icons/child-home-coin-figma.webp" alt="">
+                <img src="assets/icons/superme-coin.webp" alt="">
                 {{ getItemCoins(item) }}
               </span>
               <span>
@@ -1261,6 +1262,26 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
 
   onItemClick(item: any, index: number) {
     if (this.rewardMode) {
+      // Article cards navigate to their detail page themselves. Opening one
+      // must not also emit the parent assignment action.
+      if (item?.type === 'article') return;
+      if (item?.type === 'quiz' || item?.type === 'puzzle') {
+        const childId = Number(this.forUserId);
+        void this.router.navigate(['/authed/content/description', item.id], {
+          queryParams: {
+            parentAssign: '1',
+            assignmentCoins: this.getRewardCoins(item),
+            ...(Number.isFinite(childId) && childId > 0 ? { childId } : {})
+          },
+          state: {
+            source: this.source || '/parent-account',
+            selectedChildId: Number.isFinite(childId) && childId > 0 ? childId : null,
+            assignmentCoins: this.getRewardCoins(item),
+            alreadyAssigned: this.isRewardAssigned(item)
+          }
+        });
+        return;
+      }
       if (!this.isRewardAssigned(item)) {
         this.rewardSelected.emit({ item, index, coins: this.getRewardCoins(item) });
       }

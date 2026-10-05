@@ -1,4 +1,8 @@
 {
   "extends": "./tsconfig.spec.json",
-  "include": ["src/app/core/components/daily-entry/*.spec.ts", "src/**/*.d.ts"]
+  "include": [
+    "src/app/core/components/daily-entry/daily-entry.component.spec.ts",
+    "src/app/core/services/pet-message-api.service.spec.ts",
+    "src/**/*.d.ts"
+  ]
 }

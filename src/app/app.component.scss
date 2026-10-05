@@ -85,10 +85,12 @@
   }
 
   &__icon {
-    display: grid;
+    display: block;
     width: 58px;
     height: 58px;
-    place-items: center;
+    padding: 6px;
+    box-sizing: border-box;
+    object-fit: contain;
     margin: 0 auto 12px;
     border-radius: 50%;
     background: #fff3d6;

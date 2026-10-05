@@ -14,7 +14,7 @@ import { AuthService as CoreAuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { MoodService } from '../../services/mood.service';
 import { VibesDisplayResponse } from '../../models/mood.model';
-import { AuthService, FamilyMember, FamilyDetailsResponse } from '../../../../package/api/auth.service';
+import { AuthService, FamilyMember } from '../../../../package/api/auth.service';
 import { ParentImageService } from '../../services/parent-image.service';
 import { ChildSelfImageService } from '../../services/child-self-image.service';
 import { SkeletonImageComponent } from '../skeleton-image/skeleton-image.component';
@@ -108,7 +108,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
     // Load user data from localStorage (set during login)
     this.loadUserDataFromStorage();
     // Load user stats from localStorage first, then API if not available
-    this.loadUserStatsFromStorage();
+    if (this.isParentProfile()) this.loadFamilyDetails();
+    else this.loadUserStatsFromStorage();
     // Subscribe to user data changes from CoreAuthService (primary source of truth)
     // This will reactively update the UI when user data changes (e.g., from edit-profile)
     this.coreAuthService.userData$.subscribe(userData => {
@@ -257,6 +258,20 @@ export class UserProfileComponent implements OnInit, OnChanges {
     return this.resolveDisplayIdentity(this.user) || 'You';
   }
 
+  isParentProfile(): boolean {
+    return String(this.user?.relationship || this.coreAuthService.getUserData()?.relationship || '').toUpperCase() === 'PARENT';
+  }
+
+  familyMemberName(member: FamilyMember): string {
+    return displayName(member) || member.name || 'Family member';
+  }
+
+  familyMemberRole(member: FamilyMember, creator = false): string {
+    if (creator) return 'Parent / Creator';
+    const relationship = String(member.relationship || '').toUpperCase();
+    return member.coParent || relationship.includes('PARENT') ? 'Parent' : 'Child';
+  }
+
   /**
    * Load user statistics from localStorage first, then fetch from API if not available
    */
@@ -339,23 +354,36 @@ export class UserProfileComponent implements OnInit, OnChanges {
    * Load family details from API
    */
   private loadFamilyDetails(): void {
-    this.authService.getFamilyDetails().subscribe({
-      next: (response: FamilyDetailsResponse) => {
-        if (response.family) {
-          this.creator = response.family.creator;
-          // The backend's family read model can be briefly stale right after
-          // a removal. Never allow that response to re-add a confirmed
-          // removed child to the cached My Profile screen.
-          this.members = this.coreAuthService.excludeRemovedFamilyMembers(response.family.members);
-          console.log('[UserProfile] Loaded family details:', {
-            creator: this.creator,
-            members: this.members
-          });
-        }
-      },
-      error: (error: any) => {
-        console.error('[UserProfile] Failed to load family details:', error);
-      }
+    const apply = (response: any) => {
+      const family = response?.family;
+      const rawMembers = Array.isArray(response?.members)
+        ? response.members
+        : [family?.creator, ...(Array.isArray(family?.members) ? family.members : [])].filter(Boolean);
+      const currentUserId = Number(this.coreAuthService.getUserData()?.id || 0);
+      const normalized: FamilyMember[] = rawMembers.map((member: any) => {
+        const relationship = String(member.relationship || '').toUpperCase();
+        const userId = Number(member.id ?? member.userId ?? member.memberId ?? 0);
+        const dob = member.dateOfBirth ? new Date(member.dateOfBirth) : null;
+        const today = new Date();
+        const dobAge = dob && !Number.isNaN(dob.getTime())
+          ? today.getFullYear() - dob.getFullYear() - (today.getMonth() < dob.getMonth()
+            || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate()) ? 1 : 0)
+          : 0;
+        const coParent = member.coParent === true || relationship === 'CO_PARENT' || relationship === 'CO-PARENT';
+        return { ...member, userId, coParent, age: Number(member.age) || Math.max(0, dobAge),
+          relationship: coParent || relationship.includes('PARENT') ? 'Parent' : 'Child',
+          you: member.you === true || (!!currentUserId && userId === currentUserId) };
+      });
+      const available = this.coreAuthService.excludeRemovedFamilyMembers(normalized);
+      this.creator = available.find(member => member.relationship === 'Parent' && member.coParent !== true)
+        || null;
+      const creatorId = Number(this.creator?.userId || 0);
+      this.members = available.filter(member => member !== this.creator && (!creatorId || member.userId !== creatorId));
+    };
+    this.authService.getFamilyStatus().subscribe({
+      next: apply,
+      error: () => this.authService.getFamilyDetails().subscribe({ next: apply,
+        error: (error: any) => console.error('[UserProfile] Failed to load family details:', error) })
     });
   }
 

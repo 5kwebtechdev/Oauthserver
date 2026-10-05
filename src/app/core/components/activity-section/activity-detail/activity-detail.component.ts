@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 import { Habit } from '../habit.types';
 import { NavigationService } from '../../../services/navigation.service';
 import { plannerEditTab } from '../home-calendar-kind';
+import { activityRewardIconHtml } from '../activity-reward-icon';
 import { FocusTimerService } from '../../superme-timer/focus-timer.service';
 import { HabitService } from '../habit.service';
 import { AuthService } from '../../../services/auth.service';
@@ -64,6 +66,9 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   public showDeletePopup: boolean = false;
   public deletePopupConfig: SupermePopupConfig = {};
   private deletingActivity = false;
+  private activityChanges?: Subscription;
+  private awaitingEditReturn = false;
+  private refreshAfterEdit = false;
 
   constructor(
     private router: Router,
@@ -85,11 +90,31 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     this.initUserRole();
     this.initNavigationState();
     this.loadActivityFromRoute();
+    // The editor emits an update after saving. Mark this cached Ionic view for
+    // one refresh on return, without refetching for completion/abort signals.
+    let subscribing = true;
+    this.activityChanges = this.habitService.dataChanged$.subscribe(change => {
+      if (subscribing) return; // Ignore the ReplaySubject's prior change.
+      if (!this.awaitingEditReturn || change.action !== 'updated' || !this.habit) return;
+      const type = this.habit.type === 'tasks' ? 'task' : 'habit';
+      if (change.type !== type) return;
+      this.refreshAfterEdit = true;
+    });
+    subscribing = false;
     this.setupButtonStateChecker();
   }
 
   ngOnDestroy(): void {
+    this.activityChanges?.unsubscribe();
     this.clearAllIntervals();
+  }
+
+  ionViewWillEnter(): void {
+    if (this.refreshAfterEdit && this.habit) {
+      this.refreshAfterEdit = false;
+      this.loadDetail(Number(this.habit.id), this.habit.type === 'tasks' ? 'tasks' : 'habits', this.selectedDateFromState || undefined);
+    }
+    this.awaitingEditReturn = false;
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -219,7 +244,6 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         if (this.habit?.status?.toLowerCase() === 'ongoing') {
           this.percentageCompleted = this.calculateProgressPercentage();
           this.startProgress();
-          void this.openFocusTimer();
         } else {
           this.percentageCompleted = 0;
         }
@@ -576,6 +600,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onEdit() {
+    if (this.habit && !this.canEdit()) return;
     if (!this.habit) {
       this.router.navigate(['/activity-input'], {
         state: { origin: this.router.url || '/home' }
@@ -583,6 +608,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
 
+    this.awaitingEditReturn = true;
     this.router.navigate(['/activity-input'], {
       state: {
         habit: this.habit,
@@ -622,8 +648,15 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     } catch { return false; }
   }
 
+  canDelete(): boolean {
+    if (!this.habit || this.habit.type === 'timetable') return false;
+    const currentUserId = this.authService?.getUserId?.();
+    const createdBy = (this.habit as any).createdById ?? (this.habit as any).createdBy ?? (this.habit as any).createdByName;
+    return !!currentUserId && createdBy != null && String(createdBy) === String(currentUserId);
+  }
+
   openDeletePopup(): void {
-    if (!this.habit || !this.canEdit()) return;
+    if (!this.canDelete()) return;
     this.deletePopupConfig = {
       image: 'assets/Images-Transparent/Image-Input-Delete.webp',
       imageAlt: 'Delete activity',
@@ -643,7 +676,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   confirmDelete(): void {
-    if (!this.habit || !this.canEdit() || this.deletingActivity) return;
+    if (!this.habit || !this.canDelete() || this.deletingActivity) return;
     this.deletingActivity = true;
     const id = String(this.habit.id);
     const isTask = this.habit.type === 'tasks';
@@ -798,10 +831,10 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
    */
   openCompletePopup() {
     const coins = this.getCoinReward();
-    const streak = this.getStreak();
+    const streak = Math.max(1, this.getStreak());
 
     // Build heading HTML to include coin and streak rows
-    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:var(--text-base);">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style=\"display:flex;flex-direction:column;align-items: center;gap:8px;margin-top:12px;text-align:left;\"><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/coin.webp' style=\"width:20px;height:20px;\" alt=\"coins\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${coins}</div></div><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/streak.webp' style=\"width:20px;height:20px;\" alt=\"streak\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${streak}</div></div></div>`;
+    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:var(--text-base);">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;text-align:left;"><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('coin')}<div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('streak')}<div style="font-weight:600;">${streak}</div></div></div>`;
 
     const primary: SupermePopupCTA = {
       text: 'Confirm',
@@ -873,9 +906,9 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
   openAbortPopup() {
     const coins = this.getCoinReward();
-    const streak = this.getStreak();
+    const streak = Math.max(1, this.getStreak());
 
-    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:var(--text-base);">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/coin.webp' style="width:20px;height:20px;" alt="coins"/><div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/streak.webp' style="width:20px;height:20px;" alt="streak"/><div style="font-weight:600;">${streak}</div></div></div>`;
+    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:var(--text-base);">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;">${activityRewardIconHtml('coin')}<div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;">${activityRewardIconHtml('streak')}<div style="font-weight:600;">${streak}</div></div></div>`;
 
     const primary: SupermePopupCTA = {
       text: 'Keep Going',
@@ -960,7 +993,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
   startProgress(): void {
     this.clearProgress();
-    this.percentageCompleted = this.buttonLogic.calculateProgressPercentage(this.habit);
+    this.percentageCompleted = this.calculateProgressPercentage();
     this.progressInterval = setInterval(() => {
       this.percentageCompleted = this.calculateProgressPercentage();
     }, 10000); // Update every 10s to avoid ANR
@@ -979,7 +1012,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   calculateProgressPercentage(): number {
-    return this.buttonLogic.calculateProgressPercentage(this.habit);
+    return this.buttonLogic.calculateProgressPercentage(this.getHabitForButtonLogic());
   }
 
   // === Button State Logic ===

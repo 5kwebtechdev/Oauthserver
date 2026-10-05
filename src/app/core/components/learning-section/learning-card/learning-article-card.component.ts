@@ -34,7 +34,16 @@ export class LearningArticleCardComponent implements OnChanges {
         if (this.source) state['source'] = this.source;
         const childId = Number(this.forUserId);
         if (Number.isFinite(childId) && childId > 0) state['selectedChildId'] = childId;
-        this.router.navigate(['/content/article', this.item.id], { state });
+        const raw: any = this.item?.rawData ?? this.item;
+        const assigned = raw?.alreadyAssignedToThisUser;
+        state['alreadyAssigned'] = assigned === true || assigned === 1 || String(assigned).trim().toLowerCase() === 'true';
+        const coins = Number(raw?.assignmentCoins ?? raw?.bonusCoins ?? raw?.extraCoinsByParent ?? raw?.extraCoins);
+        if (Number.isFinite(coins) && coins > 0) state['assignmentCoins'] = Math.round(coins);
+        const parentAssignment = this.source?.includes('view=parent') === true;
+        this.router.navigate(['/content/article', this.item.id], {
+            ...(parentAssignment ? { queryParams: { parentAssign: '1', ...(Number.isFinite(childId) && childId > 0 ? { childId } : {}) } } : {}),
+            state
+        });
     }
 
     onCardAction(event: Event): void {

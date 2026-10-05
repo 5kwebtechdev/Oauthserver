@@ -662,6 +662,11 @@
         <span></span>
       </div>
 
+      <div class="pet-carousel-nav">
+      <button type="button" class="pet-carousel-arrow pet-carousel-arrow--previous" aria-label="Previous pets"
+        [disabled]="petCarouselAtStart" (click)="movePetCarousel('previous')">
+        <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+      </button>
       <swiper-container class="pet-carousel" slides-per-view="1.28" centered-slides="true" space-between="12"
         [breakpoints]="petCarouselBreakpoints"
         grab-cursor="true" (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl>
@@ -693,6 +698,11 @@
           </article>
         </swiper-slide>
       </swiper-container>
+      <button type="button" class="pet-carousel-arrow pet-carousel-arrow--next" aria-label="Next pets"
+        [disabled]="petCarouselAtEnd" (click)="movePetCarousel('next')">
+        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+      </button>
+      </div>
 
       <button type="button" class="pet-step-next"
         [disabled]="!hasSelectedPet || registrationInProgress"

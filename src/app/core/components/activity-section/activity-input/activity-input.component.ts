@@ -470,7 +470,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   private readonly DELETE_IMAGE_PATH = 'assets/Images-Transparent/Image-Input-Delete.webp';
 
   // use PNG assets for icons (18px width, height auto)
-  readonly _coinSvg = `<img src="assets/figma/parent-home/coin.webp" alt="Coins" style="width:18px;height:auto;"/>`;
+  readonly _coinSvg = `<img src="assets/icons/superme-coin.webp" alt="Coins" style="width:18px;height:auto;"/>`;
   private readonly _streakSvg = `<img src="assets/figma/parent-home/streak.webp" alt="Streak" style="width:18px;height:auto;"/>`;
 
   private buildDeletePopupConfig(coin: number, streak: number): SupermePopupConfig {

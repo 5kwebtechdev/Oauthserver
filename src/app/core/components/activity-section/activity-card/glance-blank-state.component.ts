@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GlanceBlankState } from './glance-blank-state';
 
@@ -9,7 +9,8 @@ import { GlanceBlankState } from './glance-blank-state';
   template: `
     <section class="blank" [attr.data-blank-state]="state.key" [attr.data-figma-frame]="state.frame">
       <div class="art" [style.width.px]="state.width" [style.aspect-ratio]="state.width + '/' + state.height">
-        <img [src]="state.image" alt="" [style.width]="state.crop.width" [style.height]="state.crop.height"
+        <img [src]="state.image" alt="" [style.visibility]="loadedImage === state.image ? 'visible' : 'hidden'"
+          (load)="onImageLoad($event)" [style.width]="state.crop.width" [style.height]="state.crop.height"
           [style.left]="state.crop.left" [style.top]="state.crop.top">
       </div>
       <div class="copy">
@@ -89,8 +90,18 @@ import { GlanceBlankState } from './glance-blank-state';
     @media(max-width: 359px) { h4 { font-size: 18px; } }
   `]
 })
-export class GlanceBlankStateComponent {
+export class GlanceBlankStateComponent implements OnChanges {
   @Input({ required: true }) state!: GlanceBlankState;
   @Output() primary = new EventEmitter<void>();
   @Output() secondary = new EventEmitter<void>();
+  loadedImage: string | null = null;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['state']?.previousValue?.image !== this.state.image) this.loadedImage = null;
+  }
+
+  onImageLoad(event: Event): void {
+    const image = event.target as HTMLImageElement;
+    if (image.src === new URL(this.state.image, document.baseURI).href) this.loadedImage = this.state.image;
+  }
 }

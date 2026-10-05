@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/core/components/learning-section/parent-quiz-assignment.spec.ts",
+    "src/app/core/components/learning-section/quiz-navigation.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

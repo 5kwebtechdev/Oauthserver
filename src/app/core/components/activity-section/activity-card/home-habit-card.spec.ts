@@ -72,6 +72,31 @@ describe('Compact Home Habit card', () => {
     expect(button(f, 'start').disabled).toBeFalse();
     expect(button(f, 'done').disabled).toBeTrue(); // Existing start-window rule.
   });
+  for (const type of ['habits', 'tasks'] as const) {
+    for (const duration of [3, 45] as const) {
+      it(`keeps inner ${type} Done available after a ${duration}-minute schedule until midnight`, () => {
+        const time = (timestamp: number) => {
+          const date = new Date(timestamp);
+          return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+        };
+        const f = render({ type, status: 'ongoing', startTimeStamp: now - (duration + 30) * 60_000,
+          endTimeStamp: now - 30 * 60_000, startDate: '2020-01-01', endDate: '2020-01-01',
+          startTime: time(now - (duration + 30) * 60_000), endTime: time(now - 30 * 60_000) } as unknown as Partial<Habit>, false);
+        const c = f.componentInstance;
+        const today = new Date(now);
+        c.selectedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        spyOn<any>(c, 'hasOtherOngoingActivity').and.returnValue(true);
+        expect(c.isDoneVisible()).toBeTrue();
+        expect(c.isDoneEnabled()).toBeTrue();
+        c.habit = { ...c.habit!, status: 'pending' } as Habit;
+        expect(c.isDoneVisible()).toBeTrue();
+        expect(c.isDoneEnabled()).toBeTrue();
+        c.isCurrentDateView = false;
+        expect(c.isDoneVisible()).toBeFalse();
+        expect(c.isDoneEnabled()).toBeFalse();
+      });
+    }
+  }
   it('routes one click to the existing start handler without opening the card', () => {
     const f = render();
     const start = spyOn(f.componentInstance, 'openStartPopup').and.callThrough();
@@ -120,10 +145,12 @@ describe('Compact Home Habit card', () => {
       expect(start).toHaveBeenCalledOnceWith('test-habit');
       expect(focus).not.toHaveBeenCalled();
       expect(c.getStatus()).toBe('pending');
+      expect(c.showStartBubble).toBeFalse();
       response.next({});
       response.complete();
       f.detectChanges();
       expect(c.getStatus()).toBe('ongoing');
+      expect(c.showStartBubble).toBeTrue();
       expect(progress).toHaveBeenCalledTimes(1);
       expect(f.nativeElement.querySelector('[role="progressbar"]').getAttribute('aria-valuenow')).toBe('25');
       expect(button(f, 'timer')).toBeTruthy();
@@ -134,7 +161,10 @@ describe('Compact Home Habit card', () => {
       button(f, 'timer').click();
       expect(focus).toHaveBeenCalledTimes(1);
       expect(details).toHaveBeenCalledTimes(1);
-      tick(10000);
+      tick(9999);
+      expect(c.showStartBubble).toBeTrue();
+      tick(1);
+      expect(c.showStartBubble).toBeFalse();
     }));
   }
   it('uses the focus timer occurrence instead of counting down an entire recurring series', () => {

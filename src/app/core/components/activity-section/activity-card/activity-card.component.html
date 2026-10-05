@@ -343,11 +343,11 @@
         <ng-template #habitReadyDetails>
           <div class="compact-habit__details">
             <span class="compact-habit__time" [style.color]="getStatus() === 'completed' || getStatus() === 'skipped' ? getTimeColor(habit) : null">{{ compactHabitTime(habit?.startTime, startTime) }}-{{ compactHabitTime(habit?.endTime, endTime) }}</span>
-            <span class="compact-habit__reward" [attr.aria-label]="getStreak() + ' day streak'">
-              <img src="assets/figma/parent-home/streak.webp" alt="" width="20" height="20">{{ getStreak() }}
+            <span class="compact-habit__reward activity-reward" [attr.aria-label]="getStreak() + ' day streak'">
+              <svg class="activity-reward__icon" viewBox="33 8 31 44" preserveAspectRatio="none" aria-hidden="true"><image href="assets/figma/parent-home/streak.webp" width="96" height="64" /></svg>{{ getStreak() }}
             </span>
-            <span class="compact-habit__reward" *ngIf="getCoinReward() > 0" [attr.aria-label]="getCoinReward() + ' coins'">
-              <img src="assets/figma/parent-home/coin.webp" alt="" width="20" height="20">{{ getCoinReward() }}
+            <span class="compact-habit__reward activity-reward" *ngIf="getCoinReward() > 0" [attr.aria-label]="getCoinReward() + ' coins'">
+              <img class="activity-reward__icon" src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">{{ getCoinReward() }}
             </span>
           </div>
         </ng-template>
@@ -416,12 +416,12 @@
       <div class="habit-footer-container">
         <div class="container w-full justify-content-between d-flex p-0 align-items-center">
           <div class=" d-flex reward-section">
-            <div class="single-point-container d-flex p-0 align-items-center">
-              <img class="score p-r-0" src="assets/figma/parent-home/streak.webp" alt="">
+            <div class="single-point-container activity-reward">
+              <svg class="activity-reward__icon" viewBox="33 8 31 44" preserveAspectRatio="none" aria-hidden="true"><image href="assets/figma/parent-home/streak.webp" width="96" height="64" /></svg>
               <p class="score p-l-0">{{getStreak()}}</p>
             </div>
-            <div class="single-point-container" *ngIf="getCoinReward() > 0">
-              <img class="score" src="assets/figma/parent-home/coin.webp" alt="" style="width:24px;height:auto;">
+            <div class="single-point-container activity-reward" *ngIf="getCoinReward() > 0">
+              <img class="activity-reward__icon" src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
               <p class="score p-l-0">{{getCoinReward()}}</p>
             </div>
           </div>

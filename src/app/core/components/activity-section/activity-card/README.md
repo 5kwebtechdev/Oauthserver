@@ -16,7 +16,7 @@ Quick links
 - Visibility Rule (Home screen): Only today's scheduled activities appear on the Home screen. An activity is considered "today's" when its scheduled start date/time falls on the current day.
 - Top-4 Rule: Only the Top 4 activities are shown on Home. Activities are ordered by proximity to the current time (closest start time first). The UI displays the first four items after filtering and sorting.
 - Removal Rule (Completed): When an activity is marked `completed` it disappears from Home immediately and is moved to the Completed lists/history.
-- Removal Rule (Time-based / Grace period): If an activity was started (`ongoing`) but not completed by its scheduled end time, it remains visible on Home for an extra 5‑minute grace period (endTime + 5 minutes). After the grace window expires the card is removed from Home and the activity's status is set to `pending` for that day (so it can still be marked completed via history or other screens until midnight).
+- Removal Rule (Time-based): An unfinished activity disappears from Home at its scheduled end time. It can still be marked Done from the inner Activity/Details screen until midnight of that day.
 - Abort Rule: If the user clicks `Abort` on an active (`ongoing`) card, the activity is set back to `pending` but the card remains visible on Home until its scheduled end time (it does NOT disappear immediately).
 - Note: Completed or skipped activities are excluded from the Home feed; they appear in history/completed lists instead.
 

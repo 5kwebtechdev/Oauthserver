@@ -5,11 +5,11 @@
         <button class="toolbar-back" type="button" aria-label="Go back" (click)="onBack()">
           <img [src]="detailIcon('back')" alt="" />
         </button>
-        <div class="toolbar-actions" *ngIf="habit.type !== 'timetable' && canEdit()">
-          <button class="toolbar-action delete-action" type="button" aria-label="Delete activity" (click)="openDeletePopup()">
+        <div class="toolbar-actions" *ngIf="habit.type !== 'timetable' && (canEdit() || canDelete())">
+          <button *ngIf="canDelete()" class="toolbar-action delete-action" type="button" aria-label="Delete activity" (click)="openDeletePopup()">
             <img [src]="detailIcon('delete')" alt="" />
           </button>
-          <button class="toolbar-action edit-action" type="button" aria-label="Edit activity" (click)="onEdit()">
+          <button *ngIf="canEdit()" class="toolbar-action edit-action" type="button" aria-label="Edit activity" (click)="onEdit()">
             <img [src]="detailIcon('edit')" alt="" />
           </button>
         </div>
@@ -71,7 +71,7 @@
         </div>
         <div class="stat-item">
           <div class="figma-stat-icon figma-coin-icon" aria-hidden="true">
-            <img src="assets/app-assets/activity-detail/progress-coins-hd.webp" alt="" />
+            <img src="assets/icons/superme-coin.webp" alt="" />
           </div>
           <span>Coins<br />Earned</span><strong>{{ coinStats.userCoins }}</strong><small>overall</small>
         </div>

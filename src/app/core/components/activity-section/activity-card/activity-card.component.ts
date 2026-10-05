@@ -32,6 +32,7 @@ import { EventApi } from '../../../api/event.api';
 import { CalendarApi } from '../../../api/calendar.api';
 import { getEventTypeIcon } from '../event-type-icon';
 import { isCalendarMirrorOfPersonalEvent, isHomePersonalEvent, isHomePlannerSchedule } from '../home-calendar-kind';
+import { activityRewardIconHtml } from '../activity-reward-icon';
 import { CustomToastService } from '../../../services/custom-toast.service';
 
 @Component({
@@ -110,7 +111,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       const status = String(item?.status || '').toLowerCase();
       return {
         completed: status === 'completed' || item.completed === true,
-        // Use the same Home deadline as card visibility, including end-time grace.
+        // Use the same scheduled-end deadline as Home card visibility.
         passed: planner ? (item.expired === true || this.isGlancePlannerEntryPassed(item))
           : !this.buttonLogic.homeTiming(item).visible
       };
@@ -315,8 +316,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   progressInterval: any;
   // Local flag to show timer icon only for this card when user clicked "Let's Go"
   public showLocalTimer: boolean = false;
-  // Local flag to show the short-lived "Start focus timer" bubble
+  // Local flag to show the "Start focus timer" bubble
   public showStartBubble: boolean = false;
+  private static readonly START_BUBBLE_DURATION_MS = 10_000;
+  private static readonly startBubbleDeadlines = new Map<string, number>();
 
   // Popup state for start confirmation
   public showStartPopup: boolean = false;
@@ -407,6 +410,35 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   /**
    * Called when user taps "Let's Go" - set status to ONGOING
    */
+  private startBubbleKey(): string | null {
+    if (!this.habit?.id) return null;
+    return `${this.authService.getUserId?.() ?? ''}:${this.habit.type}:${this.habit.id}`;
+  }
+
+  private showStartTimerBubble(startNewWindow = true): void {
+    const key = this.startBubbleKey();
+    if (!key) return;
+    const deadlines = ActivityCardComponent.startBubbleDeadlines;
+    const deadline = startNewWindow
+      ? Date.now() + ActivityCardComponent.START_BUBBLE_DURATION_MS
+      : deadlines.get(key) ?? 0;
+    if (this.startBubbleTimer) clearTimeout(this.startBubbleTimer);
+    this.startBubbleTimer = null;
+    if (deadline <= Date.now()) {
+      this.showStartBubble = false;
+      deadlines.delete(key);
+      return;
+    }
+    deadlines.set(key, deadline);
+    this.showStartBubble = true;
+    this.startBubbleTimer = setTimeout(() => {
+      if (deadlines.get(key) === deadline) deadlines.delete(key);
+      this.showStartBubble = false;
+      this.startBubbleTimer = null;
+      this.cdr.detectChanges();
+    }, deadline - Date.now());
+  }
+
   onStartHabit() {
     if (!this.habit) return;
 
@@ -436,19 +468,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           // Start progress with proper initialization
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
-          // Show the short-lived start bubble for 3s
-          if (!this.showStartBubble) {
-            if (this.startBubbleTimer) {
-              clearTimeout(this.startBubbleTimer);
-              this.startBubbleTimer = null;
-            }
-            this.showStartBubble = true;
-            this.startBubbleTimer = setTimeout(() => {
-              this.showStartBubble = false;
-              this.startBubbleTimer = null;
-              this.cdr.detectChanges();
-            }, 10000);
-          }
+          this.showStartTimerBubble();
           this.startProgress();
           try {
             const today = new Date();
@@ -482,19 +502,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           });
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
-          // Show the short-lived start bubble for 3s
-          if (!this.showStartBubble) {
-            if (this.startBubbleTimer) {
-              clearTimeout(this.startBubbleTimer);
-              this.startBubbleTimer = null;
-            }
-            this.showStartBubble = true;
-            this.startBubbleTimer = setTimeout(() => {
-              this.showStartBubble = false;
-              this.startBubbleTimer = null;
-              this.cdr.detectChanges();
-            }, 3000);
-          }
+          this.showStartTimerBubble();
           // Start progress with proper initialization
           this.startProgress();
           try {
@@ -558,19 +566,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   handlePopupPrimary() {
-    // Show the start bubble immediately for 3s and show local timer icon
-    if (this.startBubbleTimer) {
-      clearTimeout(this.startBubbleTimer);
-      this.startBubbleTimer = null;
-    }
-    this.showLocalTimer = true;
-    this.showStartBubble = true;
-    this.startBubbleTimer = setTimeout(() => {
-      this.showStartBubble = false;
-      this.startBubbleTimer = null;
-      this.cdr.detectChanges();
-    }, 3000);
-
+    // The prompt starts after the API confirms the activity is running.
     this.onStartHabit();
     this.closeStartPopup();
   }
@@ -584,10 +580,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    */
   openCompletePopup() {
     const coins = this.getCoinReward();
-    const streak = this.getStreak();
+    const streak = Math.max(1, this.getStreak());
 
     // Build heading HTML to include coin and streak rows
-    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:var(--text-base);">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style=\"display:flex;flex-direction:column;align-items: center;gap:8px;margin-top:12px;text-align:left;\"><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/coin.webp' style=\"width:20px;height:20px;\" alt=\"coins\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${coins}</div></div><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/streak.webp' style=\"width:20px;height:20px;\" alt=\"streak\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${streak}</div></div></div>`;
+    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:var(--text-base);">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;text-align:left;"><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('coin')}<div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('streak')}<div style="font-weight:600;">${streak}</div></div></div>`;
 
     const primary: SupermePopupCTA = {
       text: 'Confirm',
@@ -726,9 +722,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   openAbortPopup() {
     const coins = this.getCoinReward();
-    const streak = this.getStreak();
+    const streak = Math.max(1, this.getStreak());
 
-    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:var(--text-base);">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/coin.webp' style="width:20px;height:20px;" alt="coins"/><div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/streak.webp' style="width:20px;height:20px;" alt="streak"/><div style="font-weight:600;">${streak}</div></div></div>`;
+    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:var(--text-base);">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;">${activityRewardIconHtml('coin')}<div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;">${activityRewardIconHtml('streak')}<div style="font-weight:600;">${streak}</div></div></div>`;
 
     const primary: SupermePopupCTA = {
       text: 'Keep Going',
@@ -1153,6 +1149,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       this.startProgress();
       // Show timer icon and bubble for ongoing habits (persists across reloads)
       this.showLocalTimer = true;
+      this.showStartTimerBubble(false);
     } else {
       // For non-ongoing habits, initialize to 0
       this.percentageCompleted = 0;
@@ -1354,7 +1351,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   /**
    * Set up timers to automatically reload habits/tasks at key time points:
-   * Home refreshes at start - 5m, start + 10m, and immediately after end + 10m.
+   * Home refreshes at start - 5m, start + 10m, and at the scheduled end.
    * Other views retain their existing refresh boundaries.
    */
   private setupAutoReloadTimers(): void {
@@ -1377,7 +1374,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
         if (this.mode !== 'single' || this.homeTiming) {
           const timing = this.buttonLogic.homeTiming(activity, now);
-          for (const time of [timing.opens, timing.handoff, timing.closes + 1]) {
+          for (const time of [timing.opens, timing.handoff, timing.closes]) {
             if (timing.valid && time > now) upcomingEvents.push({ time, type: 'letsgo' });
           }
           return;
@@ -1604,7 +1601,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const coins = this.getCoinReward();
     const label = this.pendingDeleteType === 'timetable' ? 'planner entry' : this.pendingDeleteType;
     const lossHtml = coins > 0
-      ? `<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;align-items:center;justify-content:center;"><span style="font-weight:400;font-size:var(--text-sm);opacity:0.7;">You are about to lose:</span><div style="display:flex;align-items:center;gap:8px;"><img src='assets/figma/parent-home/coin.webp' style="width:20px;height:20px;" alt="coins"/><span style="font-weight:600;">${coins}</span></div></div>`
+      ? `<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;align-items:center;justify-content:center;"><span style="font-weight:400;font-size:var(--text-sm);opacity:0.7;">You are about to lose:</span><div style="display:flex;align-items:center;gap:8px;"><img src='assets/icons/superme-coin.webp' style="width:20px;height:20px;" alt="coins"/><span style="font-weight:600;">${coins}</span></div></div>`
       : '';
     const headingHtml = `Delete this ${label}?<br/><span style="font-weight:400;font-size:var(--text-sm);">This action cannot be undone.</span>${lossHtml}`;
     this.deletePopupConfig = {
@@ -3253,8 +3250,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const parts = [
       `${this.totalHabitsLoaded} Habit${this.totalHabitsLoaded === 1 ? '' : 's'}`,
       `${this.totalTasksLoaded} Task${this.totalTasksLoaded === 1 ? '' : 's'}`,
-      this.glanceBlankState ? `${plannerCount} Time Table${plannerCount === 1 ? '' : 's'}`
-        : `${plannerCount} Planner${plannerCount === 1 ? '' : 's'}`
+      `${plannerCount} Planner${plannerCount === 1 ? '' : 's'}`
     ];
     return parts.join(' • ');
   }
@@ -3449,9 +3445,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    * Check if "Done" button should be enabled
    */
   isDoneEnabled(): boolean {
-    if (this.homeTiming) return this.buttonLogic.homeTiming(this.habit).done
-      && ['pending', 'ongoing'].includes(this.getStatus()) && !this.hasOtherOngoingActivity();
-    return this.buttonLogic.isDoneEnabled(this.habit, this.hasOtherOngoingActivity());
+    if (this.homeTiming) {
+      const timing = this.buttonLogic.homeTiming(this.habit);
+      const status = this.getStatus();
+      return timing.visible && ((status === 'ongoing' && Date.now() >= timing.opens + 5 * 60_000)
+        || (status === 'pending' && timing.done));
+    }
+    if (!this.isCurrentDateView) return false;
+    return this.buttonLogic.isDoneEnabled(this.activityForSelectedDay(), false);
   }
 
   /**
@@ -3459,7 +3460,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    */
   isDoneVisible(): boolean {
     if (this.homeTiming) return ['pending', 'ongoing'].includes(this.getStatus());
-    return this.buttonLogic.isDoneVisible(this.habit);
+    return this.isCurrentDateView && this.buttonLogic.isDoneVisible(this.activityForSelectedDay());
+  }
+
+  private activityForSelectedDay(): any {
+    return this.selectedDate && this.habit
+      ? { ...this.habit, startDate: this.selectedDate, endDate: this.selectedDate }
+      : this.habit;
   }
 
   /**

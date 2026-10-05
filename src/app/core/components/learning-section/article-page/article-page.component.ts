@@ -88,6 +88,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   isParentAssignment = false;
   isAssigningToChild = false;
   parentAssignmentComplete = false;
+  assignmentCoins = 20;
 
   // Popup state and config
   showMarkPopup = false;
@@ -126,9 +127,12 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     this.profileUserId = navigationState?.['ownProfile'] === true
       ? navigationState?.['forUserId'] ?? this.authService.getUserId()
       : null;
-    const selectedChildId = Number(navigationState?.['selectedChildId']);
+    const selectedChildId = Number(this.route.snapshot.queryParamMap.get('childId') ?? navigationState?.['selectedChildId']);
     this.parentAssignmentChildId = Number.isFinite(selectedChildId) && selectedChildId > 0 ? selectedChildId : null;
-    this.isParentAssignment = source.includes('view=parent') && this.parentAssignmentChildId !== null;
+    this.isParentAssignment = this.route.snapshot.queryParamMap.get('parentAssign') === '1' || source.includes('view=parent');
+    this.parentAssignmentComplete = this.isParentAssignment && navigationState?.['alreadyAssigned'] === true;
+    const assignmentCoins = Number(navigationState?.['assignmentCoins']);
+    if (Number.isFinite(assignmentCoins) && assignmentCoins > 0) this.assignmentCoins = Math.round(assignmentCoins);
   }
 
   get isArticleRead(): boolean {
@@ -143,7 +147,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     if (!this.article || !this.isParentAssignment || !this.parentAssignmentChildId || this.isAssigningToChild || this.parentAssignmentComplete) return;
     this.isAssigningToChild = true;
     this.actionError = '';
-    this.learningService.assignArticle(this.article.id, [this.parentAssignmentChildId], 20)
+    this.learningService.assignArticle(this.article.id, [this.parentAssignmentChildId], this.assignmentCoins)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {

@@ -1941,6 +1941,20 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
+  get petCarouselAtStart(): boolean {
+    return this.swiperRef?.nativeElement?.swiper?.isBeginning ?? this.currentSlideIndex <= 0;
+  }
+
+  get petCarouselAtEnd(): boolean {
+    return this.swiperRef?.nativeElement?.swiper?.isEnd ?? this.currentSlideIndex >= this.pets.length - 1;
+  }
+
+  movePetCarousel(direction: 'previous' | 'next'): void {
+    const swiper = this.swiperRef?.nativeElement?.swiper;
+    if (direction === 'previous') swiper?.slidePrev();
+    else swiper?.slideNext();
+  }
+
   /**
    * Explicitly confirm a pet as the user's choice (tap-to-select). Centers
    * the tapped card, marks it as selected, and persists the choice — but

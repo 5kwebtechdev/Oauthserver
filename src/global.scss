@@ -27,6 +27,11 @@ ion-modal.activity-focus-timer {
   --background: #fff;
 }
 
+/* Keep the shared currency artwork square within each existing icon slot. */
+img[src$="/superme-coin.webp"] {
+  object-fit: contain;
+}
+
 // SVG Icon System - Store all icon paths in one place
 $svg-icons: (
   back: "/assets/icons/back.svg",

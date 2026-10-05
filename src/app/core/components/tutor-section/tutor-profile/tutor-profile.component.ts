@@ -24,7 +24,8 @@ import { TutorLikeService } from '../../../services/tutor-like.service';
 import { TutorService } from '../../../services/tutor.service';
 import { UserService } from '../../../services/user.service';
 import { ShareLinkService } from '../../../services/share-link.service';
-import { FaqItem, PROFILE_FAQS, ProfileFactsComponent } from '../../user-profile/profile-facts/profile-facts.component';
+import { FaqItem, ProfileFactsComponent } from '../../user-profile/profile-facts/profile-facts.component';
+import { EDUHUB_FAQS } from '../../education-section/eduhub-faqs';
 import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 import { teachingGroups, TeachingGroup } from '../../../models/teaching-display';
 
@@ -43,11 +44,9 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   @Input() tutor: Tutor | undefined;
   @Input() categoryKey: string | null = null;
 
-  readonly tutorFaqs: FaqItem[] = PROFILE_FAQS.filter(faq => {
-    const section = (faq.section || '').toLowerCase();
-    const screen = (faq.screen || '').toLowerCase();
-    return section === 'tutor' || section === 'tutors' || screen.includes('tutor');
-  });
+  get tutorFaqs(): FaqItem[] {
+    return EDUHUB_FAQS[this.isCounselorProfile ? 'counsellor' : this.isAcademyProfile() ? 'academy' : 'tutor'];
+  }
 
   categoryFieldRows: Array<{ label: string; value: string }> = [];
   isLoading = false;

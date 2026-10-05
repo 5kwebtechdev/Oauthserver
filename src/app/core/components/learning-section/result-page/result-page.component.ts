@@ -41,7 +41,7 @@ export class ResultPageComponent implements OnInit, OnDestroy {
 
   // Keep result rewards aligned with the current Home/Insights icon set.
   // The neutral coin/trophy artwork is legacy and no longer matches the app.
-  readonly rewardCoinIcon = 'assets/icons/child-home-coin-figma.webp';
+  readonly rewardCoinIcon = 'assets/icons/superme-coin.webp';
   readonly rewardTrophyIcon = 'assets/icons/child-home-trophy-figma.webp';
 
   // Results from submission

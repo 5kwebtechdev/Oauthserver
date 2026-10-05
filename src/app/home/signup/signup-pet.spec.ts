@@ -75,4 +75,18 @@ describe('Signup pet continuation', () => {
     expect(component.selectedPetIndex).toBe(0);
     expect(component.registerChildOrSelfFromSession).not.toHaveBeenCalled();
   });
+
+  it('browses pets with arrows without changing the selected pet', () => {
+    const slidePrev = jasmine.createSpy('slidePrev');
+    const slideNext = jasmine.createSpy('slideNext');
+    component.swiperRef = { nativeElement: { swiper: { slidePrev, slideNext, isBeginning: false, isEnd: false } } };
+
+    component.movePetCarousel('next');
+    component.movePetCarousel('previous');
+
+    expect(slideNext).toHaveBeenCalledTimes(1);
+    expect(slidePrev).toHaveBeenCalledTimes(1);
+    expect(component.selectedPetIndex).toBe(0);
+    expect(sessionStorage.getItem('signup_pet')).toBe(savedPet);
+  });
 });

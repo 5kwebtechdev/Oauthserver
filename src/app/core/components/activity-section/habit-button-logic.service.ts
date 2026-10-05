@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
  */
 @Injectable({ providedIn: 'root' })
 export class HabitButtonLogicService {
-  /** Home boundaries: start opens inclusively, hands off to Done, then expires after grace. */
+  /** Home boundaries: start opens inclusively, hands off to Done, then hides at scheduled end. */
   homeTiming(item: any, now = Date.now()) {
     const today = new Date(now);
     const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -18,9 +18,9 @@ export class HabitButtonLogicService {
     const end = normalize(times.endTimeStamp);
     const opens = start - 5 * 60_000;
     const handoff = start + 10 * 60_000;
-    const closes = end + 10 * 60_000;
+    const closes = end;
     const valid = Number.isFinite(start) && start > 0 && Number.isFinite(end) && end >= start;
-    const visible = valid && now <= closes;
+    const visible = valid && now < closes;
     return { opens, handoff, closes, valid, visible,
       letsGo: visible && now >= opens && now < handoff,
       done: visible && now >= handoff };

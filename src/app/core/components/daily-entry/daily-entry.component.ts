@@ -28,6 +28,7 @@ import { messageWithUsername } from '../../models/greeting-username';
         [event]="referralEvent" [busy]="busy" [notice]="notice" (dismiss)="dismiss()"></app-referral-test-popup>
       <ng-template #existingOverlay>
       <app-streak-milestone *ngIf="isReward; else prompt" [days]="days" [celebrateProgress]="true"
+        [dailyCoins]="rewardDailyCoins" [milestoneCoins]="rewardMilestoneCoins"
         [restoreMode]="canRestore" [restoreCost]="restoreCost" [restoreDisabled]="busy" [restoring]="busy"
         [notice]="notice" (restore)="restore()"
         (continue)="dismiss()"></app-streak-milestone>
@@ -71,6 +72,8 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
   active: ApiOverlayType | null = null;
   message = '';
   days = 0;
+  rewardDailyCoins = 5;
+  rewardMilestoneCoins: number | null = null;
   busy = false;
   canRestore = false;
   restoreCost = 5;
@@ -79,6 +82,7 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
   notice = '';
   readonly referralTestUiEnabled = ENABLE_REFERRAL_TEST_POPUP;
   referralEvent: PetMessageApiResponse | null = null;
+  private rewardEventId: string | number | null = null;
   private destroyed = false;
   private entryKey = '';
   private finishedKey = '';
@@ -87,6 +91,7 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
   private listener?: PluginListenerHandle;
   private timer?: ReturnType<typeof setInterval>;
   private seen = new Set<string>();
+  private skippedRewardClaims = new Set<string>();
   private wake = () => this.zone.run(() => { void this.check(); });
 
   constructor(private auth: AuthService, private api: PetMessageApiService,
@@ -145,10 +150,24 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
     try { localStorage.setItem(marker, 'true'); } catch { /* In-memory guard remains active. */ }
   }
 
+  private claimSkipMarker(eventId: string | number): string {
+    return `superme_reward_claim_skipped_${this.entryKey.split(':')[0]}:${eventId}`;
+  }
+  private hasSkippedClaim(eventId: string | number): boolean {
+    const marker = this.claimSkipMarker(eventId);
+    try { return this.skippedRewardClaims.has(marker) || localStorage.getItem(marker) === 'true'; }
+    catch { return this.skippedRewardClaims.has(marker); }
+  }
+  private skipClaim(eventId: string | number): void {
+    const marker = this.claimSkipMarker(eventId);
+    this.skippedRewardClaims.add(marker);
+    try { localStorage.setItem(marker, 'true'); } catch { /* In-memory guard remains active. */ }
+  }
+
   async check(): Promise<void> {
     if (this.blocked) return;
     const key = this.context();
-    if (key !== this.entryKey) { this.active = null; this.referralEvent = null; this.entryKey = key; this.finishedKey = ''; this.lastAttempt = 0; }
+    if (key !== this.entryKey) { this.active = null; this.referralEvent = null; this.rewardEventId = null; this.entryKey = key; this.finishedKey = ''; this.lastAttempt = 0; }
     // New referrals can arrive after today's normal entry queue has finished.
     const retryInterval = key === this.finishedKey ? 30_000 : 10_000;
     if (!key || this.busy || this.active || Date.now() - this.lastAttempt < retryInterval) return;
@@ -187,22 +206,48 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
           return;
         }
         if (!type || type === 'NONE') {
-          // Fresh login remains a valid fallback, but yesterday's stored flag never is.
-          if (this.auth.isFirstLoggedForTheDay() && !this.hasSeen('DAILY_LOGIN')) type = 'DAILY_LOGIN';
-          else { this.finishedKey = key; return; }
+          // Only the account-level server overlay may authorize a reward popup.
+          // A per-device login flag can replay the same reward on other devices.
+          this.finishedKey = key;
+          return;
         }
         if (this.hasSeen(type)) {
-          await firstValueFrom(this.api.dismissHomeOverlay(type).pipe(timeout(15_000)));
+          await firstValueFrom(this.api.dismissHomeOverlay(type, response.eventId).pipe(timeout(15_000)));
           continue;
         }
         if (type === 'DAILY_LOGIN' || type === 'STREAK_MILESTONE') {
-          const status = await firstValueFrom(this.streak.getStreakStatus(Number(key.split(':')[0])).pipe(timeout(15_000)));
+          // The GET is read-only: only the winner of the account-wide atomic claim
+          // may present this reward. Never retry-and-show on an uncertain claim.
+          if (response.eventId == null || !String(response.eventId).trim()) return;
+          if (this.hasSkippedClaim(response.eventId)) { this.finishedKey = key; return; }
+          let claim;
+          try {
+            claim = await firstValueFrom(this.api.claimRewardOverlay(response.eventId).pipe(timeout(15_000)));
+          } catch { this.skipClaim(response.eventId); this.finishedKey = key; return; }
           if (this.destroyed || this.blocked || this.context() !== key) return;
-          this.days = Number(status.currentStreak ?? 0);
-          this.canRestore = status.canRestore;
-          this.restoreCost = status.restoreCost ?? 5;
-          this.restoreToStreak = status.restoreToStreak;
-          this.availableCoins = Number.isFinite(Number(status.coins)) ? Number(status.coins) : null;
+          if (!claim.claimed || (claim.type !== 'DAILY_LOGIN' && claim.type !== 'STREAK_MILESTONE')
+            || String(claim.eventId) !== String(response.eventId)) {
+            this.skipClaim(response.eventId);
+            this.finishedKey = key;
+            return;
+          }
+          type = claim.type;
+          this.rewardEventId = claim.eventId;
+          this.rewardDailyCoins = claim.dailyCoins ?? 5;
+          this.rewardMilestoneCoins = claim.type === 'STREAK_MILESTONE' ? claim.milestoneCoins : null;
+          let status;
+          try {
+            status = await firstValueFrom(this.streak.getStreakStatus(Number(key.split(':')[0])).pipe(timeout(15_000)));
+          } catch {
+            // The claim is already consumed; a status outage must not re-offer it.
+            status = null;
+          }
+          if (this.destroyed || this.blocked || this.context() !== key) return;
+          this.days = Number(claim.milestoneDay ?? status?.currentStreak ?? 0);
+          this.canRestore = status?.canRestore ?? false;
+          this.restoreCost = status?.restoreCost ?? 5;
+          this.restoreToStreak = status?.restoreToStreak ?? null;
+          this.availableCoins = status && Number.isFinite(Number(status.coins)) ? Number(status.coins) : null;
         }
         this.message = messageWithUsername(response.message || '', this.auth.getUserData());
         this.notice = '';
@@ -245,9 +290,10 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
     if (type === 'MOOD_PROMPT') this.markSeen(type);
     this.active = null;
     this.busy = true;
-    try { await firstValueFrom(this.api.dismissHomeOverlay(type).pipe(timeout(15_000))); }
+    try { await firstValueFrom(this.api.dismissHomeOverlay(type, this.rewardEventId).pipe(timeout(15_000))); }
     catch { /* Presentation receipt prevents a repeat; retry consumption on the next check. */ }
     finally {
+      this.rewardEventId = null;
       this.busy = false;
       this.lastAttempt = 0;
       if (!this.destroyed && this.context() === key) void this.check();

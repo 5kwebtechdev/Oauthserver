@@ -11,6 +11,8 @@ import { streakMilestoneWindow } from './streak-milestones';
 })
 export class StreakMilestoneComponent implements OnChanges, OnDestroy {
   @Input() days = 0;
+  @Input() dailyCoins = 5;
+  @Input() milestoneCoins: number | null = null;
   @Input() celebrateProgress = false;
   @Input() restoreMode = false;
   @Input() restoreCost = 5;

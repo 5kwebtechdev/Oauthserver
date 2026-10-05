@@ -4,8 +4,8 @@ The client now checks `GET /pet-message/home/overlay` from the app root on cold 
 authenticated navigation, foreground resume, and local-day rollover. It does not
 repeat the login request or retain credentials for that purpose.
 
-`firstLoggedForTheDay` from login is a fallback only for that user and that login
-date. It cannot tell the app about a subsequent day in a restored session.
+`firstLoggedForTheDay` from login is not used to authorize a reward popup. That
+device-local flag cannot prove that another device has not already shown it.
 
 ## Backend requirements to verify
 
@@ -18,9 +18,15 @@ date. It cannot tell the app about a subsequent day in a restored session.
   It must only describe rewards that have actually been credited. If visit
   registration requires a separate POST endpoint, supply its contract and wire it
   before this GET; no unconfirmed endpoint is called by this implementation.
-- `POST /pet-message/home/overlay/dismiss?type=...` must persist consumption for
-  that authenticated user and reward date, including across devices. Daily login
-  and milestone are combined into one reward sheet and must not grant twice.
+- Daily reward GET responses include `eventId`. Before presentation, the frontend
+  calls `POST /pet-message/home/overlay/claim?eventId=<id>` and shows the reward
+  only when the response has `claimed: true`, the same `eventId`, and a reward
+  `type`. A lost, stale, failed, or timed-out claim shows nothing. The popup uses
+  the claimed reward type and amounts; dismissal includes the claimed event ID.
+  The backend atomically persists the account-wide claim, including across devices.
+  Daily login and milestone are combined into one reward sheet and must not grant twice.
+- Reward and milestone coin/streak crediting must be idempotent on the server,
+  keyed by account and reward date/event. The frontend never grants these rewards.
 - `GET /login-streak/status?userId=...` must return the current streak after visit
   registration. `POST /mood/vibes/set` must persist today's mood and clear its
   pending prompt after success.

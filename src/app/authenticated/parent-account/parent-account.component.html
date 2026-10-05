@@ -50,7 +50,7 @@
             <img src="assets/figma/parent-home/notification.svg" alt="" aria-hidden="true">
           </button>
           <button type="button" class="parent-coin-pill" aria-label="Open coins" (click)="openCoinPage()">
-            <img src="assets/figma/parent-home/coin.webp" alt="" aria-hidden="true">
+            <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
             <span>{{ parentCoins }}</span>
           </button>
         </nav>
@@ -86,7 +86,7 @@
                     {{ child.streak ?? 0 }}
                   </span>
                   <span>
-                    <img src="assets/figma/parent-home/coin.webp" alt="" aria-hidden="true">
+                    <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
                     {{ child.coins ?? 0 }}
                   </span>
                 </span>
@@ -263,7 +263,7 @@
         <learning-section
           title="Motivate your child"
           subtitle="Assign bonus coins to learning activities to boost motivation"
-          headerIcon="assets/figma/parent-home/coin.webp"
+          headerIcon="assets/icons/superme-coin.webp"
           [rewardMode]="true"
           [forUserId]="selectedChild?.id ?? null"
           [age]="selectedChildAge"

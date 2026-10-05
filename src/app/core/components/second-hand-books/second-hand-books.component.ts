@@ -10,6 +10,8 @@ import { IonicModule } from '@ionic/angular';
 import { FooterComponent } from '../footer/footer.component';
 import { SupermeDropdownComponent } from '../superme-dropdown/superme-dropdown.component';
 import { ProfileImageComponent } from '../profile-image/profile-image.component';
+import { ProfileFactsComponent } from '../user-profile/profile-facts/profile-facts.component';
+import { EDUHUB_FAQS } from '../education-section/eduhub-faqs';
 import { BookListing, BookListingCondition, BookListingCreateRequest, BookListingPage, BookListingType, BookListingsService } from '../../services/book-listings.service';
 import { AuthService } from '../../services/auth.service';
 import { INDIA_STATES, INDIA_STATE_OPTIONS } from '../../constants/india-location-options';
@@ -108,11 +110,12 @@ interface SellerConditionOption {
 @Component({
   selector: 'app-second-hand-books',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, FooterComponent, SupermeDropdownComponent, ProfileImageComponent],
+  imports: [CommonModule, FormsModule, IonicModule, FooterComponent, SupermeDropdownComponent, ProfileImageComponent, ProfileFactsComponent],
   templateUrl: './second-hand-books.component.html',
   styleUrls: ['./second-hand-books.component.scss']
 })
 export class SecondHandBooksComponent implements OnInit, OnDestroy {
+  readonly secondHandBookFaqs = EDUHUB_FAQS['secondHandBooks'];
   readonly bookTypes: Array<{ value: BookType; label: string; icon: string }> = SECOND_HAND_BOOK_TYPES.map(type => ({
     ...type,
     icon: `assets/figma/second-hand-books/book-type-${type.value}.svg`

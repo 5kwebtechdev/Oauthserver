@@ -1666,6 +1666,56 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   }
 }
 
+// Share the Habit/Task picker treatment with the standard Time Table form.
+.habit-input-root:is(.habits, .tasks, .timetable:not(.child-planner-root)) {
+  .picker-card {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    min-height: 84px;
+    box-sizing: border-box;
+    justify-content: initial;
+    gap: 8px;
+    overflow: visible;
+  }
+
+  .picker-icon-tile {
+    position: static;
+  }
+
+  .picker-body {
+    width: 100%;
+    margin-inline: 0;
+  }
+
+  .picker-body .superme-input-group,
+  .picker-body superme-timepicker,
+  .picker-body superme-datepicker,
+  .picker-card ::ng-deep .superme-timepicker-wrapper,
+  .picker-card ::ng-deep .datepicker-wrapper {
+    overflow: visible;
+  }
+
+  .picker-card ::ng-deep .superme-timepicker-wrapper input,
+  .picker-card ::ng-deep .datepicker-wrapper input {
+    font-size: 12px !important;
+    text-overflow: clip;
+  }
+}
+
+@media (max-width: 360px) {
+  .habit-input-root:is(.habits, .tasks, .timetable:not(.child-planner-root)) {
+    .picker-card { grid-template-columns: 28px minmax(0, 1fr); }
+    .picker-card ::ng-deep .superme-timepicker-wrapper input,
+    .picker-card ::ng-deep .datepicker-wrapper input { font-size: 11px !important; }
+  }
+}
+
+@media (max-width: 375px) {
+  .habit-input-root.timetable:not(.child-planner-root) .picker-row {
+    flex-direction: column;
+  }
+}
+
 .start-end-row {
   display: flex;
   flex-direction: column;

@@ -363,17 +363,19 @@
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 16px;
+		min-width: 0;
 	}
 
 	.planner-picker-card {
-		display: flex;
+		display: grid;
+		grid-template-columns: 37px minmax(0, 1fr);
 		width: 100%;
 		min-width: 0;
-		height: 44px;
+		min-height: 60px;
+		box-sizing: border-box;
 		align-items: center;
-		justify-content: space-between;
-		gap: 6px;
-		padding: 3px 4px;
+		gap: 8px;
+		padding: 6px 8px;
 		border: 0;
 		border-radius: 12px;
 		background: #fff;
@@ -400,12 +402,10 @@
 		line-height: normal;
 
 		strong {
-			overflow: hidden;
 			color: var(--planner-ink);
 			font-size: 15px;
 			font-weight: 600;
 			line-height: 1.4;
-			text-overflow: ellipsis;
 			white-space: nowrap;
 		}
 
@@ -453,12 +453,7 @@
 		font-size: 12px !important;
 		font-weight: 600 !important;
 		line-height: normal !important;
-	}
-
-	.planner-picker-add {
-		width: 16px;
-		height: 16px;
-		flex: 0 0 16px;
+		text-overflow: clip !important;
 	}
 
 	.planner-entries-card {
@@ -680,12 +675,24 @@
 		.planner-choice-copy strong { font-size: 13px; }
 		.planner-color-options { justify-content: space-between; gap: 6px; }
 		.planner-color-option { width: 36px; height: 36px; flex-basis: 36px; }
-		.planner-date-row,
-		.planner-entry-time-row { gap: 8px; }
 		.planner-picker-icon { width: 32px; height: 32px; flex-basis: 32px; }
 		.planner-picker-copy strong { font-size: 13px; }
 		.planner-entry-days { gap: 5px; }
 		.planner-entry-days button { font-size: 13px; }
+	}
+}
+
+@media (max-width: 375px) {
+	.child-planner-root {
+		.planner-date-row,
+		.planner-entry-time-row {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 8px;
+		}
+
+		.planner-picker-card {
+			grid-template-columns: 37px minmax(0, 1fr);
+		}
 	}
 }
 

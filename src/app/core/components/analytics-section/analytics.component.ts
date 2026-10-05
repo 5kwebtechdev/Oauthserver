@@ -334,7 +334,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
         this.metric('badges', 'Badges', this.asNumber(insights.achievements?.badges), 'Badges earned in the last 30 days', 'assets/figma/parent-insights/badge.webp', 'achievement', 'badge'),
         this.metric('streaks', 'Streak', this.asNumber(insights.achievements?.streaks), 'Your longest streak this month', 'assets/figma/parent-insights/streak.webp', 'achievement', 'streak'),
         this.metric('trophies', 'Trophies', this.asNumber(insights.achievements?.trophies), 'Trophies unlocked this month', 'assets/figma/parent-insights/trophy.webp', 'achievement', 'trophy'),
-        this.metric('coins', 'Coins', this.asNumber(insights.achievements?.coins), 'Coins collected this month', 'assets/figma/parent-insights/coin.webp', 'achievement', 'coin'),
+        this.metric('coins', 'Coins', this.asNumber(insights.achievements?.coins), 'Coins collected this month', 'assets/icons/superme-coin.webp', 'achievement', 'coin'),
       ],
     });
 
@@ -348,7 +348,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
       this.metric('badges', 'Badges', this.asNumber(insights.achievements?.badges), 'Badges earned in the last 30 days', 'assets/figma/parent-insights/badge.webp', 'achievement'),
       this.metric('streaks', 'Streak', this.asNumber(insights.achievements?.streaks), 'Your longest streak this month', 'assets/figma/parent-insights/streak.webp', 'achievement'),
       this.metric('trophies', 'Trophies', this.asNumber(insights.achievements?.trophies), 'Trophies unlocked this month', 'assets/figma/parent-insights/trophy.webp', 'achievement'),
-      this.metric('coins', 'Coins', this.asNumber(insights.achievements?.coins), 'Coins collected this month', 'assets/figma/parent-insights/coin.webp', 'achievement'),
+      this.metric('coins', 'Coins', this.asNumber(insights.achievements?.coins), 'Coins collected this month', 'assets/icons/superme-coin.webp', 'achievement'),
     ];
 
     return [

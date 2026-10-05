@@ -20,6 +20,7 @@ import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { AutoAbortService } from '../auto-abort.service';
 import { FocusTimerService } from '../../superme-timer/focus-timer.service';
 import { GLANCE_BLANK_STATES, GlanceDailyData, GlanceTab } from './glance-blank-state';
+import { GlanceBlankStateComponent } from './glance-blank-state.component';
 
 describe('Home Today at a Glance Figma states', () => {
   const now = new Date(2026, 8, 28, 12).getTime();
@@ -37,7 +38,7 @@ describe('Home Today at a Glance Figma states', () => {
     spyOn(ActivityCardComponent.prototype, 'ngOnDestroy');
     TestBed.overrideProvider(ModalController, { useValue: {} });
     await TestBed.configureTestingModule({
-      imports: [ActivityCardComponent],
+      imports: [ActivityCardComponent, GlanceBlankStateComponent],
       providers: [provideRouter([]), HabitButtonLogicService,
         { provide: HabitCardService, useValue: { lastToggled$: EMPTY } },
         ...[HabitApi, TaskApi, CalendarApi, AuthApi, EventApi, CalendarService, CustomToastService,
@@ -61,6 +62,60 @@ describe('Home Today at a Glance Figma states', () => {
     fixture.detectChanges();
     return fixture;
   }
+
+  it('hides the previous tab image until the newly selected image loads', () => {
+    const f = TestBed.createComponent(GlanceBlankStateComponent);
+    const c = f.componentInstance;
+    c.state = GLANCE_BLANK_STATES['habits-passed'];
+    f.detectChanges();
+    const image = f.nativeElement.querySelector('img') as HTMLImageElement;
+    image.dispatchEvent(new Event('load'));
+    f.detectChanges();
+    expect(image.style.visibility).toBe('visible');
+
+    c.state = GLANCE_BLANK_STATES['tasks-empty'];
+    f.detectChanges();
+    expect(image.style.visibility).toBe('hidden');
+    expect(f.nativeElement.textContent).toContain('No tasks lined up for today!');
+    image.dispatchEvent(new Event('load'));
+    f.detectChanges();
+    expect(image.style.visibility).toBe('visible');
+    expect(image.src).toContain('tasks.png');
+  });
+
+  it('keeps empty-state art and copy synchronized during rapid tab switches', () => {
+    const f = render('all', empty());
+    const expected: Array<[GlanceTab, string, string]> = [
+      ['all', 'all-empty', 'Your day is wide open'],
+      ['habits', 'habits-empty', 'No habits lined up for today!'],
+      ['tasks', 'tasks-empty', 'No tasks lined up for today!'],
+      ['timetable', 'timetable-empty', 'No Plan lined up for today!'],
+      ['all', 'all-empty', 'Your day is wide open']
+    ];
+    for (const [tab, key, title] of expected) {
+      f.componentInstance.switchTab(tab);
+      f.detectChanges();
+      const state = f.nativeElement.querySelector(`.blank[data-blank-state="${key}"]`);
+      expect(state).withContext(tab).toBeTruthy();
+      expect(state.textContent).withContext(tab).toContain(title);
+      const image = state.querySelector('img') as HTMLImageElement;
+      expect(image.src).withContext(tab).toContain(GLANCE_BLANK_STATES[key].image);
+    }
+  });
+
+  it('uses the same Planner summary label and count in every tab and blank state', () => {
+    const f = render('all', { habits: [active], tasks: [], planners: [] });
+    const c = f.componentInstance;
+    for (const tab of ['all', 'habits', 'tasks', 'timetable'] as GlanceTab[]) {
+      c.currentActive = tab;
+      f.detectChanges();
+      expect(c.glanceSubtitle).toBe('1 Habit • 0 Tasks • 0 Planners');
+      expect(f.nativeElement.textContent).not.toContain('Time Tables');
+    }
+    c.totalTimetablesLoaded = 1;
+    f.detectChanges();
+    expect(c.glanceSubtitle).toBe('1 Habit • 0 Tasks • 1 Planner');
+  });
 
   it('keeps every tab in loading until daily and planner responses are ready', () => {
     const f = render('all', empty());
@@ -113,7 +168,7 @@ describe('Home Today at a Glance Figma states', () => {
       for (const [offset, visible, go, done] of [
         [-300001, true, false, false], [-300000, true, true, false],
         [599999, true, true, false], [600000, true, false, true],
-        [5100000, true, false, true], [5100001, false, false, false]
+        [4499999, true, false, true], [4500000, false, false, false]
       ] as const) {
         (Date.now as jasmine.Spy).and.returnValue(now + offset);
         expect(c.isLetsGoEnabled()).toBe(go);
@@ -121,10 +176,44 @@ describe('Home Today at a Glance Figma states', () => {
         expect(c.combinedAndSortedItems.length).toBe(visible ? 1 : 0);
         expect((type === 'habits' ? c.filteredRecentHabits : c.filteredRecentTasks).length).toBe(visible ? 1 : 0);
       }
+      (c as any).hasOtherOngoingActivity.and.returnValue(true);
+      (Date.now as jasmine.Spy).and.returnValue(now + 20 * 60_000);
+      expect(c.isDoneEnabled()).toBeTrue();
+      activity.status = 'ongoing';
+      expect(c.isDoneEnabled()).toBeTrue();
+      activity.status = 'pending';
+      (c as any).hasOtherOngoingActivity.and.returnValue(false);
       activity.status = 'completed';
       (Date.now as jasmine.Spy).and.returnValue(now + 600000);
       expect(c.isDoneEnabled()).toBeFalse();
       expect(c.combinedAndSortedItems.length).toBe(0);
+    }
+  });
+
+  it('enables Done immediately for running short and long Home activities until card expiry', () => {
+    const c = render('all', empty()).componentInstance;
+    c.homeTiming = true;
+    for (const type of ['habits', 'tasks'] as const) {
+      for (const duration of [3, 15] as const) {
+        const activity = { id: `${type}-${duration}`, type, status: 'pending',
+          startTimeStamp: now, endTimeStamp: now + duration * 60_000 } as any;
+        c.habit = activity;
+        c.recentHabits = type === 'habits' ? [activity] : [];
+        c.recentTasks = type === 'tasks' ? [activity] : [];
+        (Date.now as jasmine.Spy).and.returnValue(now);
+        expect(c.isDoneEnabled()).toBeFalse();
+        activity.status = 'ongoing';
+        (Date.now as jasmine.Spy).and.returnValue(now - 1);
+        expect(c.isDoneEnabled()).toBeFalse();
+        for (const offset of [0, duration * 60_000 - 1] as const) {
+          (Date.now as jasmine.Spy).and.returnValue(now + offset);
+          expect(c.isDoneEnabled()).withContext(`${type} ${duration}m at ${offset}ms`).toBeTrue();
+          expect(c.combinedAndSortedItems.length).toBe(1);
+        }
+        (Date.now as jasmine.Spy).and.returnValue(now + duration * 60_000);
+        expect(c.isDoneEnabled()).toBeFalse();
+        expect(c.combinedAndSortedItems.length).toBe(0);
+      }
     }
   });
 
@@ -241,8 +330,8 @@ describe('Home Today at a Glance Figma states', () => {
   it('uses all daily records, including active items beyond the four-card limit', () => {
     expect(render('habits', { ...empty(), habits: [done, done, passed, passed, active] }).componentInstance.glanceBlankState).toBeNull();
   });
-  it('preserves the exact ten-minute grace boundary and seconds normalization', () => {
-    const f = render('tasks', { ...empty(), tasks: [{ status: 'pending', endTimeStamp: (now - 600000) / 1000 }] });
+  it('hides at the exact scheduled end boundary with seconds normalization', () => {
+    const f = render('tasks', { ...empty(), tasks: [{ status: 'pending', endTimeStamp: (now + 1) / 1000 }] });
     expect(f.componentInstance.glanceBlankState).toBeNull();
     f.componentInstance.glanceDailyData!.tasks[0].endTimeStamp -= .001;
     expect(f.componentInstance.glanceBlankState?.key).toBe('tasks-passed');

@@ -59,7 +59,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
           <div class="col-6">
             <div class="meta">
               <div class="meta-value">
-                <img src="assets/figma/parent-child-learning/coin.webp" alt="" class="meta-icon" />
+                <img src="assets/icons/superme-coin.webp" alt="" class="meta-icon" />
                 {{challenge.coinsForCorrectAnswer || challenge.coins || 5}} coins
               </div>
               <div class="meta-label">For Correct Answer</div>
@@ -72,11 +72,12 @@ import { Challenge } from 'src/app/core/models/learning.models';
         <p>{{challenge.descriptionExpanded || challenge.description}}</p>
       </div>
 
-      <button class="start-journey w-100" (click)="isParentAssignment ? assignToChild() : startJourney()"
-        [disabled]="isAssigningToChild || assignmentComplete">
+      <button class="start-journey w-100" [class.assignment-complete]="isParentAssignment && assignmentComplete"
+        (click)="isParentAssignment ? assignToChild() : startJourney()"
+        [disabled]="isAssigningToChild || assignmentComplete || (isParentAssignment && !parentAssignmentChildId)">
         <span *ngIf="!isAssigningToChild">{{ assignmentComplete ? 'Assigned' : (isParentAssignment ? 'Assign' : 'Start your journey') }}</span>
-        <span *ngIf="isParentAssignment && !isAssigningToChild" class="assignment-coin-reward">
-          <img src="assets/figma/parent-child-learning/coin.webp" alt="" aria-hidden="true"> 20
+        <span *ngIf="isParentAssignment && !isAssigningToChild && !assignmentComplete" class="assignment-coin-reward">
+          <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true"> {{ assignmentCoins }}
         </span>
         <span *ngIf="isAssigningToChild">Assigning...</span>
       </button>
@@ -115,6 +116,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
     .content-description-screen .description { color: #282527; font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 600; line-height: 140%; opacity: 0.7; overflow-wrap: anywhere; }
     .content-description-screen .description p { margin: 0; }
     .content-description-screen .start-journey { display: flex; height: 56px; color: #FFF; padding: 10px; justify-content: center; align-items: center; gap: 8px; flex-shrink: 0; border-radius: 8px; border: 1px solid #CF3359; background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%); box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20); font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 700; line-height: 140%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: pointer; }
+    .content-description-screen .start-journey.assignment-complete { color: #68636a; border-color: #ddd8dc; background: #f3f1f3; box-shadow: none; cursor: default; }
     .w-100 { width: 100%; }
     .assignment-error { width: 100%; margin: -8px 0 0; color: #b42318; font-size: 13px; text-align: center; }
     .assignment-coin-reward { display: inline-flex; align-items: center; gap: 4px; }
@@ -140,7 +142,8 @@ export class LearningDescriptionComponent implements OnInit {
   isAssigningToChild = false;
   assignmentComplete = false;
   assignmentError = '';
-  private parentAssignmentChildId: number | null = null;
+  assignmentCoins = 20;
+  parentAssignmentChildId: number | null = null;
 
   constructor(
     public router: Router,
@@ -155,13 +158,21 @@ export class LearningDescriptionComponent implements OnInit {
     this.profileUserId = navigationState?.['ownProfile'] === true
       ? navigationState?.['forUserId'] ?? null
       : null;
-    const selectedChildId = Number(navigationState?.['selectedChildId']);
+    const selectedChildId = Number(this.route.snapshot.queryParamMap.get('childId') ?? navigationState?.['selectedChildId']);
     this.parentAssignmentChildId = Number.isFinite(selectedChildId) && selectedChildId > 0 ? selectedChildId : null;
-    this.isParentAssignment = typeof source === 'string'
-      && (source.includes('view=parent') || source.includes('/parent-learning'))
-      && this.parentAssignmentChildId !== null;
+    this.isParentAssignment = this.route.snapshot.queryParamMap.get('parentAssign') === '1'
+      || (typeof source === 'string'
+        && (source.includes('view=parent') || source.includes('/parent-learning')));
+    const coins = Number(this.route.snapshot.queryParamMap.get('assignmentCoins') ?? navigationState?.['assignmentCoins']);
+    if (Number.isFinite(coins) && coins > 0) this.assignmentCoins = Math.round(coins);
+    this.assignmentComplete = this.isParentAssignment && navigationState?.['alreadyAssigned'] === true;
+    if (this.isParentAssignment && !this.parentAssignmentChildId) {
+      this.assignmentError = 'Select a child before assigning this quiz.';
+    }
     if (typeof source === 'string' && source.startsWith('/')) {
       this.returnUrl = source;
+    } else if (this.isParentAssignment) {
+      this.returnUrl = '/parent-account';
     }
 
     // Get challenge ID from route parameters
@@ -190,6 +201,7 @@ export class LearningDescriptionComponent implements OnInit {
   }
 
   startJourney() {
+    if (this.isParentAssignment) return;
     if (this.isNavigating) return;
     this.isNavigating = true;
     if (this.challenge) {
@@ -213,7 +225,7 @@ export class LearningDescriptionComponent implements OnInit {
     if (!this.challenge || !this.parentAssignmentChildId || this.isAssigningToChild || this.assignmentComplete) return;
     this.isAssigningToChild = true;
     this.assignmentError = '';
-    this.learningService.assignChallenge(this.challenge.challengeId, [this.parentAssignmentChildId], 20).subscribe({
+    this.learningService.assignChallenge(this.challenge.challengeId, [this.parentAssignmentChildId], this.assignmentCoins).subscribe({
       next: () => { this.isAssigningToChild = false; this.assignmentComplete = true; },
       error: (error) => {
         this.isAssigningToChild = false;

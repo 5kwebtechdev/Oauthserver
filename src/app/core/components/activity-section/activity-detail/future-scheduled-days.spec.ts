@@ -1,5 +1,6 @@
 import { of } from 'rxjs';
 import { ActivityDetailComponent } from './activity-detail.component';
+import { SupermeCalendarComponent } from '../../superme-inputs/superme-calendar/superme-calendar.component';
 
 describe('Activity detail future scheduled days', () => {
   let component: ActivityDetailComponent;
@@ -7,7 +8,7 @@ describe('Activity detail future scheduled days', () => {
     jasmine.clock().install();
     jasmine.clock().mockDate(new Date(2026, 8, 29, 12));
     component = new ActivityDetailComponent(null!, null!, null!, null!, null!,
-      { detectChanges() {} } as any, null!, null!, null!, null!, null!, null!);
+      { detectChanges() {} } as any, null!, null!, null!, null!, null!, null!, null!);
     component.habit = {
       id: '1', type: 'tasks', startDate: new Date(2026, 8, 29), endDate: new Date(2026, 9, 29),
       everyday: false, selectedDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'SATURDAY', 'SUNDAY']
@@ -44,5 +45,24 @@ describe('Activity detail future scheduled days', () => {
     component.habit!.endDate = new Date(2026, 9, 2);
     const statuses = (component as any).getFutureScheduledStatuses(new Date(2026, 9, 1));
     expect(Object.keys(statuses)).toEqual(['2026-10-01', '2026-10-02']);
+  });
+
+  it('colors pending future dates in this month and the next month without changing actual statuses', () => {
+    jasmine.clock().mockDate(new Date(2026, 9, 5, 12));
+    const calendar = new SupermeCalendarComponent();
+    calendar.statusData = {
+      '2026-10-05': 'PENDING',
+      '2026-10-06': 'PENDING',
+      '2026-10-19': 'PENDING',
+      '2026-11-02': 'PENDING',
+      '2026-11-03': 'COMPLETED',
+      '2026-11-04': 'SKIPPED'
+    };
+    expect(calendar.isFutureScheduledStatus(new Date(2026, 9, 5))).toBeFalse();
+    expect(calendar.isFutureScheduledStatus(new Date(2026, 9, 6))).toBeTrue();
+    expect(calendar.isFutureScheduledStatus(new Date(2026, 9, 19))).toBeTrue();
+    expect(calendar.isFutureScheduledStatus(new Date(2026, 10, 2))).toBeTrue();
+    expect(calendar.isFutureScheduledStatus(new Date(2026, 10, 3))).toBeFalse();
+    expect(calendar.isFutureScheduledStatus(new Date(2026, 10, 4))).toBeFalse();
   });
 });

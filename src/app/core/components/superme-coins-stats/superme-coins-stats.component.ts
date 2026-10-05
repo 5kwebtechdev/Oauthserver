@@ -20,7 +20,7 @@ export class SupermeCoinsStatsComponent {
   @Input() successPercentage: number | string = 0; // e.g. 85 (percent)
   @Input() totalStreaks: number | string = 0; // total historical streaks count
 
-  @Input() coinsIcon: string = 'assets/Icons-Neutral/Icons-Coins.webp';
+  @Input() coinsIcon: string = 'assets/icons/superme-coin.webp';
   @Input() trophyIcon: string = 'assets/Icons-Neutral/Icon-Trophy.webp';
   @Input() streakIcon: string = 'assets/Icons-Neutral/Icon-Streak.webp';
   @Input() badgesIcon: string = 'assets/Icons-Neutral/Icon-Badge.webp';

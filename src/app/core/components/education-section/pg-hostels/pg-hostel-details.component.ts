@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 import { PgHostel, PgHostelsService } from '../../../services/pg-hostels.service';
+import { EDUHUB_FAQS } from '../eduhub-faqs';
 
 @Component({
   selector: 'app-pg-hostel-details', standalone: true,
@@ -15,12 +16,7 @@ import { PgHostel, PgHostelsService } from '../../../services/pg-hostels.service
 export class PgHostelDetailsComponent implements OnInit, OnDestroy {
   // Keep detail content bound to the PG/Hostel response; the Figma listing is illustrative only.
   readonly asset = 'assets/figma/pg-hostels/';
-  readonly faqs = [
-    { question: "What if I don't like my PG/hostel?", answer: 'Please contact the property directly to ask about visits, cancellation, and refund terms before booking.' },
-    { question: 'Is food included in the rent?', answer: 'Check the food availability above and confirm meal charges directly with the property.' },
-    { question: 'How do I know if a PG/hostel is good?', answer: 'Review the listing details and amenities, and contact the property to arrange a visit before committing.' },
-    { question: 'How do I contact the PG/hostel?', answer: 'Use the contact details on this page when they are available.' }
-  ];
+  readonly faqs = EDUHUB_FAQS['pgHostels'];
   item: PgHostel | null = null;
   loading = false;
   error = '';

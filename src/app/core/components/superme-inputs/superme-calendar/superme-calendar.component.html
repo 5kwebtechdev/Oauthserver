@@ -73,7 +73,8 @@
       <div *ngIf="!showMoodToggle && hasStatusData(date)" class="status-dot"
         [class.status-completed]="getStatusForDate(date) === 'COMPLETED'"
         [class.status-skipped]="getStatusForDate(date) === 'SKIPPED'"
-        [class.status-pending]="getStatusForDate(date) === 'PENDING'">
+        [class.status-pending]="getStatusForDate(date) === 'PENDING' && !isFutureScheduledStatus(date)"
+        [class.status-future]="isFutureScheduledStatus(date)">
         <img *ngIf="useActivityDetailStyle && getStatusForDate(date) !== 'PENDING'" aria-hidden="true" alt=""
           [src]="'assets/app-assets/activity-detail/' + (getStatusForDate(date) === 'COMPLETED' ? 'check-' : 'close-') + activityDetailTheme + '.svg'" />
       </div>

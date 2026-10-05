@@ -242,6 +242,7 @@
         &.status-completed { background-color: #4CAF50; }
         &.status-skipped   { background-color: #BB2124; }
         &.status-pending   { background-color: #F04D0A; }
+        &.status-future    { background-color: #524f84; }
       }
 
       // ── Today ───────────────────────────────────────────────────────────────
@@ -460,6 +461,7 @@
           &.status-skipped { background: transparent; }
           &.status-completed { color: #2d6830; }
           &.status-skipped { color: #bb2124; }
+          &.status-future { background: #524f84; border-radius: 50%; width: 8px; height: 8px; }
         }
 
         &.status-completed-day p {

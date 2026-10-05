@@ -1362,6 +1362,32 @@ ion-content.counselor-detail-page { --background: #fff; --padding-top: 0px; --pa
   }
 }
 
+@media (max-width: 600px) {
+  .tutor-detail-page:not(.shop-profile-page) {
+    .detail-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 16px 12px;
+    }
+
+    .detail-header > .header-action { grid-column: 1; justify-self: start; }
+    .header-actions { grid-column: 2; justify-self: end; gap: 8px; }
+
+    .profile-hero {
+      grid-column: 1 / -1;
+      grid-template-columns: 86px minmax(0, 1fr);
+      gap: 8px 14px;
+      align-items: start;
+    }
+
+    .avatar-wrap { width: 86px; height: 86px; align-self: center; }
+    .profile-copy, .profile-stats, .profile-mode { grid-column: 2; }
+    .profile-stats { justify-content: flex-start; margin-top: 0; }
+    .profile-mode { justify-self: start; }
+  }
+}
+
 @media (min-width: 761px) {
   .detail-shell {
     margin-block: 18px;

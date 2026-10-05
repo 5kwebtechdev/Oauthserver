@@ -59,7 +59,7 @@
             <ng-container *ngIf="!isUnlockingContact">
               <img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
               <span>Unlock Now</span>
-              <span><img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">{{ contactUnlockCost }}</span>
+              <span><img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">{{ contactUnlockCost }}</span>
             </ng-container>
           </button>
         </section>
@@ -76,15 +76,15 @@
         <h2 id="counselor-unlock-title">Unlock contact Details?</h2>
         <p>This will unlock full contact information and other details of {{ getDisplayName() }}</p>
         <div class="counselor-unlock-balance">
-          <img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">
+          <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
           <span><strong>{{ contactUnlockCost }} coins will be deducted</strong> from your SuperMeApp coin balance.</span>
-          <small>Your balance <b><img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">{{ getCoinBalance() }}</b></small>
+          <small>Your balance <b><img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">{{ getCoinBalance() }}</b></small>
         </div>
         <p class="counselor-unlock-access">You will get access to:</p>
         <div class="counselor-unlock-access-list"><span>Full Address</span><span>Phone Number</span><span>Email</span><span>View on map</span></div>
         <button type="button" class="counselor-unlock-confirm" [disabled]="isUnlockingContact" (click)="confirmUnlock()">
           <ion-spinner *ngIf="isUnlockingContact" name="crescent"></ion-spinner>
-          <ng-container *ngIf="!isUnlockingContact"><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Unlock Now <span><img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">{{ contactUnlockCost }}</span></ng-container>
+          <ng-container *ngIf="!isUnlockingContact"><img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">Unlock Now <span><img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">{{ contactUnlockCost }}</span></ng-container>
         </button>
       </section>
     </div>
@@ -216,7 +216,7 @@
           <img class="unlock-button__lock" src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
           <span>Unlock Now</span>
           <span class="unlock-button__cost">
-            <img src="assets/figma/contact-unlock/coin.webp" alt="" aria-hidden="true">
+            <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
             {{ contactUnlockCost }}
           </span>
           </ng-container>

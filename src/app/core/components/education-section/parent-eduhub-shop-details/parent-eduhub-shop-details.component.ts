@@ -6,6 +6,8 @@ import { FooterComponent } from '../../footer/footer.component';
 import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 import { EduHubEventsService } from '../../../services/eduhub-events.service';
 import { CustomToastService } from '../../../services/custom-toast.service';
+import { ProfileFactsComponent } from '../../user-profile/profile-facts/profile-facts.component';
+import { EDUHUB_FAQS } from '../eduhub-faqs';
 
 interface ShopListing {
   id: number;
@@ -23,7 +25,7 @@ interface ShopListing {
 @Component({
   selector: 'app-parent-eduhub-shop-details',
   standalone: true,
-  imports: [CommonModule, IonicModule, FooterComponent, ProfileImageComponent],
+  imports: [CommonModule, IonicModule, FooterComponent, ProfileImageComponent, ProfileFactsComponent],
   templateUrl: './parent-eduhub-shop-details.component.html',
   styleUrls: ['./parent-eduhub-shop-details.component.scss']
 })
@@ -32,6 +34,12 @@ export class ParentEduHubShopDetailsComponent implements OnInit {
   categoryLabel = 'Shop';
   unlockInProgress = false;
   imageFullscreen = false;
+
+  get shopFaqs() {
+    const category = this.categoryLabel.toLowerCase();
+    return /station(?:e|ar)y/.test(category) ? EDUHUB_FAQS['stationeryShop']
+      : /book/.test(category) ? EDUHUB_FAQS['bookStore'] : [];
+  }
 
   constructor(private readonly route: ActivatedRoute, private readonly location: Location, private readonly eventsService: EduHubEventsService, private readonly toastService: CustomToastService) {}
 

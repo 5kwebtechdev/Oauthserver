@@ -16,9 +16,9 @@
 
   .day-at-glance-container { display: flex; flex-direction: column; gap: 16px; padding: 0; width: 100%; }
   .glance-heading-block { min-height: 64px; height: auto; gap: 16px; }
-  superme-card-header { flex: 0 0 48px; }
+  superme-card-header { flex: 0 0 auto; min-height: 48px; }
   .glance-done-pill { background: transparent; min-width: 0; padding: 7px 15px; border-radius: 24px; }
-  .glance-progress-track { flex-shrink: 0; height: 6px; margin-bottom: -6px; transform: translateY(-3px); }
+  .glance-progress-track { flex-shrink: 0; height: 6px; }
   ::ng-deep .superme-card-header { margin: 0; padding: 0; min-height: 48px; }
   ::ng-deep .superme-card-header__title { font: 500 20px/28px var(--font-heading); margin: 0; }
   ::ng-deep .superme-card-header__tagline .tag { font: 500 13px/18px var(--font-sans); }
@@ -844,14 +844,21 @@ h4 {
   vertical-align: middle;
 }
 
-.single-point-container img.score {
-  width: 24px;
-  height: auto;
+.activity-reward {
+  --activity-reward-icon-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+// SVG viewBoxes remove the different transparent margins in the original assets.
+.activity-reward__icon {
+  display: block;
+  width: var(--activity-reward-icon-size);
+  height: var(--activity-reward-icon-size);
+  flex: 0 0 var(--activity-reward-icon-size);
   object-fit: contain;
-  display: inline-block;
-  margin: 0;
-  padding-top: 1px;
-  vertical-align: middle;
 }
 
 .single-point-container p.score {
@@ -1762,8 +1769,7 @@ h4 {
   &__body { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; min-height: 34px; }
   &__details { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; color: #7471ba; font-size: 13px; font-weight: 600; line-height: 1.4; }
   &__time { white-space: nowrap; }
-  &__reward { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; color: #282527; }
-  &__reward img { width: 20px; height: 20px; object-fit: contain; flex: 0 0 20px; }
+  &__reward { color: #282527; }
   &__actions { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
   &__actions button {
     display: inline-flex; align-items: center; justify-content: center;
@@ -1792,7 +1798,6 @@ h4 {
 @container (max-width: 330px) {
   .habit-wrapper.habit-wrapper--compact { padding-left: 16px; padding-right: 10px; }
   .compact-habit__details { gap: 4px; font-size: 12px; }
-  .compact-habit__reward img { width: 16px; height: 16px; flex-basis: 16px; }
   .compact-habit__actions { gap: 4px; }
   .compact-habit__actions .compact-habit__start { width: 56px; padding-inline: 8px; }
   .compact-habit__actions .compact-habit__done { width: 48px; padding-inline: 8px; }

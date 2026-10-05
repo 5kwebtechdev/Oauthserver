@@ -22,6 +22,24 @@ describe('Home overlay referral API contract', () => {
     expect(req.request.headers.get('X-Skip-Profile-Selector')).toBe('true');
     req.flush(data);
   });
+  it('claims a reward using the eventId before presentation', () => {
+    const claim = { eventId: 'reward/1', claimed: true, type: 'DAILY_LOGIN', dailyCoins: 5,
+      milestoneDay: null, milestoneCoins: null };
+    api.claimRewardOverlay('reward/1').subscribe(result => expect(result).toEqual(claim as any));
+    const req = http.expectOne(request => request.url.endsWith('/overlay/claim'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.params.get('eventId')).toBe('reward/1');
+    expect(req.request.body).toBeNull();
+    expect(req.request.headers.get('X-Skip-Profile-Selector')).toBe('true');
+    req.flush(claim);
+  });
+  it('passes a claimed reward eventId to dismissal', () => {
+    api.dismissHomeOverlay('DAILY_LOGIN', 'reward-1').subscribe();
+    const req = http.expectOne(request => request.url.endsWith('/overlay/dismiss'));
+    expect(req.request.params.get('type')).toBe('DAILY_LOGIN');
+    expect(req.request.params.get('eventId')).toBe('reward-1');
+    req.flush({});
+  });
   it('sends the referral type and encoded eventId, keeping a null body', () => {
     api.dismissHomeOverlay('REFERRAL_RECEIVED', 'r/1&2').subscribe();
     const req = http.expectOne(req => req.url.endsWith('/overlay/dismiss'));

@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": ["src/app/core/components/activity-section/activity-detail/activity-detail-actions.spec.ts", "src/**/*.d.ts"]
+}

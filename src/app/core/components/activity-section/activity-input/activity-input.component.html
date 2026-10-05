@@ -36,7 +36,6 @@
               (ngModelChange)="onStartTimeChanged()"></superme-timepicker>
           </div>
         </div>
-        <span class="picker-plus" aria-hidden="true">+</span>
       </div>
       <div class="picker-card" (click)="endTimeCtrl.openPopup()">
         <span class="picker-icon-tile" aria-hidden="true">
@@ -50,7 +49,6 @@
               (ngModelChange)="clearTimeError()"></superme-timepicker>
           </div>
         </div>
-        <span class="picker-plus" aria-hidden="true">+</span>
       </div>
     </div>
     <div *ngIf="attemptedSubmit && showTimeError" class="field-error" role="alert">Please set a time.</div>
@@ -74,7 +72,6 @@
             [rangeStart]="rangeStartShown" [rangeEnd]="rangeEndShown" placeholder=""></superme-datepicker>
         </div>
       </div>
-      <span class="picker-plus" aria-hidden="true">+</span>
     </div>
     <div class="picker-card" (click)="endDateCtrl.toggleCalendar()">
       <span class="picker-icon-tile" aria-hidden="true">
@@ -89,7 +86,6 @@
             placeholder=""></superme-datepicker>
         </div>
       </div>
-      <span class="picker-plus" aria-hidden="true">+</span>
     </div>
   </div>
   <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Please pick both dates.
@@ -393,7 +389,6 @@
                 [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate"
                 placeholder=""></superme-datepicker>
             </span>
-            <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
           </div>
           <div class="planner-picker-card" [class.planner-picker-card--empty]="!endDate"
             role="button" tabindex="0" aria-label="Select end date"
@@ -409,7 +404,6 @@
                 [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate" [seedDate]="startDate"
                 [quickRanges]="endDateQuickRanges" placeholder=""></superme-datepicker>
             </span>
-            <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
           </div>
         </div>
         <div *ngIf="attemptedSubmit && showDateError" class="field-error" role="alert">Please pick both dates.</div>
@@ -458,7 +452,6 @@
                   [(ngModel)]="entry.startTime"
                   (ngModelChange)="onPlannerEntryChanged()"></superme-timepicker>
               </span>
-              <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
             </div>
             <div class="planner-picker-card" [class.planner-picker-card--empty]="!entry.endTime"
               role="button" tabindex="0" [attr.aria-label]="'Select end time for entry ' + (i + 1)"
@@ -475,7 +468,6 @@
                   [(ngModel)]="entry.endTime"
                   (ngModelChange)="onPlannerEntryChanged()"></superme-timepicker>
               </span>
-              <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
             </div>
           </div>
         </div>
@@ -514,7 +506,6 @@
                     placeholder=""></superme-datepicker>
                 </div>
               </div>
-              <span class="picker-plus" aria-hidden="true">+</span>
             </div>
             <div class="picker-card" (click)="endDateCtrl.toggleCalendar()">
               <span class="picker-icon-tile" aria-hidden="true">
@@ -528,7 +519,6 @@
                     [quickRanges]="endDateQuickRanges" placeholder=""></superme-datepicker>
                 </div>
               </div>
-              <span class="picker-plus" aria-hidden="true">+</span>
             </div>
           </div>
           <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">

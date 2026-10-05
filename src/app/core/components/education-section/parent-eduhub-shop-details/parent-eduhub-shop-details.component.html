@@ -45,9 +45,10 @@
         <div class="unlock-benefits"><span>Full Address</span><span>Phone Number</span><span>Email</span><span>View on map</span></div>
         <button type="button" class="unlock-button" [disabled]="unlockInProgress" (click)="unlockListing()">
           <ion-spinner *ngIf="unlockInProgress" name="crescent"></ion-spinner>
-          <ng-container *ngIf="!unlockInProgress"><img src="assets/figma/contact-unlock/lock-open.svg" alt=""><span>Unlock Now</span><span class="unlock-cost"><img src="assets/figma/contact-unlock/coin.webp" alt="">{{ item.unlockCost }}</span></ng-container>
+          <ng-container *ngIf="!unlockInProgress"><img src="assets/figma/contact-unlock/lock-open.svg" alt=""><span>Unlock Now</span><span class="unlock-cost"><img src="assets/icons/superme-coin.webp" alt="">{{ item.unlockCost }}</span></ng-container>
         </button>
       </section>
+      <profile-facts *ngIf="shopFaqs.length" [faqs]="shopFaqs" heading="FAQ's"></profile-facts>
     </main>
   </div>
   <ng-template #unavailable>

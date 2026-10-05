@@ -19,12 +19,14 @@ export class LearningChallengeCardComponent {
     /** Optional source route to return to when the challenge is closed. */
     @Input() source?: string;
     @Input() forUserId: string | number | null = null;
+    @Input() parentPreviewOnly = false;
     @Output() cardClick = new EventEmitter<{ item: LearningCardData; index: number }>();
 
     constructor(private router: Router) { }
 
     onCardClick() {
         this.cardClick.emit({ item: this.item, index: this.index });
+        if (this.parentPreviewOnly) return;
         // Quiz and puzzle cards start the challenge immediately. The questions
         // page loads the full challenge by ID and returns to the originating list.
         const state: Record<string, unknown> = {};

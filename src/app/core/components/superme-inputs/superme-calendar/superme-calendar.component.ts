@@ -294,4 +294,11 @@ export class SupermeCalendarComponent implements OnChanges {
     const key = this.getDateKey(date);
     return this.statusData[key] || null;
   }
+
+  isFutureScheduledStatus(date: Date): boolean {
+    if (this.getStatusForDate(date) !== 'PENDING') return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() > today.getTime();
+  }
 }

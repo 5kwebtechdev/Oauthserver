@@ -1248,6 +1248,45 @@ superme-navigator.signup-navigator {
   overflow: visible;
 }
 
+.pet-carousel-nav {
+  position: relative;
+  width: 100%;
+}
+
+.pet-carousel-arrow {
+  display: none;
+}
+
+:host-context(html:not(.plt-capacitor)) .pet-carousel-arrow {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #b8a0d2;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #61368e;
+  box-shadow: 0 4px 14px rgba(67, 36, 119, 0.14);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+:host-context(html:not(.plt-capacitor)) .pet-carousel-arrow--previous { left: 4px; }
+:host-context(html:not(.plt-capacitor)) .pet-carousel-arrow--next { right: 4px; }
+:host-context(html:not(.plt-capacitor)) .pet-carousel-arrow:disabled { opacity: 0.4; cursor: default; }
+:host-context(html:not(.plt-capacitor)) .pet-carousel-arrow:not(:disabled):hover { background: #f6effb; }
+:host-context(html:not(.plt-capacitor)) .pet-carousel-arrow:focus-visible { outline: 3px solid #7341a7; outline-offset: 3px; }
+
+@media (max-width: 767px) {
+  :host-context(html:not(.plt-capacitor)) .pet-carousel-arrow { width: 36px; height: 36px; }
+  :host-context(html:not(.plt-capacitor)) .pet-carousel-arrow--previous { left: 8px; }
+  :host-context(html:not(.plt-capacitor)) .pet-carousel-arrow--next { right: 8px; }
+}
+
 .pet-carousel swiper-slide {
   position: relative;
   height: auto;
