@@ -276,7 +276,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
     'You will need the family code or QR code from your parent to complete the switch.',
     'After linking, your parent can see family activity such as habits, tasks, routines, streaks, progress, and rewards.',
     'Your personal space stays with you. Notes, coins, pet, and learning progress remain attached to this account.',
-    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:16px; font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:16px; font-weight:500;">If you leave the family or are removed, this account returns to Self mode. Family-linked access stops until you join a family again.</span>'
+    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:var(--text-base); font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:var(--text-base); font-weight:500;">If you leave the family or are removed, this account returns to Self mode. Family-linked access stops until you join a family again.</span>'
   ];
 
   instructionItemsParent: string[] = [
@@ -284,7 +284,7 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
     'If you create a family, you will receive a family code and QR code to share with your child.',
     'If you join an existing family, use the family code shared by the family creator.',
     'Parent mode gives access to family tools such as child progress, approvals, routines, tasks, and rewards.',
-    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:16px; font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:16px; font-weight:500;">If you are the family creator, you cannot switch this same account back to Self mode directly. To use Self mode separately, create another account with different login details.</span>'
+    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:var(--text-base); font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:var(--text-base); font-weight:500;">If you are the family creator, you cannot switch this same account back to Self mode directly. To use Self mode separately, create another account with different login details.</span>'
   ];
 
   consentChecked: boolean = false;

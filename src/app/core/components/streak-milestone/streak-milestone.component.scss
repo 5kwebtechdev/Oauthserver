@@ -55,3 +55,20 @@ button:focus-visible { outline: 3px solid #987ac4; outline-offset: 3px; }button:
 @media (prefers-reduced-motion: reduce) { .celebrating .streak-count, .celebrating .streak-art, .just-reached .marker, .sparkles i { animation: none; } .sparkles { display: none; } }
 @media (max-width: 600px) { .hero { width: min(337px, 82%); }.reward-body { border-radius: 38px 38px 0 0; }.milestone-track li { font-size: clamp(10px, 3vw, 12px); } }
 @media (max-width: 360px) { .reward-body { padding-inline: 12px; }.daily-image, .streak-art { flex-basis: 76px; width: 76px; }.milestone-heading h3 { font-size: 17px; }.broken-art { flex-basis: 60px; width: 60px; }.broken-card h3 { font-size: 15px; } }
+// Keep the five milestone markers legible; scroll this intentional track rather
+// than squeezing labels and coin amounts into five tiny columns.
+h2, .daily-reward strong, .milestone-heading h3 { font-size: var(--text-lg); }
+header p, .daily-reward p, .milestone-card p, .notice { font-size: var(--text-sm); }
+.daily-reward h3, .broken-card h3 { font-size: var(--text-base); }
+.daily-reward, .milestone-heading, .broken-card { flex-wrap: wrap; }
+.daily-reward > div:last-child { min-width: 0; flex: 1 1 8rem; }
+.milestone-track { overflow-x: auto; padding-bottom: 0.5rem; }
+.milestone-track li { flex: 1 0 3.5rem; font-size: var(--text-xs); text-align: center; }
+footer { height: auto; min-height: 72px; padding-bottom: 1rem; }
+.continue-button, .restore-button {
+  font-size: var(--text-sm);
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}

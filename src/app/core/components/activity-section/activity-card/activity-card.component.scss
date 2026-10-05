@@ -15,7 +15,7 @@
   &.glance-card--timetable { background: #eaf2f3; --blank-primary: #6e9ea2; --blank-accent: #537c81; }
 
   .day-at-glance-container { display: flex; flex-direction: column; gap: 16px; padding: 0; width: 100%; }
-  .glance-heading-block { height: 64px; gap: 16px; }
+  .glance-heading-block { min-height: 64px; height: auto; gap: 16px; }
   superme-card-header { flex: 0 0 48px; }
   .glance-done-pill { background: transparent; min-width: 0; padding: 7px 15px; border-radius: 24px; }
   .glance-progress-track { flex-shrink: 0; height: 6px; margin-bottom: -6px; transform: translateY(-3px); }
@@ -1805,4 +1805,35 @@ h4 {
   .compact-habit__category { padding-inline: 8px; }
   .compact-habit__timer-row { flex-wrap: wrap; }
   .compact-habit__hint { margin-left: 4px; }
+}
+.glance-loading {
+  min-height: 260px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  ion-skeleton-text { width: 70%; height: 18px; border-radius: 12px; }
+  .glance-loading__image { width: 85%; height: 150px; }
+}
+// Tabs retain their hierarchy but no longer force enlarged labels onto one line.
+.glance-tab {
+  min-width: 0;
+  font-size: var(--text-xs);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  flex-wrap: wrap;
+  line-height: 1.4;
+}
+.glance-header-actions { flex-wrap: wrap; }
+.glance-done-pill { white-space: normal; font-size: var(--text-xs); }
+.day-at-glance__view-all .bubble {
+  height: auto;
+  min-height: 25px;
+  max-width: 100%;
+  padding: 0.25em;
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }

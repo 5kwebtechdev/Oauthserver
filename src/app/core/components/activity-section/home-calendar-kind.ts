@@ -1,5 +1,15 @@
+/** The backend discriminator takes precedence over legacy calendar labels. */
+export function plannerEditTab(item: any): 'events' | 'timetable' | undefined {
+  const kind = String(item?.plannerType ?? '').trim().toUpperCase().replace(/[ _-]/g, '');
+  if (kind === 'EVENT' || kind === 'EVENTS') return 'events';
+  if (kind === 'TIMETABLE') return 'timetable';
+  return undefined;
+}
+
 /** Classify records before Home converts them into display cards. */
 export function isHomePersonalEvent(item: any): boolean {
+  const plannerTab = plannerEditTab(item);
+  if (plannerTab) return plannerTab === 'events';
   const type = String(item?.originalCalendarType || item?.type || '').trim().toUpperCase();
   // Calendar timetable rows can also be labelled EVENT by the calendar API.
   // Their schedule fields are more specific than that generic type label.
@@ -25,6 +35,8 @@ export function isHomePersonalEvent(item: any): boolean {
 }
 
 export function isHomePlannerSchedule(item: any): boolean {
+  const plannerTab = plannerEditTab(item);
+  if (plannerTab) return plannerTab === 'timetable';
   if (isHomePersonalEvent(item)) return false;
   const type = String(item?.originalCalendarType || item?.type || '').toUpperCase();
   return /TIMETABLE|PLANNER|SCHEDULE/.test(type)
@@ -37,6 +49,7 @@ export function isHomePlannerSchedule(item: any): boolean {
 
 /** Match a calendar projection to its personal Event API record, not to a similarly named timetable. */
 export function isCalendarMirrorOfPersonalEvent(calendar: any, event: any): boolean {
+  if (plannerEditTab(calendar) === 'timetable') return false;
   // Explicit schedule IDs beat generic calendar type labels, which can be
   // TIMETABLE even for a projected personal Event.
   if (calendar?.timetableId != null || calendar?.timetable_id != null

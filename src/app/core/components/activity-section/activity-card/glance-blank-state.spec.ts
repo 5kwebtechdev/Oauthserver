@@ -51,6 +51,7 @@ describe('Home Today at a Glance Figma states', () => {
     const fixture = TestBed.createComponent(ActivityCardComponent);
     const c = fixture.componentInstance;
     c.mode = 'recent'; c.currentActive = tab; c.glanceDailyData = data;
+    c.glancePlannerLoaded = true;
     c.totalHabitsLoaded = data.habits.length; c.totalTasksLoaded = data.tasks.length;
     c.totalTimetablesLoaded = data.planners.length;
     c.totalHabitsCompleted = data.habits.filter(x => x.status === 'COMPLETED').length;
@@ -60,6 +61,44 @@ describe('Home Today at a Glance Figma states', () => {
     fixture.detectChanges();
     return fixture;
   }
+
+  it('keeps every tab in loading until daily and planner responses are ready', () => {
+    const f = render('all', empty());
+    const c = f.componentInstance;
+    c.glanceLoading = true;
+    for (const tab of ['all', 'habits', 'tasks', 'timetable'] as GlanceTab[]) {
+      c.currentActive = tab;
+      f.detectChanges();
+      expect(c.glanceBlankState).toBeNull();
+      expect(f.nativeElement.querySelector('[aria-busy="true"]')).toBeTruthy();
+      expect(f.nativeElement.querySelector('glance-blank-state')).toBeNull();
+    }
+    c.glanceLoading = false;
+    c.glancePlannerLoading = true;
+    expect(c.glanceBlankState).toBeNull();
+    c.glancePlannerLoading = false;
+    c.currentActive = 'all';
+    expect(c.glanceBlankState?.key).toBe('all-empty');
+  });
+
+  it('does not treat a failed refresh as a confirmed empty day', () => {
+    const f = render('all', empty());
+    f.componentInstance.glanceLoadError = true;
+    f.detectChanges();
+    expect(f.componentInstance.glanceBlankState).toBeNull();
+    expect(f.nativeElement.textContent).toContain("Couldn't load today's activities");
+  });
+
+  it('resolves completed data after refreshing without displaying general empty art', () => {
+    const f = render('all', empty());
+    const c = f.componentInstance;
+    c.glanceLoading = true;
+    expect(c.glanceBlankState).toBeNull();
+    c.glanceDailyData = { habits: [done], tasks: [done], planners: [] };
+    expect(c.glanceBlankState).toBeNull();
+    c.glanceLoading = false;
+    expect(c.glanceBlankState?.key).toBe('all-completed');
+  });
 
   it('applies Home CTA boundaries and removes expired rows from All and category lists', () => {
     const c = render('all', empty()).componentInstance;
@@ -135,6 +174,9 @@ describe('Home Today at a Glance Figma states', () => {
   it('keeps the highlighted Add CTA inside the card at mobile widths', () => {
     const f = render('all', empty());
     // Geometry needs a visible, attached host in the headless test runner.
+    document.body.appendChild(f.nativeElement);
+    const bodyDisplay = document.body.style.display;
+    document.body.style.display = 'block';
     for (const width of [320, 360, 375, 390, 414, 430]) {
       f.nativeElement.style.width = `${width}px`;
       const card = f.nativeElement.querySelector('.glance-card') as HTMLElement;
@@ -148,6 +190,7 @@ describe('Home Today at a Glance Figma states', () => {
       expect(getComputedStyle(button, '::before').pointerEvents).toBe('none');
       expect(getComputedStyle(button, '::after').pointerEvents).toBe('none');
     }
+    document.body.style.display = bodyDisplay;
   });
   it('shows No Habit while Tasks exist, without claiming All is empty', () => {
     const f = render('habits', { ...empty(), tasks: [active] });
@@ -268,7 +311,8 @@ describe('Home Today at a Glance Figma states', () => {
 
     // A genuinely separate Event with the same name must remain an Event.
     (c as any).eventApi = { getEvents: () => of([{
-      id: 99, name: 'Viva', eventDate: date, eventType: 'OTHER', isPrivate: false, allDay: true
+      id: 99, name: 'Viva', eventDate: date, eventType: 'OTHER', isPrivate: false, allDay: false,
+      startTime: '12:00', endTime: '13:00'
     }]), getCachedEvent: () => null };
     c.loadGlancePlannerCards(true);
     expect(c.glancePlannerCards.length).toBe(1);

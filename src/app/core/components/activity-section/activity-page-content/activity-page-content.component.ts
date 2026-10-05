@@ -22,7 +22,7 @@ import { EventApi } from '../../../api/event.api';
 import { Observable, Subscription, filter, skip, take, forkJoin } from 'rxjs';
 import { LongPressDirective } from '../../../directives/gestureControlDirective';
 import { getEventTypeIcon } from '../event-type-icon';
-import { isHomePersonalEvent, isHomePlannerSchedule } from '../home-calendar-kind';
+import { isHomePersonalEvent, isHomePlannerSchedule, plannerEditTab } from '../home-calendar-kind';
 
 interface PlannerScheduleCard {
     id: string;
@@ -723,9 +723,10 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     editPlannerEntry(source: any, entry: any, event: Event): void {
         this.plannerHeldAt = Date.now();
         event?.stopPropagation();
+        const editTab = plannerEditTab(source) ?? 'timetable';
         const planner = {
             ...source,
-            type: 'timetable',
+            type: editTab,
             activities: Array.isArray(source?.activities) && source.activities.length
                 ? source.activities
                 : [entry]
@@ -733,7 +734,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         void this.router.navigate(['/activity-input'], {
             state: {
                 habit: planner,
-                currentActive: 'timetable',
+                currentActive: editTab,
                 selectedDate: this.getSelectedDateString(),
                 origin: this.router.url
             }

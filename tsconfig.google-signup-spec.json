@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": ["src/app/core/components/social-media/google-signup-flow.spec.ts", "src/**/*.d.ts"]
+}

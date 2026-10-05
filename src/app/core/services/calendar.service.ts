@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, of, catchError } from 'rxjs';
 import { CalendarResponse, TimelineEvent } from '../models/calendar.model';
+import { plannerEditTab } from '../components/activity-section/home-calendar-kind';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -96,11 +97,12 @@ export class CalendarService {
         // Transform events
         response.events.forEach(event => {
             timelineEvents.push({
+                ...event,
                 id: event.id,
                 title: event.title,
                 startTime: event.startTime.slice(0, 5), // Convert "HH:mm:ss" to "HH:mm"
                 endTime: event.endTime.slice(0, 5),
-                type: 'timetable', // Changed from 'event' to 'timetable' to match the filter
+                type: plannerEditTab(event) === 'events' ? 'event' : 'timetable',
                 description: event.description,
                 tags: event.tags,
                 priority: event.priority,

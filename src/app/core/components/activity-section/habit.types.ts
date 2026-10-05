@@ -1,6 +1,7 @@
 export type ReminderOffset = 'MINUTES_15' | 'MINUTES_30' | 'MINUTES_45';
 
 export interface Habit {
+  plannerType?: string;
   id: string; // Unique identifier
   title: string;
   notes: string;

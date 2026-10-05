@@ -31,7 +31,7 @@
                 <div class="address-detail" *ngIf="!cartLoading && items.length > 0">
                     <img src="assets/icons/location-icon.svg" alt="Location" width="24" height="24" style="opacity: 0.7;" />
                     <div class="address-text-detail d-flex flex-column w-100">
-                      <h2 style="font-size: 13px;">Deliver to:</h2>
+                      <h2 style="font-size:var(--text-sm);">Deliver to:</h2>
                       <div class="address-text d-flex justify-content-between">
                         <h2>{{ selectedAddress ? formatAddressShort(selectedAddress) : '' }}</h2>
                         <a class="underline-link" role="button" tabindex="0" (click)="openAddressPopup()" (keyup.enter)="openAddressPopup()">Change</a>
@@ -75,10 +75,10 @@
                         <span class="discounted-price">{{ moneyDisplay(item.sellingPrice ?? item.price) }}</span>
                         <span *ngIf="(item.mrp ?? item.originalPrice ?? 0) > (item.sellingPrice ?? item.price ?? 0)" class="original-price">{{ moneyDisplay(item.mrp ?? item.originalPrice) }}</span>
                       </div>
-                      <h2 *ngIf="item.deliveryDays" style="color:#90214D; font-size: 13px;">{{ item.deliveryDays }}-day delivery</h2>
+                      <h2 *ngIf="item.deliveryDays" style="color:#90214D; font-size:var(--text-sm);">{{ item.deliveryDays }}-day delivery</h2>
                       <div class="item-bottom-row">
                         <div *ngIf="item.sizeLabel" class="size-picker">
-                          <h2 style="font-size: 10px;">Size: {{ item.sizeLabel }}</h2>
+                          <h2 style="font-size:var(--text-xs);">Size: {{ item.sizeLabel }}</h2>
                         </div>
                         <div class="quantity-selector d-flex align-center gap-2">
                           <button class="qty-btn decrease" aria-label="Decrease quantity" (click)="$event.stopPropagation(); decreaseQuantity(i)">

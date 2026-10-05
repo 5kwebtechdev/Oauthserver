@@ -2836,3 +2836,13 @@ button {
     height: 14px;
   }
 }
+// Long family names and enlarged text must not collide with the header tools.
+.parent-header { height: auto; min-height: 48px; flex-wrap: wrap; }
+.parent-header__identity { flex: 1 1 10rem; }
+.parent-header__copy strong, .parent-header__copy span {
+  font-size: var(--text-xs);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+.parent-coin-pill { height: auto; min-height: 36px; font-size: var(--text-sm); }

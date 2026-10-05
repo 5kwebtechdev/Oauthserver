@@ -17,15 +17,17 @@ $bp-2xl: 1536px;
 // ── CSS Custom Properties ─────────────────────────────────────────────────────
 :root {
   // ── Typography (fluid — clamp(min, preferred-vw, max)) ────────────────────
-  --text-2xs:  clamp(9px,  2vw,   11px);   // labels, captions
-  --text-xs:   clamp(10px, 2.5vw, 12px);   // tags, meta
-  --text-sm:   clamp(12px, 3vw,   14px);   // secondary / helper
-  --text-base: clamp(13px, 3.5vw, 16px);   // body copy
-  --text-md:   clamp(15px, 4vw,   18px);   // sub-headings
-  --text-lg:   clamp(16px, 4.5vw, 20px);   // section headings
-  --text-xl:   clamp(18px, 5vw,   24px);   // page headings
-  --text-2xl:  clamp(20px, 5.5vw, 28px);   // large headings
-  --text-3xl:  clamp(22px, 6vw,   32px);   // hero / display
+  // Root-relative bounds allow enlarged text; the small viewport contribution
+  // adds fluidity without making text tiny on phones or oversized on tablets.
+  --text-2xs:  0.75rem;                                      // compact metadata
+  --text-xs:   clamp(0.75rem, 0.725rem + 0.125vw, 0.8125rem);
+  --text-sm:   clamp(0.875rem, 0.85rem + 0.125vw, 0.9375rem);  // helper text
+  --text-base: clamp(1rem, 0.975rem + 0.125vw, 1.0625rem);    // body / controls
+  --text-md:   clamp(1.0625rem, 1rem + 0.3125vw, 1.125rem);
+  --text-lg:   clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+  --text-xl:   clamp(1.25rem, 1.125rem + 0.625vw, 1.5rem);
+  --text-2xl:  clamp(1.5rem, 1.25rem + 1.25vw, 1.75rem);
+  --text-3xl:  clamp(1.75rem, 1.5rem + 1.25vw, 2rem);
 
   // ── Spacing ────────────────────────────────────────────────────────────────
   --space-1:  clamp(4px,  1vw,   6px);
@@ -63,7 +65,7 @@ $bp-2xl: 1536px;
   --pet-size-sm:  clamp(56px, 14vw,  72px);
   --pet-size-md:  clamp(90px, 22vw, 130px);
   --footer-icon:  clamp(22px, 5.5vw, 28px);
-  --nav-heading:  clamp(17px, 4.5vw, 22px);
+  --nav-heading:  var(--text-lg);
   --card-padding: clamp(14px, 3.5vw, 20px);
   --card-radius:  clamp(16px, 4vw,   24px);
 

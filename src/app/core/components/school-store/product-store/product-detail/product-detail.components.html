@@ -110,12 +110,12 @@
         <div class="address-detail">
           <img src="assets/icons/location-icon.svg" alt="Location" width="16" height="20" />
           <div class="address-text-detail d-flex flex-column w-100">
-            <h2 style="font-size: 13px">Deliver to:</h2>
+            <h2 style="font-size:var(--text-sm)">Deliver to:</h2>
             <div class="address-text d-flex justify-content-between">
               <h2>{{ selectedAddress }}</h2>
               <a role="button" tabindex="0" (click)="openAddressPopup()">Change</a>
             </div>
-            <span class="shipping-date" style="font-size: 16px" *ngIf="deliveryDateText">Get it by {{ deliveryDateText }}</span>
+            <span class="shipping-date" style="font-size:var(--text-base)" *ngIf="deliveryDateText">Get it by {{ deliveryDateText }}</span>
           </div>
         </div>
       </ng-container>

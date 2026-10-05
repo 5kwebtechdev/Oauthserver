@@ -1352,9 +1352,58 @@ a,
 input,
 textarea,
 select {
-  font-size: max(16px, 1em); // prevents iOS auto-zoom on focus
+  font-size: max(1rem, 1em);
   max-width: 100%;
+  min-width: 0;
+  line-height: 1.5;
   box-sizing: border-box;
+}
+
+// Shared text defaults. Do not set text-size-adjust or WebView textZoom:
+// accessibility enlargement belongs to the user, not the layout.
+body {
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+:where(h1, h2, h3, h4, h5, h6, p, label, ion-label) {
+  overflow-wrap: anywhere;
+}
+
+// Ionic controls expose styling through their hosts, variables and parts.
+// Avoid targeting private shadow-DOM implementation classes.
+ion-input, ion-textarea, ion-select {
+  min-width: 0;
+  max-width: 100%;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  --padding-top: 0.75em;
+  --padding-bottom: 0.75em;
+}
+
+ion-button:not([shape="round"]) {
+  height: auto;
+  min-height: 2.75rem;
+  white-space: normal;
+  font-size: var(--text-base);
+  --padding-top: 0.65em;
+  --padding-bottom: 0.65em;
+}
+
+ion-button::part(native), ion-select::part(text), ion-select::part(placeholder) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+ion-segment-button {
+  height: auto;
+  min-width: 0;
+  font-size: var(--text-sm);
+  --padding-top: 0.5em;
+  --padding-bottom: 0.5em;
+
+  ion-label { white-space: normal; line-height: 1.4; }
 }
 
 // ── Table overflow guard ──────────────────────────────────────────────────────

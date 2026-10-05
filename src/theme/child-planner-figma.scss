@@ -225,12 +225,12 @@
 		display: block;
 		width: 100%;
 		min-width: 0;
-		height: 40px;
-		min-height: 40px;
-		max-height: 40px;
+		height: auto;
+		min-height: 3em;
+		max-height: none;
 		padding: 0;
-		resize: none;
-		overflow: hidden;
+		resize: vertical;
+		overflow-y: auto;
 		border: 0;
 		outline: 0;
 		background: transparent;

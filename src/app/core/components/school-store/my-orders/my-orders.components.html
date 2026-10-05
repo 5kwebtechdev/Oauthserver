@@ -225,7 +225,7 @@
             <div class="address-detail">
                 <img src="assets/icons/location-icon.svg" alt="Location" width="24" height="24" style="opacity: 0.7;" />
                 <div class="address-text-detail d-flex flex-column w-100">
-                    <h2 style="font-size: 13px;">{{ addressLabel }}</h2>
+                    <h2 style="font-size:var(--text-sm);">{{ addressLabel }}</h2>
                     <div class="address-text">
                         <h2 *ngIf="selectedOrder.shippingAddress?.receiverName">{{ selectedOrder.shippingAddress?.receiverName }}</h2>
                         <p>{{ formatAddress(selectedOrder.shippingAddress) }}</p>
@@ -310,7 +310,7 @@
                 <textarea
                     *ngIf="selectedCancelReason === 'Other'"
                     class="comments-textarea"
-                    style="width:100%; padding:12px 16px; border:1px solid rgba(40,37,39,0.3); border-radius:8px; font-size:14px; resize:vertical; min-height:80px;"
+                    style="width:100%; padding:12px 16px; border:1px solid rgba(40,37,39,0.3); border-radius:8px; font-size:var(--text-sm); resize:vertical; min-height:80px;"
                     placeholder="Please tell us more..."
                     [value]="customCancelReason"
                     (input)="customCancelReason = $any($event.target).value"></textarea>

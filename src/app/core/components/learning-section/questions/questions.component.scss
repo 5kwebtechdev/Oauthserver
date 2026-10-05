@@ -711,3 +711,16 @@
         animation: none;
     }
 }
+
+// Responsive text and controls; media / wheel geometry is intentionally retained.
+
+.quiz-header h1 { font-size: var(--text-lg); white-space: normal; overflow-wrap: anywhere; }
+.quiz-question-copy h2 { font-size: var(--text-md); }
+.quiz-question-copy p, .quiz-option-text, .quiz-visual-option-text,
+.quiz-hint-copy strong, .quiz-check-button { font-size: var(--text-base); }
+.quiz-option-text, .quiz-visual-option-text { min-width: 0; overflow-wrap: anywhere; }
+.quiz-hint-copy > span { font-size: var(--text-sm); }
+.quiz-hint-meta { font-size: var(--text-xs); }
+.quiz-hint-meta > span:last-child { white-space: normal; }
+.quiz-hint-card { grid-template-columns: 72px minmax(0, 1fr); }
+.quiz-hint-meta { grid-column: 2; justify-self: start; }

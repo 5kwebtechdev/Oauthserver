@@ -247,17 +247,20 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
     };
     const currentActive = map[this.selectedType] || 'habits';
     const origin = this.router.url || '/home';
-    this.router.navigate(['/activity-input'], { state: { currentActive, origin } });
+    this.router.navigate(['/activity-input'], {
+      queryParams: { createType: currentActive },
+      state: { currentActive, origin }
+    });
   }
 
   async onTimetableLongPress(event: TimelineEvent): Promise<void> {
     if (!event || !event.id) return;
 
-    if (event.type === 'timetable') {
+    if (event.type === 'timetable' || event.type === 'event') {
       const { ActivityInputComponent } = await import('../activity-input/activity-input.component');
       const modal = await this.modalCtrl.create({
         component: ActivityInputComponent,
-        componentProps: { editingHabit: event, initialTab: 'timetable' }
+        componentProps: { editingHabit: event, initialTab: event.type === 'event' ? 'events' : 'timetable' }
       });
       await modal.present();
       const { data } = await modal.onWillDismiss();

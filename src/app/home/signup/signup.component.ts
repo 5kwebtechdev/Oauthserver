@@ -10,7 +10,7 @@ import { UserService } from '../../core/services/user.service';
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { LoadingService } from '../../core/services/loading.service';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { firstValueFrom, Subscription } from 'rxjs';
+import { firstValueFrom, Subscription, timeout, finalize } from 'rxjs';
 import { CredentialSaverService } from '../../core/services/credential-saver.service';
 import { SignupCredentialStateService } from '../../core/services/signup-credential-state.service';
 import { StoredGender, toApiGender, toStoredGender } from '../../core/models/gender.model';
@@ -3452,10 +3452,19 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // and each later onboarding action on this provider identity.
     const onboardingRequest = this.authService.googleOAuthLogin(googlePayload);
 
-    onboardingRequest.subscribe({
+    onboardingRequest.pipe(
+      timeout({ first: 30000 }),
+      finalize(() => {
+        this.registrationInProgress = false;
+        this.loadingService.forceHide();
+      })
+    ).subscribe({
       next: (response) => {
         const responseStep = this.getResponseOnboardingStep(response);
         const expectedStep = unlockPotential ? 7 : (includePet ? 6 : (role === 'parent' ? 4 : 5));
+        // Some OAuth responses keep the profile step at 4 after accepting the
+        // details. Preserve the completed-details draft and continue to Pet.
+        const submittedDetailsAtProfileStep = !includePet && !unlockPotential && responseStep === 4;
         const returnedRelationship = String(response?.user?.relationship || '').toLowerCase();
         const returnedRole = returnedRelationship === 'self' && response?.user?.asChild === true
           ? 'child' : returnedRelationship;
@@ -3467,7 +3476,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         if (provider === 'google' && response?.token && response?.user?.id
           && ((returnedRole === 'parent' && response.user.family?.id)
             || differentAccountRole
-            || (!pendingGoogleSignup && (!responseStep || responseStep < expectedStep)))) {
+            || (!pendingGoogleSignup && !submittedDetailsAtProfileStep
+              && (!responseStep || responseStep < expectedStep)))) {
           this.resumeReturnedGoogleAccount(response, providerId, returnedRole, responseStep);
           return;
         }
@@ -3570,7 +3580,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       error: (err) => {
         this.registrationInProgress = false;
         this.loadingService.forceHide();
-        const serverMsg = err?.error?.message || 'Sign-up failed. Please try again.';
+        const serverMsg = err?.name === 'TimeoutError'
+          ? 'Google sign-up is taking too long. Please check your connection and tap Next again.'
+          : err?.error?.message || 'Sign-up failed. Please try again.';
         this.errorMessage = serverMsg;
         this.handleRecoverableFamilyJoinError(serverMsg);
         try { this.core.triggerToasrt(this.errorMessage!); } catch (e) {}

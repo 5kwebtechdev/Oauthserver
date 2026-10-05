@@ -624,7 +624,7 @@ $theme-colors-dark: (
   /* Title input field itself */
   input {
     font-family: var(--font-heading);
-    font-size: 14px !important;
+    font-size: var(--text-base) !important;
     font-weight: 700 !important;
     color: #282527 !important;
     border: none !important;
@@ -730,8 +730,8 @@ $theme-colors-dark: (
   min-height: 20px;
   margin: 0;
   padding: 0;
-  resize: none;
-  overflow: hidden;
+  resize: vertical;
+  overflow-y: auto;
   border: 0;
   outline: 0;
   background: transparent;
@@ -2524,3 +2524,8 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
     animation-duration: 1.4s;
   }
 }
+// Both event and timetable titles must remain editable at enlarged text sizes.
+.planner-title-textarea { font-size: var(--text-base); min-height: 3em; }
+.form-field-section__label { font-size: var(--text-sm); }
+.form-field-section__header, .title-input__header { flex-wrap: wrap; }
+.title-card-subtitle { font-size: var(--text-xs); overflow-wrap: anywhere; }

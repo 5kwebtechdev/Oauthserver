@@ -13,6 +13,17 @@ describe('Header mood picker limits', () => {
     component.presentation = 'dialog';
     return { component, post };
   }
+  it('lists popup moods in the requested order without changing API values', () => {
+    const { component } = picker();
+    expect(component.popupOptions.map(option => [option.label, option.vibe])).toEqual([
+      ['Excited', 'EXCITED'],
+      ['Happy', 'HAPPY'],
+      ['Calm', 'NEUTRAL'],
+      ['Anxious', 'NERVOUS'],
+      ['Sad', 'SAD'],
+      ['Frustrated', 'UPSET'],
+    ]);
+  });
   it('opens only when requested and closes without saving', () => {
     const { component, post } = picker();
     expect(component.dialogOpen).toBeFalse();

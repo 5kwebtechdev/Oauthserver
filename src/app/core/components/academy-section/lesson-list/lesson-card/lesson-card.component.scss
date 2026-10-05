@@ -21,21 +21,23 @@
 
   .body {
     flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
 
     .title {
       margin: 0;
-      font-size: 1rem;
+      font-size: var(--text-base);
       font-weight: 600;
     }
 
     .desc {
       margin: 6px 0;
       color: #444;
-      font-size: 0.9rem;
+      font-size: var(--text-sm);
     }
 
     .meta {
-      font-size: 0.85rem;
+      font-size: var(--text-xs);
       color: #888;
     }
 

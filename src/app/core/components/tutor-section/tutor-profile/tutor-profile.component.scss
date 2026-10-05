@@ -693,6 +693,24 @@ ion-content.tutor-detail-page {
   font-size: 17px;
 }
 
+// Responsive text and controls; media / wheel geometry is intentionally retained.
+
+.profile-copy h1 { font-size: var(--text-3xl); }
+.profile-copy p, .information-value { font-size: var(--text-base); overflow-wrap: anywhere; }
+.stat, .pill-label, .teaching-pill p { font-size: var(--text-sm); overflow-wrap: anywhere; }
+.teaching-section h2, .unlock-card h2 { font-size: var(--text-lg); }
+.teaching-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+.teaching-pill { grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); }
+.counselor-unlock-card > button, .counselor-unlock-confirm {
+  height: auto;
+  min-height: 3rem;
+  white-space: normal;
+  flex-wrap: wrap;
+  font-size: var(--text-base);
+  line-height: 1.4;
+}
+
+
 .counselor-detail-header {
   flex-wrap: wrap;
   align-items: center;

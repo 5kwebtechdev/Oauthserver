@@ -26,11 +26,12 @@
   width: 100%;
   max-width: min(360px, 100%);
   max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
 
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 24px;
 }
@@ -56,6 +57,9 @@
 }
 
 .superme-popup-content {
+  width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
   display: inline-flex;
   flex-direction: column;
   justify-content: center;
@@ -100,7 +104,7 @@
 .superme-popup-heading {
   color: #282527;
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: var(--text-base);
   font-style: normal;
   font-weight: 500;
   text-align: center;
@@ -111,7 +115,7 @@
   color: #282527;
   text-align: center;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-style: normal;
   font-weight: 400;
   margin: 0;
@@ -142,12 +146,16 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  width: auto;
+  flex-wrap: wrap;
+  max-width: 100%;
+  width: 100%;
+  min-width: 0;
   justify-content: center;
 
   .superme-button {
-    flex: none;
-    min-width: 140px;
+    flex: 1 1 8rem;
+    min-width: 0;
+    max-width: 100%;
   }
 }
 
@@ -163,6 +171,7 @@
   superme-button,
   .button {
     width: 100% !important;
+    flex: 0 1 auto;
   }
 }
 
@@ -171,7 +180,7 @@
   background: #FFF;
   box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
   display: flex;
-  height: 42px;
+  min-height: 2.75rem;
   padding: 8px 24px;
   justify-content: center;
   align-items: center;
@@ -179,7 +188,7 @@
   align-self: stretch;
   color: #282527;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 600;
 }
 
@@ -193,12 +202,15 @@
   border-radius: 12px;
   border: none;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
-  min-height: 48px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+  min-height: 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -285,11 +297,11 @@
   }
 
   .superme-popup-heading {
-    font-size: 16px;
+    font-size: var(--text-base);
   }
 
   .superme-popup-subtitle {
-    font-size: 13px;
+    font-size: var(--text-sm);
   }
 }
 
@@ -322,3 +334,6 @@
     transform: translateY(0) scale(1);
   }
 }
+.superme-popup-container > * { flex-shrink: 0; }
+.superme-popup-heading, .superme-popup-subtitle { line-height: 1.5; }
+.superme-popup-single-cta { max-width: 100%; }

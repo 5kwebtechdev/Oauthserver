@@ -356,3 +356,11 @@
     animation: none;
   }
 }
+
+// Responsive text and controls; media / wheel geometry is intentionally retained.
+
+.datepicker-wrapper input { font-size: var(--text-base); min-height: 2.75rem; height: auto; line-height: 1.5; }
+.datepicker-wrapper .calendar-popup .calendar-title { font-size: var(--text-md); }
+.datepicker-wrapper .calendar-popup .calendar-header { flex-wrap: wrap; gap: 0.5rem; }
+.datepicker-wrapper .calendar-popup .calendar-header span { font-size: var(--text-base); }
+.datepicker-wrapper .calendar-popup .calendar-header .box label { font-size: var(--text-xs); }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap, catchError, of, ReplaySubject } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, of, ReplaySubject, throwError } from 'rxjs';
 import { Habit } from './habit.types';
 import { HabitApi } from '../../api/habit.api';
 import { TagsApi } from '../../api/tags.api';
@@ -73,7 +73,7 @@ export class HabitService {
     );
   }
 
-  loadTodayHabits(force: boolean = false): Observable<any> {
+  loadTodayHabits(force: boolean = false, propagateErrors: boolean = false): Observable<any> {
     return this.habitApi.getTodayHabits(force).pipe(
       tap(response => {
         if (response) {
@@ -83,6 +83,7 @@ export class HabitService {
       }),
       catchError(error => {
         console.error('Error fetching today\'s habits:', error);
+        if (propagateErrors) return throwError(() => error);
         this.habitsSubject.next([]);
         return of([]);
       })

@@ -15,6 +15,7 @@ export interface CalendarResponse {
 }
 
 export interface CalendarEvent {
+    plannerType?: string;
     id: number;
     title: string;
     description: string;
@@ -61,6 +62,7 @@ export interface CalendarHabit {
 export interface CalendarTask extends CalendarEvent { }
 
 export interface TimelineEvent {
+    plannerType?: string;
     id: number;
     title: string;
     startTime: string;

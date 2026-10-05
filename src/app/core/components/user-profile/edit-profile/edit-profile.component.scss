@@ -327,7 +327,8 @@
 .phone-input-container {
   display: flex;
 
-  height: 61px;
+  min-height: 3.8125rem;
+  height: auto;
   padding: 0;
   align-items: center;
   flex-shrink: 0;
@@ -348,7 +349,8 @@
 
   .country-code-selector {
     display: flex;
-    height: 61px;
+    min-height: 3.8125rem;
+    height: auto;
     padding: 0 8px;
     align-items: center;
     border-radius: 12px 0 0 12px;
@@ -744,6 +746,21 @@
 }
 
 .otp-modal__confirm-btn { display: none; }
+
+// The phone prefix and entered text grow together without a clipped wrapper.
+.phone-input-container {
+  align-items: stretch;
+  max-width: 100%;
+  min-width: 0;
+}
+.phone-input-container input,
+.phone-input-container .country-code-selector .country-code {
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+.phone-input-container input { height: auto; }
+.phone-input-container .country-code-selector { padding-block: 0.75em; }
+.error { font-size: var(--text-sm); overflow-wrap: anywhere; }
 
 @media (max-width: 480px) {
   .otp-modal { width: 95%; padding: 12px; }

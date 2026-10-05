@@ -263,3 +263,19 @@ $wheel-visible-rows: 3;
     }
   }
 }
+
+// Responsive text and controls; media / wheel geometry is intentionally retained.
+
+.wheel-title { font-size: var(--text-md); }
+.wheel-subtitle, .wheel-col-label { font-size: var(--text-sm); }
+.wheel-footer { flex-wrap: wrap; gap: 0.5rem; }
+.wheel-cancel, .wheel-done { font-size: var(--text-base); min-height: 2.75rem; white-space: normal; }
+.superme-timepicker-wrapper .time-display-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  height: auto;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  &::placeholder { font-size: inherit; }
+}

@@ -254,6 +254,10 @@ export class SocialMediaComponent implements OnInit {
     }
 
     const selectedRole = this.getSelectedSignupRole();
+    // A deleted account can reuse the same Google identity. Start its profile
+    // draft afresh while retaining the freshly obtained provider proof and role.
+    ['signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
+      'show_child_welcome_after_family'].forEach(key => sessionStorage.removeItem(key));
     sessionStorage.setItem('oauth_signup_pending_submission', 'true');
     this.onboardingState.clearRegistrationDraft();
     this.onboardingState.saveRegistrationDraft({

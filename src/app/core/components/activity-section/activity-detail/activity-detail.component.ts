@@ -5,6 +5,8 @@ import { IonicModule } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 
 import { Habit } from '../habit.types';
+import { NavigationService } from '../../../services/navigation.service';
+import { plannerEditTab } from '../home-calendar-kind';
 import { FocusTimerService } from '../../superme-timer/focus-timer.service';
 import { HabitService } from '../habit.service';
 import { AuthService } from '../../../services/auth.service';
@@ -75,7 +77,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     private autoAbortService: AutoAbortService,
     private badgePopupService: BadgePopupService,
     private petAgeService: PetAgeService,
-    private focusTimer: FocusTimerService
+    private focusTimer: FocusTimerService,
+    private navigation: NavigationService
   ) {}
 
   ngOnInit() {
@@ -225,7 +228,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         console.error(`Error loading ${type} detail:`, err);
         // If habit not found (likely deleted), navigate back
         if (err?.status === 404 || err?.status === 400) {
-          this.router.navigate(['/authed/activity-page']).catch(() => {});
+          this.router.navigate(['/authed/activity-page'], { replaceUrl: true }).catch(() => {});
         }
       }
     });
@@ -584,7 +587,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       state: {
         habit: this.habit,
         type: this.habit.type,
-        currentActive: this.habit.type || 'habits',
+        currentActive: plannerEditTab(this.habit) ?? this.habit.type ?? 'habits',
         selectedDate: this.selectedDateFromState,
         originType: this.navigationOriginType,
         origin: this.router.url || '/home',
@@ -653,7 +656,9 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         // Close before navigation so a successful delete never leaves its
         // confirmation overlay attached while the list reloads.
         this.closeDeletePopup();
+        this.navigation.forgetDeletedActivity(id, this.habit?.type || 'habits');
         this.router.navigate(['/authed/activity-page'], {
+          replaceUrl: true,
           state: { type: this.habit?.type || 'habits', refresh: true }
         }).catch(() => {});
       },
@@ -796,7 +801,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     const streak = this.getStreak();
 
     // Build heading HTML to include coin and streak rows
-    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:16px;">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style=\"display:flex;flex-direction:column;align-items: center;gap:8px;margin-top:12px;text-align:left;\"><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/coin.webp' style=\"width:20px;height:20px;\" alt=\"coins\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${coins}</div></div><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/streak.webp' style=\"width:20px;height:20px;\" alt=\"streak\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${streak}</div></div></div>`;
+    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:var(--text-base);">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style=\"display:flex;flex-direction:column;align-items: center;gap:8px;margin-top:12px;text-align:left;\"><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/coin.webp' style=\"width:20px;height:20px;\" alt=\"coins\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${coins}</div></div><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/figma/parent-home/streak.webp' style=\"width:20px;height:20px;\" alt=\"streak\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${streak}</div></div></div>`;
 
     const primary: SupermePopupCTA = {
       text: 'Confirm',
@@ -870,7 +875,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     const coins = this.getCoinReward();
     const streak = this.getStreak();
 
-    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:16px;">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/coin.webp' style="width:20px;height:20px;" alt="coins"/><div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/streak.webp' style="width:20px;height:20px;" alt="streak"/><div style="font-weight:600;">${streak}</div></div></div>`;
+    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:var(--text-base);">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/coin.webp' style="width:20px;height:20px;" alt="coins"/><div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;"><img src='assets/figma/parent-home/streak.webp' style="width:20px;height:20px;" alt="streak"/><div style="font-weight:600;">${streak}</div></div></div>`;
 
     const primary: SupermePopupCTA = {
       text: 'Keep Going',

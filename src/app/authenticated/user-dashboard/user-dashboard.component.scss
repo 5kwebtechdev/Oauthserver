@@ -2113,3 +2113,13 @@ footer {
   .streak-milestone-overlay { padding: 12px 0 max(0px, env(safe-area-inset-bottom)); align-items: flex-end; }
   .streak-milestone-overlay app-streak-milestone { width: 100%; max-height: calc(100dvh - 12px); margin-bottom: 0; }
 }
+// Acknowledgment popup remains scrollable on short/keyboard-reduced viewports.
+.family-ack-popup {
+  box-sizing: border-box;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.family-ack-popup__title { font-size: var(--text-lg); }
+.family-ack-popup__desc { font-size: var(--text-sm); }
+.family-ack-popup__btn { font-size: var(--text-base); white-space: normal; }

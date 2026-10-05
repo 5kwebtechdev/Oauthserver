@@ -84,14 +84,14 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
     'NEUTRAL': 'Neutral'
   };
 
-  // Popup options - Neutral is NOT shown in popup, only as default
+  // Display order shared by the entry popup and mood pickers.
   popupOptions: PopupMoodOption[] = [
-    { src: 'assets/figma/child-home/moods/happy.svg', label: 'Happy', vibe: 'HAPPY', art: 'happy' },
     { src: 'assets/figma/child-home/moods/excited.svg', label: 'Excited', vibe: 'EXCITED', art: 'excited' },
+    { src: 'assets/figma/child-home/moods/happy.svg', label: 'Happy', vibe: 'HAPPY', art: 'happy' },
+    { src: 'assets/figma/child-home/moods/Calm.svg', label: 'Calm', vibe: 'NEUTRAL', art: 'calm' },
     { src: 'assets/figma/child-home/moods/anxious.svg', label: 'Anxious', vibe: 'NERVOUS', art: 'anxious' },
     { src: 'assets/figma/child-home/moods/sad.svg', label: 'Sad', vibe: 'SAD', art: 'sad' },
-    { src: 'assets/figma/child-home/moods/frustrated.svg', label: 'Frustated', vibe: 'UPSET', art: 'frustrated' },
-    { src: 'assets/figma/child-home/moods/Calm.svg', label: 'Calm', vibe: 'NEUTRAL', art: 'calm' }
+    { src: 'assets/figma/child-home/moods/frustrated.svg', label: 'Frustrated', vibe: 'UPSET', art: 'frustrated' }
   ];
 
   ngOnInit() {

@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -84,6 +84,38 @@ describe('Google signup request sequencing', () => {
     expect(sessionStorage.getItem('oauth_signup_id_token')).toBe('google-proof');
     expect(onboarding.getRegistrationState()?.savedData.socialDetailsCompleted).toBeFalse();
   });
+
+  it('starts a reused deleted email with a fresh draft and current Google proof', async () => {
+    sessionStorage.setItem('signup_profile', JSON.stringify({ name: 'Deleted profile', phone: 'old-phone' }));
+    sessionStorage.setItem('signup_pet', 'old-pet');
+    sessionStorage.setItem('familyCode', 'old-family');
+    onboarding.saveRegistrationDraft({ email: identity.email, socialDetailsCompleted: true, onboardingStep: 7 }, 7, 'EMAIL');
+    await authenticateNewUser();
+    expect(sessionStorage.getItem('signup_profile')).toBeNull();
+    expect(sessionStorage.getItem('signup_pet')).toBeNull();
+    expect(sessionStorage.getItem('familyCode')).toBeNull();
+    expect(sessionStorage.getItem('oauth_signup_id_token')).toBe('google-proof');
+    await signup.registerOrProceed();
+    const request = http.expectOne('/v1/auth/oauth2/mobile-login');
+    expect(request.request.body.name).toBe('Chosen Name');
+    request.flush({ token: 'fresh-session', user: { id: 901, relationship: 'SELF', onboardingStep: 4 } });
+    expect(signup.navigateToSignupStep).toHaveBeenCalledWith(4);
+    expect(signup.registrationInProgress).toBeFalse();
+  });
+
+  it('releases Next and retains Google proof if the submission times out', fakeAsync(() => {
+    sessionStorage.setItem('oauth_signup_pending_submission', 'true');
+    sessionStorage.setItem('google_signup_email', identity.email);
+    sessionStorage.setItem('google_signup_provider_id', identity.providerId);
+    sessionStorage.setItem('oauth_signup_id_token', identity.idToken);
+    signup.completeGoogleOnboardingFlow('self');
+    http.expectOne('/v1/auth/oauth2/mobile-login');
+    tick(30001);
+    expect(signup.registrationInProgress).toBeFalse();
+    expect(signup.loadingService.forceHide).toHaveBeenCalled();
+    expect(signup.errorMessage).toContain('tap Next again');
+    expect(sessionStorage.getItem('oauth_signup_id_token')).toBe(identity.idToken);
+  }));
 
   it('submits completed details once at Continue and uses mobile-login for later onboarding actions', async () => {
     await authenticateNewUser();
@@ -235,7 +267,7 @@ describe('Google signup request sequencing', () => {
     expect(onboarding.getRegistrationState()).toBeNull();
   });
 
-  it('resumes a valid login at an earlier server step without reporting a failed request', async () => {
+  it('continues submitted Google details when the server still reports profile step 4', async () => {
     await authenticateNewUser();
     sessionStorage.removeItem('oauth_signup_pending_submission');
     await signup.registerOrProceed();
@@ -243,10 +275,9 @@ describe('Google signup request sequencing', () => {
       user: { id: 42, relationship: 'SELF', onboardingStep: 4 } });
     expect(auth.setSession).toHaveBeenCalledTimes(1);
     expect(signup.errorMessage).toBeNull();
-    expect(signup.navCtrl.navigateRoot).toHaveBeenCalledWith('/signup', {
-      queryParams: { step: 2, role: 'self' }, animated: false
-    });
-    expect(signup.navigateToSignupStep).not.toHaveBeenCalledWith(4);
+    expect(signup.navigateToSignupStep).toHaveBeenCalledWith(4);
+    expect(onboarding.getRegistrationState()?.savedData.socialDetailsCompleted).toBeTrue();
+    expect(onboarding.getResumeNavigation()?.queryParams?.['step']).toBe(4);
   });
 
   it('advances a new pending Child after 201 even when the response is SELF + asChild at step 4', async () => {

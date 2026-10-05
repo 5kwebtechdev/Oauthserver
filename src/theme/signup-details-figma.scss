@@ -1409,3 +1409,35 @@ html:not(.plt-capacitor) .signup-container.profile-layout .profile-step.profile-
     transform: none;
   }
 }
+// Override the native and desktop Figma fixed-height field variants together.
+// Keep icon / wheel geometry unchanged; only text-bearing controls grow.
+html .signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group input,
+html .signup-container.profile-layout .profile-step.profile-step--figma .profile .phone-input-container,
+html .signup-container.profile-layout .profile-step.profile-step--figma .profile .phone-input-container input,
+html .signup-container.profile-layout .profile-step.profile-step--figma .profile .phone-input-container .country-code-selector,
+.profile-step--figma .details-referral-section .input-group input {
+  height: auto !important;
+  min-height: 3.5625rem;
+  max-width: 100%;
+  min-width: 0;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+html .signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group input,
+.profile-step--figma .details-referral-section .input-group input {
+  font-size: var(--text-base) !important;
+  padding-block: 0.75em;
+}
+.profile-step--figma .phone-input-container { align-items: stretch; }
+.profile-step--figma .phone-input-container .country-code-selector {
+  flex: 0 0 auto;
+  padding-block: 0.75em;
+  font-size: var(--text-sm);
+}
+.profile-step--figma .gender-select-button {
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.profile-step--figma .username-change-note { font-size: var(--text-sm); }

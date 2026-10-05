@@ -146,6 +146,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   // Recent habits and tasks
   public recentHabits: Habit[] = [];
   public glanceDailyData: { habits: any[]; tasks: any[]; planners: any[] } | null = null;
+  public glanceLoading = true;
+  public glanceLoadError = false;
+  private glanceRequestId = 0;
   public recentTasks: any[] = [];
   public recentTimetables: any[] = [];
 
@@ -627,13 +630,21 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
    * Load recent habits and tasks
    */
   private loadRecentHabitsAndTasks(forceReload: boolean = false): void {
+    const requestId = ++this.glanceRequestId;
+    this.glanceLoading = true;
+    this.glanceLoadError = false;
     // Use a single calendar API to fetch both habits and tasks for today
     const today = new Date();
     const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     this.calendarService.getUserCalendar(formatted, 'day', forceReload).subscribe({
       next: (resp: any) => {
-        if (!resp) return;
+        if (requestId !== this.glanceRequestId) return;
+        if (!resp || resp.loadError) {
+          this.glanceLoading = false;
+          this.glanceLoadError = true;
+          return;
+        }
 
         // Preserve full daily data for blank/completed/passed presentation.
         this.glanceDailyData = {
@@ -700,7 +711,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           .slice(0,4);
 
           this.recentHabits = habitsData;
-          setTimeout(() => this.recentHabits = [...this.recentHabits], 0);
         }
 
         // Process tasks
@@ -754,7 +764,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           .slice(0,4);
 
           this.recentTasks = tasksData;
-          setTimeout(() => this.recentTasks = [...this.recentTasks], 0);
         }
 
         // The API count represents all planner schedules for the selected day.
@@ -812,7 +821,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           .slice(0, 4);
 
           this.recentTimetables = timetableData;
-          setTimeout(() => this.recentTimetables = [...this.recentTimetables], 0);
         }
 
         // Set completion data
@@ -826,9 +834,13 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         this.awaitingHabits = Math.max(0, Number(resp.awaitingHabits ?? (this.totalHabits - this.totalHabitsCompleted)) || 0);
 
         this.updatePetMessageWithCounts();
+        this.glanceLoading = false;
       },
       error: (err) => {
         console.error('Failed to load calendar data:', err);
+        if (requestId !== this.glanceRequestId) return;
+        this.glanceLoading = false;
+        this.glanceLoadError = true;
       }
     });
   }

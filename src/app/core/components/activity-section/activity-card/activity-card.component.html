@@ -1,3 +1,11 @@
+<ng-template #glanceLoadingState>
+  <div *ngIf="glanceDataLoading" class="glance-loading" role="status" aria-label="Loading today's activities" aria-busy="true">
+    <ion-skeleton-text [animated]="true" class="glance-loading__image"></ion-skeleton-text>
+    <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+    <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+  </div>
+  <div *ngIf="glanceDataError" class="glance-loading" role="status">Couldn't load today's activities. Pull down to retry.</div>
+</ng-template>
 <ng-template #glanceTabs>
     <div class="container w-full glance-tabs-shell">
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
@@ -78,7 +86,7 @@
 <!-- Planner tab: grouped schedule cards with expand/collapse, shared by List and Recent modes -->
 <ng-template #plannerCards>
   <section class="glance-planner-cards"
-    *ngIf="!glanceBlankState && (currentActive === 'all' || currentActive === 'timetable') && hasGlancePlannerCards">
+    *ngIf="glanceDataReady && !glanceBlankState && (currentActive === 'all' || currentActive === 'timetable') && hasGlancePlannerCards">
     <div class="glance-action-swipe glance-action-swipe--planner"
       *ngFor="let card of glancePlannerCards; let i = index; trackBy: trackGlancePlannerCard"
       [class.is-swipe-open]="getActionSwipeOffset('planner-' + card.id) > 0"
@@ -149,6 +157,7 @@
 
     <!-- Keep category navigation visible in loading, empty and completed states. -->
     <ng-container *ngTemplateOutlet="glanceTabs"></ng-container>
+    <ng-container *ngTemplateOutlet="glanceLoadingState"></ng-container>
 
     <glance-blank-state *ngIf="glanceBlankState as blank" [state]="blank"
       (primary)="openHabitInput()" (secondary)="openBlankStateSecondary(blank)"></glance-blank-state>
@@ -157,7 +166,7 @@
 
   <!-- Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="!glanceBlankState && currentActive === 'habits' && hasHabits">
+    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'habits' && hasHabits">
     <activity-card *ngFor="let habitItem of filteredRecentHabits.slice(0, maxItemsToShow)" [habit]="habitItem" [autoExpand]="true" [homeTiming]="true" [homeHabitCard]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
@@ -166,7 +175,7 @@
 
   <!-- Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="!glanceBlankState && currentActive === 'tasks' && hasTasks">
+    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'tasks' && hasTasks">
     <activity-card *ngFor="let taskItem of filteredRecentTasks.slice(0, maxItemsToShow)" [habit]="taskItem" [autoExpand]="true" [homeTiming]="true" [homeTaskCard]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
@@ -176,7 +185,7 @@
   <!-- Grouped planner cards use the same layout in Planner and All. -->
   <ng-container *ngTemplateOutlet="plannerCards"></ng-container>
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="!glanceBlankState && currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
+    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
     <activity-card *ngFor="let ttItem of timetables.slice(0, maxItemsToShow)" [habit]="ttItem"
       [startTime]="ttItem.startTimeStamp || 0" [endTime]="ttItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
@@ -185,7 +194,7 @@
 
   <!-- Combined Items (when all tab is active - sorted by closest start time) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="!glanceBlankState && currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
+    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
@@ -194,7 +203,7 @@
   </div>
 
   <!-- CTA Buttons -->
-  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!glanceBlankState && !isEmpty">
+  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="glanceDataReady && !glanceBlankState && !isEmpty">
     <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">
       {{ viewActionLabel }}
     </button>
@@ -213,6 +222,7 @@
 
     <!-- Keep category navigation visible in loading, empty and completed states. -->
     <ng-container *ngTemplateOutlet="glanceTabs"></ng-container>
+    <ng-container *ngTemplateOutlet="glanceLoadingState"></ng-container>
 
     <glance-blank-state *ngIf="glanceBlankState as blank" [state]="blank"
       (primary)="openHabitInput()" (secondary)="openBlankStateSecondary(blank)"></glance-blank-state>
@@ -221,7 +231,7 @@
 
   <!-- Recent Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="!glanceBlankState && currentActive === 'habits' && hasHabits">
+    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'habits' && hasHabits">
     <activity-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem" [autoExpand]="true" [homeTiming]="true" [homeHabitCard]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
@@ -230,7 +240,7 @@
 
   <!-- Recent Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="!glanceBlankState && currentActive === 'tasks' && hasTasks">
+    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'tasks' && hasTasks">
     <activity-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem" [autoExpand]="true" [homeTiming]="true" [homeTaskCard]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
@@ -240,7 +250,7 @@
   <!-- Grouped planner cards use the same layout in Planner and All. -->
   <ng-container *ngTemplateOutlet="plannerCards"></ng-container>
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="!glanceBlankState && currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
+    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
     <activity-card *ngFor="let ttItem of filteredRecentTimetables" [habit]="ttItem"
       [startTime]="ttItem.startTimeStamp || 0" [endTime]="ttItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
@@ -249,7 +259,7 @@
 
   <!-- Recent Combined Items (when all tab is active - sorted by closest start time) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="!glanceBlankState && currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
+    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
@@ -258,7 +268,7 @@
   </div>
 
   <!-- CTA Buttons -->
-  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!glanceBlankState && !isEmpty">
+  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="glanceDataReady && !glanceBlankState && !isEmpty">
     <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">
       {{ viewActionLabel }}
     </button>

@@ -22,6 +22,8 @@ export class NavigationService {
 
   // True while we are in the middle of a back navigation so pushUrl is a no-op.
   private isGoingBack = false;
+  private replacingEntry = false;
+  private deletedActivityUrls = new Set<string>();
 
   constructor(
     private router: Router,
@@ -36,6 +38,14 @@ export class NavigationService {
     this.router.events
       .pipe(filter((e): e is NavigationStart => e instanceof NavigationStart))
       .subscribe((event: NavigationStart) => {
+        if (this.deletedActivityUrls.has(event.url)) {
+          this.isGoingBack = false;
+          void this.router.navigateByUrl('/authed/activity-page', { replaceUrl: true });
+          return;
+        }
+        const stored = this.getStoredHistory();
+        this.replacingEntry = !!this.router.getCurrentNavigation()?.extras.replaceUrl
+          && stored[stored.length - 1] === this.router.url;
         if (event.navigationTrigger === 'popstate') {
           const history = this.getStoredHistory();
           if (history.length > 0) history.pop();
@@ -85,11 +95,17 @@ export class NavigationService {
     if (this.isGoingBack) {
       // Back navigation already adjusted the history — don't add the destination again.
       this.isGoingBack = false;
+      this.replacingEntry = false;
       return;
     }
     if (this.isRemovedRoute(url)) return;
 
     const history = this.getStoredHistory();
+    if (this.replacingEntry) {
+      history.pop();
+      this.saveHistory(history);
+      this.replacingEntry = false;
+    }
     // Deduplicate consecutive identical entries (e.g. guard redirects to same page).
     if (history.length > 0 && history[history.length - 1] === url) return;
     history.push(url);
@@ -114,6 +130,21 @@ export class NavigationService {
   }
 
   // ─── Public API ─────────────────────────────────────────────────────────────
+
+  /** Invalidate cached detail/edit destinations only after a successful delete. */
+  forgetDeletedActivity(id: string, type: string): void {
+    const history = this.getStoredHistory();
+    for (const url of [...history, this.router.url]) {
+      const tree = this.router.parseUrl(url);
+      const segments = tree.root.children['primary']?.segments.map(segment => segment.path) || [];
+      const detailIndex = segments.indexOf('activity-detail');
+      const isDetail = detailIndex >= 0 && segments[detailIndex + 1] === String(id);
+      const urlType = String(tree.queryParams['type'] || type);
+      if (isDetail && urlType === type) this.deletedActivityUrls.add(url);
+    }
+    this.saveHistory(history.filter(url => !this.deletedActivityUrls.has(url)
+      && !/^\/(?:authed\/)?activity-input(?:[?#]|$)/.test(url)));
+  }
 
   /**
    * Navigate back one page.

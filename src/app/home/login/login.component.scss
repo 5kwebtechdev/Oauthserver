@@ -265,7 +265,7 @@ button {
 .login-mode-switch {
   display: grid;
   width: 100%;
-  height: 44px;
+  min-height: 2.75rem;
   margin-top: 30px;
   padding: 4px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -321,8 +321,8 @@ button {
 .login-password-wrap {
   display: flex;
   width: 100%;
-  height: 57px;
-  min-height: 57px;
+  height: auto;
+  min-height: 3.5625rem;
   align-items: center;
   overflow: hidden;
   border: 0;
@@ -361,8 +361,10 @@ button {
 .login-password-wrap input {
   width: 100%;
   min-width: 0;
-  height: 57px;
-  padding: 0 24px;
+  height: auto;
+  min-height: 3.5625rem;
+  line-height: 1.5;
+  padding: 0.75em 24px;
   border: 0;
   outline: 0;
   background: transparent;
@@ -494,8 +496,8 @@ button {
 .login-primary-btn {
   display: inline-flex;
   width: 100%;
-  height: 56px;
-  min-height: 56px;
+  height: auto;
+  min-height: 3.5rem;
   padding: 8px 16px;
   align-items: center;
   justify-content: center;
@@ -716,7 +718,9 @@ button {
 .country-modal__search input {
   width: 100%;
   min-width: 0;
-  height: 50px;
+  min-height: 3.125rem;
+  height: auto;
+  padding-block: 0.5em;
   border: 0;
   outline: 0;
   background: transparent;
@@ -1085,7 +1089,7 @@ button {
   .login-input-wrap input,
   .login-phone-wrap input,
   .login-password-wrap input {
-    height: 56px;
+    height: auto;
   }
 
   .login-divider {
@@ -1115,3 +1119,17 @@ button {
     transition: none;
   }
 }
+// Text-bearing controls grow with accessibility text settings.
+.login-input-wrap input, .login-phone-wrap input, .login-password-wrap input,
+.country-modal__search input { font-size: var(--text-base); }
+.login-title { font-size: var(--text-lg); }
+.login-subtitle { font-size: var(--text-base); }
+.login-error { font-size: var(--text-sm); overflow-wrap: anywhere; }
+.login-mode-switch button, .login-primary-btn {
+  font-size: var(--text-base);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+  min-width: 0;
+}
+.login-country-btn { height: auto; min-height: 3rem; padding-block: 0.5em; }

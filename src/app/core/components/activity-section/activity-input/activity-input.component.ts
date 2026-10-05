@@ -23,6 +23,7 @@ import { ProfileSelectorService } from '../../../services/profile-selector-servi
 import { CustomToastService } from '../../../services/custom-toast.service';
 import { EVENT_TYPE_ICONS, getEventTypeIcon } from '../event-type-icon';
 
+import { plannerEditTab } from '../home-calendar-kind';
 type ActivityTab = 'habits' | 'tasks' | 'timetable' | 'events';
 type ActivityNavigationTab = ActivityTab | 'planner';
 type EventRecurrence = 'ONE_TIME' | 'MONTHLY' | 'YEARLY';
@@ -473,7 +474,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   private readonly _streakSvg = `<img src="assets/figma/parent-home/streak.webp" alt="Streak" style="width:18px;height:auto;"/>`;
 
   private buildDeletePopupConfig(coin: number, streak: number): SupermePopupConfig {
-    const headingHtml = `Delete this activity?<br/><div style="margin-top:12px;font-size:14px;color:#6b656a">This will remove every instance of this activity in the date range you selected.<div style="display:flex;flex-direction:column;gap:8px;align-items: center;margin-top:8px">` +
+    const headingHtml = `Delete this activity?<br/><div style="margin-top:12px;font-size:var(--text-sm);color:#6b656a">This will remove every instance of this activity in the date range you selected.<div style="display:flex;flex-direction:column;gap:8px;align-items: center;margin-top:8px">` +
       `<div style="display:flex;align-items:center;gap:8px">You are about to lose:</div>` +
       `<div style="display:flex;align-items:center;gap:8px">${this._streakSvg}<div style=\"font-weight:600;\">${streak}</div></div>` +
       `</div></div>`;
@@ -922,7 +923,15 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       const stateOrigin = nav?.extras?.state?.['origin'] ?? (history && (history.state as any)?.origin);
       this.originUrl = stateOrigin || null;
       const eventId = this.route.snapshot.queryParamMap.get('editEventId');
-      const navigationHabit = this.editingHabit ?? nav?.extras?.state?.['habit'] ?? (history && (history.state as any)?.habit);
+      // Add CTAs carry a durable category. Ionic can reuse a form after a
+      // planner edit, and transient navigation state may be absent on re-entry.
+      // An explicit create request must not revive the previous edit record.
+      const requestedCreateType = !eventId && !this.editingHabit
+        ? this.route.snapshot.queryParamMap.get('createType') : null;
+      const createType = ['habits', 'tasks', 'timetable', 'events'].includes(requestedCreateType || '')
+        ? requestedCreateType : null;
+      const navigationHabit = createType ? null
+        : this.editingHabit ?? nav?.extras?.state?.['habit'] ?? (history && (history.state as any)?.habit);
       const savedEvent = eventId && String(this.resolvedEditEvent?.id ?? '') === eventId
         ? this.resolvedEditEvent : null;
       // A direct/reused Ionic route may lose history.state. The URL keeps the
@@ -956,8 +965,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       const stateSelectedDate = nav?.extras?.state?.['selectedDate'] ?? (history && (history.state as any)?.selectedDate) ?? null;
       // Respect an explicit initialTab passed via componentProps or navigation state even when
       // no `habit` object is provided (creating a new activity). Use habit type as a fallback.
-      const stateCurrentActive = eventId ? 'events' : this.initialTab ?? nav?.extras?.state?.['currentActive'] ?? (history && (history.state as any)?.currentActive);
-      this.currentActive = this.normalizeActivityTab(stateCurrentActive || stateHabit?.type, this.currentActive);
+      const stateCurrentActive = eventId ? 'events' : createType ?? this.initialTab ?? nav?.extras?.state?.['currentActive'] ?? (history && (history.state as any)?.currentActive);
+      this.currentActive = plannerEditTab(stateHabit) ?? this.normalizeActivityTab(stateCurrentActive || stateHabit?.type, this.currentActive);
       if (!stateHabit) {
         this.resetForNewEntry();
         return;
@@ -982,7 +991,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       this.reminderExpanded = false;
       // Auto-switch to the appropriate tab based on: @Input() initialTab, explicit currentActive in state, or habit type
       // Reuse `stateCurrentActive` declared above and fall back to habit type when editing.
-      this.currentActive = this.normalizeActivityTab(stateCurrentActive || h.type, this.currentActive);
+      this.currentActive = plannerEditTab(h) ?? this.normalizeActivityTab(stateCurrentActive || h.type, this.currentActive);
       // Apply privacy immediately when the navigation state already contains
       // the API flags, then refresh it from the authoritative detail request.
       this.applyPrivacyState(h);
@@ -2284,10 +2293,18 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       const deleteMessage = this.isParent ? `${this.title} deleted. It's gone from all days.` : `${this.title} deleted from ${categoryLabel}`;
       this.toastService.successWithIcon(deleteMessage, 'assets/icons/tick-small.svg', '#2D6830', 4000);
       
-      try { this.modalCtrl.dismiss(); } catch { /* ignore if not modal */ }
       this.deletePopupVisible = false;
-      // Use finalize path to persist tab and navigate back/origin
-      try { this.finalizeAndReturn(); } catch { try { this.navigation.back(); } catch {} }
+      this.navigation.forgetDeletedActivity(String(idToRemove || this.editingId), this.currentActive);
+      const returnToList = () => this.router.navigate(['/authed/activity-page'], {
+        replaceUrl: true,
+        queryParams: { tab: this.currentActive },
+        state: { type: this.currentActive, refresh: true }
+      });
+      // Deletion cannot use the save/cancel path: the previous detail is now invalid.
+      void this.modalCtrl.getTop().then(async modal => {
+        if (modal) await modal.dismiss({ deleted: true });
+        await returnToList();
+      }).catch(() => { void returnToList(); });
     };
 
     if (!backendId) {

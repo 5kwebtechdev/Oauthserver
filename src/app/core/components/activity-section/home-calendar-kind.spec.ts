@@ -1,6 +1,26 @@
-import { isCalendarMirrorOfPersonalEvent, isHomePersonalEvent, isHomePlannerSchedule } from './home-calendar-kind';
+import { isCalendarMirrorOfPersonalEvent, isHomePersonalEvent, isHomePlannerSchedule, plannerEditTab } from './home-calendar-kind';
 
 describe('Home calendar separation', () => {
+  it('uses plannerType EVENT even when the calendar projection looks like a timetable', () => {
+    const item = { plannerType: 'EVENT', type: 'TIMETABLE', timetableId: 42, activities: [{}] };
+    expect(plannerEditTab(item)).toBe('events');
+    expect(isHomePersonalEvent(item)).toBeTrue();
+    expect(isHomePlannerSchedule(item)).toBeFalse();
+  });
+
+  it('uses plannerType TIMETABLE even with personal event metadata', () => {
+    const item = { plannerType: 'TIMETABLE', type: 'EVENT', name: 'Exam', eventType: 'EXAM' };
+    expect(plannerEditTab(item)).toBe('timetable');
+    expect(isHomePersonalEvent(item)).toBeFalse();
+    expect(isHomePlannerSchedule(item)).toBeTrue();
+  });
+
+  it('normalizes planner types and leaves missing or unknown values to legacy handling', () => {
+    expect(plannerEditTab({ plannerType: ' event ' })).toBe('events');
+    expect(plannerEditTab({ plannerType: 'TIME_TABLE' })).toBe('timetable');
+    expect(plannerEditTab({})).toBeUndefined();
+    expect(plannerEditTab({ plannerType: 'UNKNOWN' })).toBeUndefined();
+  });
   it('keeps a timed personal Event API record out of Planner', () => {
     const event = { name: 'test event', eventDate: '2026-09-23', eventType: 'OTHER', isPrivate: false, allDay: false, startTime: '16:46', endTime: '16:51' };
     expect(isHomePersonalEvent(event)).toBeTrue();

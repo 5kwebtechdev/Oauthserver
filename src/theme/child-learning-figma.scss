@@ -305,7 +305,7 @@
 
 .child-learning-tabs {
 	width: calc(100% - 32px);
-	height: 82px;
+	height: auto;
 	min-height: 82px;
 	display: flex;
 	margin: 0 16px;
@@ -326,7 +326,8 @@
 .child-learning-tab {
 	width: 0;
 	min-width: 0;
-	height: 78px;
+	height: auto;
+	min-height: 78px;
 	flex: 1 1 0;
 	display: flex;
 	flex-direction: column;
@@ -350,8 +351,9 @@
 		display: block;
 		flex: 0 0 auto;
 		min-height: 18px;
-		line-height: 18px;
-		white-space: nowrap;
+		line-height: 1.4;
+		white-space: normal;
+		overflow-wrap: anywhere;
 	}
 }
 
