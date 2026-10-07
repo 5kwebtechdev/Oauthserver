@@ -4,6 +4,7 @@ import { Observable, throwError, forkJoin, map } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
+import { EduHubCityService } from './eduhub-city.service';
 
 /**
  * The response contract exposed by GET /eduhub/events.  Keeping this model
@@ -85,7 +86,8 @@ export class EduHubEventsService {
   }
   constructor(
     private readonly http: HttpClient,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly location: EduHubCityService
   ) {}
 
   getPage(
@@ -105,6 +107,9 @@ export class EduHubEventsService {
     }
     const selectedCity = String(city ?? '').trim();
     if (selectedCity) params = params.set('city', selectedCity);
+    else for (const [key, value] of Object.entries(this.location.filter)) {
+      if (value) params = params.set(key, value);
+    }
 
     return this.http.get<EduHubEventPage>(`${environment.apiUrl}/eduhub/events`, {
       headers: this.getHeaders(),

@@ -70,11 +70,17 @@ export interface SelectedFilters {
 }
 
 export type TutorSearchSort = 'RECENT' | 'ALPHABETICAL' | 'MOST_LIKED' | 'EXPERIENCE' | 'RATING';
+export type TutorSearchScope = 'CITY' | 'ALL_INDIA' | 'WORLDWIDE';
 
 export interface TutorSearchRequest extends SelectedFilters {
     page: number;
     size: number;
     sort: TutorSearchSort;
+    city?: string;
+    state?: string;
+    country?: string;
+    scope?: TutorSearchScope;
+    autoFallbackToOnline?: boolean;
 }
 
 export interface TutorSearchPage {
@@ -85,6 +91,7 @@ export interface TutorSearchPage {
     size: number;
     first: boolean;
     last: boolean;
+    noLocalListings?: boolean;
 }
 
 /**

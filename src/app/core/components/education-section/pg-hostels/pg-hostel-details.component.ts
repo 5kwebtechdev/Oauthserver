@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 import { PgHostel, PgHostelsService } from '../../../services/pg-hostels.service';
+import { getProfileImageInitials } from '../../../utils/profile-image.util';
 import { EDUHUB_FAQS } from '../eduhub-faqs';
 
 @Component({
@@ -23,13 +24,16 @@ export class PgHostelDetailsComponent implements OnInit, OnDestroy {
   showContact = false;
   openFaq = -1;
   private request?: Subscription;
+  private readonly failedImages = new Set<string>();
 
   constructor(private api: PgHostelsService, private route: ActivatedRoute, private router: Router) {}
   ngOnInit(): void { this.load(); }
   ngOnDestroy(): void { this.request?.unsubscribe(); }
   back(): void { void this.router.navigateByUrl('/authed/education/pg-hostels'); }
   get title(): string { return String(this.item?.name || this.item?.title || 'PG / Hostel'); }
-  get image(): string { return this.item?.imageUrls?.[0] || this.item?.imageUrl || this.item?.thumbnailUrl || ''; }
+  get initials(): string { return getProfileImageInitials(this.title); }
+  get image(): string { return this.api.imageCandidates(this.item).find(url => !this.failedImages.has(url)) ?? ''; }
+  onImageError(): void { this.failedImages.add(this.image); }
   get location(): string { return [this.item?.city, this.item?.state].filter(Boolean).join(', '); }
   get occupancy(): string { const value = this.item?.roomOccupancy; return Array.isArray(value) ? value.join(', ') : String(value || ''); }
   get amenities(): string { const value = this.item?.amenities; return Array.isArray(value) ? value.join(', ') : String(value || ''); }
@@ -51,6 +55,7 @@ export class PgHostelDetailsComponent implements OnInit, OnDestroy {
     if (!Number.isInteger(id) || id <= 0) { this.error = 'This listing could not be found.'; return; }
     this.loading = true;
     this.error = '';
+    this.failedImages.clear();
     this.request?.unsubscribe();
     this.request = this.api.get(id).subscribe({
       next: item => { this.item = (item as any)?.data ?? item; this.loading = false; },

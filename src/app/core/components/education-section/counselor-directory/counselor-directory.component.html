@@ -64,6 +64,13 @@
         </header>
 
         <div class="counselor-filter-row" *ngIf="!isLoading">
+          <label class="tutor-scope-select" *ngIf="entityType === 'INDIVIDUAL'">Scope
+            <select [value]="tutorScope" (change)="setTutorScope($any($event.target).value)">
+              <option value="CITY">Only within the selected city</option>
+              <option value="ALL_INDIA">All India</option>
+              <option value="WORLDWIDE">Worldwide</option>
+            </select>
+          </label>
           <button *ngIf="entityType !== 'COUNSELOR'" type="button" (click)="openEducationFilters()">
             <img src="assets/Icons-Neutral/Icon-Tutor-Subjects.webp" alt="" aria-hidden="true">
             <span>{{ educationFilters ? 'Filters applied' : 'Filters' }}</span>
@@ -80,6 +87,7 @@
             <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
           </button>
         </div>
+        <p class="tutor-fallback-note" *ngIf="entityType === 'INDIVIDUAL' && showingOnlineFallback">No local tutors yet. Mode: Online · Scope: All India.</p>
 
         <div *ngIf="isLoading" class="counselor-loading" aria-label="Loading counselors">
           <article *ngFor="let card of loadingCards" class="counselor-card counselor-card--skeleton">

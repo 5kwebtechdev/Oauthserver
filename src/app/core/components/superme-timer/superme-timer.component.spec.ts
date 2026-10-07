@@ -58,7 +58,7 @@ describe('SupermeTimerComponent', () => {
     spyOn(window, 'requestAnimationFrame').and.returnValue(1);
     spyOn(window, 'cancelAnimationFrame');
     modal = { dismiss: jasmine.createSpy().and.resolveTo(true) };
-    habits = { completeHabit: jasmine.createSpy(), notifyTaskCompleted: jasmine.createSpy() };
+    habits = { completeHabit: jasmine.createSpy(), notifyTaskCompleted: jasmine.createSpy(), notifyTaskUpdated: jasmine.createSpy(), notifyHabitStarted: jasmine.createSpy() };
     taskApi = { completeTask: jasmine.createSpy().and.returnValue(of({})), clearCache: jasmine.createSpy() };
     habitApi = { completeHabit: jasmine.createSpy().and.returnValue(of({})) };
     abort = { cancelAutoAbort: jasmine.createSpy(), scheduleAutoAbort: jasmine.createSpy() };
@@ -98,6 +98,25 @@ describe('SupermeTimerComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.sound').length).toBe(4);
     expect(component.dotX).toBeCloseTo(244.5);
     expect(component.dotY).toBeCloseTo(126);
+    const schedule = fixture.nativeElement.querySelector('.scheduled-time');
+    expect(schedule.textContent.trim()).toBe(component.scheduledTime);
+    expect(component.scheduledTime).toContain(' - ');
+    expect(fixture.nativeElement.querySelectorAll('.timer-actions button').length).toBe(2);
+  });
+
+  it('lets Done complete the current activity using the existing completion API', async () => {
+    (fixture.nativeElement.querySelector('.done') as HTMLButtonElement).click();
+    await settle();
+    expect(habitApi.completeHabit).toHaveBeenCalledOnceWith('focus-test', false);
+    expect(modal.dismiss).toHaveBeenCalledWith({ completed: true }, 'completed');
+  });
+
+  it('aborts through the existing API and closes the timer', async () => {
+    habitApi.abortHabit = jasmine.createSpy().and.returnValue(of({}));
+    (fixture.nativeElement.querySelector('.abort') as HTMLButtonElement).click();
+    await settle();
+    expect(habitApi.abortHabit).toHaveBeenCalledOnceWith('focus-test');
+    expect(modal.dismiss).toHaveBeenCalledWith({ aborted: true }, 'aborted');
   });
 
   it('shows the selected Figma Timer pet without changing the timer controls', () => {

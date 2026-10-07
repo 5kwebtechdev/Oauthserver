@@ -5,5 +5,5 @@
     <string name="package_name">com.superme.app</string>
     <string name="custom_url_scheme">com.superme.app</string>
     <string name="server_client_id">124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com</string>
-    <string name="asset_statements" translatable="false">[{\"include\":\"https://supermeapp.com/.well-known/assetlinks.json\"},{\"include\":\"https://www.supermeapp.com/.well-known/assetlinks.json\"}]</string>
+    <string name="asset_statements" translatable="false">[{\"include\":\"https://supermeapp.com/.well-known/assetlinks.json\"}]</string>
 </resources>

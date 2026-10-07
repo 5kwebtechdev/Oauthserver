@@ -22,6 +22,7 @@ export interface GlanceBlankState {
   secondaryRoute?: 'calendar' | 'activities';
   capitalize?: boolean;
   footerGap?: number;
+  parentCopy?: boolean;
 }
 
 const crop = (width: string, height: string, left: string, top: string) => ({ width, height, left, top });
@@ -105,6 +106,26 @@ export const GLANCE_BLANK_STATES: Record<string, GlanceBlankState> = {
     primary: 'Add New activity', secondary: 'View Calendar', secondaryRoute: 'calendar'
   }
 };
+
+/** Parent-only copy for the three empty category tabs; artwork and actions stay shared. */
+export function parentCategoryBlankState(state: GlanceBlankState, childName: string): GlanceBlankState {
+  const name = childName.trim() || 'Your child';
+  const copy: Record<string, { title: string; description: string }> = {
+    'habits-empty': {
+      title: `${name}\nhas no habits today!`,
+      description: `Habits help build consistency and good routines. Add one to get ${name} started.`
+    },
+    'tasks-empty': {
+      title: `${name}\nhas no tasks today!`,
+      description: `Tasks help ${name} stay organized and focused. Add one to keep the day on track.`
+    },
+    'timetable-empty': {
+      title: `${name}\nhas no plans today!`,
+      description: `Plans help ${name} manage time better. Add one to keep the day structured.`
+    }
+  };
+  return copy[state.key] ? { ...state, ...copy[state.key], parentCopy: true } : state;
+}
 
 /** Receives existing completion/time decisions; does not change activity status. */
 export function resolveGlanceBlankState(tab: GlanceTab, groups: Record<'habits' | 'tasks' | 'timetable', GlanceItemState[]>): GlanceBlankState | null {

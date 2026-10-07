@@ -22,11 +22,16 @@
   min-width: 0;
 
   > div:first-child {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: center;
+    column-gap: 8px;
     min-width: 0;
   }
 
   h3 {
     display: flex;
+    grid-area: 1 / 1;
     margin: 0;
     font-family: var(--font-heading);
     font-size: 17px;
@@ -44,6 +49,7 @@
 
   p {
     display: flex;
+    grid-area: 2 / 1 / 3 / 3;
     align-items: center;
     gap: 5px;
     margin: 2px 0 0;
@@ -100,13 +106,11 @@
 
 .eduhub-home-city {
   display: flex;
+  grid-area: 1 / 2;
   width: max-content;
-  max-width: 180px;
-  margin-top: 7px;
-  padding: 5px 10px;
-  border: 1px solid rgba(20, 50, 168, 0.45);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.55);
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   color: #1432a8;
 }
 
@@ -441,28 +445,13 @@
 .eduhub-section--empty {
   gap: 8px;
 
-  .eduhub-header > div:first-child {
-    display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
-    align-items: center;
-    column-gap: 8px;
-  }
-
   .eduhub-header h3 { grid-area: 1 / 1; line-height: 1.4; }
   .eduhub-header p { grid-area: 2 / 1 / 3 / 3; margin-top: 0; line-height: 1.4; }
-  .eduhub-home-city {
-    grid-area: 1 / 2;
-    max-width: 100%;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-  }
   .eduhub-listings { min-height: 28px; }
   .eduhub-empty { margin-top: -4px; }
 }
 
-:host ::ng-deep .eduhub-section--empty .eduhub-home-city .eduhub-city-selector__pin { display: none; }
+:host ::ng-deep .eduhub-home-city .eduhub-city-selector__pin { display: none; }
 
 .eduhub-view-all {
   width: 100%;

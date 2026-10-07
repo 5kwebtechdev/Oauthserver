@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom, Subscription } from 'rxjs';
 
-import { INDIA_STATES } from '../../../constants/india-location-options';
+import { INDIA_STATE_OPTIONS } from '../../../constants/india-location-options';
 import { EduHubCityService } from '../../../services/eduhub-city.service';
 import { LocationService } from '../../../services/location.service';
+import { EduHubLocationApi, EduHubResolvedLocation } from '../../../services/eduhub-location.api';
 
 const CURRENT_LOCATION_OPTION = '__current_location__';
 const EDUHUB_LOCATION_PROMPTED_KEY = 'superme_eduhub_location_prompted';
@@ -21,31 +22,31 @@ const EDUHUB_LOCATION_PROMPTED_KEY = 'superme_eduhub_location_prompted';
 })
 export class EduHubCitySelectorComponent implements OnInit, OnDestroy {
   readonly currentLocationOption = CURRENT_LOCATION_OPTION;
-  selectedCity = '';
+  selectedLocation = '';
   isDetectingLocation = false;
   locationMessage = '';
+  private manualSelectionVersion = 0;
   private readonly subscriptions = new Subscription();
-  readonly cities = [
-    'Mumbai',
-    ...Array.from(new Set<string>(Object.values(INDIA_STATES).reduce<string[]>(
-      (allCities, stateCities) => allCities.concat(stateCities),
-      []
-    )))
-      .filter(city => city !== 'Mumbai')
-      .sort((a, b) => a.localeCompare(b))
-  ];
+  readonly states = INDIA_STATE_OPTIONS;
+  readonly stateLabels: Record<string, string> = {
+    'Andaman & Nicobar Islands': 'Andaman Nicobar',
+    'Dadra & Nagar Haveli and Daman & Diu': 'Daman Diu',
+    'Jammu & Kashmir': 'Jammu Kashmir'
+  };
 
   constructor(
     readonly cityService: EduHubCityService,
     private readonly locationService: LocationService,
+    private readonly locationApi: EduHubLocationApi,
     private readonly route: ActivatedRoute,
+    private readonly router: Router,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.selectedCity = this.cityService.city;
-    this.subscriptions.add(this.cityService.city$.subscribe(city => {
-      this.selectedCity = city;
+    this.selectedLocation = this.cityService.state || this.cityService.city;
+    this.subscriptions.add(this.cityService.location$.subscribe(() => {
+      this.selectedLocation = this.cityService.state || this.cityService.city;
       this.cdr.markForCheck();
     }));
 
@@ -53,7 +54,10 @@ export class EduHubCitySelectorComponent implements OnInit, OnDestroy {
     // for the device location here could overwrite a city the user just chose
     // when the Ionic page is recreated or refreshed.
     const routeCity = String(this.route.snapshot.queryParamMap.get('city') ?? '').trim();
-    if (!routeCity && !this.cityService.hasSavedCity() && !this.wasLocationPromptedThisSession()) {
+    const routeState = String(this.route.snapshot.queryParamMap.get('state') ?? '').trim();
+    const canonicalRouteState = this.canonicalState(routeState);
+    if (canonicalRouteState && canonicalRouteState !== this.cityService.state) this.cityService.selectState(canonicalRouteState);
+    if (!routeCity && !routeState && !this.cityService.hasSavedCity() && !this.cityService.hasSavedState() && !this.wasLocationPromptedThisSession()) {
       this.markLocationPromptedThisSession();
       void this.useCurrentLocation();
     }
@@ -63,38 +67,87 @@ export class EduHubCitySelectorComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  selectCity(city: string): void {
-    if (city === CURRENT_LOCATION_OPTION) {
+  selectLocation(location: string): void {
+    if (location === CURRENT_LOCATION_OPTION) {
       void this.useCurrentLocation();
       return;
     }
 
+    this.manualSelectionVersion++;
     this.locationMessage = '';
-    this.cityService.selectCity(city);
+    const state = this.canonicalState(location);
+    if (state) this.cityService.selectState(state);
+    else this.cityService.selectCity(location); // Preserve an existing city deep link.
+    this.syncRouteLocation();
   }
 
   async useCurrentLocation(): Promise<void> {
     if (this.isDetectingLocation) return;
 
+    const selectionVersion = this.manualSelectionVersion;
     this.isDetectingLocation = true;
     this.locationMessage = 'Detecting current location…';
     this.cdr.markForCheck();
 
     try {
-      const position = await this.locationService.getCurrentPosition();
-      const address = await this.locationService.reverseGeocode(
-        position.coords.latitude,
-        position.coords.longitude
-      );
-      this.cityService.selectCity(address.city);
-      this.locationMessage = `Current location: ${address.city}`;
+      let coordinates: { lat: number; lng: number } | undefined;
+      try {
+        const position = await this.locationService.getCurrentPosition();
+        coordinates = { lat: position.coords.latitude, lng: position.coords.longitude };
+      } catch {
+        // The backend resolves the request IP when device coordinates are unavailable.
+      }
+      const location = await firstValueFrom(this.locationApi.resolve(coordinates));
+      if (selectionVersion !== this.manualSelectionVersion) return;
+      this.applyResolvedLocation(location);
     } catch (error) {
-      console.warn('[EduHubCitySelector] Current location unavailable:', error);
-      this.locationMessage = 'Location unavailable. Please select your city.';
+      console.warn('[EduHubCitySelector] Location resolution unavailable:', error);
+      if (selectionVersion === this.manualSelectionVersion) {
+        this.cityService.applyResolvedLocation({ city: 'Mumbai', state: 'Maharashtra', source: 'default' });
+        this.syncRouteLocation();
+        this.locationMessage = 'Showing Maharashtra, India (default location).';
+      }
     } finally {
       this.isDetectingLocation = false;
       this.cdr.markForCheck();
     }
+  }
+
+  private applyResolvedLocation(location: EduHubResolvedLocation): void {
+    const state = this.canonicalState(location.state);
+    this.cityService.applyResolvedLocation({
+      city: location.city,
+      state: state || 'Maharashtra',
+      source: location.source
+    });
+    this.syncRouteLocation();
+    this.locationMessage = `${location.city}, ${location.state}, ${location.country} (${location.source} location)`;
+  }
+
+  private syncRouteLocation(): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: this.cityService.state
+        ? { state: this.cityService.state, city: null }
+        : { city: this.cityService.city, state: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+  }
+
+  private canonicalState(value: string): string {
+    const normalized = String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const aliases: Record<string, string> = {
+      jammukashmir: 'Jammu & Kashmir',
+      damandiu: 'Dadra & Nagar Haveli and Daman & Diu',
+      dadranagarhaveli: 'Dadra & Nagar Haveli and Daman & Diu',
+      andamannicobar: 'Andaman & Nicobar Islands',
+      nctofdelhi: 'Delhi',
+      pondicherry: 'Puducherry',
+      orissa: 'Odisha',
+      uttaranchal: 'Uttarakhand'
+    };
+    return aliases[normalized] || this.states.find(state => state.toLowerCase().replace(/[^a-z0-9]/g, '') === normalized) || '';
   }
 
   private wasLocationPromptedThisSession(): boolean {

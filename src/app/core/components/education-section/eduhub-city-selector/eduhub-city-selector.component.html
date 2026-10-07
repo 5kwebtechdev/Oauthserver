@@ -1,15 +1,15 @@
 <label class="eduhub-city-selector" [class.is-detecting]="isDetectingLocation"
-  [attr.title]="locationMessage || 'Select EduHub city'">
-  <span class="sr-only">Select city</span>
+  [attr.title]="locationMessage || 'Select EduHub state or region'">
+  <span class="sr-only">Select state or region</span>
   <span class="eduhub-city-selector__pin" aria-hidden="true"></span>
   <span class="eduhub-city-selector__value" aria-hidden="true">
-    {{ isDetectingLocation ? 'Detecting location…' : (cityService.city || selectedCity || 'Select city') }}
+    {{ isDetectingLocation ? 'Detecting location…' : (stateLabels[selectedLocation] || selectedLocation || 'Select state') }}
   </span>
-  <select [ngModel]="selectedCity" (ngModelChange)="selectCity($event)"
-    [disabled]="isDetectingLocation" aria-label="Select EduHub city">
-    <option *ngIf="selectedCity && !cities.includes(selectedCity)"
-      [value]="selectedCity">{{ selectedCity }}</option>
-    <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+  <select [ngModel]="selectedLocation" (ngModelChange)="selectLocation($event)"
+    [disabled]="isDetectingLocation" aria-label="Select EduHub state or region">
+    <option *ngIf="selectedLocation && !states.includes(selectedLocation)"
+      [value]="selectedLocation">{{ selectedLocation }}</option>
+    <option *ngFor="let state of states" [value]="state">{{ stateLabels[state] || state }}</option>
   </select>
   <span class="eduhub-city-selector__chevron" aria-hidden="true"></span>
   <span class="sr-only" role="status" aria-live="polite">{{ locationMessage }}</span>

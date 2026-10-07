@@ -49,7 +49,7 @@ export const environment = {
     },
     deepLinks: {
       scheme: 'superme',
-      hosts: ['supermeapp.com', 'www.supermeapp.com'],
+      hosts: ['supermeapp.com'],
       defaultPath: '/authed/user-dashboard'
     }
   },

@@ -13,7 +13,8 @@ button:focus-visible,a:focus-visible { outline:3px solid #1432a8; outline-offset
 .share { background:#1432a8; }
 .favourite img,.share img { width:24px; height:24px; }
 .profile { display:flex; align-items:center; gap:12px; margin-top:16px; }
-.profile-photo { position:relative; width:104px; height:104px; flex:0 0 104px; border-radius:50%; background:#6b656a; }
+.profile-photo { position:relative; width:104px; height:104px; flex:0 0 104px; border-radius:50%; background:#e8f1f5; }
+.profile-photo-initials { display:flex; width:100%; height:100%; align-items:center; justify-content:center; color:#526b98; font-size:36px; font-weight:800; line-height:1; }
 .profile-photo > img:first-child:not(.verified) { width:100%; height:100%; border-radius:50%; object-fit:cover; }
 .profile-photo .verified { position:absolute; right:-2px; bottom:-2px; width:24px; height:24px; object-fit:contain; }
 .profile-copy { min-width:0; }

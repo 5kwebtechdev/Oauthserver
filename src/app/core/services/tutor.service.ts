@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { BehaviorSubject, forkJoin, Observable, of, throwError } from 'rxjs';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../../package/api/auth.service';
+import { EduHubCityService } from './eduhub-city.service';
 import {
     Tutor,
     TutorListItem,
@@ -14,6 +15,12 @@ import {
     SelectedFilters,
     TutorSearchRequest
 } from '../models/tutor.model';
+
+export interface HomeTutorResult {
+    tutors: Tutor[];
+    noLocalListings: boolean;
+    usedOnlineFallback: boolean;
+}
 
 @Injectable({
     providedIn: 'root'
@@ -41,7 +48,8 @@ export class TutorService {
 
     constructor(
         private http: HttpClient,
-        private authService: AuthService
+        private authService: AuthService,
+        private readonly eduhubLocation: EduHubCityService
     ) { }
 
     /**
@@ -116,7 +124,7 @@ export class TutorService {
      */
     fetchTutors(forceRefresh = false): Observable<Tutor[]> {
         this.tutorsLoading$.next(true);
-        return this.http.get<Tutor[]>(`${this.apiUrl}/tutors`, { headers: this.getHeaders() })
+        return this.http.get<Tutor[]>(`${this.apiUrl}/tutors`, { headers: this.getHeaders(), params: this.eduhubLocation.filter })
             .pipe(
                 tap(tutors => {
                     this.unfilteredTutors = [...tutors];
@@ -172,6 +180,9 @@ export class TutorService {
             // so a previously selected category is not accidentally retained.
             categoryKey: filters?.categoryKey ?? '',
             filters: filters?.filters ?? {},
+            ...this.eduhubLocation.filter,
+            scope: 'CITY',
+            autoFallbackToOnline: false,
             page: 0,
             size: 100,
             sort: 'RECENT'
@@ -195,16 +206,21 @@ export class TutorService {
             const expectedType = String(entityType || '').trim().toUpperCase();
             return expectedType
                 ? tutors.filter((tutor: Tutor) => !tutor?.entityType
-                    || String(tutor.entityType).trim().toUpperCase() === expectedType)
+                    || String(tutor.entityType).trim().toUpperCase() === expectedType
+                    || (expectedType === 'INDIVIDUAL' && String(tutor.entityType).trim().toUpperCase() === 'TUTOR'))
                 : tutors;
         }));
     }
 
     getTutorsByEntityType(entityType: string, city?: string): Observable<Tutor[]> {
         const normalizedType = String(entityType || '').trim().toUpperCase();
-        let params = new HttpParams().set('entityType', normalizedType);
+        const queryType = normalizedType === 'INDIVIDUAL' ? 'TUTOR' : normalizedType;
+        let params = new HttpParams().set('entityType', queryType);
         const selectedCity = String(city ?? '').trim();
         if (selectedCity) params = params.set('city', selectedCity);
+        else for (const [key, value] of Object.entries(this.eduhubLocation.filter)) {
+            if (value) params = params.set(key, value);
+        }
         return this.http.get<any>(`${this.apiUrl}/tutors`, {
             headers: this.getHeaders(),
             params
@@ -218,6 +234,50 @@ export class TutorService {
                     || (Array.isArray(response?.data) ? response.data : []))),
             tap(tutors => this.setDirectoryCache(normalizedType, tutors))
         );
+    }
+
+    /** Home-only fallback; manual locations and non-Tutor directories never use it. */
+    getHomeTutorListings(scope: 'CITY' | 'ALL_INDIA' | 'WORLDWIDE' = 'CITY'): Observable<HomeTutorResult> {
+        if (scope !== 'CITY') return this.searchOnlineTutors(scope, false);
+        return this.getTutorsByEntityType('INDIVIDUAL').pipe(switchMap(localTutors => {
+            if (localTutors.length || !this.eduhubLocation.isAutomaticLocation || !this.eduhubLocation.resolvedCity) {
+                return of({ tutors: localTutors, noLocalListings: false, usedOnlineFallback: false });
+            }
+            return this.searchOnlineTutors('CITY', true);
+        }));
+    }
+
+    private searchOnlineTutors(scope: 'CITY' | 'ALL_INDIA' | 'WORLDWIDE', autoFallbackToOnline: boolean): Observable<HomeTutorResult> {
+            return this.http.get<Array<{ categoryKey: string; isActive: boolean }>>(
+                `${this.apiUrl}/tutors/categories`, { headers: this.getHeaders() }
+            ).pipe(switchMap(categories => {
+                const activeKeys = categories.filter(category => category.isActive && category.categoryKey).map(category => category.categoryKey);
+                if (!activeKeys.length) return throwError(() => new Error('Tutor categories unavailable for online fallback'));
+                const requests = activeKeys.map(categoryKey => {
+                    const request: TutorSearchRequest = {
+                        categoryKey, filters: {}, page: 0, size: 20, sort: 'RECENT',
+                        ...(scope === 'CITY' ? { city: this.eduhubLocation.resolvedCity, state: this.eduhubLocation.state } : {}),
+                        scope, autoFallbackToOnline
+                    };
+                    return this.http.post<{ content: Tutor[]; noLocalListings?: boolean }>(
+                        `${this.apiUrl}/tutors/search`, request, { headers: this.getHeaders() }
+                    ).pipe(catchError(() => of(null)));
+                });
+                return forkJoin(requests).pipe(map(pages => {
+                    if (pages.every(page => page === null)) throw new Error('Tutor online fallback unavailable');
+                    const unique = new Map<number, Tutor>();
+                    for (const page of pages) for (const tutor of page?.content || []) {
+                        const online = tutor.teachingMode === 'ONLINE' || tutor.teachingMode === 'HYBRID'
+                            || tutor.contactModes?.includes('VIDEO_CALL');
+                        if (['INDIVIDUAL', 'TUTOR'].includes(String((tutor as any).entityType).toUpperCase()) && online) unique.set(tutor.id, tutor);
+                    }
+                    return {
+                        tutors: Array.from(unique.values()),
+                        noLocalListings: pages.some(page => page?.noLocalListings === true),
+                        usedOnlineFallback: autoFallbackToOnline
+                    };
+                }));
+            }));
     }
 
     /**

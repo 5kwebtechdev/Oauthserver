@@ -37,6 +37,7 @@ describe('Home Today at a Glance Figma states', () => {
     spyOn(ActivityCardComponent.prototype, 'ngAfterViewInit');
     spyOn(ActivityCardComponent.prototype, 'ngOnDestroy');
     TestBed.overrideProvider(ModalController, { useValue: {} });
+    TestBed.overrideProvider(ProfileSelectorService, { useValue: { getSelectedChild: () => ({ name: 'Mira' }) } });
     await TestBed.configureTestingModule({
       imports: [ActivityCardComponent, GlanceBlankStateComponent],
       providers: [provideRouter([]), HabitButtonLogicService,
@@ -103,6 +104,46 @@ describe('Home Today at a Glance Figma states', () => {
     }
   });
 
+  it('shows Figma Parent copy for only the three empty category tabs', () => {
+    const f = render('habits', empty());
+    const c = f.componentInstance;
+    c.isParent = true;
+    const expected = [
+      ['habits', 'habits.png', 'Mira\nhas no habits today!', 'Habits help build consistency and good routines. Add one to get Mira started.', 'Add a Habit'],
+      ['tasks', 'tasks.png', 'Mira\nhas no tasks today!', 'Tasks help Mira stay organized and focused. Add one to keep the day on track.', 'Add a Task'],
+      ['timetable', 'planner.png', 'Mira\nhas no plans today!', 'Plans help Mira manage time better. Add one to keep the day structured.', 'Add a Plan']
+    ] as const;
+    for (const [tab, image, heading, description, cta] of expected) {
+      c.currentActive = tab;
+      f.detectChanges();
+      const blank = f.nativeElement.querySelector('glance-blank-state') as HTMLElement;
+      expect(blank.querySelector('h4')?.textContent).toBe(heading);
+      expect(blank.querySelector('p')?.textContent).toBe(description);
+      expect(blank.querySelector('img')?.getAttribute('src')).toContain(image);
+      expect(blank.textContent).toContain(cta);
+    }
+    c.currentActive = 'all';
+    expect(c.glanceBlankState?.title).toBe('Your day is wide open');
+    c.isParent = false;
+    c.currentActive = 'habits';
+    expect(c.glanceBlankState?.title).toBe('No habits lined up for today!');
+  });
+
+  it('keeps Parent category blank states within mobile widths', () => {
+    const f = render('habits', empty());
+    const c = f.componentInstance;
+    c.isParent = true;
+    for (const width of [360, 375, 390, 414]) {
+      f.nativeElement.style.width = `${width}px`;
+      for (const tab of ['habits', 'tasks', 'timetable'] as GlanceTab[]) {
+        c.currentActive = tab;
+        f.detectChanges();
+        const blank = f.nativeElement.querySelector('.blank') as HTMLElement;
+        expect(blank.scrollWidth).withContext(`${tab} at ${width}px`).toBeLessThanOrEqual(blank.clientWidth);
+      }
+    }
+  });
+
   it('uses the same Planner summary label and count in every tab and blank state', () => {
     const f = render('all', { habits: [active], tasks: [], planners: [] });
     const c = f.componentInstance;
@@ -166,7 +207,8 @@ describe('Home Today at a Glance Figma states', () => {
       c.recentHabits = type === 'habits' ? [activity] : [];
       c.recentTasks = type === 'tasks' ? [activity] : [];
       for (const [offset, visible, go, done] of [
-        [-300001, true, false, false], [-300000, true, true, false],
+        [-600001, true, false, false], [-600000, true, true, false],
+        [-480000, true, true, false],
         [599999, true, true, false], [600000, true, false, true],
         [4499999, true, false, true], [4500000, false, false, false]
       ] as const) {
@@ -450,6 +492,27 @@ describe('Home Today at a Glance Figma states', () => {
     expect(c.glancePlannerCards.map(card => card.source.title)).toEqual(['PlannerOneUpdated']);
     expect(c.glanceUpcomingEvents.map(event => event.name)).toEqual(['Birthday', 'sasa']);
     expect(c.glanceSubtitle).toContain('1 Planner');
+  });
+  it('fully closes a timetable card and reopens its entries from the header', () => {
+    const f = render('all', empty());
+    const c = f.componentInstance;
+    c.glancePlannerRaw = [{ id: 91, type: 'TIMETABLE', title: 'Sports',
+      startDate: '2020-01-01', endDate: '2030-12-31', everyday: true,
+      activities: [{ title: 'Pickleball', startTime: '19:00', endTime: '20:45' }] }];
+    f.detectChanges();
+    const header = f.nativeElement.querySelector('.glance-planner-card__header') as HTMLButtonElement;
+    expect(header).toBeTruthy();
+    expect(header.getAttribute('aria-expanded')).toBe('true');
+    expect(f.nativeElement.querySelectorAll('.glance-planner-entry').length).toBe(1);
+    header.click();
+    f.detectChanges();
+    expect(header.getAttribute('aria-expanded')).toBe('false');
+    expect(f.nativeElement.querySelector('.glance-planner-card__entries')).toBeNull();
+    expect(f.nativeElement.querySelector('.glance-planner-card > p')).toBeNull();
+    header.click();
+    f.detectChanges();
+    expect(header.getAttribute('aria-expanded')).toBe('true');
+    expect(f.nativeElement.querySelectorAll('.glance-planner-entry').length).toBe(1);
   });
   it('does not display an empty state before daily data arrives or while planner loads', () => {
     const f = render('all', empty());

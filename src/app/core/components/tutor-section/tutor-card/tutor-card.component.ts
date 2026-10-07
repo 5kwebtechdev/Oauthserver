@@ -149,6 +149,8 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   private readonly externalLoading = new Set<CategoryKey>();
 
   private subscriptions = new Subscription();
+  tutorLoadError = false;
+  showingOnlineFallback = false;
   private likeSubscriptions = new Map<string, Subscription>();
 
   constructor(
@@ -166,8 +168,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadTutors();
-    this.subscriptions.add(this.cityService.city$.pipe(
-      distinctUntilChanged(),
+    this.subscriptions.add(this.cityService.location$.pipe(
       skip(1)
     ).subscribe(() => this.onEduHubCityChanged()));
   }
@@ -283,13 +284,13 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
     this.externalLoading.add(categoryKey);
     if (categoryKey === 'hostels') {
-      this.subscriptions.add(this.pgHostels.list(0, 20, { city: this.cityService.city }).subscribe({
+      this.subscriptions.add(this.pgHostels.list(0, 20, this.cityService.filter).subscribe({
         next: page => {
           this.externalPreviews.set(categoryKey, page.content.map(hostel => ({
             id: hostel.id,
             name: hostel.name || hostel.title || 'PG / Hostel',
             description: [hostel.accommodationType, hostel.suitableFor].filter(Boolean).join(' · '),
-            image: hostel.imageUrls?.[0] || hostel.imageUrl || hostel.thumbnailUrl || '',
+            image: this.pgHostels.imageCandidates(hostel)[0] || '',
             fee: hostel.monthlyRent ?? hostel.rent ?? hostel.price ?? null,
             location: [hostel.city, hostel.state].filter(Boolean).join(', '),
             hostel
@@ -368,8 +369,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       params = params.set('page', '0').set('size', '20');
       const userId = this.authService.getUserId();
       if (userId != null) params = params.set('forUserId', String(userId));
-      if (source.endpoint === 'shops' && this.cityService.city.trim()) {
-        params = params.set('city', this.cityService.city.trim());
+      if (source.endpoint === 'shops') {
+        for (const [key, value] of Object.entries(this.cityService.filter)) {
+          if (value) params = params.set(key, value);
+        }
       }
     }
     this.subscriptions.add(
@@ -431,9 +434,9 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     if (this.isExternalCategory(this.selectedCategoryKey)) {
       this.loadExternalCategory(this.selectedCategoryKey);
     }
-    // Tutors are returned as a complete INDIVIDUAL directory and are filtered
-    // locally. Changing city must not replace that complete cache with a
-    // backend-specific city response.
+    this.refreshHomeTutors();
+    this.academyLoaded = false;
+    if (this.selectedCategoryKey === 'academies') this.loadAcademies();
   }
 
   private filterBySelectedCity(items: TutorListItem[]): TutorListItem[] {
@@ -548,18 +551,9 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   private loadTutors(): void {
     this.isLoading = true;
 
-    // Subscribe to loading state
-    this.subscriptions.add(
-      this.tutorService.isLoading$.subscribe(loading => {
-        if (this.selectedCategoryKey === 'tutors') this.isLoading = loading;
-      })
-    );
-
     // The unfiltered endpoint mixes individual tutors, academies and
     // counselors. The Tutors tab must contain individual profiles only.
-    this.subscriptions.add(
-      this.tutorService.fetchTutorsByEntityType('INDIVIDUAL').subscribe()
-    );
+    this.refreshHomeTutors();
 
     // Subscribe to recent tutors
     this.subscriptions.add(
@@ -569,7 +563,6 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       this.tutorService.getRecentTutors(Number.MAX_SAFE_INTEGER).subscribe(tutors => {
         this.tutors = tutors;
         this.syncLikeStates();
-        if (this.selectedCategoryKey === 'tutors') this.isLoading = false;
       })
     );
 
@@ -579,6 +572,26 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       })
     );
   }
+
+  private refreshHomeTutors(): void {
+    this.tutorLoadError = false;
+    this.showingOnlineFallback = false;
+    this.isLoading = true;
+    this.tutorService.setCacheAndApply([]);
+    this.subscriptions.add(this.tutorService.getHomeTutorListings().subscribe({
+      next: result => {
+        this.showingOnlineFallback = result.usedOnlineFallback && result.noLocalListings;
+        this.tutorService.setCacheAndApply(result.tutors);
+        this.isLoading = false;
+      },
+      error: () => {
+        this.tutorLoadError = true;
+        this.isLoading = false;
+      }
+    }));
+  }
+
+  retryTutors(): void { this.refreshHomeTutors(); }
 
   private academyHeaders(): HttpHeaders {
     const token = this.authService.getToken();
@@ -606,7 +619,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.http.get<any>(`${environment.apiUrl}/tutors`, {
         headers: this.academyHeaders(),
-        params: { entityType: 'ACADEMY' }
+        params: { entityType: 'ACADEMY', ...this.cityService.filter }
       }).subscribe({
         next: (res) => {
           const raw = Array.isArray(res)
@@ -742,7 +755,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   onViewAll(): void {
     if (this.selectedCategoryKey === 'hostels') {
-      void this.router.navigate(['/authed/education/pg-hostels'], { queryParams: { city: this.cityService.city } });
+      void this.router.navigate(['/authed/education/pg-hostels'], { queryParams: this.cityService.filter });
       return;
     }
     if (this.selectedCategoryKey === 'tutors') {
@@ -753,9 +766,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       // protects native/Ionic navigation from recreating the destination
       // before its shared-city subscription has emitted.
       void this.router.navigate(['/authed/tutors'], {
-        queryParams: { city: this.cityService.city },
+        queryParams: this.cityService.filter,
         state: {
           city: this.cityService.city,
+          state: this.cityService.state,
           directoryItems: visibleProfiles
         }
       });
@@ -776,15 +790,15 @@ export class TutorCardComponent implements OnInit, OnDestroy {
         queryParams: {
           label: selectedShop.label,
           entityType: selectedShop.entityType,
-          city: this.cityService.city
+          ...this.cityService.filter
         },
-        state: { city: this.cityService.city }
+        state: this.cityService.filter
       });
       return;
     }
     if (this.selectedCategoryKey === 'workshops' || this.selectedCategoryKey === 'events') {
       void this.router.navigate([this.selectedCategory.route], {
-        queryParams: { city: this.cityService.city, combined: 'true' }
+        queryParams: { ...this.cityService.filter, combined: 'true' }
       });
       return;
     }
@@ -793,9 +807,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
         .map(academy => this.academyProfiles.get(Number(academy.id)))
         .filter((academy): academy is Tutor => !!academy);
       void this.router.navigate([this.selectedCategory.route], {
-        queryParams: { city: this.cityService.city },
+        queryParams: this.cityService.filter,
         state: {
           city: this.cityService.city,
+          state: this.cityService.state,
           directoryItems: visibleProfiles
         }
       });

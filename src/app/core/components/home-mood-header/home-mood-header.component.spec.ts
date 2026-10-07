@@ -102,4 +102,19 @@ describe('Home mood header', () => {
       }
     }
   });
+
+  it('uses birthday artwork for every pet and both mood groups only when enabled', () => {
+    component.birthday = true;
+    for (const type of ['panda', 'owl', 'llama', 'dragon'] as const) {
+      pet = type;
+      component.mood = 'happy';
+      expect(component.petMoodImage).toContain('pets-positive.png');
+      expect(component.state.emphasis).toBe('Lucky me.');
+      component.mood = 'sad';
+      expect(component.petMoodImage).toContain(type === 'panda' ? 'pets-positive.png' : 'pets-negative.png');
+      expect(component.state.emphasis).toBe('Cake counts.');
+    }
+    component.birthday = false;
+    expect(component.petMoodImage).toContain('dragon-latest-moods.png');
+  });
 });

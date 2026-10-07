@@ -135,7 +135,15 @@ export interface CourseLesson {
   assessmentId?: number | string | null;
 }
 
+export interface CourseMetadata {
+  id?: number;
+  order?: number | null;
+  text?: string | null;
+  imageUrl?: string | null;
+}
+
 export interface CourseDetailResponse {
+  courseMetadata?: CourseMetadata[] | null;
   id: number;
   courseName: string;
   description: string;

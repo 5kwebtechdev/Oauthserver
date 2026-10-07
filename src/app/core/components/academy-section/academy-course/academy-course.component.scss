@@ -208,7 +208,7 @@
 
 .learning-summary {
   display: grid;
-  grid-template-columns: 1.05fr repeat(3, 1fr);
+  grid-template-columns: 1.05fr repeat(var(--learning-columns, 3), minmax(0, 1fr));
   align-items: stretch;
   margin-top: 14px;
   overflow: hidden;
@@ -237,11 +237,10 @@
   padding: 19px 17px;
   border-left: 1px solid rgba(20, 42, 91, .12);
 
-  > ion-icon { flex: 0 0 auto; font-size: clamp(30px, 4vw, 45px); color: #f4ad15; }
-  &:nth-of-type(3) > ion-icon { color: #ef4b62; }
-  &:nth-of-type(4) > ion-icon { color: #ec6f3b; }
+  > img { flex: 0 0 auto; width: clamp(30px, 4vw, 45px); height: clamp(30px, 4vw, 45px); object-fit: contain; }
+  > img[hidden] { display: none; }
 
-  p { min-width: 0; margin: 0; color: #42506b; line-height: 1.17; }
+  p { min-width: 0; margin: 0; color: #42506b; line-height: 1.17; overflow-wrap: break-word; }
   strong, span { display: block; }
   strong { color: #142553; font-size: clamp(15px, 2vw, 21px); font-weight: 900; }
   span { margin-top: 3px; font-size: clamp(12px, 1.7vw, 16px); font-weight: 700; }
@@ -456,10 +455,10 @@
   .hero-description { margin-inline: auto; font-size: 14px; }
   .hero-cta { width: 100%; min-height: 50px; font-size: 15px; }
 
-  .learning-summary { grid-template-columns: .86fr repeat(3, 1fr); border-radius: 18px; }
-  .learning-summary h2 { padding: 14px 8px 14px 13px; font-size: 16px; }
-  .learning-summary__item { flex-direction: column; align-items: flex-start; gap: 3px; padding: 13px 8px; }
-  .learning-summary__item > ion-icon { font-size: 29px; }
+  .learning-summary { grid-template-columns: minmax(90px, .86fr) repeat(var(--learning-columns, 3), minmax(135px, 1fr)); overflow-x: auto; border-radius: 18px; }
+  .learning-summary h2 { position: sticky; left: 0; z-index: 1; padding: 14px 8px 14px 13px; background: rgba(255, 255, 255, .91); font-size: 16px; }
+  .learning-summary__item { flex-direction: row; align-items: center; gap: 5px; padding: 13px 6px; }
+  .learning-summary__item > img { width: 29px; height: 29px; }
   .learning-summary__item strong { font-size: 12px; }
   .learning-summary__item span { font-size: 10px; }
 

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { PgHostel } from '../../../services/pg-hostels.service';
+import { PgHostel, PgHostelsService } from '../../../services/pg-hostels.service';
+import { getProfileImageInitials } from '../../../utils/profile-image.util';
 
 @Component({
   selector: 'app-pg-hostel-card', standalone: true,
@@ -8,7 +9,7 @@ import { PgHostel } from '../../../services/pg-hostels.service';
   template: `
     <article class="hostel-card">
       <div class="card-top">
-        <div class="photo"><img *ngIf="image" [src]="image" [alt]="title" loading="lazy"></div>
+        <div class="photo"><img *ngIf="image; else photoInitials" [src]="image" [alt]="title" loading="lazy" (error)="onImageError()"><ng-template #photoInitials><span class="photo-initials" role="img" [attr.aria-label]="title + ' image unavailable'">{{ initials }}</span></ng-template></div>
         <div class="summary">
           <div class="title-line"><h3>{{ title }}</h3><img *ngIf="item.verified || item.isVerified" class="verified" src="assets/figma/pg-hostels/detail-verified2.png" alt="Verified"></div>
           <p *ngIf="item.accommodationType">Type: {{ item.accommodationType }}</p>
@@ -26,8 +27,9 @@ import { PgHostel } from '../../../services/pg-hostels.service';
     :host { display:block; min-width:0; }
     .hostel-card { box-sizing:border-box; width:100%; min-width:0; padding:8px; border-radius:24px; background:#fff; box-shadow:0 0 2px 2px rgba(107,101,106,.1); color:#282527; font-family:Nunito,sans-serif; }
     .card-top { display:flex; align-items:flex-start; min-width:0; gap:8px; }
-    .photo { width:94px; height:91px; flex:0 0 94px; overflow:hidden; border-radius:16px; background:#979494; }
+    .photo { width:94px; height:91px; flex:0 0 94px; overflow:hidden; border-radius:16px; background:#e8f1f5; }
     .photo img { width:100%; height:100%; object-fit:cover; }
+    .photo-initials { display:flex; width:100%; height:100%; align-items:center; justify-content:center; color:#526b98; font-size:32px; font-weight:800; line-height:1; }
     .summary { flex:1; min-width:0; padding-top:2px; }
     .title-line { display:flex; align-items:center; gap:4px; min-width:0; }
     h3 { min-width:0; margin:0 0 4px; font-size:15px; line-height:1.35; font-weight:700; overflow-wrap:anywhere; }
@@ -49,8 +51,18 @@ export class PgHostelCardComponent {
   @Input({ required: true }) item!: PgHostel;
   @Input() showAction = true;
   @Output() viewDetails = new EventEmitter<PgHostel>();
+  private readonly failedImages = new WeakMap<PgHostel, Set<string>>();
+  constructor(private readonly pgHostels: PgHostelsService) {}
   get title(): string { return String(this.item?.name || this.item?.title || 'PG / Hostel').trim(); }
-  get image(): string { return this.item?.imageUrls?.[0] || this.item?.imageUrl || this.item?.thumbnailUrl || ''; }
+  get initials(): string { return getProfileImageInitials(this.title); }
+  get image(): string {
+    return this.pgHostels.imageCandidates(this.item).find(url => !this.failedImages.get(this.item)?.has(url)) ?? '';
+  }
+  onImageError(): void {
+    const failed = this.failedImages.get(this.item) ?? new Set<string>();
+    failed.add(this.image);
+    this.failedImages.set(this.item, failed);
+  }
   get price(): number | null {
     const value = this.item?.monthlyRent ?? this.item?.rent ?? this.item?.price;
     return value == null || !Number.isFinite(Number(value)) ? null : Number(value);

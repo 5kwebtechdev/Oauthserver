@@ -53,10 +53,9 @@ export class PgHostelsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const routeCity = String(this.route.snapshot.queryParamMap.get('city') || '').trim();
     if (routeCity) this.cities.selectCity(routeCity);
-    this.filters.city = this.cities.city;
-    this.citySubscription = this.cities.city$.pipe(skip(1)).subscribe(city => {
-      if (this.filters.city === city) return;
-      this.filters.city = city;
+    this.filters = this.cities.filter;
+    this.citySubscription = this.cities.location$.pipe(skip(1)).subscribe(() => {
+      this.filters = { ...this.filters, city: this.cities.city || undefined, state: this.cities.state || undefined };
       this.page = 0;
       this.load();
     });
@@ -82,7 +81,7 @@ export class PgHostelsComponent implements OnInit, OnDestroy {
   }
   applyFilters(): void {
     this.selected = this.copySelection(this.draft);
-    this.filters = { city: this.cities.city };
+    this.filters = this.cities.filter;
     this.page = 0;
     this.closeFilters();
     this.load();
@@ -90,7 +89,7 @@ export class PgHostelsComponent implements OnInit, OnDestroy {
   clearFilters(): void {
     this.draft = this.emptySelection();
     this.selected = this.emptySelection();
-    this.filters = { city: this.cities.city };
+    this.filters = this.cities.filter;
     this.page = 0;
     this.load();
   }
@@ -108,7 +107,7 @@ export class PgHostelsComponent implements OnInit, OnDestroy {
     if (this.hasActiveFilters) {
       // The existing endpoint only accepts city/type/suitable/food. Fetch its pages
       // without new API parameters so the Figma's multi-select filters are complete.
-      const base = { city: this.cities.city };
+      const base = this.cities.filter;
       this.request = this.api.list(0, 50, base).pipe(
         expand((result, index) => index + 1 < result.totalPages ? this.api.list(index + 1, 50, base) : EMPTY),
         toArray(),

@@ -11,6 +11,7 @@
       <span class="ring-cap" *ngIf="progress > 0"></span>
       <span class="ring-dot" [style.left.px]="dotX" [style.top.px]="dotY"></span>
       <div class="time">{{ formattedTime }}</div>
+      <div class="scheduled-time" *ngIf="scheduledTime" aria-label="Scheduled activity time">{{ scheduledTime }}</div>
     </div>
     <section class="focus-sounds" aria-labelledby="focus-sounds-title">
       <div class="sounds-heading"><img [src]="assets + 'headphones.svg'" alt=""><div><h2 id="focus-sounds-title">Focus Sounds</h2><p>Pick a sound to keep you in the zone</p></div></div>
@@ -29,7 +30,10 @@
       <p *ngIf="busy">Saving your completed activity…</p>
       <ng-container *ngIf="completionError"><p>{{ completionError }}</p><button type="button" (click)="complete()" *ngIf="canRetryCompletion && activityId">Try again</button></ng-container>
     </div>
-    <footer><button class="home" type="button" (click)="onBack(true)" [disabled]="busy"><img [src]="assets + 'home.svg'" alt="">Back to home</button></footer>
+    <footer class="timer-actions">
+      <button class="abort" type="button" (click)="abort()" [disabled]="busy || completed">Abort</button>
+      <button class="done" type="button" (click)="complete()" [disabled]="busy || completed || invalidSchedule">Done</button>
+    </footer>
   </main>
 </ion-content>
 <app-superme-popup [config]="confirmConfig" [isVisible]="confirmVisible" (primaryAction)="complete(true)" (secondaryAction)="cancelConfirmation()"></app-superme-popup>

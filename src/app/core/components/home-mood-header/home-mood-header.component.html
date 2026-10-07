@@ -1,4 +1,4 @@
-<section class="mood-header" [ngClass]="'home-period-' + period" [attr.data-home-period]="period" aria-label="Your mood and progress">
+<section class="mood-header" [ngClass]="[birthday ? 'mood-header--birthday' : 'home-period-' + period, birthdayNegative ? 'mood-header--birthday-negative' : '']" [attr.data-home-period]="period" aria-label="Your mood and progress">
   <div class="mood-message">
     <img class="mood-message__shape" src="assets/figma/home-mood-header/speech-bubble.svg" alt="">
     <span class="mood-message__copy" aria-live="polite">{{ state.before }}<strong>{{ state.emphasis }}</strong>{{ messageEnding }}</span>
@@ -7,7 +7,7 @@
     <img *ngIf="mood" class="mood-pill__emoji" [src]="emojiImage" alt=""><span>{{ mood ? state.label : 'Set mood' }}</span>
     <img *ngIf="canEditMood" class="mood-pill__chevron" src="assets/figma/home-mood-header/chevron.svg" alt="">
   </button>
-  <div class="mood-pet" [ngClass]="['mood-pet--' + pet, 'mood-pet--' + (mood || 'happy')]">
+  <div class="mood-pet" [ngClass]="['mood-pet--' + pet, 'mood-pet--' + (mood || 'happy'), birthday ? 'mood-pet--birthday' : '', birthdayNegative ? 'mood-pet--birthday-negative' : '']">
     <img [src]="petMoodImage" [alt]="mood ? pet + ' feeling ' + state.label.toLowerCase() : pet + ' asking how you feel'">
   </div>
   <div class="mood-stats" aria-label="Your progress">

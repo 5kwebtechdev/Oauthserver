@@ -2,6 +2,7 @@ import { of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { PgHostelsService } from './pg-hostels.service';
+import { PgHostelCardComponent } from '../components/education-section/pg-hostels/pg-hostel-card.component';
 import { environment } from '../../../environments/environment';
 
 describe('PgHostelsService', () => {
@@ -35,5 +36,29 @@ describe('PgHostelsService', () => {
     http.get.and.returnValue(of({ id: 7, name: 'City PG' }));
     service.get(7).subscribe(item => expect(item.id).toBe(7));
     expect(http.get.calls.mostRecent().args[0]).toBe(`${environment.apiUrl}/pg-hostels/7`);
+  });
+
+  it('resolves filename keys through the public PG/Hostel download endpoint', () => {
+    expect(service.imageUrl(' ef84ae9b-eadb-45b6-b132-e31df5a684e2_download.jpg '))
+      .toBe(`${environment.apiUrl}/admin/pg-hostels/download/ef84ae9b-eadb-45b6-b132-e31df5a684e2_download.jpg`);
+    expect(service.imageUrl('https://example.com/photo.jpg')).toBe('https://example.com/photo.jpg');
+    expect(service.imageUrl('')).toBe('');
+  });
+
+  it('uses the next image if the first fails and shows no broken image when all fail', () => {
+    const card = new PgHostelCardComponent(service);
+    card.item = { id: 1, name: 'Hostel', imageUrls: ['first.jpg', 'second.jpg'] };
+    expect(card.image).toBe(service.imageUrl('first.jpg'));
+    card.onImageError();
+    expect(card.image).toBe(service.imageUrl('second.jpg'));
+    card.onImageError();
+    expect(card.image).toBe('');
+  });
+
+  it('keeps the placeholder for listings without images', () => {
+    const card = new PgHostelCardComponent(service);
+    card.item = { id: 2, name: 'Amahi Suites PG', imageUrls: [] };
+    expect(card.image).toBe('');
+    expect(card.initials).toBe('AM');
   });
 });

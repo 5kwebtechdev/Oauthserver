@@ -2579,3 +2579,6 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
 .form-field-section__label { font-size: var(--text-sm); }
 .form-field-section__header, .title-input__header { flex-wrap: wrap; }
 .title-card-subtitle { font-size: var(--text-xs); overflow-wrap: anywhere; }
+:host ::ng-deep .activity-overlap-popup .superme-popup-subtitle {
+  white-space: pre-line;
+}

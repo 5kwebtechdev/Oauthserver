@@ -49,6 +49,23 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
   private sessionStartedIds = new Set<number>();
   // API response data
   courseDetail: CourseDetailResponse | null = null;
+  get learningMetadata() {
+    const metadata = this.courseDetail?.courseMetadata;
+    if (!Array.isArray(metadata)) return [];
+    return metadata
+      .filter(item => item && typeof item.text === 'string' && item.text.trim())
+      .slice()
+      .sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
+  }
+
+  onLearningImageError(event: Event): void {
+    const image = event.target as HTMLImageElement | null;
+    if (image) image.hidden = true;
+  }
+
+  get learningMetadataRows(): number {
+    return Math.ceil(this.learningMetadata.length / 3);
+  }
   isLoadingCourse = false;
   loadError: string | null = null;
   readonly fallbackCourseImage = 'assets/Images-Transparent/Academy-Course-Thubmnail1.webp';

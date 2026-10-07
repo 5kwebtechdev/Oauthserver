@@ -7,7 +7,7 @@ import { SupermePopupComponent, SupermePopupConfig, SupermePopupCTA } from '../.
 
 import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
 import { GlanceBlankStateComponent } from './glance-blank-state.component';
-import { GlanceBlankState, GlanceDailyData, GlanceTab, resolveGlanceBlankState } from './glance-blank-state';
+import { GlanceBlankState, GlanceDailyData, GlanceTab, parentCategoryBlankState, resolveGlanceBlankState } from './glance-blank-state';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -123,11 +123,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           completed: entry.completed ?? card.source.completed,
           status: entry.status ?? card.source.status }))), [])
       : data.planners.filter(item => isHomePlannerSchedule(item) && !this.isConfirmedEventMirror(item));
-    return resolveGlanceBlankState(this.currentActive as GlanceTab, {
+    const state = resolveGlanceBlankState(this.currentActive as GlanceTab, {
       habits: data.habits.map(item => classify(item)),
       tasks: data.tasks.map(item => classify(item)),
       timetable: planners.map(item => classify(item, true))
     });
+    return state && this.isParent
+      ? parentCategoryBlankState(state, this.profileSelectorService.getSelectedChild()?.name || '')
+      : state;
   }
 
   openBlankStateSecondary(state: GlanceBlankState): void {
@@ -162,6 +165,17 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     if (!snapshot) return '';
     const seconds = snapshot.remainingSeconds;
     return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')} left`;
+  }
+
+  get compactStartsInLabel(): string {
+    if (!this.isCompactHomeActivity || !this.isCurrentDateView || this.getStatus() !== 'pending') return '';
+    const start = focusSchedule(this.habit, Date.now()).start;
+    const minutes = Math.ceil((start - Date.now()) / 60_000);
+    if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 24 * 60) return '';
+    const hours = Math.floor(minutes / 60);
+    const remainder = minutes % 60;
+    if (!hours) return `In ${minutes} min`;
+    return `In ${hours}h${remainder ? ` ${remainder} min` : ''}`;
   }
 
   /** Figma's compact clock notation; scheduling still uses the original values. */
@@ -442,7 +456,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   onStartHabit() {
     if (!this.habit) return;
 
-    // Check if Let's Go is enabled (within 5 min window)
+    // Check if Let's Go is enabled in the scheduled start window.
     if (!this.isLetsGoEnabled()) {
       console.log('Let\'s Go button is not enabled yet');
       return;
@@ -3448,7 +3462,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     if (this.homeTiming) {
       const timing = this.buttonLogic.homeTiming(this.habit);
       const status = this.getStatus();
-      return timing.visible && ((status === 'ongoing' && Date.now() >= timing.opens + 5 * 60_000)
+      return timing.visible && ((status === 'ongoing' && Date.now() >= timing.start)
         || (status === 'pending' && timing.done));
     }
     if (!this.isCurrentDateView) return false;

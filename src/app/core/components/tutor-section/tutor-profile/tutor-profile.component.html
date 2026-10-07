@@ -38,7 +38,7 @@
         <section class="unlocked-contact-card counselor-unlocked-contact-card" *ngIf="isContactUnlocked" aria-label="Unlocked contact details">
           <div class="unlocked-contact-card__heading"><span aria-hidden="true">✓</span><div><h2>Contact details unlocked</h2><p>You can now contact {{ getDisplayName() }} directly.</p></div></div>
           <div class="unlocked-contact-card__details"><span><b>Phone</b>{{ getUnlockedPhone() }}</span><span><b>Email</b>{{ getUnlockedEmail() }}</span></div>
-          <button type="button" (click)="openContactSheet()">Contact {{ getDisplayName() }}</button>
+          <button type="button" (click)="openContactSheet()">Contact Now</button>
         </section>
 
         <section class="counselor-unlock-card" *ngIf="!isContactUnlocked">
@@ -194,7 +194,7 @@
       <section class="unlocked-contact-card" *ngIf="isContactUnlocked" aria-label="Unlocked contact details">
         <div class="unlocked-contact-card__heading"><span aria-hidden="true">✓</span><div><h2>Contact details unlocked</h2><p>You can now contact {{ getDisplayName() }} directly.</p></div></div>
         <div class="unlocked-contact-card__details"><span><b>Phone</b>{{ getUnlockedPhone() }}</span><span><b>Email</b>{{ getUnlockedEmail() }}</span></div>
-        <button type="button" (click)="openContactSheet()">Contact {{ getDisplayName() }}</button>
+        <button type="button" (click)="openContactSheet()">Contact Now</button>
       </section>
 
       <section class="unlock-card" *ngIf="!isContactUnlocked">

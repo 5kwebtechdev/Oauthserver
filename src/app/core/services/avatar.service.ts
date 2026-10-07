@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-export type AvatarAgeGroup = 'BELOW_11' | 'AGE_11_13' | 'AGE_14_15' | 'AGE_16_17' | 'AGE_18_PLUS';
+export type AvatarAgeGroup = 'BELOW_11' | 'AGE_11_13' | 'AGE_14_15' | 'AGE_16_17' | 'AGE_18_PLUS' | 'AGE_25_PLUS';
 export type AvatarGender = 'male' | 'female';
 export type AvatarAudience = 'parent' | 'standard';
 
@@ -44,8 +44,12 @@ const AVATAR_GROUPS: AvatarGroupDefinition[] = [
     figmaLabel: (gender, index) => `16 & 17- ${gender === 'male' ? 'Male' : 'Female'}${index}`
   },
   {
-    ageGroup: 'AGE_18_PLUS', minimumAge: 18, maximumAge: null, filePrefix: '18-plus',
+    ageGroup: 'AGE_18_PLUS', minimumAge: 18, maximumAge: 24, filePrefix: '18-plus',
     figmaLabel: (gender, index) => `18+-${gender === 'male' ? 'Male' : 'Female'}${index}`
+  },
+  {
+    ageGroup: 'AGE_25_PLUS', minimumAge: 25, maximumAge: null, filePrefix: 'parent',
+    figmaLabel: (gender, index) => `Parent ${gender} avatar ${index}`
   }
 ];
 
@@ -67,12 +71,14 @@ function getStandardAvatarValue(
       return `assets/figma/avatars/16-17-final/16-17-${index}${genderSuffix}.webp`;
     case 'AGE_18_PLUS':
       return `assets/figma/avatars/18-plus-final/18plus-${index}${genderSuffix}.webp`;
+    case 'AGE_25_PLUS':
+      return `assets/figma/avatars/parents/Parent${index}${genderSuffix}.webp`;
     default:
       return `assets/figma/avatars/${key}.webp`;
   }
 }
 
-const AVATARS: AvatarDefinition[] = AVATAR_GROUPS.reduce((avatars, group) => {
+const AVATARS: AvatarDefinition[] = AVATAR_GROUPS.filter(group => group.ageGroup !== 'AGE_25_PLUS').reduce((avatars, group) => {
   (['male', 'female'] as AvatarGender[]).forEach(gender => {
     for (let index = 1; index <= 6; index++) {
       const key = `${group.filePrefix}-${gender}-${index}`;
@@ -102,7 +108,7 @@ const PARENT_AVATARS: AvatarDefinition[] = (['male', 'female'] as AvatarGender[]
         label: `Parent ${gender} avatar ${index}`,
         imageName: filename,
         value: `assets/figma/avatars/parents/${filename}`,
-        ageGroup: 'AGE_18_PLUS',
+        ageGroup: 'AGE_25_PLUS',
         gender,
         index,
         audience: 'parent'
@@ -132,7 +138,7 @@ export class AvatarService {
     const age = this.calculateAge(dateOfBirth);
     if (age === null) return null;
     return AVATAR_GROUPS.find(group => age >= group.minimumAge
-      && (group.maximumAge === null || age <= group.maximumAge))?.ageGroup || 'AGE_18_PLUS';
+      && (group.maximumAge === null || age <= group.maximumAge))?.ageGroup || 'AGE_25_PLUS';
   }
 
   normalizeGender(gender: unknown): AvatarGender | null {
@@ -144,15 +150,13 @@ export class AvatarService {
 
   /**
    * Returns only the Figma avatar variants valid for a user's DOB and gender.
-   * If one of these optional details is unavailable, the current safe adult
-   * group is used and both genders remain selectable instead of breaking UI.
+   * If DOB is unavailable, use the 25+ set; if gender is unavailable,
+   * leave both gender options selectable instead of breaking the picker.
    */
-  getAvatarsForUser(dateOfBirth: unknown, gender: unknown, relationship?: unknown): AvatarDefinition[] {
-    const isParent = String(relationship || '').trim().toUpperCase() === 'PARENT';
-    const ageGroup = this.getAgeGroup(dateOfBirth) || 'AGE_18_PLUS';
+  getAvatarsForUser(dateOfBirth: unknown, gender: unknown, _relationship?: unknown): AvatarDefinition[] {
+    const ageGroup = this.getAgeGroup(dateOfBirth) || 'AGE_25_PLUS';
     const normalizedGender = this.normalizeGender(gender);
-    const candidates = isParent ? PARENT_AVATARS : AVATARS;
-    return candidates.filter(avatar => (isParent || avatar.ageGroup === ageGroup)
+    return ALL_AVATARS.filter(avatar => avatar.ageGroup === ageGroup
       && (!normalizedGender || avatar.gender === normalizedGender));
   }
 
@@ -168,12 +172,12 @@ export class AvatarService {
 
   /** Resolve a current Figma avatar, preserving old saved avatar values safely. */
   getAvatarForUser(user: any): AvatarDefinition {
-    const isParent = this.isParent(user?.relationship || user?.role);
+    const ageGroup = this.getAgeGroup(user?.dateOfBirth || user?.dob);
     const direct = this.getAvatarAsset(this.extractAvatarIdentifier(user));
-    if (direct) return isParent ? this.toParentAvatar(direct, user?.gender) : direct;
+    if (direct) return this.matchAvatarToAgeGroup(direct, ageGroup);
 
     const legacy = this.getLegacyAvatar(user);
-    if (legacy) return isParent ? this.toParentAvatar(legacy, user?.gender) : legacy;
+    if (legacy) return this.matchAvatarToAgeGroup(legacy, ageGroup);
 
     return this.getFallbackAvatar(
       user?.dateOfBirth || user?.dob,
@@ -184,7 +188,7 @@ export class AvatarService {
 
   getFallbackAvatar(dateOfBirth: unknown, gender: unknown, relationship?: unknown): AvatarDefinition {
     const options = this.getAvatarsForUser(dateOfBirth, gender, relationship);
-    return options[0] || AVATARS.find(avatar => avatar.key === '18-plus-male-1')!;
+    return options[0] || PARENT_AVATARS[0];
   }
 
   getAllAvatars(): readonly AvatarDefinition[] {
@@ -216,25 +220,15 @@ export class AvatarService {
     }
 
     if (!gender || !index || index < 1 || index > 6) return null;
-    const group = this.getAgeGroup(user?.dateOfBirth || user?.dob) || 'AGE_18_PLUS';
-    return AVATARS.find(avatar => avatar.ageGroup === group && avatar.gender === gender && avatar.index === index) || null;
+    const group = this.getAgeGroup(user?.dateOfBirth || user?.dob) || 'AGE_25_PLUS';
+    return ALL_AVATARS.find(avatar => avatar.ageGroup === group && avatar.gender === gender && avatar.index === index) || null;
   }
 
-  /**
-   * Existing Parent accounts can still contain an older standard/adult avatar
-   * identifier. Keep their chosen gender and position while moving them onto
-   * the dedicated Parent artwork instead of continuing to render the old set.
-   */
-  private toParentAvatar(avatar: AvatarDefinition, fallbackGender: unknown): AvatarDefinition {
-    if (avatar.audience === 'parent') return avatar;
-    const gender = this.normalizeGender(avatar.gender) || this.normalizeGender(fallbackGender) || 'male';
-    return PARENT_AVATARS.find(candidate => candidate.gender === gender && candidate.index === avatar.index)
-      || PARENT_AVATARS.find(candidate => candidate.gender === gender)
-      || PARENT_AVATARS[0];
-  }
-
-  private isParent(relationship: unknown): boolean {
-    return String(relationship || '').trim().toUpperCase() === 'PARENT';
+  /** Keep a saved avatar's gender and position when its age-group artwork changes. */
+  private matchAvatarToAgeGroup(avatar: AvatarDefinition, ageGroup: AvatarAgeGroup | null): AvatarDefinition {
+    if (!ageGroup || avatar.ageGroup === ageGroup) return avatar;
+    return ALL_AVATARS.find(candidate => candidate.ageGroup === ageGroup
+      && candidate.gender === avatar.gender && candidate.index === avatar.index) || avatar;
   }
 
   private extractAvatarIdentifier(user: any): string {

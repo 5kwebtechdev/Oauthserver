@@ -5,7 +5,7 @@ import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { skip, takeUntil } from 'rxjs/operators';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
@@ -16,7 +16,7 @@ import { SupermePopupComponent } from '../../superme-popup/superme-popup.compone
 import { AuthService } from '../../../services/auth.service';
 import { TutorService } from '../../../services/tutor.service';
 import { TutorApi } from '../../../api/tutor.api';
-import { SelectedFilters, TutorListItem, TutorSearchRequest, TutorSearchSort, TutorSortOption } from '../../../models/tutor.model';
+import { SelectedFilters, TutorListItem, TutorSearchRequest, TutorSearchScope, TutorSearchSort, TutorSortOption } from '../../../models/tutor.model';
 import { EduHubCitySelectorComponent } from '../../education-section/eduhub-city-selector/eduhub-city-selector.component';
 import { EduHubCityService } from '../../../services/eduhub-city.service';
 
@@ -48,6 +48,8 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   showAllFilters = false;
   totalTutorCount = 0;
   private readonly searchPageSize = 100;
+  selectedScope: TutorSearchScope = 'CITY';
+  showingOnlineFallback = false;
 
   /** Emitted when a tutor profile is requested */
   @Output() viewProfile = new EventEmitter<TutorListItem>();
@@ -80,6 +82,11 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   ngOnInit(): void {
     this.directoryEntityType = String(this.route.snapshot.queryParamMap.get('entityType') || '').trim().toUpperCase();
     this.loadTutors();
+    this.cityService.location$.pipe(skip(1), takeUntil(this.destroy$)).subscribe(() => {
+      this.selectedScope = 'CITY';
+      this.showingOnlineFallback = false;
+      this.refreshDirectory();
+    });
   }
 
   ionViewWillEnter(): void {
@@ -93,21 +100,11 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   }
 
   private loadTutors(): void {
-    this.tutorService.isLoading$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(loading => { this.isLoading = loading; });
-
     // A filtered EduHub directory must start with unfiltered API data instead
     // of inheriting search/filter state from the general Tutors page.
     if (this.directoryEntityType) this.tutorService.clearFilters();
 
-    const request = this.directoryEntityType
-      ? this.tutorService.fetchTutorsByEntityType(this.directoryEntityType)
-      : this.tutorService.fetchTutors();
-
-    request
-      .pipe(takeUntil(this.destroy$))
-      .subscribe();
+    this.refreshDirectory();
 
     this.tutorService.tutors$
       .pipe(takeUntil(this.destroy$))
@@ -117,6 +114,39 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
       });
 
     this.currentSort = this.tutorService.getCurrentSort();
+  }
+
+  private refreshDirectory(): void {
+    if (this.lastAppliedFilters) {
+      this.searchWithBackend(this.lastAppliedFilters as SelectedFilters);
+      return;
+    }
+    this.isLoading = true;
+    if (!this.directoryEntityType && (this.selectedScope !== 'CITY' || this.cityService.isAutomaticLocation)) {
+      this.tutorService.getHomeTutorListings(this.selectedScope).pipe(takeUntil(this.destroy$)).subscribe({
+        next: result => {
+          this.showingOnlineFallback = result.usedOnlineFallback && result.tutors.length > 0;
+          if (this.showingOnlineFallback) this.selectedScope = 'ALL_INDIA';
+          this.tutorService.setCacheAndApply(result.tutors);
+          this.isLoading = false;
+        },
+        error: () => { this.isLoading = false; }
+      });
+      return;
+    }
+    const request = this.directoryEntityType
+      ? this.tutorService.fetchTutorsByEntityType(this.directoryEntityType)
+      : this.tutorService.fetchTutors(true);
+    request.pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => { this.isLoading = false; },
+      error: () => { this.isLoading = false; }
+    });
+  }
+
+  onScopeChange(): void {
+    this.showingOnlineFallback = false;
+    if (this.lastAppliedFilters) this.searchWithBackend(this.lastAppliedFilters as SelectedFilters);
+    else this.refreshDirectory();
   }
 
   get isCounselorDirectory(): boolean {
@@ -138,7 +168,7 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   }
 
   get visibleTutors(): TutorListItem[] {
-    const city = this.cityService.city.toLocaleLowerCase();
+    const city = this.selectedScope === 'CITY' ? this.cityService.city.toLocaleLowerCase() : '';
     return this.tutors.filter(tutor => {
       const raw = this.tutorService.getTutorFromCache(tutor.id) as any;
       const location = [raw?.city, raw?.location, raw?.state, (tutor as any)?.location]
@@ -199,6 +229,9 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
     const request: TutorSearchRequest = {
       categoryKey: sel.categoryKey,
       filters: sel.filters,
+      ...this.cityService.filter,
+      scope: this.selectedScope,
+      autoFallbackToOnline: false,
       page: 0,
       size: this.searchPageSize,
       sort: this.toBackendSort(this.currentSort)

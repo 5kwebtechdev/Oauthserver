@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": ["src/app/core/services/eduhub-city.service.spec.ts", "src/app/core/services/eduhub-location.api.spec.ts", "src/**/*.d.ts"]
+}

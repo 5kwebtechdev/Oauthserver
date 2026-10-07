@@ -54,8 +54,8 @@ import { PetMessageApiResponse } from '../../services/pet-message-api.service';
     .referral-card--joined .copy p { max-width:249px; }
     .copy strong { font-weight:700; }
     .reward { position:relative; width:154px; height:120px; flex:none; overflow:hidden; }
-    .reward img { position:absolute; top:-32.2px; left:-12.8px; width:184.3px; height:184.3px; max-width:none; }
-    .dynamic-amount { position:absolute; left:78px; bottom:17px; display:block; min-width:57px;
+    .reward img { display:block; width:100%; height:100%; object-fit:contain; }
+    .dynamic-amount { position:absolute; left:70px; bottom:13px; display:block; min-width:57px;
       padding:0 3px; border-radius:10px; background:#f0e9ff; color:#432477;
       font-size:19px; font-weight:900; line-height:25px; }
     .close { position:absolute; z-index:1; top:10px; right:10px; display:grid; place-items:center;

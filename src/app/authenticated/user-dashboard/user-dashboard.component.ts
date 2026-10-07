@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { HomeMoodHeaderComponent, HomeMood, normalizeHomeMood } from '../../core/components/home-mood-header/home-mood-header.component';
+import { isBirthdayToday } from './birthday-date';
 import { displayName } from '../../core/models/display-name';
 import { greetingUsername, messageWithUsername } from '../../core/models/greeting-username';
 import { CommonModule } from "@angular/common";
@@ -117,6 +118,11 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   // currently selected mood
   public selectedMood: string | null = null;
   public homeHeaderMood: HomeMood | null = null;
+  public birthdayToday = false;
+  public showBirthdayDialog = false;
+  private birthdayDob: unknown = null;
+  private birthdayUserId = '';
+  private birthdayDateTimer: ReturnType<typeof setTimeout> | null = null;
   @ViewChild('homeMoodSelector') private homeMoodSelector?: MoodSelectorComponent;
   private headerMoodUserId = '';
   // Pet message and mood
@@ -208,6 +214,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     if (document.visibilityState === 'visible') {
       this.activityCard?.switchTab('all');
       this.syncHomeTimePeriod();
+      this.syncBirthdayState();
       this.refreshWeekStreakDays();
       this.maybeShowDailyStreakPopup();
     }
@@ -215,6 +222,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   private readonly handleHomeWindowFocus = (): void => {
     this.activityCard?.switchTab('all');
     this.syncHomeTimePeriod();
+    this.syncBirthdayState();
     this.refreshWeekStreakDays();
     this.maybeShowDailyStreakPopup();
   };
@@ -404,6 +412,31 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.maybeShowDailyStreakPopup();
   }
 
+  dismissBirthdayDialog(): void {
+    this.showBirthdayDialog = false;
+    try {
+      const date = new Date();
+      sessionStorage.setItem(`birthday_home_seen_${this.birthdayUserId}_${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`, '1');
+    } catch { /* The dialog still closes when storage is unavailable. */ }
+  }
+
+  private syncBirthdayState(): void {
+    const now = new Date();
+    this.birthdayToday = isBirthdayToday(this.birthdayDob, now);
+    if (!this.birthdayToday) this.showBirthdayDialog = false;
+    if (this.birthdayToday && this.birthdayUserId) {
+      try {
+        const key = `birthday_home_seen_${this.birthdayUserId}_${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+        this.showBirthdayDialog = sessionStorage.getItem(key) !== '1';
+      } catch { this.showBirthdayDialog = true; }
+    }
+    if (this.birthdayDateTimer) clearTimeout(this.birthdayDateTimer);
+    const midnight = new Date(now);
+    midnight.setDate(now.getDate() + 1);
+    midnight.setHours(0, 0, 0, 0);
+    this.birthdayDateTimer = setTimeout(() => this.syncBirthdayState(), Math.max(1000, midnight.getTime() - now.getTime() + 1000));
+  }
+
   async openNotes() {
     // Navigate to the notes home page instead of opening the Notes modal
     this.router.navigate(['/authed/notes']);
@@ -442,6 +475,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.authService.userData$
       .pipe(takeUntil(this.destroy$))
       .subscribe(userData => {
+        this.birthdayDob = userData?.dateOfBirth ?? userData?.dob ?? userData?.birthDate ?? null;
+        this.birthdayUserId = String(userData?.userId ?? userData?.id ?? userData?.memberId ?? '');
+        this.syncBirthdayState();
         const moodUserId = String(userData?.userId ?? userData?.id ?? userData?.memberId ?? '');
         if (moodUserId !== this.headerMoodUserId) {
           this.headerMoodUserId = moodUserId;
@@ -1449,6 +1485,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       clearTimeout(this.homeTimeChangeTimer);
       this.homeTimeChangeTimer = null;
     }
+    if (this.birthdayDateTimer) clearTimeout(this.birthdayDateTimer);
     document.removeEventListener('visibilitychange', this.handleHomeVisibilityChange);
     window.removeEventListener('focus', this.handleHomeWindowFocus);
     // Cleanup all subscriptions

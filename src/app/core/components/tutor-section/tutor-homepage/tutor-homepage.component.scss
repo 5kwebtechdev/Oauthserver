@@ -106,6 +106,18 @@ display: flex;
    
 }
 
+.tutor-scope {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 16px 12px;
+  color: #473275;
+
+  select { max-width: 100%; padding: 8px 12px; border: 1px solid #c9c0dc; border-radius: 12px; background: #fff; color: inherit; }
+  p { flex-basis: 100%; margin: 0; font-size: 13px; }
+}
+
 .filter-btn {
   display: inline-flex;
   align-items: center;

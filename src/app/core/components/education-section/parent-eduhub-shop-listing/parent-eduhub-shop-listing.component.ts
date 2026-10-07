@@ -186,7 +186,7 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     // The selector on this page updates the shared city. Refresh the API
     // immediately so changing city here updates this directory too.
     this.subscriptions.add(
-      this.cityService.city$.pipe(skip(1), distinctUntilChanged()).subscribe(() => {
+      this.cityService.location$.pipe(skip(1)).subscribe(() => {
         this.selectedListingId = null;
         this.loadListings();
       })
@@ -554,10 +554,10 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
 
     const userId = this.authService.getUserId();
     const params: Record<string, string> = {
-      city: this.cityService.city,
       page: '0',
       size: '100'
     };
+    Object.assign(params, this.cityService.filter);
     if (userId != null) params['forUserId'] = String(userId);
     if (this.entityType) params['entityType'] = this.entityType;
 

@@ -14,7 +14,7 @@ import { GlanceBlankState } from './glance-blank-state';
           [style.left]="state.crop.left" [style.top]="state.crop.top">
       </div>
       <div class="copy">
-        <h4 [class.capitalize]="state.capitalize">{{ state.title }}</h4>
+        <h4 [class.capitalize]="state.capitalize" [class.parent-copy]="state.parentCopy">{{ state.title }}</h4>
         <p [style.max-width.px]="state.textWidth">{{ state.description }}</p>
       </div>
       <div class="actions" [class.single]="!state.secondary" [style.margin-top.px]="(state.footerGap || 12) - 12">
@@ -31,6 +31,7 @@ import { GlanceBlankState } from './glance-blank-state';
     .copy { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; text-align: center; }
     h4 { margin: 0; color: #282527; font: 700 20px/1.4 var(--font-sans, 'Nunito', sans-serif); }
     h4.capitalize { text-transform: capitalize; }
+    h4.parent-copy { width: min(305px, 100%); white-space: pre-line; overflow-wrap: anywhere; }
     p { margin: 0; width: 100%; color: #6b656a; font: 600 13px/18px var(--font-sans, 'Nunito', sans-serif); }
     .actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
     .actions.single { justify-content: center; }

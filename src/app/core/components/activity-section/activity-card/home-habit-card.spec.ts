@@ -151,6 +151,8 @@ describe('Compact Home Habit card', () => {
       f.detectChanges();
       expect(c.getStatus()).toBe('ongoing');
       expect(c.showStartBubble).toBeTrue();
+      expect(f.nativeElement.querySelector('.compact-habit__hint')).toBeTruthy();
+      expect(f.nativeElement.querySelector('.compact-habit__scheduled-time')).toBeNull();
       expect(progress).toHaveBeenCalledTimes(1);
       expect(f.nativeElement.querySelector('[role="progressbar"]').getAttribute('aria-valuenow')).toBe('25');
       expect(button(f, 'timer')).toBeTruthy();
@@ -163,8 +165,12 @@ describe('Compact Home Habit card', () => {
       expect(details).toHaveBeenCalledTimes(1);
       tick(9999);
       expect(c.showStartBubble).toBeTrue();
+      expect(f.nativeElement.querySelector('.compact-habit__scheduled-time')).toBeNull();
       tick(1);
       expect(c.showStartBubble).toBeFalse();
+      f.detectChanges();
+      expect(f.nativeElement.querySelector('.compact-habit__hint')).toBeNull();
+      expect(f.nativeElement.querySelector('.compact-habit__scheduled-time').textContent).toBe('12.00-13.00');
     }));
   }
   it('uses the focus timer occurrence instead of counting down an entire recurring series', () => {
@@ -180,6 +186,19 @@ describe('Compact Home Habit card', () => {
     expect(f.nativeElement.querySelector('.compact-habit__time').textContent).toBe('8.00-9.15');
     expect(f.componentInstance.habit?.startTime).toBe('08:00:00');
   });
+  for (const type of ['habits', 'tasks'] as const) {
+    it(`shows the live time-until-start chip for an upcoming ${type}, then hides it at start`, () => {
+      const f = render({ type, status: 'pending', startTimeStamp: now + 75 * 60000,
+        endTimeStamp: now + 135 * 60000 }, true, type === 'tasks');
+      expect(f.nativeElement.querySelector('.compact-habit__starts-in').textContent).toBe('In 1h 15 min');
+      clock.and.returnValue(now + 74 * 60000);
+      f.detectChanges();
+      expect(f.nativeElement.querySelector('.compact-habit__starts-in').textContent).toBe('In 1 min');
+      clock.and.returnValue(now + 75 * 60000);
+      f.detectChanges();
+      expect(f.nativeElement.querySelector('.compact-habit__starts-in')).toBeNull();
+    });
+  }
   it('keeps upcoming actions disabled using the existing button service', () => {
     const f = render({ startTimeStamp: now + 3600000, endTimeStamp: now + 7200000 });
     expect(button(f, 'start').disabled).toBeTrue(); expect(button(f, 'done').disabled).toBeTrue();

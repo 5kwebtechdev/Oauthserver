@@ -1,9 +1,9 @@
 <section class="reward-popup" aria-label="Streak Day">
-  <div class="hero" aria-hidden="true"><img [src]="assets + 'hero.webp'" alt=""></div>
+  <div class="hero" aria-hidden="true"><img [src]="assets + 'hero-superme-coins.webp'" alt=""></div>
   <div class="reward-body">
     <header><h2>Great Start!</h2><p>You're making progress, one day at a time.</p></header>
     <section class="daily-reward" aria-label="Daily reward coins">
-      <div class="daily-image"><img [src]="assets + 'daily-coins.webp'" alt=""></div>
+      <div class="daily-image"><img [src]="assets + 'daily-superme-coins.webp'" alt=""></div>
       <div><h3>Daily reward coins</h3><strong>+{{ dailyCoins }} coins</strong><p>You have earned {{ dailyCoins }} coins today for logging into the SuperMeApp.</p></div>
     </section>
     <section class="milestone-card" [class.celebrating]="celebrating" *ngIf="!restoreMode; else broken" aria-label="Streak Day milestones">

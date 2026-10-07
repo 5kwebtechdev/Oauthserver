@@ -5,8 +5,9 @@ describe('HabitButtonLogicService', () => {
 
   for (const type of ['habits', 'tasks']) {
     for (const [offset, visible, letsGo, done] of [
-      [-300001, true, false, false],
-      [-300000, true, true, false],
+      [-600001, true, false, false],
+      [-600000, true, true, false],
+      [-480000, true, true, false],
       [599999, true, true, false],
       [600000, true, false, true],
       [600001, true, false, true],

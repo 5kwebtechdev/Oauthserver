@@ -35,6 +35,8 @@ PODS:
     - Capacitor
   - CapacitorKeyboard (7.0.1):
     - Capacitor
+  - CapacitorLocalNotifications (7.0.7):
+    - Capacitor
   - CapacitorMlkitBarcodeScanning (7.5.0):
     - Capacitor
     - GoogleMLKit/BarcodeScanning (= 7.0.0)
@@ -195,6 +197,7 @@ DEPENDENCIES:
   - "CapacitorGeolocation (from `../../node_modules/@capacitor/geolocation`)"
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
   - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
+  - "CapacitorLocalNotifications (from `../../node_modules/@capacitor/local-notifications`)"
   - "CapacitorMlkitBarcodeScanning (from `../../node_modules/@capacitor-mlkit/barcode-scanning`)"
   - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
@@ -255,6 +258,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/haptics"
   CapacitorKeyboard:
     :path: "../../node_modules/@capacitor/keyboard"
+  CapacitorLocalNotifications:
+    :path: "../../node_modules/@capacitor/local-notifications"
   CapacitorMlkitBarcodeScanning:
     :path: "../../node_modules/@capacitor-mlkit/barcode-scanning"
   CapacitorShare:
@@ -283,6 +288,7 @@ SPEC CHECKSUMS:
   CapacitorGeolocation: bcd9412a99fd542b585561238b210bd2b162b8f6
   CapacitorHaptics: 70e47470fa1a6bd6338cd102552e3846b7f9a1b3
   CapacitorKeyboard: 969647d0ca2e5c737d7300088e2517aa832434e2
+  CapacitorLocalNotifications: f8ccb7e9c9056a23f415398e51825594e953af3a
   CapacitorMlkitBarcodeScanning: ef67c921ac0d3943157a20c72744ab3d5b8a92fb
   CapacitorShare: eac8c1e192dbbb0737a84a50552ffe12398cb11f
   CapacitorStatusBar: 275cbf2f4dfc00388f519ef80c7ec22edda342c9
@@ -312,6 +318,6 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
 
-PODFILE CHECKSUM: 881fdd99a130784aaf71679c57fc5c5b7c22f50f
+PODFILE CHECKSUM: bb325bce18664b4fef9138ed422a8d2bc55fd81c
 
 COCOAPODS: 1.16.2

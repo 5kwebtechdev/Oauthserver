@@ -118,19 +118,7 @@
             alt="" aria-hidden="true">
         </span>
       </button>
-      <p>{{ getGlancePlannerDateRange(card.source) }}</p>
-      <div class="glance-planner-card__entries" *ngIf="!isGlancePlannerExpanded(card, i) && card.entries.length">
-        <div class="glance-planner-entry glance-planner-entry--preview"
-          role="button" tabindex="0" [attr.aria-label]="'View ' + getGlancePlannerTitle(card.entries[0])"
-          (click)="viewPlanner(card.source, card.entries[0], $event)"
-          (keydown.enter)="viewPlanner(card.source, card.entries[0], $event)"
-          (keydown.space)="$event.preventDefault(); viewPlanner(card.source, card.entries[0], $event)"
-          [class.is-passed]="isGlancePlannerEntryPassed(card.entries[0])">
-          <time>{{ getGlancePlannerEntryTime(card.entries[0]) }}</time>
-          <strong>{{ getGlancePlannerTitle(card.entries[0]) }}</strong>
-          <em *ngIf="getGlancePlannerEntryCountdown(card.entries[0]) as countdown">{{ countdown }}</em>
-        </div>
-      </div>
+      <p *ngIf="isGlancePlannerExpanded(card, i)">{{ getGlancePlannerDateRange(card.source) }}</p>
       <div class="glance-planner-card__entries" *ngIf="isGlancePlannerExpanded(card, i)">
         <div class="glance-planner-entry" *ngFor="let entry of card.entries; let entryIndex = index; trackBy: trackGlancePlannerEntry"
           role="button" tabindex="0" [attr.aria-label]="'Edit ' + getGlancePlannerTitle(entry)"
@@ -322,12 +310,16 @@
     </div>
     <section *ngIf="isCompactHomeActivity" class="compact-habit" long-press [delay]="1500" (press)="onLongPress()">
       <div class="compact-habit__header">
-        <h3>{{ habit?.title || (habit?.type === 'tasks' ? 'Task' : 'Habit') }}</h3>
+        <div class="compact-habit__heading">
+          <h3>{{ habit?.title || (habit?.type === 'tasks' ? 'Task' : 'Habit') }}</h3>
+          <span class="compact-habit__starts-in" *ngIf="compactStartsInLabel as startsIn">{{ startsIn }}</span>
+        </div>
         <span class="compact-habit__category" *ngIf="getTagOrRoutine() as tag">{{ tag }}</span>
       </div>
       <div class="compact-habit__body">
         <div class="compact-habit__running" *ngIf="getStatus() === 'ongoing'; else habitReadyDetails">
           <div class="compact-habit__timer-row">
+            <span *ngIf="!showStartBubble" class="compact-habit__scheduled-time">{{ compactHabitTime(habit?.startTime, startTime) }}-{{ compactHabitTime(habit?.endTime, endTime) }}</span>
             <span class="compact-habit__remaining" role="timer">{{ habitRemainingLabel }}</span>
             <button type="button" class="compact-habit__timer" aria-label="Start focus timer"
               [disabled]="isParent" [title]="isParent ? 'Only the child can start a focus timer' : null"
@@ -344,7 +336,7 @@
           <div class="compact-habit__details">
             <span class="compact-habit__time" [style.color]="getStatus() === 'completed' || getStatus() === 'skipped' ? getTimeColor(habit) : null">{{ compactHabitTime(habit?.startTime, startTime) }}-{{ compactHabitTime(habit?.endTime, endTime) }}</span>
             <span class="compact-habit__reward activity-reward" [attr.aria-label]="getStreak() + ' day streak'">
-              <svg class="activity-reward__icon" viewBox="33 8 31 44" preserveAspectRatio="none" aria-hidden="true"><image href="assets/figma/parent-home/streak.webp" width="96" height="64" /></svg>{{ getStreak() }}
+              <svg class="activity-reward__icon" viewBox="96 20 96 140" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="assets/icons/child-home-streak-figma.webp" width="288" height="192" /></svg>{{ getStreak() }}
             </span>
             <span class="compact-habit__reward activity-reward" *ngIf="getCoinReward() > 0" [attr.aria-label]="getCoinReward() + ' coins'">
               <img class="activity-reward__icon" src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">{{ getCoinReward() }}
@@ -417,7 +409,7 @@
         <div class="container w-full justify-content-between d-flex p-0 align-items-center">
           <div class=" d-flex reward-section">
             <div class="single-point-container activity-reward">
-              <svg class="activity-reward__icon" viewBox="33 8 31 44" preserveAspectRatio="none" aria-hidden="true"><image href="assets/figma/parent-home/streak.webp" width="96" height="64" /></svg>
+              <svg class="activity-reward__icon" viewBox="96 20 96 140" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="assets/icons/child-home-streak-figma.webp" width="288" height="192" /></svg>
               <p class="score p-l-0">{{getStreak()}}</p>
             </div>
             <div class="single-point-container activity-reward" *ngIf="getCoinReward() > 0">

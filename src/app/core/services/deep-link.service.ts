@@ -114,6 +114,12 @@ export class DeepLinkService {
       return `${path}${query}`;
     }
 
+    // Article share URLs use the public website host. Preserve the ID/slug so
+    // an installed app opens the same article instead of its default Home tab.
+    if (/^\/articles\/[^/]+$/.test(path)) {
+      return `${path}${query}`;
+    }
+
     if (path === '/join-family') {
       return `/home/join-family${query}`;
     }

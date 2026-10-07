@@ -52,6 +52,19 @@ export interface PgHostelPage {
 export class PgHostelsService {
   constructor(private http: HttpClient, private auth: AuthService) {}
 
+  imageUrl(value: string | null | undefined): string {
+    const image = value?.trim();
+    if (!image) return '';
+    if (/^(?:https?:|blob:|data:)/i.test(image)) return image;
+    return `${environment.apiUrl}/admin/pg-hostels/download/${encodeURIComponent(image)}`;
+  }
+
+  imageCandidates(item: PgHostel | null | undefined): string[] {
+    return [...(item?.imageUrls ?? []), item?.imageUrl, item?.thumbnailUrl]
+      .map(value => this.imageUrl(value))
+      .filter((url, index, urls) => !!url && urls.indexOf(url) === index);
+  }
+
   list(page = 0, size = 10, filters: PgHostelFilters = {}): Observable<PgHostelPage> {
     let params = new HttpParams().set('page', String(page)).set('size', String(size));
     for (const key of ['city', 'state', 'accommodationType', 'suitableFor'] as const) {

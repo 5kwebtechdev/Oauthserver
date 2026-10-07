@@ -14,6 +14,8 @@ const STATES: Record<HomeMood | 'default', MoodPresentation> = {
   calm: { label: 'Calm', before: 'This is a good pace. No rush, no noise, nothing extra. ', emphasis: 'I like it here', after: ' with you 🌿', petMood: 'base' },
   default: { label: '', before: "I'm wondering how you're doing today. Genuinely curious. Tell me your mood and ", emphasis: "I'll match it", after: ' 🐼', petMood: 'base' }
 };
+const BIRTHDAY_POSITIVE: MoodPresentation = { label: '', before: "Today belongs to you. And I'm spending every bit of it right here. ", emphasis: 'Lucky me.', after: ' 🎂', petMood: 'happy' };
+const BIRTHDAY_NEGATIVE: MoodPresentation = { label: '', before: "Birthdays don't always feel how you expect. Still here though. ", emphasis: 'Cake counts.', after: ' 🎂', petMood: 'tired' };
 
 export function normalizeHomeMood(value: string | null | undefined): HomeMood | null {
   const key = String(value ?? '').trim().toLowerCase().replace(/[_-]+/g, ' ');
@@ -28,6 +30,7 @@ export function normalizeHomeMood(value: string | null | undefined): HomeMood | 
 })
 export class HomeMoodHeaderComponent {
   @Input() mood: HomeMood | null = null;
+  @Input() birthday = false;
   @Input() period: 'morning' | 'evening' | 'night' = 'morning';
   @Input() streaks = 0;
   @Input() trophies = 0;
@@ -36,11 +39,19 @@ export class HomeMoodHeaderComponent {
   @Input() moodPickerOpen = false;
   @Output() moodEdit = new EventEmitter<void>();
   constructor(private readonly pets: PetAgeService) {}
-  get state(): MoodPresentation { return STATES[this.mood ?? 'default']; }
+  get state(): MoodPresentation {
+    if (!this.birthday) return STATES[this.mood ?? 'default'];
+    const birthdayState = this.mood === 'sad' || this.mood === 'anxious' || this.mood === 'frustrated' ? BIRTHDAY_NEGATIVE : BIRTHDAY_POSITIVE;
+    return { ...birthdayState, label: STATES[this.mood ?? 'default'].label };
+  }
   get pet(): string { return this.pets.getCurrentPetType() || 'panda'; }
   get petMoodImage(): string {
+    if (this.birthday) {
+      return `assets/figma/home-birthday/pets-${this.birthdayNegative && this.pet !== 'panda' ? 'negative' : 'positive'}.png`;
+    }
     return `assets/figma/home-mood-header/${this.pet}-latest-moods.png`;
   }
+  get birthdayNegative(): boolean { return this.mood === 'sad' || this.mood === 'anxious' || this.mood === 'frustrated'; }
   get emojiImage(): string { return `assets/figma/child-home/moods/${this.mood === 'calm' ? 'Calm' : this.mood}.svg`; }
   get messageEnding(): string {
     const emoji: Record<string, string> = { panda: '🐼', dragon: '🐉', llama: '🦙', owl: '🦉' };

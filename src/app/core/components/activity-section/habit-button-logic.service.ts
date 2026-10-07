@@ -16,12 +16,12 @@ export class HabitButtonLogicService {
     const normalize = (value: number) => value > 0 && value < 1e12 ? value * 1000 : value;
     const start = normalize(times.startTimeStamp);
     const end = normalize(times.endTimeStamp);
-    const opens = start - 5 * 60_000;
+    const opens = start - 10 * 60_000;
     const handoff = start + 10 * 60_000;
     const closes = end;
     const valid = Number.isFinite(start) && start > 0 && Number.isFinite(end) && end >= start;
     const visible = valid && now < closes;
-    return { opens, handoff, closes, valid, visible,
+    return { start, opens, handoff, closes, valid, visible,
       letsGo: visible && now >= opens && now < handoff,
       done: visible && now >= handoff };
   }

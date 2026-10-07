@@ -521,17 +521,6 @@
             width: 20px;
         }
 
-        // The "All" tab uses a vector icon instead of the raster tab-*.webp
-        // artwork: those are large multi-tile illustrations meant for a big
-        // presentation context and turn into an unreadable smudge at this
-        // tab-icon size. ion-icon paints in currentColor, so it automatically
-        // follows --tab-color / the active-state color below with no extra
-        // filter needed.
-        ion-icon {
-            flex: 0 0 auto;
-            font-size: 20px;
-        }
-
         &.is-active {
             background: var(--tab-active, var(--tab-color));
             color: #fff;

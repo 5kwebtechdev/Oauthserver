@@ -50,7 +50,7 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
   confirmConfig: SupermePopupConfig = {};
   private expired = false;
   private presented = false;
-  private invalidSchedule = false;
+  invalidSchedule = false;
   private destroyed = false;
   private frame = 0;
   private lastFrame = 0;
@@ -70,6 +70,11 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
 
   get formattedTime(): string {
     return String(Math.floor(this.remainingSeconds / 60)).padStart(2, '0') + ':' + String(this.remainingSeconds % 60).padStart(2, '0');
+  }
+  get scheduledTime(): string {
+    if (!Number.isFinite(this.startTime) || !Number.isFinite(this.endTime) || this.startTime <= 0 || this.endTime <= this.startTime) return '';
+    const format = (timestamp: number) => new Date(timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return `${format(this.startTime)} - ${format(this.endTime)}`;
   }
   get dotX(): number { return 126 + 118.5 * Math.sin(this.progress * 2 * Math.PI); }
   get dotY(): number { return 126 - 118.5 * Math.cos(this.progress * 2 * Math.PI); }
@@ -152,7 +157,7 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
   }
 
   async complete(confirmed = false): Promise<void> {
-    if (this.busy || this.completed || this.destroyed || !this.presented || !this.expired || !this.activityId) return;
+    if (this.busy || this.completed || this.destroyed || !this.presented || this.invalidSchedule || !this.activityId) return;
     this.busy = true;
     this.confirmVisible = false;
     this.completionError = '';
@@ -182,7 +187,7 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
       await this.modal.dismiss({ completed: true }, 'completed');
       this.badges.check();
     } catch {
-      this.completionError = 'Your timer has finished, but completion could not be saved. Please try again.';
+      this.completionError = 'Completion could not be saved. Please try again.';
     } finally {
       this.busy = false;
       if (!this.destroyed) this.cd.markForCheck();
@@ -192,6 +197,31 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
   cancelConfirmation(): void {
     this.confirmVisible = false;
     this.completionError = 'Completion has not been saved. You can try again or return home.';
+  }
+
+  async abort(): Promise<void> {
+    if (this.busy || this.completed || !this.activityId) return;
+    this.busy = true;
+    this.completionError = '';
+    try {
+      await firstValueFrom(this.activityType === 'tasks'
+        ? this.taskApi.abortTask(this.activityId)
+        : this.habitApi.abortHabit(this.activityId));
+      localStorage.removeItem('ongoing_' + this.activityType + '_' + this.activityId);
+      this.autoAbort.cancelAutoAbort(this.activityId, this.activityType);
+      this.calendar.clearCache();
+      this.taskApi.clearCache();
+      if (this.activityType === 'tasks') this.habits.notifyTaskUpdated();
+      else this.habits.notifyHabitStarted();
+      this.completed = true;
+      this.stopSound();
+      await this.modal.dismiss({ aborted: true }, 'aborted');
+    } catch {
+      this.completionError = 'Unable to abort this activity. Please try again.';
+    } finally {
+      this.busy = false;
+      if (!this.destroyed) this.cd.markForCheck();
+    }
   }
 
   async onBack(home = false): Promise<void> {

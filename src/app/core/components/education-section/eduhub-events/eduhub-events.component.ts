@@ -90,8 +90,7 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
     const navigationCity = String(this.route.snapshot.queryParamMap.get('city') || '').trim();
     if (navigationCity) this.cityService.selectCity(navigationCity);
     this.loadFirstPage();
-    this.subscriptions.add(this.cityService.city$.pipe(
-      distinctUntilChanged(),
+    this.subscriptions.add(this.cityService.location$.pipe(
       skip(1)
     ).subscribe(() => this.loadFirstPage()));
   }

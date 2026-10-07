@@ -120,6 +120,7 @@ const routes: Routes = [
   },
   {
     path: 'articles/:slug',
+    canActivate: [authGuard],
     loadComponent: () => import('./core/components/learning-section/article-page/article-page.component').then(m => m.ArticlePageComponent)
   },
   {

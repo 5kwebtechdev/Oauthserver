@@ -16,6 +16,7 @@ import { BookListing, BookListingCondition, BookListingCreateRequest, BookListin
 import { AuthService } from '../../services/auth.service';
 import { INDIA_STATES, INDIA_STATE_OPTIONS } from '../../constants/india-location-options';
 import { LocationService } from '../../services/location.service';
+import { EduHubCityService } from '../../services/eduhub-city.service';
 import { ShareLinkService } from '../../services/share-link.service';
 import {
   COLLEGE_DEGREE_STREAM_OPTIONS,
@@ -181,6 +182,7 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly bookListings: BookListingsService,
+    private readonly eduhubLocation: EduHubCityService,
     private readonly locationService: LocationService,
     private readonly auth: AuthService,
     private readonly shareLinks: ShareLinkService
@@ -903,12 +905,17 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
     this.listingsLoading = true;
     this.listingsError = '';
     this.listings = [];
-    try {
-      const position = await this.locationService.getCurrentPosition();
-      this.buyerLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
-    } catch { this.buyerLocation = null; }
+    if (this.eduhubLocation.state) {
+      this.buyerLocation = null; // A manually selected state takes precedence over device proximity.
+    } else {
+      try {
+        const position = await this.locationService.getCurrentPosition();
+        this.buyerLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+      } catch { this.buyerLocation = null; }
+    }
     const typeMap: Record<BookType, BookListingType> = { school: 'SCHOOL', college: 'COLLEGE', exam: 'EXAM_PREP', general: 'GENERAL' };
     this.bookListings.list({
+      ...this.eduhubLocation.filter,
       bookType: typeMap[this.buyer.bookType],
       bookClass: this.buyer.bookType === 'school' ? this.buyer.classLevel : undefined,
       board: this.buyer.bookType === 'school' ? this.buyer.board : undefined,

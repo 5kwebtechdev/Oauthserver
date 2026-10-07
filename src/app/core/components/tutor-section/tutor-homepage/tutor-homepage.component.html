@@ -84,6 +84,16 @@
     </div>
   </div>
 
+  <div class="tutor-scope" *ngIf="!isCounselorDirectory">
+    <label for="tutor-scope-select">Tutor search area</label>
+    <select id="tutor-scope-select" [(ngModel)]="selectedScope" (ngModelChange)="onScopeChange()">
+      <option value="CITY">Only within the selected city</option>
+      <option value="ALL_INDIA">All India</option>
+      <option value="WORLDWIDE">Worldwide</option>
+    </select>
+    <p *ngIf="showingOnlineFallback">No local tutors yet. Showing online tutors across India.</p>
+  </div>
+
   <!--tutor list-->
   <div class="tutor-list-section">
     <div class="title-tutor-list">

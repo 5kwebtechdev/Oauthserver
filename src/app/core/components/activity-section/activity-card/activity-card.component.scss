@@ -1764,7 +1764,9 @@ h4 {
   color: #524f84;
 
   &__header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; min-height: 24px; }
+  &__heading { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 1 auto; }
   &__header h3 { margin: 0; min-width: 0; font: 700 16px/1.4 'Nunito', sans-serif; color: #524f84; overflow-wrap: anywhere; }
+  &__starts-in { flex: 0 0 auto; border-radius: 16px; padding: 4px 12px; background: #e8ecf7; color: #45456a; font: 600 10px/14px 'Nunito', sans-serif; white-space: nowrap; box-shadow: 0 0 1px rgba(83, 124, 129, .5); }
   &__category { flex: 0 1 auto; max-width: 45%; border: 1px solid #524f84; border-radius: 16px; padding: 4px 16px; background: #e8ecf7; font: 600 10px/14px 'Nunito', sans-serif; text-align: center; overflow-wrap: anywhere; }
   &__body { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; min-height: 34px; }
   &__details { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; color: #7471ba; font-size: 13px; font-weight: 600; line-height: 1.4; }
@@ -1784,6 +1786,7 @@ h4 {
   button:focus-visible { outline: 2px solid #432477; outline-offset: 3px; }
   &__running { flex: 1 1 auto; min-width: 0; max-width: 193px; }
   &__timer-row { display: flex; align-items: center; gap: 8px; min-height: 24px; }
+  &__scheduled-time { white-space: nowrap; color: #7471ba; font: 600 13px/1.4 'Nunito', sans-serif; margin-right: 16px; }
   &__remaining { white-space: nowrap; color: #282527; font: 700 13px/1.4 'Nunito', sans-serif; }
   &__timer { flex: 0 0 24px; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; padding: 4px; background: #ebe6f5; border: 0; border-radius: 50%; cursor: pointer; }
   &__timer:disabled { opacity: .4; cursor: default; }
@@ -1798,17 +1801,21 @@ h4 {
 @container (max-width: 330px) {
   .habit-wrapper.habit-wrapper--compact { padding-left: 16px; padding-right: 10px; }
   .compact-habit__details { gap: 4px; font-size: 12px; }
+  .compact-habit__heading { gap: 6px; }
+  .compact-habit__starts-in { padding-inline: 7px; }
   .compact-habit__actions { gap: 4px; }
   .compact-habit__actions .compact-habit__start { width: 56px; padding-inline: 8px; }
   .compact-habit__actions .compact-habit__done { width: 48px; padding-inline: 8px; }
   .compact-habit__hint { font-size: 8px; padding-inline: 3px; }
   .compact-habit__timer-row { gap: 4px; }
   .compact-habit__remaining { font-size: 12px; }
+  .compact-habit__scheduled-time { font-size: 12px; margin-right: 4px; }
 }
 @container (max-width: 280px) {
   .compact-habit__time { flex-basis: 100%; }
   .compact-habit__category { padding-inline: 8px; }
   .compact-habit__timer-row { flex-wrap: wrap; }
+  .compact-habit__scheduled-time { margin-right: 0; }
   .compact-habit__hint { margin-left: 4px; }
 }
 .glance-loading {

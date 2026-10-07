@@ -11,9 +11,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:supermeapp.com</string>
-		<string>applinks:www.supermeapp.com</string>
 		<string>webcredentials:supermeapp.com</string>
-		<string>webcredentials:www.supermeapp.com</string>
 	</array>
 </dict>
 </plist>

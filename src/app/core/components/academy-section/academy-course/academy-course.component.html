@@ -53,21 +53,17 @@
         </div>
       </div>
 
-      <section class="learning-summary" aria-labelledby="learning-summary-title">
-        <h2 id="learning-summary-title">What<br>you'll<br>learn</h2>
-        <div class="learning-summary__item">
-          <ion-icon name="bulb-outline" aria-hidden="true"></ion-icon>
-          <p><strong>Think</strong><span>like an entrepreneur</span></p>
-        </div>
-        <div class="learning-summary__item">
-          <ion-icon name="locate-outline" aria-hidden="true"></ion-icon>
-          <p><strong>Solve</strong><span>real-world problems</span></p>
-        </div>
-        <div class="learning-summary__item">
-          <ion-icon name="rocket-outline" aria-hidden="true"></ion-icon>
-          <p><strong>Build</strong><span>ideas into action</span></p>
-        </div>
-      </section>
+      <ng-container *ngIf="learningMetadata as metadata">
+        <section *ngIf="metadata.length" class="learning-summary" aria-labelledby="learning-summary-title"
+          [style.--learning-columns]="metadata.length < 3 ? metadata.length : 3">
+          <h2 id="learning-summary-title" [style.grid-row]="'1 / span ' + learningMetadataRows">What<br>you'll<br>learn</h2>
+          <div class="learning-summary__item" *ngFor="let item of metadata">
+            <img *ngIf="item.imageUrl?.trim()" [src]="item.imageUrl" alt="" aria-hidden="true"
+              (error)="onLearningImageError($event)">
+            <p><strong>{{ item.text }}</strong></p>
+          </div>
+        </section>
+      </ng-container>
     </section>
 
     <section class="course-lessons" aria-labelledby="course-lessons-title">

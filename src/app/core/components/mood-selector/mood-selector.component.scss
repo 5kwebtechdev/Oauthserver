@@ -26,12 +26,14 @@
   align-items: center;
   padding: 0;
   border: 0;
+  border-radius: 12px;
   background: transparent;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 
 .entry-mood-art {
+  position: relative;
   display: grid;
   width: 48px;
   height: 48px;
@@ -46,6 +48,27 @@
   max-width: none;
 }
 
+.entry-mood-art--calm img {
+  width: 58px;
+  height: 50px;
+}
+
+.entry-mood-selected-mark {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 50%;
+  background: #49ad58;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+
 .entry-mood-label {
   color: #282527;
   font-family: var(--font-sans, 'Nunito', sans-serif);
@@ -55,8 +78,6 @@
   white-space: nowrap;
 }
 
-.entry-mood-option.selected .entry-mood-art { filter: drop-shadow(0 0 2px #8b8dcb); }
-.entry-mood-option.selected .entry-mood-label { color: #432477; font-weight: 700; }
 .entry-mood-option--previous { opacity: .5; }
 .entry-mood-option:focus-visible { outline: 2px solid #432477; outline-offset: 2px; border-radius: 8px; }
 
@@ -117,10 +138,6 @@
 .home-mood-dropdown .entry-mood-option {
   min-height: 70px;
   border-radius: 12px;
-}
-
-.home-mood-dropdown .entry-mood-option.selected {
-  background: #f1ebff;
 }
 
 .home-mood-dropdown .entry-mood-submit {

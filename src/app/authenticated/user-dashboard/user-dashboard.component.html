@@ -9,6 +9,16 @@
 </div>
 
 <!-- ══ Home-screen overlays (PRD: bonus coins, daily login, mood prompt, streak milestone) ══ -->
+<div *ngIf="birthdayToday && showBirthdayDialog && !showFamilyAck && !showDailyStreakPopup && !activeOverlay"
+     class="birthday-dialog-backdrop" role="dialog" aria-modal="true" aria-label="Happy Birthday"
+     (keydown.escape)="dismissBirthdayDialog()">
+  <div class="birthday-dialog">
+    <img src="assets/figma/home-birthday/dialog-art.png" alt="Happy Birthday! It's your special day! Here's to a year full of new adventures, amazing learning and all the exciting things that make you, you! A little birthday gift for you: 200 coins." />
+    <button type="button" class="birthday-dialog__close" aria-label="Close birthday greeting" (click)="dismissBirthdayDialog()">
+      <img src="assets/figma/home-birthday/close.svg" alt="" />
+    </button>
+  </div>
+</div>
 <div *ngIf="showDailyStreakPopup && streakStatusResolved && !showFamilyAck"
      class="streak-milestone-overlay" role="dialog" aria-modal="true" aria-label="Streak Day"
      (keydown.escape)="dismissDailyStreakPopup()">
@@ -97,7 +107,7 @@
         </div>
 
         <div class="hero-mood-anchor">
-          <app-home-mood-header [mood]="homeHeaderMood" [period]="homeTimePeriod"
+          <app-home-mood-header [mood]="homeHeaderMood" [period]="homeTimePeriod" [birthday]="birthdayToday"
             [streaks]="userStreaks" [trophies]="userDays" [badges]="userBadges"
             [canEditMood]="!homeMoodSelector.dailyLimitReached"
             [moodPickerOpen]="homeMoodSelector.dialogOpen"

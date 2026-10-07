@@ -14,7 +14,10 @@
       [class.selected]="popupSelection === p.src"
       [class.entry-mood-option--previous]="hasSavedMood && displayAssetSrc === p.src && popupSelection !== p.src"
       [attr.aria-pressed]="popupSelection === p.src" (click)="choosePopup(p.src)">
-      <span class="entry-mood-art"><img [src]="p.src" [alt]="p.label"></span>
+      <span class="entry-mood-art" [class.entry-mood-art--calm]="p.art === 'calm'">
+        <img [src]="p.src" [alt]="p.label">
+        <span *ngIf="popupSelection === p.src" class="entry-mood-selected-mark" aria-hidden="true">✓</span>
+      </span>
       <span class="entry-mood-label">{{ p.art === 'frustrated' ? 'Frustrated' : p.label }}</span>
     </button>
   </div>

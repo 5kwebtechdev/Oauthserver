@@ -27,12 +27,14 @@
 
   <ng-container *ngIf="!isSelectedCategoryLoading">
     <ng-container *ngIf="selectedCategoryKey === 'tutors'">
+      <p *ngIf="showingOnlineFallback && visibleTutors.length" role="status">No local tutors yet. Showing online tutors across India.</p>
+      <div *ngIf="tutorLoadError" role="alert">Tutors could not be loaded. <button type="button" (click)="retryTutors()">Try again</button></div>
       <div class="eduhub-tutors" *ngIf="visibleTutors.length">
         <ng-container *ngFor="let tutor of visibleTutors; trackBy: trackTutor">
           <app-counselor-card *ngIf="getEducationProfile(tutor) as profile" class="eduhub-event-preview" [counselor]="profile" [education]="true" (viewProfile)="onViewProfile(tutor)"></app-counselor-card>
         </ng-container>
       </div>
-      <ng-container *ngIf="!visibleTutors.length" [ngTemplateOutlet]="eduhubEmptyState"></ng-container>
+      <ng-container *ngIf="!visibleTutors.length && !tutorLoadError" [ngTemplateOutlet]="eduhubEmptyState"></ng-container>
     </ng-container>
 
     <ng-container *ngIf="selectedCategoryKey === 'academies'">
@@ -100,7 +102,7 @@
       </div>
       <div class="eduhub-empty__copy">
         <h4>We haven't landed here yet!</h4>
-        <p>Listings are on their way, good things take a little time. Switch to a nearby city or try a different category while we catch up.</p>
+        <p>Listings are on their way. Try another state or region, or a different category while we catch up.</p>
       </div>
     </div>
   </ng-template>

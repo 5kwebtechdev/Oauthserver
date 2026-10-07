@@ -5,6 +5,7 @@
   font-family: var(--font-sans, 'Nunito', sans-serif); color: #282527;
   &.home-period-evening { background-image: url('../../../../assets/Images-Thumbnails/HeaderV2-evening.webp'); }
   &.home-period-night { background-image: url('../../../../assets/Images-Thumbnails/HeaderV2-night.webp'); }
+  &.mood-header--birthday { background-image: url('../../../../assets/figma/home-birthday/background.png'); }
 }
 .mood-message {
   position: absolute; top: 8px; left: 8px; width: 245px; max-width: 68%; height: 74px;
@@ -77,6 +78,19 @@
 .mood-stat__flame {
   position: relative; display: block; width: 40px; height: 40px; overflow: hidden;
   img { position: absolute; max-width: none; width: 205.07%; height: 140.08%; left: -53.4%; top: -15.46%; }
+}
+.mood-pet.mood-pet--birthday {
+  --pet-width: 110px; --pet-height: 140px; --sprite-width: 269px; --sprite-height: 274px;
+  --sprite-left: -28px; --sprite-top: -3px;
+  &.mood-pet--owl { --sprite-left: -151px; }
+  &.mood-pet--llama { --sprite-left: -29px; --sprite-top: -151px; }
+  &.mood-pet--dragon { --sprite-left: -151px; --sprite-top: -151px; }
+  &.mood-pet--birthday-negative {
+    --sprite-width: 267px; --sprite-height: 268px;
+    &.mood-pet--owl { --sprite-left: -79px; --sprite-top: 0; }
+    &.mood-pet--llama { --sprite-left: -7px; --sprite-top: -139px; }
+    &.mood-pet--dragon { --sprite-left: -151px; --sprite-top: -139px; }
+  }
 }
 .home-period-evening, .home-period-night { .mood-stat { color: white; text-shadow: 0 1px 3px #282527; span { color: white; } } }
 button:focus-visible, a:focus-visible { outline: 2px solid #432477; outline-offset: 2px; }

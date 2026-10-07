@@ -3,12 +3,12 @@ import { ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnIn
 import { ActivatedRoute, Router } from '@angular/router';
 import { Share } from '@capacitor/share';
 import { IonicModule } from '@ionic/angular';
-import { Observable, Subscription, catchError, map, of, switchMap, take } from 'rxjs';
+import { Observable, Subscription, catchError, map, of, skip, switchMap, take } from 'rxjs';
 
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
-import { Tutor, SelectedFilters, formatContactModes, formatExperience, formatTeachingMode, getExperienceYears } from '../../../models/tutor.model';
+import { Tutor, SelectedFilters, TutorSearchScope, formatContactModes, formatExperience, formatTeachingMode, getExperienceYears } from '../../../models/tutor.model';
 import { TutorAllFilterComponent } from '../../tutor-section/tutor-all-filter/tutor-all-filter.component';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
@@ -50,8 +50,11 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   directoryTitle = 'Counselors';
   singularTitle = 'Counselor';
   educationFilters: SelectedFilters | null = null;
+  tutorScope: TutorSearchScope = 'CITY';
+  showingOnlineFallback = false;
   showEducationFilters = false;
   private selectedCity = '';
+  private selectedState = '';
 
   private readonly subscriptions = new Subscription();
   private readonly likeSubscriptions = new Map<number, Subscription>();
@@ -82,19 +85,25 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     this.entityType = String(routeData['entityType'] || 'COUNSELOR').trim().toUpperCase();
     this.directoryTitle = String(routeData['title'] || 'Counselors').trim() || 'Counselors';
     this.singularTitle = String(routeData['singularTitle'] || this.directoryTitle.replace(/s$/i, '')).trim() || 'Listing';
-    const navigationState = (history.state || {}) as { city?: string; directoryItems?: Tutor[] };
+    const navigationState = (history.state || {}) as { city?: string; state?: string; directoryItems?: Tutor[] };
+    const routeState = String(this.route.snapshot.queryParamMap.get('state') || navigationState.state || '').trim();
     const navigationCity = String(
-      this.route.snapshot.queryParamMap.get('city') || navigationState.city || ''
+      this.route.snapshot.queryParamMap.get('city') || (routeState ? '' : navigationState.city) || ''
     ).trim();
-    if (navigationCity) this.cityService.selectCity(navigationCity);
+    if (navigationCity && !routeState) this.cityService.selectCity(navigationCity);
     // Ionic keeps this route alive on mobile. Subscribe to the shared city so
     // returning to the page or changing location immediately recomputes cards.
     this.selectedCity = this.normalizeLocation(navigationCity || this.cityService.city);
-    this.subscriptions.add(this.cityService.city$.subscribe(city => {
+    this.selectedState = this.cityService.state;
+    this.subscriptions.add(this.cityService.location$.pipe(skip(1)).subscribe(() => {
+      const city = this.cityService.city;
       const nextCity = this.normalizeLocation(city);
-      const cityChanged = nextCity !== this.selectedCity;
+      const cityChanged = nextCity !== this.selectedCity || this.selectedState !== this.cityService.state;
       this.selectedCity = nextCity;
+      this.selectedState = this.cityService.state;
       if (cityChanged) {
+        this.tutorScope = 'CITY';
+        this.showingOnlineFallback = false;
         // A new city is a new directory query. Remove records handed off for
         // the previous city and reload the complete entity directory so both
         // the selector and cards always describe the same location.
@@ -110,7 +119,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         // revisited, making the selector appear unable to change location.
         void this.router.navigate([], {
           relativeTo: this.route,
-          queryParams: { city },
+          queryParams: { city: city || null, state: this.cityService.state || null },
           queryParamsHandling: 'merge',
           replaceUrl: true
         });
@@ -163,7 +172,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   get visibleCounselors(): Tutor[] {
-    const city = this.selectedCity;
+    const city = this.entityType === 'INDIVIDUAL' && this.tutorScope !== 'CITY' ? '' : this.selectedCity;
     return this.counselors.filter(counselor => {
       const specializations = this.getSpecializations(counselor);
       const experience = this.getExperienceFilterValue(counselor);
@@ -254,7 +263,14 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     // A background request should not replace valid shared data with a loader.
     this.isLoading = !this.counselors.length;
     this.errorMessage = '';
-    const directoryRequest = this.entityType !== 'COUNSELOR' && this.educationFilters
+    const directoryRequest = this.entityType === 'INDIVIDUAL' && !this.educationFilters
+      && (this.tutorScope !== 'CITY' || this.cityService.isAutomaticLocation)
+      ? this.tutorService.getHomeTutorListings(this.tutorScope).pipe(map(result => {
+          this.showingOnlineFallback = result.usedOnlineFallback && result.tutors.length > 0;
+          if (this.showingOnlineFallback) this.tutorScope = 'ALL_INDIA';
+          return result.tutors;
+        }))
+      : this.entityType !== 'COUNSELOR' && this.educationFilters
       ? this.tutorService.searchDirectory(this.entityType, this.educationFilters)
       : this.getDirectoryWithFallback();
     this.subscriptions.add(
@@ -287,6 +303,12 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     );
   }
 
+  setTutorScope(scope: TutorSearchScope): void {
+    this.tutorScope = scope;
+    this.showingOnlineFallback = false;
+    this.loadCounselors();
+  }
+
   /**
    * Home already loads the general tutor directory successfully. Some mobile
    * sessions receive an empty/error response from the entityType variant, so
@@ -311,7 +333,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     return this.tutorService.getTutorsByEntityType(expectedType).pipe(
       switchMap(items => {
         const requestedDirectory = normalizeRequestedType(items);
-        return requestedDirectory.length
+        return requestedDirectory.length || !!this.cityService.state
           ? of(requestedDirectory)
           : this.tutorService.fetchTutors(true).pipe(map(filterExpectedType));
       }),
@@ -322,6 +344,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   private filterDirectoryType(items: Tutor[] | null | undefined): Tutor[] {
     return (Array.isArray(items) ? items : []).filter(item =>
       String(item?.entityType || '').trim().toUpperCase() === this.entityType
+      || (this.entityType === 'INDIVIDUAL' && String(item?.entityType || '').trim().toUpperCase() === 'TUTOR')
     );
   }
 

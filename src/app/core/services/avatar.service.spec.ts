@@ -29,7 +29,8 @@ describe('AvatarService', () => {
       { age: 16, gender: 'male', group: 'AGE_16_17' },
       { age: 17, gender: 'female', group: 'AGE_16_17' },
       { age: 18, gender: 'male', group: 'AGE_18_PLUS' },
-      { age: 25, gender: 'female', group: 'AGE_18_PLUS' }
+      { age: 24, gender: 'female', group: 'AGE_18_PLUS' },
+      { age: 25, gender: 'female', group: 'AGE_25_PLUS' }
     ];
 
     const calculateAgeSpy = spyOn(service, 'calculateAge');
@@ -46,16 +47,16 @@ describe('AvatarService', () => {
   it('uses stable local assets and retains a safe mapping for old avatar names', () => {
     expect(service.getAllAvatars().length).toBe(72);
     expect(service.getAvatarAsset('14-15-male-3.webp')?.value)
-      .toBe('assets/figma/avatars/14-15-male-3.webp');
+      .toBe('assets/figma/avatars/14-15-final/14-15-3.webp');
 
     spyOn(service, 'calculateAge').and.returnValue(16);
     const legacy = service.getAvatarForUser({ avatarImageName: 'Avatar 8', gender: 'male' });
     expect(legacy.key).toBe('16-17-male-2');
   });
 
-  it('uses the dedicated gender-wise avatar set for parent signup', () => {
+  it('uses the 25+ artwork for every role, in its existing order', () => {
     const maleAvatars = service.getAvatarsForUser('1985-01-01', 'male', 'parent');
-    const femaleAvatars = service.getAvatarsForUser('1985-01-01', 'female', 'PARENT');
+    const femaleAvatars = service.getAvatarsForUser('1985-01-01', 'female', 'SELF');
 
     expect(maleAvatars.length).toBe(6);
     expect(maleAvatars.every(avatar => avatar.audience === 'parent' && avatar.gender === 'male')).toBeTrue();
@@ -65,15 +66,23 @@ describe('AvatarService', () => {
     expect(femaleAvatars[0].imageName).toBe('Parent1F.webp');
   });
 
-  it('remaps an existing standard avatar to the matching parent artwork', () => {
+  it('remaps an existing adult avatar to the matching 25+ artwork by age', () => {
     const avatar = service.getAvatarForUser({
-      relationship: 'PARENT',
+      dateOfBirth: '1985-01-01',
+      relationship: 'SELF',
       gender: 'male',
       avatarName: '18-plus-male-3'
     });
 
     expect(avatar.key).toBe('parent-male-3');
     expect(avatar.value).toBe('assets/figma/avatars/parents/Parent3.webp');
+  });
+
+  it('keeps 18-24 artwork for a parent under 25, including an old parent selection', () => {
+    const dob = new Date().getFullYear() - 24 + '-01-01';
+    expect(service.getAvatarsForUser(dob, 'male', 'PARENT')[0].key).toBe('18-plus-male-1');
+    expect(service.getAvatarForUser({ dateOfBirth: dob, relationship: 'PARENT', avatarName: 'parent-male-3' }).key)
+      .toBe('18-plus-male-3');
   });
 
   it('uses the final Below 11 images for child and self signup', () => {

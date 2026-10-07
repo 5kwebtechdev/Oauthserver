@@ -24,6 +24,7 @@ import { CustomToastService } from '../../../services/custom-toast.service';
 import { EVENT_TYPE_ICONS, getEventTypeIcon } from '../event-type-icon';
 
 import { plannerEditTab } from '../home-calendar-kind';
+import { activityConflictMessage } from './activity-conflict-message';
 type ActivityTab = 'habits' | 'tasks' | 'timetable' | 'events';
 type ActivityNavigationTab = ActivityTab | 'planner';
 type EventRecurrence = 'ONE_TIME' | 'MONTHLY' | 'YEARLY';
@@ -463,6 +464,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   deletePopupConfig: SupermePopupConfig = {};
   overlapPopupVisible = false;
   overlapPopupConfig: SupermePopupConfig = {};
+  creationSuccessVisible = false;
+  creationSuccessConfig: SupermePopupConfig = {};
   // internal guard to prevent double-delete
   private deleting = false;
 
@@ -497,8 +500,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     if (/overlap|already exists|conflict|time slot/i.test(message)) {
       this.overlapPopupConfig = {
         heading: 'Time slot unavailable',
-        subtitle: `${message}\n\nChoose a different time or date for this activity.`,
-        primaryCTA: { text: 'Choose another time', buttonStyle: 'bronze', buttonMedium: true },
+        subtitle: activityConflictMessage(message),
+        primaryCTA: { text: 'Choose another time', buttonStyle: this.currentActive === 'habits' ? 'lavendar' : this.currentActive === 'tasks' ? 'orange' : 'aqua', buttonMedium: true },
         showCloseButton: true,
         backdrop: true,
         ctaDirection: 'column'
@@ -1511,8 +1514,48 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.toastService.successWithIcon(message, 'assets/icons/tick-small.svg', '#2D6830', 4000);
   }
 
+  private showCreationSuccess(category: 'habits' | 'tasks' | 'timetable' | 'event', activity: Habit): void {
+    const label = category === 'habits' ? 'Habit' : category === 'tasks' ? 'Task' : 'Planner';
+    const collection = category === 'habits' ? 'Habits' : category === 'tasks' ? 'Tasks' : 'Planner';
+    // The selected calendar dates are local dates. API date-only strings may
+    // parse as UTC and display as the previous day on some devices.
+    const start = category === 'event' ? this.eventDate : this.startDate;
+    const end = category === 'event' ? this.eventDate : (this.endDate ?? start);
+    const formatDate = (value: Date | null): string => value && !Number.isNaN(value.getTime())
+      ? value.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+    const startDate = formatDate(start);
+    const endDate = formatDate(end);
+    const time = activity.allDay ? 'all day' : activity.startTime && activity.endTime
+      ? `${this.to12Hour(activity.startTime)}–${this.to12Hour(activity.endTime)}` : '';
+    const details = [
+      time ? ` for ${time}` : '',
+      startDate ? `, starting ${startDate}` : '',
+      endDate ? ` and ending ${endDate}` : ''
+    ].join('');
+    this.creationSuccessConfig = {
+      heading: `${label} created successfully.`,
+      subtitle: `"${activity.title || this.title.trim()}" has been added to your ${collection}${details}. You can view or edit it anytime under “View All”.`,
+      primaryCTA: {
+        text: 'Done',
+        buttonStyle: category === 'habits' ? 'lavendar' : category === 'tasks' ? 'orange' : 'aqua',
+        buttonMedium: true
+      },
+      showCloseButton: true,
+      backdrop: true,
+      ctaDirection: 'column'
+    };
+    this.creationSuccessVisible = true;
+  }
+
+  dismissCreationSuccess(): void {
+    if (!this.creationSuccessVisible) return;
+    this.creationSuccessVisible = false;
+    this.finalizeAndReturn();
+  }
+
 
   submit() {
+    if (this.creationSuccessVisible || this.isSubmitting) return;
     if (this.currentActive === 'events') {
       this.submitEvent();
       return;
@@ -1725,8 +1768,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
               const createdHabit = this.buildHabitFromResponse(res, habit, 'tasks', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
               this.habitService.notifyTaskAdded();
-              this.showSuccessToast(this.title, 'tasks');
-              this.finalizeAndReturn();
+              this.showCreationSuccess('tasks', createdHabit);
             } finally { this.isSubmitting = false; }
           },
           error: (err) => {
@@ -1750,7 +1792,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
               this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
-          error: (err) => { this.isSubmitting = false; console.error('Failed to update timetable', err); alert('Failed to update timetable. Please try again.'); }
+          error: (err) => { this.isSubmitting = false; console.error('Failed to update timetable', err); this.handleSaveError(err, 'Failed to update timetable. Please try again.'); if (!this.overlapPopupVisible) alert('Failed to update timetable. Please try again.'); }
         });
       } else {
         this.calendarApi.addCalendarEvent(payload).subscribe({
@@ -1758,14 +1800,14 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
             try {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit, 'planner');
-              this.showSuccessToast(this.title, 'timetable');
-              this.finalizeAndReturn();
+              this.showCreationSuccess('timetable', createdHabit);
             } finally { this.isSubmitting = false; }
           },
           error: (err) => {
             this.isSubmitting = false;
             console.error('Failed to create timetable', err);
-            alert(`Failed to create timetable: ${err?.error?.message || err?.message || 'Unknown error'}. Please try again.`);
+            this.handleSaveError(err, 'Failed to create timetable. Please try again.');
+            if (!this.overlapPopupVisible) alert(`Failed to create timetable: ${err?.error?.message || err?.message || 'Unknown error'}. Please try again.`);
           }
         });
       }
@@ -1789,8 +1831,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
             try {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
-              this.showSuccessToast(this.title, 'habits');
-              this.finalizeAndReturn();
+              this.showCreationSuccess('habits', createdHabit);
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to create habit', err); this.handleSaveError(err, 'Failed to create habit. Please try again.'); }
@@ -1876,16 +1917,20 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
           // Planner refresh channel instead of treating the event as a habit.
           if (this.editingId) this.habitService.updateHabit(savedEvent, 'planner');
           else this.habitService.addHabit(savedEvent, 'planner');
-          this.showSuccessToast(this.title.trim(), 'event', !!this.editingId);
-          this.finalizeAndReturn();
+          if (this.editingId) {
+            this.showSuccessToast(this.title.trim(), 'event', true);
+            this.finalizeAndReturn();
+          } else {
+            this.showCreationSuccess('event', savedEvent);
+          }
         } finally {
           this.isSubmitting = false;
         }
       },
       error: (error) => {
         this.isSubmitting = false;
-        this.serverErrorMessage = error?.error?.message || error?.message || 'Failed to save the event. Please try again.';
-        this.toastService.error(this.serverErrorMessage);
+        this.handleSaveError(error, 'Failed to save the event. Please try again.');
+        if (!this.overlapPopupVisible) this.toastService.error(this.serverErrorMessage);
       }
     });
   }

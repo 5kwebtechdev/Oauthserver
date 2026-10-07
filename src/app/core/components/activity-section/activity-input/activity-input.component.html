@@ -763,6 +763,10 @@
   (secondaryAction)="cancelDelete()" (backdropClick)="cancelDelete()"
   (closeAction)="cancelDelete()"></app-superme-popup>
 
-<app-superme-popup [isVisible]="overlapPopupVisible" [config]="overlapPopupConfig"
+<app-superme-popup class="activity-overlap-popup" [isVisible]="overlapPopupVisible" [config]="overlapPopupConfig"
   (primaryAction)="closeOverlapPopup()" (backdropClick)="closeOverlapPopup()"
   (closeAction)="closeOverlapPopup()"></app-superme-popup>
+
+<app-superme-popup [isVisible]="creationSuccessVisible" [config]="creationSuccessConfig"
+  (primaryAction)="dismissCreationSuccess()" (backdropClick)="dismissCreationSuccess()"
+  (closeAction)="dismissCreationSuccess()"></app-superme-popup>
