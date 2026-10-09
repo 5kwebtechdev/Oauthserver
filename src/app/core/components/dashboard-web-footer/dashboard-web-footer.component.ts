@@ -154,10 +154,10 @@ export class DashboardWebFooterComponent implements OnInit {
     },
     {
       label: 'Terms of Use',
-      routerLink: '/our-policies',
-      queryParams: { tab: 'terms' },
+      href: 'https://supermeapp.com/terms-of-use',
+      sameTab: true,
     },
-    { label: 'Child Safety', routerLink: '/our-policies', queryParams: { tab: 'child-safety' } },
+    { label: 'Child Safety', routerLink: '/privacy-policy' },
     {
       label: 'Refund & Cancellation',
       routerLink: '/our-policies',

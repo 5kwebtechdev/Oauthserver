@@ -4,8 +4,8 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { IonicModule } from '@ionic/angular';
 import { Share } from '@capacitor/share';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { map, switchMap, takeUntil } from 'rxjs/operators';
 import { SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { LearningService } from 'src/app/core/services/learning.service';
@@ -72,6 +72,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
   // Minimum reading time gate
   readonly minReadSeconds = 60;
+  readonly isAuthenticated: boolean;
   readonly ringRadius = 17;
   readonly ringCircumference = 2 * Math.PI * this.ringRadius;
   remainingReadSeconds = this.minReadSeconds;
@@ -81,6 +82,9 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   justUnlocked = false;
   private justUnlockedTimeout: any;
   private readonly destroy$ = new Subject<void>();
+  private canonicalLink: HTMLLinkElement | null = null;
+  private previousCanonicalHref: string | null = null;
+  private createdCanonicalLink = false;
   private readonly returnUrl: string;
   private readonly profileUserId: string | number | null;
   /** Parent detail pages assign the article to the selected child instead of reading it. */
@@ -121,6 +125,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     private petAgeService: PetAgeService,
     private authService: AuthService
   ) {
+    this.isAuthenticated = this.authService.isLoggedIn();
     const navigationState = this.router.getCurrentNavigation()?.extras.state || history.state;
     const source = String(navigationState?.['source'] || '');
     this.returnUrl = (source.startsWith('/') || source.startsWith('/authed/')) ? source : '/article';
@@ -304,25 +309,40 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Get article ID from route parameters
-    const articleId = this.route.snapshot.paramMap.get('id')
-      ?? this.route.snapshot.paramMap.get('slug');
-    console.log('Article identifier from route:', articleId);
+    const articleId = this.route.snapshot.paramMap.get('id');
+    const slug = this.route.snapshot.paramMap.get('slug');
+    const legacyId = articleId || (slug && /^\d+$/.test(slug) ? slug : null);
+    const articleRequest = slug && !legacyId
+      ? this.learningService.fetchPublicArticleBySlug(slug).pipe(
+          switchMap(publicArticle => publicArticle && this.isAuthenticated
+            ? this.learningService.fetchArticleById(publicArticle.id, this.profileUserId)
+                .pipe(map(accountArticle => accountArticle || publicArticle))
+            : of(publicArticle)))
+      : legacyId && this.isAuthenticated
+        ? this.learningService.fetchArticleById(legacyId, this.profileUserId)
+        : of(null);
 
-    if (articleId) {
-      this.learningService.fetchArticleById(articleId, this.profileUserId)
+    if (articleId || slug) {
+      articleRequest
         .pipe(takeUntil(this.destroy$))
         .subscribe({
         next: (article) => {
-          console.log('Article loaded:', article);
           this.article = article;
           this.isLoading = false;
           if (article) {
+            this.updateCanonical(article.slug);
+            if (article.slug && (legacyId || this.route.snapshot.routeConfig?.path === 'articles/:slug')) {
+              void this.router.navigate(['/article', article.slug], {
+                replaceUrl: true,
+                queryParamsHandling: 'preserve',
+                state: { ...history.state }
+              });
+            }
             this.prepareArticleContent(article.content);
             this.initializeHelpfulness(article);
             this.loadRelatedChallenges(article);
             this.updatePopupRewardCopy();
-            this.startReadingTimer();
+            if (this.isAuthenticated) this.startReadingTimer();
           }
         },
         error: (error) => {
@@ -331,7 +351,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
         }
       });
     } else {
-      console.error('No article ID provided in route');
+      console.error('No article identifier provided in route');
       this.isLoading = false;
     }
   }
@@ -340,6 +360,10 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.stopReadingTimer();
+    if (this.canonicalLink) {
+      if (this.createdCanonicalLink) this.canonicalLink.remove();
+      else if (this.previousCanonicalHref !== null) this.canonicalLink.href = this.previousCanonicalHref;
+    }
     if (this.justUnlockedTimeout) {
       clearTimeout(this.justUnlockedTimeout);
       this.justUnlockedTimeout = null;
@@ -351,7 +375,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   }
 
   async shareArticle(): Promise<void> {
-    if (!this.article) return;
+    if (!this.article?.slug) return;
 
     try {
       await Share.share({
@@ -398,9 +422,23 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
   private getPublicArticleUrl(): string {
     const baseUrl = String(environment.publicWebUrl || 'https://supermeapp.com').replace(/\/+$/, '');
-    const article = this.article as any;
-    const slug = String(article?.slug || article?.urlSlug || article?.slugName || '').trim();
-    return `${baseUrl}/articles/${encodeURIComponent(slug || String(article?.id || ''))}`;
+    return `${baseUrl}/article/${encodeURIComponent(this.article!.slug!)}`;
+  }
+
+  private updateCanonical(slug: string | undefined): void {
+    if (!slug || typeof document === 'undefined') return;
+    const href = this.getPublicArticleUrl();
+    let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'canonical';
+      document.head.appendChild(link);
+      this.createdCanonicalLink = true;
+    } else if (!this.canonicalLink) {
+      this.previousCanonicalHref = link.href;
+    }
+    this.canonicalLink = link;
+    link.href = href;
   }
 
   private toArticleFeedback(value: HelpfulnessValue | null): ArticleFeedback | undefined {

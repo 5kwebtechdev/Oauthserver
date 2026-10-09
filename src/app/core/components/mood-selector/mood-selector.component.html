@@ -11,12 +11,13 @@
 <ng-template #compactMoodPicker><div class="entry-mood-content">
   <div class="entry-mood-options" role="group" aria-label="Choose your mood">
     <button *ngFor="let p of popupOptions; trackBy: trackByMood" type="button" class="entry-mood-option"
-      [class.selected]="popupSelection === p.src"
-      [class.entry-mood-option--previous]="hasSavedMood && displayAssetSrc === p.src && popupSelection !== p.src"
-      [attr.aria-pressed]="popupSelection === p.src" (click)="choosePopup(p.src)">
+      [class.selected]="isMoodSelected(p)"
+      [class.entry-mood-option--previous]="isSavedMoodSrc(p.src) && popupSelection !== null"
+      [disabled]="isSavedMoodSrc(p.src) || saving"
+      [attr.aria-pressed]="isMoodSelected(p)" (click)="choosePopup(p.src)">
       <span class="entry-mood-art" [class.entry-mood-art--calm]="p.art === 'calm'">
         <img [src]="p.src" [alt]="p.label">
-        <span *ngIf="popupSelection === p.src" class="entry-mood-selected-mark" aria-hidden="true">✓</span>
+        <span *ngIf="isMoodSelected(p)" class="entry-mood-selected-mark" aria-hidden="true">✓</span>
       </span>
       <span class="entry-mood-label">{{ p.art === 'frustrated' ? 'Frustrated' : p.label }}</span>
     </button>
@@ -96,6 +97,7 @@
         type="button"
         class="mood-option"
         [class.selected]="isMoodSelected(p)"
+        [disabled]="isSavedMoodSrc(p.src) || saving"
         [attr.aria-pressed]="isMoodSelected(p)"
         (click)="choosePopup(p.src)">
         <span class="mood-option-avatar">

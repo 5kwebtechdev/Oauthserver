@@ -212,17 +212,18 @@ export class EducationMainPageComponent implements OnInit {
         // Presentation-only metadata from Figma 25657:18007. Preserve the
         // category IDs, API metadata and navigation labels used by click handlers.
         const presentation: Record<string, { image: string; description: string; displayTitle?: string }> = {
-            tutors: { image: 'tutor', description: 'Get 1 : 1 with trusted tutors' },
-            academies: { image: 'academy', description: 'Explore courses and programs' },
-            'store-second-hand-books': { image: 'second-hand', displayTitle: 'Second-hand books', description: 'Pre-loved books in great condition, at prices that make room for the next one.' },
-            'store-stationery-shops': { image: 'stationery', displayTitle: 'Stationery\nShops', description: 'Notebooks, pens & more' },
-            'store-book-stores': { image: 'books', displayTitle: 'Book\nStores', description: 'Story, Frictions books & more' },
-            'store-sports-shop': { image: 'sports', description: 'Gear up for a healthier you.' },
-            counselors: { image: 'counselors', description: 'Talk, share, and get guidance from trusted professionals.' },
-            events: { image: 'events', description: 'Find events and workshops near you. Discover new skills every time.' },
-            hostels: { image: 'hostels', description: 'Verified PGs and hostels near you. Safe, affordable stays for students.' }
+            tutors: { image: 'tutor', description: 'Find & Contact trusted tutors' },
+            academies: { image: 'academy', description: 'Explore courses & classes' },
+            'store-second-hand-books': { image: 'second-hand', displayTitle: 'Second Hand Books', description: 'Buy & sell used textbooks, competitive exam guides, fiction & non-fiction books.' },
+            'store-stationery-shops': { image: 'stationery', displayTitle: 'Stationery Shops', description: 'Notebooks, pens & everyday essentials.' },
+            'store-book-stores': { image: 'books', displayTitle: 'Book Stores', description: 'Find book stores near you.' },
+            'store-sports-shop': { image: 'sports', description: 'For football, cricket, tennis and other sports goods near you.' },
+            counselors: { image: 'counselors', description: 'Find trusted counselors for mental health, career & personal guidance.' },
+            events: { image: 'events', description: 'Discover. Learn. Experience events and workshops near you.' },
+            hostels: { image: 'hostels', description: 'Find safe & affordable PGs and hostels.' }
         };
-        return sections.map(section => ({ ...section, categories: section.categories.map(category => {
+        const displayOrder = ['learning-support', 'pre-loved', 'living', 'guidance', 'activities', 'shops'];
+        return sections.sort((a, b) => displayOrder.indexOf(a.key) - displayOrder.indexOf(b.key)).map(section => ({ ...section, categories: section.categories.map(category => {
             const visual = presentation[category.id];
             const image = `assets/figma/eduhub-categories/${visual.image}.png`;
             return { ...category, ...visual, image, fallbackImage: image };

@@ -39,7 +39,7 @@ describe('Header mood picker limits', () => {
     (component as any).setsToday = 2;
     spyOn(component, 'showBlockedTooltip');
     component.editMood();
-    expect(component.dialogOpen).toBeTrue();
+    expect(component.dialogOpen).toBeFalse();
     expect(component.dailyLimitReached).toBeTrue();
     component.popupSelection = component.popupOptions[0].src;
     component.setVibe();
@@ -51,6 +51,37 @@ describe('Header mood picker limits', () => {
     component.setVibe();
     component.setVibe();
     expect(post).toHaveBeenCalledTimes(1);
+  });
+  it('does not re-select or submit the mood already saved today', () => {
+    const { component, post } = picker();
+    const happy = component.popupOptions.find(option => option.vibe === 'HAPPY')!;
+    const excited = component.popupOptions.find(option => option.vibe === 'EXCITED')!;
+    (component as any).savedMoodKey = 'HAPPY';
+    (component as any).setsToday = 1;
+    component.value = `asset:${happy.src}`;
+
+    expect(component.isSavedMoodSrc(happy.src)).toBeTrue();
+    expect(component.isMoodSelected(happy)).toBeTrue();
+    component.choosePopup(happy.src);
+    expect(component.popupSelection).toBeNull();
+
+    component.popupSelection = happy.src; // Defensive guard for stale/programmatic selection.
+    component.setVibe();
+    expect(post).not.toHaveBeenCalled();
+
+    component.popupSelection = null;
+    component.choosePopup(excited.src);
+    expect(String(component.popupSelection)).toBe(excited.src);
+    component.setVibe();
+    expect(post).toHaveBeenCalledTimes(1);
+  });
+  it('keeps the unsaved default Calm available', () => {
+    const { component } = picker();
+    const calm = component.popupOptions.find(option => option.vibe === 'NEUTRAL')!;
+    component.value = `asset:${calm.src}`;
+    expect(component.isSavedMoodSrc(calm.src)).toBeFalse();
+    component.choosePopup(calm.src);
+    expect(component.popupSelection).toBe(calm.src);
   });
 });
 

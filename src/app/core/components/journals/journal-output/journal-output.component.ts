@@ -411,7 +411,8 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
     const raw = typeof value === 'string' ? value : value?.url || value?.uri || value?.src || value?.fileUrl || '';
     if (!raw) return '';
     if (raw.startsWith('https://')) return raw;
-    if (raw.startsWith('http://')) return raw.replace('http://', 'https://');
-    return raw.startsWith('/') ? `https://api.supermeapp.com${raw}` : `https://api.supermeapp.com/${raw}`;
+    if (raw.startsWith('http://')) return environment.production ? raw.replace(/^http:/, 'https:') : raw;
+    const backendOrigin = new URL(environment.apiUrl).origin;
+    return raw.startsWith('/') ? `${backendOrigin}${raw}` : `${backendOrigin}/${raw}`;
   }
 }

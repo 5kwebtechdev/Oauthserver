@@ -5,7 +5,7 @@
         <img src="assets/figma/learning-details/back.svg" alt="" aria-hidden="true">
       </button>
 
-      <button type="button" class="learning-details-header__share" (click)="shareArticle()" aria-label="Share article">
+      <button *ngIf="article.slug" type="button" class="learning-details-header__share" (click)="shareArticle()" aria-label="Share article">
         <span>
           <img src="assets/figma/learning-details/share.svg" alt="" aria-hidden="true">
         </span>
@@ -85,7 +85,7 @@
         </button>
       </section>
 
-      <section class="learning-details-action" *ngIf="!isParentAssignment">
+      <section class="learning-details-action" *ngIf="isAuthenticated && !isParentAssignment">
         <button type="button" class="learning-details-action__button" (click)="openFeedbackPrompt()"
           [disabled]="isMarkAsReadDisabled" [class.learning-details-action__button--complete]="isArticleRead"
           [attr.aria-label]="isArticleRead ? 'Article already read' : (!readTimerComplete ? 'Read this article, available in ' + readTimerDisplay : 'Mark this article as read')">
@@ -108,7 +108,7 @@
         </p>
         <p class="learning-details-action__error" *ngIf="actionError" role="alert">{{ actionError }}</p>
       </section>
-      <section class="learning-details-action learning-details-action--parent" *ngIf="isParentAssignment">
+      <section class="learning-details-action learning-details-action--parent" *ngIf="isAuthenticated && isParentAssignment">
         <button type="button" class="learning-details-action__button" [class.learning-details-action__button--complete]="parentAssignmentComplete" (click)="assignToChild()"
           [disabled]="isAssigningToChild || parentAssignmentComplete || !parentAssignmentChildId">
           <ion-spinner *ngIf="isAssigningToChild" name="crescent"></ion-spinner>

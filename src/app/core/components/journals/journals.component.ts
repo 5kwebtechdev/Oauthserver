@@ -294,8 +294,9 @@ export class JournalsComponent implements OnInit, OnDestroy {
             const raw = typeof u === 'string' ? u : (u.url || u.uri || u.src || u.fileUrl || '');
             if (!raw) return '';
             if (raw.startsWith('https://')) return raw;
-            if (raw.startsWith('http://')) return raw.replace('http://', 'https://');
-            return raw.startsWith('/') ? `https://api.supermeapp.com${raw}` : `https://api.supermeapp.com/${raw}`;
+            if (raw.startsWith('http://')) return environment.production ? raw.replace(/^http:/, 'https:') : raw;
+            const backendOrigin = new URL(environment.apiUrl).origin;
+            return raw.startsWith('/') ? `${backendOrigin}${raw}` : `${backendOrigin}/${raw}`;
           };
           const urlArrayField = item.attachments ?? item.files ?? item.attachmentUrls ?? item.imageUrls ?? item.images ?? item.mediaUrls;
           if (urlArrayField && Array.isArray(urlArrayField)) {

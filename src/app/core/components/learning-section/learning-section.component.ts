@@ -54,10 +54,6 @@ import { AuthService } from 'src/app/core/services/auth.service';
                 <img src="assets/icons/superme-coin.webp" alt="">
                 {{ getItemCoins(item) }}
               </span>
-              <span *ngIf="getItemTrophies(item) !== null">
-                <img src="assets/icons/child-home-trophy-figma.webp" alt="">
-                {{ getItemTrophies(item) }}
-              </span>
               <span>
                 <img class="learning-meta-icon learning-meta-icon--time" src="assets/figma/child-learning/schedule.svg" alt="">
                 {{ getItemDuration(item) }}

@@ -2156,3 +2156,76 @@ footer {
 .family-ack-popup__title { font-size: var(--text-lg); }
 .family-ack-popup__desc { font-size: var(--text-sm); }
 .family-ack-popup__btn { font-size: var(--text-base); white-space: normal; }
+
+// Child/Self Home header.
+:host .profile-header.home-referral-header {
+  gap: 8px;
+  .home-referral-tools { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+  .home-referral-tools .coin-pill {
+    display: flex; flex-direction: column; gap: 0; padding: 0;
+    min-width: 0; min-height: 0; border: 0; background: transparent; box-shadow: none;
+    .coin-pill-icon { width: 28px; height: 28px; object-fit: contain; }
+    span {
+      padding: 1px 5px; border: 1px solid transparent; border-radius: 16px;
+      background: linear-gradient(#f6f2fb, #f6f2fb) padding-box,
+        linear-gradient(135deg, #8b8dcb, #f2bf98, #ff2d79) border-box;
+      color: #432478; font: 700 14px/20px var(--font-sans); white-space: nowrap;
+    }
+  }
+  .home-referral-tools .refer-tool,
+  .home-referral-tools .bell-tool {
+    display: grid; place-items: center; flex: 0 0 40px;
+    width: 40px; height: 40px; min-height: 40px; padding: 0;
+    border: 1px solid transparent; border-radius: 50%;
+    background: linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(135deg, #8b8dcb, #f2bf98, #ff2d79) border-box;
+    box-shadow: 0 0 4px #6b656a33;
+    img { width: 28px; height: 28px; object-fit: contain; }
+  }
+  .home-referral-tools .bell-tool { position: relative; }
+  .home-referral-tools .notification-count {
+    position: absolute; top: -5px; right: -5px;
+    display: grid; place-items: center;
+    min-width: 16px; height: 16px; padding: 0 2px;
+    border-radius: 999px; background: #bb2124; color: #fff;
+    font: 700 10px/1 var(--font-sans);
+  }
+  .refer-tool:focus-visible { outline: 2px solid #432478; outline-offset: 3px; }
+}
+@media (max-width: 767px) {
+  :host .profile-header.home-referral-header {
+    flex-wrap: nowrap;
+    .user-info { gap: 4px; min-width: 0; }
+    .user-avatar { width: 40px; height: 40px; min-width: 40px; max-width: 40px; max-height: 40px; flex-basis: 40px; }
+    .user-name-wrap { flex: 1; min-width: 0; overflow: hidden; }
+    .user-name--mobile { display: block; font: 400 12px/18px var(--font-sans); color: #282527; }
+    .user-name--web { display: none; }
+    .user-subtitle { display: none; }
+    .home-referral-tools { gap: 6px; }
+    .home-referral-tools .coin-pill {
+      flex-direction: row; gap: 2px; min-height: 34px; padding: 2px 7px 2px 3px;
+      border: 1px solid transparent; border-radius: 999px;
+      background: linear-gradient(#fff, #fff) padding-box,
+        linear-gradient(135deg, #8b8dcb, #f2bf98, #ff2d79) border-box;
+      box-shadow: 0 0 4px #6b656a33;
+      .coin-pill-icon { width: 28px; height: 28px; }
+      span {
+        padding: 0; border: 0; background: transparent;
+        font: 700 12px/18px var(--font-sans);
+      }
+    }
+    .home-referral-tools .refer-tool,
+    .home-referral-tools .bell-tool {
+      width: 34px; height: 34px; min-height: 34px; flex-basis: 34px;
+      img { width: 25px; height: 25px; }
+    }
+  }
+}
+@media (max-width: 374px) {
+  :host .profile-header.home-referral-header {
+    gap: 4px;
+    .home-referral-tools { gap: 4px; }
+    .home-referral-tools .coin-pill { padding-right: 5px; }
+    .home-referral-tools .coin-pill span { font-size: 11px; }
+  }
+}

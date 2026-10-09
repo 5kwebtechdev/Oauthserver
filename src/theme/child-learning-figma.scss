@@ -860,6 +860,37 @@
 	}
 }
 
+.child-screen-state.learnings-blank-state {
+	min-height: 0;
+	width: 100%;
+	padding: 24px 16px;
+	background: #fff;
+	border: 0;
+	border-radius: 0;
+
+	> img {
+		width: 136px;
+		height: 100px;
+		max-width: 100%;
+		object-fit: contain;
+	}
+
+	h2 {
+		width: 100%;
+		margin: 8px 0 0;
+		color: #282527;
+		font: 700 17px/1.3 'Nunito', sans-serif;
+	}
+
+	p {
+		max-width: 279px;
+		margin: 4px 0 0;
+		color: #6b656a;
+		font: 600 15px/1.4 'Nunito', sans-serif;
+		overflow-wrap: normal;
+	}
+}
+
 @media (min-width: 430px) {
 	.child-learning-item__media {
 		width: 153px;

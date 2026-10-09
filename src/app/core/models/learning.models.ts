@@ -97,6 +97,8 @@ export interface Challenge {
  */
 export interface Article {
     id: number;
+    /** Stable, unique slug assigned by the backend. */
+    slug?: string;
     title: string;
     description: string;
     tags: string[];
@@ -117,6 +119,7 @@ export interface Article {
  */
 export interface LearningCardData {
     id: number;
+    slug?: string;
     title: string;
     description: string;
     image: string;

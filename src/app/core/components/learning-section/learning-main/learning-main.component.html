@@ -275,9 +275,7 @@
             </p>
           </div>
 
-          <img *ngIf="isPandaPet" class="child-learning-hero__pet" src="assets/figma/child-learning/header-pet.webp"
-            alt="SuperMe learning companion holding a trophy">
-          <superme-pet *ngIf="!isPandaPet" class="child-learning-hero__pet" mood="happy" [size]="140"></superme-pet>
+          <superme-pet class="child-learning-hero__pet" mood="happy" [size]="140"></superme-pet>
         </header>
 
         <section class="child-learning-body">
@@ -374,12 +372,22 @@
             </div>
 
             <div *ngIf="!categoryContentLoading && !categoryContentError && visibleParentContent.length === 0"
-              class="child-screen-state">
-              <img [src]="currentPetCuriousImage" [alt]="currentPetCuriousAlt">
-              <h2>No {{ parentStatus }} items</h2>
-              <p *ngIf="searchKeyword">Try another search term.</p>
-              <p *ngIf="!searchKeyword">New learning content will appear here when it is available.</p>
-              <button *ngIf="searchKeyword" type="button" (click)="clearSearch()">Clear search</button>
+              class="child-screen-state" [class.learnings-blank-state]="!searchKeyword" aria-live="polite">
+              <ng-container *ngIf="searchKeyword; else learningsBlankState">
+                <img [src]="currentPetCuriousImage" [alt]="currentPetCuriousAlt">
+                <h2>No {{ parentStatus }} items</h2>
+                <p>Try another search term.</p>
+                <button type="button" (click)="clearSearch()">Clear search</button>
+              </ng-container>
+              <ng-template #learningsBlankState>
+                <img [src]="parentStatus === 'pending'
+                  ? 'assets/figma/learnings-empty/pending-cleared.png'
+                  : 'assets/figma/learnings-empty/nothing-completed.png'" alt="" aria-hidden="true">
+                <h2>{{ parentStatus === 'pending' ? 'The whole list? Cleared. All of it.' : 'Nothing started yet!' }}</h2>
+                <p>{{ parentStatus === 'pending'
+                  ? 'You completed every learning content here. New contents on its way'
+                  : 'Complete your learning items to make them appear here.' }}</p>
+              </ng-template>
             </div>
 
             <div *ngIf="!categoryContentLoading && !categoryContentError && pagedParentContent.length"
@@ -402,9 +410,6 @@
                       <ng-container *ngIf="isParentItemAssigned(item) && getParentBonusCoins(item) as bonus">
                         <span class="child-learning-item__bonus">+{{ bonus }} coins</span>
                       </ng-container>
-                      <span *ngIf="getChildTrophyCount(item) as trophies">
-                        <img src="assets/figma/child-learning/trophy.webp" alt="Trophies">{{ trophies }}
-                      </span>
                       <span *ngIf="getChildTimeText(item) as time">
                         <img src="assets/figma/child-learning/schedule.svg" alt="Duration">{{ time }}
                       </span>

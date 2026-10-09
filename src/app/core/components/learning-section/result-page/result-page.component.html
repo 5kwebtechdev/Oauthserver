@@ -25,11 +25,6 @@
         <img [src]="rewardCoinIcon" alt="Coins" class="reward-icon" />
         <span class="reward-count">{{ coinsEarned }}</span>
       </div>
-      <div class="reward-item">
-        <span class="plus">+</span>
-        <img [src]="rewardTrophyIcon" alt="Trophy" class="reward-icon" />
-        <span class="reward-count">{{ trophiesEarned }}</span>
-      </div>
     </div>
 
     <section class="result-details" *ngIf="hasSubmissionResult" aria-label="Challenge result summary">
@@ -48,10 +43,6 @@
         <div class="result-stat">
           <span>Total coins</span>
           <strong>{{ totalCoins }}</strong>
-        </div>
-        <div class="result-stat">
-          <span>Total trophies</span>
-          <strong>{{ totalTrophies }}</strong>
         </div>
       </div>
     </section>

@@ -52,4 +52,24 @@ describe('Temporary referral popup', () => {
     expect(f.nativeElement.textContent).not.toContain('coins.');
     expect(f.nativeElement.textContent).not.toContain('streak');
   });
+  it('uses the supplied 500-coin visual for both referral popup directions', () => {
+    const f = create();
+    f.componentInstance.event.amount = 500;
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('.reward img').getAttribute('src')).toContain('reward-500.png');
+    expect(f.nativeElement.querySelector('.dynamic-amount')).toBeNull();
+
+    f.componentInstance.event = { ...f.componentInstance.event, overlayType: 'REFERRAL_JOINED' };
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('.reward img').getAttribute('src')).toContain('reward-500.png');
+  });
+  it('keeps the supplied visual and overlays the actual reward for other amounts', () => {
+    const f = create();
+    expect(f.nativeElement.querySelector('.reward img').getAttribute('src')).toContain('reward-500.png');
+    expect(f.nativeElement.querySelector('.dynamic-amount').textContent).toContain('+75');
+    f.componentInstance.event = { ...f.componentInstance.event, overlayType: 'REFERRAL_JOINED', amount: 100 };
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('.reward img').getAttribute('src')).toContain('reward-500.png');
+    expect(f.nativeElement.querySelector('.dynamic-amount').textContent).toContain('+100');
+  });
 });

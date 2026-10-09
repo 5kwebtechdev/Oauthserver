@@ -11,6 +11,7 @@ import { FooterComponent } from 'src/app/core/components/footer/footer.component
 import { SupermePetComponent } from 'src/app/core/components/superme-pet/superme-pet.component';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { LearningCardData, LearningCategorySummary } from 'src/app/core/models/learning.models';
+import { articleRoute } from 'src/app/core/models/article-route';
 import { EmptyStateComponent } from 'src/app/core/components/empty-state/empty-state.component';
 import { CustomToastService } from 'src/app/core/services/custom-toast.service';
 import { AcademyCategory, AcademyService, Course } from 'src/app/core/services/academy.service';
@@ -680,7 +681,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       return;
     }
     if (item.type === 'article') {
-      void this.router.navigate(['/content/article', item.id], extras);
+      void this.router.navigate(articleRoute(item), extras);
       return;
     }
     void this.router.navigate(['/authed/content/description', item.id], extras);
@@ -693,7 +694,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       return;
     }
     if (item.type === 'article') {
-      void this.router.navigate(['/content/article', item.id], extras);
+      void this.router.navigate(articleRoute(item), extras);
       return;
     }
     void this.router.navigate(['/authed/content/description', item.id], extras);

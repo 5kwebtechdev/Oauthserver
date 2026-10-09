@@ -51,4 +51,24 @@ describe('Edit profile one-time username change', () => {
 
     expect(payload.username).toBe('newname');
   });
+
+  it('applies the new length rule only when editing the username', () => {
+    const validate = (component as any).validateAvatarUsername.bind(component);
+    validate('ab');
+    expect(component.avatarNameError).toBe('Username must be at least 3 characters.');
+    validate('abc');
+    expect(component.showAvatarNameError).toBeFalse();
+    validate('abcdefghij');
+    expect(component.showAvatarNameError).toBeFalse();
+    validate('abcdefghijk');
+    expect(component.avatarNameError).toBe('Username cannot exceed 10 characters.');
+
+    component.username = 'legacyusername';
+    component.fullName = 'Child';
+    (component as any).storeInitialValues();
+    (component as any).avatarInput$ = { next: jasmine.createSpy('next') };
+    component.onUsernameChange('legacyusername');
+    expect(component.displayUsername).toBe('legacyusername');
+    expect(component.showAvatarNameError).toBeFalse();
+  });
 });

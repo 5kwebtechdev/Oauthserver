@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Leaderboard">
+  <defs><linearGradient id="gold" x1="13" y1="8" x2="47" y2="52" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF1A2"/><stop offset=".5" stop-color="#FFC32B"/><stop offset="1" stop-color="#DE7911"/></linearGradient></defs>
+  <path d="M4 57h56" stroke="#48257B" stroke-width="3" stroke-linecap="round"/>
+  <path d="M5 35a4 4 0 0 1 4-4h12v26H5V35Z" fill="#AEBCE1" stroke="#6E7EAA" stroke-width="2"/>
+  <path d="M21 23a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4v34H21V23Z" fill="url(#gold)" stroke="#D88717" stroke-width="2"/>
+  <path d="M43 39a4 4 0 0 1 4-4h12v22H43V39Z" fill="#F3A788" stroke="#D87756" stroke-width="2"/>
+  <path d="m26 13 2-6 4 4 4-4 2 6-2 3h-8l-2-3Z" fill="#FFB32C" stroke="#D87D12" stroke-linejoin="round"/>
+  <text x="32" y="45" text-anchor="middle" font-family="Arial,sans-serif" font-size="17" font-weight="800" fill="#88400C">1</text>
+  <text x="13" y="50" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="800" fill="#47558F">2</text>
+  <text x="51" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="800" fill="#A74731">3</text>
+</svg>

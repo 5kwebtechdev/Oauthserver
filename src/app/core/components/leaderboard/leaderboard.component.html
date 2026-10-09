@@ -1,0 +1,97 @@
+<ion-content class="leaderboard-content" fullscreen>
+  <main class="leaderboard-page">
+    <section class="leaderboard-hero" aria-labelledby="leaderboard-title">
+      <button class="back-button" type="button" aria-label="Go back" (click)="back()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7"/></svg>
+      </button>
+      <div class="hero-copy">
+        <h1 id="leaderboard-title">Leaderboard</h1>
+        <p>Earn coins, climb the ranks,<br>Be the best you!</p>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <img src="assets/figma/leaderboard/hero.png" alt="">
+      </div>
+    </section>
+
+    <div class="leaderboard-body">
+      <div class="scope-tabs" role="tablist" aria-label="Leaderboard scope">
+        <button type="button" role="tab" [attr.aria-selected]="scope === 'GLOBAL'" [class.active]="scope === 'GLOBAL'" (click)="selectScope('GLOBAL')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a2 2 0 0 0-2 2H5a2 2 0 0 0-2 2v2a4 4 0 0 0 4.4 4A5 5 0 0 0 11 16v3H8a1 1 0 0 0 0 2h8a1 1 0 0 0 0-2h-3v-3a5 5 0 0 0 3.6-3A4 4 0 0 0 21 9V7a2 2 0 0 0-2-2h-2a2 2 0 0 0-2-2H9ZM5 7h2v4a2 2 0 0 1-2-2V7Zm12 0h2v2a2 2 0 0 1-2 2V7Z"/></svg> Global Leaderboard
+        </button>
+        <button type="button" role="tab" [attr.aria-selected]="scope === 'GROUP'" [class.active]="scope === 'GROUP'" (click)="selectScope('GROUP')">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="6.5" r="2.7"/><circle cx="4.5" cy="9" r="2.1"/><circle cx="19.5" cy="9" r="2.1"/><path d="M7 18.5v-2.1a5 5 0 0 1 10 0v2.1H7ZM0 18.5v-1.4a4.4 4.4 0 0 1 6.2-4l.8.4a6.8 6.8 0 0 0-1.7 5H0Zm18.7 0a6.8 6.8 0 0 0-1.7-5l.8-.4a4.4 4.4 0 0 1 6.2 4v1.4h-5.3Z"/></svg>
+          Group Leaderboard
+        </button>
+      </div>
+
+      <div *ngIf="scope === 'GROUP'" class="group-coming-soon" role="status">
+        <div class="group-coming-soon__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="6.5" r="2.7"/><circle cx="4.5" cy="9" r="2.1"/><circle cx="19.5" cy="9" r="2.1"/><path d="M7 18.5v-2.1a5 5 0 0 1 10 0v2.1H7ZM0 18.5v-1.4a4.4 4.4 0 0 1 6.2-4l.8.4a6.8 6.8 0 0 0-1.7 5H0Zm18.7 0a6.8 6.8 0 0 0-1.7-5l.8-.4a4.4 4.4 0 0 1 6.2 4v1.4h-5.3Z"/></svg>
+        </div>
+        <h2>Group Leaderboard is coming soon</h2>
+        <p>Compete with friends and family in a private group. This feature is on its way.</p>
+      </div>
+
+      <div *ngIf="scope === 'GLOBAL' && loading" class="state-message" role="status">Loading leaderboard…</div>
+      <div *ngIf="scope === 'GLOBAL' && error && !result" class="state-message" role="alert">
+        <strong>{{ error === 'access' ? 'Access denied' : error === 'invalid' ? 'Unable to load rankings' : error === 'unavailable' ? 'Leaderboard is coming soon' : 'Could not load the leaderboard' }}</strong>
+        <p>{{ error === 'access' ? 'You do not have access to this group.' : error === 'invalid' ? 'The leaderboard request was not accepted.' : error === 'unavailable' ? 'The ranking service is not available yet.' : 'Please check your connection and try again.' }}</p>
+        <button *ngIf="error !== 'access'" type="button" (click)="load()">Try again</button>
+      </div>
+      <ng-container *ngIf="scope === 'GLOBAL' && result && !loading">
+        <div *ngIf="result.state === 'EMPTY'" class="state-message" role="status">
+          <strong>No ranked users yet</strong>
+        </div>
+
+        <ng-container *ngIf="result.state === 'OK'">
+          <p *ngIf="!result.content.length" class="pagination-end">No more ranks on this page.</p>
+          <ng-container *ngIf="result.content.length">
+          <div class="podium" [class.podium--complete]="podium.length === 3" aria-label="Top three leaderboard ranks">
+            <ng-container *ngFor="let rank of [2, 1, 3]">
+              <div *ngIf="podiumUser(rank) as user" class="podium-entry" [class.podium-entry--first]="rank === 1" [class.podium-entry--second]="rank === 2" [class.podium-entry--third]="rank === 3" [class.podium-entry--you]="isCurrentUser(user)">
+                <div class="podium-avatar">
+                  <img *ngIf="avatarUrl(user) as src; else initialsAvatar" [src]="src" [alt]="user.displayName + ' avatar'" (error)="avatarFailed(user)">
+                  <ng-template #initialsAvatar><span>{{ initials(user) }}</span></ng-template>
+                  <img *ngIf="rank === 1" class="podium-crown" src="assets/figma/leaderboard/crown.png" alt="" aria-hidden="true">
+                </div>
+                <div class="podium-plinth">
+                  <span class="podium-medal">{{ rank }}</span>
+                  <strong class="podium-name">{{ user.displayName }}</strong>
+                  <span class="podium-coins"><img src="assets/icons/superme-coin.webp" alt="">{{ user.coins | number }}</span>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+
+          <div class="ranking-list" aria-label="Leaderboard rankings">
+            <div class="ranking-heading" aria-hidden="true"><span>Rank</span><span>Username</span><span>Coins</span></div>
+            <div *ngFor="let user of rows; trackBy: trackUser" class="ranking-row" [class.ranking-row--you]="isCurrentUser(user)">
+              <span class="ranking-rank">{{ user.rank }}</span>
+              <span class="ranking-person">
+                <span class="ranking-avatar"><img *ngIf="avatarUrl(user) as src; else rowInitials" [src]="src" [alt]="user.displayName + ' avatar'" (error)="avatarFailed(user)"><ng-template #rowInitials>{{ initials(user) }}</ng-template></span>
+                <strong>{{ user.displayName }}</strong>
+              </span>
+              <span class="ranking-coins"><img src="assets/icons/superme-coin.webp" alt="">{{ user.coins | number }}</span>
+            </div>
+          </div>
+          </ng-container>
+        </ng-container>
+        <section *ngIf="showSeparateCurrentUser" class="your-position" aria-label="Your position">
+          <h2>Your position</h2>
+          <div class="ranking-row ranking-row--you">
+            <span class="ranking-rank">{{ rankLabel(result.currentUser) }}</span>
+            <span class="ranking-person"><span class="ranking-avatar"><img *ngIf="avatarUrl(result.currentUser) as src; else currentInitials" [src]="src" alt="Your avatar" (error)="avatarFailed(result.currentUser)"><ng-template #currentInitials>{{ initials(result.currentUser) }}</ng-template></span><strong>{{ result.currentUser.displayName }}</strong></span>
+            <span class="ranking-coins"><img src="assets/icons/superme-coin.webp" alt="">{{ result.currentUser.coins | number }}</span>
+          </div>
+        </section>
+        <div *ngIf="currentUserInTopTen" class="share-rank">
+          <button type="button" class="share-rank__button" (click)="shareRank()">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5M4 13v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Share your rank
+          </button>
+          <p *ngIf="shareFeedback" class="share-rank__feedback" role="status">{{ shareFeedback }}</p>
+        </div>
+      </ng-container>
+    </div>
+  </main>
+</ion-content>

@@ -7,6 +7,7 @@
         <profile-edit-input title="Username" description="Your in-app identity name" type="text"
           placeholder="Username"
           [value]="displayUsername"
+          [maxLength]="usernameMaxLength"
           [disabled]="usernameChangeLocked || usernameStatusLoading || usernameStatusUnavailable"
           (valueChange)="onUsernameChange($event)"
           [suggestions]="avatarSuggestions"

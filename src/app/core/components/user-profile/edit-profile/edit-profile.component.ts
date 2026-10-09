@@ -16,6 +16,7 @@ import { finalize, debounceTime, distinctUntilChanged, switchMap, filter, catchE
 import { Router } from '@angular/router';
 import { ApiGender, toApiGender, toStoredGender } from '../../../models/gender.model';
 import { AvatarDefinition, AvatarService } from '../../../services/avatar.service';
+import { USERNAME_MAX_LENGTH, USERNAME_LENGTH_MESSAGES, usernameLengthError } from '../../../models/username-length';
 
 type ProfileGender = 'Male' | 'Female' | 'PreferNotToSay';
 
@@ -27,6 +28,7 @@ type ProfileGender = 'Male' | 'Female' | 'PreferNotToSay';
   styleUrls: ['./edit-profile.component.scss']
 })
 export class EditProfileComponent implements OnInit, OnDestroy {
+  readonly usernameMaxLength = USERNAME_MAX_LENGTH;
   @ViewChildren('otpInput') otpInputs!: QueryList<ElementRef>;
 
   // Country and phone related
@@ -895,7 +897,15 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     this.avatarSuggestionError = null;
     this.username = value || '';
     const v = (value || '').toString();
-    this.validateAvatarUsername(v);
+    const originalUsername = this.initialValues?.username !== null
+      ? (this.initialValues?.username || '').trim()
+      : (this.initialValues?.avatarName || '').trim();
+    if (this.initialValues && v.trim() === originalUsername) {
+      this.avatarNameError = null;
+      this.showAvatarNameError = false;
+    } else {
+      this.validateAvatarUsername(v);
+    }
     if (v.trim().length >= 4) {
       this.avatarInput$.next(v.trim());
     } else {
@@ -921,17 +931,15 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   /** Apply the PRD username rules while the user types in Edit Profile. */
   private validateAvatarUsername(value: string): void {
+    const lengthError = value ? usernameLengthError(value) : null;
     if (!value) {
       this.avatarNameError = 'Username is required.';
       this.showAvatarNameError = true;
+    } else if (lengthError) {
+      this.avatarNameError = USERNAME_LENGTH_MESSAGES[lengthError];
+      this.showAvatarNameError = true;
     } else if (/\s/.test(value)) {
       this.avatarNameError = "Spaces aren't allowed. Use _ instead";
-      this.showAvatarNameError = true;
-    } else if (value.length < 3) {
-      this.avatarNameError = 'Minimum 3 characters required.';
-      this.showAvatarNameError = true;
-    } else if (value.length > 20) {
-      this.avatarNameError = 'Maximum limit is 20 characters';
       this.showAvatarNameError = true;
     } else if (/[A-Z]/.test(value)) {
       this.avatarNameError = 'Only lowercase letters allowed';
@@ -1140,7 +1148,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     // Email: required and must pass format validation
     if (this.profileForm.get('email')?.invalid) return true;
 
-    // Avatar name: max 20 chars (shown error means invalid)
+    // An edited username must satisfy the current rules. A stored, unchanged
+    // username may still be longer than the new limit.
     if (this.showAvatarNameError) return true;
 
     return false;

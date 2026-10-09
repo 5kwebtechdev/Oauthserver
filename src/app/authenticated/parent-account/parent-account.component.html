@@ -22,7 +22,7 @@
       <button type="button" (click)="loadChildren()">Try again</button>
     </section>
 
-    <header class="parent-header" *ngIf="hasLinkedChildren || showNoChildHome">
+    <header class="parent-header parent-header--referral" *ngIf="hasLinkedChildren || showNoChildHome">
         <div class="parent-header__identity">
           <a class="parent-avatar" [routerLink]="['/app', 'user-profile']"
             [attr.aria-label]="'Open ' + parentName + ' profile'">
@@ -34,24 +34,24 @@
           </a>
 
           <div class="parent-header__copy">
-            <strong>{{ greetingPeriod }} {{ parentName }} !</strong>
-            <span *ngIf="hasLinkedChildren; else noChildHeaderCopy">
-              Here's {{ selectedChildName }}'s overview for today
-            </span>
-            <ng-template #noChildHeaderCopy>
-              <span>Set up SuperMeApp for your child today</span>
-            </ng-template>
+            <span>{{ greetingPeriod }} !</span>
+            <strong [attr.title]="parentName">{{ parentName }}</strong>
           </div>
         </div>
 
         <nav class="parent-header__tools" aria-label="Parent tools">
-          <button type="button" class="notification-button" aria-label="Open notifications"
-            (click)="openNotifications()">
-            <img src="assets/figma/parent-home/notification.svg" alt="" aria-hidden="true">
-          </button>
           <button type="button" class="parent-coin-pill" aria-label="Open coins" (click)="openCoinPage()">
             <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
-            <span>{{ parentCoins }}</span>
+            <span>{{ parentCoins.toLocaleString('en-IN') }}</span>
+          </button>
+          <a class="parent-refer-button" routerLink="/authed/refer-friend" aria-label="Refer a friend">
+            <img src="assets/figma/streak-screen/gift.png" alt="" aria-hidden="true">
+          </a>
+          <button type="button" class="notification-button"
+            [attr.aria-label]="unreadNotificationCount ? 'Open notifications, ' + unreadNotificationCount + ' unread' : 'Open notifications'"
+            (click)="openNotifications()">
+            <img src="assets/figma/parent-home/notification.svg" alt="" aria-hidden="true">
+            <span class="notification-button__count" *ngIf="unreadNotificationCount > 0" aria-hidden="true">{{ unreadNotificationCount > 9 ? '9+' : unreadNotificationCount }}</span>
           </button>
         </nav>
       </header>

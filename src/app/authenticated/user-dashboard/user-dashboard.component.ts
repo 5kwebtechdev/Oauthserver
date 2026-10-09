@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { HomeMoodHeaderComponent, HomeMood, normalizeHomeMood } from '../../core/components/home-mood-header/home-mood-header.component';
 import { isBirthdayToday } from './birthday-date';
+import { BirthdayPopupStatusService } from '../../core/services/birthday-popup-status.service';
 import { displayName } from '../../core/models/display-name';
-import { greetingUsername, messageWithUsername } from '../../core/models/greeting-username';
+import { greetingUsername, homeGreetingName, messageWithUsername } from '../../core/models/greeting-username';
 import { CommonModule } from "@angular/common";
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { StreakRestoreApi, StreakStatus, StreakStatusDay } from '../../core/api/streak-restore.api';
@@ -45,6 +47,7 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
 import { MoodService } from '../../core/services/mood.service';
 import { MoodTransition } from '../../core/models/mood.model';
 import { PetAgeService } from '../../core/services/pet-age.service';
+import { environment } from '../../../environments/environment';
 
 type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
 
@@ -99,9 +102,11 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   // Minimal properties used by the template
   public userName = '';
+  public headerName = 'there';
   public userAvatarUrl: string | null = null;
   public avatarImageName: string | null = null;
   public userCoins: number = 0;
+  public unreadNotificationCount = 0;
   public userStreaks: number = 0;
   public loginStreakDays: number | null = null;
   public userDays: number = 0;
@@ -229,6 +234,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private modalCtrl: ModalController,
+    private http: HttpClient,
     private router: Router,
     private petMessagesService: PetMessagesService,
     private userService: UserService,
@@ -244,7 +250,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private streakRestoreApi: StreakRestoreApi,
     private petMessageApi: PetMessageApiService,
     private moodService: MoodService,
-    private petAgeService: PetAgeService
+    private petAgeService: PetAgeService,
+    private birthdayPopupStatus: BirthdayPopupStatusService
   ) {
     this.toast$ = this.toastService.toast$;
   }
@@ -414,22 +421,11 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   dismissBirthdayDialog(): void {
     this.showBirthdayDialog = false;
-    try {
-      const date = new Date();
-      sessionStorage.setItem(`birthday_home_seen_${this.birthdayUserId}_${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`, '1');
-    } catch { /* The dialog still closes when storage is unavailable. */ }
   }
 
   private syncBirthdayState(): void {
     const now = new Date();
     this.birthdayToday = isBirthdayToday(this.birthdayDob, now);
-    if (!this.birthdayToday) this.showBirthdayDialog = false;
-    if (this.birthdayToday && this.birthdayUserId) {
-      try {
-        const key = `birthday_home_seen_${this.birthdayUserId}_${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-        this.showBirthdayDialog = sessionStorage.getItem(key) !== '1';
-      } catch { this.showBirthdayDialog = true; }
-    }
     if (this.birthdayDateTimer) clearTimeout(this.birthdayDateTimer);
     const midnight = new Date(now);
     midnight.setDate(now.getDate() + 1);
@@ -448,6 +444,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       this.router.navigate(['/authed/parent-account'], { replaceUrl: true });
       return;
     }
+
+    this.refreshUnreadNotificationCount();
 
     // global.scss caps every ion-page/ion-router-outlet to a readable content
     // width (see body.onboarding-active for the same pattern) — this page's
@@ -476,8 +474,21 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(userData => {
         this.birthdayDob = userData?.dateOfBirth ?? userData?.dob ?? userData?.birthDate ?? null;
-        this.birthdayUserId = String(userData?.userId ?? userData?.id ?? userData?.memberId ?? '');
+        const popupUserId = Number(userData?.userId ?? userData?.id ?? userData?.memberId ?? this.authService.getUserId());
+        const previousPopupUserId = this.birthdayUserId;
+        this.birthdayUserId = Number.isSafeInteger(popupUserId) && popupUserId > 0 ? String(popupUserId) : '';
         this.syncBirthdayState();
+        if (this.birthdayUserId && this.birthdayUserId !== previousPopupUserId) {
+          this.showBirthdayDialog = false;
+          this.birthdayPopupStatus.checkOnce(popupUserId)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(shouldShow => {
+              if (shouldShow && this.birthdayUserId === String(popupUserId)
+                && this.birthdayPopupStatus.consume(popupUserId)) {
+                this.showBirthdayDialog = true;
+              }
+            });
+        }
         const moodUserId = String(userData?.userId ?? userData?.id ?? userData?.memberId ?? '');
         if (moodUserId !== this.headerMoodUserId) {
           this.headerMoodUserId = moodUserId;
@@ -489,6 +500,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         if (userData) {
           console.log('[UserDashboard] User data updated from AuthService:', userData.name);
           this.userName = this.resolveGreetingUsername(userData);
+          this.headerName = homeGreetingName(userData);
 
           // The avatar is resolved only from the logged-in user's API/stored profile.
           const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
@@ -522,6 +534,11 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         const activeId = activeUser?.userId ?? activeUser?.id ?? activeUser?.memberId;
         if (profile && activeId != null && String(profile.userId) === String(activeId)) {
           const profileUsername = this.resolveGreetingUsername(profile);
+          const profileHeaderName = homeGreetingName(profile);
+          if (!String(activeUser?.username ?? activeUser?.userName ?? '').trim()
+            && profileHeaderName !== 'there') {
+            this.headerName = profileHeaderName;
+          }
           if (!String(activeUser?.username ?? activeUser?.userName ?? '').trim() && profileUsername !== 'there') {
             this.userName = String(profileUsername).trim();
           } else if (!this.userName) {
@@ -599,10 +616,34 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     // The initial entry is already loaded by ngOnInit, so avoid a duplicate
     // request on first render.
     if (this.hasEnteredDashboard) {
+      this.refreshUnreadNotificationCount();
       this.loadRecentHabitsAndTasks(true);
       this.learningSection?.refreshFromApi();
     }
     this.hasEnteredDashboard = true;
+  }
+
+  private refreshUnreadNotificationCount(): void {
+    const token = this.authService.getToken();
+    if (!token) {
+      this.unreadNotificationCount = 0;
+      return;
+    }
+    const headers = new HttpHeaders({
+      Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+      Accept: 'application/json',
+      'x-skip-loading': '1'
+    });
+    this.http.get<Array<{ readStatus: boolean }>>(`${environment.apiUrl}/user/notifications`, { headers })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: notifications => {
+          this.unreadNotificationCount = Array.isArray(notifications)
+            ? notifications.filter(notification => !notification.readStatus).length
+            : 0;
+        },
+        error: () => { this.unreadNotificationCount = 0; }
+      });
   }
 
   private startHomeTimeSync(): void {
@@ -985,7 +1026,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   get userInitial(): string {
-    return (this.userName || '').trim().charAt(0).toUpperCase();
+    return (this.headerName || '').trim().charAt(0).toUpperCase();
   }
 
   /** Build the rolling seven-day Figma streak, ending with Today. */
@@ -1186,6 +1227,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     const userData = this.authService.getUserData();
     if (userData) {
       this.userName = this.resolveGreetingUsername(userData) || this.userName;
+      this.headerName = homeGreetingName(userData);
 
       const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
       this.userAvatarUrl = resolved.url || null;

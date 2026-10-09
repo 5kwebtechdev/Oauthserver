@@ -105,6 +105,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public userName: string = 'User';
     public parentName: string = 'Parent';
     public parentCoins: number = 0;
+    public unreadNotificationCount = 0;
     public familyCode = '';
     public userCoins: number = 0;
     public userStreaks: number = 0;
@@ -641,6 +642,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     async ionViewWillEnter(): Promise<void> {
         // Fires on initial load AND every time this screen becomes active (return from navigation).
         this.activityCard?.switchTab('all');
+        this.refreshUnreadNotificationCount();
         await Promise.all([
             this.loadChildren(),
             firstValueFrom(
@@ -1352,6 +1354,29 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.router.navigate(['/authed/notifications']);
     }
 
+    private refreshUnreadNotificationCount(): void {
+        const token = this.authService.getToken();
+        if (!token) {
+            this.unreadNotificationCount = 0;
+            return;
+        }
+        const headers = new HttpHeaders({
+            Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+            Accept: 'application/json',
+            'x-skip-loading': '1'
+        });
+        this.http.get<Array<{ readStatus: boolean }>>(`${environment.apiUrl}/user/notifications`, { headers })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: notifications => {
+                    this.unreadNotificationCount = Array.isArray(notifications)
+                        ? notifications.filter(notification => !notification.readStatus).length
+                        : 0;
+                },
+                error: () => { this.unreadNotificationCount = 0; }
+            });
+    }
+
     openCoinPage(): void {
         this.router.navigate(['/authed/coin']);
     }
@@ -1395,7 +1420,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             '',
             "Once you join, you'll be able to:",
             '✨ Track progress and milestones',
-            '🏆 Celebrate streaks and achievements',
+            '✨ Celebrate streaks and achievements',
             '📚 Assign learning activities and quizzes',
             '💜 Stay connected and support our child together',
             '',

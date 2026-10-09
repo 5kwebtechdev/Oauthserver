@@ -1,0 +1,84 @@
+:host { display: block; height: 100%; }
+.leaderboard-content { --background: #fff; }
+.leaderboard-page { width: 100%; min-height: 100%; margin: 0 auto; overflow: hidden; background: #fff; color: #28232b; font-family: var(--font-sans, 'Nunito', sans-serif); }
+.leaderboard-hero {
+  position: relative; min-height: 160px; padding: calc(env(safe-area-inset-top, 0px) + 18px) 24px 12px;
+  overflow: hidden; background: linear-gradient(180deg, #ffe18d 0%, #ffe398 52%, #fff 100%);
+}
+.back-button { position: relative; z-index: 2; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; background: transparent; color: #292630; }
+.back-button svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+.hero-copy { position: relative; z-index: 1; margin-top: 24px; }
+.hero-copy h1 { margin: 0; font-family: inherit; color: #282527; font-size: 28px; font-weight: 800; line-height: 38px; letter-spacing: 0; }
+.hero-copy p { margin: 0; color: #6b656a; font-size: 15px; font-weight: 500; line-height: 20px; }
+.hero-art { position: absolute; right: 24px; bottom: 4px; width: 100px; height: 100px; pointer-events: none; }
+.hero-art img { width: 100%; height: 100%; object-fit: contain; }
+.leaderboard-body { position: relative; max-width: 600px; margin: 0 auto; padding: 4px 16px calc(env(safe-area-inset-bottom, 0px) + 16px); }
+.scope-tabs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; border-radius: 24px; background: #f5f2fa; }
+.scope-tabs button { display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 40px; padding: 0 6px; border: 0; border-radius: 24px; background: transparent; color: #6b656a; font: 500 12px/1.2 var(--font-sans, 'Nunito', sans-serif); white-space: nowrap; }
+.scope-tabs button.active { background: #48257c; color: #fff; }
+.scope-tabs button svg { width: 24px; height: 24px; flex: none; fill: currentColor; }
+.group-name { margin: 10px 4px 0; color: #6d626d; font-size: 12px; font-weight: 700; text-align: center; }
+.group-coming-soon { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 330px; padding: 30px 24px; text-align: center; color: #6b656a; }
+.group-coming-soon__icon { display: grid; place-items: center; width: 74px; height: 74px; margin-bottom: 18px; border-radius: 24px; background: #f5f2fa; font-size: 38px; }
+.group-coming-soon__icon svg { width: 40px; height: 40px; fill: #48257c; }
+.group-coming-soon h2 { margin: 0; color: #48257c; font-size: 20px; font-weight: 800; line-height: 1.25; }
+.group-coming-soon p { max-width: 270px; margin: 10px 0 0; font-size: 14px; line-height: 1.45; }
+.pagination-end { padding: 25px 10px; color: #777078; font-size: 13px; text-align: center; }
+.state-message { min-height: 210px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px; text-align: center; color: #5b5363; }
+.state-message strong { font-size: 18px; color: #432477; }
+.state-message p { margin: 7px 0 12px; font-size: 14px; line-height: 1.4; }
+.state-message button, .load-more { border: 0; border-radius: 13px; background: #4b237d; color: #fff; padding: 10px 20px; font: 800 13px var(--font-sans, 'Nunito', sans-serif); }
+.podium { position: relative; display: flex; justify-content: center; align-items: flex-end; gap: 0; min-height: 214px; margin-top: 12px; }
+.podium-entry { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; max-width: 120px; display: flex; flex-direction: column; align-items: center; }
+.podium-avatar { position: relative; z-index: 1; display: grid; place-items: center; width: 64px; height: 64px; margin-bottom: 0; border-radius: 50%; background: #e7d8f0; color: #48257c; font-size: 21px; font-weight: 800; }
+.podium-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.podium-entry--you .podium-avatar { outline: 3px solid #48257c; outline-offset: 2px; }
+.podium-avatar .podium-crown { position: absolute; z-index: 2; top: -31px; left: 50%; width: 42px; height: 31px; border-radius: 0; transform: translateX(-50%); object-fit: fill; }
+.podium-plinth { position: relative; display: flex; flex-direction: column; align-items: center; width: 100%; aspect-ratio: 382 / 290; padding: 0 5px; justify-content: flex-end; padding-bottom: 10px; text-align: center; background-repeat: no-repeat; background-size: contain; }
+.podium-entry--first .podium-plinth { aspect-ratio: 382 / 362; padding-bottom: 24px; background-image: url('/assets/figma/leaderboard/podium-gold.png'); }
+.podium-entry--second .podium-plinth { background-image: url('/assets/figma/leaderboard/podium-silver.png'); }
+.podium-entry--third .podium-plinth { aspect-ratio: 382 / 272; background-image: url('/assets/figma/leaderboard/podium-bronze.png'); }
+.podium-medal { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.podium-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 500; line-height: 18px; }
+.podium-coins { display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 14px; font-weight: 700; white-space: nowrap; }
+.podium-coins img, .ranking-coins img { width: 16px; height: 16px; object-fit: contain; }
+.ranking-list { margin-top: 16px; border: 1px solid #f2f0f2; border-radius: 24px; overflow: hidden; box-shadow: 0 0 3px #28252708; }
+.ranking-heading, .ranking-row { display: grid; grid-template-columns: 56px minmax(0, 1fr) 92px; align-items: center; gap: 6px; }
+.ranking-heading { height: 34px; color: #6b656a; font-size: 14px; font-weight: 500; }
+.ranking-heading span:first-child { padding-left: 16px; }
+.ranking-heading span:last-child { padding-left: 0; }
+.ranking-row { min-height: 55px; border-top: 1px solid #dedbde; font-size: 14px; }
+.ranking-heading + .ranking-row { border-top: 0; }
+.ranking-row--you { background: #ebe6f5; color: #48257c; }
+.ranking-rank { padding-left: 16px; font-weight: 500; }
+.ranking-person { display: flex; align-items: center; min-width: 0; gap: 9px; }
+.ranking-person strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.ranking-row--you strong, .ranking-row--you .ranking-rank { font-weight: 700; }
+.ranking-avatar { display: grid; place-items: center; width: 30px; height: 30px; flex: none; overflow: hidden; border-radius: 50%; background: #e9dcf5; color: #48257c; font-size: 13px; font-weight: 700; }
+.ranking-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ranking-coins { display: flex; align-items: center; justify-content: flex-start; gap: 3px; padding-right: 8px; font-size: 14px; font-weight: 700; white-space: nowrap; }
+.load-more { display: block; margin: 16px auto; cursor: pointer; }
+.load-more:disabled { opacity: .55; cursor: default; }
+.pagination-error { text-align: center; color: #b33850; font-size: 12px; }
+.your-position { position: sticky; bottom: 0; z-index: 3; margin-top: 4px; background: #fff; border-radius: 0 0 24px 24px; overflow: hidden; }
+.your-position h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.your-position .ranking-row { grid-template-columns: 72px minmax(0, 1fr) 82px; }
+.your-position .ranking-rank { font-size: 12px; }
+.share-rank { display: flex; flex-direction: column; align-items: center; padding: 17px 0 8px; }
+.share-rank__button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 19px; border: 0; border-radius: 22px; background: #48257c; color: #fff; font: 800 14px/1 var(--font-sans, 'Nunito', sans-serif); cursor: pointer; }
+.share-rank__button svg { width: 18px; height: 18px; }
+.share-rank__feedback { margin: 8px 0 0; color: #48257c; font-size: 12px; }
+button:focus-visible { outline: 2px solid #4b237d; outline-offset: 2px; }
+@media (max-width: 374px) {
+  .leaderboard-hero { padding-inline: 19px; }
+  .leaderboard-body { padding-inline: 12px; }
+  .hero-copy p { font-size: 14px; }
+  .hero-art { right: 16px; width: 86px; height: 86px; }
+  .scope-tabs button { gap: 3px; font-size: 11px; }
+  .ranking-heading, .ranking-row { grid-template-columns: 37px minmax(0, 1fr) 77px; gap: 4px; }
+  .your-position .ranking-row { grid-template-columns: 66px minmax(0, 1fr) 77px; }
+}
+@media (min-width: 768px) {
+  .leaderboard-page { max-width: 650px; box-shadow: 0 0 30px #20162c18; }
+  .hero-art { right: 36px; }
+}

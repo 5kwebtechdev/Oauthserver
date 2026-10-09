@@ -207,6 +207,9 @@ const routes: Routes = [
         path: 'streaks',
         loadComponent: () => import('../core/components/streaks-section/streaks-section.component').then(m => m.StreaksSectionComponent)
       }, {
+        path: 'leaderboard',
+        loadComponent: () => import('../core/components/leaderboard/leaderboard.component').then(m => m.LeaderboardComponent)
+      }, {
         path: 'reel-expand',
         loadComponent: () => import('../core/components/reel-section/reel-expand/reels-expand.component').then(m => m.ReelsExpandComponent)
       }, {
@@ -270,7 +273,8 @@ const routes: Routes = [
         loadComponent: () => import('../core/components/analytics-section/analytics.component').then(m => m.AnalyticsComponent)
       }, {
         path: 'trophies',
-        loadComponent: () => import('../core/components/trophy-section/trophy-page.component').then(m => m.TrophyPageComponent)
+        redirectTo: '/authed/home',
+        pathMatch: 'full'
       }, {
         path: 'badges',
         loadComponent: () => import('../core/components/badge-section/badge-section.component').then(m => m.BadgeSectionComponent)

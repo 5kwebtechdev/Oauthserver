@@ -79,6 +79,8 @@
 }
 
 .entry-mood-option--previous { opacity: .5; }
+.entry-mood-option:disabled:not(.entry-mood-option--previous),
+.mood-option:disabled { opacity: 1; cursor: default; }
 .entry-mood-option:focus-visible { outline: 2px solid #432477; outline-offset: 2px; border-radius: 8px; }
 
 .entry-mood-submit {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SupermeButtonComponent } from 'src/app/core/components/superme-button/superme-button.component';
 import { LearningCardData } from 'src/app/core/models/learning.models';
+import { articleRoute } from 'src/app/core/models/article-route';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 
 @Component({
@@ -29,7 +30,7 @@ export class LearningArticleCardComponent implements OnChanges {
 
     onCardClick() {
         this.cardClick.emit({ item: this.item, index: this.index });
-        // Navigate with the article ID
+        // Use the backend slug when present; retain the legacy ID fallback for cached cards.
         const state: Record<string, unknown> = {};
         if (this.source) state['source'] = this.source;
         const childId = Number(this.forUserId);
@@ -40,7 +41,7 @@ export class LearningArticleCardComponent implements OnChanges {
         const coins = Number(raw?.assignmentCoins ?? raw?.bonusCoins ?? raw?.extraCoinsByParent ?? raw?.extraCoins);
         if (Number.isFinite(coins) && coins > 0) state['assignmentCoins'] = Math.round(coins);
         const parentAssignment = this.source?.includes('view=parent') === true;
-        this.router.navigate(['/content/article', this.item.id], {
+        this.router.navigate(articleRoute(this.item), {
             ...(parentAssignment ? { queryParams: { parentAssign: '1', ...(Number.isFinite(childId) && childId > 0 ? { childId } : {}) } } : {}),
             state
         });

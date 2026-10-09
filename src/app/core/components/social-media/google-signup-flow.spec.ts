@@ -66,6 +66,34 @@ describe('Google signup request sequencing', () => {
     Object.entries(savedLocal).forEach(([key, value]) => localStorage.setItem(key, value));
   });
 
+  it('does not start a second Google authorization while sign-in is in progress', async () => {
+    const signIn = spyOn(social, 'signInWithGoogle');
+    await social.open('google');
+    expect(signIn).not.toHaveBeenCalled();
+    http.expectNone('/v1/auth/oauth2/mobile-login');
+  });
+
+  it('surfaces backend rollback without a session or automatic retry, then permits a manual retry', fakeAsync(() => {
+    const toast = spyOn(social, 'presentToast').and.resolveTo();
+    const message = 'OAuth2 login failed: Transaction silently rolled back because it has been marked as rollback-only';
+    social.loginWithOAuthProfile(identity, loading, 'google');
+    http.expectOne('/v1/auth/oauth2/mobile-login').flush({ message },
+      { status: 500, statusText: 'Internal Server Error' });
+    tick();
+    expect(toast).toHaveBeenCalledWith(message);
+    expect(social.isSocialLoginInProgress).toBeFalse();
+    expect(auth.setSession).not.toHaveBeenCalled();
+    expect(social.router.navigate).not.toHaveBeenCalled();
+    http.expectNone('/v1/auth/oauth2/mobile-login');
+
+    social.loginWithOAuthProfile(identity, loading, 'google');
+    http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'retry-token',
+      user: { id: 42, email: identity.email, relationship: 'SELF', onboardingStep: 7 } });
+    tick();
+    expect(auth.setSession).toHaveBeenCalledTimes(1);
+    http.expectNone('/v1/auth/oauth2/mobile-login');
+  }));
+
   async function authenticateNewUser() {
     const pending = social.continueGoogleAuthentication(identity, loading);
     const lookup = http.expectOne('/v1/api/public/check-mail-already-exists?email=new@example.test');
@@ -125,7 +153,8 @@ describe('Google signup request sequencing', () => {
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual(jasmine.objectContaining({
       provider: 'google', providerId: 'google-sub', idToken: 'google-proof',
-      email: 'new@example.test', name: 'Chosen Name', username: 'chosenuser', dob: '2000-01-01', role: 'SELF'
+      email: 'new@example.test', name: 'Chosen Name', username: 'chosenuser', dob: '2000-01-01',
+      role: 'SELF', profileCompleted: true
     }));
     http.expectNone('/v1/api/auth/complete-google-profile');
     expect(signup.registrationInProgress).toBeTrue();
@@ -139,6 +168,19 @@ describe('Google signup request sequencing', () => {
     expect(completion.request.body.providerId).toBe('google-sub');
     http.expectNone('/v1/api/auth/complete-google-profile');
     completion.flush({ user: { id: 42, onboardingStep: 5 } });
+  });
+
+  it('keeps the profile draft when mobile-login returns step 3 without saving it', async () => {
+    await authenticateNewUser();
+    await signup.registerOrProceed();
+    http.expectOne('/v1/auth/oauth2/mobile-login').flush({
+      token: 'premature-session', user: { id: 42, relationship: 'SELF', onboardingStep: 3 }
+    });
+    expect(signup.errorMessage).toContain('profile was not saved');
+    expect(sessionStorage.getItem('oauth_signup_pending_submission')).toBe('true');
+    expect(auth.setSession).not.toHaveBeenCalled();
+    expect(signup.navigateToSignupStep).not.toHaveBeenCalled();
+    http.expectNone('/v1/auth/oauth2/mobile-login');
   });
 
   it('keeps existing-user Google login and session handling', async () => {

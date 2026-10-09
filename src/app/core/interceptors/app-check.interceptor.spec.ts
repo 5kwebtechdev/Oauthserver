@@ -2,9 +2,10 @@ import { HttpErrorResponse, HttpHandler, HttpRequest } from '@angular/common/htt
 import { of, throwError } from 'rxjs';
 import { AppCheckInterceptor } from './app-check.interceptor';
 import { FirebaseRuntimeService } from '../services/firebase-runtime.service';
+import { environment } from '../../../environments/environment';
 
 describe('AppCheckInterceptor', () => {
-  const request = new HttpRequest('POST', 'https://api.supermeapp.com/v1/pet-message/home/overlay/dismiss', null);
+  const request = new HttpRequest('POST', `${environment.apiUrl}/pet-message/home/overlay/dismiss`, null);
 
   it('does not resend a failed dismiss request', done => {
     const runtime = {

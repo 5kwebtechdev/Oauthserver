@@ -9,7 +9,7 @@
 </div>
 
 <!-- ══ Home-screen overlays (PRD: bonus coins, daily login, mood prompt, streak milestone) ══ -->
-<div *ngIf="birthdayToday && showBirthdayDialog && !showFamilyAck && !showDailyStreakPopup && !activeOverlay"
+<div *ngIf="showBirthdayDialog && !showFamilyAck && !showDailyStreakPopup && !activeOverlay"
      class="birthday-dialog-backdrop" role="dialog" aria-modal="true" aria-label="Happy Birthday"
      (keydown.escape)="dismissBirthdayDialog()">
   <div class="birthday-dialog">
@@ -72,13 +72,13 @@
       <div class="dasboard-wrapper">
         <div class="profile-content mobile-chrome">
 
-          <header class="profile-header" role="banner">
+          <header class="profile-header home-referral-header" role="banner">
             <div class="user-info" role="group" aria-label="User info">
               <div class="user-avatar" aria-hidden="false">
                 <a [routerLink]="['/app','user-profile']" aria-label="Open profile">
                   <app-img *ngIf="userAvatarUrl; else avatarInitial"
                     [src]="userAvatarUrl"
-                    [alt]="avatarImageName ? avatarImageName : (userName + ' avatar')"
+                    [alt]="avatarImageName ? avatarImageName : (headerName + ' avatar')"
                     [circle]="true"
                     objectFit="cover">
                   </app-img>
@@ -88,19 +88,25 @@
                 </a>
               </div>
               <div class="user-name-wrap">
-                <span class="user-name user-name--mobile">Hey {{ userName }} !</span>
-                <strong class="user-name user-name--web">{{ greetingPeriod }} {{ userName }} !</strong>
+                <span class="user-name user-name--mobile">Hey {{ headerName }}!</span>
+                <strong class="user-name user-name--web">{{ greetingPeriod }} {{ headerName }} !</strong>
                 <span class="user-subtitle">Ready to grow today?</span>
               </div>
             </div>
 
-            <nav class="header-tools" role="navigation" aria-label="Profile tools">
-              <button class="bell-tool" type="button" aria-label="Notifications" (click)="openNotifications()">
-                <img src="assets/icons/child-home-notification-figma.svg" alt="" class="notification-tool-icon" aria-hidden="true">
-              </button>
+            <nav class="header-tools home-referral-tools" role="navigation" aria-label="Profile tools">
               <button class="coin-pill" type="button" aria-label="Open coins" (click)="openCoinPage()">
                 <img src="assets/icons/superme-coin.webp" alt="" class="coin-pill-icon" aria-hidden="true">
-                <span>{{ userCoins }}</span>
+                <span>{{ userCoins.toLocaleString('en-IN') }}</span>
+              </button>
+              <a class="refer-tool" routerLink="/authed/refer-friend" aria-label="Refer a friend">
+                <img src="assets/figma/streak-screen/gift.png" alt="" aria-hidden="true">
+              </a>
+              <button class="bell-tool" type="button"
+                [attr.aria-label]="unreadNotificationCount ? 'Open notifications, ' + unreadNotificationCount + ' unread' : 'Open notifications'"
+                (click)="openNotifications()">
+                <img src="assets/icons/child-home-notification-figma.svg" alt="" class="notification-tool-icon" aria-hidden="true">
+                <span class="notification-count" *ngIf="unreadNotificationCount > 0" aria-hidden="true">{{ unreadNotificationCount > 9 ? '9+' : unreadNotificationCount }}</span>
               </button>
             </nav>
           </header>
@@ -108,7 +114,7 @@
 
         <div class="hero-mood-anchor">
           <app-home-mood-header [mood]="homeHeaderMood" [period]="homeTimePeriod" [birthday]="birthdayToday"
-            [streaks]="userStreaks" [trophies]="userDays" [badges]="userBadges"
+            [streaks]="userStreaks" [badges]="userBadges"
             [canEditMood]="!homeMoodSelector.dailyLimitReached"
             [moodPickerOpen]="homeMoodSelector.dialogOpen"
             (moodEdit)="editHeaderMood()"></app-home-mood-header>

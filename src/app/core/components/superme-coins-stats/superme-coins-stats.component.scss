@@ -32,7 +32,7 @@
 // The latest streak artwork includes more transparent padding than the other
 // stat assets. Scale only its artwork so the visible icons have equal weight
 // while every stat still occupies the same 60px box.
-.stat-col:nth-of-type(3) .stat-icon {
+.stat-col:nth-of-type(2) .stat-icon {
   transform: scale(1.28);
 }
 

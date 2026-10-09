@@ -212,20 +212,12 @@ export class PushNotificationService {
         console.log('📦 Full data   :', data);
         console.groupEnd();
 
-        // Show tappable in-app banner with the notification message.
-        // The toast acts as a navigation shortcut — tapping it navigates to
-        // the resolved screen just as a background tap would.
+        // Receipt only displays the alert. Navigation belongs exclusively to
+        // notificationActionPerformed/localNotificationActionPerformed, which
+        // require an explicit user tap.
         const message = [title, body].filter(Boolean).join('\n') || 'New notification';
         this.toastService.show(message, 'info', 6000);
         void this.showAndroidForegroundNotification(title, body, data);
-
-        // Also navigate immediately for high-priority foreground actions
-        // (only if the app is open and the user is already authenticated).
-        const authToken = localStorage.getItem('auth_token');
-        if (authToken && data['actionScreen']) {
-          // Slight delay so the toast is visible first
-          setTimeout(() => this.zone.run(() => this.handleNavigation(data)), 300);
-        }
       });
     }).catch(err => console.warn('[FCM] foreground listener error:', err));
   }

@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": ["src/app/core/components/streaks-section/*.spec.ts", "src/app/core/api/streak-restore.api.spec.ts", "src/**/*.d.ts"]
+}

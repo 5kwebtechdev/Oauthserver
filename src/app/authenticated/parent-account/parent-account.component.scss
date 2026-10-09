@@ -2846,3 +2846,76 @@ button {
   line-height: 1.4;
 }
 .parent-coin-pill { height: auto; min-height: 36px; font-size: var(--text-sm); }
+
+// Parent Home header from the updated referral design.
+:host .parent-header.parent-header--referral {
+  flex-wrap: nowrap; gap: 8px; min-height: 40px;
+  .parent-header__identity { flex: 1 1 0; min-width: 0; gap: 6px; }
+  .parent-avatar { width: 40px; height: 40px; flex: 0 0 40px; }
+  .parent-header__copy { min-width: 0; gap: 0; }
+  .parent-header__copy strong, .parent-header__copy span {
+    color: #282527; font: 500 13px/18px var(--font-sans);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .parent-header__copy strong { font-weight: 600; }
+  .parent-header__tools { gap: 6px; }
+  .parent-coin-pill {
+    flex-direction: column; gap: 0; padding: 0; min-width: 0;
+    height: auto; min-height: 0; background: transparent; border: 0; box-shadow: none;
+    img { width: 28px; height: 28px; }
+    span {
+      padding: 1px 5px; border: 1px solid transparent; border-radius: 16px;
+      background: linear-gradient(#f6f2fb, #f6f2fb) padding-box,
+        linear-gradient(135deg, #8b8dcb, #f2bf98, #ff2d79) border-box;
+      font: 600 13px/18px var(--font-sans); white-space: nowrap;
+    }
+  }
+  .notification-button, .parent-refer-button {
+    display: grid; place-items: center; width: 32px; height: 32px;
+    flex: 0 0 32px; padding: 0; border: 1px solid transparent; border-radius: 50%;
+    background: linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(135deg, #8b8dcb, #f2bf98, #ff2d79) border-box;
+    box-shadow: 0 0 4px #6b656a33;
+    img { width: 24px; height: 24px; object-fit: contain; }
+  }
+  .notification-button {
+    position: relative;
+    img { width: 16px; height: 16px; }
+    &__count {
+      position: absolute;
+      top: 3px;
+      right: 2px;
+      display: grid;
+      place-items: center;
+      min-width: 12px;
+      height: 12px;
+      padding: 0 1px;
+      border-radius: 25px;
+      background: #bb2124;
+      color: #fff;
+      font: 700 9px/1 var(--font-sans, 'Nunito', sans-serif);
+    }
+  }
+  .parent-refer-button:focus-visible { outline: 2px solid #432477; outline-offset: 3px; }
+}
+@media (max-width: 767.98px) {
+  :host .child-switcher__rail {
+    gap: 4px;
+    > .switcher-child, .switcher-child--selected-single, .switcher-child--selected-multiple {
+      width: clamp(116px, 32.5vw, 128px); min-width: 116px; max-width: 128px;
+      flex: 0 0 clamp(116px, 32.5vw, 128px);
+      padding-inline: 4px;
+    }
+    .switcher-child__details > strong {
+      display: block; font-size: 12px; line-height: 18px;
+      white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
+    }
+    .switcher-child__stats {
+      flex-direction: row; align-items: center; justify-content: flex-start; gap: 5px;
+      span { font-size: 10px; min-height: 16px; }
+      img, span:first-child img { width: 12px; height: 12px; }
+    }
+    > .switcher-action--invite { flex-basis: 84px; width: 84px; min-width: 84px; max-width: 84px; }
+    .switcher-action--invite > span:last-child { max-width: 84px; font-size: 11px; white-space: nowrap; }
+  }
+}

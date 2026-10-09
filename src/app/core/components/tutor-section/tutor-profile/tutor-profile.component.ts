@@ -445,13 +445,13 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   getFeeTypeString(): string {
     const labels: Record<string, string> = {
-      PER_HOUR: '/Hour',
+      PER_HOUR: '/ Hour',
       PER_MONTH: '/Month',
       PER_SESSION: '/Session',
       PER_COURSE: '/Course',
       PER_SUBJECT: '/Subject'
     };
-    return labels[String(this.tutor?.feeType || '')] || '/Hour';
+    return labels[String(this.tutor?.feeType || '')] || '/ Hour';
   }
 
   isChildUser(): boolean {

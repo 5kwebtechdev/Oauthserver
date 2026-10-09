@@ -23,6 +23,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard, KeyboardInfo } from '@capacitor/keyboard';
 import { environment } from '../../../environments/environment';
 import { AvatarDefinition, AvatarService } from '../../core/services/avatar.service';
+import { USERNAME_MAX_LENGTH, USERNAME_LENGTH_MESSAGES, usernameLengthError } from '../../core/models/username-length';
 import { SupermeInputsModule } from '../../core/components/superme-inputs/superme-inputs.module';
 import { SupermeNavigatorComponent } from '../../core/components/superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
@@ -61,6 +62,7 @@ type SignupGender = StoredGender;
   ],
 })
 export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
+  readonly usernameMaxLength = USERNAME_MAX_LENGTH;
   private static readonly CHILD_POST_FAMILY_WELCOME_KEY = 'show_child_welcome_after_family';
   private static readonly CREATE_CHILD_AFTER_FAMILY_KEY = 'create_child_after_family';
   private static readonly MANAGED_CHILD_SIGNUP_KEY = 'managed_child_signup';
@@ -781,9 +783,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const value = String(control.value || '');
       if (!value) return null;
 
+      const lengthError = usernameLengthError(value);
+      if (lengthError) return { [lengthError]: true };
       if (/\s/.test(value)) return { usernameSpaces: true };
-      if (value.length < 3) return { usernameMinLength: true };
-      if (value.length > 20) return { usernameMaxLength: true };
       if (/[A-Z]/.test(value)) return { usernameUppercase: true };
       if (!/^[a-z0-9_]+$/.test(value)) return { usernameInvalidCharacters: true };
 
@@ -811,8 +813,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     if (errors['required']) return 'Username is required.';
     if (errors['usernameSpaces']) return "Spaces aren't allowed. Use _ instead";
-    if (errors['usernameMinLength']) return 'Minimum 3 characters required.';
-    if (errors['usernameMaxLength']) return 'Maximum limit is 20 characters';
+    if (errors['usernameMinLength']) return USERNAME_LENGTH_MESSAGES.usernameMinLength;
+    if (errors['usernameMaxLength']) return USERNAME_LENGTH_MESSAGES.usernameMaxLength;
     if (errors['usernameUppercase']) return 'Only lowercase letters allowed';
     if (errors['usernameStartsWithUnderscore']) return 'Username cannot start with underscore';
     if (errors['usernameConsecutiveUnderscores']) return 'Username cannot have consecutive underscores';
@@ -3351,6 +3353,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       ...(resolvedName ? { name: resolvedName } : {}),
       avatarUrl,
       role:            role.toUpperCase(),          // backend uses "role", not "relationship"
+      profileCompleted: true,
       avatarName:      avatar?.key,
       avatarImageName,
       referralCode:    sessionStorage.getItem('referralCode') || null
@@ -3489,10 +3492,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         // and resume the returned account, never replace it with the draft.
         if (provider === 'google' && response?.token && response?.user?.id
           && ((returnedRole === 'parent' && response.user.family?.id)
-            || differentAccountRole
-            || (!pendingGoogleSignup && !submittedDetailsAtProfileStep
-              && (!responseStep || responseStep < expectedStep)))) {
+            || differentAccountRole)) {
           this.resumeReturnedGoogleAccount(response, providerId, returnedRole, responseStep);
+          return;
+        }
+        if (responseStep !== null && responseStep < expectedStep
+          && !submittedDetailsAtProfileStep) {
+          this.errorMessage = 'Your profile was not saved. Please try again.';
+          this.core.triggerToasrt(this.errorMessage);
           return;
         }
         const resolvedStep = responseStep
@@ -4375,7 +4382,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    * Navigate to Terms of Use page (no login required)
    */
   navigateToTermsOfUse(): void {
-    this.router.navigate(['/our-policies'], { queryParams: { tab: 'terms' } });
+    window.location.assign('https://supermeapp.com/terms-of-use');
   }
 
   getSignupCredentialIdentifier(): string {

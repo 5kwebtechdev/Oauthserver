@@ -1,4 +1,4 @@
-import { greetingUsername, messageWithUsername } from './greeting-username';
+import { greetingUsername, homeGreetingName, messageWithUsername } from './greeting-username';
 
 describe('Self/child greeting identity', () => {
   const user = { fullName: 'Tapsya Sharma', name: 'Tapsya', username: 'tapsya_star' };
@@ -7,6 +7,13 @@ describe('Self/child greeting identity', () => {
     expect(greetingUsername(user)).toBe('tapsya_star');
     expect(greetingUsername({ name: 'Private Name' })).toBe('there');
     expect(greetingUsername({ userName: 'child_handle' })).toBe('child_handle');
+  });
+
+  it('uses the account name only for the Home header when username is missing', () => {
+    expect(homeGreetingName(user)).toBe('tapsya_star');
+    expect(homeGreetingName({ name: 'Codex Temp', username: null })).toBe('Codex Temp');
+    expect(homeGreetingName({ name: '  ', fullName: 'Full Name' })).toBe('Full Name');
+    expect(homeGreetingName({})).toBe('there');
   });
 
   it('uses the username in personalized pet and popup messages', () => {

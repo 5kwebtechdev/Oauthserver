@@ -310,6 +310,20 @@ export class LearningService {
             );
     }
 
+    /** Anonymous, read-only lookup for the backend's stored article slug. */
+    fetchPublicArticleBySlug(slug: string): Observable<Article | null> {
+        return this.http.get<Article>(`${this.apiUrl}/public/articles/${encodeURIComponent(slug)}`, {
+            headers: new HttpHeaders({ 'X-Skip-Authorization': 'true' })
+        })
+            .pipe(
+                map(article => article ? this.normalizeArticle(article) : null),
+                catchError(error => {
+                    console.error(`Error fetching public article ${slug}:`, error);
+                    return of(null);
+                })
+            );
+    }
+
     /**
      * Fetch quizzes from dedicated endpoint
      */
@@ -759,6 +773,7 @@ export class LearningService {
 
         return {
             id: normalizedArticle.id,
+            slug: normalizedArticle.slug,
             title: normalizedArticle.title,
             description: normalizedArticle.description,
             image: normalizedArticle.thumbnailUrl || 'assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg',
@@ -1007,6 +1022,7 @@ export class LearningService {
                 // Fallback mapping for article-like objects
                 return {
                     id: item.id ?? 0,
+                    slug: item.slug,
                     title: item.title ?? item.name ?? 'Untitled',
                     description: item.description ?? '',
                     image: item.thumbnailUrl ?? item.image ?? 'assets/icons/placeholder.webp',

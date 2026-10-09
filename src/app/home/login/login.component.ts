@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { ReactiveFormsModule } from '@angular/forms';
@@ -155,6 +155,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.loading = false;
+          this.clearPassword();
           console.error('[LoginComponent] Login error', {
             status: error.status,
             error: error.error,
@@ -189,6 +190,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.clearPassword();
     // Get return URL from route parameters (don't set default here, will be determined after login)
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
     console.log('[LoginComponent] Return URL set to:', this.returnUrl || 'Will be determined after login');
@@ -214,8 +216,26 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.clearPassword();
     document.body.classList.remove('onboarding-active');
     document.body.classList.remove('login-web-full-bleed');
+  }
+
+  ionViewWillEnter(): void {
+    this.clearPassword();
+  }
+
+  @HostListener('window:pageshow')
+  onPageShow(): void {
+    this.clearPassword();
+  }
+
+  private clearPassword(): void {
+    this.password?.reset('', { emitEvent: false });
+    if (this.passwordInputRef?.nativeElement) {
+      this.passwordInputRef.nativeElement.value = '';
+    }
+    this.hidePassword = true;
   }
 
   focusPassword(): void {
@@ -226,12 +246,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     const val = (event.target as HTMLInputElement).value;
     this.signInForm.get('email')?.setValue(val, { emitEvent: true });
     this.signInForm.get('email')?.markAsDirty();
-  }
-
-  onPasswordAutofill(event: Event): void {
-    const val = (event.target as HTMLInputElement).value;
-    this.signInForm.get('password')?.setValue(val, { emitEvent: true });
-    this.signInForm.get('password')?.markAsDirty();
   }
 
   navigateToSignup(): void {
@@ -261,8 +275,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
 
     this.signInForm.patchValue({
-      email: credentials.identifier,
-      password: credentials.password
+      email: credentials.identifier
     });
   }
 

@@ -29,8 +29,8 @@ import { PetMessageApiResponse } from '../../services/pet-message-api.service';
           </div>
         </div>
         <div class="reward" *ngIf="amount !== null" aria-hidden="true">
-          <img src="assets/figma/referral-popup/reward.png" alt="">
-          <span class="dynamic-amount" *ngIf="amount !== 100">+{{ amount | number }}</span>
+          <img src="assets/figma/referral-popup/reward-500.png" alt="">
+          <span class="dynamic-amount" *ngIf="amount !== 500">+{{ amount | number }}</span>
         </div>
       </div>
       <p *ngIf="notice" class="error" role="alert">{{ notice }}</p>

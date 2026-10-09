@@ -116,7 +116,7 @@ export class DeepLinkService {
 
     // Article share URLs use the public website host. Preserve the ID/slug so
     // an installed app opens the same article instead of its default Home tab.
-    if (/^\/articles\/[^/]+$/.test(path)) {
+    if (/^\/(?:article|articles)\/[^/]+$/.test(path)) {
       return `${path}${query}`;
     }
 

@@ -28,6 +28,8 @@ describe('visible calendar week dots', () => {
                 selectedDate: selected, childCarouselStartDate: selected,
                 plannerRequestId: 0, subscriptions: new Subscription(), childDateActivities: {},
                 habitService: { formatDateToYYYYMMDD: key },
+                authService: { isParentUser: () => false },
+                eventApi: { getEvents: () => of([]) },
                 cdr: { detectChanges() {} },
                 getPlannerContextKey: () => 'self',
                 calendarService: { getUserPlannerCalendarMonth: jasmine.createSpy().and.callFake((date: string) => of({
@@ -52,6 +54,33 @@ describe('visible calendar week dots', () => {
             c.subscriptions.unsubscribe();
         });
     }
+});
+
+describe('Planner events in the calendar', () => {
+    it('marks and displays an event saved through the Event API', () => {
+        const c: any = Object.create(ActivityPageContentComponent.prototype);
+        const selected = new Date(2026, 9, 9);
+        const key = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        const event = { id: 31, name: 'School event', eventDate: '2026-10-09', eventType: 'OTHER', recurrence: 'ONE_TIME' };
+        Object.assign(c, {
+            selectedDate: selected, childCarouselStartDate: selected, childCalendarTab: 'planner',
+            plannerRequestId: 0, subscriptions: new Subscription(), childDateActivities: {},
+            habitService: { formatDateToYYYYMMDD: key },
+            authService: { isParentUser: () => false },
+            eventApi: { getEvents: () => of([event]) },
+            cdr: { detectChanges() {} },
+            getPlannerContextKey: () => 'self',
+            calendarService: { getUserPlannerCalendarMonth: () => of({ habits: [], tasks: [], events: [] }) }
+        });
+
+        c.loadChildCalendarData();
+
+        expect(c.getChildDateActivities(selected).planner).toBeTrue();
+        expect(c.childEventItems).toEqual([event]);
+        expect(c.showsPlannerEvents).toBeTrue();
+        expect(c.hasChildCalendarContent).toBeTrue();
+        c.subscriptions.unsubscribe();
+    });
 });
 
 describe('planner schedule card', () => {

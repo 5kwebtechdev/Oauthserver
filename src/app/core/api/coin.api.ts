@@ -4,6 +4,14 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthApi } from '../api/auth.api';
 
+export interface BirthdayPopupStatus {
+    success: boolean;
+    userId: number;
+    isBirthdayToday: boolean;
+    shouldShowPopup: boolean;
+    alreadyClaimedThisYear: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CoinApi {
     private base = environment.apiUrl || '';
@@ -30,5 +38,13 @@ export class CoinApi {
     getCoinHistory(): Observable<any> {
         const url = `${this.base}/coins/history`;
         return this.http.get(url, { headers: this.headers() });
+    }
+
+    getBirthdayPopupStatus(userId?: number): Observable<BirthdayPopupStatus> {
+        const url = `${this.base}/coins/birthday-gift/popup-status`;
+        return this.http.get<BirthdayPopupStatus>(url, {
+            headers: this.headers(),
+            params: userId == null ? {} : { userId: String(userId) }
+        });
     }
 }

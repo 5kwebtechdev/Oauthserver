@@ -124,7 +124,7 @@
             </div>
 
             <div class="child-activity-list" *ngIf="!loading && !plannerLoading; else childActivityLoading">
-                <!-- Personal events use their own compact image-card rail and never render as Planner rows. -->
+                <!-- Personal events use their own compact cards in All and Planner views. -->
                 <section class="child-event-cards" *ngIf="showsPlannerEvents" aria-label="Events">
                     <header class="child-event-cards__header">
                         <h2><img src="assets/figma/home-glance/upcoming-events.webp" alt="" />Upcoming Events</h2>

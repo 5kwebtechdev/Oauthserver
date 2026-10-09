@@ -233,6 +233,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   // Tapping a mood option — gated by the same daily-limit rule the submit button enforces
   choosePopup(src: string) {
     if (this.isParent || this.saving) return;
+    if (this.isSavedMoodSrc(src)) return;
     if (this.setsToday >= 2) {
       this.showBlockedTooltip();
       return;
@@ -285,7 +286,12 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
    */
   isMoodSelected(option: { src: string }): boolean {
     if (this.popupSelection) return this.popupSelection === option.src;
-    return this.hasSavedMood && this.displayAssetSrc === option.src;
+    return this.isSavedMoodSrc(option.src);
+  }
+
+  /** The mood already saved today is not another available choice. */
+  isSavedMoodSrc(src: string): boolean {
+    return this.hasSavedMood && this.displayAssetSrc === src;
   }
 
   // Big preview circle: shows the tapped option, falling back to today's current/neutral mood
@@ -324,6 +330,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
 
   setVibe() {
     if (!this.popupSelection || this.saving || this.isParent) return;
+    if (this.isSavedMoodSrc(this.popupSelection)) return;
 
     // Safety guard: if we already hit the daily limit, don't attempt network call
     if (this.setsToday >= 2) {

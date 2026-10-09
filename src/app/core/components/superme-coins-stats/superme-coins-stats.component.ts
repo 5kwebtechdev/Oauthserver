@@ -21,7 +21,6 @@ export class SupermeCoinsStatsComponent {
   @Input() totalStreaks: number | string = 0; // total historical streaks count
 
   @Input() coinsIcon: string = 'assets/icons/superme-coin.webp';
-  @Input() trophyIcon: string = 'assets/Icons-Neutral/Icon-Trophy.webp';
   @Input() streakIcon: string = 'assets/Icons-Neutral/Icon-Streak.webp';
   @Input() badgesIcon: string = 'assets/Icons-Neutral/Icon-Badge.webp';
   @Input() successIcon: string = 'assets/Icons-Neutral/Icon-SuccessRate.webp';
@@ -29,7 +28,6 @@ export class SupermeCoinsStatsComponent {
 
 
   @Input() slot1: string = 'coins';
-  @Input() slot2: string = 'trophy';
   @Input() slot3: string = 'streak';
   @Input() slot4: string = 'badges';
 
@@ -37,8 +35,6 @@ export class SupermeCoinsStatsComponent {
     switch (slot) {
       case 'coins':
         return this.userCoins ?? 0;
-      case 'trophy':
-        return this.userDays ?? 0;
       case 'streak':
         return this.userStreaks ?? 0;
       case 'current-streak':
@@ -60,8 +56,6 @@ export class SupermeCoinsStatsComponent {
     switch (slot) {
       case 'coins':
         return this.coinsIcon;
-      case 'trophy':
-        return this.trophyIcon;
       case 'streak':
         return this.streakIcon;
       case 'current-streak':
@@ -83,13 +77,6 @@ export class SupermeCoinsStatsComponent {
     if (slot === 'coins') {
       // Navigate to the coin page inside the authenticated area
       await this.router.navigateByUrl('/authed/coin', { state: { coins: this.userCoins } } as any);
-    }
-  }
-
-  async openTrophyPageIf(slot: string) {
-    if (slot === 'trophy') {
-      // Navigate to the trophies page inside the authenticated area
-      await this.router.navigateByUrl('/authed/trophies');
     }
   }
 

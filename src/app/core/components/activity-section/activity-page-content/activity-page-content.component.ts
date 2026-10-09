@@ -18,10 +18,10 @@ import { Habit } from '../habit.types';
 import { CalendarService } from '../../../services/calendar.service';
 import { CalendarResponse } from '../../../models/calendar.model';
 import { EventApi } from '../../../api/event.api';
-import { Observable, Subscription, filter, skip, take, forkJoin } from 'rxjs';
+import { Observable, Subscription, filter, skip, take, forkJoin, of, catchError } from 'rxjs';
 import { LongPressDirective } from '../../../directives/gestureControlDirective';
 import { getEventTypeIcon } from '../event-type-icon';
-import { isHomePersonalEvent, isHomePlannerSchedule, plannerEditTab } from '../home-calendar-kind';
+import { isCalendarMirrorOfPersonalEvent, isHomePersonalEvent, isHomePlannerSchedule, plannerEditTab } from '../home-calendar-kind';
 
 interface PlannerScheduleCard {
     id: string;
@@ -574,16 +574,15 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     get showsPlannerEvents(): boolean {
-        // Events are a separate image-card section in All. The Planner tab is
-        // intentionally schedule-only, as defined by the calendar design.
-        return this.childCalendarTab === 'all' && this.childEventItems.length > 0;
+        return (this.childCalendarTab === 'all' || this.childCalendarTab === 'planner')
+            && this.childEventItems.length > 0;
     }
 
     get hasChildCalendarContent(): boolean {
         if (this.childCalendarTab === 'habit' || this.childCalendarTab === 'task') {
             return this.childVisibleItems.length > 0;
         }
-        if (this.childCalendarTab === 'planner') return this.childPlannerCards.length > 0;
+        if (this.childCalendarTab === 'planner') return this.childPlannerCards.length > 0 || this.childEventItems.length > 0;
         return this.childVisibleItems.length > 0 || this.childPlannerCards.length > 0 || this.childEventItems.length > 0;
     }
 
@@ -811,19 +810,24 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         const months = [...visibleMonths.values()];
         this.plannerLoading = true;
         this.subscriptions.add(
-            // A seven-day window can cross a month/year boundary. Fetch each
-            // represented month once, including the selected month's details.
-            forkJoin(months.map(month => this.calendarService.getUserPlannerCalendarMonth(
+            // A seven-day window can cross a month/year boundary. Personal
+            // Planner events are saved by /events/add and may not be included
+            // in /calendar/user-calendar, so fetch them for the self account.
+            // Parent-child views must stay scoped to the selected child.
+            forkJoin({ calendars: forkJoin(months.map(month => this.calendarService.getUserPlannerCalendarMonth(
                 month.getFullYear() === this.selectedDate.getFullYear()
                     && month.getMonth() === this.selectedDate.getMonth()
                     ? selectedDateString : this.dateKey(month)
-            ))).subscribe({
-                next: (responses: CalendarResponse[]) => {
+            ))), personalEvents: this.authService.isParentUser()
+                ? of([])
+                : this.eventApi.getEvents().pipe(catchError(() => of([]))) }).subscribe({
+                next: ({ calendars: responses, personalEvents }) => {
                     if (!this.isCurrentPlannerRequest(requestId, contextKey, selectedDateString)) return;
                     const response = responses[0];
                     const allEvents = response.events || [];
                     const plannerItems = allEvents.filter(item => this.isPlannerSchedule(item));
-                    const eventItems = allEvents.filter(item => this.isPersonalEventRecord(item));
+                    const eventItems = allEvents.filter(item => this.isPersonalEventRecord(item)
+                        && !personalEvents.some(event => isCalendarMirrorOfPersonalEvent(item, event)));
 
                     responses.forEach((monthResponse, index) => {
                         if (monthResponse.loadError) return;
@@ -831,11 +835,12 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                         const month = months[index];
                         this.recordChildCalendarActivities(monthResponse.habits || [], 'habit', monthActivities, month);
                         this.recordChildCalendarActivities(monthResponse.tasks || [], 'task', monthActivities, month);
-                        this.recordChildCalendarActivities((monthResponse.events || []).filter(item => this.isPlannerSchedule(item)), 'planner', monthActivities, month);
+                        this.recordChildCalendarActivities(monthResponse.events || [], 'planner', monthActivities, month);
+                        this.recordChildCalendarActivities(personalEvents, 'planner', monthActivities, month);
                         this.replaceChildCalendarMonth(monthActivities, month);
                     });
                     this.childPlannerItems = this.mergeDuplicatePlannerSchedules(plannerItems);
-                    this.childEventItems = eventItems
+                    this.childEventItems = [...personalEvents, ...eventItems]
                         .filter(event => this.eventOccursOnSelectedDate(event, selectedDateString))
                         .sort((left, right) => this.getPlannerStartTimestamp(left) - this.getPlannerStartTimestamp(right));
                     this.plannerLoadError = !!response.loadError;
@@ -907,7 +912,9 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
             .map(date => this.dateKey(date));
         if (explicitDates.length) return explicitDates;
 
-        const start = this.getLocalDate(item?.startDate ?? item?.start_date ?? item?.eventDate);
+        const start = this.getLocalDate(this.isPersonalEventRecord(item)
+            ? (item?.eventDate ?? item?.event_date ?? item?.startDate ?? item?.start_date)
+            : (item?.startDate ?? item?.start_date ?? item?.eventDate ?? item?.event_date));
         const end = this.getLocalDate(item?.endDate ?? item?.end_date) || start;
         if (!start) return [];
 
@@ -936,7 +943,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     private eventOccursOnSelectedDate(event: any, selectedDate: string): boolean {
-        const eventDate = String(event?.startDate || event?.eventDate || '').slice(0, 10);
+        const eventDate = String(event?.eventDate || event?.event_date || event?.startDate || event?.start_date || '').slice(0, 10);
         if (eventDate === selectedDate) return true;
         if (String(event?.recurrence).toUpperCase() === 'YEARLY') return eventDate.slice(5) === selectedDate.slice(5);
         if (String(event?.recurrence).toUpperCase() === 'MONTHLY') return eventDate.slice(8) === selectedDate.slice(8);

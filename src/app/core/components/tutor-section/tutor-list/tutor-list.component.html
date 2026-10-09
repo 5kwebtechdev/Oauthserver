@@ -46,8 +46,8 @@
         <!-- Bottom row: fees + CTA -->
         <div *ngIf="!isGuestView" class="tc__bottom">
           <div class="tc__fees">
-            <span class="tc__price">₹ {{ t.hourlyRate || 0 }}</span>
-            <span class="tc__per">{{ t.feeLabel || '/hr' }}</span>
+            <span class="tc__price">₹{{ t.hourlyRate || 0 }}</span>
+            <span class="tc__per">{{ itemLabel === 'Tutor' ? '/ Hour' : (t.feeLabel || '/hr') }}</span>
           </div>
           <superme-button type="columbian-blue" small [text]="'View Profile'" (click)="onViewProfile(t)"
             [attr.aria-label]="'View profile of ' + (t.name || itemLabel)"></superme-button>

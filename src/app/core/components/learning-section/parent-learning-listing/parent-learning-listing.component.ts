@@ -8,6 +8,7 @@ import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FooterComponent } from '../../footer/footer.component';
 import { LearningCardData } from '../../../models/learning.models';
+import { articleRoute } from '../../../models/article-route';
 import { LearningService } from '../../../services/learning.service';
 import { AuthService } from '../../../services/auth.service';
 
@@ -223,7 +224,7 @@ export class ParentLearningListingComponent implements OnInit, OnDestroy {
     };
 
     if (item.type === 'article') {
-      void this.router.navigate(['/content/article', item.id], extras);
+      void this.router.navigate(articleRoute(item), extras);
       return;
     }
     void this.router.navigate(['/authed/content/description', item.id], extras);

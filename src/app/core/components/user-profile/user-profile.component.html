@@ -1,10 +1,10 @@
-<ion-content>
-  <superme-navigator heading="My Profile" backIcon="arrowSvg" (back)="onBack()"></superme-navigator>
-  <div class="profile">
+<ion-content [class.parent-profile-page]="isParentProfile()">
+  <superme-navigator [heading]="isParentProfile() ? 'Profile' : 'My Profile'" backIcon="arrowSvg" (back)="onBack()"></superme-navigator>
+  <div class="profile" [class.profile--parent]="isParentProfile()">
 
-    <section class="user-profile-main">
+    <section class="user-profile-main" [class.user-profile-main--parent]="isParentProfile()">
       <div class="user-profile">
-        <div class="avatar w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
+        <div class="avatar w-100 d-flex justify-content-center gap-2 flex-column align-items-center" *ngIf="!isParentProfile()">
           <div class="avatar-wrapper">
             <app-img
               [src]="userAvatarUrl || user?.avatarUrl || 'assets/figma/avatars/18-plus-male-1.webp'"
@@ -19,18 +19,18 @@
           </div>
         </div>
         <div class="parent-family-tree" *ngIf="isParentProfile(); else rewardStats" aria-label="My Family" role="group">
-          <h2>My Family</h2>
+          <h2><img src="assets/figma/journal/adult/family.svg" alt="" aria-hidden="true">My Family</h2>
           <ng-container *ngIf="creator; else noFamilyDetails">
-            <div class="parent-family-tree__creator">
-              <div class="parent-family-tree__avatar">
-                <img *ngIf="getMemberAvatar(creator)?.url as avatar; else creatorInitial" [src]="avatar" [alt]="familyMemberName(creator) + ' avatar'">
-                <ng-template #creatorInitial>{{ getInitial(creator.name) }}</ng-template>
+            <div class="parent-family-tree__grid">
+              <div class="parent-family-tree__creator">
+                <div class="parent-family-tree__avatar">
+                  <img *ngIf="getMemberAvatar(creator)?.url as avatar; else creatorInitial" [src]="avatar" [alt]="familyMemberName(creator) + ' avatar'">
+                  <ng-template #creatorInitial>{{ getInitial(creator.name) }}</ng-template>
+                </div>
+                <strong>{{ familyMemberName(creator) }}</strong>
+                <span *ngIf="creator.age">{{ creator.age }} years old</span>
+                <small>{{ familyMemberRole(creator, true) }}</small>
               </div>
-              <strong>{{ familyMemberName(creator) }}</strong>
-              <span *ngIf="creator.age">{{ creator.age }} years old</span>
-              <small>{{ familyMemberRole(creator, true) }}</small>
-            </div>
-            <div class="parent-family-tree__members" *ngIf="members.length">
               <div class="parent-family-tree__member" *ngFor="let member of members">
                 <div class="parent-family-tree__avatar">
                   <img *ngIf="getMemberAvatar(member)?.url as avatar; else memberInitial" [src]="avatar" [alt]="familyMemberName(member) + ' avatar'">

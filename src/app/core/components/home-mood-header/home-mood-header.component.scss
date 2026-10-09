@@ -37,6 +37,9 @@
   > img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(40,37,39,.5)); }
   strong { font-size: 13px; line-height: 18px; }
 }
+.mood-stat--leaderboard { width: 65px; }
+.mood-stat--leaderboard > img { width: 40px; height: 40px; }
+.mood-stat--leaderboard strong { font-size: 10px; letter-spacing: -.25px; white-space: nowrap; }
 .mood-stats__divider { width: 1px; height: 42px; }
 // Each crop is the matching pet layer from Figma's six-state mood sheet.
 .mood-pet--panda {

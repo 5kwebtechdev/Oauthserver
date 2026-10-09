@@ -1,99 +1,86 @@
 <ion-content class="streaks-page" fullscreen>
-    <superme-navigator heading="Your Streak Journey" backIcon="arrowSvg"></superme-navigator>
+  <main class="streak-shell">
+    <section class="hero">
+      <button type="button" class="back-button" (click)="goBack()" aria-label="Go back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>
+      </button>
+      <div class="hero-copy">
+        <h1>Streak</h1>
+        <p>Small steps, big progress.<br />Keep the streak alive!</p>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <img src="assets/figma/streak-screen/hero.png" alt="" />
+      </div>
+    </section>
 
-    <div class="page-body">
+    <section class="summary-card" aria-label="Your streak statistics">
+      <div class="summary-stat">
+        <img src="assets/app-assets/activity-detail/progress-streak-hd.webp" alt="" />
+        <span class="summary-label">Current Streak</span>
+        <strong>{{ currentDays }} <small>{{ currentDays === 1 ? 'Day' : 'Days' }}</small></strong>
+      </div>
+      <div class="summary-stat">
+        <img src="assets/Icons-Neutral/Icon-BestStreak.webp" alt="" />
+        <span class="summary-label">Best Streak</span>
+        <strong>{{ bestDays }} <small>{{ bestDays === 1 ? 'Day' : 'Days' }}</small></strong>
+      </div>
+      <div class="summary-stat">
+        <img src="assets/Icons-Neutral/Icon-TotalActiveDays.webp" alt="" />
+        <span class="summary-label">Total Active Days</span>
+        <strong>{{ totalActiveDays }} <small>{{ totalActiveDays === 1 ? 'Day' : 'Days' }}</small></strong>
+      </div>
+    </section>
 
-        <!-- ── Stat cards ───────────────────────────────────────────── -->
-        <div class="stats-row">
-            <div class="stat-card">
-                <span class="stat-label">Current Streak</span>
-                <img src="assets/app-assets/activity-detail/progress-streak-hd.webp" alt="Current streak" class="stat-icon" />
-                <span class="stat-value">{{ currentUser?.currentStreak || 0 }} days</span>
-            </div>
-
-            <div class="stat-card">
-                <span class="stat-label">Best Streak</span>
-                <img src="assets/app-assets/activity-detail/progress-highest-streak-hd.webp" alt="Best streak" class="stat-icon" />
-                <span class="stat-value">{{ currentUser?.highestStreak || 0 }} days</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">Total Days Active</span>
-                <img src="assets/Icons-Neutral/Icon-TotalActiveDays.webp" alt="Total active days" class="stat-icon" />
-                <span class="stat-value">{{ currentUser?.totalActiveDays || 0 }} days</span>
-            </div>
+    <section class="milestone-card" aria-label="Streak milestones">
+      <div class="milestone-overview">
+        <div class="overview-item">
+          <img src="assets/figma/streak-screen/gift.png" alt="" />
+          <div><span>Next Milestone</span><strong *ngIf="nextMilestone; else allDone">{{ nextMilestone.days }} <small>Days</small></strong><ng-template #allDone><strong>All reached!</strong></ng-template></div>
         </div>
-
-        <!-- ── Leaderboard section ──────────────────────────────────── -->
-        <div class="leaderboard-section">
-
-            <!-- Header row: title + pet banner -->
-            <div class="section-header">
-                <h2 class="section-title">Top Streakers</h2>
-                <div class="pet-banner" *ngIf="currentUser?.rank">
-                    <app-speech-bubble
-                        [message]="currentUser?.petMessage || ('You\'re ranked #' + currentUser!.rank + ', Keep going champ!')"
-                        type="talking" arrowSide="right" color="#F0AD4E">
-                    </app-speech-bubble>
-                    <superme-pet mood="happy" [size]="44"></superme-pet>
-                </div>
-            </div>
-
-            <!-- Leaderboard list -->
-            <div class="leaderboard-card">
-                <ul class="streaks-list">
-                    <li *ngFor="let item of rankedStreaks"
-                        class="streak-item"
-                        [class.is-current-user]="currentUser && item.rank === currentUser.rank">
-
-                        <!-- Rank -->
-                        <div class="rank-wrap">
-                            <ng-container [ngSwitch]="item.rank">
-                                <img *ngSwitchCase="1" src="assets/Icons-Neutral/Icon-Trophy.webp" alt="1st" class="rank-trophy" />
-                                <span *ngSwitchDefault class="rank-num">{{ item.rank }}</span>
-                            </ng-container>
-                        </div>
-
-                        <!-- Avatar -->
-                        <div class="avatar-wrap" [class.avatar-highlight]="currentUser && item.rank === currentUser.rank">
-                            <img class="avatar"
-                                 [src]="item.avatar || 'assets/avatar/ChildAvatar.webp'"
-                                 [alt]="item.avatarAlt || item.avatarName + ' avatar'" />
-                        </div>
-
-                        <!-- Name -->
-                        <span class="name">{{ item.avatarName }}</span>
-
-                        <!-- Days -->
-                        <span class="days">{{ item.highestStreak }} days</span>
-                    </li>
-
-                    <!-- ── Current user row (shown when not in top list) ── -->
-                    <ng-container *ngIf="currentUser && currentUser.rank && !currentUserInList">
-                        <!-- Ellipsis separator -->
-                        <li class="ellipsis-row">
-                            <span>•••</span>
-                        </li>
-                        <!-- You row -->
-                        <li class="streak-item is-current-user">
-                            <div class="rank-wrap">
-                                <span class="rank-num">{{ currentUser.rank }}</span>
-                            </div>
-                            <div class="avatar-wrap avatar-highlight">
-                                <img class="avatar"
-                                     [src]="currentUserAvatarUrl || 'assets/avatar/ChildAvatar.webp'"
-                                     alt="Your avatar" />
-                            </div>
-                            <span class="name">
-                                {{ currentUser.avatarName || 'You' }}
-                                <span class="you-badge">You</span>
-                            </span>
-                            <span class="days">{{ currentUser.highestStreak || currentUser.currentStreak || 0 }} days</span>
-                        </li>
-                    </ng-container>
-                </ul>
-            </div>
+        <div class="overview-item reward">
+          <img src="assets/icons/superme-coin.webp" alt="" />
+          <div><span>Reward</span><strong *ngIf="nextMilestone; else rewardsDone">{{ nextMilestone.coins }} <small>Coins</small></strong><ng-template #rewardsDone><strong>All earned</strong></ng-template></div>
         </div>
-    </div>
+      </div>
+      <div class="progress-track" role="progressbar" [attr.aria-valuenow]="milestoneProgress" aria-valuemin="0" aria-valuemax="100" aria-label="Progress toward next milestone">
+        <div class="progress-fill" [style.width.%]="milestoneProgress"></div>
+      </div>
+      <p class="progress-caption" *ngIf="nextMilestone; else completedCaption">{{ currentDays - milestoneStart }} of {{ nextMilestone.days - milestoneStart }} days completed</p>
+      <ng-template #completedCaption><p class="progress-caption">Every milestone reached</p></ng-template>
 
-    <app-footer></app-footer>
+      <h2>Milestones</h2>
+      <div class="milestone-grid">
+        <div class="milestone" *ngFor="let item of milestones" [class.reached]="isMilestoneClaimed(item)">
+          <span class="milestone-node"><img *ngIf="!isMilestoneClaimed(item)" src="assets/figma/streak-milestones/lock.svg" alt="Locked" /><img *ngIf="isMilestoneClaimed(item)" class="claimed-flame" src="assets/app-assets/activity-detail/progress-streak-hd.webp" alt="Reached" /></span>
+          <span class="milestone-days">{{ item.days }} Days</span>
+          <span class="milestone-coins"><img src="assets/icons/superme-coin.webp" alt="" />{{ item.coins }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="calendar-section" aria-label="Streak calendar" [attr.aria-busy]="calendarLoading">
+      <div class="month-nav">
+        <button type="button" (click)="changeMonth(-1)" aria-label="Previous month"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg></button>
+        <h2>{{ monthLabel }}</h2>
+        <button type="button" (click)="changeMonth(1)" [disabled]="!canGoForward" aria-label="Next month"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg></button>
+      </div>
+      <p class="calendar-error" *ngIf="calendarError" role="alert">Calendar unavailable. <button type="button" (click)="retryCalendar()">Try again</button></p>
+      <div class="calendar-grid" role="grid">
+        <span class="weekday" *ngFor="let weekday of weekdays">{{ weekday }}</span>
+        <span class="calendar-day" *ngFor="let day of calendarDays" [class.outside]="day.outside"
+          [class.today]="day.today" [class.future]="day.future"
+          [class.streak]="day.state === 'streak'" [class.restored]="day.state === 'restored'"
+          [class.missed]="day.state === 'missed'"
+          [attr.aria-current]="day.today ? 'date' : null"
+          [attr.aria-label]="day.key + (day.today ? ', today' : '') + (day.future ? '' : ', ' + day.state)">
+          {{ day.date }}
+        </span>
+      </div>
+      <div class="legend" aria-label="Calendar legend">
+        <span><i class="legend-streak"></i>Streak</span>
+        <span><i class="legend-restored"></i>Restored</span>
+        <span><i class="legend-missed"></i>Missed</span>
+      </div>
+    </section>
+  </main>
 </ion-content>

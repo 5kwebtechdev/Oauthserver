@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { ActivatedRouteSnapshot, PreloadAllModules, RouterModule, RouterStateSnapshot, Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/authe-guard/authe-guard';
 import { legacyAuthedRedirectGuard } from './core/authe-guard/authe-guard';
 import { OurPoliciesComponent } from './core/components/user-profile/our-policies/our-policies.component';
@@ -119,8 +119,16 @@ const routes: Routes = [
     component: OurPoliciesComponent
   },
   {
+    path: 'privacy-policy',
+    component: OurPoliciesComponent
+  },
+  {
+    path: 'article/:slug',
+    loadComponent: () => import('./core/components/learning-section/article-page/article-page.component').then(m => m.ArticlePageComponent)
+  },
+  {
     path: 'articles/:slug',
-    canActivate: [authGuard],
+    canActivate: [(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => /^\d+$/.test(route.paramMap.get('slug') || '') ? authGuard(route, state) : true],
     loadComponent: () => import('./core/components/learning-section/article-page/article-page.component').then(m => m.ArticlePageComponent)
   },
   {

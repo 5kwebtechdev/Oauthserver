@@ -40,9 +40,8 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   private returnUrl = '/authed/content';
 
   // Keep result rewards aligned with the current Home/Insights icon set.
-  // The neutral coin/trophy artwork is legacy and no longer matches the app.
   readonly rewardCoinIcon = 'assets/icons/superme-coin.webp';
-  readonly rewardTrophyIcon = 'assets/icons/child-home-trophy-figma.webp';
+  readonly fallbackBadgeIcon = 'assets/Icons-Neutral/Icon-Badge.webp';
 
   // Results from submission
   submissionResult: ChallengeSubmissionResponse | null = null;
@@ -224,11 +223,12 @@ export class ResultPageComponent implements OnInit, OnDestroy {
 
   getBadgeIconUrl(badge: any): string {
     const title = badge?.title || badge?.name || '';
-    return this.BADGE_ICON_MAP[title] || this.rewardTrophyIcon;
+    return this.BADGE_ICON_MAP[title] || this.fallbackBadgeIcon;
   }
 
   onBadgeImageError(event: Event, _badge: any): void {
-    (event.target as HTMLImageElement).src = this.rewardTrophyIcon;
+    const image = event.target as HTMLImageElement;
+    if (!image.src.endsWith(this.fallbackBadgeIcon)) image.src = this.fallbackBadgeIcon;
   }
 
   // Returns true if the badge was earned — tries multiple boolean field names

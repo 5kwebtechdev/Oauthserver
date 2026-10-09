@@ -412,7 +412,7 @@
               [class.username-input-shell--error]="shouldShowUsernameError()"
               [class.username-input-shell--success]="shouldShowUsernameSuccess()">
               <input formControlName="username" type="text" placeholder="Enter your username"
-                autocomplete="username" autocapitalize="none" spellcheck="false"
+                autocomplete="username" autocapitalize="none" spellcheck="false" [attr.maxlength]="usernameMaxLength"
                 (blur)="onUsernameBlur()" [attr.aria-invalid]="shouldShowUsernameError()"
                 aria-describedby="username-validation-message username-policy-message"
                 [attr.aria-busy]="usernameAvailability === 'checking'" />

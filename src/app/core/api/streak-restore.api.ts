@@ -16,7 +16,23 @@ export interface StreakStatus {
   nextMilestoneDay?: number | null;
   nextMilestoneCoins?: number | null;
   daysToNextMilestone?: number | null;
+  milestones?: StreakMilestone[];
   last7Days?: StreakStatusDay[];
+}
+
+export interface StreakMilestone {
+  days: number;
+  coins: number;
+  claimed?: boolean;
+}
+
+export type StreakCalendarDayStatus = 'STREAK' | 'RESTORED' | 'MISSED' | 'UNKNOWN';
+
+export interface StreakCalendarResponse {
+  year: number;
+  month: number;
+  timezone: string;
+  days: { date: string; status: StreakCalendarDayStatus }[];
 }
 
 export interface StreakStatusDay {
@@ -60,6 +76,16 @@ export class StreakRestoreApi {
   getStreakStatus(userId: number): Observable<StreakStatus> {
     const params = new HttpParams().set('userId', String(userId));
     return this.http.get<StreakStatus>(`${this.base}/login-streak/status`, {
+      headers: this.headers(),
+      params
+    });
+  }
+
+  getStreakCalendar(year: number, month: number): Observable<StreakCalendarResponse> {
+    const params = new HttpParams()
+      .set('year', String(year))
+      .set('month', String(month));
+    return this.http.get<StreakCalendarResponse>(`${this.base}/login-streak/calendar`, {
       headers: this.headers(),
       params
     });

@@ -24,7 +24,7 @@
 
       <div class="login-card">
 
-      <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="login-form" autocomplete="on">
+      <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="login-form" autocomplete="off">
         <div class="login-field">
           <label class="login-sr-only" for="login-email">Email address</label>
           <div class="login-input-wrap" [class.login-input-wrap--error]="email?.invalid && email?.dirty">
@@ -41,8 +41,8 @@
           <label class="login-sr-only" for="login-password">Password</label>
           <div class="login-password-wrap" [class.login-input-wrap--error]="password?.invalid && password?.dirty">
             <input #passwordInput id="login-password" formControlName="password" name="password"
-              autocomplete="current-password" [type]="hidePassword ? 'password' : 'text'"
-              placeholder="Enter Your Password" (change)="onPasswordAutofill($event)" />
+              autocomplete="new-password" [type]="hidePassword ? 'password' : 'text'"
+              placeholder="Enter Your Password" />
             <button type="button" class="login-eye-btn" (click)="hidePassword = !hidePassword"
               [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'">
               <img *ngIf="hidePassword" src="assets/icons/login-eye-figma.svg" alt="" aria-hidden="true" />

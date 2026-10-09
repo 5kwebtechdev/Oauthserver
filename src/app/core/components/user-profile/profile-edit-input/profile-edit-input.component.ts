@@ -16,6 +16,7 @@ export class ProfileEditInputComponent {
   @Input() type: string = 'text';
   @Input() placeholder: string = '';
   @Input() value: string | null = null;
+  @Input() maxLength: number | null = null;
   @Input() disabled = false;
   @Input() suggestions: string[] = [];
   @Input() showSuggestions: boolean = false;

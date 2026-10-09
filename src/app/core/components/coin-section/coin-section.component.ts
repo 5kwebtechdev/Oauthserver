@@ -215,7 +215,7 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
         // Keep every streak reward on the current child-home flame artwork,
         // including APIs that call it a milestone or use a longer description.
         if (/STREAK/.test(type) || /\bstreak\b/i.test(description)) return 'assets/icons/child-home-streak-figma.webp';
-        if (/MILESTONE/.test(type) || /milestone/i.test(description)) return 'assets/Icons-Neutral/Icon-Trophy.webp';
+        if (/MILESTONE/.test(type) || /milestone/i.test(description)) return 'assets/figma/streak-screen/gift.png';
         if (/JOURNAL/.test(type)) return 'assets/figma/child-home/quick-journal.webp';
         // Use the high-resolution habit artwork used by the activity glance.
         // The legacy 24x20 `icons/Habit.webp` becomes visibly blurry at the

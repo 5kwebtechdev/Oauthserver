@@ -88,8 +88,9 @@ export class AuthInterceptor implements HttpInterceptor {
               console.warn('[AuthInterceptor] Unauthorized - Session expired, logging out');
               this.authService.logout();
             } else if (error.status === 403) {
-              // Don't redirect on 403 for login endpoint - let component handle it
-              if (!error.url?.includes('/auth/login')) {
+              // Leaderboard group access errors have a dedicated on-screen state.
+              // Keep the usual 401 session-expiry handling above unchanged.
+              if (!error.url?.includes('/auth/login') && !error.url?.includes('/leaderboard/coins')) {
                 console.warn('[AuthInterceptor] Forbidden - Access denied');
                 this.router.navigate(['/home']);
               }
