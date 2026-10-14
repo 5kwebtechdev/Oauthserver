@@ -52,7 +52,7 @@ public class LoginPageController {
         // than a broken widget with an empty sitekey.
         String turnstileWidget = turnstileSiteKey.isBlank()
                 ? ""
-                : "<div class=\"cf-turnstile\" data-sitekey=\"" + turnstileSiteKey + "\" style=\"margin:1rem 0;\"></div>";
+                : "<div class=\"cf-turnstile\" data-sitekey=\"" + turnstileSiteKey + "\"></div>";
 
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter writer = response.getWriter()) {
@@ -62,80 +62,424 @@ public class LoginPageController {
                     <html lang="en">
                       <head>
                         <meta charset="utf-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1">
-                        <meta name="theme-color" content="#f7f2ff">
+                        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+                        <meta name="theme-color" content="#f8f4ef">
+                        <meta name="mobile-web-app-capable" content="yes">
+                        <meta name="apple-mobile-web-app-capable" content="yes">
+                        <meta name="apple-mobile-web-app-status-bar-style" content="default">
                         <title>Sign in | SuperMeApp</title>
                         <style>
                           :root {
                             color-scheme: light;
                             --ink: #24203a;
+                            --ink-subtle: #514b60;
                             --muted: #777286;
                             --violet: #6840a2;
+                            --violet-light: #7b4ebc;
                             --violet-deep: #34204e;
-                            --line: #e8e3ec;
+                            --violet-tint: #f5f0fa;
+                            --line: #e5dfe8;
+                            --line-focus: #9168be;
+                            --card-bg: #ffffff;
+                            --danger-bg: #fdf2f2;
+                            --danger-text: #9b1c1c;
+                            --danger-border: #f8b4b4;
+                            --success-bg: #f3faf7;
+                            --success-text: #0e6245;
+                            --success-border: #84e1bc;
                           }
                           * { box-sizing: border-box; }
+                          html, body {
+                            margin: 0;
+                            padding: 0;
+                            width: 100%%;
+                            min-height: 100%%;
+                          }
                           body {
                             min-height: 100vh;
-                            margin: 0;
-                            display: grid;
-                            place-items: center;
-                            padding: 3rem 1.25rem;
+                            min-height: 100dvh;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            padding: max(1.25rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
                             color: var(--ink);
-                            font-family: Inter, "Segoe UI", sans-serif;
+                            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
                             background:
                               radial-gradient(ellipse at 12%% 18%%, #e8dafa 0, transparent 34rem),
                               radial-gradient(ellipse at 88%% 82%%, #f5c9dc 0, transparent 32rem),
                               radial-gradient(ellipse at 72%% 15%%, #d7eee8 0, transparent 30rem),
                               #f8f4ef;
+                            -webkit-font-smoothing: antialiased;
+                            -moz-osx-font-smoothing: grayscale;
+                            overflow-x: hidden;
                           }
-                          .auth-shell { width: min(100vw - 2.5rem, 48rem); margin: auto; }
-                          .auth-heading { margin: 0 0 1.65rem; text-align: center; }
-                          .auth-heading h1 { margin: 0; font-size: 1.45rem; font-weight: 750; letter-spacing: 0; }
-                          .auth-heading p { margin: .45rem 0 0; color: var(--muted); font-size: .95rem; }
-                          .auth-layout { display: grid; grid-template-columns: minmax(10rem, 1fr) minmax(19rem, 21rem); align-items: center; gap: 1.4rem; }
-                          .mascot-side { position: relative; display: grid; justify-items: center; align-content: center; min-height: 17rem; }
-                          .mascot-note { z-index: 1; max-width: 13.5rem; padding: 1rem 1.2rem; border: 1px solid #e9e1f0; border-radius: 1rem; background: #fff; box-shadow: 0 .8rem 2rem #49316018; text-align: center; }
-                          .mascot-note strong { display: block; color: var(--violet); font-size: 1.05rem; }
-                          .mascot-note span { display: block; margin-top: .35rem; color: var(--muted); font-size: .85rem; line-height: 1.45; }
-                          .mascot { position: relative; display: grid; place-items: center; width: 8.4rem; height: 8.4rem; margin-top: .2rem; border-radius: 50%%; background: radial-gradient(circle at 35%% 28%%, #fff 0, #f6e9da 52%%, #efd5ca 100%%); font-size: 5.2rem; filter: drop-shadow(0 .8rem .7rem #3a254022); }
-                          .auth-card { width: 100%%; padding: 1.25rem; border: 1px solid #e5dfe8; border-radius: 1.25rem; background: #fff; box-shadow: 0 1.2rem 3.5rem #34204e20, 0 .15rem .6rem #34204e0c; }
-                          .form-signin { margin: 0; }
-                          .form-signin-heading { margin: 0 0 1rem; font-size: 1.15rem; font-weight: 700; }
-                          .field { margin: 0 0 .75rem; }
-                          .field label, .form-signin > p > label:not(.sr-only) { display: block; margin: 0 0 .35rem; color: #514b60; font-size: .82rem; font-weight: 650; }
-                          .form-control { display: block; width: 100%%; min-height: 3rem; padding: .75rem .9rem; border: 1px solid var(--line); border-radius: .7rem; background: #fff; color: var(--ink); font: inherit; font-size: .95rem; box-shadow: 0 .1rem .25rem #34204e08; }
-                          .form-control:focus { outline: 3px solid #6840a226; border-color: #8d69b6; }
-                          .password-wrap { position: relative; }
-                          .password-wrap .form-control { padding-right: 3.4rem; }
-                          .password-toggle { position: absolute; top: .25rem; right: .3rem; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border: 0; border-radius: .5rem; background: transparent; color: #6b6575; cursor: pointer; }
-                          .password-toggle:hover { background: #f4eff8; }
-                          .forgot-row { margin: -.15rem 0 1rem; text-align: right; font-size: .8rem; }
-                          a { color: #63409b; font-weight: 600; }
-                          a:hover { color: #392456; }
-                          .btn { display: block; width: 100%%; min-height: 2.9rem; padding: .7rem 1rem; border: 0; border-radius: .7rem; font: inherit; font-weight: 700; cursor: pointer; }
-                          .btn-primary { color: #fff; background: linear-gradient(105deg, #7543a8, #33204d); box-shadow: 0 .35rem .85rem #51327035; }
-                          .btn-primary:hover { filter: brightness(1.08); }
-                          .divider { display: flex; align-items: center; gap: .8rem; margin: 1.25rem 0; color: var(--muted); font-size: .8rem; }
-                          .divider::before, .divider::after { height: 1px; flex: 1; background: var(--line); content: ""; }
-                          #google-signin-button { display: flex; justify-content: center; min-height: 2.5rem; }
-                          .continue-row { margin: 1rem 0 0; text-align: center; font-size: .88rem; }
-                          .signup-row { margin: 1.5rem 0 0; text-align: center; color: #514b60; font-size: .88rem; }
-                          .alert { margin: 0 0 .8rem; padding: .7rem .8rem; border-radius: .6rem; font-size: .85rem; }
-                          .alert-danger { color: #8b2635; background: #fff0f1; }
-                          .alert-success { color: #276448; background: #eaf7f0; }
-                          .text-muted { color: var(--muted); }
-                          .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-                          #register-pane { width: min(100vw - 2.5rem, 27rem); margin: auto; }
-                          #register-pane .form-signin > p { margin: .85rem 0; }
-                          #register-pane .form-signin > p > label { display: block; margin-bottom: .35rem; font-size: .85rem; font-weight: 650; }
-                          @media (max-width: 640px) {
-                            body { padding: 2rem 1rem; }
-                            .auth-shell { width: min(100vw - 2rem, 25rem); }
-                            .auth-heading { margin-bottom: 1.2rem; }
-                            .auth-layout { display: block; }
-                            .mascot-side { display: none; }
-                            .auth-card { padding: 1.15rem; }
+                          .auth-shell {
+                            width: 100%%;
+                            max-width: 48rem;
+                            margin: auto 0;
+                            padding: 0.5rem 0;
+                          }
+                          .auth-heading {
+                            margin: 0 0 1.5rem;
+                            text-align: center;
+                          }
+                          .auth-heading h1 {
+                            margin: 0;
+                            font-size: clamp(1.3rem, 4vw, 1.6rem);
+                            font-weight: 800;
+                            letter-spacing: -0.015em;
+                            color: var(--violet-deep);
+                            line-height: 1.25;
+                          }
+                          .auth-heading p {
+                            margin: 0.4rem 0 0;
+                            color: var(--muted);
+                            font-size: clamp(0.88rem, 2.5vw, 0.98rem);
+                          }
+                          .auth-layout {
+                            display: grid;
+                            grid-template-columns: minmax(11rem, 1fr) minmax(18rem, 22rem);
+                            align-items: center;
+                            gap: 1.5rem;
+                            width: 100%%;
+                          }
+                          .mascot-side {
+                            position: relative;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 17rem;
+                          }
+                          .mascot-note {
+                            z-index: 1;
+                            max-width: 14rem;
+                            padding: 0.95rem 1.2rem;
+                            border: 1px solid #ebdff5;
+                            border-radius: 1.1rem;
+                            background: rgba(255, 255, 255, 0.95);
+                            backdrop-filter: blur(8px);
+                            -webkit-backdrop-filter: blur(8px);
+                            box-shadow: 0 0.8rem 2rem rgba(73, 49, 96, 0.1);
+                            text-align: center;
+                          }
+                          .mascot-note strong {
+                            display: block;
+                            color: var(--violet);
+                            font-size: 1.05rem;
+                            font-weight: 700;
+                          }
+                          .mascot-note span {
+                            display: block;
+                            margin-top: 0.35rem;
+                            color: var(--muted);
+                            font-size: 0.85rem;
+                            line-height: 1.45;
+                          }
+                          .mascot-mobile-badge {
+                            display: none;
+                          }
+                          .mascot {
+                            position: relative;
+                            display: grid;
+                            place-items: center;
+                            width: 8.4rem;
+                            height: 8.4rem;
+                            margin-top: 0.5rem;
+                            border-radius: 50%%;
+                            background: radial-gradient(circle at 35%% 28%%, #ffffff 0, #f6e9da 52%%, #efd5ca 100%%);
+                            font-size: 5.2rem;
+                            filter: drop-shadow(0 0.8rem 0.7rem rgba(58, 37, 64, 0.15));
+                            user-select: none;
+                          }
+                          .auth-card {
+                            width: 100%%;
+                            padding: clamp(1.25rem, 4vw, 1.75rem);
+                            border: 1px solid var(--line);
+                            border-radius: 1.25rem;
+                            background: var(--card-bg);
+                            box-shadow:
+                              0 1rem 3rem rgba(52, 32, 78, 0.12),
+                              0 0.2rem 0.6rem rgba(52, 32, 78, 0.05);
+                          }
+                          .form-signin {
+                            margin: 0;
+                          }
+                          .form-signin-heading {
+                            margin: 0 0 1rem;
+                            font-size: 1.2rem;
+                            font-weight: 750;
+                            color: var(--violet-deep);
+                          }
+                          .field {
+                            margin: 0 0 0.85rem;
+                          }
+                          .field label, .form-signin > p > label:not(.sr-only) {
+                            display: block;
+                            margin: 0 0 0.4rem;
+                            color: var(--ink-subtle);
+                            font-size: 0.85rem;
+                            font-weight: 650;
+                          }
+                          .form-control {
+                            display: block;
+                            width: 100%%;
+                            min-height: 3rem;
+                            padding: 0.75rem 0.95rem;
+                            border: 1px solid var(--line);
+                            border-radius: 0.75rem;
+                            background: #ffffff;
+                            color: var(--ink);
+                            font: inherit;
+                            font-size: 16px; /* 16px prevents mobile/Android Chrome auto-zoom on focus */
+                            box-shadow: 0 0.1rem 0.25rem rgba(52, 32, 78, 0.04);
+                            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+                            -webkit-appearance: none;
+                            appearance: none;
+                          }
+                          .form-control:focus {
+                            outline: none;
+                            border-color: var(--line-focus);
+                            box-shadow: 0 0 0 3px rgba(104, 64, 162, 0.18);
+                          }
+                          .form-control::placeholder {
+                            color: #9a95a4;
+                          }
+                          select.form-control {
+                            -webkit-appearance: menulist;
+                            appearance: auto;
+                            cursor: pointer;
+                          }
+                          .password-wrap {
+                            position: relative;
+                            width: 100%%;
+                          }
+                          .password-wrap .form-control {
+                            padding-right: 3.4rem;
+                          }
+                          .password-toggle {
+                            position: absolute;
+                            top: 50%%;
+                            right: 0.35rem;
+                            transform: translateY(-50%%);
+                            display: grid;
+                            place-items: center;
+                            width: 2.6rem;
+                            height: 2.6rem;
+                            border: 0;
+                            border-radius: 0.55rem;
+                            background: transparent;
+                            color: #6b6575;
+                            cursor: pointer;
+                            touch-action: manipulation;
+                            -webkit-tap-highlight-color: transparent;
+                            transition: background-color 0.15s ease, color 0.15s ease;
+                          }
+                          .password-toggle:hover, .password-toggle:focus-visible {
+                            background: var(--violet-tint);
+                            color: var(--violet);
+                            outline: none;
+                          }
+                          .forgot-row {
+                            margin: 0.2rem 0 1rem;
+                            text-align: right;
+                            font-size: 0.85rem;
+                          }
+                          a {
+                            color: var(--violet);
+                            font-weight: 600;
+                            text-decoration: none;
+                            transition: color 0.15s ease;
+                          }
+                          a:hover, a:focus-visible {
+                            color: var(--violet-deep);
+                            text-decoration: underline;
+                          }
+                          .btn {
+                            display: inline-flex;
+                            justify-content: center;
+                            align-items: center;
+                            width: 100%%;
+                            min-height: 3rem;
+                            padding: 0.75rem 1.25rem;
+                            border: 0;
+                            border-radius: 0.75rem;
+                            font: inherit;
+                            font-size: 1rem;
+                            font-weight: 700;
+                            cursor: pointer;
+                            touch-action: manipulation;
+                            -webkit-tap-highlight-color: transparent;
+                            transition: transform 0.12s ease, filter 0.18s ease, box-shadow 0.18s ease;
+                            text-decoration: none;
+                          }
+                          .btn-primary {
+                            color: #ffffff;
+                            background: linear-gradient(105deg, #7543a8 0%%, #34204e 100%%);
+                            box-shadow: 0 0.35rem 0.9rem rgba(81, 50, 112, 0.28);
+                          }
+                          .btn-primary:hover {
+                            filter: brightness(1.08);
+                          }
+                          .btn-primary:active {
+                            transform: scale(0.985);
+                          }
+                          .btn-primary:focus-visible {
+                            outline: 3px solid var(--line-focus);
+                            outline-offset: 2px;
+                          }
+                          .cf-turnstile {
+                            display: flex;
+                            justify-content: center;
+                            width: 100%%;
+                            max-width: 100%%;
+                            margin: 0.85rem 0;
+                            overflow-x: auto;
+                          }
+                          .divider {
+                            display: flex;
+                            align-items: center;
+                            gap: 0.8rem;
+                            margin: 1.25rem 0;
+                            color: var(--muted);
+                            font-size: 0.82rem;
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            letter-spacing: 0.05em;
+                          }
+                          .divider::before, .divider::after {
+                            height: 1px;
+                            flex: 1;
+                            background: var(--line);
+                            content: "";
+                          }
+                          #google-signin-button {
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            min-height: 2.75rem;
+                            width: 100%%;
+                            overflow: hidden;
+                          }
+                          .continue-row {
+                            margin: 1.1rem 0 0;
+                            text-align: center;
+                            font-size: 0.9rem;
+                          }
+                          .signup-row {
+                            margin: 1.5rem 0 0;
+                            text-align: center;
+                            color: var(--ink-subtle);
+                            font-size: 0.92rem;
+                          }
+                          .alert {
+                            margin: 0 0 1rem;
+                            padding: 0.75rem 0.95rem;
+                            border-radius: 0.7rem;
+                            font-size: 0.88rem;
+                            line-height: 1.4;
+                            border: 1px solid transparent;
+                            word-break: break-word;
+                          }
+                          .alert-danger {
+                            color: var(--danger-text);
+                            background: var(--danger-bg);
+                            border-color: var(--danger-border);
+                          }
+                          .alert-success {
+                            color: var(--success-text);
+                            background: var(--success-bg);
+                            border-color: var(--success-border);
+                          }
+                          .text-muted {
+                            color: var(--muted);
+                          }
+                          .sr-only {
+                            position: absolute;
+                            width: 1px;
+                            height: 1px;
+                            padding: 0;
+                            margin: -1px;
+                            overflow: hidden;
+                            clip: rect(0, 0, 0, 0);
+                            white-space: nowrap;
+                            border: 0;
+                          }
+                          #register-pane {
+                            width: 100%%;
+                            max-width: 28rem;
+                            margin: 0 auto;
+                          }
+                          #register-pane .form-signin > p {
+                            margin: 0.85rem 0;
+                          }
+                          #register-pane .form-signin > p > label {
+                            display: block;
+                            margin-bottom: 0.35rem;
+                            font-size: 0.85rem;
+                            font-weight: 650;
+                            color: var(--ink-subtle);
+                          }
+                          @media (max-width: 768px) {
+                            body {
+                              padding: max(1rem, env(safe-area-inset-top)) max(0.85rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(0.85rem, env(safe-area-inset-left));
+                            }
+                            .auth-shell {
+                              max-width: 26rem;
+                            }
+                            .auth-heading {
+                              margin-bottom: 1.1rem;
+                            }
+                            .auth-layout {
+                              display: flex;
+                              flex-direction: column;
+                              gap: 0.85rem;
+                            }
+                            .mascot-side {
+                              min-height: auto;
+                              margin-bottom: 0.2rem;
+                            }
+                            .mascot-note {
+                              display: none;
+                            }
+                            .mascot {
+                              display: none;
+                            }
+                            .mascot-mobile-badge {
+                              display: inline-flex;
+                              align-items: center;
+                              gap: 0.5rem;
+                              padding: 0.45rem 0.9rem;
+                              border: 1px solid #ebdff5;
+                              border-radius: 9999px;
+                              background: rgba(255, 255, 255, 0.95);
+                              box-shadow: 0 0.35rem 1rem rgba(73, 49, 96, 0.08);
+                              font-size: 0.85rem;
+                              color: var(--violet);
+                              font-weight: 650;
+                            }
+                            .mascot-mobile-badge span {
+                              font-size: 1.15rem;
+                            }
+                            .auth-card {
+                              padding: 1.35rem 1.1rem;
+                              border-radius: 1.15rem;
+                            }
+                          }
+                          @media (max-width: 360px) {
+                            body {
+                              padding: 0.75rem 0.5rem;
+                            }
+                            .auth-card {
+                              padding: 1.15rem 0.85rem;
+                            }
+                            .auth-heading h1 {
+                              font-size: 1.25rem;
+                            }
+                            .btn {
+                              font-size: 0.94rem;
+                            }
                           }
                         </style>
                         <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -147,13 +491,16 @@ public class LoginPageController {
                             <h1>Welcome back to SuperMeApp!</h1>
                             <p>Let's unlock today's achievements.</p>
                           </header>
-                          <div class="auth-layout">
+                          <div class="auth-layout" id="auth-layout">
                             <aside class="mascot-side" aria-label="Welcome">
                               <div class="mascot-note">
                                 <strong>Hi, SuperStar!</strong>
                                 <span>Log in to continue your SuperMe adventure.</span>
                               </div>
                               <div class="mascot" aria-hidden="true">🐼</div>
+                              <div class="mascot-mobile-badge" aria-label="Welcome greeting">
+                                <span aria-hidden="true">🐼</span> Hi, SuperStar! Welcome back
+                              </div>
                             </aside>
                             <div class="auth-card" id="signin-pane">
                               <form class="form-signin" method="post" action="/login">
@@ -162,14 +509,14 @@ public class LoginPageController {
                             %s
                             <div class="field">
                               <label for="username" class="sr-only">Email or phone</label>
-                              <input type="text" id="username" name="username" class="form-control" placeholder="Email or phone" required autofocus>
+                              <input type="text" id="username" name="username" class="form-control" placeholder="Email or phone" required autofocus autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email">
                             </div>
                             <div class="field">
                               <label for="password" class="sr-only">Password</label>
                               <div class="password-wrap">
-                                <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+                                <input type="password" id="password" name="password" class="form-control" placeholder="Password" required autocomplete="current-password" autocapitalize="none" autocorrect="off">
                                 <button class="password-toggle" type="button" id="password-toggle" aria-label="Show password" title="Show password">
-                                  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                  <svg id="eye-icon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
                               </div>
                             </div>
@@ -182,7 +529,7 @@ public class LoginPageController {
                           </form>
                           <div class="divider">OR</div>
                           <div id="google-signin-button"></div>
-                          <p id="google-signin-error" style="color:#b00020; display:none;"></p>
+                          <p id="google-signin-error" class="alert alert-danger" style="display:none; margin-top:0.75rem;"></p>
                           <p class="continue-row">
                             <a href="%s">Continue with email</a>
                           </p>
@@ -197,7 +544,7 @@ public class LoginPageController {
                         <div id="register-pane" class="auth-card" style="display:none;">
                           <form class="form-signin" id="register-form">
                             <h2 class="form-signin-heading">Finish creating your account</h2>
-                            <p class="text-muted" style="font-size:0.9rem;">
+                            <p class="text-muted" style="font-size:0.9rem; margin-top:0;">
                               Signed in with Google as <strong id="register-email-label"></strong>.
                               We just need a few details SuperMeApp requires.
                             </p>
@@ -205,7 +552,7 @@ public class LoginPageController {
 
                             <p>
                               <label for="reg-name">Full name</label>
-                              <input type="text" id="reg-name" class="form-control" required>
+                              <input type="text" id="reg-name" class="form-control" autocomplete="name" required>
                             </p>
                             <p>
                               <label for="reg-gender">Gender</label>
@@ -233,8 +580,8 @@ public class LoginPageController {
                             </p>
                             <p id="reg-family-code-row" style="display:none;">
                               <label for="reg-family-code">Family code</label>
-                              <input type="text" id="reg-family-code" class="form-control" maxlength="8" placeholder="8 characters">
-                              <small class="text-muted" id="reg-family-code-hint"></small>
+                              <input type="text" id="reg-family-code" class="form-control" maxlength="8" placeholder="8 characters" autocapitalize="characters">
+                              <small class="text-muted" id="reg-family-code-hint" style="display:block; margin-top:0.3rem;"></small>
                             </p>
                             <p>
                               <label for="reg-pet">Pet name <span class="text-muted">(optional)</span></label>
@@ -242,13 +589,13 @@ public class LoginPageController {
                             </p>
                             <p>
                               <label for="reg-referral">Referral code <span class="text-muted">(optional)</span></label>
-                              <input type="text" id="reg-referral" class="form-control">
+                              <input type="text" id="reg-referral" class="form-control" autocapitalize="characters">
                             </p>
 
-                            <button class="btn btn-lg btn-primary btn-block" type="submit" id="reg-submit">
+                            <button class="btn btn-primary" type="submit" id="reg-submit" style="margin-top:1.25rem;">
                               Create account and continue
                             </button>
-                            <p style="text-align:center; margin-top:1rem;">
+                            <p style="text-align:center; margin-top:1.2rem;">
                               <a href="#" id="register-cancel">Back to sign in</a>
                             </p>
                           </form>
@@ -269,8 +616,10 @@ public class LoginPageController {
                           function openRegistrationForm(identity) {
                             document.getElementById('register-email-label').textContent = identity.email;
                             document.getElementById('reg-name').value = identity.name || '';
-                            document.getElementById('auth-layout').style.display = 'none';
-                            document.querySelector('.signup-row').style.display = 'none';
+                            var authLayout = document.getElementById('auth-layout');
+                            if (authLayout) { authLayout.style.display = 'none'; }
+                            var signupRow = document.querySelector('.signup-row');
+                            if (signupRow) { signupRow.style.display = 'none'; }
                             document.getElementById('register-pane').style.display = 'block';
                             updateFamilyFields();
                           }
@@ -293,8 +642,9 @@ public class LoginPageController {
                           }
 
                           function valueOf(id) {
-                            var raw = document.getElementById(id).value;
-                            raw = raw ? raw.trim() : '';
+                            var el = document.getElementById(id);
+                            if (!el) { return null; }
+                            var raw = el.value ? el.value.trim() : '';
                             return raw.length ? raw : null;
                           }
 
@@ -377,31 +727,68 @@ public class LoginPageController {
                                 showSignInError(err.message || 'Google sign-in failed. Please try again.');
                               });
                           }
-                          window.onload = function () {
-                            document.getElementById('reg-relationship').addEventListener('change', updateFamilyFields);
-                            document.getElementById('register-form').addEventListener('submit', submitRegistration);
-                            document.getElementById('register-cancel').addEventListener('click', function (event) {
-                              event.preventDefault();
-                              document.getElementById('register-pane').style.display = 'none';
-                              document.getElementById('auth-layout').style.display = 'grid';
-                              document.querySelector('.signup-row').style.display = 'block';
-                            });
 
-                            google.accounts.id.initialize({
-                              client_id: '%s',
-                              callback: onGoogleCredential
-                            });
+                          function renderGoogleButton() {
+                            var gBtnContainer = document.getElementById('google-signin-button');
+                            if (!gBtnContainer || typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+                              return;
+                            }
+                            var availableWidth = gBtnContainer.offsetWidth || 280;
+                            // Google Identity button width bounds: min 200, max 400
+                            var targetWidth = Math.min(Math.max(availableWidth, 200), 380);
+                            gBtnContainer.innerHTML = '';
                             google.accounts.id.renderButton(
-                              document.getElementById('google-signin-button'),
-                              { theme: 'outline', size: 'large', width: 280 }
+                              gBtnContainer,
+                              { theme: 'outline', size: 'large', width: targetWidth, shape: 'rectangular' }
                             );
-                            document.getElementById('password-toggle').addEventListener('click', function () {
-                              var password = document.getElementById('password');
-                              var showing = password.type === 'password';
-                              password.type = showing ? 'text' : 'password';
-                              this.setAttribute('aria-label', showing ? 'Hide password' : 'Show password');
-                              this.setAttribute('title', showing ? 'Hide password' : 'Show password');
-                            });
+                          }
+
+                          window.onload = function () {
+                            var relSelect = document.getElementById('reg-relationship');
+                            if (relSelect) {
+                              relSelect.addEventListener('change', updateFamilyFields);
+                            }
+                            var regForm = document.getElementById('register-form');
+                            if (regForm) {
+                              regForm.addEventListener('submit', submitRegistration);
+                            }
+                            var regCancel = document.getElementById('register-cancel');
+                            if (regCancel) {
+                              regCancel.addEventListener('click', function (event) {
+                                event.preventDefault();
+                                document.getElementById('register-pane').style.display = 'none';
+                                var authLayout = document.getElementById('auth-layout');
+                                if (authLayout) { authLayout.style.display = ''; }
+                                var signupRow = document.querySelector('.signup-row');
+                                if (signupRow) { signupRow.style.display = ''; }
+                              });
+                            }
+
+                            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                              google.accounts.id.initialize({
+                                client_id: '%s',
+                                callback: onGoogleCredential
+                              });
+                              renderGoogleButton();
+                              window.addEventListener('resize', function () {
+                                clearTimeout(window._gResizeTimer);
+                                window._gResizeTimer = setTimeout(renderGoogleButton, 200);
+                              });
+                            }
+
+                            var toggleBtn = document.getElementById('password-toggle');
+                            if (toggleBtn) {
+                              var eyeOpenSvg = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+                              var eyeOffSvg = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3.6 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>';
+                              toggleBtn.addEventListener('click', function () {
+                                var password = document.getElementById('password');
+                                var showing = password.type === 'password';
+                                password.type = showing ? 'text' : 'password';
+                                this.setAttribute('aria-label', showing ? 'Hide password' : 'Show password');
+                                this.setAttribute('title', showing ? 'Hide password' : 'Show password');
+                                this.innerHTML = showing ? eyeOffSvg : eyeOpenSvg;
+                              });
+                            }
                           };
                         </script>
                         </main>
