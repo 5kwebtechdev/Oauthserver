@@ -14,6 +14,8 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
 /**
+ *
+ * test
  * Loads the RSA signing keypair from the filesystem (see generate-keys.sh / ARCHITECTURE.md
  * for the rotation runbook) and publishes it as the JWKSource backing both JWT signing
  * and the /oauth2/jwks endpoint. Private key material never leaves this process.

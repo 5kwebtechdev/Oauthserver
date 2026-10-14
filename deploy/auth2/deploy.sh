@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 umask 077
 
 [[ $EUID -eq 0 ]] || { echo 'Deployment requires root or passwordless sudo.' >&2; exit 1; }
