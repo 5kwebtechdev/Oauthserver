@@ -1,0 +1,9 @@
+<!doctype html>
+<html>
+<head><title>Silent Refresh</title></head>
+<body>
+<script>
+  parent.postMessage(location.hash || location.search, location.origin);
+</script>
+</body>
+</html>
