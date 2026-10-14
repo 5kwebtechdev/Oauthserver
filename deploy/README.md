@@ -1,4 +1,4 @@
-# Frontend deployment on port 4202
+# Frontend deployment on port 4203
 
 Push this frontend repository's `FE` branch to deploy. Workflow:
 `.github/workflows/frontend-deploy.yml`. It uses the same three repository secrets:
@@ -8,7 +8,7 @@ build; Ubuntu needs Nginx, not Node or `ng serve`.
 
 Production URLs/client are in `src/app/core/app-config.prod.ts`. Angular replaces
 the local config through `angular.json` production `fileReplacements`.
-The callback and logout URLs derive from the browser origin, so port 4202 is used
+The callback and logout URLs derive from the browser origin, so port 4203 is used
 automatically. The default local resource API now uses port 9090 too.
 
 ## One-time server preparation
@@ -24,7 +24,7 @@ chmod 755 /var/www/auth2-frontend /var/www/auth2-frontend/releases /var/log/auth
 
 The pipeline creates releases, a `current` symlink, its Nginx config
 `/etc/nginx/auth2-frontend.conf`, and systemd service `auth2-frontend` automatically.
-This Nginx instance has its own configuration/PID and listens only on 4202.
+This Nginx instance has its own configuration/PID and listens only on 4203.
 Your existing service on 4200 is not changed.
 
 ## Required backend environment changes
@@ -32,32 +32,32 @@ Your existing service on 4200 is not changed.
 Edit `/root/Auth2.0/auth.env`, replacing these settings:
 
 ```properties
-FE_ORIGIN=http://187.127.142.16:4202
-FE_BASE_URL=http://187.127.142.16:4202/
-OAUTH_CLIENT_ID=pkce-angular-auth2-client-4202
-OAUTH_REDIRECT_URIS=http://187.127.142.16:4202/callback,http://187.127.142.16:4202/silent-refresh.html
-OAUTH_POST_LOGOUT_REDIRECT_URI=http://187.127.142.16:4202/
-FE_FORGOT_PASSWORD_URL=http://187.127.142.16:4202/forgot-password
-FE_CONTINUE_WITH_EMAIL_URL=http://187.127.142.16:4202/continue-with-email
+FE_ORIGIN=http://187.127.142.16:4203
+FE_BASE_URL=http://187.127.142.16:4203/
+OAUTH_CLIENT_ID=pkce-angular-auth2-client-4203
+OAUTH_REDIRECT_URIS=http://187.127.142.16:4203/callback,http://187.127.142.16:4203/silent-refresh.html
+OAUTH_POST_LOGOUT_REDIRECT_URI=http://187.127.142.16:4203/
+FE_FORGOT_PASSWORD_URL=http://187.127.142.16:4203/forgot-password
+FE_CONTINUE_WITH_EMAIL_URL=http://187.127.142.16:4203/continue-with-email
 ```
 
 Edit `/root/Auth2.0/resource.env`:
 
 ```properties
-FE_ORIGIN=http://187.127.142.16:4202
+FE_ORIGIN=http://187.127.142.16:4203
 SERVER_PORT=9090
 ```
 
 Keep database credentials, issuer URLs, keys, and auth port 9000 as configured.
 The new OAuth client ID is necessary because the backend seeder leaves existing
-client callback URLs unchanged. On restart it registers a new client for 4202.
+client callback URLs unchanged. On restart it registers a new client for 4203.
 
 ```bash
 chmod 600 /root/Auth2.0/auth.env /root/Auth2.0/resource.env
 systemctl restart auth2-auth auth2-resource
 ```
 
-If UFW is active, allow `ufw allow 4202/tcp`; allow the port in your provider
+If UFW is active, allow `ufw allow 4203/tcp`; allow the port in your provider
 firewall as well. Configure HTTPS for real production logins.
 
 ## Deploy and verify
@@ -68,12 +68,12 @@ startup or index/callback checks fail.
 
 ```bash
 systemctl status auth2-frontend --no-pager
-curl -i http://127.0.0.1:4202/healthz
-curl -I http://127.0.0.1:4202/callback
+curl -i http://127.0.0.1:4203/healthz
+curl -I http://127.0.0.1:4203/callback
 journalctl -u auth2-frontend -n 50 --no-pager
 ```
 
-Open `http://187.127.142.16:4202` in your browser and start login from there.
+Open `http://187.127.142.16:4203` in your browser and start login from there.
 Auth API stays on 9000; resource API stays on 9090. The public frontend contains
 no database credentials or private keys.
 

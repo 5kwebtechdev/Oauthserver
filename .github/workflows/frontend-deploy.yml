@@ -41,7 +41,7 @@ jobs:
           cp -a dist/pkce-fe/browser/. bundle/site/
           cp deploy/* bundle/
           tar -czf frontend-deploy.tar.gz -C bundle .
-      - name: Deploy frontend to port 4202
+      - name: Deploy frontend to port 4203
         env:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_USER: ${{ secrets.SERVER_USER }}

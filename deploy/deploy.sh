@@ -13,10 +13,10 @@ done
 install -d -m 0755 "$base" "$base/releases" /var/log/auth2-frontend
 exec 9>"$base/deploy.lock"
 flock -w 300 9
-listener=$(ss -H -ltnp 'sport = :4202')
+listener=$(ss -H -ltnp 'sport = :4203')
 pid=$(systemctl show auth2-frontend --property=MainPID --value 2>/dev/null || true)
 if [[ -n $listener && ( ! $pid =~ ^[1-9][0-9]*$ || $listener != *"pid=$pid,"* ) ]]; then
-  echo 'Port 4202 is occupied by another service; no deployment changes made.'; exit 1
+  echo 'Port 4203 is occupied by another service; no deployment changes made.'; exit 1
 fi
 [[ ! -e "$base/current" || -L "$base/current" ]] || { echo 'current must be a release symlink'; exit 1; }
 previous=''
@@ -59,9 +59,9 @@ systemctl restart auth2-frontend
 ready=false
 for attempt in {1..30}; do
   if systemctl is-active --quiet auth2-frontend &&
-     curl -fsS --max-time 3 http://127.0.0.1:4202/index.html -o "$stage/served-index.html" &&
+     curl -fsS --max-time 3 http://127.0.0.1:4203/index.html -o "$stage/served-index.html" &&
      cmp -s "$stage/site/index.html" "$stage/served-index.html" &&
-     curl -fsS --max-time 3 http://127.0.0.1:4202/callback -o "$stage/served-callback.html" &&
+     curl -fsS --max-time 3 http://127.0.0.1:4203/callback -o "$stage/served-callback.html" &&
      cmp -s "$stage/site/index.html" "$stage/served-callback.html"; then
     ready=true; break
   fi
@@ -69,4 +69,4 @@ for attempt in {1..30}; do
 done
 [[ $ready == true ]]
 trap - ERR
-echo 'Frontend deployed at http://187.127.142.16:4202'
+echo 'Frontend deployed at http://187.127.142.16:4203'
