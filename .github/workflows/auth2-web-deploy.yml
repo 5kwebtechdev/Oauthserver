@@ -1,7 +1,7 @@
 name: SuperMe Auth2 Web (4204)
 on:
   push:
-    branches: [Auth2.0]
+    branches: [AppFeSme]
   workflow_dispatch:
 permissions:
   contents: read
@@ -10,6 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build-and-deploy:
+    if: github.ref == 'refs/heads/AppFeSme'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

@@ -37,7 +37,7 @@ npx ng build --configuration auth2
 
 Output is `www/`. `environment.auth2.ts` enables browser PKCE with client `supermeapp-web-4204` and issuer `http://187.127.142.16:9000`. The existing production/native configurations retain their legacy auth flow. This change does not implement native PKCE or change Android Firebase distribution.
 
-The separate `.github/workflows/auth2-web-deploy.yml` runs on pushes to `Auth2.0`, or manually. Place it at the frontend GitHub repository root. It installs dependencies, checks TypeScript, runs focused PKCE tests, builds `auth2`, and deploys a versioned release over SSH.
+The separate `.github/workflows/auth2-web-deploy.yml` runs on pushes to `AppFeSme`, or manually. Place it at the frontend GitHub repository root. It installs dependencies, checks TypeScript, runs focused PKCE tests, builds `auth2`, and deploys a versioned release over SSH.
 
 Required frontend repository secrets:
 
