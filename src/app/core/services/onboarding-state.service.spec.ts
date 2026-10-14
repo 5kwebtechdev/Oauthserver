@@ -103,6 +103,43 @@ describe('OnboardingStateService', () => {
     })?.queryParams?.['step']).toBe(5);
   });
 
+  for (const provider of ['google', 'apple'] as const) {
+    it(`resumes ${provider} Parent family completion at activation without a loop`, () => {
+      service.saveRegistrationDraft({ id: 42, onboardingStep: 4, authProvider: provider,
+        selectedSignupRole: 'parent', socialDetailsCompleted: true, socialFamilyCompleted: true });
+      const restored = new OnboardingStateService();
+      expect(restored.getResumeNavigation({ id: 42, onboardingStep: 4 })).toEqual({
+        url: '/signup', queryParams: { step: 5, role: 'parent' }
+      });
+      expect(restored.isOnboardingComplete()).toBeFalse();
+      expect(restored.getResumeNavigation({ id: 42, onboardingStep: 7 })).toBeNull();
+    });
+
+    it(`does not let a stale completed draft skip pending ${provider} Parent setup`, () => {
+      service.saveRegistrationDraft({ id: 42, onboardingStep: 7, authProvider: provider,
+        selectedSignupRole: 'parent', socialDetailsCompleted: true });
+      expect(service.getResumeNavigation({ id: 42, onboardingStep: 4 })).toEqual({
+        url: '/home/instructions-for-parent', queryParams: { role: 'parent' }
+      });
+    });
+  }
+
+  it('does not reuse another account’s saved family progress', () => {
+    service.saveRegistrationDraft({ id: 1, onboardingStep: 6, authProvider: 'apple',
+      selectedSignupRole: 'parent', socialDetailsCompleted: true, socialFamilyCompleted: true });
+    service.saveRegistrationDraft({ id: 2, onboardingStep: 4, authProvider: 'google', selectedSignupRole: 'parent' });
+    expect(service.getResumeNavigation()?.queryParams?.['step']).toBe(2);
+    expect(service.getRegistrationState()?.savedData.socialFamilyCompleted).toBeUndefined();
+  });
+
+  it('keeps Email Parent profile and activation steps unchanged', () => {
+    expect(service.getResumeNavigation({ relationship: 'PARENT', onboardingStep: 4 }))
+      .toEqual({ url: '/signup', queryParams: { step: 2, role: 'parent' } });
+    expect(service.getResumeNavigation({ relationship: 'PARENT', onboardingStep: 5 }))
+      .toEqual({ url: '/signup', queryParams: { step: 5, role: 'parent' } });
+    expect(service.getResumeNavigation({ relationship: 'PARENT', onboardingStep: 7 })).toBeNull();
+  });
+
   it('never maps social onboarding to OTP or password screens', () => {
     service.saveRegistrationDraft({
       onboardingStep: 3,

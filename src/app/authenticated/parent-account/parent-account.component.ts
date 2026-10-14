@@ -1,4 +1,6 @@
-import { Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
+import { NotificationNavigationService } from '../../core/services/notification-navigation.service';
+import { NotificationUnreadService } from '../../core/services/notification-unread.service';
 import { displayName } from '../../core/models/display-name';
 import { Platform, ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from "@angular/common";
@@ -90,6 +92,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     private static readonly MANAGED_CHILD_REFRESH_KEY = 'family_children_refresh_pending';
     private static readonly MANAGED_CHILD_SNAPSHOT_KEY = 'managed_child_created_snapshot';
     private readonly destroy$ = new Subject<void>();
+    private notificationNavigation = inject(NotificationNavigationService);
+    private notificationUnread = inject(NotificationUnreadService);
     private childrenRequestId = 0;
     private moodBalanceRequestId = 0;
     private performanceRequestId = 0;
@@ -405,6 +409,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     }
 
     @ViewChild(ActivityCardComponent) activityCard?: ActivityCardComponent;
+    @ViewChild(AcademySectionComponent) academySection?: AcademySectionComponent;
     @ViewChild('messageInput') messageInput?: ElementRef<HTMLTextAreaElement>;
     constructor(
         private router: Router,
@@ -509,6 +514,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     }
 
     ngOnInit(): void {
+        this.notificationUnread.count$.pipe(takeUntil(this.destroy$)).subscribe(count => this.unreadNotificationCount = count);
+        this.notificationNavigation.changed$.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshUnreadNotificationCount());
         // global.scss caps every ion-page/ion-router-outlet to a readable content
         // width by default — this page's web layout builds its own wide
         // container internally (bp.web-container, see dashboard-web-footer and
@@ -519,6 +526,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         // Register with global pull-to-refresh service
         this.refreshService.registerRefreshHandler('ParentAccount', () => this.onGlobalRefresh());
         this.platform.resume.pipe(takeUntil(this.destroy$)).subscribe(() => {
+            this.refreshUnreadNotificationCount();
             void this.loadChildren();
         });
         // Redirect non-parent users
@@ -651,6 +659,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         ]);
         this.refreshChildrenAfterManagedChildCreation();
         this.activityCard?.refresh();
+        this.academySection?.refreshFromApi();
     }
 
     /**
@@ -1355,26 +1364,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     }
 
     private refreshUnreadNotificationCount(): void {
-        const token = this.authService.getToken();
-        if (!token) {
-            this.unreadNotificationCount = 0;
-            return;
-        }
-        const headers = new HttpHeaders({
-            Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
-            Accept: 'application/json',
-            'x-skip-loading': '1'
-        });
-        this.http.get<Array<{ readStatus: boolean }>>(`${environment.apiUrl}/user/notifications`, { headers })
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: notifications => {
-                    this.unreadNotificationCount = Array.isArray(notifications)
-                        ? notifications.filter(notification => !notification.readStatus).length
-                        : 0;
-                },
-                error: () => { this.unreadNotificationCount = 0; }
-            });
+        this.notificationUnread.refresh(this.authService.getToken());
     }
 
     openCoinPage(): void {

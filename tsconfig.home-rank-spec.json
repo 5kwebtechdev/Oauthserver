@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/core/components/home-mood-header/home-mood-header.component.spec.ts",
+    "src/app/authenticated/user-dashboard/home-leaderboard-rank.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

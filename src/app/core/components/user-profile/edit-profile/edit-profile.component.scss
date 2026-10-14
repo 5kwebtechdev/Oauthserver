@@ -106,6 +106,16 @@
   line-height: 1.4;
 }
 
+.username-availability {
+  margin-top: 8px;
+  color: #62656e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.username-availability--success { color: #248a43; }
+.username-availability--error { color: #bb2124; }
+
 .dob-confirm-backdrop {
   position: fixed;
   inset: 0;

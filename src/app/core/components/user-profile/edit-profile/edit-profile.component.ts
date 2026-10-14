@@ -16,7 +16,8 @@ import { finalize, debounceTime, distinctUntilChanged, switchMap, filter, catchE
 import { Router } from '@angular/router';
 import { ApiGender, toApiGender, toStoredGender } from '../../../models/gender.model';
 import { AvatarDefinition, AvatarService } from '../../../services/avatar.service';
-import { USERNAME_MAX_LENGTH, USERNAME_LENGTH_MESSAGES, usernameLengthError } from '../../../models/username-length';
+import { USERNAME_MAX_LENGTH } from '../../../models/username-length';
+import { USERNAME_RULE_MESSAGES, usernameRuleError } from '../../../models/username-rules';
 
 type ProfileGender = 'Male' | 'Female' | 'PreferNotToSay';
 
@@ -117,6 +118,9 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   usernameChangeLocked = false;
   usernameStatusLoading = true;
   usernameStatusUnavailable = false;
+  usernameAvailability: 'idle' | 'checking' | 'available' | 'taken' | 'unavailable' = 'idle';
+  private usernameCheckTimer: ReturnType<typeof setTimeout> | null = null;
+  private usernameCheckSubscription?: Subscription;
   readonly usernameLockedMessage = 'Your username can only be changed once. It has already been updated. If it is incorrect, please contact support.';
   dobChangeLocked = false;
   dobStatusLoading = true;
@@ -507,6 +511,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.usernameCheckTimer) clearTimeout(this.usernameCheckTimer);
+    this.usernameCheckSubscription?.unsubscribe();
     this.subscription.unsubscribe();
   }
   saveProfile(): void {
@@ -524,6 +530,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       }
       this.validateAvatarUsername(currentUsername);
       if (this.showAvatarNameError) return;
+      if (this.usernameAvailability !== 'available') {
+        this.coreService.triggerToasrt('Please wait until your username is confirmed available.');
+        return;
+      }
     }
     const currentDob = this.formatDateForBackend(this.profileForm.get('dob')?.value || '');
     const originalDob = this.initialValues?.dob ? this.formatDateForBackend(this.initialValues.dob) : '';
@@ -670,12 +680,18 @@ export class EditProfileComponent implements OnInit, OnDestroy {
               this.coreService.triggerToasrt(this.dobLockedMessage);
               return;
             }
-            if (payload.username !== undefined && /username/i.test(apiMessage) && /(?:once|already|change|update)/i.test(apiMessage)) {
+            if (payload.username !== undefined && /username/i.test(apiMessage) && /(?:only once|already (?:changed|updated)|cannot be changed|can't be changed)/i.test(apiMessage)) {
               this.usernameChangeLocked = true;
               this.username = this.initialValues?.username ?? null;
               this.avatarName = this.initialValues?.avatarName ?? null;
               this.coreAuthService.updateUserData({ usernameChanged: true });
               this.coreService.triggerToasrt(this.usernameLockedMessage);
+              return;
+            }
+            if (payload.username !== undefined && /username/i.test(apiMessage) && /(?:already exists|already taken|unavailable|duplicate)/i.test(apiMessage)) {
+              this.usernameAvailability = 'taken';
+              this.avatarNameError = 'Oops! Someone already has this username';
+              this.showAvatarNameError = true;
               return;
             }
 
@@ -893,6 +909,9 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   onUsernameChange(value: string | null): void {
     if (this.usernameChangeLocked || this.usernameStatusLoading || this.usernameStatusUnavailable) return;
+    if (this.usernameCheckTimer) clearTimeout(this.usernameCheckTimer);
+    this.usernameCheckSubscription?.unsubscribe();
+    this.usernameAvailability = 'idle';
     // Clear any previous avatar-suggestion error when user types manually
     this.avatarSuggestionError = null;
     this.username = value || '';
@@ -905,6 +924,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       this.showAvatarNameError = false;
     } else {
       this.validateAvatarUsername(v);
+      if (!this.showAvatarNameError) this.scheduleUsernameCheck(v);
     }
     if (v.trim().length >= 4) {
       this.avatarInput$.next(v.trim());
@@ -927,25 +947,42 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     this.showAvatarSuggestions = false;
     this.avatarSuggestionError = null;
     this.validateAvatarUsername(s);
+    this.scheduleUsernameCheck(s);
+  }
+
+  private scheduleUsernameCheck(value: string): void {
+    if (this.usernameCheckTimer) clearTimeout(this.usernameCheckTimer);
+    this.usernameCheckSubscription?.unsubscribe();
+    this.usernameAvailability = 'idle';
+    if (this.showAvatarNameError) return;
+    this.usernameCheckTimer = setTimeout(() => {
+      if (this.displayUsername !== value) return;
+      this.usernameAvailability = 'checking';
+      this.usernameCheckSubscription = this.coreAuthService.checkUsernameExists(value).subscribe({
+        next: exists => {
+          if (this.displayUsername !== value) return;
+          this.usernameAvailability = exists ? 'taken' : 'available';
+          this.avatarNameError = exists ? 'Oops! Someone already has this username' : null;
+          this.showAvatarNameError = exists;
+        },
+        error: () => {
+          if (this.displayUsername !== value) return;
+          this.usernameAvailability = 'unavailable';
+          this.avatarNameError = 'Could not check this username. Please try again.';
+          this.showAvatarNameError = true;
+        }
+      });
+    }, 450);
   }
 
   /** Apply the PRD username rules while the user types in Edit Profile. */
   private validateAvatarUsername(value: string): void {
-    const lengthError = value ? usernameLengthError(value) : null;
+    const ruleError = usernameRuleError(value, this.fullName || '');
     if (!value) {
       this.avatarNameError = 'Username is required.';
       this.showAvatarNameError = true;
-    } else if (lengthError) {
-      this.avatarNameError = USERNAME_LENGTH_MESSAGES[lengthError];
-      this.showAvatarNameError = true;
-    } else if (/\s/.test(value)) {
-      this.avatarNameError = "Spaces aren't allowed. Use _ instead";
-      this.showAvatarNameError = true;
-    } else if (/[A-Z]/.test(value)) {
-      this.avatarNameError = 'Only lowercase letters allowed';
-      this.showAvatarNameError = true;
-    } else if (!/^[a-z0-9_]+$/.test(value)) {
-      this.avatarNameError = 'Only letters, numbers, and underscore are allowed.';
+    } else if (ruleError) {
+      this.avatarNameError = USERNAME_RULE_MESSAGES[ruleError];
       this.showAvatarNameError = true;
     } else {
       this.avatarNameError = null;
@@ -962,6 +999,17 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     } else {
       this.fullNameError = null;
       this.showFullNameError = false;
+    }
+    const originalUsername = this.initialValues?.username !== null
+      ? (this.initialValues?.username || '').trim()
+      : (this.initialValues?.avatarName || '').trim();
+    if (this.displayUsername.trim() !== originalUsername) {
+      this.validateAvatarUsername(this.displayUsername);
+      if (this.showAvatarNameError) {
+        if (this.usernameCheckTimer) clearTimeout(this.usernameCheckTimer);
+        this.usernameCheckSubscription?.unsubscribe();
+        this.usernameAvailability = 'idle';
+      }
     }
   }
 
@@ -1151,6 +1199,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     // An edited username must satisfy the current rules. A stored, unchanged
     // username may still be longer than the new limit.
     if (this.showAvatarNameError) return true;
+    const originalUsername = this.initialValues?.username !== null
+      ? (this.initialValues?.username || '').trim()
+      : (this.initialValues?.avatarName || '').trim();
+    if (this.displayUsername.trim() !== originalUsername && this.usernameAvailability !== 'available') return true;
 
     return false;
   }

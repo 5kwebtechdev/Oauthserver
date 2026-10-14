@@ -372,7 +372,7 @@
 
       <div class="profile">
         <form [formGroup]="profileForm">
-          <ng-container *ngIf="!isOAuthSignup; else oauthIdentityProvided">
+          <ng-container *ngIf="!isOAuthSignup || currentRole === 'parent'; else oauthIdentityProvided">
             <h4 class="profile-field-heading">
               <span class="profile-field-title">Full Name <span class="profile-required-marker" aria-label="required">*</span></span>
             </h4>
@@ -412,13 +412,13 @@
               [class.username-input-shell--error]="shouldShowUsernameError()"
               [class.username-input-shell--success]="shouldShowUsernameSuccess()">
               <input formControlName="username" type="text" placeholder="Enter your username"
-                autocomplete="username" autocapitalize="none" spellcheck="false" [attr.maxlength]="usernameMaxLength"
+                autocomplete="username" autocapitalize="none" spellcheck="false"
                 (blur)="onUsernameBlur()" [attr.aria-invalid]="shouldShowUsernameError()"
                 aria-describedby="username-validation-message username-policy-message"
                 [attr.aria-busy]="usernameAvailability === 'checking'" />
               <i *ngIf="shouldShowUsernameSuccess()"
                 class="fa-solid fa-check username-status-icon username-status-icon--success" aria-hidden="true"></i>
-              <i *ngIf="usernameAvailability === 'taken'"
+              <i *ngIf="shouldShowUsernameError()"
                 class="fa-solid fa-xmark username-status-icon username-status-icon--error" aria-hidden="true"></i>
             </div>
 
@@ -433,7 +433,7 @@
 
             <p id="username-policy-message" class="username-policy-note" *ngIf="shouldShowUsernameSuccess()" role="status">
               <i class="fa-solid fa-clock" aria-hidden="true"></i>
-              <span>Once saved, you can change your username again after 30 days.</span>
+              <span>After onboarding, you can change your username only once in Profile Settings.</span>
             </p>
           </div>
           </ng-container>
@@ -460,7 +460,7 @@
 
           <section class="profile-dob-field">
             <h4 class="profile-field-heading">
-              <span class="profile-field-title">Date of Birth <span *ngIf="!isOAuthSignup" class="profile-required-marker" aria-label="required">*</span></span>
+              <span class="profile-field-title">Date of Birth <span *ngIf="!isOAuthSignup || currentRole === 'parent'" class="profile-required-marker" aria-label="required">*</span></span>
               <span class="profile-field-meta">
                 <span *ngIf="currentRole === 'self' || currentRole === 'child'"
                   class="profile-field-hint profile-field-purpose">

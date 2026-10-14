@@ -68,10 +68,10 @@
         </span>
         <span class="academy__progress-label">
           <em>{{ lesson.ctaLabel || lesson.lessonStatus || 'Ready to continue' }}</em>
-          <small>{{ getLessonProgress(lesson) }}%</small>
+          <small>{{ getLessonProgress(lesson) === null ? '—' : getLessonProgress(lesson) + '%' }}</small>
         </span>
         <span class="academy__progress-track">
-          <span [style.width.%]="getLessonProgress(lesson)"></span>
+          <span [style.width.%]="getLessonProgress(lesson) ?? 0"></span>
         </span>
       </button>
     </div>

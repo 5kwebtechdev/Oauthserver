@@ -1,7 +1,7 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SocialMediaComponent } from './social-media.component';
 import { AuthService } from '../../services/auth.service';
 import { OnboardingStateService } from '../../services/onboarding-state.service';
@@ -46,6 +46,7 @@ describe('Google signup request sequencing', () => {
     signup = Object.create(SignupComponent.prototype);
     Object.assign(signup, { authService: auth, onboardingState: onboarding,
       registrationInProgress: false, profileContinueInProgress: false, managedChildSignup: false,
+      signupForm: new FormGroup({ email: new FormControl(identity.email) }),
       profileForm: new FormGroup({ name: new FormControl('Chosen Name'), username: new FormControl('chosenuser'),
         phone: new FormControl(''), dob: new FormControl('2000-01-01') }),
       avatarSelected: 1, gender: 'male', selectedCountry: { code: '+91' },
@@ -252,6 +253,77 @@ describe('Google signup request sequencing', () => {
     completion.flush({ token: 'parent-session', user: { id: 42, onboardingStep: 6 } });
   });
 
+  for (const provider of ['google', 'apple'] as const) {
+    it(`requires Parent DOB for ${provider} just as for Email signup`, () => {
+      sessionStorage.setItem('signup_role', 'parent');
+      sessionStorage.setItem('signup_via_oauth', 'true');
+      sessionStorage.setItem('oauth_signup_provider', provider);
+      const validate = signup.profileIdentityValidator([Validators.required]);
+      expect(validate(new FormControl(''))).toEqual({ required: true });
+      expect(validate(new FormControl('1990-01-01'))).toBeNull();
+      sessionStorage.removeItem('signup_via_oauth');
+      expect(validate(new FormControl(''))).toEqual({ required: true });
+    });
+
+    it(`keeps new ${provider} Parents in family setup after saving profile details`, async () => {
+      sessionStorage.setItem('signup_role', 'parent');
+      await authenticateNewUser();
+      sessionStorage.setItem('oauth_signup_provider', provider);
+      await signup.registerOrProceed();
+      const request = http.expectOne('/v1/auth/oauth2/mobile-login');
+      expect(request.request.body.provider).toBe(provider);
+      request.flush({ token: 'session', user: {
+        id: 42, relationship: 'PARENT', onboardingStep: 4, family: { id: 11 }
+      } });
+      expect(signup.navCtrl.navigateRoot).toHaveBeenCalledOnceWith('/home/instructions-for-parent', {
+        queryParams: { role: 'parent' }, animated: false
+      });
+      expect(onboarding.getResumeNavigation()).toEqual({
+        url: '/home/instructions-for-parent', queryParams: { role: 'parent' }
+      });
+      http.expectNone('/v1/auth/oauth2/mobile-login');
+      const family: any = Object.create(FamilyOnboardComponent.prototype);
+      Object.assign(family, { authService: auth, familyCode: 'ABC123', onboardingState: onboarding,
+        core: { triggerToasrt: jasmine.createSpy() } });
+      spyOn(family, 'navigateWithoutHistory');
+      family.completeGoogleParentSignup();
+      const familyRequest = http.expectOne('/v1/auth/oauth2/mobile-login');
+      expect(familyRequest.request.body.provider).toBe(provider);
+      familyRequest.flush({ token: 'session', user: { id: 42, relationship: 'PARENT', onboardingStep: 4 } });
+      expect(family.navigateWithoutHistory).toHaveBeenCalledOnceWith('/signup', { step: 5, role: 'parent' });
+      expect(new OnboardingStateService().getResumeNavigation({ id: 42, onboardingStep: 4 })).toEqual({
+        url: '/signup', queryParams: { step: 5, role: 'parent' }
+      });
+      expect(onboarding.isOnboardingComplete()).toBeFalse();
+      expect(sessionStorage.getItem('oauth_signup_provider')).toBe(provider);
+    });
+
+    it(`sends completed ${provider} Parents directly Home`, async () => {
+      social.loginWithOAuthProfile({ ...identity, provider }, loading, provider);
+      http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'session', user: {
+        id: 42, relationship: 'PARENT', onboardingStep: 7, family: { id: 11 }
+      } });
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(social.router.navigate).toHaveBeenCalledOnceWith(['/authenticated/user'], { replaceUrl: true });
+      expect(onboarding.getRegistrationState()).toBeNull();
+    });
+
+    it(`retains saved ${provider} Parent progress when logging in again`, async () => {
+      onboarding.saveRegistrationDraft({ id: 42, onboardingStep: 4, authProvider: provider,
+        selectedSignupRole: 'parent', socialDetailsCompleted: true, socialFamilyCompleted: true });
+      social.loginWithOAuthProfile({ ...identity, provider }, loading, provider);
+      http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'session', user: {
+        id: 42, relationship: 'PARENT', onboardingStep: 4, family: { id: 11 }
+      } });
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(social.router.navigate).toHaveBeenCalledOnceWith(['/signup'], {
+        queryParams: { step: 5, role: 'parent' }, replaceUrl: true
+      });
+    });
+  }
+
   it('requires Google proof before a pending registration can submit', async () => {
     await authenticateNewUser();
     sessionStorage.removeItem('oauth_signup_id_token');
@@ -262,7 +334,7 @@ describe('Google signup request sequencing', () => {
     expect(signup.errorMessage).toContain('sign in with Google again');
   });
 
-  it('opens Home for the reported existing Parent with a family, without a signup guard loop', async () => {
+  it('opens Home for a completed Parent returned during a different-role signup', async () => {
     auth.getDashboardRoute = () => '/parent-account';
     sessionStorage.setItem('signup_role', 'child');
     signup.isEditingPendingChildOnboarding = false;
@@ -270,7 +342,7 @@ describe('Google signup request sequencing', () => {
     await signup.registerOrProceed();
     const user = { id: 829, name: 'Existing Parent', username: 'existingparent',
       email: 'new@example.test', relationship: 'PARENT', gender: 'prefer_not_to_say',
-      dateOfBirth: '1998-08-31', onboardingStep: 4, family: { id: 210 } };
+      dateOfBirth: '1998-08-31', onboardingStep: 7, family: { id: 210 } };
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'valid-parent-session', user });
     expect(signup.errorMessage).toBeNull();
     expect(signup.registrationInProgress).toBeFalse();
@@ -278,13 +350,12 @@ describe('Google signup request sequencing', () => {
     expect(sessionStorage.getItem('oauth_signup_pending_submission')).toBeNull();
     expect(onboarding.getRegistrationState()).toBeNull();
     expect(onboarding.getResumeNavigation(user)).toBeNull();
-    expect(user.onboardingStep).toBe(4);
+    expect(user.onboardingStep).toBe(7);
     expect(signup.navCtrl.navigateRoot).toHaveBeenCalledWith('/parent-account', { animated: false });
-    expect(onboarding.getResumeNavigation({ ...user, id: 830 })).not.toBeNull();
     http.expectNone('/v1/auth/oauth2/mobile-login');
   });
 
-  it('opens Parent Home when Continue returns the same Parent role at step 4 with an existing family', async () => {
+  it('continues to family setup after Parent details even when the backend already created a family', async () => {
     sessionStorage.setItem('signup_role', 'parent');
     auth.getDashboardRoute = () => '/parent-account';
     await authenticateNewUser();
@@ -292,10 +363,13 @@ describe('Google signup request sequencing', () => {
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'parent-session',
       user: { id: 829, relationship: 'PARENT', onboardingStep: 4, family: { id: 210 } } });
     expect(signup.errorMessage).toBeNull();
-    expect(signup.navCtrl.navigateRoot).toHaveBeenCalledOnceWith('/parent-account', { animated: false });
+    expect(signup.navCtrl.navigateRoot).toHaveBeenCalledOnceWith('/home/instructions-for-parent', {
+      queryParams: { role: 'parent' }, animated: false
+    });
   });
 
-  it('also opens Parent Home on subsequent Google login for that existing family account', async () => {
+  it('resumes incomplete Google Parent details instead of treating family membership as completion', async () => {
+    sessionStorage.setItem('signup_role', 'parent');
     auth.getDashboardRoute = () => '/parent-account';
     const pending = social.continueGoogleAuthentication(identity, loading);
     http.expectOne('/v1/api/public/check-mail-already-exists?email=new@example.test').flush({ exists: true });
@@ -304,9 +378,11 @@ describe('Google signup request sequencing', () => {
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'parent-session', user });
     await Promise.resolve();
     await Promise.resolve();
-    expect(social.router.navigate).toHaveBeenCalledOnceWith(['/parent-account'], { replaceUrl: true });
-    expect(onboarding.getResumeNavigation(user)).toBeNull();
-    expect(onboarding.getRegistrationState()).toBeNull();
+    expect(social.router.navigate).toHaveBeenCalledOnceWith(['/signup'], {
+      queryParams: { step: 2, role: 'parent' }, replaceUrl: true
+    });
+    expect(onboarding.getResumeNavigation(user)?.queryParams?.['step']).toBe(2);
+    expect(onboarding.getRegistrationState()).not.toBeNull();
   });
 
   it('continues submitted Google details when the server still reports profile step 4', async () => {

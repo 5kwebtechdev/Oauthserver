@@ -15,8 +15,8 @@
       <span class="mood-stat__flame"><img src="assets/icons/child-home-streak-figma.webp" alt=""></span><strong>{{ streaks }}</strong>
     </a>
     <img class="mood-stats__divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="">
-    <a class="mood-stat mood-stat--leaderboard" routerLink="/leaderboard" aria-label="Open Leaderboard">
-      <img src="assets/icons/home-leaderboard-podium.png" alt=""><strong>Leaderboard</strong>
+    <a class="mood-stat mood-stat--leaderboard" routerLink="/leaderboard" [attr.aria-label]="'Open Leaderboard' + (leaderboardRank ? ', your rank ' + leaderboardRankLabel : '')">
+      <img src="assets/icons/home-leaderboard-podium.png" alt=""><strong>{{ leaderboardRankLabel }}</strong>
     </a>
     <img class="mood-stats__divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="">
     <a class="mood-stat" routerLink="/badges" [attr.aria-label]="'Badges: ' + badges">

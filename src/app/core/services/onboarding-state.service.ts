@@ -37,6 +37,7 @@ export interface RegistrationDraftData {
   socialProviderId?: string;
   socialOnboarding?: boolean;
   socialDetailsCompleted?: boolean;
+  socialFamilyCompleted?: boolean;
   socialRolePending?: boolean;
   selectedSignupRole?: 'child' | 'parent' | 'self';
   familyLinkSkipped?: boolean;
@@ -59,11 +60,6 @@ export interface OnboardingResumeNavigation {
   providedIn: 'root'
 })
 export class OnboardingStateService {
-  private readonly existingGoogleHomeKey = 'superme_existing_google_home_user';
-
-  allowExistingGoogleAccountHome(userId: number): void {
-    sessionStorage.setItem(this.existingGoogleHomeKey, String(userId));
-  }
   private readonly legacyOnboardingKey = 'onboardingComplete';
   // The backend uses step 6 for the final "Unlock My Potential" action and
   // returns step 7 only after that action has completed successfully.
@@ -97,7 +93,8 @@ export class OnboardingStateService {
     fallbackStep?: unknown,
     identifierType?: 'EMAIL' | 'PHONE'
   ): RegistrationOnboardingState | null {
-    const current = this.getRegistrationState();
+    const stored = this.getRegistrationState();
+    const current = this.belongsToSameAccount(stored?.savedData, savedData) ? stored : null;
     const sanitizedData = this.sanitizeDraftData(savedData);
     const onboardingStep = this.normalizeOnboardingStep(
       sanitizedData.onboardingStep ?? fallbackStep ?? current?.onboardingStep
@@ -160,18 +157,8 @@ export class OnboardingStateService {
   }
 
   getResumeNavigation(source?: RegistrationDraftData | null): OnboardingResumeNavigation | null {
-    // A Google login can return a legacy Parent at step 4 despite an existing
-    // family. Its successful account login must not loop through signup.
-    if (source?.relationship === 'PARENT' && (source['family'] as any)?.id) {
-      try {
-        if (String(source['id'] || source.userId || '') === sessionStorage.getItem(this.existingGoogleHomeKey)) {
-          return null;
-        }
-      } catch {
-        // Restricted storage keeps the normal onboarding route available.
-      }
-    }
-    const state = this.getRegistrationState();
+    const stored = this.getRegistrationState();
+    const state = this.belongsToSameAccount(stored?.savedData, source) ? stored : null;
     const savedData = this.sanitizeDraftData({
       ...(state?.savedData || {}),
       ...(source || {})
@@ -217,8 +204,9 @@ export class OnboardingStateService {
   }
 
   getSignupRole(source?: RegistrationDraftData | null): 'child' | 'parent' | 'self' | null {
+    const draft = this.getRegistrationState()?.savedData;
     const combined = {
-      ...(this.getRegistrationState()?.savedData || {}),
+      ...(this.belongsToSameAccount(draft, source) ? draft : {}),
       ...(source || {})
     };
     const explicitlySelectedRole = String(combined.selectedSignupRole || '').trim().toLowerCase();
@@ -256,8 +244,9 @@ export class OnboardingStateService {
   }
 
   isSocialOnboarding(source?: RegistrationDraftData | null): boolean {
+    const draft = this.getRegistrationState()?.savedData;
     const combined = {
-      ...(this.getRegistrationState()?.savedData || {}),
+      ...(this.belongsToSameAccount(draft, source) ? draft : {}),
       ...(source || {})
     };
     return combined.socialOnboarding === true
@@ -360,7 +349,9 @@ export class OnboardingStateService {
     backendStep: number | null,
     localStep: number | null
   ): OnboardingResumeNavigation | null {
-    const effectiveStep = Math.max(backendStep || 0, localStep || 0);
+    // An authenticated response is authoritative. A stale local completion
+    // must not skip the pending steps returned by the backend.
+    const effectiveStep = backendStep ?? localStep ?? 0;
     if (effectiveStep >= this.completedOnboardingStep) return null;
 
     const role = this.getSignupRole(savedData);
@@ -379,7 +370,7 @@ export class OnboardingStateService {
       };
     }
 
-    if (effectiveStep >= 6) {
+    if (effectiveStep >= 6 || (role === 'parent' && savedData.socialFamilyCompleted === true)) {
       return {
         url: '/signup',
         queryParams: { step: 5, role }
@@ -412,6 +403,15 @@ export class OnboardingStateService {
       url: '/signup',
       queryParams: { step: 4, role: 'self' }
     };
+  }
+
+  private belongsToSameAccount(left?: RegistrationDraftData | null, right?: RegistrationDraftData | null): boolean {
+    if (!left || !right) return true;
+    const leftId = left.userId ?? left['id'];
+    const rightId = right.userId ?? right['id'];
+    if (leftId && rightId) return String(leftId) === String(rightId);
+    if (left.email && right.email) return left.email.toLowerCase() === right.email.toLowerCase();
+    return true;
   }
 
   private sanitizeDraftData(data: RegistrationDraftData): RegistrationDraftData {

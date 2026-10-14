@@ -1,6 +1,6 @@
 import { ElementRef } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { throwError } from 'rxjs';
+import { NEVER, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
 
 describe('LoginComponent password handling', () => {
@@ -44,8 +44,45 @@ describe('LoginComponent password handling', () => {
     expect(component.password?.value).toBe('');
 
     component.password?.setValue('old-password');
-    component.onPageShow();
+    component.onPageShow({ persisted: true } as PageTransitionEvent);
     expect(component.password?.value).toBe('');
+  });
+
+  it('accepts a valid password and keeps it while typing or after the password picker returns', () => {
+    component.signInForm.patchValue({ email: 'user@example.com', password: 'first' });
+    component.password?.setValue('valid-password');
+    component.onPageShow({ persisted: false } as PageTransitionEvent);
+
+    expect(component.password?.value).toBe('valid-password');
+    expect(component.isLoginFormValid()).toBeTrue();
+  });
+
+  it('rejects an empty password without changing the login password rules', () => {
+    component.signInForm.patchValue({ email: 'user@example.com', password: '' });
+    expect(component.password?.hasError('required')).toBeTrue();
+    expect(component.isLoginFormValid()).toBeFalse();
+  });
+
+  it('toggles visibility without clearing or changing the password', () => {
+    component.password?.setValue('valid-password');
+    component.togglePasswordVisibility();
+    expect(component.hidePassword).toBeFalse();
+    expect(component.password?.value).toBe('valid-password');
+    component.togglePasswordVisibility();
+    expect(component.hidePassword).toBeTrue();
+    expect(component.password?.value).toBe('valid-password');
+  });
+
+  it('accepts a pasted password and submits the exact value', () => {
+    authService.login.and.returnValue(NEVER);
+    component.signInForm.patchValue({ email: 'user@example.com', password: 'pasted password' });
+    component.onSubmit();
+
+    expect(authService.login).toHaveBeenCalledOnceWith({
+      email: 'user@example.com', password: 'pasted password'
+    });
+    expect(component.password?.value).toBe('pasted password');
+    expect(component.loading).toBeTrue();
   });
 
   it('uses a saved identifier without restoring its password', async () => {
@@ -57,6 +94,18 @@ describe('LoginComponent password handling', () => {
 
     expect(component.email?.value).toBe('saved@example.com');
     expect(component.password?.value).toBe('');
+  });
+
+  it('does not replace the email selected by the system password manager with a stale saved identifier', async () => {
+    credentialSaver.suggest.and.resolveTo({
+      identifier: 'old@example.com', password: 'old-password', mode: 'email'
+    });
+    component.ngOnInit();
+    component.signInForm.patchValue({ email: 'chosen@example.com', password: 'chosen-password' });
+    await Promise.resolve();
+
+    expect(component.email?.value).toBe('chosen@example.com');
+    expect(component.password?.value).toBe('chosen-password');
   });
 
   it('clears the password after a failed login but keeps the email and error', () => {

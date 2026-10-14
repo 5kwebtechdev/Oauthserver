@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/core/services/notification-navigation.service.spec.ts",
+    "src/app/core/services/notification-unread.service.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

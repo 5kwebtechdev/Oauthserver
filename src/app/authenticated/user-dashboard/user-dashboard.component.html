@@ -106,7 +106,7 @@
                 [attr.aria-label]="unreadNotificationCount ? 'Open notifications, ' + unreadNotificationCount + ' unread' : 'Open notifications'"
                 (click)="openNotifications()">
                 <img src="assets/icons/child-home-notification-figma.svg" alt="" class="notification-tool-icon" aria-hidden="true">
-                <span class="notification-count" *ngIf="unreadNotificationCount > 0" aria-hidden="true">{{ unreadNotificationCount > 9 ? '9+' : unreadNotificationCount }}</span>
+                <span class="notification-count" *ngIf="unreadNotificationCount > 0" aria-hidden="true">{{ unreadNotificationCount }}</span>
               </button>
             </nav>
           </header>
@@ -114,7 +114,7 @@
 
         <div class="hero-mood-anchor">
           <app-home-mood-header [mood]="homeHeaderMood" [period]="homeTimePeriod" [birthday]="birthdayToday"
-            [streaks]="userStreaks" [badges]="userBadges"
+            [streaks]="userStreaks" [badges]="userBadges" [leaderboardRank]="homeLeaderboardRank"
             [canEditMood]="!homeMoodSelector.dailyLimitReached"
             [moodPickerOpen]="homeMoodSelector.dialogOpen"
             (moodEdit)="editHeaderMood()"></app-home-mood-header>

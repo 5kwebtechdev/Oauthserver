@@ -15,6 +15,12 @@ const STORAGE_KEY = 'mb_selected_child_id';
  */
 @Injectable({ providedIn: 'root' })
 export class ProfileStoreService {
+  private requestedChildId: string | null = null;
+
+  /** A cold-start notification may arrive before the authenticated family list. */
+  selectWhenAvailable(id: string): void {
+    this.requestedChildId = this.selectById(id) ? null : id;
+  }
   // Internal state
   private readonly childrenSubject = new BehaviorSubject<ChildInfo[]>([]);
   private readonly selectedSubject = new BehaviorSubject<ChildInfo | null>(null);
@@ -55,6 +61,11 @@ export class ProfileStoreService {
   /** Set children list and auto-select restored or first child */
   setChildren(children: ChildInfo[]): void {
     this.childrenSubject.next(children);
+    if (children.length && this.requestedChildId) {
+      const requestedId = this.requestedChildId;
+      this.requestedChildId = null;
+      if (this.selectById(requestedId)) return;
+    }
     if (!children.length) {
       this.clearSelection();
       return;
@@ -109,6 +120,7 @@ export class ProfileStoreService {
 
   /** Clear everything (logout) */
   reset(): void {
+    this.requestedChildId = null;
     this.childrenSubject.next([]);
     this.selectedSubject.next(null);
     this.persistId(null);

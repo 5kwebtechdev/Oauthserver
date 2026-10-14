@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/core/models/username-rules.spec.ts",
+    "src/app/home/signup/signup-username-length.spec.ts",
+    "src/app/core/components/user-profile/edit-profile/edit-profile-username.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

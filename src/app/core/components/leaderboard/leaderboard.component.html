@@ -43,8 +43,8 @@
           <strong>No ranked users yet</strong>
         </div>
 
-        <ng-container *ngIf="result.state === 'OK'">
-          <p *ngIf="!result.content.length" class="pagination-end">No more ranks on this page.</p>
+        <ng-container *ngIf="result.state === 'OK' || rows.length">
+          <p *ngIf="result.state === 'OK' && !result.content.length && !rows.length" class="pagination-end">No more ranks on this page.</p>
           <ng-container *ngIf="result.content.length">
           <div class="podium" [class.podium--complete]="podium.length === 3" aria-label="Top three leaderboard ranks">
             <ng-container *ngFor="let rank of [2, 1, 3]">
@@ -63,10 +63,11 @@
             </ng-container>
           </div>
 
-          <div class="ranking-list" aria-label="Leaderboard rankings">
+          </ng-container>
+          <div *ngIf="result.content.length || rows.length" class="ranking-list" aria-label="Leaderboard rankings">
             <div class="ranking-heading" aria-hidden="true"><span>Rank</span><span>Username</span><span>Coins</span></div>
             <div *ngFor="let user of rows; trackBy: trackUser" class="ranking-row" [class.ranking-row--you]="isCurrentUser(user)">
-              <span class="ranking-rank">{{ user.rank }}</span>
+              <span class="ranking-rank">{{ rankLabel(user) }}</span>
               <span class="ranking-person">
                 <span class="ranking-avatar"><img *ngIf="avatarUrl(user) as src; else rowInitials" [src]="src" [alt]="user.displayName + ' avatar'" (error)="avatarFailed(user)"><ng-template #rowInitials>{{ initials(user) }}</ng-template></span>
                 <strong>{{ user.displayName }}</strong>
@@ -74,16 +75,7 @@
               <span class="ranking-coins"><img src="assets/icons/superme-coin.webp" alt="">{{ user.coins | number }}</span>
             </div>
           </div>
-          </ng-container>
         </ng-container>
-        <section *ngIf="showSeparateCurrentUser" class="your-position" aria-label="Your position">
-          <h2>Your position</h2>
-          <div class="ranking-row ranking-row--you">
-            <span class="ranking-rank">{{ rankLabel(result.currentUser) }}</span>
-            <span class="ranking-person"><span class="ranking-avatar"><img *ngIf="avatarUrl(result.currentUser) as src; else currentInitials" [src]="src" alt="Your avatar" (error)="avatarFailed(result.currentUser)"><ng-template #currentInitials>{{ initials(result.currentUser) }}</ng-template></span><strong>{{ result.currentUser.displayName }}</strong></span>
-            <span class="ranking-coins"><img src="assets/icons/superme-coin.webp" alt="">{{ result.currentUser.coins | number }}</span>
-          </div>
-        </section>
         <div *ngIf="currentUserInTopTen" class="share-rank">
           <button type="button" class="share-rank__button" (click)="shareRank()">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5M4 13v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>

@@ -204,6 +204,13 @@ export const guestGuard: CanActivateFn = (
     if (!isLoggedIn) {
         return true;
     } else if (registrationResume && onboardingState.isSocialOnboarding()) {
+        // An explicit Back from the social profile form may review the role
+        // without changing the backend's authoritative resume step.
+        if (isSignupRoute && route.queryParamMap.get('step') === '1'
+            && route.queryParamMap.get('reviewPrevious') === 'true'
+            && registrationResume.queryParams?.['step'] === 2) {
+            return true;
+        }
         const targetStep = registrationResume.queryParams?.['step'];
         const currentStep = route.queryParamMap.get('step');
         const isExactSocialResumeTarget = state.url.includes(registrationResume.url)

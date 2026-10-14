@@ -1,12 +1,15 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
+import { NotificationNavigationService } from '../../core/services/notification-navigation.service';
+import { NotificationUnreadService } from '../../core/services/notification-unread.service';
 import { HomeMoodHeaderComponent, HomeMood, normalizeHomeMood } from '../../core/components/home-mood-header/home-mood-header.component';
 import { isBirthdayToday } from './birthday-date';
 import { BirthdayPopupStatusService } from '../../core/services/birthday-popup-status.service';
+import { CoinLeaderboardService } from '../../core/services/coin-leaderboard.service';
 import { displayName } from '../../core/models/display-name';
 import { greetingUsername, homeGreetingName, messageWithUsername } from '../../core/models/greeting-username';
 import { CommonModule } from "@angular/common";
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { ModalController, RefresherCustomEvent } from '@ionic/angular';
+import { HttpClient } from '@angular/common/http';
+import { ModalController, Platform, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { StreakRestoreApi, StreakStatus, StreakStatusDay } from '../../core/api/streak-restore.api';
 import { StreakRestoreModalComponent } from '../../core/components/streak-restore/streak-restore-modal.component';
@@ -99,6 +102,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   @ViewChild(ActivityCardComponent) activityCard?: ActivityCardComponent;
   @ViewChild(LearningSectionComponent) learningSection?: LearningSectionComponent;
+  @ViewChild(AcademySectionComponent) academySection?: AcademySectionComponent;
 
   // Minimal properties used by the template
   public userName = '';
@@ -111,6 +115,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public loginStreakDays: number | null = null;
   public userDays: number = 0;
   public userBadges: number = 0;
+  public homeLeaderboardRank: number | null = null;
+  private homeLeaderboardUserId = '';
+  private homeLeaderboardRequestId = 0;
   public homeTimePeriod: HomeTimePeriod = 'morning';
 
   public get greetingPeriod(): string {
@@ -207,6 +214,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   // Subject for cleanup
   private destroy$ = new Subject<void>();
+  private notificationNavigation = inject(NotificationNavigationService);
+  private notificationUnread = inject(NotificationUnreadService);
+  private platform = inject(Platform);
   private refreshScheduled$ = new Subject<void>();
   private hasEnteredDashboard = false;
   private homeTimeChangeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -251,7 +261,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private petMessageApi: PetMessageApiService,
     private moodService: MoodService,
     private petAgeService: PetAgeService,
-    private birthdayPopupStatus: BirthdayPopupStatusService
+    private birthdayPopupStatus: BirthdayPopupStatusService,
+    private coinLeaderboard: CoinLeaderboardService
   ) {
     this.toast$ = this.toastService.toast$;
   }
@@ -439,6 +450,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.notificationUnread.count$.pipe(takeUntil(this.destroy$)).subscribe(count => this.unreadNotificationCount = count);
+    this.notificationNavigation.changed$.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshUnreadNotificationCount());
+    this.platform.resume.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshUnreadNotificationCount());
     // Check if the current user is a parent and redirect if needed
     if (this.authService.isParentUser()) {
       this.router.navigate(['/authed/parent-account'], { replaceUrl: true });
@@ -490,6 +504,12 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
             });
         }
         const moodUserId = String(userData?.userId ?? userData?.id ?? userData?.memberId ?? '');
+        const rankUserId = userData ? String(userData?.userId ?? userData?.id ?? userData?.memberId ?? this.authService.getUserId() ?? '') : '';
+        if (rankUserId !== this.homeLeaderboardUserId) {
+          this.homeLeaderboardUserId = rankUserId;
+          this.homeLeaderboardRank = null;
+          if (rankUserId) this.loadHomeLeaderboardRank();
+        }
         if (moodUserId !== this.headerMoodUserId) {
           this.headerMoodUserId = moodUserId;
           this.homeHeaderMood = null;
@@ -520,10 +540,12 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(stats => {
         if (!stats) return;
+        const coinsChanged = this.userCoins !== stats.coins;
         this.userCoins = stats.coins;
         this.userStreaks = stats.streaks;
         this.userDays = stats.days;
         this.userBadges = stats.badges;
+        if (coinsChanged && this.hasEnteredDashboard) this.loadHomeLeaderboardRank();
       });
 
     // A secondary cache must never replace the active account's identity.
@@ -616,34 +638,37 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     // The initial entry is already loaded by ngOnInit, so avoid a duplicate
     // request on first render.
     if (this.hasEnteredDashboard) {
+      this.loadHomeLeaderboardRank();
       this.refreshUnreadNotificationCount();
       this.loadRecentHabitsAndTasks(true);
       this.learningSection?.refreshFromApi();
+      this.academySection?.refreshFromApi();
     }
     this.hasEnteredDashboard = true;
   }
 
-  private refreshUnreadNotificationCount(): void {
-    const token = this.authService.getToken();
-    if (!token) {
-      this.unreadNotificationCount = 0;
-      return;
-    }
-    const headers = new HttpHeaders({
-      Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
-      Accept: 'application/json',
-      'x-skip-loading': '1'
-    });
-    this.http.get<Array<{ readStatus: boolean }>>(`${environment.apiUrl}/user/notifications`, { headers })
+  private loadHomeLeaderboardRank(): void {
+    const requestId = ++this.homeLeaderboardRequestId;
+    const userId = this.homeLeaderboardUserId;
+    if (!userId || this.authService.isParentUser()) return;
+    this.coinLeaderboard.getLeaderboard('GLOBAL', 0, 1)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: notifications => {
-          this.unreadNotificationCount = Array.isArray(notifications)
-            ? notifications.filter(notification => !notification.readStatus).length
-            : 0;
+        next: result => {
+          if (requestId !== this.homeLeaderboardRequestId || userId !== this.homeLeaderboardUserId) return;
+          const rank = result?.currentUser?.rank;
+          this.homeLeaderboardRank = typeof rank === 'number' && Number.isInteger(rank) && rank > 0 ? rank : null;
         },
-        error: () => { this.unreadNotificationCount = 0; }
+        error: () => {
+          if (requestId === this.homeLeaderboardRequestId && userId === this.homeLeaderboardUserId) {
+            this.homeLeaderboardRank = null;
+          }
+        }
       });
+  }
+
+  private refreshUnreadNotificationCount(): void {
+    this.notificationUnread.refresh(this.authService.getToken());
   }
 
   private startHomeTimeSync(): void {
@@ -769,6 +794,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
                 }).filter(Boolean);
               })(),
               coinReward: Number(item.coinReward ?? item.rewardCoins ?? item.reward_coins ?? item.rewardsCoins ?? (item.rewards?.coins ?? item.rewards?.rewardCoins) ?? item.coins ?? 0),
+              // The Home card reads currentHabitStreak, which the calendar API
+              // returns alongside each habit (also exposed by habit-by-id).
+              currentHabitStreak: Number(item.currentHabitStreak ?? item.streak ?? item.streakCount ?? 0),
               // keep routine info so activity-card can render routine icon
               routine: item.routine ?? item.selectedRoutine ?? item.selected_routine ?? null,
               createdAt: item.createdAt ? new Date(item.createdAt) : new Date()
@@ -1222,6 +1250,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
    */
   private async onGlobalRefresh(): Promise<void> {
     console.log('[UserDashboard] Global refresh triggered');
+    this.academySection?.refreshFromApi();
 
     // Update local user data from refreshed storage
     const userData = this.authService.getUserData();

@@ -31,11 +31,12 @@ describe('LeaderboardComponent', () => {
     return { component, getLeaderboard, getGroups };
   }
 
-  it('uses API ranks without re-sorting and keeps the current user separately', () => {
+  it('keeps the API rank and appends an outside-top-10 user after the top rows', () => {
     const { component } = create();
     component.load();
     expect(component.podium.map(user => user.rank)).toEqual([1, 2, 3]);
-    expect(component.rows.map(user => user.rank)).toEqual([4]);
+    expect(component.rows.map(user => user.rank)).toEqual([4, 53]);
+    expect(component.rows[1]).toEqual(response.currentUser);
     expect(component.result?.currentUser.rank).toBe(53);
   });
 
@@ -72,15 +73,14 @@ describe('LeaderboardComponent', () => {
     const { component } = create(getLeaderboard);
     component.load();
     expect(getLeaderboard).toHaveBeenCalledWith('GLOBAL', 0, 10);
-    expect(component.rows.map(user => user.rank)).toEqual([4]);
+    expect(component.rows.map(user => user.rank)).toEqual([4, 53]);
     expect(component.currentUserInTopTen).toBeFalse();
-    expect(component.showSeparateCurrentUser).toBeTrue();
     component.result = { ...ranked, currentUser: entry(4, 4, 'Fourth', 70) };
     expect(component.currentUserInTopTen).toBeTrue();
-    expect(component.showSeparateCurrentUser).toBeFalse();
+    expect(component.rows.map(user => user.rank)).toEqual([4]);
     component.result = { ...ranked, currentUser: entry(2, 2, 'Second', 90) };
     expect(component.currentUserInTopTen).toBeTrue();
-    expect(component.showSeparateCurrentUser).toBeTrue();
+    expect(component.rows.map(user => user.rank)).toEqual([4]);
   });
 
   it('discards a stale response after switching tabs', () => {
@@ -116,16 +116,29 @@ describe('LeaderboardComponent', () => {
     fixture.detectChanges();
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.share-rank__button')).toBeNull();
-    expect(host.querySelector('.your-position')).not.toBeNull();
+    const appended = host.querySelector('.ranking-list .ranking-row:last-child') as HTMLElement;
+    expect(appended.classList.contains('ranking-row--you')).toBeTrue();
+    expect(appended.querySelector('.ranking-rank')?.textContent?.trim()).toBe('53');
+    expect(appended.querySelector('.ranking-person strong')?.textContent?.trim()).toBe('Me');
+    expect(appended.querySelector('.ranking-coins')?.textContent?.trim()).toBe('10');
+    expect(host.querySelectorAll('.ranking-row--you').length).toBe(1);
     fixture.componentInstance.result = { ...response, currentUser: entry(4, 4, 'Fourth', 70) };
     fixture.detectChanges();
     expect(host.querySelector('.share-rank__button')?.textContent).toContain('Share your rank');
-    expect(host.querySelector('.your-position')).toBeNull();
+    expect(host.querySelectorAll('.ranking-row--you').length).toBe(1);
+    fixture.componentInstance.result = { ...response, currentUser: entry(2, 2, 'Second', 90) };
+    fixture.detectChanges();
+    expect(host.querySelectorAll('.ranking-row--you').length).toBe(0);
+    expect(host.querySelectorAll('.podium-entry--you').length).toBe(1);
     fixture.componentInstance.selectScope('GROUP');
     fixture.detectChanges();
     expect(host.querySelector('.group-coming-soon')?.textContent).toContain('coming soon');
     expect(host.querySelector('.ranking-list')).toBeNull();
     fixture.componentInstance.selectScope('GLOBAL');
+    fixture.componentInstance.result = {
+      ...response,
+      currentUser: entry(99, 53, 'A very long leaderboard username that must truncate', 123456)
+    };
     fixture.detectChanges();
     for (const width of [360, 375, 390, 414]) {
       host.style.display = 'block';

@@ -1082,15 +1082,12 @@
 
 .book-gallery {
   display: grid;
-  // A fixed 225px main column left very little room for the secondary
-  // column on narrow phones, squeezing its two stacked images down until
-  // they read as a cramped, overlapping mess. A proportional split plus a
-  // height that scales with viewport width keeps both columns legible on
-  // any screen size instead of only above ~360px wide.
   grid-template-columns: minmax(0, 58%) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 8px;
   width: 100%;
   height: clamp(160px, 42vw, 225px);
+  overflow: hidden;
 
   &--empty,
   &--single { grid-template-columns: 1fr; }
@@ -1103,24 +1100,27 @@
 }
 
 .book-gallery__main {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
   border-radius: 40px;
   display: grid;
   place-items: center;
 
-  img { width: 100%; height: 100%; display: block; object-fit: contain; }
+  img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: contain; }
   ion-icon { width: 64px; height: 64px; color: #987fb5; font-size: 64px; }
 }
 
-.book-gallery__secondary { min-width: 0; display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.book-gallery__secondary { min-width: 0; min-height: 0; display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .book-gallery__secondary img,
 .book-gallery__secondary-placeholder { border-radius: 24px; }
 .book-gallery__secondary img,
-.book-gallery__secondary-placeholder { width: 100%; height: 100%; display: block; overflow: hidden; background: #949094; object-fit: cover; }
+.book-gallery__secondary-placeholder { min-width: 0; min-height: 0; width: 100%; height: 100%; display: block; overflow: hidden; background: #949094; object-fit: contain; }
 
 .book-details-summary { padding: 16px 0 0; }
 .book-details-summary h2 { margin: 0; color: #282527; font-family: var(--font-heading, 'Fredoka', sans-serif); font-size: 20px; font-weight: 500; line-height: 27px; overflow-wrap: anywhere; }
 .book-details-summary__price-row { min-height: 29px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
-.book-details-summary__price-row > div { min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+.book-details-summary__price-row > div { min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
 .book-details-summary__price-row strong { color: #1432a8; font-family: var(--font-sans, 'Nunito', sans-serif); font-size: 20px; font-weight: 800; line-height: 27px; }
 .book-details-summary__free-price { color: #47b85c !important; }
 .book-details-summary__price-row s { color: #6b656a; font-family: var(--font-sans, 'Nunito', sans-serif); font-size: 16px; font-weight: 600; line-height: 23px; }
@@ -1129,9 +1129,9 @@
 .book-details-summary__price-row > p ion-icon { width: 18px; height: 18px; color: #62b35a; font-size: 18px; }
 
 .book-detail-rows { margin-top: 16px; overflow: hidden; border: 1px solid #efedf0; border-radius: 24px; box-shadow: 0 0 2px 1px rgba(107, 101, 106, .1); }
-.book-detail-row { min-height: 48px; display: grid; grid-template-columns: minmax(132px, 1fr) minmax(0, 1fr); align-items: center; gap: 8px; padding: 6px 12px; border-bottom: 1px solid #d9d4da; box-sizing: border-box; }
+.book-detail-row { min-height: 48px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 8px; padding: 6px 12px; border-bottom: 1px solid #d9d4da; box-sizing: border-box; }
 .book-detail-row:last-child { border-bottom: 0; }
-.book-detail-row__label { min-width: 0; display: inline-flex; align-items: center; gap: 8px; color: #6b656a; font-family: var(--font-sans, 'Nunito', sans-serif); font-size: 13px; font-weight: 700; line-height: 18px; }
+.book-detail-row__label { min-width: 0; display: inline-flex; align-items: center; gap: 8px; overflow-wrap: anywhere; color: #6b656a; font-family: var(--font-sans, 'Nunito', sans-serif); font-size: 13px; font-weight: 700; line-height: 18px; }
 .book-detail-row__label ion-icon { width: 32px; height: 32px; flex: 0 0 32px; padding: 7px; border-radius: 50%; background: #d9e5f9; color: #3158a8; font-size: 18px; box-sizing: border-box; }
 .book-detail-row > strong { min-width: 0; display: flex; flex-direction: column; align-items: flex-end; overflow-wrap: anywhere; color: #282527; font-family: var(--font-sans, 'Nunito', sans-serif); font-size: 13px; font-weight: 700; line-height: 18px; text-align: right; }
 .book-detail-row > strong > span { min-width: 0; overflow-wrap: anywhere; }
@@ -1297,7 +1297,7 @@
   .listing-card__details-button { font-size: 13px; }
   .book-gallery { grid-template-columns: minmax(0, 61%) minmax(0, 1fr); }
   .book-gallery--single { grid-template-columns: 1fr; }
-  .book-detail-row { grid-template-columns: minmax(120px, .9fr) minmax(0, 1.1fr); gap: 8px; }
+  .book-detail-row { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 8px; }
   .book-detail-row { padding-right: 10px; padding-left: 10px; }
   .book-detail-row__label { font-size: 12px; }
   .book-detail-row > strong { font-size: 12px; }

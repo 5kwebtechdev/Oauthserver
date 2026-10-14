@@ -19,7 +19,6 @@ if (Test-Path "$rootDir\www") {
     Remove-Item -Recurse -Force "$rootDir\www"
 }
 Write-Host "Done"
-
 # Step 2: Angular production build
 Write-Host ""
 Write-Host "[2/4] Building Angular app (production)..."

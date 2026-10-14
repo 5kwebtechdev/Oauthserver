@@ -376,6 +376,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
       });
       const available = this.coreAuthService.excludeRemovedFamilyMembers(normalized);
       this.creator = available.find(member => member.relationship === 'Parent' && member.coParent !== true)
+        || available.find(member => member.relationship === 'Parent' && member.you)
+        || available.find(member => member.relationship === 'Parent')
         || null;
       const creatorId = Number(this.creator?.userId || 0);
       this.members = available.filter(member => member !== this.creator && (!creatorId || member.userId !== creatorId));

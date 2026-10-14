@@ -977,9 +977,7 @@ Thank you!`;
                 return;
             }
 
-            this.onboardingState.clearRegistrationDraft();
             this.onboardingState.markExistingUser();
-            this.clearOAuthSignupSession();
             try { sessionStorage.setItem('family_connected_ack', 'Parent'); } catch (e) {}
             this.navigateWithoutHistory('/signup', { step: 5, role: 'parent' });
             return;
@@ -1437,14 +1435,25 @@ Thank you!`;
                     );
                 }
                 this.onboardingState.markExistingUser();
+                // Family setup is saved, but activation is still pending.
+                // Keep the shared draft and provider identity for refresh and
+                // the final action, for both Google and Apple.
+                this.onboardingState.updateRegistrationDraft({
+                    ...(response.user || {}),
+                    authProvider: provider,
+                    socialProviderId: providerId,
+                    selectedSignupRole: 'parent',
+                    socialOnboarding: true,
+                    socialDetailsCompleted: true,
+                    socialFamilyCompleted: true
+                });
                 try { sessionStorage.setItem('family_connected_ack', 'Parent'); } catch (e) {}
                 if (isCreator && this.showFamilyCreationSuccess(response)) {
                     this.pendingOAuthFamilyCompletion = true;
                     return;
                 }
 
-                this.clearOAuthSignupSession();
-                this.navigateWithoutHistory('/signup', { step: 5 });
+                this.navigateWithoutHistory('/signup', { step: 5, role: 'parent' });
             },
             error: (err) => {
                 this.isLoading = false;

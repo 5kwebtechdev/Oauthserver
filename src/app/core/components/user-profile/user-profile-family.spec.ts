@@ -32,4 +32,28 @@ describe('Parent profile family summary', () => {
     (profile as any).coreAuthService = { getUserData: () => ({ relationship: 'CHILD' }) };
     expect(profile.isParentProfile()).toBeFalse();
   });
+
+  it('shows family details when the only parent in the response is a co-parent', () => {
+    const profile = Object.create(UserProfileComponent.prototype) as UserProfileComponent;
+    profile.user = { relationship: 'PARENT' };
+    (profile as any).coreAuthService = {
+      getUserData: () => ({ id: 273, relationship: 'PARENT' }),
+      excludeRemovedFamilyMembers: (members: any[]) => members
+    };
+    (profile as any).authService = { getFamilyStatus: () => of({
+      userId: 273,
+      hasFamily: true,
+      familyRole: 'CO_PARENT',
+      members: [
+        { id: 273, memberId: 61, name: 'Rktk', relationship: 'parent', coParent: true },
+        { id: 355, memberId: 71, name: 'Tkkk', relationship: 'child', coParent: false }
+      ]
+    }) };
+
+    (profile as any).loadFamilyDetails();
+    expect(profile.creator?.name).toBe('Rktk');
+    expect(profile.creator?.coParent).toBeTrue();
+    expect(profile.creator?.you).toBeTrue();
+    expect(profile.members.map(member => member.name)).toEqual(['Tkkk']);
+  });
 });

@@ -23,6 +23,11 @@ export function normalizeHomeMood(value: string | null | undefined): HomeMood | 
   return aliases[key] ?? null;
 }
 
+export function homeLeaderboardRankLabel(rank: number | null | undefined): string {
+  if (rank == null || !Number.isInteger(rank) || rank < 1) return 'Leaderboard';
+  return rank > 100 ? '#100+' : `#${rank}`;
+}
+
 @Component({
   selector: 'app-home-mood-header', standalone: true,
   imports: [CommonModule, RouterModule],
@@ -35,6 +40,7 @@ export class HomeMoodHeaderComponent {
   @Input() streaks = 0;
   @Input() trophies = 0;
   @Input() badges = 0;
+  @Input() leaderboardRank: number | null = null;
   @Input() canEditMood = true;
   @Input() moodPickerOpen = false;
   @Output() moodEdit = new EventEmitter<void>();
@@ -57,4 +63,5 @@ export class HomeMoodHeaderComponent {
     const emoji: Record<string, string> = { panda: '🐼', dragon: '🐉', llama: '🦙', owl: '🦉' };
     return this.state.after.replace('🐼', emoji[this.pet] || '🐼');
   }
+  get leaderboardRankLabel(): string { return homeLeaderboardRankLabel(this.leaderboardRank); }
 }

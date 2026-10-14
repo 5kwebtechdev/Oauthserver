@@ -865,28 +865,30 @@ html:not(.plt-capacitor) .signup-container.profile-layout .profile-step.profile-
 
 @media (max-width: 600px) {
   .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-dob-field > .profile-field-heading {
-    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
     align-items: start !important;
     row-gap: 4px !important;
     margin-bottom: 10px !important;
   }
 
   .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-dob-field .profile-field-meta {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    flex-wrap: wrap !important;
-    width: 100% !important;
-    gap: 4px 10px !important;
+    display: contents !important;
   }
 
-  .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-dob-field .profile-field-hint {
-    align-self: auto !important;
+  .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-dob-field .profile-field-purpose {
+    grid-column: 1 / -1;
+    grid-row: 2;
     justify-self: start !important;
-    width: auto !important;
-    max-width: 100% !important;
     text-align: left !important;
+  }
+
+  .signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-dob-field .age-count {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end !important;
+    color: #282527 !important;
+    font-weight: 800 !important;
+    white-space: nowrap;
   }
 }
 

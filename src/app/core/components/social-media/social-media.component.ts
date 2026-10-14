@@ -447,16 +447,6 @@ export class SocialMediaComponent implements OnInit {
           this.analytics.logLogin(provider);
           this.analytics.setUserId(String(userId));
 
-          if (provider === 'google' && responseUser.relationship === 'PARENT'
-            && responseUser.family?.id) {
-            this.onboardingState.clearRegistrationDraft();
-            this.onboardingState.allowExistingGoogleAccountHome(userId);
-            this.onboardingState.markExistingUser();
-            this.clearOAuthSignupSession();
-            this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });
-            return;
-          }
-
           if (onboardingStep !== null && onboardingStep < 7) {
             // Keep the exact Apple private-relay email and the one-time Apple
             // name. Returning Apple users fall back to the backend/cached name.
@@ -469,10 +459,13 @@ export class SocialMediaComponent implements OnInit {
             };
             this.storeOAuthSignupSession(provider, signupIdentity);
 
-            const roleFromBackend = onboardingStep >= 5
-              ? this.onboardingState.getSignupRole(responseUser)
-              : null;
-            const onboardingRole = selectedRole || roleFromBackend;
+            const saved = this.onboardingState.getRegistrationState()?.savedData;
+            const sameAccount = !!saved && String(saved.userId ?? saved['id'] ?? '') === String(userId);
+            const roleFromBackend = this.onboardingState.getSignupRole({
+              ...responseUser, selectedSignupRole: undefined, socialRolePending: false
+            });
+            const onboardingRole = (sameAccount ? saved?.selectedSignupRole : null)
+              || roleFromBackend || selectedRole;
             this.onboardingState.saveRegistrationDraft({
               ...responseUser,
               email: signupIdentity.email || responseUser.email,
@@ -480,7 +473,7 @@ export class SocialMediaComponent implements OnInit {
               authProvider: provider,
               socialProviderId: signupIdentity.providerId,
               socialOnboarding: true,
-              socialDetailsCompleted: onboardingStep >= 5,
+              socialDetailsCompleted: onboardingStep >= 5 || (sameAccount && saved?.socialDetailsCompleted === true),
               socialRolePending: !onboardingRole,
               selectedSignupRole: onboardingRole || undefined,
               relationship: onboardingRole

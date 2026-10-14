@@ -40,13 +40,17 @@ export class StreaksService {
     constructor(private http: HttpClient, private authService: AuthService) { }
 
     getLeaderboard(page = 0, size = this.leaderboardPageSize): Observable<StreakLeaderboardResponse> {
-        const userAge = this.authService.getCurrentUserAge();
+        const userData = this.authService.getUserData();
+        const hasDob = Boolean(userData?.dateOfBirth || userData?.dob || userData?.birthDate);
         let params = new HttpParams()
             .set('page', String(Math.max(0, page)))
             .set('size', String(size || this.leaderboardPageSize));
 
-        if (userAge != null) {
-            params = params.set('age', String(userAge));
+        // The backend derives the cohort from the account DOB. Only accounts without
+        // a DOB need the optional age fallback supported by this endpoint.
+        if (!hasDob) {
+            const userAge = this.authService.getCurrentUserAge();
+            if (userAge != null) params = params.set('age', String(userAge));
         }
 
         return this.http.get<StreakLeaderboardResponse>(`${this.baseUrl}/auth/leaderboard/streaks`, { params }).pipe(

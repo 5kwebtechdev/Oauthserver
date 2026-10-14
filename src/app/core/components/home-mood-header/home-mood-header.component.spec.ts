@@ -1,4 +1,4 @@
-import { HomeMoodHeaderComponent, normalizeHomeMood } from './home-mood-header.component';
+import { HomeMoodHeaderComponent, homeLeaderboardRankLabel, normalizeHomeMood } from './home-mood-header.component';
 import { PetAgeService, PetType } from '../../services/pet-age.service';
 import { MoodSelectorComponent } from '../mood-selector/mood-selector.component';
 import { Subject } from 'rxjs';
@@ -91,6 +91,19 @@ describe('Home mood header', () => {
   beforeEach(() => {
     pet = 'panda';
     component = new HomeMoodHeaderComponent({ getCurrentPetType: () => pet } as PetAgeService);
+  });
+
+  it('shows exact ranks through 100, caps higher ranks, and handles missing ranks', () => {
+    for (const rank of [1, 24, 87, 99, 100]) {
+      expect(homeLeaderboardRankLabel(rank)).toBe(`#${rank}`);
+    }
+    expect(homeLeaderboardRankLabel(101)).toBe('#100+');
+    expect(homeLeaderboardRankLabel(250)).toBe('#100+');
+    for (const rank of [null, undefined, 0, -1, NaN]) {
+      expect(homeLeaderboardRankLabel(rank)).toBe('Leaderboard');
+    }
+    component.leaderboardRank = 35;
+    expect(component.leaderboardRankLabel).toBe('#35');
   });
 
   it('keeps no mood distinct from a confirmed Calm selection', () => {

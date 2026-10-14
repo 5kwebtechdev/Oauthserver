@@ -226,8 +226,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   @HostListener('window:pageshow')
-  onPageShow(): void {
-    this.clearPassword();
+  onPageShow(event?: PageTransitionEvent): void {
+    // Clear a browser back/forward-cache restore, but do not erase a password
+    // the user just entered or selected from the system password manager.
+    if (event?.persisted) this.clearPassword();
   }
 
   private clearPassword(): void {
@@ -240,6 +242,10 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   focusPassword(): void {
     this.passwordInputRef?.nativeElement?.focus();
+  }
+
+  togglePasswordVisibility(): void {
+    this.hidePassword = !this.hidePassword;
   }
 
   onEmailAutofill(event: Event): void {
@@ -273,6 +279,10 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (credentials.mode !== 'email') {
       return;
     }
+
+    // Do not overwrite an email the user typed or selected from Android's
+    // password manager while the saved-identifier lookup was pending.
+    if (this.email?.value) return;
 
     this.signInForm.patchValue({
       email: credentials.identifier

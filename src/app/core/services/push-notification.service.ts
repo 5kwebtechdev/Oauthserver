@@ -8,12 +8,15 @@ import { FirebaseMessaging, Importance, Visibility } from '@capacitor-firebase/m
 import { PushNotificationApi } from '../api/push-notification.api';
 import { CustomToastService } from './custom-toast.service';
 import { CrashlyticsService } from './crashlytics.service';
+import { NotificationNavigationService } from './notification-navigation.service';
 
 const STORED_TOKEN_KEY = 'fcm_token';
 const ANDROID_NOTIFICATION_CHANNEL_ID = 'superme_ping_v1';
 
 @Injectable({ providedIn: 'root' })
 export class PushNotificationService {
+  private messaging = FirebaseMessaging;
+  private localNotifications = LocalNotifications;
   private listenersReady = false;
   private localNotificationId = Date.now() % 2147483647;
   private currentToken: string | null = null;
@@ -24,7 +27,8 @@ export class PushNotificationService {
     private zone: NgZone,
     private pushApi: PushNotificationApi,
     private toastService: CustomToastService,
-    private crashlytics: CrashlyticsService
+    private crashlytics: CrashlyticsService,
+    private notificationNavigation: NotificationNavigationService
   ) {}
 
   /**
@@ -70,6 +74,7 @@ export class PushNotificationService {
    * obtained before the user authenticated.
    */
   async onAuthenticated(): Promise<void> {
+    this.notificationNavigation.resume();
     const stored = localStorage.getItem(STORED_TOKEN_KEY);
     if (stored) {
       await this.ensureDefaultAndroidChannel();
@@ -84,6 +89,7 @@ export class PushNotificationService {
    * the device token so the user no longer receives notifications.
    */
   async clearToken(): Promise<void> {
+    this.notificationNavigation.cancelPending();
     if (!Capacitor.isNativePlatform()) {
       this.currentToken = null;
       localStorage.removeItem(STORED_TOKEN_KEY);
@@ -198,9 +204,10 @@ export class PushNotificationService {
   // ---------------------------------------------------------------------------
 
   private setupForegroundListener(): void {
-    FirebaseMessaging.addListener('notificationReceived', (event) => {
+    this.messaging.addListener('notificationReceived', (event) => {
       this.zone.run(() => {
         const notification = event.notification ?? {};
+        this.notificationNavigation.changed$.next();
         const { title, body } = notification as any;
         const data: Record<string, any> = (notification as any)?.data ?? {};
 
@@ -255,7 +262,7 @@ export class PushNotificationService {
 
   private setupLocalNotificationTapListener(): void {
     if (Capacitor.getPlatform() !== 'android') return;
-    LocalNotifications.addListener('localNotificationActionPerformed', event => {
+    this.localNotifications.addListener('localNotificationActionPerformed', event => {
       const data: Record<string, any> = event.notification.extra ?? {};
       this.zone.run(() => this.handleNavigation(data));
     }).catch(error => console.warn('[FCM] Local notification tap listener failed:', error));
@@ -273,7 +280,7 @@ export class PushNotificationService {
   }
 
   private setupNotificationTapListener(): void {
-    FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
+    this.messaging.addListener('notificationActionPerformed', (event) => {
       this.zone.run(() => {
         const notification = (event.notification as any) ?? {};
         const data: Record<string, any> = notification?.data ?? {};
@@ -295,75 +302,7 @@ export class PushNotificationService {
   // ---------------------------------------------------------------------------
 
   private handleNavigation(data: Record<string, any>): void {
-    const actionScreen: string = (data['actionScreen'] ?? '').toString().toUpperCase();
-    const referenceId: string | null = data['referenceId'] ? String(data['referenceId']) : null;
-
-    const target = this.actionScreenToRoute(actionScreen, referenceId);
-
-    console.log(`%c[FCM] Navigating → ${target}  (actionScreen: ${actionScreen})`,
-      'color: #FF9800; font-weight: bold;');
-
-    this.router.navigateByUrl(target, { replaceUrl: false }).catch(err => {
-      console.warn('[FCM] Navigation failed, falling back to dashboard:', err);
-      this.router.navigate(['/home']);
-    });
+    this.notificationNavigation.open(data);
   }
 
-  /**
-   * Maps every `actionScreen` value from the backend FCM spec to an Angular route.
-   *
-   * actionScreen → route
-   * ─────────────────────────────────────────────────────────
-   * HOME                  → /home
-   * ADD_HABIT_TASK        → /authed/activity-input
-   * VIEW_ALL_HABITS_TASKS → /authed/activity-page
-   * VIEW_ALL_HABITS       → /authed/activity-page?tab=habits
-   * VIEW_ALL_TASKS        → /authed/activity-page?tab=tasks
-   * JOURNAL               → /authed/journal-input
-   * NOTES                 → /authed/notes
-   * QUIZ_HOME             → /authed/content
-   * LEARNINGS_HOME        → /authed/content
-   * COURSE_LESSON         → /authed/academy/course/:referenceId
-   * ACADEMY_HOME          → /authed/academy
-   */
-  private actionScreenToRoute(actionScreen: string, referenceId: string | null): string {
-    switch (actionScreen) {
-      case 'HOME':
-        return '/home';
-
-      case 'ADD_HABIT_TASK':
-        return '/authed/activity-input';
-
-      case 'VIEW_ALL_HABITS_TASKS':
-        return '/authed/activity-page';
-
-      case 'VIEW_ALL_HABITS':
-        return '/authed/activity-page?tab=habits';
-
-      case 'VIEW_ALL_TASKS':
-        return '/authed/activity-page?tab=tasks';
-
-      case 'JOURNAL':
-        return '/authed/journal-input';
-
-      case 'NOTES':
-        return '/authed/notes';
-
-      case 'QUIZ_HOME':
-      case 'LEARNINGS_HOME':
-        return '/authed/content';
-
-      case 'COURSE_LESSON':
-        return referenceId
-          ? `/authed/academy/course/${referenceId}`
-          : '/authed/academy';
-
-      case 'ACADEMY_HOME':
-        return '/authed/academy';
-
-      default:
-        console.warn(`[FCM] Unknown actionScreen "${actionScreen}" — falling back to dashboard.`);
-        return '/home';
-    }
-  }
 }

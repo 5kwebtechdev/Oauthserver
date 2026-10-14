@@ -70,17 +70,17 @@ export class LeaderboardComponent implements OnInit, OnDestroy, ViewWillEnter, V
   }
 
   get rows(): CoinLeaderboardUser[] {
-    return (this.result?.content ?? []).filter(user => user.rank != null && user.rank >= 4 && user.rank <= 10);
+    const topTenRows = (this.result?.content ?? []).filter(user => user.rank != null && user.rank >= 4 && user.rank <= 10);
+    const currentUser = this.result?.currentUser;
+    if (this.scope !== 'GLOBAL' || !currentUser || (currentUser.rank != null && currentUser.rank >= 1 && currentUser.rank <= 10)) {
+      return topTenRows;
+    }
+    return topTenRows.some(user => this.isCurrentUser(user)) ? topTenRows : [...topTenRows, currentUser];
   }
 
   get currentUserInTopTen(): boolean {
     const rank = this.result?.currentUser?.rank;
     return this.scope === 'GLOBAL' && this.result?.state === 'OK' && rank != null && rank >= 1 && rank <= 10;
-  }
-
-  get showSeparateCurrentUser(): boolean {
-    const rank = this.result?.currentUser?.rank;
-    return !!this.result?.currentUser && this.scope === 'GLOBAL' && !(rank != null && rank >= 4 && rank <= 10 && this.rows.some(user => this.isCurrentUser(user)));
   }
 
   podiumUser(rank: number): CoinLeaderboardUser | undefined {

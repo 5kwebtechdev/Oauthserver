@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../../environments/environment';
+import { NotificationNavigationService } from '../../../services/notification-navigation.service';
+import { NotificationUnreadService } from '../../../services/notification-unread.service';
 
 interface ApiNotification {
   id: number;
@@ -14,7 +16,7 @@ interface ApiNotification {
   message: string;
   actionScreen: string | null;
   actionReferenceId: number | null;
-  readStatus: boolean;
+  readStatus: boolean | null;
   createdAt: string;
 }
 
@@ -36,7 +38,9 @@ export class NotificationComponent implements OnInit {
     private http: HttpClient,
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private navigation: NotificationNavigationService,
+    private unread: NotificationUnreadService
   ) { }
 
   ngOnInit(): void {
@@ -55,9 +59,16 @@ export class NotificationComponent implements OnInit {
   loadNotifications(): void {
     this.loading = true;
     this.error = false;
-    this.http.get<ApiNotification[]>(`${environment.apiUrl}/user/notifications`, { headers: this.headers() }).subscribe({
-      next: (res) => {
-        this.notifications = Array.isArray(res) ? res : [];
+    const token = this.authService.getToken();
+    if (!token) {
+      this.notifications = [];
+      this.loading = false;
+      this.error = true;
+      return;
+    }
+    this.unread.load<ApiNotification>(token).subscribe({
+      next: ({ notifications, current }) => {
+        if (current) this.notifications = notifications;
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -70,7 +81,7 @@ export class NotificationComponent implements OnInit {
   }
 
   get unreadCount(): number {
-    return this.notifications.filter(n => !n.readStatus).length;
+    return this.notifications.filter(n => n.readStatus !== true).length;
   }
 
   onTap(n: ApiNotification): void {
@@ -81,13 +92,21 @@ export class NotificationComponent implements OnInit {
   private markAsRead(n: ApiNotification): void {
     if (this.markingRead.has(n.id)) return;
     this.markingRead.add(n.id);
+    const previousStatus = n.readStatus;
     n.readStatus = true;
+    const token = this.authService.getToken();
+    if (token) this.unread.beginRead(token, this.notifications);
     this.cdr.detectChanges();
     this.http.post(`${environment.apiUrl}/user/notifications/${n.id}/read`, {}, { headers: this.headers() }).subscribe({
-      next: () => { this.markingRead.delete(n.id); },
+      next: () => {
+        this.markingRead.delete(n.id);
+        if (token) this.unread.finishRead(token);
+      },
       error: () => {
         this.markingRead.delete(n.id);
-        n.readStatus = false;
+        n.readStatus = previousStatus;
+        this.updateUnreadCount();
+        if (token) this.unread.finishRead(token);
         this.cdr.detectChanges();
       }
     });
@@ -96,34 +115,36 @@ export class NotificationComponent implements OnInit {
   markAllAsRead(): void {
     if (this.markingAllRead || !this.unreadCount) return;
     this.markingAllRead = true;
-    const previouslyUnread = this.notifications.filter(n => !n.readStatus);
-    previouslyUnread.forEach(n => n.readStatus = true);
+    const previouslyUnread = this.notifications
+      .filter(n => n.readStatus !== true)
+      .map(notification => ({ notification, readStatus: notification.readStatus }));
+    previouslyUnread.forEach(({ notification }) => notification.readStatus = true);
+    const token = this.authService.getToken();
+    if (token) this.unread.beginRead(token, this.notifications);
     this.cdr.detectChanges();
     this.http.post(`${environment.apiUrl}/user/notifications/read-all`, {}, { headers: this.headers() }).subscribe({
       next: () => {
         this.markingAllRead = false;
+        if (token) this.unread.finishRead(token);
         this.cdr.detectChanges();
       },
       error: () => {
         this.markingAllRead = false;
-        previouslyUnread.forEach(n => n.readStatus = false);
+        previouslyUnread.forEach(({ notification, readStatus }) => notification.readStatus = readStatus);
+        this.updateUnreadCount();
+        if (token) this.unread.finishRead(token);
         this.cdr.detectChanges();
       }
     });
   }
 
   private navigateFor(n: ApiNotification): void {
-    if (n.actionReferenceId == null) return;
-    switch (n.actionScreen) {
-      case 'SCREEN_ORDER_DETAIL':
-        this.router.navigate(['/authed/school-store/my-orders'], { queryParams: { orderId: n.actionReferenceId } });
-        break;
-      case 'COURSE_LESSON':
-        this.router.navigate(['/authed/academy/course', n.actionReferenceId]);
-        break;
-      default:
-        break;
-    }
+    this.navigation.open(n);
+  }
+
+  private updateUnreadCount(): void {
+    const token = this.authService.getToken();
+    if (token) this.unread.setFromList(token, this.notifications);
   }
 
   iconFor(type: string): string {

@@ -60,10 +60,6 @@
 .load-more { display: block; margin: 16px auto; cursor: pointer; }
 .load-more:disabled { opacity: .55; cursor: default; }
 .pagination-error { text-align: center; color: #b33850; font-size: 12px; }
-.your-position { position: sticky; bottom: 0; z-index: 3; margin-top: 4px; background: #fff; border-radius: 0 0 24px 24px; overflow: hidden; }
-.your-position h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.your-position .ranking-row { grid-template-columns: 72px minmax(0, 1fr) 82px; }
-.your-position .ranking-rank { font-size: 12px; }
 .share-rank { display: flex; flex-direction: column; align-items: center; padding: 17px 0 8px; }
 .share-rank__button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 19px; border: 0; border-radius: 22px; background: #48257c; color: #fff; font: 800 14px/1 var(--font-sans, 'Nunito', sans-serif); cursor: pointer; }
 .share-rank__button svg { width: 18px; height: 18px; }
@@ -75,8 +71,10 @@ button:focus-visible { outline: 2px solid #4b237d; outline-offset: 2px; }
   .hero-copy p { font-size: 14px; }
   .hero-art { right: 16px; width: 86px; height: 86px; }
   .scope-tabs button { gap: 3px; font-size: 11px; }
-  .ranking-heading, .ranking-row { grid-template-columns: 37px minmax(0, 1fr) 77px; gap: 4px; }
-  .your-position .ranking-row { grid-template-columns: 66px minmax(0, 1fr) 77px; }
+  .ranking-heading, .ranking-row { grid-template-columns: 37px minmax(0, 1fr) 84px; gap: 4px; }
+  .ranking-heading { font-size: 12px; }
+  .ranking-heading span:first-child, .ranking-rank { padding-left: 8px; }
+  .ranking-coins { font-size: 12px; }
 }
 @media (min-width: 768px) {
   .leaderboard-page { max-width: 650px; box-shadow: 0 0 30px #20162c18; }

@@ -1,4 +1,6 @@
 import { FormControl, FormGroup } from '@angular/forms';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { of } from 'rxjs';
 import { EditProfileComponent } from './edit-profile.component';
 
 describe('Edit profile one-time username change', () => {
@@ -16,6 +18,7 @@ describe('Edit profile one-time username change', () => {
     component.avatarSuggestions = [];
     component.usernameStatusLoading = false;
     component.usernameStatusUnavailable = false;
+    component.usernameChangeLocked = false;
     toast = jasmine.createSpy('triggerToasrt');
     (component as any).coreService = { triggerToasrt: toast };
   });
@@ -71,4 +74,34 @@ describe('Edit profile one-time username change', () => {
     expect(component.displayUsername).toBe('legacyusername');
     expect(component.showAvatarNameError).toBeFalse();
   });
+
+  it('checks availability before allowing a changed username', fakeAsync(() => {
+    component.username = 'oldname';
+    component.fullName = 'Child';
+    (component as any).storeInitialValues();
+    (component as any).avatarInput$ = { next: jasmine.createSpy('next') };
+    const checkUsernameExists = jasmine.createSpy('checkUsernameExists').and.returnValue(of(false));
+    (component as any).coreAuthService = { checkUsernameExists };
+
+    component.onUsernameChange('newname');
+    expect(component.usernameAvailability).toBe('idle');
+    tick(450);
+    expect(checkUsernameExists).toHaveBeenCalledOnceWith('newname');
+    expect(component.usernameAvailability).toBe('available');
+    expect(component.showAvatarNameError).toBeFalse();
+  }));
+
+  it('rejects a taken username without consuming the one allowed change', fakeAsync(() => {
+    component.username = 'oldname';
+    component.fullName = 'Child';
+    (component as any).storeInitialValues();
+    (component as any).avatarInput$ = { next: jasmine.createSpy('next') };
+    (component as any).coreAuthService = { checkUsernameExists: () => of(true) };
+
+    component.onUsernameChange('takenname');
+    tick(450);
+    expect(component.usernameAvailability).toBe('taken');
+    expect(component.usernameChangeLocked).toBeFalse();
+    expect(component.isFormInvalid).toBeTrue();
+  }));
 });

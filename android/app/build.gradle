@@ -35,8 +35,8 @@ android {
         applicationId = "com.superme.app"
         minSdk = 26
         targetSdk = rootProject.ext.targetSdkVersion
-        versionCode = 50
-        versionName = "0.1.18"
+        versionCode = 52
+        versionName = "0.1.19"
         manifestPlaceholders = [    
             deeplinkHost: envOrProp('DEEPLINK_HOST') ?: 'supermeapp.com',
             deeplinkScheme: envOrProp('DEEPLINK_SCHEME') ?: 'superme'
@@ -69,6 +69,28 @@ android {
             }
         }
     }
+}
+
+// Fail release builds before they can produce an unsigned/unusable artifact.
+def validateReleaseSigning = tasks.register('validateReleaseSigning') {
+    doLast {
+        def signingKeys = [
+            'MYAPP_UPLOAD_STORE_FILE',
+            'MYAPP_UPLOAD_STORE_PASSWORD',
+            'MYAPP_UPLOAD_KEY_ALIAS',
+            'MYAPP_UPLOAD_KEY_PASSWORD'
+        ]
+        def missingKeys = signingKeys.findAll { !project.findProperty(it)?.toString()?.trim() }
+        if (missingKeys) {
+            throw new GradleException("Release signing is incomplete: missing ${missingKeys.join(', ')}")
+        }
+        if (!file(project['MYAPP_UPLOAD_STORE_FILE']).isFile()) {
+            throw new GradleException('Release upload keystore is missing at the configured MYAPP_UPLOAD_STORE_FILE path')
+        }
+    }
+}
+tasks.matching { it.name in ['bundleRelease', 'assembleRelease'] }.configureEach {
+    dependsOn validateReleaseSigning
 }
 
 // Release bundles are uploaded manually to Google Play. Avoid making the

@@ -51,7 +51,7 @@
             [attr.aria-label]="unreadNotificationCount ? 'Open notifications, ' + unreadNotificationCount + ' unread' : 'Open notifications'"
             (click)="openNotifications()">
             <img src="assets/figma/parent-home/notification.svg" alt="" aria-hidden="true">
-            <span class="notification-button__count" *ngIf="unreadNotificationCount > 0" aria-hidden="true">{{ unreadNotificationCount > 9 ? '9+' : unreadNotificationCount }}</span>
+            <span class="notification-button__count" *ngIf="unreadNotificationCount > 0" aria-hidden="true">{{ unreadNotificationCount }}</span>
           </button>
         </nav>
       </header>

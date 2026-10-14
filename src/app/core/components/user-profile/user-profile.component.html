@@ -29,7 +29,7 @@
                 </div>
                 <strong>{{ familyMemberName(creator) }}</strong>
                 <span *ngIf="creator.age">{{ creator.age }} years old</span>
-                <small>{{ familyMemberRole(creator, true) }}</small>
+                <small>{{ creator.coParent ? 'Co Parent' : familyMemberRole(creator, true) }}{{ creator.you ? ' / You' : '' }}</small>
               </div>
               <div class="parent-family-tree__member" *ngFor="let member of members">
                 <div class="parent-family-tree__avatar">
@@ -38,7 +38,11 @@
                 </div>
                 <strong>{{ familyMemberName(member) }}</strong>
                 <span *ngIf="member.age">{{ member.age }} years old</span>
-                <small [class.is-child]="familyMemberRole(member) === 'Child'">{{ familyMemberRole(member) }}</small>
+                <small [class.is-child]="familyMemberRole(member) === 'Child'" [class.is-co-parent]="member.coParent">{{ member.coParent ? 'Co Parent' : familyMemberRole(member) }}</small>
+                <button *ngIf="creator.you && !creator.coParent" class="parent-family-tree__manage" type="button"
+                  [attr.aria-label]="'Manage ' + familyMemberName(member) + ' in My Family'" (click)="onMyFamily()">
+                  <ion-icon name="trash-outline" aria-hidden="true"></ion-icon> Remove
+                </button>
               </div>
             </div>
           </ng-container>
@@ -95,9 +99,11 @@
         <div class="menu-group__card">
           <profile-content-card iconName="gift" title="Refer a Friend" subtitle="Refer friends for exciting rewards"
             (select)="onRefer()"></profile-content-card>
-          <div class="menu-divider"></div>
-          <profile-content-card iconName="link" title="My Family" subtitle="View your family details"
-            (select)="onMyFamily()"></profile-content-card>
+          <ng-container *ngIf="!isParentProfile()">
+            <div class="menu-divider"></div>
+            <profile-content-card iconName="link" title="My Family" subtitle="View your family details"
+              (select)="onMyFamily()"></profile-content-card>
+          </ng-container>
           <div class="menu-divider"></div>
           <profile-content-card iconName="lock" title="Parental Control" subtitle="View app restrictions & permissions"
             (select)="onParentalControl()"></profile-content-card>

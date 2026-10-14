@@ -1,10 +1,11 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AcademyService, AcademyFeedCourse, AcademyFeedLesson } from '../../services/academy.service';
 import { AuthService } from '../../services/auth.service';
 import { LearningService } from '../../services/learning.service';
+import { catchError, forkJoin, map, of } from 'rxjs';
 
 // Kept for backward compatibility — academy-course.component imports this
 export interface CourseCard {
@@ -26,7 +27,7 @@ export interface CourseCard {
   imports: [CommonModule, IonicModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class AcademySectionComponent implements OnInit {
+export class AcademySectionComponent implements OnInit, OnDestroy {
   loading = true;
   state: 1 | 2 | 3 = 1;
   headerTitle = 'Your Skills Quest';
@@ -36,6 +37,8 @@ export class AcademySectionComponent implements OnInit {
 
   // State 2 — lessons
   lessons: AcademyFeedLesson[] = [];
+  private readonly courseProgressById = new Map<number, number>();
+  private feedRequestId = 0;
   articleCount = 0;
 
   get masterClassCount(): number {
@@ -50,17 +53,7 @@ export class AcademySectionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const age = this.authService.getCurrentUserAge() ?? undefined;
-    this.academyService.getAcademyFeed(age).subscribe({
-      next: (res) => {
-        this.state = (Number(res.state) as 1 | 2 | 3) || 1;
-        this.headerTitle = res.headerTitle || this.headerTitle;
-        this.courses = res.courses ?? [];
-        this.lessons = res.lessons ?? [];
-        this.loading = false;
-      },
-      error: () => { this.loading = false; }
-    });
+    this.refreshFromApi();
 
     this.learningService.getArticleCards().subscribe({
       next: (cards) => {
@@ -68,6 +61,52 @@ export class AcademySectionComponent implements OnInit {
       },
       error: () => {
         this.articleCount = 0;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.feedRequestId++;
+  }
+
+  refreshFromApi(): void {
+    const requestId = ++this.feedRequestId;
+    const age = this.authService.getCurrentUserAge() ?? undefined;
+    this.loading = true;
+    this.courseProgressById.clear();
+    this.academyService.getAcademyFeed(age).subscribe({
+      next: (res) => {
+        if (requestId !== this.feedRequestId) return;
+        this.state = (Number(res.state) as 1 | 2 | 3) || 1;
+        this.headerTitle = res.headerTitle || this.headerTitle;
+        this.courses = res.courses ?? [];
+        this.lessons = res.lessons ?? [];
+        this.loading = false;
+        if (this.state === 2) this.loadCourseProgress(requestId);
+      },
+      error: () => {
+        if (requestId === this.feedRequestId) this.loading = false;
+      }
+    });
+  }
+
+  private loadCourseProgress(requestId: number): void {
+    const courseIds = [...new Set(this.lessons.map(lesson => Number(lesson.courseId)))]
+      .filter(id => Number.isSafeInteger(id) && id > 0);
+    if (!courseIds.length) return;
+
+    forkJoin(courseIds.map(id => this.academyService.getCourseById(id).pipe(
+      map(course => ({ id, percentage: course.completionPercentage })),
+      catchError(() => of({ id, percentage: null }))
+    ))).subscribe({
+      next: results => {
+        if (requestId !== this.feedRequestId) return;
+        for (const { id, percentage } of results) {
+          const value = Number(percentage);
+          if (percentage != null && Number.isFinite(value)) {
+            this.courseProgressById.set(id, Math.min(100, Math.max(0, Math.round(value))));
+          }
+        }
       }
     });
   }
@@ -102,8 +141,8 @@ export class AcademySectionComponent implements OnInit {
     return Math.min(100, Math.max(0, Math.round(Number.isFinite(progress) ? progress : 0)));
   }
 
-  getLessonProgress(lesson: AcademyFeedLesson): number {
-    return lesson.isCompleted ? 100 : 0;
+  getLessonProgress(lesson: AcademyFeedLesson): number | null {
+    return this.courseProgressById.get(Number(lesson.courseId)) ?? null;
   }
 
   getCourseImage(course: AcademyFeedCourse): string {

@@ -1,8 +1,8 @@
 import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit, OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { IonicModule, IonContent, NavController } from '@ionic/angular';
-import { Router, ActivatedRoute, RouterModule } from "@angular/router";
+import { IonicModule, IonContent, NavController, Platform } from '@ionic/angular';
+import { Router, ActivatedRoute, RouterModule, NavigationStart } from "@angular/router";
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 import { CoreService } from "../../core/services/core.service";
 import { AuthService } from '../../core/services/auth.service';
@@ -10,7 +10,7 @@ import { UserService } from '../../core/services/user.service';
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { LoadingService } from '../../core/services/loading.service';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { firstValueFrom, Subscription, timeout, finalize } from 'rxjs';
+import { firstValueFrom, Subscription, timeout, finalize, filter } from 'rxjs';
 import { CredentialSaverService } from '../../core/services/credential-saver.service';
 import { SignupCredentialStateService } from '../../core/services/signup-credential-state.service';
 import { StoredGender, toApiGender, toStoredGender } from '../../core/models/gender.model';
@@ -23,7 +23,8 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard, KeyboardInfo } from '@capacitor/keyboard';
 import { environment } from '../../../environments/environment';
 import { AvatarDefinition, AvatarService } from '../../core/services/avatar.service';
-import { USERNAME_MAX_LENGTH, USERNAME_LENGTH_MESSAGES, usernameLengthError } from '../../core/models/username-length';
+import { USERNAME_MAX_LENGTH } from '../../core/models/username-length';
+import { USERNAME_RULE_MESSAGES, usernameRuleError } from '../../core/models/username-rules';
 import { SupermeInputsModule } from '../../core/components/superme-inputs/superme-inputs.module';
 import { SupermeNavigatorComponent } from '../../core/components/superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
@@ -32,6 +33,10 @@ import { AuthBackButtonComponent } from '../../core/components/auth-back-button/
 
 type SignupRole = 'child' | 'parent' | 'self';
 type SignupGender = StoredGender;
+
+export function shouldRefreshSignupOnboarding(step: number, reviewPrevious: boolean): boolean {
+  return step !== 2 && !reviewPrevious;
+}
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -180,13 +185,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private referralCheckInProgress: boolean = false;
   private validatedReferralCode: string = '';
   private referralValidationTimer: ReturnType<typeof setTimeout> | null = null;
-  public usernameAvailability: 'idle' | 'checking' | 'available' | 'taken' = 'idle';
+  public usernameAvailability: 'idle' | 'checking' | 'available' | 'taken' | 'unavailable' = 'idle';
   private usernameCheckTimer: ReturnType<typeof setTimeout> | null = null;
   private usernameCheckSubscription?: Subscription;
-  private readonly reservedUsernames = new Set([
-    'admin', 'administrator', 'help', 'moderator', 'official', 'root',
-    'security', 'support', 'superme', 'supermeapp', 'system'
-  ]);
 
   // Use an accessor so we can defensively guard and log unexpected changes
   private _openBirthdayPicker = false;
@@ -355,6 +356,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.subscription.add(this.router.events.pipe(
+      filter((event): event is NavigationStart => event instanceof NavigationStart
+        && event.navigationTrigger === 'popstate')
+    ).subscribe(() => this.handleBrowserBack()));
+    // The wizard replaces its own history entries. Android Back must follow
+    // the same step transition as the visible arrow instead of popping a
+    // stale URL (which the onboarding resume logic would reopen).
+    if (Capacitor.getPlatform() === 'android') {
+      this.subscription.add(this.platform.backButton.subscribeWithPriority(20, processNextHandler =>
+        this.handleSystemBack(processNextHandler)));
+    }
     // ion-router-outlet is capped to a centered readable column on tablet/
     // desktop by default (see global.scss); this component's steps each
     // build their own wide web background, so they need the same
@@ -478,11 +490,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.hydrateAppleIdentity();
       }
 
-      // Provider identity is authoritative. Social users never need to retype
-      // a provider name, and DOB remains optional for Apple and Google.
-      this.profileForm.get('name')?.clearValidators();
+      // Reuse provider identity while retaining Parent profile requirements.
       this.profileForm.get('name')?.updateValueAndValidity({ emitEvent: false });
-      this.profileForm.get('dob')?.clearValidators();
       this.profileForm.get('dob')?.updateValueAndValidity({ emitEvent: false });
     }
   }
@@ -506,7 +515,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private navCtrl: NavController,
     private onboardingState: OnboardingStateService,
     private ngZone: NgZone,
-    private avatarService: AvatarService
+    private avatarService: AvatarService,
+    private platform: Platform
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -516,19 +526,19 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     });
 
     this.profileForm = this.fb.group({
-      name: ['', [
+      name: ['', this.profileIdentityValidator([
         Validators.required,
         Validators.minLength(2),
         Validators.maxLength(50),
         Validators.pattern(/^[A-Za-z][A-Za-z\s'-]*$/),
         this.noRepeatedLetterValidator()
-      ]],
+      ])],
       username: ['', [
         Validators.required,
         this.usernameRulesValidator()
       ]],
       phone: ['', []],
-      dob: ['', [Validators.required]],
+      dob: ['', this.profileIdentityValidator([Validators.required])],
     })
 
     this.passwordForm = this.fb.group({
@@ -578,6 +588,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (roleParam && ['child', 'parent', 'self'].includes(roleParam)) {
         try { sessionStorage.setItem('signup_role', roleParam); } catch (e) { }
         this.roleSelected = roleParam;
+        this.profileForm.get('name')?.updateValueAndValidity({ emitEvent: false });
+        this.profileForm.get('dob')?.updateValueAndValidity({ emitEvent: false });
       }
 
       this.step = Number(stepParam) || 1;
@@ -594,7 +606,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // render behind a background onboarding refresh; the saved draft is
       // already restored synchronously above and the refresh is not needed to
       // open or validate the referral panel.
-      if (this.step !== 2) {
+      if (shouldRefreshSignupOnboarding(this.step, params['reviewPrevious'] === 'true')) {
         this.refreshIncompleteAuthenticatedOnboarding();
       }
 
@@ -724,10 +736,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   get isProfileStepInvalid(): boolean {
-    if (!this.isOAuthSignup && (this.name?.invalid || this.dob()?.invalid)) return true;
+    if ((!this.isOAuthSignup || this.currentRole === 'parent') && (this.name?.invalid || this.dob()?.invalid)) return true;
     if (this.currentRole !== 'parent' && this.username?.invalid) return true;
     if (this.currentRole !== 'parent' && this.usernameAvailability !== 'available') return true;
-    // Phone, gender and (for social accounts) DOB remain optional. An avatar
+    // Phone and gender remain optional; Parent DOB is required for every provider. An avatar
     // is still selected explicitly from the centralized age/gender mapping.
     if (!this.avatarSelected) return true;
     return false;
@@ -778,57 +790,38 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
+  private profileIdentityValidator(validators: ValidatorFn[]): ValidatorFn {
+    const validate = Validators.compose(validators);
+    return control => this.isOAuthSignup && this.currentRole !== 'parent'
+      ? null : validate?.(control) || null;
+  }
+
   private usernameRulesValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = String(control.value || '');
       if (!value) return null;
 
-      const lengthError = usernameLengthError(value);
-      if (lengthError) return { [lengthError]: true };
-      if (/\s/.test(value)) return { usernameSpaces: true };
-      if (/[A-Z]/.test(value)) return { usernameUppercase: true };
-      if (!/^[a-z0-9_]+$/.test(value)) return { usernameInvalidCharacters: true };
-
-      return null;
+      const error = usernameRuleError(value, String(this.profileForm?.get('name')?.value || ''));
+      return error ? { [error]: true } : null;
     };
-  }
-
-  private looksLikeRealName(username: string): boolean {
-    const fullName = String(this.profileForm?.get('name')?.value || '').trim().toLowerCase();
-    if (!fullName) return false;
-
-    const usernameLetters = username.replace(/_/g, '');
-    const nameParts = fullName.split(/[^a-z]+/).filter(part => part.length >= 3);
-    const joinedName = nameParts.join('');
-
-    return joinedName.length >= 3 && (
-      usernameLetters === joinedName ||
-      nameParts.some(part => usernameLetters === part)
-    );
   }
 
   public getUsernameValidationMessage(): string {
     const errors = this.username?.errors;
-    if (!errors) return '';
+    if (!errors) return this.usernameAvailability === 'unavailable'
+      ? 'Could not check this username. Please try again.' : '';
 
     if (errors['required']) return 'Username is required.';
-    if (errors['usernameSpaces']) return "Spaces aren't allowed. Use _ instead";
-    if (errors['usernameMinLength']) return USERNAME_LENGTH_MESSAGES.usernameMinLength;
-    if (errors['usernameMaxLength']) return USERNAME_LENGTH_MESSAGES.usernameMaxLength;
-    if (errors['usernameUppercase']) return 'Only lowercase letters allowed';
-    if (errors['usernameStartsWithUnderscore']) return 'Username cannot start with underscore';
-    if (errors['usernameConsecutiveUnderscores']) return 'Username cannot have consecutive underscores';
-    if (errors['usernameInvalidCharacters']) return 'Only letters, numbers, and underscore are allowed.';
-    if (errors['usernameMissingLetter']) return 'Username must include at least one letter';
-    if (errors['usernameReserved']) return 'Invalid username. Choose another';
-    if (errors['usernameLooksLikeRealName']) return 'This looks like a real name. Try a nickname for privacy';
+    for (const [error, message] of Object.entries(USERNAME_RULE_MESSAGES)) {
+      if (errors[error]) return message;
+    }
     if (errors['usernameTaken']) return 'Oops! Someone already has this username';
 
     return 'Invalid username. Choose another';
   }
 
   public shouldShowUsernameError(): boolean {
-    return Boolean(this.username?.invalid && (this.username?.dirty || this.username?.touched));
+    return Boolean((this.username?.invalid || this.usernameAvailability === 'unavailable') && (this.username?.dirty || this.username?.touched));
   }
 
   public shouldShowUsernameSuccess(): boolean {
@@ -845,7 +838,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   public onUsernameBlur(): void {
     this.username?.markAsTouched();
-    if (this.username?.valid && this.usernameAvailability === 'idle') {
+    if (this.username?.valid && (this.usernameAvailability === 'idle' || this.usernameAvailability === 'unavailable')) {
       this.clearUsernameCheckTimer();
       this.checkUsernameAvailability(String(this.username.value || ''));
     }
@@ -879,7 +872,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       },
       error: () => {
         if (String(this.username?.value || '') === username) {
-          this.usernameAvailability = 'idle';
+          this.usernameAvailability = 'unavailable';
         }
       }
     });
@@ -1356,8 +1349,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     this.profileForm.markAllAsTouched();
+    this.profileForm.get('name')?.updateValueAndValidity({ emitEvent: false });
+    this.profileForm.get('dob')?.updateValueAndValidity({ emitEvent: false });
 
-    if (!this.isOAuthSignup && this.profileForm.get('name')?.invalid) {
+    if ((!this.isOAuthSignup || this.currentRole === 'parent') && this.profileForm.get('name')?.invalid) {
       this.core.triggerToasrt(this.getNameErrorMessage());
       return;
     }
@@ -1367,7 +1362,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    if (!this.isOAuthSignup && this.profileForm.get('dob')?.invalid) {
+    if ((!this.isOAuthSignup || this.currentRole === 'parent') && this.profileForm.get('dob')?.invalid) {
       this.core.triggerToasrt('Please select your date of birth.');
       return;
     }
@@ -1476,12 +1471,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    * current URL prevents Ionic/browser history from briefly rendering stale
    * completed steps and stops the device Back action from reopening them.
    */
-  private navigateToSignupStep(step: number): void {
+  private navigateToSignupStep(step: number, reviewPrevious = false): void {
     if (this.step === 0.3 && step !== 0.3) {
       this.dismissPasswordKeyboard();
     }
     this.resetTransientStepUi();
     const queryParams: Record<string, string | number | boolean> = { step };
+    if (reviewPrevious) queryParams['reviewPrevious'] = true;
     if (this.isManagedChildSignup) {
       queryParams['role'] = 'child';
       queryParams['managedChild'] = true;
@@ -1529,6 +1525,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.navigateToSignupStep(0.1);
   }
 
+  private handleSystemBack(processNextHandler: () => void): void {
+    if (!/^\/signup(?:[/?#]|$)/.test(this.router.url)) {
+      processNextHandler();
+      return;
+    }
+    this.ngZone.run(() => this.goBack());
+  }
+
+  private handleBrowserBack(): void {
+    // Query-param wizard pages are not reliable browser-history entries after
+    // navigateRoot(). Override a browser Back only on the affected profile
+    // step; all other browser navigation retains its normal behavior.
+    if (this.step === 2 && /^\/signup(?:[/?#]|$)/.test(this.router.url)) {
+      this.goBack();
+    }
+  }
+
   goBack() {
     if (this.step === 0.1) {
       if (this.isManagedChildSignup) {
@@ -1543,6 +1556,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.navigateToSignupStep(0.1);
     } else if (this.step === 1) {
       if (this.isOAuthSignup) {
+        if (this.route.snapshot.queryParamMap.get('reviewPrevious') === 'true') {
+          // A second Back is an explicit exit from the social onboarding
+          // review, not a request to bounce back to the profile form.
+          void this.authService.logout();
+          return;
+        }
         // Social authentication is already complete. Never send an OAuth user
         // back to Login/Password from role selection; continue with the
         // preserved role when available and otherwise keep role selection.
@@ -1562,7 +1581,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         return;
       }
       if (this.step === 2) {
-        this.roleSelected = undefined;
+        // OAuth has already authenticated and came from role selection.
+        // Email/managed-child signup came from password creation. If its
+        // in-memory password was lost on a resumed session, return to the
+        // credential entry rather than showing an unusable password step.
+        if (this.isOAuthSignup) {
+          this.roleSelected = undefined;
+          this.navigateToSignupStep(1, true);
+        } else {
+          this.navigateToSignupStep(this.signupCredentialState.getPassword() ? 0.3 : 0.1, true);
+        }
+        return;
       }
       this.navigateToSignupStep(this.step - 1);
     }
@@ -3402,8 +3431,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       googlePayload.clientId = clientId;
     }
 
-    // Gender and DOB are optional — Apple/Google never supply them, and
-    // Sign In with Apple review requires we don't force them.
+    // Send the profile values collected by the shared setup screen.
+    // Parent DOB is required there; gender remains optional.
     const oauthGenderValue = profile.gender || this.gender;
     if (oauthGenderValue) {
       googlePayload.gender = toApiGender(oauthGenderValue);
@@ -3491,8 +3520,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         // of applying the submitted signup details. Accept its valid session
         // and resume the returned account, never replace it with the draft.
         if (provider === 'google' && response?.token && response?.user?.id
-          && ((returnedRole === 'parent' && response.user.family?.id)
-            || differentAccountRole)) {
+          && differentAccountRole) {
           this.resumeReturnedGoogleAccount(response, providerId, returnedRole, responseStep);
           return;
         }
@@ -3633,13 +3661,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       ? returnedRole as SignupRole : undefined;
     if (role) sessionStorage.setItem('signup_role', role);
     this.roleSelected = role;
-    if (role === 'parent' && user.family?.id) {
-      this.onboardingState.allowExistingGoogleAccountHome(user.id);
-      this.clearGoogleSignupSession();
-      this.onboardingState.markExistingUser();
-      this.navigateReplacing(this.authService.getDashboardRoute());
-      return;
-    }
     if (responseStep && responseStep < 7) {
       this.onboardingState.saveRegistrationDraft({
         ...this.getRegistrationResponseDraft(response),
@@ -4485,9 +4506,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         // The local registration draft remains sufficient for rendering.
       }
 
-      this.profileForm.get('name')?.clearValidators();
       this.profileForm.get('name')?.updateValueAndValidity({ emitEvent: false });
-      this.profileForm.get('dob')?.clearValidators();
       this.profileForm.get('dob')?.updateValueAndValidity({ emitEvent: false });
     }
 
