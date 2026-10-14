@@ -1,3 +1,5 @@
+import { BadgeSocketService } from './badge-socket.service';
+import { FamilyService } from './family.service';
 import { AuthService } from './auth.service';
 import { HttpClient } from '@angular/common/http';
 import { Subject, of, firstValueFrom } from 'rxjs';
@@ -33,6 +35,19 @@ describe('PKCE session bridge', () => {
   it('coordinates concurrent refresh requests into one token exchange', async () => {
     await Promise.all([service.refresh(), service.refresh()]);
     expect(oauth.refreshToken).toHaveBeenCalledTimes(1);
+  });
+  it('does not mistake an Auth2 email or phone subject for a numeric API user ID', () => {
+    const jwt = (subject: string, algorithm: string) =>
+      btoa(JSON.stringify({ alg: algorithm })).replace(/=/g, '') + '.' +
+      btoa(JSON.stringify({ sub: subject })).replace(/=/g, '') + '.signature';
+    const badge = Object.create(BadgeSocketService.prototype) as any;
+    const family = Object.create(FamilyService.prototype) as any;
+    for (const subject of ['user@example.com', '919876543210']) {
+      expect(badge.extractUserIdFromToken(jwt(subject, 'RS256'))).toBeNull();
+      expect(family.decodeUserIdFromToken(jwt(subject, 'RS256'))).toBeNull();
+    }
+    expect(badge.extractUserIdFromToken(jwt('94', 'HS256'))).toBe('94');
+    expect(family.decodeUserIdFromToken(jwt('94', 'HS256'))).toBe(94);
   });
   it('does not send PKCE logout to the legacy business API', async () => {
     const post = jasmine.createSpy();

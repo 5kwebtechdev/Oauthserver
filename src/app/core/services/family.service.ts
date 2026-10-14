@@ -37,8 +37,8 @@ export class FamilyService {
      * null because hasValidSession() requires last_activity/user_id to
      * already be fully populated — which isn't guaranteed yet at this step.
      * Fall back to userData.id, a raw localStorage read, and finally decode
-     * the JWT itself (it always carries `id`/`sub` and is always present
-     * whenever a request can be authenticated at all).
+     * a legacy JWT with a numeric ID. Auth2 email/phone subjects must not
+     * be interpreted as database IDs; its token-response user supplies the ID.
      */
     private resolveUserId(headers?: HttpHeaders): number | null {
         let userData: any = null;
@@ -110,7 +110,9 @@ export class FamilyService {
                 atob(padded).split('').map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')).join('')
             );
             const claims = JSON.parse(json);
-            const id = claims?.id ?? claims?.userId ?? claims?.sub;
+            const headerBase64 = parts[0].replace(/-/g, '+').replace(/_/g, '/');
+            const header = JSON.parse(atob(headerBase64 + '='.repeat((4 - headerBase64.length % 4) % 4)));
+            const id = claims?.id ?? claims?.userId ?? (header.alg === 'HS256' ? claims?.sub : null);
             return this.normalizeUserId(id);
         } catch (e) {
             return null;
