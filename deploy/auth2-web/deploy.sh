@@ -11,6 +11,7 @@ cp -a "$bundle/www/." "$base/releases/$release/"
 chmod -R a+rX "$base/releases/$release"
 previous=$(readlink "$base/current" || true)
 backup=$(mktemp)
+config_dump=$(mktemp)
 existing=false
 if test -f "$site"; then cp "$site" "$backup"; existing=true; fi
 rollback() {
@@ -19,11 +20,29 @@ rollback() {
   if $existing; then cp "$backup" "$site"; else rm -f "$site"; fi
   nginx -t && systemctl reload nginx || true
 }
-trap 'rm -f "$backup"' EXIT
+trap 'rm -f "$backup" "$config_dump"' EXIT
 cp "$bundle/nginx.conf" "$site"
 ln -sfn "$base/releases/$release" "$base/current.next"
 mv -Tf "$base/current.next" "$base/current"
-if ! nginx -t || ! systemctl reload nginx; then rollback; exit 1; fi
-if ! curl --fail --silent --show-error --retry 3 http://127.0.0.1:4204/ -o /dev/null; then rollback; exit 1; fi
-if ! curl --fail --silent --show-error http://127.0.0.1:4204/callback -o /dev/null; then rollback; exit 1; fi
+if ! nginx -T > "$config_dump" 2>&1; then
+  cat "$config_dump"
+  rollback; exit 1
+fi
+if ! grep -Fq "# configuration file $site:" "$config_dump"; then
+  echo "Nginx is not loading $site. Its http block must include /etc/nginx/conf.d/*.conf."
+  rollback; exit 1
+fi
+if ! systemctl reload nginx; then rollback; exit 1; fi
+# Nginx reload is asynchronous. Retry connection refusal while new workers start.
+check_page() {
+  curl --fail --silent --show-error --connect-timeout 2 --max-time 5 \
+    --retry 10 --retry-connrefused --retry-delay 1 --retry-max-time 45 \
+    "http://127.0.0.1:4204$1" -o /dev/null
+}
+if ! check_page / || ! check_page /callback; then
+  echo 'Port 4204 health check failed. Capturing diagnostics before rollback.'
+  ss -ltn '( sport = :4204 )' || true
+  journalctl -u nginx -n 30 --no-pager || true
+  rollback; exit 1
+fi
 echo "SuperMeAppFE deployed on port 4204: $release"
