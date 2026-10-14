@@ -1,0 +1,21 @@
+[Unit]
+Description=PKCE Resource Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=pkce
+Group=pkce
+WorkingDirectory=/opt/pkce
+EnvironmentFile=/etc/pkce/resource.env
+ExecStart=/usr/bin/java -jar /opt/pkce/resource-server.jar
+Restart=on-failure
+RestartSec=10
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

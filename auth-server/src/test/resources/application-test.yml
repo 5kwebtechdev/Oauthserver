@@ -1,0 +1,99 @@
+spring:
+  datasource:
+    # USER joins VALUE in NON_KEYWORDS because SuperMeBE's user table is literally named
+    # "User" and the ported entity leaves it unquoted (as theirs does) - H2 treats USER as a
+    # reserved word otherwise and rejects the identifier outright.
+    url: jdbc:h2:mem:authserver_test;MODE=MySQL;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE,USER
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    # Flyway is the schema source of truth; Hibernate's "validate" mode compares against
+    # the H2Dialect's own type expectations (e.g. BOOLEAN) rather than the MySQL-specific
+    # types our migrations actually use (e.g. TINYINT(1)), which is a false mismatch that
+    # only exists under H2's MySQL-compatibility mode, not against real MySQL (already
+    # verified separately - see ARCHITECTURE.md testing notes).
+    hibernate:
+      ddl-auto: none
+      naming:
+        # Same strategy production uses - SuperMeBE's columns are camelCase, so the ported
+        # entities only resolve correctly with implicit names left as-is.
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    open-in-view: false
+  flyway:
+    enabled: true
+    # db/testmigration holds stand-ins for the SuperMeBE tables this server reads but does
+    # not own (User, UserPassword, Family, Avatar, Pet). Production gets them from
+    # SuperMeBE itself, so the real migration set never creates them; tests need them to
+    # exist somewhere, and keeping them under src/test/resources means they cannot
+    # possibly be applied to a live database.
+    locations: classpath:db/migration,classpath:db/testmigration
+  mail:
+    # Never point tests at the real smtp.gmail.com - EmailService is always @MockBean'd
+    # in any test that triggers a send, but if that were ever missed, this fails fast
+    # (connection refused) instead of hanging on a timeout to a real external host.
+    host: localhost
+    port: 2525
+    username: test
+    password: test
+
+app:
+  security:
+    issuer: http://localhost:9000
+    jwt:
+      private-key-path: src/test/resources/test-keys/private_key.pem
+      public-key-path: src/test/resources/test-keys/public_key.pem
+      key-id: test-key-1
+    cors:
+      allowed-origins: http://localhost:4200
+    client:
+      id: pkce-angular-client
+      redirect-uris: http://localhost:4200/callback
+      post-logout-redirect-uri: http://localhost:4200/
+  frontend:
+    base-url: http://localhost:4200/
+    forgot-password-url: http://localhost:4200/forgot-password
+    continue-with-email-url: http://localhost:4200/continue-with-email
+  superme:
+    # Tests exercise the write paths (Google provider linking, password reset) against H2's
+    # throwaway copies of these tables, never a real database - see db/testmigration.
+    writes-enabled: true
+  # RateLimitFilter's buckets are an in-memory singleton that Spring's test context
+  # caching keeps alive - and shares - across every test class using this same profile
+  # within one test run. These capacities are deliberately generous so the suite's normal
+  # cumulative traffic across all classes never trips them by accident; RateLimitFilterTest
+  # unit-tests the actual 429-triggering behavior in isolation with its own low-capacity
+  # properties object, and any test that needs to genuinely trip a limit (e.g. a
+  # RATE_LIMIT_EXCEEDED security-event test) overrides the relevant value via
+  # @SpringBootTest(properties = ...), which gives it its own non-shared context.
+  rate-limit:
+    login:
+      capacity: 200
+      refill-tokens: 200
+      refill-duration-seconds: 60
+    token:
+      capacity: 200
+      refill-tokens: 200
+      refill-duration-seconds: 60
+    otp-request:
+      capacity: 200
+      refill-tokens: 200
+      refill-duration-seconds: 900
+    verify:
+      capacity: 200
+      refill-tokens: 200
+      refill-duration-seconds: 900
+    google-login:
+      capacity: 200
+      refill-tokens: 200
+      refill-duration-seconds: 60
+  account-lockout:
+    max-attempts: 3
+    lockout-duration-minutes: 15
+  # Left unconfigured on purpose: TurnstileVerificationService treats a blank secret-key
+  # as "not configured" and skips enforcement, so existing tests don't need to supply a
+  # captcha token - TurnstileVerificationServiceTest covers the real verify()/fail-closed
+  # logic directly, with a secret key set only in that one test.
+  turnstile:
+    site-key: ""
+    secret-key: ""

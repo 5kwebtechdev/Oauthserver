@@ -1,0 +1,17 @@
+target/
+*.class
+.idea/
+*.iml
+.env
+*.pem
+!**/test-keys/*.pem
+**/keys/
+.flattened-pom.xml
+
+# Local credentials and production configuration
+**/.env
+**/.env.properties
+**/application-prod.yml
+
+# Signing keys
+**/keys/
