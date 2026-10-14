@@ -1,7 +1,7 @@
 # Auth2.0 automatic deployment
 
 Place `.github/workflows/auth2-deploy.yml` at the **GitHub repository root** on
-branch `Auth2.0`. If BE is a subdirectory in GitHub, move only the workflow into
+branch `main` or `Auth2.0`. If BE is a subdirectory in GitHub, move only the workflow into
 the repository root's `.github/workflows/`; keep `deploy/auth2` beside the backend
 parent `pom.xml`. The workflow locates the backend automatically. This local
 workspace is not a normal standalone Git checkout, so no commit or push was made.
@@ -67,7 +67,7 @@ HTTP URLs are initial connection settings; configure HTTPS before live logins.
 
 ## Push to deploy
 
-Push code and the workflow to `Auth2.0`. The workflow runs tests, creates two
+Push code and the workflow to `main` or `Auth2.0`. The workflow runs tests, creates two
 executable JARs, uploads a bundle, and installs/restarts these services:
 
 - `auth2-auth`: port 9000, uses both `/root` PEM files.

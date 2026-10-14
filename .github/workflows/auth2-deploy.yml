@@ -2,7 +2,7 @@ name: Auth2.0 CI/CD
 
 on:
   push:
-    branches: [Auth2.0]
+    branches: [main, Auth2.0]
   workflow_dispatch:
 
 permissions:
@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
-    if: github.ref == 'refs/heads/Auth2.0'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/Auth2.0'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
