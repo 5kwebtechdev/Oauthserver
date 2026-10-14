@@ -121,7 +121,7 @@ public class LoginPageController {
                           }
                           .auth-shell {
                             width: 100%%;
-                            max-width: 20.5rem;
+                            max-width: 23.75rem;
                             position: relative;
                             margin: auto 0;
                             padding: 0.5rem 0;
@@ -484,6 +484,9 @@ public class LoginPageController {
                             font-size: 0.85rem;
                             font-weight: 650;
                             color: var(--ink-subtle);
+                          }
+                          @media (min-width: 701px) {
+                            #signin-pane { padding: 1.6rem 1.1rem; }
                           }
                           @media (min-width: 701px) and (min-height: 601px) {
                             .auth-shell { top: -1.3rem; }
