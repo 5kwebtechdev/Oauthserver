@@ -32,6 +32,9 @@ public class DefaultSecurityConfig {
     @Value("${app.security.cors.allowed-origins}")
     private String allowedOrigin;
 
+    @Value("${app.frontend.base-url}")
+    private String frontendBaseUrl;
+
     /**
      * Catch-all chain: the login form shown mid-authorization-code-flow, the (demo-only)
      * password-reset API called directly by the Angular app, and anything else outside
@@ -73,7 +76,10 @@ public class DefaultSecurityConfig {
                         "/api/auth/forgot-password/**", "/api/auth/google-login",
                         "/api/auth/continue-with-email/**", "/api/auth/register", "/api/auth/register/**",
                         "/v1/**"))
-                .formLogin((form) -> form.loginPage("/login").permitAll())
+                .formLogin((form) -> form.loginPage("/login")
+                        // Preserve saved OAuth requests; direct logins return to the frontend.
+                        .defaultSuccessUrl(frontendBaseUrl, false)
+                        .permitAll())
                 // Cheapest check first: in-memory rate limit before the Turnstile filter's
                 // outbound call to Cloudflare, so a flood gets rejected without paying for
                 // a network round trip on every single request.

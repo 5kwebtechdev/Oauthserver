@@ -33,6 +33,11 @@ public class LoginPageController {
     @Value("${app.turnstile.site-key}")
     private String turnstileSiteKey;
 
+    @GetMapping("/")
+    public void home(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        response.sendRedirect(frontendBaseUrl);
+    }
+
     @GetMapping("/login")
     public void login(HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) throws Exception {
         CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());

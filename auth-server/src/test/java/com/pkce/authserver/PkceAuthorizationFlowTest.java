@@ -103,6 +103,25 @@ class PkceAuthorizationFlowTest {
 
     // ---- helpers -----------------------------------------------------
 
+    @Test
+    void directLogin_redirectsToFrontend() throws Exception {
+        assertThat(loginAsTestUser()).isEqualTo("http://localhost:4200/");
+    }
+
+    @Test
+    void loginFromRoot_returnsToFrontendInsteadOf404() throws Exception {
+        HttpResponse<String> root = send(HttpRequest.newBuilder(URI.create(baseUrl + "/")).GET());
+        assertThat(root.statusCode()).isEqualTo(302);
+        String target = loginAsTestUser();
+        if (target.startsWith(baseUrl + "/")) {
+            HttpResponse<String> response = send(HttpRequest.newBuilder(URI.create(target)).GET());
+            assertThat(response.statusCode()).isEqualTo(302);
+            assertThat(response.headers().firstValue("Location")).contains("http://localhost:4200/");
+        } else {
+            assertThat(target).isEqualTo("http://localhost:4200/");
+        }
+    }
+
     private String loginAsTestUser() throws Exception {
         return login(testUser.getEmail(), TEST_PASSWORD);
     }
