@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.pkce.authserver.PkceAuthorizationFlowTest
--------------------------------------------------------------------------------
-Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.78 s -- in com.pkce.authserver.PkceAuthorizationFlowTest

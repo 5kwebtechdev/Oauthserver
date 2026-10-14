@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.pkce.authserver.AccountLockoutTest
--------------------------------------------------------------------------------
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.378 s -- in com.pkce.authserver.AccountLockoutTest
