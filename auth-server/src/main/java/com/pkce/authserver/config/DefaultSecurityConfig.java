@@ -93,10 +93,14 @@ public class DefaultSecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
         CorsConfiguration statelessConfig = new CorsConfiguration();
-        statelessConfig.setAllowedOrigins(List.of(allowedOrigin));
+        statelessConfig.setAllowedOrigins(java.util.Arrays.stream(allowedOrigin.split(",")).map(String::trim).filter(origin -> !origin.isEmpty()).toList());
         statelessConfig.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
         statelessConfig.setAllowedHeaders(List.of("*"));
         statelessConfig.setAllowCredentials(false);
+        // OPTIONS may be handled by the default chain rather than the OAuth
+        // endpoint matcher, so token preflights need the same origin allowlist.
+        source.registerCorsConfiguration("/oauth2/**", statelessConfig);
+        source.registerCorsConfiguration("/.well-known/**", statelessConfig);
         source.registerCorsConfiguration("/api/auth/forgot-password/**", statelessConfig);
 
         // This endpoint sets the session cookie that carries the user's login state into
@@ -104,7 +108,7 @@ public class DefaultSecurityConfig {
         // both send and store it on this cross-origin XHR - allowCredentials(true), which
         // requires a literal origin here rather than "*".
         CorsConfiguration credentialedConfig = new CorsConfiguration();
-        credentialedConfig.setAllowedOrigins(List.of(allowedOrigin));
+        credentialedConfig.setAllowedOrigins(java.util.Arrays.stream(allowedOrigin.split(",")).map(String::trim).filter(origin -> !origin.isEmpty()).toList());
         credentialedConfig.setAllowedMethods(List.of("POST", "OPTIONS"));
         credentialedConfig.setAllowedHeaders(List.of("*"));
         credentialedConfig.setAllowCredentials(true);
@@ -117,7 +121,7 @@ public class DefaultSecurityConfig {
         // Bearer token rather than this server's session cookie, so it needs GET as well as POST
         // and no credentialed-origin restriction beyond the configured one.
         CorsConfiguration compatConfig = new CorsConfiguration();
-        compatConfig.setAllowedOrigins(List.of(allowedOrigin));
+        compatConfig.setAllowedOrigins(java.util.Arrays.stream(allowedOrigin.split(",")).map(String::trim).filter(origin -> !origin.isEmpty()).toList());
         compatConfig.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
         compatConfig.setAllowedHeaders(List.of("*"));
         compatConfig.setAllowCredentials(true);

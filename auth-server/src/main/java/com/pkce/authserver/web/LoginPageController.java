@@ -35,6 +35,17 @@ public class LoginPageController {
     @Value("${app.turnstile.site-key}")
     private String turnstileSiteKey;
 
+    @Value("${app.frontend.additional-client-id:}")
+    private String additionalClientId;
+    @Value("${app.frontend.additional-base-url:}")
+    private String additionalBaseUrl;
+    @Value("${app.frontend.additional-signup-url:}")
+    private String additionalSignupUrl;
+    @Value("${app.frontend.additional-forgot-password-url:}")
+    private String additionalForgotUrl;
+    @Value("${app.frontend.additional-continue-with-email-url:}")
+    private String additionalEmailUrl;
+
     @GetMapping("/")
     public void home(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
         response.sendRedirect(frontendBaseUrl);
@@ -42,6 +53,20 @@ public class LoginPageController {
 
     @GetMapping("/login")
     public void login(HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) throws Exception {
+        // The saved authorization request determines the client; never accept a return URL
+        // supplied directly to /login. Each link is a configured frontend URL.
+        var session = request.getSession(false);
+        var saved = session == null ? null : session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+        boolean additional = false;
+        if (saved instanceof org.springframework.security.web.savedrequest.SavedRequest authorizationRequest) {
+            String[] ids = authorizationRequest.getParameterValues("client_id");
+            additional = !additionalClientId.isBlank() && ids != null && ids.length == 1
+                    && additionalClientId.equals(ids[0]);
+        }
+        String pageBaseUrl = additional && !additionalBaseUrl.isBlank() ? additionalBaseUrl : frontendBaseUrl;
+        String pageSignupUrl = additional && !additionalSignupUrl.isBlank() ? additionalSignupUrl : frontendBaseUrl;
+        String pageForgotUrl = additional && !additionalForgotUrl.isBlank() ? additionalForgotUrl : forgotPasswordUrl;
+        String pageEmailUrl = additional && !additionalEmailUrl.isBlank() ? additionalEmailUrl : continueWithEmailUrl;
         CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
         boolean captchaFailed = request.getParameter("captcha") != null;
         boolean hasError = request.getParameter("error") != null && !captchaFailed;
@@ -860,10 +885,10 @@ public class LoginPageController {
                     csrfToken.getParameterName(),
                     csrfToken.getToken(),
                     turnstileWidget,
-                    forgotPasswordUrl,
-                    continueWithEmailUrl,
-                    frontendBaseUrl,
-                    frontendBaseUrl,
+                    pageForgotUrl,
+                    pageEmailUrl,
+                    pageSignupUrl,
+                    pageBaseUrl,
                     googleClientId
             ));
         }

@@ -44,8 +44,25 @@ public class ClientRegistrationSeeder implements ApplicationRunner {
     @Value("${app.security.client.post-logout-redirect-uri:http://localhost:4200/}")
     private String postLogoutRedirectUri;
 
+    @Value("${app.security.additional-client.id:}")
+    private String additionalClientId;
+    @Value("${app.security.additional-client.redirect-uris:}")
+    private String additionalRedirectUris;
+    @Value("${app.security.additional-client.post-logout-redirect-uri:}")
+    private String additionalLogoutUri;
+
     @Override
     public void run(ApplicationArguments args) {
+        register(clientId, redirectUris, postLogoutRedirectUri);
+        if (!additionalClientId.isBlank()) {
+            if (additionalClientId.equals(clientId) || additionalRedirectUris.isBlank() || additionalLogoutUri.isBlank()) {
+                throw new IllegalArgumentException("Additional frontend needs a distinct client ID, callbacks and logout URL");
+            }
+            register(additionalClientId, additionalRedirectUris, additionalLogoutUri);
+        }
+    }
+
+    private void register(String clientId, String redirectUris, String postLogoutRedirectUri) {
         if (registeredClientRepository.findByClientId(clientId) != null) {
             return;
         }

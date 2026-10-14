@@ -90,3 +90,9 @@ journalctl -u auth2-auth -u auth2-resource -n 100 --no-pager
 
 Workflow references: [GitHub workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax)
 and [Java/Maven builds](https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing-java-with-maven).
+
+## Additional SuperMeAppFE on port 4204
+
+See [the integration guide](../../docs/SUPERME_4204_INTEGRATION.md) and
+`superme-4204.env.additions.example`. Keep the existing 4203 client settings; add
+the second client and expand the CORS origin lists when deploying the updated backend.

@@ -67,7 +67,16 @@ app:
       id: ${OAUTH_CLIENT_ID:pkce-angular-client}
       redirect-uris: ${OAUTH_REDIRECT_URIS:http://localhost:4200/callback}
       post-logout-redirect-uri: ${OAUTH_POST_LOGOUT_REDIRECT_URI:http://localhost:4200/}
+    additional-client:
+      id: ${SUPERME_OAUTH_CLIENT_ID:}
+      redirect-uris: ${SUPERME_OAUTH_REDIRECT_URIS:}
+      post-logout-redirect-uri: ${SUPERME_OAUTH_POST_LOGOUT_REDIRECT_URI:}
   frontend:
+    additional-client-id: ${SUPERME_OAUTH_CLIENT_ID:}
+    additional-base-url: ${SUPERME_FE_BASE_URL:}
+    additional-signup-url: ${SUPERME_FE_SIGNUP_URL:}
+    additional-forgot-password-url: ${SUPERME_FE_FORGOT_PASSWORD_URL:}
+    additional-continue-with-email-url: ${SUPERME_FE_CONTINUE_WITH_EMAIL_URL:}
     base-url: ${FE_BASE_URL:http://localhost:4200/}
     forgot-password-url: ${FE_FORGOT_PASSWORD_URL:http://localhost:4200/forgot-password}
     continue-with-email-url: ${FE_CONTINUE_WITH_EMAIL_URL:http://localhost:4200/continue-with-email}
