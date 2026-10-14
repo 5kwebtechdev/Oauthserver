@@ -46,6 +46,18 @@ jobs:
           test -f "$backend/deploy/auth2/deploy.sh"
           echo "BACKEND_DIR=$backend" >> "$GITHUB_ENV"
 
+      - name: Generate temporary test signing keys
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          auth_keys="$BACKEND_DIR/auth-server/src/test/resources/test-keys"
+          resource_keys="$BACKEND_DIR/resource-server/src/test/resources/test-keys"
+          mkdir -p "$auth_keys" "$resource_keys"
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$auth_keys/private_key.pem"
+          openssl pkey -in "$auth_keys/private_key.pem" -pubout -out "$auth_keys/public_key.pem"
+          cp "$auth_keys/public_key.pem" "$resource_keys/public_key.pem"
+
       - name: Build and test both applications
         run: mvn -B -f "$BACKEND_DIR/pom.xml" clean verify
 

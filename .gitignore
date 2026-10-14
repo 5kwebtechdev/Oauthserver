@@ -12,6 +12,8 @@ target/
 **/.env
 **/.env.properties
 **/application-prod.yml
+!auth-server/src/main/resources/application-prod.yml
+!resource-server/src/main/resources/application-prod.yml
 
 # Signing keys
 **/keys/

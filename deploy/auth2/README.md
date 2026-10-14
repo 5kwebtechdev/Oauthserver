@@ -67,7 +67,8 @@ HTTP URLs are initial connection settings; configure HTTPS before live logins.
 
 ## Push to deploy
 
-Push code and the workflow to `main` or `Auth2.0`. The workflow runs tests, creates two
+Push code and the workflow to `main` or `Auth2.0`. The workflow generates temporary
+test signing keys (no production keys are needed), runs tests, creates two
 executable JARs, uploads a bundle, and installs/restarts these services:
 
 - `auth2-auth`: port 9000, uses both `/root` PEM files.
