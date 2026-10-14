@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 export class PkceAuthService {
   readonly enabled = environment.oauth.enabled && !Capacitor.isNativePlatform();
   error = '';
+  private loggingOut = false;
   private renewal?: Promise<void>;
   private initialization?: Promise<void>;
   constructor(private oauth: OAuthService, private injector: Injector) {}
@@ -65,6 +66,7 @@ export class PkceAuthService {
     return this.oauth.hasValidAccessToken() ? this.oauth.getAccessToken() : null;
   }
   refresh(): Promise<void> {
+    if (this.loggingOut) return Promise.reject(new Error('Logout is in progress.'));
     if (!this.renewal) {
       this.renewal = this.oauth.refreshToken().then(() => this.syncSession())
         .finally(() => { this.renewal = undefined; });
@@ -88,9 +90,21 @@ export class PkceAuthService {
       finally { tokens.forEach(([key, value]) => localStorage.setItem(key, value)); }
     }
   }
+  async prepareLogout(): Promise<string | null> {
+    if (!this.enabled) return null;
+    this.loggingOut = true;
+    this.oauth.stopAutomaticRefresh();
+    // A refresh rotates the ID token. Finish any in-flight exchange before
+    // reading the logout hint, and prevent further renewal during cleanup.
+    if (this.renewal) {
+      try { await this.renewal; } catch { /* Use the latest stored ID token. */ }
+    }
+    return this.logoutUrl();
+  }
   logoutUrl(): string | null {
     if (!this.enabled || !this.oauth.logoutUrl) return null;
     const url = new URL(this.oauth.logoutUrl);
+    url.searchParams.set('client_id', environment.oauth.clientId);
     url.searchParams.set('id_token_hint', this.oauth.getIdToken());
     url.searchParams.set('post_logout_redirect_uri', window.location.origin + '/');
     return url.toString();

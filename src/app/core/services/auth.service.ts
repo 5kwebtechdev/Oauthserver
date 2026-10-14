@@ -750,7 +750,6 @@ export class AuthService {
   }
 
   async logout(redirectToLogin: boolean = true): Promise<void> {
-    const oidcLogout = this.pkce.logoutUrl();
     console.log('[AuthService] Logging out user');
 
     // Capture the id before any local state is cleared, and call the backend
@@ -767,6 +766,10 @@ export class AuthService {
         console.warn('[AuthService] Backend logout call failed, continuing with local cleanup:', error);
       }
     }
+
+    // Business logout can trigger a token renewal. Capture the OIDC hint only
+    // after it finishes, while OAuth storage is still available.
+    const oidcLogout = await this.pkce.prepareLogout();
 
     // Start device-token cleanup while the old session is still identifiable,
     // but revoke all local/in-memory access immediately rather than waiting on

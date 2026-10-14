@@ -1,4 +1,5 @@
 import { Subject } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { PkceAuthService } from './pkce-auth.service';
 
 describe('PKCE session bridge', () => {
@@ -9,6 +10,8 @@ describe('PKCE session bridge', () => {
     localStorage.clear(); sessionStorage.clear();
     auth = { setSession: jasmine.createSpy().and.callFake(() => localStorage.clear()), setUserData: jasmine.createSpy() };
     oauth = {
+      logoutUrl: environment.oauth.issuer + '/connect/logout',
+      stopAutomaticRefresh: jasmine.createSpy(), getIdToken: () => 'latest-id-token',
       configure: jasmine.createSpy(), setStorage: jasmine.createSpy(), events: new Subject(),
       loadDiscoveryDocumentAndTryLogin: jasmine.createSpy().and.callFake(async () => localStorage.setItem('superme_oidc_refresh_token', 'new-refresh')),
       hasValidAccessToken: () => true, getAccessToken: () => 'new-access',
@@ -29,7 +32,28 @@ describe('PKCE session bridge', () => {
     await Promise.all([service.refresh(), service.refresh()]);
     expect(oauth.refreshToken).toHaveBeenCalledTimes(1);
   });
-  it('rejects an external return URL', async () => {
+  it('identifies the correct client and callback in logout', async () => {
+    const url = new URL((await service.prepareLogout())!);
+    expect(url.searchParams.get('client_id')).toBe(environment.oauth.clientId);
+    expect(url.searchParams.get('id_token_hint')).toBe('latest-id-token');
+    expect(url.searchParams.get('post_logout_redirect_uri')).toBe(window.location.origin + '/');
+    expect(oauth.stopAutomaticRefresh).toHaveBeenCalled();
+  });
+  it('waits for token rotation before capturing the logout hint', async () => {
+    let finish!: () => void;
+    let idToken = 'old-id';
+    oauth.getIdToken = () => idToken;
+    oauth.refreshToken.and.callFake(() => new Promise<void>(resolve => {
+      finish = () => { idToken = 'rotated-id'; resolve(); };
+    }));
+    const refresh = service.refresh();
+    const logout = service.prepareLogout();
+    finish();
+    await refresh;
+    expect(new URL((await logout)!).searchParams.get('id_token_hint')).toBe('rotated-id');
+    await expectAsync(service.refresh()).toBeRejected();
+  });
+  it('rejects an external return URL' , async () => {
     await service.login('//untrusted.example');
     expect(sessionStorage.getItem('pkce_return_url')).toBeNull();
     expect(oauth.initCodeFlow).toHaveBeenCalled();
