@@ -46,7 +46,7 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # 8️⃣ Cache Gradle dependencies
+      # 8️⃣ Cache Gradle dependencies.fsdfsd
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
