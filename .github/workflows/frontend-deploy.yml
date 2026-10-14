@@ -1,0 +1,67 @@
+name: Auth2 Frontend CI/CD
+on:
+  push:
+    branches: [FE]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: auth2-frontend-deploy
+  cancel-in-progress: false
+jobs:
+  build-and-deploy:
+    if: github.ref == 'refs/heads/FE'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build production frontend
+        run: npm run build -- --configuration production
+      - name: Package build
+        run: |
+          set -euo pipefail
+          test -s dist/pkce-fe/browser/index.html
+          test -s dist/pkce-fe/browser/silent-refresh.html
+          mkdir -p bundle/site
+          cp -a dist/pkce-fe/browser/. bundle/site/
+          cp deploy/* bundle/
+          tar -czf frontend-deploy.tar.gz -C bundle .
+      - name: Deploy frontend to port 4201
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          : "${SERVER_HOST:?Missing SERVER_HOST}"
+          : "${SERVER_USER:?Missing SERVER_USER}"
+          : "${SERVER_SSH_KEY:?Missing SERVER_SSH_KEY}"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SERVER_SSH_KEY" | tr -d '\r' > ~/.ssh/auth2_fe_key
+          chmod 600 ~/.ssh/auth2_fe_key
+          trap 'rm -f ~/.ssh/auth2_fe_key' EXIT
+          ssh-keyscan -H "$SERVER_HOST" > ~/.ssh/auth2_fe_hosts
+          ssh_opts=(-i ~/.ssh/auth2_fe_key -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=~/.ssh/auth2_fe_hosts -o ConnectTimeout=15)
+          stage=$(ssh "${ssh_opts[@]}" "$SERVER_USER@$SERVER_HOST" 'mktemp -d /tmp/auth2-fe.XXXXXXXX')
+          release="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          scp "${ssh_opts[@]}" frontend-deploy.tar.gz "$SERVER_USER@$SERVER_HOST:$stage/bundle.tar.gz"
+          ssh "${ssh_opts[@]}" "$SERVER_USER@$SERVER_HOST" "bash -s -- '$stage' '$release'" <<'REMOTE'
+          set -euo pipefail
+          stage=$1
+          release=$2
+          trap 'rm -rf "$stage"' EXIT
+          tar -xzf "$stage/bundle.tar.gz" -C "$stage"
+          if [ "$(id -u)" -eq 0 ]; then
+            bash "$stage/deploy.sh" "$stage" "$release"
+          else
+            sudo -n bash "$stage/deploy.sh" "$stage" "$release"
+          fi
+          REMOTE

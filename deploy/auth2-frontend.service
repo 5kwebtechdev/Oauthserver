@@ -1,0 +1,16 @@
+[Unit]
+Description=Auth2 frontend on port 4201
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=forking
+RuntimeDirectory=auth2-frontend
+PIDFile=/run/auth2-frontend/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/auth2-frontend.conf
+ExecStart=/usr/sbin/nginx -c /etc/nginx/auth2-frontend.conf
+ExecReload=/usr/sbin/nginx -s reload -c /etc/nginx/auth2-frontend.conf
+ExecStop=/usr/sbin/nginx -s quit -c /etc/nginx/auth2-frontend.conf
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=multi-user.target
