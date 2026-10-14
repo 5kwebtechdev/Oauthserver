@@ -6,7 +6,7 @@
 export const APP_CONFIG = {
   authIssuer: 'http://localhost:9000',
   clientId: 'pkce-angular-client',
-  resourceServerBaseUrl: 'http://localhost:8080',
+  resourceServerBaseUrl: 'http://localhost:9090',
   scope: 'openid profile notes.read notes.write',
   // Cloudflare Turnstile site key - public, safe to embed in frontend code. Empty until
   // a real key is created (see ARCHITECTURE.md): the backend's TurnstileVerificationService
