@@ -56,6 +56,7 @@ public class LoginPageController {
 
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter writer = response.getWriter()) {
+            // String.formatted treats '%' as a format marker: use '%%' for CSS percentages.
             writer.write("""
                     <!doctype html>
                     <html lang="en">
@@ -83,9 +84,9 @@ public class LoginPageController {
                             color: var(--ink);
                             font-family: Inter, "Segoe UI", sans-serif;
                             background:
-                              radial-gradient(ellipse at 12% 18%, #e8dafa 0, transparent 34rem),
-                              radial-gradient(ellipse at 88% 82%, #f5c9dc 0, transparent 32rem),
-                              radial-gradient(ellipse at 72% 15%, #d7eee8 0, transparent 30rem),
+                              radial-gradient(ellipse at 12%% 18%%, #e8dafa 0, transparent 34rem),
+                              radial-gradient(ellipse at 88%% 82%%, #f5c9dc 0, transparent 32rem),
+                              radial-gradient(ellipse at 72%% 15%%, #d7eee8 0, transparent 30rem),
                               #f8f4ef;
                           }
                           .auth-shell { width: min(100vw - 2.5rem, 48rem); margin: auto; }
@@ -97,8 +98,8 @@ public class LoginPageController {
                           .mascot-note { z-index: 1; max-width: 13.5rem; padding: 1rem 1.2rem; border: 1px solid #e9e1f0; border-radius: 1rem; background: #fff; box-shadow: 0 .8rem 2rem #49316018; text-align: center; }
                           .mascot-note strong { display: block; color: var(--violet); font-size: 1.05rem; }
                           .mascot-note span { display: block; margin-top: .35rem; color: var(--muted); font-size: .85rem; line-height: 1.45; }
-                          .mascot { position: relative; display: grid; place-items: center; width: 8.4rem; height: 8.4rem; margin-top: .2rem; border-radius: 50%; background: radial-gradient(circle at 35% 28%, #fff 0, #f6e9da 52%, #efd5ca 100%); font-size: 5.2rem; filter: drop-shadow(0 .8rem .7rem #3a254022); }
-                          .auth-card { width: 100%; padding: 1.25rem; border: 1px solid #e5dfe8; border-radius: 1.25rem; background: #fff; box-shadow: 0 1.2rem 3.5rem #34204e20, 0 .15rem .6rem #34204e0c; }
+                          .mascot { position: relative; display: grid; place-items: center; width: 8.4rem; height: 8.4rem; margin-top: .2rem; border-radius: 50%%; background: radial-gradient(circle at 35%% 28%%, #fff 0, #f6e9da 52%%, #efd5ca 100%%); font-size: 5.2rem; filter: drop-shadow(0 .8rem .7rem #3a254022); }
+                          .auth-card { width: 100%%; padding: 1.25rem; border: 1px solid #e5dfe8; border-radius: 1.25rem; background: #fff; box-shadow: 0 1.2rem 3.5rem #34204e20, 0 .15rem .6rem #34204e0c; }
                           .form-signin { margin: 0; }
                           .form-signin-heading { margin: 0 0 1rem; font-size: 1.15rem; font-weight: 700; }
                           .field { margin: 0 0 .75rem; }

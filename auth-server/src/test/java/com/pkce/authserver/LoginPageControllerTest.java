@@ -86,4 +86,11 @@ class LoginPageControllerTest {
         assertThat(html).doesNotContain("%s");
         assertThat(html).contains("http://localhost:4200/");
     }
+
+    @Test
+    void loginPage_rendersCssPercentagesWithoutFormattingErrors() throws Exception {
+        String html = loginPageHtml();
+        assertThat(html).contains("ellipse at 12% 18%", "width: 100%;", "border-radius: 50%;");
+        assertThat(html).doesNotContain("%%");
+    }
 }
