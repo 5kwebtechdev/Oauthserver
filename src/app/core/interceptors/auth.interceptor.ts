@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import { Injectable } from '@angular/core';
 import {
   HttpRequest,
@@ -22,6 +23,7 @@ export class AuthInterceptor implements HttpInterceptor {
   ) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    if (environment.oauth.enabled && !Capacitor.isNativePlatform()) return next.handle(request);
     // Public authentication exchanges (OAuth, login, OTP, etc.) must not
     // inherit a token from a previous app session. This is especially
     // important on web, where the Google account picker can complete while an

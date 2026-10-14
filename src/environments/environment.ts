@@ -1,4 +1,5 @@
 export const environment = {
+  oauth: { enabled: false, issuer: 'http://187.127.142.16:9000', clientId: 'supermeapp-web-4204' },
   production: false,
   apiUrl: 'http://187.127.142.16:8082/v1',
   // apiUrl: 'https://api.supermeapp.com/v1',
