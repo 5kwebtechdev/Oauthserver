@@ -1,3 +1,5 @@
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { Injectable, Injector } from '@angular/core';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { Capacitor } from '@capacitor/core';
@@ -53,6 +55,16 @@ export class PkceAuthService {
       localStorage.removeItem('user_data');
       this.error = 'Could not connect to sign in. Please try again.';
     }
+  }
+  async loginAfterRegistration(credentials: { email?: string; phone?: string; password: string }): Promise<void> {
+    await this.init();
+    if (this.error) throw new Error(this.error);
+    await firstValueFrom(this.injector.get(HttpClient).post(
+      environment.oauth.issuer + '/v1/auth/session-login',
+      { email: credentials.email, phone: credentials.phone, password: credentials.password },
+      { withCredentials: true }
+    ));
+    await this.login();
   }
   async login(returnUrl = ''): Promise<void> {
     await this.init();

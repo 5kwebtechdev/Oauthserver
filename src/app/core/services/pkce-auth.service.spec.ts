@@ -1,4 +1,5 @@
-import { Subject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Subject, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PkceAuthService } from './pkce-auth.service';
 
@@ -52,6 +53,15 @@ describe('PKCE session bridge', () => {
     await refresh;
     expect(new URL((await logout)!).searchParams.get('id_token_hint')).toBe('rotated-id');
     await expectAsync(service.refresh()).toBeRejected();
+  });
+  it('establishes a credentialed session before starting post-signup PKCE', async () => {
+    const post = jasmine.createSpy().and.returnValue(of({ authenticated: true }));
+    service = new PkceAuthService(oauth, { get: (type: unknown) => type === HttpClient ? { post } : auth } as any);
+    Object.defineProperty(service, 'enabled', { value: true });
+    await service.loginAfterRegistration({ email: 'new@example.com', password: 'new-password' });
+    expect(post).toHaveBeenCalledWith(environment.oauth.issuer + '/v1/auth/session-login',
+      { email: 'new@example.com', phone: undefined, password: 'new-password' }, { withCredentials: true });
+    expect(oauth.initCodeFlow).toHaveBeenCalled();
   });
   it('rejects an external return URL' , async () => {
     await service.login('//untrusted.example');

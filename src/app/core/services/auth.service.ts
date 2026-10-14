@@ -1,8 +1,8 @@
 import { PkceAuthService } from './pkce-auth.service';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subject, timer, of, EMPTY, firstValueFrom } from 'rxjs';
-import { tap, map, catchError } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject, timer, of, EMPTY, from, firstValueFrom } from 'rxjs';
+import { tap, map, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -292,8 +292,7 @@ export class AuthService {
    */
   login(credentials: LoginCredentials): Observable<AuthResponse> {
     if (this.pkce.enabled) {
-      void this.pkce.login();
-      return EMPTY;
+      return from(this.pkce.loginAfterRegistration(credentials)).pipe(switchMap(() => EMPTY));
     }
     const loginUrl = `${this.apiUrl}/auth/login`;
     console.log('[AuthService] Login attempt with:', {
