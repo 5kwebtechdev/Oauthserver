@@ -61,6 +61,8 @@ public class SupermeAuthCompatController {
     private final PasswordEncoder passwordEncoder;
     private final TokenIssuanceService tokenIssuanceService;
     private final LoginAttemptService loginAttemptService;
+    private final com.pkce.authserver.service.AppUserDetailsService appUserDetailsService;
+    private final com.pkce.authserver.service.SessionLoginHelper sessionLoginHelper;
 
     @GetMapping("/check/alreadyRegistered")
     public ResponseEntity<Map<String, Object>> checkAlreadyRegistered(
@@ -111,10 +113,10 @@ public class SupermeAuthCompatController {
      * as a wrong password; identity is checked before account status so a wrong password always
      * reads as "Incorrect password." whatever state the account is in.
      */
-    @PostMapping("/login")
+    @PostMapping({"/login", "/session-login"})
     @Transactional
     public ResponseEntity<?> login(@Valid @RequestBody AuthenticationRequest request,
-                                   HttpServletRequest httpRequest) {
+                                   HttpServletRequest httpRequest, jakarta.servlet.http.HttpServletResponse httpResponse) {
         if (!StringUtils.hasText(request.getPassword())) {
             return ResponseEntity.badRequest().body(Map.of("message", "Password cannot be empty"));
         }
@@ -151,6 +153,15 @@ public class SupermeAuthCompatController {
 
         loginAttemptService.recordSuccess(user.getId());
 
+        if (httpRequest.getRequestURI().endsWith("/session-login")) {
+            // Signup already has the new user's credentials. Establish the browser
+            // session after the same password/status/lockout checks as normal login,
+            // then let the SPA obtain its own tokens through Authorization Code + PKCE.
+            if (httpRequest.getSession(false) != null) httpRequest.changeSessionId();
+            sessionLoginHelper.establishSessionAndResolveRedirect(
+                    appUserDetailsService.loadUserByUsername(identifier), httpRequest, httpResponse);
+            return ResponseEntity.ok(Map.of("authenticated", true));
+        }
         Map<String, Object> tokens = tokenIssuanceService.issueTokens(user);
         LoginResponse response = new LoginResponse((String) tokens.get("access_token"), UserMapper.toDto(user));
         response.setRefreshToken((String) tokens.get("refresh_token"));

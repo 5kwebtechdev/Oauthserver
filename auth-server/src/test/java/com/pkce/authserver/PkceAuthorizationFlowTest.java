@@ -190,6 +190,38 @@ class PkceAuthorizationFlowTest {
                 .collect(Collectors.toMap(p -> p[0], p -> java.net.URLDecoder.decode(p[1], StandardCharsets.UTF_8)));
     }
 
+    @Test
+    void postRegistrationSessionLoginCompletesPkceWithoutLoginForm() throws Exception {
+        var session = send(HttpRequest.newBuilder(URI.create(baseUrl + "/v1/auth/session-login"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(
+                        Map.of("email", testUser.getEmail(), "password", TEST_PASSWORD)))));
+        assertThat(session.statusCode()).isEqualTo(200);
+        assertThat(objectMapper.readTree(session.body()).get("authenticated").asBoolean()).isTrue();
+        String verifier = b64url("signup-session-verifier-abcdefghijklmnopqrstuvwxyz".getBytes(StandardCharsets.UTF_8));
+        var authorization = authorize(PUBLIC_CLIENT_ID, PUBLIC_REDIRECT_URI, "openid profile", sha256(verifier), "signup-state");
+        assertThat(authorization.statusCode()).isEqualTo(302);
+        String location = authorization.headers().firstValue("Location").orElseThrow();
+        assertThat(location).startsWith(PUBLIC_REDIRECT_URI + "?");
+        var tokens = tokenRequest(Map.of("grant_type", "authorization_code", "client_id", PUBLIC_CLIENT_ID,
+                "redirect_uri", PUBLIC_REDIRECT_URI, "code_verifier", verifier,
+                "code", parseQuery(location).get("code")), null);
+        assertThat(tokens.get("__status").asInt()).isEqualTo(200);
+        assertThat(tokens.get("user").get("id").asLong()).isEqualTo(testUser.getId());
+    }
+
+    @Test
+    void postRegistrationSessionLoginRejectsIncorrectCredentials() throws Exception {
+        var session = send(HttpRequest.newBuilder(URI.create(baseUrl + "/v1/auth/session-login"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(
+                        Map.of("email", testUser.getEmail(), "password", "incorrect-password")))));
+        assertThat(session.statusCode()).isEqualTo(401);
+        String verifier = b64url("signup-failed-verifier-abcdefghijklmnopqrstuvwxyz".getBytes(StandardCharsets.UTF_8));
+        var authorization = authorize(PUBLIC_CLIENT_ID, PUBLIC_REDIRECT_URI, "openid", sha256(verifier), "denied-state");
+        assertThat(authorization.headers().firstValue("Location").orElseThrow()).endsWith("/login");
+    }
+
     // ---- tests ---------------------------------------------------------
 
     @Test

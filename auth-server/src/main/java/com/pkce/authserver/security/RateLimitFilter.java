@@ -76,7 +76,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // Password submission - both the BE login form and the compat JSON login.
-        if (path.endsWith("/login")) {
+        if (path.endsWith("/login") || path.endsWith("/session-login")) {
             return "login";
         }
         if (path.endsWith("/oauth2/token")) {
