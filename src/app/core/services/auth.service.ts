@@ -737,6 +737,9 @@ export class AuthService {
    * session server-side (e.g. revoke the token, drop device registration).
    */
   logoutUser(userId: string | number): Observable<{ success: boolean; message: string }> {
+    // PKCE sessions are ended by /connect/logout on the issuer. The legacy
+    // business API cannot revoke tokens issued by this authorization server.
+    if (this.pkce.enabled) return of({ success: true, message: 'Logout handled by the authorization server.' });
     const token = this.getToken();
     const headers = new HttpHeaders({
       Authorization: token?.startsWith('Bearer ') ? token : `Bearer ${token || ''}`
@@ -751,12 +754,10 @@ export class AuthService {
   async logout(redirectToLogin: boolean = true): Promise<void> {
     console.log('[AuthService] Logging out user');
 
-    // Capture the id before any local state is cleared, and call the backend
-    // logout endpoint first. Wait for it (and the local cleanup that follows)
-    // to finish before this method resolves — the caller/navigation must not
-    // treat the user as logged out until the old session data is actually gone.
+    // Legacy sessions still notify the business API. PKCE sessions use the
+    // issuer logout endpoint below and never call the legacy logout API.
     const userId = this.getUserId();
-    if (userId) {
+    if (userId && !this.pkce.enabled) {
       try {
         await firstValueFrom(this.logoutUser(userId));
       } catch (error) {
@@ -766,8 +767,7 @@ export class AuthService {
       }
     }
 
-    // Business logout can trigger a token renewal. Capture the OIDC hint only
-    // after it finishes, while OAuth storage is still available.
+    // Capture the latest ID token after any in-flight renewal, before cleanup.
     const oidcLogout = await this.pkce.prepareLogout();
 
     // Start device-token cleanup while the old session is still identifiable,

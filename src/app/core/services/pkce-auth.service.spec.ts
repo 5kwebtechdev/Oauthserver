@@ -1,5 +1,6 @@
+import { AuthService } from './auth.service';
 import { HttpClient } from '@angular/common/http';
-import { Subject, of } from 'rxjs';
+import { Subject, of, firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PkceAuthService } from './pkce-auth.service';
 
@@ -32,6 +33,24 @@ describe('PKCE session bridge', () => {
   it('coordinates concurrent refresh requests into one token exchange', async () => {
     await Promise.all([service.refresh(), service.refresh()]);
     expect(oauth.refreshToken).toHaveBeenCalledTimes(1);
+  });
+  it('does not send PKCE logout to the legacy business API', async () => {
+    const post = jasmine.createSpy();
+    const result = AuthService.prototype.logoutUser.call({ pkce: { enabled: true }, http: { post } } as any, 94);
+    expect((await firstValueFrom(result)).success).toBeTrue();
+    expect(post).not.toHaveBeenCalled();
+  });
+  it('prepares issuer logout while skipping the legacy logout request', async () => {
+    const legacyLogout = jasmine.createSpy().and.returnValue(of({ success: true }));
+    const prepareLogout = jasmine.createSpy().and.returnValue(Promise.resolve(null));
+    await AuthService.prototype.logout.call({
+      pkce: { enabled: true, prepareLogout }, getUserId: () => '94', logoutUser: legacyLogout,
+      pushNotifications: { clearToken: () => Promise.resolve() }, clearLocalUserState: () => {},
+      analytics: { clearUserId: () => {} }, crashlytics: { clearUserId: () => {} },
+      authSessionCleanup: { clearExternalAuthSessions: () => Promise.resolve() }
+    } as any, false);
+    expect(legacyLogout).not.toHaveBeenCalled();
+    expect(prepareLogout).toHaveBeenCalledTimes(1);
   });
   it('identifies the correct client and callback in logout', async () => {
     const url = new URL((await service.prepareLogout())!);
