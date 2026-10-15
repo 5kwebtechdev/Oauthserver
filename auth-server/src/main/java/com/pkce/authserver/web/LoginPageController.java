@@ -620,7 +620,11 @@ public class LoginPageController {
                               return;
                             }
                             var signupUrl = new URL(signupLink.href, window.location.href);
-                            signupUrl.searchParams.set('step', '1');
+                            // Google has already verified the user's identity. Start the
+                            // frontend at the profile form (step 4 of 5), where it can
+                            // exchange the one-time ticket and prefill Google's name/email.
+                            signupUrl.searchParams.set('step', '2');
+                            signupUrl.searchParams.set('role', 'self');
                             signupUrl.searchParams.set('googleSignupTicket', handoffTicket);
                             window.location.assign(signupUrl.toString());
                           }

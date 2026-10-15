@@ -70,7 +70,8 @@ class LoginPageControllerTest {
 
         assertThat(html).contains("registrationRequired");
         assertThat(html).contains("function redirectToFrontendSignup(handoffTicket)");
-        assertThat(html).contains("signupUrl.searchParams.set('step', '1')");
+        assertThat(html).contains("signupUrl.searchParams.set('step', '2')");
+        assertThat(html).contains("signupUrl.searchParams.set('role', 'self')");
         assertThat(html).contains("signupUrl.searchParams.set('googleSignupTicket', handoffTicket)");
         assertThat(html).contains("redirectToFrontendSignup(result.data.handoffTicket)");
         assertThat(html).doesNotContain("register-pane", "/api/auth/register", "openRegistrationForm");
