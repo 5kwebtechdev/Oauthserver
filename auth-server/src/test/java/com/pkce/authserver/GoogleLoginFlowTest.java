@@ -66,16 +66,19 @@ class GoogleLoginFlowTest {
     private static final String REDIRECT_URI = "http://localhost:4200/callback";
 
     private Jwt googleJwt(String email) {
+        Instant now = Instant.now();
         return Jwt.withTokenValue("fake-google-token")
                 .header("alg", "RS256")
                 .claim("iss", "https://accounts.google.com")
-                .claim("aud", "some-client-id")
+                .claim("azp", "124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com")
+                .claim("aud", "124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com")
                 .claim("sub", "google-sub-" + email)
                 .claim("email", email)
                 .claim("email_verified", true)
                 .claim("picture", "https://example.com/avatar.png")
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusSeconds(3600))
+                .claim("nbf", now.minusSeconds(300).getEpochSecond())
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(3600))
                 .build();
     }
 

@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -36,6 +37,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class GoogleLoginController {
 
     private final GoogleLoginService googleLoginService;
@@ -82,6 +84,13 @@ public class GoogleLoginController {
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "invalid_google_token", "message", e.getMessage()));
+        } catch (RuntimeException e) {
+            // Do not log the submitted ID token or email. The generic 500 response is intentional;
+            // the stack trace in the service journal identifies whether verification, DB lookup,
+            // or account linking failed without exposing internals to the browser.
+            log.error("Google login failed during token verification or account lookup; requestId={}",
+                    httpRequest.getRequestId(), e);
+            throw e;
         }
 
         // The email (or phone) is the identifier logins resolve on, not User.username, which is
@@ -94,8 +103,19 @@ public class GoogleLoginController {
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "unusable_account", "message", e.getMessage()));
+        } catch (RuntimeException e) {
+            log.error("Google login failed while building the authenticated user; requestId={}",
+                    httpRequest.getRequestId(), e);
+            throw e;
         }
-        String redirectTo = sessionLoginHelper.establishSessionAndResolveRedirect(userDetails, httpRequest, httpResponse);
+        String redirectTo;
+        try {
+            redirectTo = sessionLoginHelper.establishSessionAndResolveRedirect(userDetails, httpRequest, httpResponse);
+        } catch (RuntimeException e) {
+            log.error("Google login failed while saving the session or resolving its redirect; requestId={}",
+                    httpRequest.getRequestId(), e);
+            throw e;
+        }
 
         // Not Map.of: it throws NPE on a null value, and 45 of the live accounts have no email.
         Map<String, Object> body = new HashMap<>();
