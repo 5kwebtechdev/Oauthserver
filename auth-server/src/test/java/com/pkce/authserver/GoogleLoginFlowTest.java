@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pkce.authserver.repository.SupermeUserRepository;
 import com.pkce.authserver.repository.UserPasswordRepository;
+import com.pkce.authserver.superme.enums.AgeGroup;
 import com.pkce.authserver.superme.enums.Role;
 import com.pkce.authserver.superme.model.User;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -25,6 +27,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
@@ -60,6 +63,9 @@ class GoogleLoginFlowTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final String CLIENT_ID = "pkce-angular-client";
@@ -160,6 +166,26 @@ class GoogleLoginFlowTest {
         assertThat(linked.getOauth2ProviderType()).isEqualTo("GOOGLE");
         assertThat(linked.getOauth2ProviderId()).isEqualTo("google-sub-" + email);
         assertThat(linked.getOauth2AvatarUrl()).isEqualTo("https://example.com/avatar.png");
+    }
+
+    @Test
+    void existingAccountWithLegacyAgeGroup_signsInAndMapsToCurrentBand() throws Exception {
+        String email = "legacy-age-google-" + System.nanoTime() + "@example.com";
+        User seeded = SupermeUserFixture.user(email);
+        seeded.setDateOfBirth(LocalDate.now().minusYears(20));
+        seeded = userRepository.save(seeded);
+        // This is the value present in the production User.ageGroup ENUM that previously made
+        // Hibernate fail before it could finish finding the account by email.
+        jdbcTemplate.update("UPDATE User SET ageGroup = ? WHERE id = ?", "AGE_18_TO_24", seeded.getId());
+        when(googleIdTokenDecoder.decode(anyString())).thenReturn(googleJwt(email));
+
+        HttpClient http = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();
+        HttpResponse<String> resp = googleLogin(http);
+
+        assertThat(resp.statusCode()).isEqualTo(200);
+        assertThat(objectMapper.readTree(resp.body()).get("email").asText()).isEqualTo(email);
+        assertThat(userRepository.findById(seeded.getId()).orElseThrow().getAgeGroup())
+                .isEqualTo(AgeGroup.AGE_18_TO_29);
     }
 
     /**

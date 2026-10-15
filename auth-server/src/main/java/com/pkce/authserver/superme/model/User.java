@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.pkce.authserver.superme.enums.AgeGroup;
 import com.pkce.authserver.superme.enums.Relationship;
 import com.pkce.authserver.superme.enums.Role;
+import com.pkce.authserver.superme.converter.AgeGroupConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -199,9 +201,9 @@ public class User {
     @Builder.Default
     private int age = 0;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
+    @Convert(converter = AgeGroupConverter.class)
     private AgeGroup ageGroup = AgeGroup.BELOW_11;
 
     // ─────────────────────────────
