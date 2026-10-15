@@ -153,14 +153,14 @@ describe('Google signup request sequencing', () => {
 
     expect(auth.exchangeGoogleSignupHandoff).toHaveBeenCalledOnceWith('opaque-ticket');
     expect(signup.router.navigate).toHaveBeenCalledOnceWith(['/signup'], {
-      queryParams: { step: 1 }, replaceUrl: true
+      queryParams: { step: 2, role: 'self' }, replaceUrl: true
     });
-    expect(signup.step).toBe(1);
+    expect(signup.step).toBe(2);
     expect(signup.signupForm.get('email')?.value).toBe(identity.email);
     expect(signup.profileForm.get('name')?.value).toBe(identity.name);
     expect(sessionStorage.getItem('oauth_signup_id_token')).toBe(identity.idToken);
     expect(sessionStorage.getItem('oauth_signup_pending_submission')).toBe('true');
-    expect(sessionStorage.getItem('signup_role')).toBeNull();
+    expect(sessionStorage.getItem('signup_role')).toBe('self');
   });
 
   it('starts a reused deleted email with a fresh draft and current Google proof', async () => {
