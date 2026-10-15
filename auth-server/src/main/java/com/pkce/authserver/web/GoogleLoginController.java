@@ -110,7 +110,8 @@ public class GoogleLoginController {
         }
         String redirectTo;
         try {
-            redirectTo = sessionLoginHelper.establishSessionAndResolveRedirect(userDetails, httpRequest, httpResponse);
+            redirectTo = sessionLoginHelper.establishSessionAndResolveRedirect(
+                    userDetails, "google", httpRequest, httpResponse);
         } catch (RuntimeException e) {
             log.error("Google login failed while saving the session or resolving its redirect; requestId={}",
                     httpRequest.getRequestId(), e);

@@ -39,4 +39,6 @@ public class UserDTO {
     private LocalDate lastDailyBonusDate;
     private Boolean asChild;
     private Integer coins;
+    /** Authentication provider used by the account, exposed so clients can resume social onboarding. */
+    private String authProvider;
 }

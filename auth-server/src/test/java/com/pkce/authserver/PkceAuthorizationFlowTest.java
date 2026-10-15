@@ -444,6 +444,8 @@ class PkceAuthorizationFlowTest {
         // which is a plain setter, not a merge - it silently overwrote whatever the
         // default handler had already put there, including id_token for any request with
         // the openid scope. UserInfoAccessTokenResponseCustomizer now merges instead.
+        testUser.setOauth2ProviderType("GOOGLE");
+        userRepository.save(testUser);
         loginAsTestUser();
         String verifier = b64url("user-info-check-verifier-abcdefghijklmnopqrst".getBytes(StandardCharsets.UTF_8));
         String challenge = sha256(verifier);
@@ -476,11 +478,12 @@ class PkceAuthorizationFlowTest {
         assertThat(keys).containsExactlyInAnyOrder(
                 "id", "name", "username", "email", "phone", "gender", "dateOfBirth", "age",
                 "relationship", "role", "referralCode", "onboardingStep", "family", "familyMembers",
-                "avatar", "pet", "lastDailyBonusDate", "asChild", "coins");
+                "avatar", "pet", "lastDailyBonusDate", "asChild", "coins", "authProvider");
 
         assertThat(user.get("email").asText()).isEqualTo(testUser.getEmail());
         assertThat(user.get("role").asText()).isEqualTo("USER");
         assertThat(user.get("relationship").asText()).isEqualTo("SELF");
+        assertThat(user.get("authProvider").asText()).isEqualTo("google");
         assertThat(user.get("age").asInt()).isPositive();
 
         // Regression check: the token endpoint's own Jackson converter (not the

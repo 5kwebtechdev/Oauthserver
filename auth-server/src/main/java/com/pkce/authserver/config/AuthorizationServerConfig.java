@@ -189,10 +189,18 @@ public class AuthorizationServerConfig {
     private OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
         return (context) -> {
             if (context.getPrincipal().getPrincipal() instanceof UserDetails userDetails) {
-                List<String> roles = userDetails.getAuthorities().stream()
+                List<String> authorities = context.getPrincipal().getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toCollection(ArrayList::new));
+                List<String> roles = authorities.stream()
+                        .filter(authority -> authority.startsWith("ROLE_"))
+                        .collect(Collectors.toCollection(ArrayList::new));
                 context.getClaims().claim("roles", roles);
+                authorities.stream()
+                        .filter(authority -> authority.startsWith("AUTH_PROVIDER_"))
+                        .map(authority -> authority.substring("AUTH_PROVIDER_".length()).toLowerCase())
+                        .findFirst()
+                        .ifPresent(provider -> context.getClaims().claim("authProvider", provider));
             }
             if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
                 // Token metadata (including these claims) gets persisted as JSON and later

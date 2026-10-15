@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -33,8 +34,20 @@ public class SessionLoginHelper {
     public String establishSessionAndResolveRedirect(UserDetails userDetails,
                                                        HttpServletRequest request,
                                                        HttpServletResponse response) {
+        return establishSessionAndResolveRedirect(userDetails, null, request, response);
+    }
+
+    public String establishSessionAndResolveRedirect(UserDetails userDetails,
+                                                       String authProvider,
+                                                       HttpServletRequest request,
+                                                       HttpServletResponse response) {
+        java.util.List<org.springframework.security.core.GrantedAuthority> authorities =
+                new java.util.ArrayList<>(userDetails.getAuthorities());
+        if ("google".equals(authProvider) || "apple".equals(authProvider)) {
+            authorities.add(new SimpleGrantedAuthority("AUTH_PROVIDER_" + authProvider.toUpperCase()));
+        }
         UsernamePasswordAuthenticationToken authentication =
-                UsernamePasswordAuthenticationToken.authenticated(userDetails, null, userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken.authenticated(userDetails, null, authorities);
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);

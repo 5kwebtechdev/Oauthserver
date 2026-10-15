@@ -63,8 +63,18 @@ public final class UserMapper {
                 user.getPet(),
                 user.getLastDailyBonusDate(),
                 user.getAsChild(),
-                user.getCoins()
+                user.getCoins(),
+                socialProvider(user.getOauth2ProviderType())
         );
+    }
+
+    private static String socialProvider(String providerType) {
+        if (providerType == null) return null;
+        return switch (providerType.trim().toUpperCase()) {
+            case "GOOGLE" -> "google";
+            case "APPLE" -> "apple";
+            default -> null;
+        };
     }
 
     private static Integer calculateAge(LocalDate dateOfBirth) {
