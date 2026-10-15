@@ -75,6 +75,7 @@ export interface AuthResponse {
     onboardingStep?: number;
     emailVerified?: boolean;
     authProvider?: 'google' | 'apple';
+    socialProviderId?: string;
   };
   expiresIn?: number;
 }
