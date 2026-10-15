@@ -2,6 +2,7 @@ package com.pkce.authserver.web;
 
 import com.pkce.authserver.service.AppUserDetailsService;
 import com.pkce.authserver.service.GoogleLoginService;
+import com.pkce.authserver.service.GoogleSignupHandoffService;
 import com.pkce.authserver.service.SessionLoginHelper;
 import com.pkce.authserver.service.UserRegistrationService;
 import com.pkce.authserver.superme.dto.RegisterRequest;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,6 +42,7 @@ public class GoogleLoginController {
     private final AppUserDetailsService appUserDetailsService;
     private final SessionLoginHelper sessionLoginHelper;
     private final UserRegistrationService userRegistrationService;
+    private final GoogleSignupHandoffService googleSignupHandoffService;
 
     @PostMapping("/google-login")
     public ResponseEntity<Map<String, Object>> googleLogin(@Valid @RequestBody GoogleLoginRequest request,
@@ -61,6 +64,7 @@ public class GoogleLoginController {
                 body.put("name", firstNonBlank(request.name(), identity.name()));
                 body.put("pictureUrl", identity.pictureUrl());
                 body.put("requiredFields", new String[]{"gender", "dateOfBirth", "relationship"});
+                body.put("handoffTicket", googleSignupHandoffService.issue(request.idToken(), identity));
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
             }
 
@@ -100,6 +104,23 @@ public class GoogleLoginController {
         body.put("newUser", result.newlyCreated);
         body.put("redirectTo", redirectTo);
         return ResponseEntity.ok(body);
+    }
+
+    @PostMapping("/google-signup-handoff")
+    public ResponseEntity<Map<String, Object>> consumeGoogleSignupHandoff(
+            @Valid @RequestBody GoogleSignupHandoffRequest request) {
+        GoogleSignupHandoffService.SignupIdentity identity = googleSignupHandoffService.consume(request.ticket());
+        return ResponseEntity.ok(Map.of(
+                "provider", "google", "providerId", identity.providerId(), "email", identity.email(),
+                "name", identity.name() == null ? "" : identity.name(),
+                "avatarUrl", identity.avatarUrl() == null ? "" : identity.avatarUrl(), "idToken", identity.idToken()));
+    }
+
+    @ExceptionHandler(GoogleSignupHandoffService.HandoffNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> expiredGoogleSignupHandoff() {
+        return ResponseEntity.status(HttpStatus.GONE).body(Map.of(
+                "error", "google_signup_handoff_expired",
+                "message", "This Google signup link has expired. Please try Google sign-in again."));
     }
 
     private boolean hasRegistrationProfile(GoogleLoginRequest request) {

@@ -611,7 +611,7 @@ public class LoginPageController {
                             el.style.display = 'block';
                           }
 
-                          function redirectToFrontendSignup() {
+                          function redirectToFrontendSignup(handoffTicket) {
                             // Registration belongs to the configured FE wizard. Use its
                             // server-configured link, never a URL supplied by the identity provider.
                             var signupLink = document.querySelector('.signup-link');
@@ -620,7 +620,8 @@ public class LoginPageController {
                               return;
                             }
                             var signupUrl = new URL(signupLink.href, window.location.href);
-                            signupUrl.searchParams.set('step', '0.1');
+                            signupUrl.searchParams.set('step', '1');
+                            signupUrl.searchParams.set('googleSignupTicket', handoffTicket);
                             window.location.assign(signupUrl.toString());
                           }
 
@@ -645,7 +646,10 @@ public class LoginPageController {
                                 // The identity is valid, but new account creation belongs to the
                                 // FE's full signup flow rather than an abbreviated form on /login.
                                 if (result.data.registrationRequired) {
-                                  redirectToFrontendSignup();
+                                  if (!result.data.handoffTicket) {
+                                    throw new Error('Google signup could not be started. Please try again.');
+                                  }
+                                  redirectToFrontendSignup(result.data.handoffTicket);
                                   return;
                                 }
                                 throw new Error(result.data.message || 'Google sign-in failed.');

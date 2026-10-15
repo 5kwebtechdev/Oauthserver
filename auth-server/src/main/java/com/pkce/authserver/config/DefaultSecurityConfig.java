@@ -56,6 +56,7 @@ public class DefaultSecurityConfig {
                         .requestMatchers("/.well-known/appspecific/**").permitAll()
                         .requestMatchers("/api/auth/forgot-password/**").permitAll()
                         .requestMatchers("/api/auth/google-login").permitAll()
+                        .requestMatchers("/api/auth/google-signup-handoff").permitAll()
                         .requestMatchers("/api/auth/continue-with-email/**").permitAll()
                         // Registration is open by necessity - the caller has no account yet. It
                         // still has to prove ownership of the email inside the request body (an
@@ -74,6 +75,7 @@ public class DefaultSecurityConfig {
                 // endpoint in AuthorizationServerConfig.
                 .csrf((csrf) -> csrf.ignoringRequestMatchers(
                         "/api/auth/forgot-password/**", "/api/auth/google-login",
+                        "/api/auth/google-signup-handoff",
                         "/api/auth/continue-with-email/**", "/api/auth/register", "/api/auth/register/**",
                         "/v1/**"))
                 .formLogin((form) -> form.loginPage("/login")
@@ -113,6 +115,7 @@ public class DefaultSecurityConfig {
         credentialedConfig.setAllowedHeaders(List.of("*"));
         credentialedConfig.setAllowCredentials(true);
         source.registerCorsConfiguration("/api/auth/google-login", credentialedConfig);
+        source.registerCorsConfiguration("/api/auth/google-signup-handoff", statelessConfig);
         source.registerCorsConfiguration("/api/auth/continue-with-email/**", credentialedConfig);
         source.registerCorsConfiguration("/api/auth/register", credentialedConfig);
         source.registerCorsConfiguration("/api/auth/register/**", credentialedConfig);

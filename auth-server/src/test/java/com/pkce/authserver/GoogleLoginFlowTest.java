@@ -113,6 +113,24 @@ class GoogleLoginFlowTest {
         JsonNode body = objectMapper.readTree(resp.body());
         assertThat(body.get("registrationRequired").asBoolean()).isTrue();
         assertThat(body.get("email").asText()).isEqualTo(email);
+        assertThat(body.get("handoffTicket").asText()).isNotBlank();
+
+        HttpRequest handoff = HttpRequest.newBuilder(URI.create(
+                        "http://localhost:" + port + "/api/auth/google-signup-handoff"))
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(
+                        java.util.Map.of("ticket", body.get("handoffTicket").asText()))))
+                .header("Content-Type", "application/json")
+                .build();
+        HttpResponse<String> exchange = http.send(handoff, HttpResponse.BodyHandlers.ofString());
+        assertThat(exchange.statusCode()).isEqualTo(200);
+        JsonNode exchangedIdentity = objectMapper.readTree(exchange.body());
+        assertThat(exchangedIdentity.get("provider").asText()).isEqualTo("google");
+        assertThat(exchangedIdentity.get("providerId").asText()).isEqualTo("google-sub-" + email);
+        assertThat(exchangedIdentity.get("email").asText()).isEqualTo(email);
+        assertThat(exchangedIdentity.get("idToken").asText()).isEqualTo("fake-google-token");
+
+        HttpResponse<String> reusedTicket = http.send(handoff, HttpResponse.BodyHandlers.ofString());
+        assertThat(reusedTicket.statusCode()).isEqualTo(410);
         // Nothing was created - that only happens when /api/auth/register is called.
         assertThat(userRepository.findByEmail(email)).isEmpty();
     }

@@ -53,7 +53,7 @@ public class GoogleLoginService {
     }
 
     /** The parts of a verified Google ID token a registration form can be pre-filled from. */
-    public record GoogleIdentity(String email, String name, String pictureUrl) {
+    public record GoogleIdentity(String providerId, String email, String name, String pictureUrl) {
     }
 
     public static final class Result {
@@ -75,7 +75,7 @@ public class GoogleLoginService {
         User user = findByProviderId(providerId)
                 .or(() -> userRepository.findByEmail(email))
                 .orElseThrow(() -> new AccountNotRegisteredException(new GoogleIdentity(
-                        email, jwt.getClaimAsString("name"), jwt.getClaimAsString("picture"))));
+                        providerId, email, jwt.getClaimAsString("name"), jwt.getClaimAsString("picture"))));
 
         if (Boolean.TRUE.equals(user.getDeleted()) || !user.isEnabled()) {
             throw new BadCredentialsException("This account is not active");
