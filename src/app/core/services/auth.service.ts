@@ -74,6 +74,7 @@ export interface AuthResponse {
     } | null;
     onboardingStep?: number;
     emailVerified?: boolean;
+    authProvider?: 'google' | 'apple';
   };
   expiresIn?: number;
 }

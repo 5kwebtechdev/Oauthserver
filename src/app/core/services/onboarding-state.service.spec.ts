@@ -156,6 +156,21 @@ describe('OnboardingStateService', () => {
     });
   });
 
+  it('recognizes an OAuth provider returned by PKCE and resumes at role selection or Details', () => {
+    expect(service.getResumeNavigation({
+      id: 42,
+      onboardingStep: 3,
+      authProvider: 'google'
+    })).toEqual({ url: '/signup', queryParams: { step: 1 } });
+
+    expect(service.getResumeNavigation({
+      id: 42,
+      onboardingStep: 3,
+      authProvider: 'google',
+      relationship: 'SELF'
+    })).toEqual({ url: '/signup', queryParams: { step: 2, role: 'self' } });
+  });
+
   it('resumes each social role at its role-specific screen after Details', () => {
     const base = {
       onboardingStep: 5,
