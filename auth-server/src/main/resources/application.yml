@@ -1,6 +1,6 @@
 server:
   port: 9000
-
+  forward-headers-strategy: framework
 
 spring:
   application:
@@ -56,7 +56,8 @@ spring:
 
 app:
   security:
-    issuer: ${AUTH_ISSUER:http://localhost:9000}
+#    issuer: ${AUTH_ISSUER:http://localhost:9000}
+    issuer: ${AUTH_ISSUER:https://auth.supermeapp.com}
     jwt:
       private-key-path: ${JWT_PRIVATE_KEY_PATH:/home/mohit/TestPKCE/PKCE_BE_FE_B14/PKCE_BE_FE/BE/auth-server/keys/private_key_20261003153613.pem}
       public-key-path: ${JWT_PUBLIC_KEY_PATH:/home/mohit/TestPKCE/PKCE_BE_FE_B14/PKCE_BE_FE/BE/auth-server/keys/public_key_20261003153613.pem}

@@ -7,7 +7,8 @@ spring:
 
 app:
   security:
-    issuer: ${AUTH_ISSUER:http://187.127.142.16:9000}
+#    issuer: ${AUTH_ISSUER:http://187.127.142.16:9000}
+    issuer: ${AUTH_ISSUER:https://auth.supermeapp.com}
     jwt:
       private-key-path: ${JWT_PRIVATE_KEY_PATH:/root/privateKey.pem}
       public-key-path: ${JWT_PUBLIC_KEY_PATH:/root/publicKey.pem}
