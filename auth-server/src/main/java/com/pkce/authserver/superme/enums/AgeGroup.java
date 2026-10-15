@@ -21,7 +21,7 @@ public enum AgeGroup implements DisplayableEnum {
     AGE_16_TO_17("16-17"),
     AGE_18_TO_29("18-29"),
     AGE_30_PLUS("30+"),
-    // Retained so Hibernate can read older persisted values; AgeGroupConverter canonicalizes them.
+    // Retained so Hibernate can read older persisted values; User.getAgeGroup canonicalizes them.
     AGE_18_TO_24("18-24"),
     AGE_18_PLUS("18+"),
     AGE_25_PLUS("25+"),
@@ -38,6 +38,14 @@ public enum AgeGroup implements DisplayableEnum {
     @Override
     public String getDisplayName() {
         return displayName;
+    }
+
+    public AgeGroup canonical() {
+        return switch (this) {
+            case AGE_18_TO_24 -> AGE_18_TO_29;
+            case AGE_18_PLUS, AGE_25_PLUS -> AGE_30_PLUS;
+            default -> this;
+        };
     }
 
     @JsonValue

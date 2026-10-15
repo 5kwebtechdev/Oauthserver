@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.pkce.authserver.superme.enums.AgeGroup;
 import com.pkce.authserver.superme.enums.Relationship;
 import com.pkce.authserver.superme.enums.Role;
-import com.pkce.authserver.superme.converter.AgeGroupConverter;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -202,8 +200,8 @@ public class User {
     private int age = 0;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     @Builder.Default
-    @Convert(converter = AgeGroupConverter.class)
     private AgeGroup ageGroup = AgeGroup.BELOW_11;
 
     // ─────────────────────────────
@@ -350,6 +348,11 @@ public class User {
 
     public boolean isUsingEmail() {
         return email != null && !email.isBlank();
+    }
+
+    /** Returns the current age-band identifier for older values still stored in production. */
+    public AgeGroup getAgeGroup() {
+        return ageGroup == null ? null : ageGroup.canonical();
     }
 
     public boolean isUsingPhone() {
