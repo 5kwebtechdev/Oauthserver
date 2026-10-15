@@ -67,6 +67,31 @@ describe('Google signup request sequencing', () => {
     Object.entries(savedLocal).forEach(([key, value]) => localStorage.setItem(key, value));
   });
 
+  it('routes an unregistered Apple account through the FE signup wizard', fakeAsync(() => {
+    const appleIdentity = {
+      provider: 'apple', providerId: 'apple-sub', email: 'new.apple@example.test',
+      name: 'Apple Name', avatarUrl: '', idToken: 'apple-proof',
+      identityToken: 'apple-proof', authorizationCode: 'apple-code',
+      rawNonce: 'nonce', clientId: 'apple-client'
+    };
+    const toast = spyOn(social, 'presentToast').and.resolveTo();
+
+    social.loginWithOAuthProfile(appleIdentity, loading, 'apple');
+    http.expectOne('/v1/auth/oauth2/mobile-login').flush(
+      { message: 'User not found.' }, { status: 404, statusText: 'Not Found' }
+    );
+    tick();
+
+    expect(social.router.navigate).toHaveBeenCalledOnceWith(['/signup'], {
+      queryParams: { step: 2, role: 'self' }, replaceUrl: true
+    });
+    expect(sessionStorage.getItem('oauth_signup_pending_submission')).toBe('true');
+    expect(sessionStorage.getItem('oauth_signup_provider')).toBe('apple');
+    expect(sessionStorage.getItem('oauth_signup_identity_token')).toBe('apple-proof');
+    expect(auth.setSession).not.toHaveBeenCalled();
+    expect(toast).not.toHaveBeenCalled();
+  }));
+
   it('does not start a second Google authorization while sign-in is in progress', async () => {
     const signIn = spyOn(social, 'signInWithGoogle');
     await social.open('google');

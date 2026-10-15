@@ -503,6 +503,11 @@ export class SocialMediaComponent implements OnInit {
         await this.presentToast('Sign-in failed: invalid server response. Please try again.');
       },
       error: async (err) => {
+        if (this.isUnknownOAuthAccountError(err)) {
+          await this.finishSocialLogin(loading);
+          await this.enterOAuthSignupWizard(profile, provider);
+          return;
+        }
         await this.finishSocialLogin(loading);
         this.clearOAuthSignupSession();
         console.error('[SocialMedia] OAuth login error:', err);
@@ -583,6 +588,43 @@ export class SocialMediaComponent implements OnInit {
 
       sessionStorage.setItem('requestedIdentifier', data.email);
     } catch (e) {}
+  }
+
+  private isUnknownOAuthAccountError(error: any): boolean {
+    const code = String(error?.error?.error || error?.error?.code || '').toLowerCase();
+    const message = String(error?.error?.message || error?.error || '').toLowerCase();
+    return code === 'registration_required'
+      || (Number(error?.status) === 404
+        && /user not found|account not found|not registered/.test(message));
+  }
+
+  private async enterOAuthSignupWizard(
+    profile: OAuthSignupSessionData,
+    provider: OAuthProviderName
+  ): Promise<void> {
+    const selectedRole = this.getSelectedSignupRole();
+    ['signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
+      'show_child_welcome_after_family'].forEach(key => sessionStorage.removeItem(key));
+    this.storeOAuthSignupSession(provider, profile);
+    sessionStorage.setItem('oauth_signup_pending_submission', 'true');
+    this.onboardingState.clearRegistrationDraft();
+    this.onboardingState.saveRegistrationDraft({
+      email: profile.email,
+      name: profile.name,
+      authProvider: provider,
+      socialProviderId: profile.providerId,
+      socialOnboarding: true,
+      socialDetailsCompleted: false,
+      socialRolePending: !selectedRole,
+      selectedSignupRole: selectedRole || undefined,
+      relationship: selectedRole?.toUpperCase(),
+      asChild: selectedRole === 'child',
+      onboardingStep: 3
+    }, 3, 'EMAIL');
+    await this.router.navigate(['/signup'], {
+      queryParams: selectedRole ? { step: 2, role: selectedRole } : { step: 1 },
+      replaceUrl: true
+    });
   }
 
   private clearOAuthSignupSession(): void {
