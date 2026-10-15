@@ -515,6 +515,14 @@ export class AuthService {
     return this.http.get<{ exists: boolean }>(url, { params: { email } });
   }
 
+  exchangeGoogleSignupHandoff(ticket: string): Observable<{
+    provider: 'google'; providerId: string; email: string; name: string; avatarUrl: string; idToken: string;
+  }> {
+    return this.http.post<{
+      provider: 'google'; providerId: string; email: string; name: string; avatarUrl: string; idToken: string;
+    }>(`${environment.oauth.issuer}/api/auth/google-signup-handoff`, { ticket });
+  }
+
   checkUsernameExists(username: string): Observable<boolean> {
     const url = `${this.apiUrl}/auth/check/alreadyRegistered`;
     return this.http.get<{ status?: boolean; exists?: boolean }>(url, {

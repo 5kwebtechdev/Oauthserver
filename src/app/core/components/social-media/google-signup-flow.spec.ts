@@ -2,6 +2,7 @@ import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { of } from 'rxjs';
 import { SocialMediaComponent } from './social-media.component';
 import { AuthService } from '../../services/auth.service';
 import { OnboardingStateService } from '../../services/onboarding-state.service';
@@ -52,6 +53,7 @@ describe('Google signup request sequencing', () => {
       avatarSelected: 1, gender: 'male', selectedCountry: { code: '+91' },
       loadingService: { show: jasmine.createSpy(), forceHide: jasmine.createSpy() },
       core: { triggerToasrt: jasmine.createSpy() },
+      router: { navigate: jasmine.createSpy().and.resolveTo(true) },
       navCtrl: { navigateRoot: jasmine.createSpy().and.resolveTo(true) } });
     spyOn(signup, 'getAvatarDefinition').and.returnValue({ key: 'avatar_1', imageName: 'avatar.webp' });
     spyOn(signup, 'validateReferralBeforeContinue').and.resolveTo(true);
@@ -143,6 +145,22 @@ describe('Google signup request sequencing', () => {
     expect(sessionStorage.getItem('oauth_signup_id_token')).toBe('google-proof');
     expect(onboarding.getRegistrationState()?.savedData.socialDetailsCompleted).toBeFalse();
     expect(onboarding.getRegistrationState()?.savedData.socialRolePending).toBeTrue();
+  });
+
+  it('hydrates a BE-started Google signup handoff without OTP or password steps', async () => {
+    auth.exchangeGoogleSignupHandoff = jasmine.createSpy().and.returnValue(of(identity));
+    await (signup as any).completeGoogleSignupHandoff('opaque-ticket');
+
+    expect(auth.exchangeGoogleSignupHandoff).toHaveBeenCalledOnceWith('opaque-ticket');
+    expect(signup.router.navigate).toHaveBeenCalledOnceWith(['/signup'], {
+      queryParams: { step: 1 }, replaceUrl: true
+    });
+    expect(signup.step).toBe(1);
+    expect(signup.signupForm.get('email')?.value).toBe(identity.email);
+    expect(signup.profileForm.get('name')?.value).toBe(identity.name);
+    expect(sessionStorage.getItem('oauth_signup_id_token')).toBe(identity.idToken);
+    expect(sessionStorage.getItem('oauth_signup_pending_submission')).toBe('true');
+    expect(sessionStorage.getItem('signup_role')).toBeNull();
   });
 
   it('starts a reused deleted email with a fresh draft and current Google proof', async () => {

@@ -165,6 +165,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public avatarSelected: string | null = null;
 
   public errorMessage: string | null = null;
+  public socialHandoffPending = false;
   // Referral code UI and value
   public showReferral: boolean = false;
   public referralCode: string = '';
@@ -570,6 +571,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
       const stepParam = params['step'];
       const roleParam = params['role'];
+      const googleSignupTicket = String(params['googleSignupTicket'] || '').trim();
+      if (googleSignupTicket) {
+        this.socialHandoffPending = true;
+        this.step = 1;
+        this.roleSelected = undefined;
+        sessionStorage.removeItem('signup_role');
+        void this.completeGoogleSignupHandoff(googleSignupTicket);
+        return;
+      }
       const managedChildParam = params['managedChild'] === 'true';
       this.managedChildSignup = managedChildParam
         || sessionStorage.getItem(SignupComponent.MANAGED_CHILD_SIGNUP_KEY) === 'true';
@@ -702,6 +712,54 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         }
       } catch (e) { /* ignore */ }
     })
+  }
+
+  private async completeGoogleSignupHandoff(ticket: string): Promise<void> {
+    // Strip the opaque, single-use ticket from the address bar before making
+    // any further requests or loading third-party content.
+    this.roleSelected = undefined;
+    sessionStorage.removeItem('signup_role');
+    await this.router.navigate(['/signup'], { queryParams: { step: 1 }, replaceUrl: true });
+    try {
+      const profile = await firstValueFrom(
+        this.authService.exchangeGoogleSignupHandoff(ticket).pipe(timeout({ first: 15_000 }))
+      );
+      if (!profile?.idToken || !profile.providerId || !profile.email) {
+        throw new Error('The Google signup handoff did not contain a complete identity.');
+      }
+
+      sessionStorage.setItem('signup_via_google', 'true');
+      sessionStorage.setItem('signup_via_oauth', 'true');
+      sessionStorage.setItem('oauth_signup_provider', 'google');
+      sessionStorage.setItem('oauth_signup_pending_submission', 'true');
+      sessionStorage.setItem('oauth_signup_id_token', profile.idToken);
+      sessionStorage.setItem('google_signup_email', profile.email);
+      sessionStorage.setItem('google_signup_name', profile.name || '');
+      sessionStorage.setItem('google_signup_avatar', profile.avatarUrl || '');
+      sessionStorage.setItem('google_signup_provider_id', profile.providerId);
+      this.signupForm.patchValue({ email: profile.email });
+      this.profileForm.patchValue({ name: profile.name || '' });
+      this.requestedIdentifier = profile.email;
+      this.onboardingState.clearRegistrationDraft();
+      this.onboardingState.saveRegistrationDraft({
+        email: profile.email,
+        name: profile.name || '',
+        authProvider: 'google',
+        socialProviderId: profile.providerId,
+        socialOnboarding: true,
+        socialDetailsCompleted: false,
+        socialRolePending: true,
+        onboardingStep: 3
+      }, 3, 'EMAIL');
+      this.step = 1;
+      this.errorMessage = null;
+    } catch (error) {
+      console.error('[Signup] Unable to resume Google signup handoff', error);
+      this.core.triggerToasrt('Google sign-up could not be resumed. Please try Google sign-in again.');
+      await this.router.navigate(['/login'], { replaceUrl: true });
+    } finally {
+      this.socialHandoffPending = false;
+    }
   }
 
   get email() {
