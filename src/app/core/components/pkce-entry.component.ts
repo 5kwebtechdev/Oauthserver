@@ -14,7 +14,9 @@ export class PkceEntryComponent implements OnInit {
       await this.pkce.init();
       if (this.pkce.error) throw new Error(this.pkce.error);
       if (this.pkce.token) {
-        const resume = this.onboarding.getResumeNavigation(this.auth.getUserData());
+        const user = this.auth.getUserData();
+        const isSocialAccount = user?.authProvider === 'google' || user?.authProvider === 'apple';
+        const resume = isSocialAccount ? this.onboarding.getResumeNavigation(user) : null;
         const requested = sessionStorage.getItem('pkce_return_url') || '';
         sessionStorage.removeItem('pkce_return_url');
         if (resume) await this.router.navigate([resume.url], { queryParams: resume.queryParams });
