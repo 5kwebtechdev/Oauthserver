@@ -574,9 +574,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const googleSignupTicket = String(params['googleSignupTicket'] || '').trim();
       if (googleSignupTicket) {
         this.socialHandoffPending = true;
-        this.step = 1;
-        this.roleSelected = undefined;
-        sessionStorage.removeItem('signup_role');
+        this.step = 2;
         void this.completeGoogleSignupHandoff(googleSignupTicket);
         return;
       }
@@ -717,9 +715,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private async completeGoogleSignupHandoff(ticket: string): Promise<void> {
     // Strip the opaque, single-use ticket from the address bar before making
     // any further requests or loading third-party content.
-    this.roleSelected = undefined;
-    sessionStorage.removeItem('signup_role');
-    await this.router.navigate(['/signup'], { queryParams: { step: 1 }, replaceUrl: true });
+    // Google verified the identity; continue at the profile screen as self.
+    this.roleSelected = 'self';
+    sessionStorage.setItem('signup_role', 'self');
+    await this.router.navigate(['/signup'], {
+      queryParams: { step: 2, role: 'self' },
+      replaceUrl: true
+    });
     try {
       const profile = await firstValueFrom(
         this.authService.exchangeGoogleSignupHandoff(ticket).pipe(timeout({ first: 15_000 }))
@@ -748,10 +750,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         socialProviderId: profile.providerId,
         socialOnboarding: true,
         socialDetailsCompleted: false,
-        socialRolePending: true,
+        socialRolePending: false,
+        selectedSignupRole: 'self',
+        relationship: 'SELF',
+        asChild: false,
         onboardingStep: 3
       }, 3, 'EMAIL');
-      this.step = 1;
+      this.step = 2;
       this.errorMessage = null;
     } catch (error) {
       console.error('[Signup] Unable to resume Google signup handoff', error);
