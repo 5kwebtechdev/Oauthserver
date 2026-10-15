@@ -45,12 +45,20 @@ public class SupermeUserInfoService {
 
     @Transactional(readOnly = true)
     public Optional<Map<String, Object>> userPayloadFor(String identifier, String authProvider) {
+        return userPayloadFor(identifier, authProvider, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Map<String, Object>> userPayloadFor(String identifier, String authProvider, String socialProviderId) {
         return userLookup.findByIdentifier(identifier)
                 .map(UserMapper::toDto)
                 .map(this::toMap)
                 .map(payload -> {
                     if ("google".equals(authProvider) || "apple".equals(authProvider)) {
                         payload.put("authProvider", authProvider);
+                    }
+                    if (socialProviderId != null && !socialProviderId.isBlank()) {
+                        payload.put("socialProviderId", socialProviderId);
                     }
                     return payload;
                 });

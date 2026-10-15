@@ -59,10 +59,12 @@ public class GoogleLoginService {
     public static final class Result {
         public final User user;
         public final boolean newlyCreated;
+        public final String providerId;
 
-        public Result(User user, boolean newlyCreated) {
+        public Result(User user, boolean newlyCreated, String providerId) {
             this.user = user;
             this.newlyCreated = newlyCreated;
+            this.providerId = providerId;
         }
     }
 
@@ -82,7 +84,7 @@ public class GoogleLoginService {
         }
 
         linkProviderIfNeeded(user, providerId, jwt.getClaimAsString("picture"));
-        return new Result(user, false);
+        return new Result(user, false, providerId);
     }
 
     /**

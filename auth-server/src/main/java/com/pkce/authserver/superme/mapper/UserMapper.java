@@ -64,7 +64,8 @@ public final class UserMapper {
                 user.getLastDailyBonusDate(),
                 user.getAsChild(),
                 user.getCoins(),
-                socialProvider(user.getOauth2ProviderType())
+                socialProvider(user.getOauth2ProviderType()),
+                user.getOauth2ProviderId()
         );
     }
 

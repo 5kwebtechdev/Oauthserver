@@ -51,16 +51,18 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
 
         String subject;
         String authProvider;
+        String socialProviderId;
         try {
             var claims = JWTParser.parse(tokenValue).getJWTClaimsSet();
             subject = claims.getSubject();
             authProvider = claims.getStringClaim("authProvider");
+            socialProviderId = claims.getStringClaim("socialProviderId");
         } catch (java.text.ParseException e) {
             log.warn("Could not parse the access token this server just issued to read its subject - omitting 'user' from the token response", e);
             return;
         }
 
-        userInfoService.userPayloadFor(subject, authProvider).ifPresentOrElse(
+        userInfoService.userPayloadFor(subject, authProvider, socialProviderId).ifPresentOrElse(
                 userPayload -> {
                     Map<String, Object> merged = new HashMap<>(authResult.getAdditionalParameters());
                     merged.put("user", userPayload);

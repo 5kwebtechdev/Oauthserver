@@ -478,7 +478,7 @@ class PkceAuthorizationFlowTest {
         assertThat(keys).containsExactlyInAnyOrder(
                 "id", "name", "username", "email", "phone", "gender", "dateOfBirth", "age",
                 "relationship", "role", "referralCode", "onboardingStep", "family", "familyMembers",
-                "avatar", "pet", "lastDailyBonusDate", "asChild", "coins", "authProvider");
+                "avatar", "pet", "lastDailyBonusDate", "asChild", "coins", "authProvider", "socialProviderId");
 
         assertThat(user.get("email").asText()).isEqualTo(testUser.getEmail());
         assertThat(user.get("role").asText()).isEqualTo("USER");

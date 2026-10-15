@@ -73,7 +73,7 @@ public class GoogleLoginController {
             try {
                 UserRegistrationService.Result registration = userRegistrationService.register(
                         registrationRequest(request, identity));
-                result = new GoogleLoginService.Result(registration.user(), registration.newlyCreated());
+                result = new GoogleLoginService.Result(registration.user(), registration.newlyCreated(), identity.providerId());
             } catch (UserRegistrationService.RegistrationException e1) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "error", "registration_failed", "message", e1.getMessage()));
@@ -111,7 +111,7 @@ public class GoogleLoginController {
         String redirectTo;
         try {
             redirectTo = sessionLoginHelper.establishSessionAndResolveRedirect(
-                    userDetails, "google", httpRequest, httpResponse);
+                    userDetails, "google", result.providerId, httpRequest, httpResponse);
         } catch (RuntimeException e) {
             log.error("Google login failed while saving the session or resolving its redirect; requestId={}",
                     httpRequest.getRequestId(), e);

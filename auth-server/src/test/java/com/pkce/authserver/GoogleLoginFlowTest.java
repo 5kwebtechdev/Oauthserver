@@ -381,12 +381,14 @@ class GoogleLoginFlowTest {
         assertThat(tokenResp.statusCode()).isEqualTo(200);
         JsonNode tokens = objectMapper.readTree(tokenResp.body());
         assertThat(tokens.get("user").get("authProvider").asText()).isEqualTo("google");
+        assertThat(tokens.get("user").get("socialProviderId").asText()).isEqualTo("google-sub-" + email);
         String accessToken = tokens.get("access_token").asText();
 
         String[] parts = accessToken.split("\\.");
         String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
         JsonNode claims = objectMapper.readTree(payloadJson);
         assertThat(claims.get("authProvider").asText()).isEqualTo("google");
+        assertThat(claims.get("socialProviderId").asText()).isEqualTo("google-sub-" + email);
         List<String> roles = objectMapper.convertValue(claims.get("roles"),
                 objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
         assertThat(roles).containsExactly("ROLE_ADMIN");

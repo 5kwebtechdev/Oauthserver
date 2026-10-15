@@ -198,9 +198,23 @@ public class AuthorizationServerConfig {
                 context.getClaims().claim("roles", roles);
                 authorities.stream()
                         .filter(authority -> authority.startsWith("AUTH_PROVIDER_"))
+                        .filter(authority -> !authority.startsWith("AUTH_PROVIDER_ID_"))
                         .map(authority -> authority.substring("AUTH_PROVIDER_".length()).toLowerCase())
                         .findFirst()
                         .ifPresent(provider -> context.getClaims().claim("authProvider", provider));
+                authorities.stream()
+                        .filter(authority -> authority.startsWith("AUTH_PROVIDER_ID_"))
+                        .map(authority -> authority.substring("AUTH_PROVIDER_ID_".length()))
+                        .findFirst()
+                        .ifPresent(encodedProviderId -> {
+                            try {
+                                String providerId = new String(java.util.Base64.getUrlDecoder().decode(encodedProviderId),
+                                        java.nio.charset.StandardCharsets.UTF_8);
+                                context.getClaims().claim("socialProviderId", providerId);
+                            } catch (IllegalArgumentException ignored) {
+                                // Malformed transient auth metadata must not break token issuance.
+                            }
+                        });
             }
             if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
                 // Token metadata (including these claims) gets persisted as JSON and later

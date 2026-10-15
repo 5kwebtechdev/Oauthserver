@@ -41,10 +41,23 @@ public class SessionLoginHelper {
                                                        String authProvider,
                                                        HttpServletRequest request,
                                                        HttpServletResponse response) {
+        return establishSessionAndResolveRedirect(userDetails, authProvider, null, request, response);
+    }
+
+    public String establishSessionAndResolveRedirect(UserDetails userDetails,
+                                                       String authProvider,
+                                                       String socialProviderId,
+                                                       HttpServletRequest request,
+                                                       HttpServletResponse response) {
         java.util.List<org.springframework.security.core.GrantedAuthority> authorities =
                 new java.util.ArrayList<>(userDetails.getAuthorities());
         if ("google".equals(authProvider) || "apple".equals(authProvider)) {
             authorities.add(new SimpleGrantedAuthority("AUTH_PROVIDER_" + authProvider.toUpperCase()));
+        }
+        if (socialProviderId != null && !socialProviderId.isBlank()) {
+            String encodedProviderId = java.util.Base64.getUrlEncoder().withoutPadding()
+                    .encodeToString(socialProviderId.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            authorities.add(new SimpleGrantedAuthority("AUTH_PROVIDER_ID_" + encodedProviderId));
         }
         UsernamePasswordAuthenticationToken authentication =
                 UsernamePasswordAuthenticationToken.authenticated(userDetails, null, authorities);

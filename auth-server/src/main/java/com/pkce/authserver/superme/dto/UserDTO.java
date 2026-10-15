@@ -41,4 +41,5 @@ public class UserDTO {
     private Integer coins;
     /** Authentication provider used by the account, exposed so clients can resume social onboarding. */
     private String authProvider;
+    private String socialProviderId;
 }
