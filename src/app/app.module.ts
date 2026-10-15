@@ -1,7 +1,4 @@
-import { OAuthModule } from 'angular-oauth2-oidc';
-import { PkceAuthService } from './core/services/pkce-auth.service';
-import { PkceInterceptor } from './core/interceptors/pkce.interceptor';
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -28,10 +25,8 @@ import { SupermePopupComponent } from './core/components/superme-popup/superme-p
     AppComponent,
   ],
 
-  imports: [OAuthModule.forRoot(), BrowserModule, CommonModule, IonicModule.forRoot(), AppRoutingModule, BrowserAnimationsModule, HttpClientModule, SupermeLoadingComponent, NetworkIssueComponent, SupermeButtonComponent, SupermePopupComponent, DailyEntryComponent],
+  imports: [BrowserModule, CommonModule, IonicModule.forRoot(), AppRoutingModule, BrowserAnimationsModule, HttpClientModule, SupermeLoadingComponent, NetworkIssueComponent, SupermeButtonComponent, SupermePopupComponent, DailyEntryComponent],
   providers: [
-    { provide: APP_INITIALIZER, multi: true, useFactory: (auth: PkceAuthService) => () => auth.init(), deps: [PkceAuthService] },
-    { provide: HTTP_INTERCEPTORS, useClass: PkceInterceptor, multi: true },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: AppCheckInterceptor, multi: true },

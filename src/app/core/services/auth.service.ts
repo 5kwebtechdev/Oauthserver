@@ -1,7 +1,6 @@
-import { PkceAuthService } from './pkce-auth.service';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subject, timer, of, EMPTY, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, timer, of, firstValueFrom } from 'rxjs';
 import { tap, map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
@@ -156,7 +155,6 @@ export class AuthService {
   private isMobilePlatform: boolean = false;
 
   constructor(
-    private pkce: PkceAuthService,
     private http: HttpClient,
     private router: Router,
     private navCtrl: NavController,
@@ -207,7 +205,6 @@ export class AuthService {
    * Check if there's a valid session in localStorage
    */
   private hasValidSession(): boolean {
-    if (this.pkce.enabled && !this.pkce.token) return false;
     const token = localStorage.getItem(this.TOKEN_KEY);
     const userId = localStorage.getItem(this.USER_ID_KEY);
     const lastActivity = localStorage.getItem(this.LAST_ACTIVITY_KEY);
@@ -291,10 +288,6 @@ export class AuthService {
    * Login user with credentials
    */
   login(credentials: LoginCredentials): Observable<AuthResponse> {
-    if (this.pkce.enabled) {
-      void this.pkce.login();
-      return EMPTY;
-    }
     const loginUrl = `${this.apiUrl}/auth/login`;
     console.log('[AuthService] Login attempt with:', {
       endpoint: loginUrl,
@@ -750,7 +743,6 @@ export class AuthService {
   }
 
   async logout(redirectToLogin: boolean = true): Promise<void> {
-    const oidcLogout = this.pkce.logoutUrl();
     console.log('[AuthService] Logging out user');
 
     // Capture the id before any local state is cleared, and call the backend
@@ -779,7 +771,7 @@ export class AuthService {
     // Logout should always stay inside the current app host. During local
     // development, sending web users to environment.publicWebUrl jumps from
     // localhost to the production marketing site and makes logout look broken.
-    const navigation = redirectToLogin && !oidcLogout
+    const navigation = redirectToLogin
       ? this.navCtrl.navigateRoot('/login', { animated: false })
       : Promise.resolve(true);
 
@@ -789,7 +781,6 @@ export class AuthService {
       this.authSessionCleanup.clearExternalAuthSessions()
     ]);
 
-    if (oidcLogout && redirectToLogin) { window.location.assign(oidcLogout); return; }
     if (redirectToLogin && typeof window !== 'undefined' && !window.location.pathname.endsWith('/login')) {
       window.location.replace('/login');
     }
