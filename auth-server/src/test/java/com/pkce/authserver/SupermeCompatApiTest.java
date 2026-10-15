@@ -131,7 +131,7 @@ class SupermeCompatApiTest {
         assertThat(user.get("onboardingStep").asInt()).isEqualTo(5);
         assertThat(user.get("gender").asText()).isEqualTo("male");
         assertThat(user.get("dateOfBirth").asText()).isEqualTo("1996-10-06");
-        assertThat(user.get("ageGroup").asText()).isEqualTo("AGE_18_PLUS");
+        assertThat(user.get("ageGroup").asText()).isEqualTo("AGE_30_PLUS");
         assertThat(user.get("coins").asInt()).isEqualTo(10);
         // The requested avatarName is ignored and a unique one generated, exactly as theirs does;
         // the image name is kept.
