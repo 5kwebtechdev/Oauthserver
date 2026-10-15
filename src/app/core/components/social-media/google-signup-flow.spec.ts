@@ -47,6 +47,7 @@ describe('Google signup request sequencing', () => {
     signup = Object.create(SignupComponent.prototype);
     Object.assign(signup, { authService: auth, onboardingState: onboarding,
       registrationInProgress: false, profileContinueInProgress: false, managedChildSignup: false,
+      signupCredentialState: { getPassword: () => null },
       signupForm: new FormGroup({ email: new FormControl(identity.email) }),
       profileForm: new FormGroup({ name: new FormControl('Chosen Name'), username: new FormControl('chosenuser'),
         phone: new FormControl(''), dob: new FormControl('2000-01-01') }),
@@ -135,6 +136,24 @@ describe('Google signup request sequencing', () => {
     http.expectNone('/v1/auth/oauth2/mobile-login');
   }
 
+  it('clears stale managed-child mode and sends every social role to Step 4 after role selection', async () => {
+    sessionStorage.setItem('managed_child_signup', 'true');
+    sessionStorage.setItem('managed_child_family_code', 'OLD-FAMILY');
+
+    await authenticateNewUser(null);
+
+    expect(sessionStorage.getItem('managed_child_signup')).toBeNull();
+    expect(sessionStorage.getItem('managed_child_family_code')).toBeNull();
+    expect((signup as any).isOAuthSignup).toBeTrue();
+
+    for (const role of ['self', 'child', 'parent'] as const) {
+      signup.roleSelected = role;
+      signup.proceedWithRole();
+      expect(signup.navigateToSignupStep).toHaveBeenCalledWith(2);
+      signup.navigateToSignupStep.calls.reset();
+    }
+  });
+
   it('gets Google proof, opens role selection and makes no mobile-login request before Continue', async () => {
     await authenticateNewUser(null);
     expect(social.router.navigate).toHaveBeenCalledOnceWith(['/signup'], {
@@ -147,20 +166,30 @@ describe('Google signup request sequencing', () => {
     expect(onboarding.getRegistrationState()?.savedData.socialRolePending).toBeTrue();
   });
 
-  it('hydrates a BE-started Google signup handoff without OTP or password steps', async () => {
+  it('hydrates a BE-started Google signup at role selection and skips OTP/password for every role', async () => {
+    sessionStorage.setItem('managed_child_signup', 'true');
     auth.exchangeGoogleSignupHandoff = jasmine.createSpy().and.returnValue(of(identity));
     await (signup as any).completeGoogleSignupHandoff('opaque-ticket');
 
     expect(auth.exchangeGoogleSignupHandoff).toHaveBeenCalledOnceWith('opaque-ticket');
     expect(signup.router.navigate).toHaveBeenCalledOnceWith(['/signup'], {
-      queryParams: { step: 2, role: 'self' }, replaceUrl: true
+      queryParams: { step: 1 }, replaceUrl: true
     });
-    expect(signup.step).toBe(2);
+    expect(signup.step).toBe(1);
     expect(signup.signupForm.get('email')?.value).toBe(identity.email);
     expect(signup.profileForm.get('name')?.value).toBe(identity.name);
     expect(sessionStorage.getItem('oauth_signup_id_token')).toBe(identity.idToken);
     expect(sessionStorage.getItem('oauth_signup_pending_submission')).toBe('true');
-    expect(sessionStorage.getItem('signup_role')).toBe('self');
+    expect(sessionStorage.getItem('signup_role')).toBeNull();
+    expect(sessionStorage.getItem('managed_child_signup')).toBeNull();
+    expect((signup as any).isOAuthSignup).toBeTrue();
+
+    for (const role of ['self', 'child', 'parent'] as const) {
+      signup.roleSelected = role;
+      signup.proceedWithRole();
+      expect(signup.navigateToSignupStep).toHaveBeenCalledWith(2);
+      signup.navigateToSignupStep.calls.reset();
+    }
   });
 
   it('starts a reused deleted email with a fresh draft and current Google proof', async () => {

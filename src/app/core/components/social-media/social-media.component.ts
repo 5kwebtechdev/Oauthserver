@@ -254,7 +254,8 @@ export class SocialMediaComponent implements OnInit {
     }
 
     // A new social account must choose Self, Child, or Parent as part of the
-    // FE signup flow. Do not inherit a role left by an earlier signup attempt.
+    // FE signup flow. Do not inherit role or managed-child state from an earlier attempt.
+    this.clearManagedChildSignupContext();
     sessionStorage.removeItem('signup_role');
     // A deleted account can reuse the same Google identity. Start its profile
     // draft afresh while retaining the freshly obtained provider proof.
@@ -605,7 +606,8 @@ export class SocialMediaComponent implements OnInit {
     provider: OAuthProviderName
   ): Promise<void> {
     // New Google/Apple identities always start at role selection, even if a
-    // previous attempt left a role in session storage or an onboarding draft.
+    // previous attempt left a role or managed-child state in session storage.
+    this.clearManagedChildSignupContext();
     sessionStorage.removeItem('signup_role');
     ['signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
       'show_child_welcome_after_family'].forEach(key => sessionStorage.removeItem(key));
@@ -629,6 +631,17 @@ export class SocialMediaComponent implements OnInit {
       queryParams: { step: 1 },
       replaceUrl: true
     });
+  }
+
+  private clearManagedChildSignupContext(): void {
+    [
+      'managed_child_signup',
+      'managed_child_family_code',
+      'managed_child_success_email',
+      'create_child_after_family',
+      'family_children_refresh_pending',
+      'managed_child_parent_welcome_pending'
+    ].forEach(key => sessionStorage.removeItem(key));
   }
 
   private clearOAuthSignupSession(): void {

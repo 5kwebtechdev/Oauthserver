@@ -574,7 +574,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const googleSignupTicket = String(params['googleSignupTicket'] || '').trim();
       if (googleSignupTicket) {
         this.socialHandoffPending = true;
-        this.step = 2;
+        this.step = 1;
         void this.completeGoogleSignupHandoff(googleSignupTicket);
         return;
       }
@@ -715,11 +715,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private async completeGoogleSignupHandoff(ticket: string): Promise<void> {
     // Strip the opaque, single-use ticket from the address bar before making
     // any further requests or loading third-party content.
-    // Google verified the identity; continue at the profile screen as self.
-    this.roleSelected = 'self';
-    sessionStorage.setItem('signup_role', 'self');
+    // Remove any stale child-creation mode, then let the user choose Self,
+    // Child, or Parent before moving to the profile screen.
+    this.managedChildSignup = false;
+    this.roleSelected = undefined;
+    [
+      SignupComponent.MANAGED_CHILD_SIGNUP_KEY,
+      SignupComponent.MANAGED_CHILD_FAMILY_CODE_KEY,
+      SignupComponent.MANAGED_CHILD_SUCCESS_EMAIL_KEY
+    ].forEach(key => sessionStorage.removeItem(key));
+    sessionStorage.removeItem('signup_role');
     await this.router.navigate(['/signup'], {
-      queryParams: { step: 2, role: 'self' },
+      queryParams: { step: 1 },
       replaceUrl: true
     });
     try {
@@ -750,13 +757,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         socialProviderId: profile.providerId,
         socialOnboarding: true,
         socialDetailsCompleted: false,
-        socialRolePending: false,
-        selectedSignupRole: 'self',
-        relationship: 'SELF',
+        socialRolePending: true,
+        selectedSignupRole: undefined,
+        relationship: undefined,
         asChild: false,
         onboardingStep: 3
       }, 3, 'EMAIL');
-      this.step = 2;
+      this.step = 1;
       this.errorMessage = null;
     } catch (error) {
       console.error('[Signup] Unable to resume Google signup handoff', error);
