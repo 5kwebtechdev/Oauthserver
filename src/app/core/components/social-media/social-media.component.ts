@@ -253,9 +253,11 @@ export class SocialMediaComponent implements OnInit {
       return;
     }
 
-    const selectedRole = this.getSelectedSignupRole();
+    // A new social account must choose Self, Child, or Parent as part of the
+    // FE signup flow. Do not inherit a role left by an earlier signup attempt.
+    sessionStorage.removeItem('signup_role');
     // A deleted account can reuse the same Google identity. Start its profile
-    // draft afresh while retaining the freshly obtained provider proof and role.
+    // draft afresh while retaining the freshly obtained provider proof.
     ['signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
       'show_child_welcome_after_family'].forEach(key => sessionStorage.removeItem(key));
     sessionStorage.setItem('oauth_signup_pending_submission', 'true');
@@ -267,14 +269,14 @@ export class SocialMediaComponent implements OnInit {
       socialProviderId: profile.providerId,
       socialOnboarding: true,
       socialDetailsCompleted: false,
-      socialRolePending: !selectedRole,
-      selectedSignupRole: selectedRole || undefined,
-      relationship: selectedRole?.toUpperCase(),
-      asChild: selectedRole === 'child',
+      socialRolePending: true,
+      selectedSignupRole: undefined,
+      relationship: undefined,
+      asChild: false,
       onboardingStep: 3
     }, 3, 'EMAIL');
     await this.router.navigate(['/signup'], {
-      queryParams: selectedRole ? { step: 2, role: selectedRole } : { step: 1 },
+      queryParams: { step: 1 },
       replaceUrl: true
     });
     await this.finishSocialLogin(loading);
@@ -602,7 +604,9 @@ export class SocialMediaComponent implements OnInit {
     profile: OAuthSignupSessionData,
     provider: OAuthProviderName
   ): Promise<void> {
-    const selectedRole = this.getSelectedSignupRole();
+    // New Google/Apple identities always start at role selection, even if a
+    // previous attempt left a role in session storage or an onboarding draft.
+    sessionStorage.removeItem('signup_role');
     ['signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
       'show_child_welcome_after_family'].forEach(key => sessionStorage.removeItem(key));
     this.storeOAuthSignupSession(provider, profile);
@@ -615,14 +619,14 @@ export class SocialMediaComponent implements OnInit {
       socialProviderId: profile.providerId,
       socialOnboarding: true,
       socialDetailsCompleted: false,
-      socialRolePending: !selectedRole,
-      selectedSignupRole: selectedRole || undefined,
-      relationship: selectedRole?.toUpperCase(),
-      asChild: selectedRole === 'child',
+      socialRolePending: true,
+      selectedSignupRole: undefined,
+      relationship: undefined,
+      asChild: false,
       onboardingStep: 3
     }, 3, 'EMAIL');
     await this.router.navigate(['/signup'], {
-      queryParams: selectedRole ? { step: 2, role: selectedRole } : { step: 1 },
+      queryParams: { step: 1 },
       replaceUrl: true
     });
   }

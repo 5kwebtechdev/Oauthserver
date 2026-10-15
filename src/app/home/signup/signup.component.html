@@ -383,6 +383,14 @@
                 {{ getNameErrorMessage() }}
               </div>
             </div>
+            <ng-container *ngIf="isOAuthSignup && currentRole === 'parent' && oauthAccountEmail">
+              <h4 class="profile-field-heading">
+                <span class="profile-field-title">Email Address</span>
+              </h4>
+              <div class="input-group">
+                <input type="email" [value]="oauthAccountEmail" readonly aria-readonly="true" autocomplete="email" />
+              </div>
+            </ng-container>
           </ng-container>
           <ng-template #oauthIdentityProvided>
             <ng-container *ngIf="oauthAccountName">

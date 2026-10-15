@@ -83,11 +83,12 @@ describe('Google signup request sequencing', () => {
     tick();
 
     expect(social.router.navigate).toHaveBeenCalledOnceWith(['/signup'], {
-      queryParams: { step: 2, role: 'self' }, replaceUrl: true
+      queryParams: { step: 1 }, replaceUrl: true
     });
     expect(sessionStorage.getItem('oauth_signup_pending_submission')).toBe('true');
     expect(sessionStorage.getItem('oauth_signup_provider')).toBe('apple');
     expect(sessionStorage.getItem('oauth_signup_identity_token')).toBe('apple-proof');
+    expect(sessionStorage.getItem('signup_role')).toBeNull();
     expect(auth.setSession).not.toHaveBeenCalled();
     expect(toast).not.toHaveBeenCalled();
   }));
@@ -120,23 +121,28 @@ describe('Google signup request sequencing', () => {
     http.expectNone('/v1/auth/oauth2/mobile-login');
   }));
 
-  async function authenticateNewUser() {
+  async function authenticateNewUser(role: 'self' | 'child' | 'parent' | null = 'self') {
     const pending = social.continueGoogleAuthentication(identity, loading);
     const lookup = http.expectOne('/v1/api/public/check-mail-already-exists?email=new@example.test');
     expect(lookup.request.method).toBe('GET');
     lookup.flush({ exists: false });
     await pending;
+    // Most tests model the user selecting a role on the FE role screen after
+    // the social callback. Pass null when asserting the initial screen.
+    if (role) sessionStorage.setItem('signup_role', role);
     http.expectNone('/v1/auth/oauth2/mobile-login');
   }
 
-  it('gets Google proof, opens details and makes no mobile-login request before Continue', async () => {
-    await authenticateNewUser();
+  it('gets Google proof, opens role selection and makes no mobile-login request before Continue', async () => {
+    await authenticateNewUser(null);
     expect(social.router.navigate).toHaveBeenCalledOnceWith(['/signup'], {
-      queryParams: { step: 2, role: 'self' }, replaceUrl: true
+      queryParams: { step: 1 }, replaceUrl: true
     });
+    expect(sessionStorage.getItem('signup_role')).toBeNull();
     expect(auth.setSession).not.toHaveBeenCalled();
     expect(sessionStorage.getItem('oauth_signup_id_token')).toBe('google-proof');
     expect(onboarding.getRegistrationState()?.savedData.socialDetailsCompleted).toBeFalse();
+    expect(onboarding.getRegistrationState()?.savedData.socialRolePending).toBeTrue();
   });
 
   it('starts a reused deleted email with a fresh draft and current Google proof', async () => {
@@ -257,7 +263,7 @@ describe('Google signup request sequencing', () => {
 
   it('submits parent details before family setup and saves family details through mobile-login', async () => {
     sessionStorage.setItem('signup_role', 'parent');
-    await authenticateNewUser();
+    await authenticateNewUser('parent');
     await signup.registerOrProceed();
     const login = http.expectOne('/v1/auth/oauth2/mobile-login');
     expect(login.request.body.role).toBe('PARENT');
@@ -292,7 +298,7 @@ describe('Google signup request sequencing', () => {
 
     it(`keeps new ${provider} Parents in family setup after saving profile details`, async () => {
       sessionStorage.setItem('signup_role', 'parent');
-      await authenticateNewUser();
+      await authenticateNewUser('parent');
       sessionStorage.setItem('oauth_signup_provider', provider);
       await signup.registerOrProceed();
       const request = http.expectOne('/v1/auth/oauth2/mobile-login');
@@ -363,7 +369,7 @@ describe('Google signup request sequencing', () => {
     auth.getDashboardRoute = () => '/parent-account';
     sessionStorage.setItem('signup_role', 'child');
     signup.isEditingPendingChildOnboarding = false;
-    await authenticateNewUser();
+    await authenticateNewUser('child');
     await signup.registerOrProceed();
     const user = { id: 829, name: 'Existing Parent', username: 'existingparent',
       email: 'new@example.test', relationship: 'PARENT', gender: 'prefer_not_to_say',
@@ -383,7 +389,7 @@ describe('Google signup request sequencing', () => {
   it('continues to family setup after Parent details even when the backend already created a family', async () => {
     sessionStorage.setItem('signup_role', 'parent');
     auth.getDashboardRoute = () => '/parent-account';
-    await authenticateNewUser();
+    await authenticateNewUser('parent');
     await signup.registerOrProceed();
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'parent-session',
       user: { id: 829, relationship: 'PARENT', onboardingStep: 4, family: { id: 210 } } });
@@ -425,7 +431,7 @@ describe('Google signup request sequencing', () => {
 
   it('advances a new pending Child after 201 even when the response is SELF + asChild at step 4', async () => {
     sessionStorage.setItem('signup_role', 'child');
-    await authenticateNewUser();
+    await authenticateNewUser('child');
     await signup.registerOrProceed();
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'created-child-session',
       user: { id: 900, relationship: 'SELF', asChild: true, onboardingStep: 4 } },
