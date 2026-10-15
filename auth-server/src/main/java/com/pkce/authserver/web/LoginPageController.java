@@ -495,21 +495,6 @@ public class LoginPageController {
                             white-space: nowrap;
                             border: 0;
                           }
-                          #register-pane {
-                            width: 100%%;
-                            max-width: 28rem;
-                            margin: 0 auto;
-                          }
-                          #register-pane .form-signin > p {
-                            margin: 0.85rem 0;
-                          }
-                          #register-pane .form-signin > p > label {
-                            display: block;
-                            margin-bottom: 0.35rem;
-                            font-size: 0.85rem;
-                            font-weight: 650;
-                            color: var(--ink-subtle);
-                          }
                           @media (min-width: 701px) {
                             #signin-pane { padding: 1.6rem 1.1rem; }
                           }
@@ -618,167 +603,28 @@ public class LoginPageController {
                           </div>
                           <p class="signup-row">Don't have an account? <a href="%s" class="signup-link">Sign up</a></p>
 
-                        <!-- Shown only when Google sign-in reports registrationRequired: the identity
-                             is verified, there is just no SuperMeApp account behind it yet. The
-                             fields are the ones SuperMeBE's User table demands and a Google token
-                             cannot supply. -->
-                        <div id="register-pane" class="auth-card" style="display:none;">
-                          <form class="form-signin" id="register-form">
-                            <h2 class="form-signin-heading">Finish creating your account</h2>
-                            <p class="text-muted" style="font-size:0.9rem; margin-top:0;">
-                              Signed in with Google as <strong id="register-email-label"></strong>.
-                              We just need a few details SuperMeApp requires.
-                            </p>
-                            <p id="register-error" class="alert alert-danger" style="display:none;"></p>
-
-                            <p>
-                              <label for="reg-name">Full name</label>
-                              <input type="text" id="reg-name" class="form-control" autocomplete="name" required>
-                            </p>
-                            <p>
-                              <label for="reg-gender">Gender</label>
-                              <select id="reg-gender" class="form-control">
-                                <option value="prefer_not_to_say">Prefer not to say</option>
-                                <option value="female">Female</option>
-                                <option value="male">Male</option>
-                              </select>
-                            </p>
-                            <p>
-                              <label for="reg-dob">Date of birth</label>
-                              <input type="date" id="reg-dob" class="form-control" required>
-                            </p>
-                            <p>
-                              <label for="reg-relationship">I am registering as</label>
-                              <select id="reg-relationship" class="form-control">
-                                <option value="SELF">Myself</option>
-                                <option value="PARENT">A parent</option>
-                                <option value="CHILD">A child</option>
-                              </select>
-                            </p>
-                            <p id="reg-family-name-row" style="display:none;">
-                              <label for="reg-family-name">Family name</label>
-                              <input type="text" id="reg-family-name" class="form-control" placeholder="e.g. The Sharmas">
-                            </p>
-                            <p id="reg-family-code-row" style="display:none;">
-                              <label for="reg-family-code">Family code</label>
-                              <input type="text" id="reg-family-code" class="form-control" maxlength="8" placeholder="8 characters" autocapitalize="characters">
-                              <small class="text-muted" id="reg-family-code-hint" style="display:block; margin-top:0.3rem;"></small>
-                            </p>
-                            <p>
-                              <label for="reg-pet">Pet name <span class="text-muted">(optional)</span></label>
-                              <input type="text" id="reg-pet" class="form-control">
-                            </p>
-                            <p>
-                              <label for="reg-referral">Referral code <span class="text-muted">(optional)</span></label>
-                              <input type="text" id="reg-referral" class="form-control" autocapitalize="characters">
-                            </p>
-
-                            <button class="btn btn-primary" type="submit" id="reg-submit" style="margin-top:1.25rem;">
-                              Create account and continue
-                            </button>
-                            <p style="text-align:center; margin-top:1.2rem;">
-                              <a href="#" id="register-cancel">Back to sign in</a>
-                            </p>
-                          </form>
-                        </div>
-
                         <script>
                           var FALLBACK_REDIRECT = '%s';
-                          // Held between the two calls: the same verified Google token that proved
-                          // the identity is what /api/auth/register accepts as proof of the email.
-                          var pendingGoogleToken = null;
-
                           function showSignInError(message) {
                             var el = document.getElementById('google-signin-error');
                             el.textContent = message;
                             el.style.display = 'block';
                           }
 
-                          function openRegistrationForm(identity) {
-                            document.getElementById('register-email-label').textContent = identity.email;
-                            document.getElementById('reg-name').value = identity.name || '';
-                            var authLayout = document.getElementById('auth-layout');
-                            if (authLayout) { authLayout.style.display = 'none'; }
-                            var signupRow = document.querySelector('.signup-row');
-                            if (signupRow) { signupRow.style.display = 'none'; }
-                            document.getElementById('register-pane').style.display = 'block';
-                            updateFamilyFields();
-                          }
-
-                          // Their rules: a CHILD must join an existing family by code, a PARENT
-                          // either joins one by code or starts one by name, and SELF has neither.
-                          function updateFamilyFields() {
-                            var relationship = document.getElementById('reg-relationship').value;
-                            var codeRow = document.getElementById('reg-family-code-row');
-                            var nameRow = document.getElementById('reg-family-name-row');
-                            var hint = document.getElementById('reg-family-code-hint');
-                            var codeInput = document.getElementById('reg-family-code');
-
-                            codeRow.style.display = relationship === 'SELF' ? 'none' : 'block';
-                            nameRow.style.display = relationship === 'PARENT' ? 'block' : 'none';
-                            codeInput.required = relationship === 'CHILD';
-                            hint.textContent = relationship === 'CHILD'
-                              ? 'Required - ask a parent for the family code.'
-                              : 'Optional - leave blank to start a new family.';
-                          }
-
-                          function valueOf(id) {
-                            var el = document.getElementById(id);
-                            if (!el) { return null; }
-                            var raw = el.value ? el.value.trim() : '';
-                            return raw.length ? raw : null;
-                          }
-
-                          function submitRegistration(event) {
-                            event.preventDefault();
-                            var button = document.getElementById('reg-submit');
-                            var errorEl = document.getElementById('register-error');
-                            errorEl.style.display = 'none';
-                            button.disabled = true;
-                            button.textContent = 'Creating your account...';
-
-                            var payload = {
-                              googleIdToken: pendingGoogleToken,
-                              email: document.getElementById('register-email-label').textContent,
-                              name: valueOf('reg-name'),
-                              gender: valueOf('reg-gender'),
-                              dateOfBirth: valueOf('reg-dob'),
-                              relationship: valueOf('reg-relationship'),
-                              familyCode: valueOf('reg-family-code'),
-                              familyName: valueOf('reg-family-name'),
-                              petName: valueOf('reg-pet'),
-                              referralCode: valueOf('reg-referral')
-                            };
-
-                            fetch('/api/auth/register', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify(payload)
-                            })
-                              .then(function (res) {
-                                return res.json()
-                                  .catch(function () { return {}; })
-                                  .then(function (data) {
-                                    if (!res.ok) { throw new Error(data.message || 'Could not create your account.'); }
-                                    return data;
-                                  });
-                              })
-                              .then(function (data) {
-                                // Registration already established the session, so this resumes the
-                                // /oauth2/authorize request that sent the browser here - the new
-                                // user lands signed in rather than back at a login form.
-                                window.location.href = data.redirectTo || FALLBACK_REDIRECT;
-                              })
-                              .catch(function (err) {
-                                errorEl.textContent = err.message;
-                                errorEl.style.display = 'block';
-                                button.disabled = false;
-                                button.textContent = 'Create account and continue';
-                              });
+                          function redirectToFrontendSignup() {
+                            // Registration belongs to the configured FE wizard. Use its
+                            // server-configured link, never a URL supplied by the identity provider.
+                            var signupLink = document.querySelector('.signup-link');
+                            if (!signupLink || !signupLink.href) {
+                              showSignInError('Please use the sign-up page to create your account.');
+                              return;
+                            }
+                            var signupUrl = new URL(signupLink.href, window.location.href);
+                            signupUrl.searchParams.set('step', '0.1');
+                            window.location.assign(signupUrl.toString());
                           }
 
                           function onGoogleCredential(response) {
-                            pendingGoogleToken = response.credential;
                             fetch('/api/auth/google-login', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
@@ -796,10 +642,10 @@ public class LoginPageController {
                                   window.location.href = result.data.redirectTo || FALLBACK_REDIRECT;
                                   return;
                                 }
-                                // The identity is fine, there is just no account yet - collect what
-                                // SuperMeApp needs rather than dead-ending on an error message.
+                                // The identity is valid, but new account creation belongs to the
+                                // FE's full signup flow rather than an abbreviated form on /login.
                                 if (result.data.registrationRequired) {
-                                  openRegistrationForm(result.data);
+                                  redirectToFrontendSignup();
                                   return;
                                 }
                                 throw new Error(result.data.message || 'Google sign-in failed.');
@@ -826,26 +672,6 @@ public class LoginPageController {
                           }
 
                           window.onload = function () {
-                            var relSelect = document.getElementById('reg-relationship');
-                            if (relSelect) {
-                              relSelect.addEventListener('change', updateFamilyFields);
-                            }
-                            var regForm = document.getElementById('register-form');
-                            if (regForm) {
-                              regForm.addEventListener('submit', submitRegistration);
-                            }
-                            var regCancel = document.getElementById('register-cancel');
-                            if (regCancel) {
-                              regCancel.addEventListener('click', function (event) {
-                                event.preventDefault();
-                                document.getElementById('register-pane').style.display = 'none';
-                                var authLayout = document.getElementById('auth-layout');
-                                if (authLayout) { authLayout.style.display = ''; }
-                                var signupRow = document.querySelector('.signup-row');
-                                if (signupRow) { signupRow.style.display = ''; }
-                              });
-                            }
-
                             if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                               google.accounts.id.initialize({
                                 client_id: '%s',

@@ -63,25 +63,16 @@ class LoginPageControllerTest {
         assertThat(html).doesNotContain("complete-profile");
     }
 
-    /**
-     * Google sign-in for an address with no SuperMeApp account must open the registration form on
-     * this page rather than dead-ending on an error - the identity is already verified, only the
-     * fields SuperMeBE's User table requires are missing.
-     */
+    /** A verified Google identity with no account is sent to the configured FE signup wizard. */
     @Test
-    void loginPage_carriesTheGoogleRegistrationForm() throws Exception {
+    void loginPage_routesUnknownGoogleAccountToFrontendSignup() throws Exception {
         String html = loginPageHtml();
 
-        assertThat(html).contains("id=\"register-pane\"");
         assertThat(html).contains("registrationRequired");
-        assertThat(html).contains("/api/auth/register");
-        // The fields that cannot be defaulted, because the live table rejects a row without them.
-        assertThat(html).contains("id=\"reg-name\"");
-        assertThat(html).contains("id=\"reg-gender\"");
-        assertThat(html).contains("id=\"reg-dob\"");
-        assertThat(html).contains("id=\"reg-relationship\"");
-        // The same Google token that proved the identity is reused as proof for registration.
-        assertThat(html).contains("googleIdToken");
+        assertThat(html).contains("function redirectToFrontendSignup()");
+        assertThat(html).contains("signupUrl.searchParams.set('step', '0.1')");
+        assertThat(html).contains("redirectToFrontendSignup();");
+        assertThat(html).doesNotContain("register-pane", "/api/auth/register", "openRegistrationForm");
     }
 
     /**
