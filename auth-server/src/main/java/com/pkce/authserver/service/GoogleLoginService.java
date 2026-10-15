@@ -19,11 +19,9 @@ import java.util.Optional;
  * Verifies a Google-issued ID token and matches it to an existing SuperMeApp account, by provider
  * id first and then by email.
  *
- * It does not create the account itself: SuperMeBE's User table requires name, gender, dateOfBirth
- * and relationship (all NOT NULL, no defaults) and a Google token carries none of them. An unknown
- * Google account raises AccountNotRegisteredException carrying the verified identity, which
- * GoogleLoginController turns into a "registrationRequired" answer so the caller can collect the
- * missing details and post them to /api/auth/register with the same token - see RegisterController.
+ * An unknown Google account raises AccountNotRegisteredException carrying the verified identity.
+ * GoogleLoginController can then complete registration when the FE supplies the required profile
+ * fields, or return the missing fields to collect first.
  *
  * On a successful match the Google provider id is recorded on the account, so a later login can be
  * matched by provider id rather than only by email - but only when writes are enabled, since that

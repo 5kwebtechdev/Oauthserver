@@ -84,12 +84,14 @@ app:
     # Client ID only - it's meant to be public (embedded in frontend code). The Client
     # Secret is never used anywhere in this codebase; it plays no role in verifying an
     # already-issued Google ID token, which is all this app does with Google.
-    client-id: ${GOOGLE_CLIENT_ID:101997713315-gi96ioqs0s5t43dj702cdt1fuamb2coq.apps.googleusercontent.com}
+    # Must match the SuperMeAppFE web OAuth client ID. Override with GOOGLE_CLIENT_ID in
+    # deployment environments if the FE client is rotated; never use the old PKCE Demo ID.
+    client-id: ${GOOGLE_CLIENT_ID:124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com}
   superme:
     # Off by default: mindfullP1 is shared with a running production app, so a fresh
     # deployment reads and authenticates without modifying anyone's data. Turning this on
-    # allows exactly two writes - linking a Google provider id onto an existing account,
-    # and password resets. See SupermeProperties.
+    # enables registration, onboarding writes, Google provider linking and password resets.
+    # See SupermeProperties before enabling it on a live database.
     writes-enabled: ${SUPERME_WRITES_ENABLED:false}
   rate-limit:
     login:

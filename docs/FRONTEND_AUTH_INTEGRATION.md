@@ -172,11 +172,20 @@ Existing usable account: 200 with `username`, `email`, `newUser`, `redirectTo`
 and a backend login session cookie. No OAuth code or token set is returned by
 this endpoint. Follow `redirectTo` in the SAME browser context to resume the
 authorization request, then use the code callback and token exchange above.
-Unknown Google account: 404 with `error: registration_required`,
-`registrationRequired: true`, `email`, `name`, and `pictureUrl`; collect onboarding
-data and register using the SAME Google ID token. Invalid token: 401.
-Google SDK token audience must match backend `GOOGLE_CLIENT_ID`; do not assume
-an Android client ID and a web/server client ID are interchangeable.
+For a new account, send the completed onboarding profile in that same request:
+
+```json
+{"idToken":"GOOGLE_ID_TOKEN_FOR_THE_CONFIGURED_GOOGLE_CLIENT","name":"A User","gender":"prefer_not_to_say","dateOfBirth":"1995-04-12","relationship":"SELF","asChild":false}
+```
+
+The auth server verifies the Google token, creates the SuperMe account using the
+normal registration service, establishes its browser session, and returns
+`redirectTo`; following that URL completes PKCE and returns the current OAuth
+tokens. Google does not provide DOB, gender, or family role, so a request without
+these fields returns 404 with `registrationRequired: true` and the required fields
+to collect. Account creation requires `SUPERME_WRITES_ENABLED=true` in the auth
+server environment. Invalid token: 401. Set `GOOGLE_CLIENT_ID` to the web client
+ID from SuperMeAppFE; the received Google token audience must match it.
 
 ### Email OTP login (optional)
 

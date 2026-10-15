@@ -3,6 +3,8 @@ package com.pkce.authserver.web;
 import com.pkce.authserver.service.AppUserDetailsService;
 import com.pkce.authserver.service.GoogleLoginService;
 import com.pkce.authserver.service.SessionLoginHelper;
+import com.pkce.authserver.service.UserRegistrationService;
+import com.pkce.authserver.superme.dto.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -26,8 +28,8 @@ import java.util.Map;
  * session for the matching SuperMeApp account. See SessionLoginHelper for how this resumes
  * the original /oauth2/authorize request.
  *
- * The account must already exist - see GoogleLoginService for why one cannot be created here - so
- * an unknown Google email comes back as 401 rather than signing anyone in.
+ * Existing users sign in with a verified Google ID token. New users can be created in the same
+ * request when the FE also supplies the profile fields the shared SuperMe table requires.
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -37,6 +39,7 @@ public class GoogleLoginController {
     private final GoogleLoginService googleLoginService;
     private final AppUserDetailsService appUserDetailsService;
     private final SessionLoginHelper sessionLoginHelper;
+    private final UserRegistrationService userRegistrationService;
 
     @PostMapping("/google-login")
     public ResponseEntity<Map<String, Object>> googleLogin(@Valid @RequestBody GoogleLoginRequest request,
@@ -46,19 +49,32 @@ public class GoogleLoginController {
         try {
             result = googleLoginService.verifyAndUpsert(request.idToken());
         } catch (GoogleLoginService.AccountNotRegisteredException e) {
-            // Not a failure so much as a fork in the road: the Google identity checks out, there is
-            // just no SuperMeApp account behind it yet. Hand back what the token proved so the
-            // caller can collect the rest (name, gender, date of birth, relationship) and post it
-            // to /api/auth/register with this same token.
             GoogleLoginService.GoogleIdentity identity = e.getIdentity();
-            Map<String, Object> body = new HashMap<>();
-            body.put("error", "registration_required");
-            body.put("message", e.getMessage());
-            body.put("registrationRequired", true);
-            body.put("email", identity.email());
-            body.put("name", identity.name());
-            body.put("pictureUrl", identity.pictureUrl());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+            if (!hasRegistrationProfile(request)) {
+                // Google does not disclose DOB, gender or family role. Ask the FE to collect those
+                // real values before creating a SuperMe account; never invent profile data.
+                Map<String, Object> body = new HashMap<>();
+                body.put("error", "registration_required");
+                body.put("message", "Complete your profile to finish Google sign-in");
+                body.put("registrationRequired", true);
+                body.put("email", identity.email());
+                body.put("name", firstNonBlank(request.name(), identity.name()));
+                body.put("pictureUrl", identity.pictureUrl());
+                body.put("requiredFields", new String[]{"gender", "dateOfBirth", "relationship"});
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+            }
+
+            try {
+                UserRegistrationService.Result registration = userRegistrationService.register(
+                        registrationRequest(request, identity));
+                result = new GoogleLoginService.Result(registration.user(), registration.newlyCreated());
+            } catch (UserRegistrationService.RegistrationException e1) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "registration_failed", "message", e1.getMessage()));
+            } catch (IllegalStateException e1) {
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
+                        "error", "registration_disabled", "message", e1.getMessage()));
+            }
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "invalid_google_token", "message", e.getMessage()));
@@ -84,5 +100,39 @@ public class GoogleLoginController {
         body.put("newUser", result.newlyCreated);
         body.put("redirectTo", redirectTo);
         return ResponseEntity.ok(body);
+    }
+
+    private boolean hasRegistrationProfile(GoogleLoginRequest request) {
+        return hasText(firstNonBlank(request.name(), null))
+                && hasText(request.gender()) && request.dateOfBirth() != null
+                && hasText(request.relationship());
+    }
+
+    private RegisterRequest registrationRequest(GoogleLoginRequest request,
+                                                GoogleLoginService.GoogleIdentity identity) {
+        RegisterRequest registration = new RegisterRequest();
+        registration.setName(firstNonBlank(request.name(), identity.name()));
+        registration.setEmail(identity.email());
+        registration.setGender(request.gender());
+        registration.setDateOfBirth(request.dateOfBirth());
+        registration.setRelationship(request.relationship());
+        registration.setFamilyName(request.familyName());
+        registration.setFamilyCode(request.familyCode());
+        registration.setPetName(request.petName());
+        registration.setUsername(request.username());
+        registration.setAvatarImageName(request.avatarImageName());
+        registration.setReferralCode(request.referralCode());
+        registration.setAsChild(request.asChild());
+        registration.setUnlockPotential(request.unlockPotential());
+        registration.setGoogleIdToken(request.idToken());
+        return registration;
+    }
+
+    private static String firstNonBlank(String value, String fallback) {
+        return hasText(value) ? value.trim() : fallback;
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

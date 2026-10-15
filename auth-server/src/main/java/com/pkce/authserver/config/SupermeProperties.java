@@ -13,7 +13,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * anything; flip it on deliberately, once a login has been verified end to end.
  *
  * Writes behind this flag: linking Google provider ids onto an existing account
- * (GoogleLoginService) and password resets (ForgotPasswordService). Our own tables -
+ * (GoogleLoginService), Google registration and onboarding (UserRegistrationService), and
+ * password resets (ForgotPasswordService). Our own tables -
  * auth_login_attempt, otp_code, security_event, the oauth2_* set - are never gated by it.
  */
 @Getter
