@@ -1,7 +1,6 @@
 package com.pkce.authserver.admin.model;
 
 import com.pkce.authserver.superme.enums.Role;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -60,7 +59,7 @@ public class Admin {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.NONE)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "password_id")
     private AdminPassword password;
 }

@@ -2,6 +2,8 @@ package com.pkce.authserver.config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,11 +37,34 @@ import java.util.Properties;
 )
 public class PrimaryDataSourceConfig {
 
+    // Read from the active profile's spring.jpa.hibernate.ddl-auto instead of hardcoding
+    // "validate": the test profile sets this to "none" (Flyway + H2 testmigration is the
+    // schema source of truth there - see application-test.yml's comment on why), and a
+    // literal "validate" here would ignore that override and run real schema validation
+    // against H2's MySQL-compatibility type mapping, which fails on false mismatches.
+    @Value("${spring.jpa.hibernate.ddl-auto:validate}")
+    private String ddlAuto;
+
+    @Primary
+    @Bean(name = "dataSourceProperties")
+    @ConfigurationProperties(prefix = "spring.datasource")
+    public DataSourceProperties dataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    /**
+     * Built via DataSourceProperties/DataSourceBuilder rather than binding
+     * @ConfigurationProperties straight onto HikariDataSource: this project's existing
+     * spring.datasource.url key (used verbatim by every deployment env file already in use)
+     * only maps onto Hikari's jdbcUrl field through DataSourceProperties.determineUrl() -
+     * Hikari itself has no "url" property, only "jdbcUrl", so a direct Hikari binding would
+     * silently leave the connection URL null. This is the same mechanism Spring Boot's own
+     * autoconfigured dataSource bean used before this class existed - behavior unchanged.
+     */
     @Primary
     @Bean(name = "dataSource")
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource dataSource() {
-        return new HikariDataSource();
+    public DataSource dataSource(@Qualifier("dataSourceProperties") DataSourceProperties properties) {
+        return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
     @Primary
@@ -53,9 +78,7 @@ public class PrimaryDataSourceConfig {
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Properties props = new Properties();
-        // Matches application.yml's spring.jpa.* for this datasource exactly: validate only,
-        // never let this server alter mindfullP1's schema.
-        props.put("hibernate.hbm2ddl.auto", "validate");
+        props.put("hibernate.hbm2ddl.auto", ddlAuto);
         props.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
         props.put("hibernate.physical_naming_strategy",
                 "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl");

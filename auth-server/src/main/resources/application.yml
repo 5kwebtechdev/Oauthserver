@@ -48,6 +48,15 @@ spring:
     # non-empty schema, and V2 (the only migration left) creates just the tables this
     # server owns - see db/migration for why the old V1-V9 set is gone.
     baseline-on-migrate: true
+    # Explicit connection instead of autowiring "the" DataSource bean: once a second
+    # DataSource (adminDataSource, for mindfullAdmin) exists in the context, Flyway's
+    # autoconfigured by-type injection is no longer guaranteed to resolve the @Primary one
+    # first, and silently handing it the admin pool breaks mindfullP1's migrations (and vice
+    # versa). Pointing Flyway at its own URL/credentials sidesteps bean resolution entirely -
+    # same mindfullP1 connection as spring.datasource above, just independently configured.
+    url: ${DB_PRIMARY_URL:jdbc:mysql://187.127.142.16:3306/}mindfullP1?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+    user: ${DB_PRIMARY_USERNAME:root}
+    password: ${DB_PRIMARY_PASSWORD:Root@1234}
   mail:
     # Credentials come from .env (gitignored, loaded by spring-dotenv) - never hardcoded
     # here. No literal fallback on purpose: if MAIL_USERNAME/MAIL_PASSWORD aren't set,

@@ -37,6 +37,11 @@ spring:
     # exist somewhere, and keeping them under src/test/resources means they cannot
     # possibly be applied to a live database.
     locations: classpath:db/migration,classpath:db/testmigration
+    # Explicit connection, same reasoning as application.yml - with the admin H2 datasource
+    # also in the context, Flyway's autowired-by-type DataSource resolution is not reliable.
+    url: jdbc:h2:mem:authserver_test;MODE=MySQL;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE,USER
+    user: sa
+    password:
   mail:
     # Never point tests at the real smtp.gmail.com - EmailService is always @MockBean'd
     # in any test that triggers a send, but if that were ever missed, this fails fast
