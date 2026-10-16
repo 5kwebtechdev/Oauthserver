@@ -46,6 +46,14 @@ public class LoginPageController {
     @Value("${app.frontend.additional-continue-with-email-url:}")
     private String additionalEmailUrl;
 
+    // Admin panel: a separate, much simpler branded page (see renderAdminLoginPage) - admin
+    // accounts don't self-serve signup or Google sign-in, so this never touches the big
+    // SuperMeApp template above/below, only adds an early-return branch in login().
+    @Value("${app.frontend.admin-client-id:}")
+    private String adminClientId;
+    @Value("${app.frontend.admin-forgot-password-url:}")
+    private String adminForgotUrl;
+
     @GetMapping("/")
     public void home(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
         response.sendRedirect(frontendBaseUrl);
@@ -58,10 +66,17 @@ public class LoginPageController {
         var session = request.getSession(false);
         var saved = session == null ? null : session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
         boolean additional = false;
+        boolean isAdmin = false;
         if (saved instanceof org.springframework.security.web.savedrequest.SavedRequest authorizationRequest) {
             String[] ids = authorizationRequest.getParameterValues("client_id");
             additional = !additionalClientId.isBlank() && ids != null && ids.length == 1
                     && additionalClientId.equals(ids[0]);
+            isAdmin = !adminClientId.isBlank() && ids != null && ids.length == 1
+                    && adminClientId.equals(ids[0]);
+        }
+        if (isAdmin) {
+            renderAdminLoginPage(request, response);
+            return;
         }
         String pageBaseUrl = additional && !additionalBaseUrl.isBlank() ? additionalBaseUrl : frontendBaseUrl;
         String pageSignupUrl = additional && !additionalSignupUrl.isBlank() ? additionalSignupUrl : frontendBaseUrl;
@@ -723,6 +738,105 @@ public class LoginPageController {
                     pageSignupUrl,
                     pageBaseUrl,
                     googleClientId
+            ));
+        }
+    }
+
+    /**
+     * SuperMeAdmin's own login page - deliberately a separate method/template from the big
+     * SuperMeApp one above, not a parameterized branch of it, so nothing here can ever change
+     * what that page renders for the existing clients. Email + password + "Forgot password?"
+     * only: no Google sign-in, no signup link - admin accounts are created by another admin
+     * (see AdminRegistrationController), not self-service.
+     */
+    private void renderAdminLoginPage(HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response)
+            throws java.io.IOException {
+        CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+        boolean captchaFailed = request.getParameter("captcha") != null;
+        boolean hasError = request.getParameter("error") != null && !captchaFailed;
+        boolean loggedOut = request.getParameter("logout") != null;
+        String pageForgotUrl = adminForgotUrl.isBlank() ? "#" : adminForgotUrl;
+
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter writer = response.getWriter()) {
+            writer.write("""
+                    <!doctype html>
+                    <html lang="en">
+                      <head>
+                        <meta charset="utf-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+                        <meta name="theme-color" content="#ffffff">
+                        <title>Sign in | SuperMe Admin</title>
+                        <style>
+                          :root { color-scheme: light; }
+                          * { box-sizing: border-box; }
+                          html, body { margin: 0; padding: 0; min-height: 100%%; }
+                          body {
+                            min-height: 100vh;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 1.5rem;
+                            background: #ffffff;
+                            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                            color: #1f2430;
+                          }
+                          .brand { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; font-weight: 700; font-size: 1.1rem; }
+                          .card { width: 100%%; max-width: 360px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.75rem; box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
+                          label { display: block; font-size: 0.85rem; margin-bottom: 0.3rem; color: #374151; }
+                          .field { margin-bottom: 1rem; position: relative; }
+                          input.form-control {
+                            width: 100%%; padding: 0.6rem 0.75rem; border-radius: 8px;
+                            border: 1px solid #c7d2fe; background: #eef2ff; font-size: 0.95rem;
+                          }
+                          input.form-control:focus { outline: 2px solid #885bc4; outline-offset: 1px; }
+                          .row-between { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1rem; font-size: 0.85rem; }
+                          .row-between a { color: #be185d; text-decoration: none; }
+                          .row-between a:hover { text-decoration: underline; }
+                          button.submit {
+                            width: 100%%; padding: 0.7rem; border: none; border-radius: 10px;
+                            background: #b05478; color: #fff; font-weight: 600; font-size: 0.95rem; cursor: pointer;
+                          }
+                          button.submit:hover { background: #9a4668; }
+                          .alert { padding: 0.6rem 0.75rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; }
+                          .alert-danger { background: #fdf2f2; color: #9b1c1c; border: 1px solid #f8b4b4; }
+                          .alert-success { background: #f3faf7; color: #0e6245; border: 1px solid #84e1bc; }
+                        </style>
+                      </head>
+                      <body>
+                        <div class="brand">SuperMe Admin</div>
+                        <div class="card">
+                          %s
+                          %s
+                          %s
+                          <form method="post" action="/login">
+                            <input type="hidden" name="%s" value="%s">
+                            <div class="field">
+                              <label for="username">Email</label>
+                              <input type="text" id="username" name="username" class="form-control" required
+                                     autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email">
+                            </div>
+                            <div class="field">
+                              <label for="password">Password</label>
+                              <input type="password" id="password" name="password" class="form-control" required autocomplete="current-password">
+                            </div>
+                            <div class="row-between">
+                              <span></span>
+                              <a href="%s">Forgot password?</a>
+                            </div>
+                            <button type="submit" class="submit">Log In</button>
+                          </form>
+                        </div>
+                      </body>
+                    </html>
+                    """.formatted(
+                    hasError ? "<div class=\"alert alert-danger\">Invalid email or password.</div>" : "",
+                    loggedOut ? "<div class=\"alert alert-success\">You have been signed out.</div>" : "",
+                    captchaFailed ? "<div class=\"alert alert-danger\">Captcha verification failed - please try again.</div>" : "",
+                    csrfToken.getParameterName(),
+                    csrfToken.getToken(),
+                    pageForgotUrl
             ));
         }
     }

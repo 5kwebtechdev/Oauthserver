@@ -7,6 +7,15 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password:
+  admin:
+    datasource:
+      # Separate throwaway H2 schema standing in for mindfullAdmin - create-drop below
+      # builds Admin/AdminPassword straight from the entities, since there is no real
+      # admin database to validate against in tests.
+      jdbc-url: jdbc:h2:mem:authserver_admin_test;MODE=MySQL;DB_CLOSE_DELAY=-1
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
   jpa:
     # Flyway is the schema source of truth; Hibernate's "validate" mode compares against
     # the H2Dialect's own type expectations (e.g. BOOLEAN) rather than the MySQL-specific
@@ -38,6 +47,8 @@ spring:
     password: test
 
 app:
+  admin-datasource:
+    ddl-auto: create-drop
   security:
     issuer: http://localhost:9000
     jwt:

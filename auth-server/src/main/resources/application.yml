@@ -16,6 +16,17 @@ spring:
     username: ${DB_PRIMARY_USERNAME:root}
     password: ${DB_PRIMARY_PASSWORD:Root@1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  admin:
+    datasource:
+      # Separate schema (same MySQL box, different database) for SuperMeBE's admin-panel
+      # staff table - see AdminDataSourceConfig. Only read from here; never migrated.
+      jdbc-url: ${DB_ADMIN_URL:jdbc:mysql://187.127.142.16:3306/mindfullAdmin?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8}
+      username: ${DB_ADMIN_USERNAME:root}
+      password: ${DB_ADMIN_PASSWORD:Root@1234}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      maximum-pool-size: 8
+      minimum-idle: 2
+      connection-timeout: 20000
   jpa:
     hibernate:
       ddl-auto: validate
@@ -72,7 +83,19 @@ app:
       id: ${SUPERME_OAUTH_CLIENT_ID:}
       redirect-uris: ${SUPERME_OAUTH_REDIRECT_URIS:}
       post-logout-redirect-uri: ${SUPERME_OAUTH_POST_LOGOUT_REDIRECT_URI:}
+    admin-client:
+      # Optional third client for the SuperMeAdmin Angular panel. Blank by default -
+      # ClientRegistrationSeeder only registers it once an id is actually configured,
+      # so an unset env leaves the existing two clients exactly as they are.
+      id: ${ADMIN_OAUTH_CLIENT_ID:}
+      redirect-uris: ${ADMIN_OAUTH_REDIRECT_URIS:}
+      post-logout-redirect-uri: ${ADMIN_OAUTH_POST_LOGOUT_REDIRECT_URI:}
   frontend:
+    # Picks the admin-branded /login page (LoginPageController.renderAdminLoginPage) instead
+    # of the SuperMeApp one, when the pending authorization's client_id matches this. Blank by
+    # default, so until ADMIN_OAUTH_CLIENT_ID is set the existing /login behavior is unchanged.
+    admin-client-id: ${ADMIN_OAUTH_CLIENT_ID:}
+    admin-forgot-password-url: ${ADMIN_FE_FORGOT_PASSWORD_URL:}
     additional-client-id: ${SUPERME_OAUTH_CLIENT_ID:}
     additional-base-url: ${SUPERME_FE_BASE_URL:}
     additional-signup-url: ${SUPERME_FE_SIGNUP_URL:}
@@ -94,6 +117,11 @@ app:
     # enables registration, onboarding writes, Google provider linking and password resets.
     # See SupermeProperties before enabling it on a live database.
     writes-enabled: ${SUPERME_WRITES_ENABLED:false}
+  admin:
+    # Off by default, same reasoning as superme.writes-enabled above but for mindfullAdmin:
+    # this server authenticates every existing admin without this flag. Turn it on only to
+    # let POST /api/admin/admins (AdminRegistrationService) create NEW admin accounts here.
+    writes-enabled: ${ADMIN_WRITES_ENABLED:false}
   rate-limit:
     login:
       capacity: 10

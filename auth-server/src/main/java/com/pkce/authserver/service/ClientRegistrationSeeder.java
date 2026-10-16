@@ -51,6 +51,13 @@ public class ClientRegistrationSeeder implements ApplicationRunner {
     @Value("${app.security.additional-client.post-logout-redirect-uri:}")
     private String additionalLogoutUri;
 
+    @Value("${app.security.admin-client.id:}")
+    private String adminClientId;
+    @Value("${app.security.admin-client.redirect-uris:}")
+    private String adminRedirectUris;
+    @Value("${app.security.admin-client.post-logout-redirect-uri:}")
+    private String adminLogoutUri;
+
     @Override
     public void run(ApplicationArguments args) {
         register(clientId, redirectUris, postLogoutRedirectUri);
@@ -59,6 +66,13 @@ public class ClientRegistrationSeeder implements ApplicationRunner {
                 throw new IllegalArgumentException("Additional frontend needs a distinct client ID, callbacks and logout URL");
             }
             register(additionalClientId, additionalRedirectUris, additionalLogoutUri);
+        }
+        if (!adminClientId.isBlank()) {
+            if (adminClientId.equals(clientId) || adminClientId.equals(additionalClientId)
+                    || adminRedirectUris.isBlank() || adminLogoutUri.isBlank()) {
+                throw new IllegalArgumentException("Admin client needs a distinct client ID, callbacks and logout URL");
+            }
+            register(adminClientId, adminRedirectUris, adminLogoutUri);
         }
     }
 

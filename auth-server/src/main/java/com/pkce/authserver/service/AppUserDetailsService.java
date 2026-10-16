@@ -1,5 +1,8 @@
 package com.pkce.authserver.service;
 
+import com.pkce.authserver.admin.model.Admin;
+import com.pkce.authserver.admin.model.AdminAccountStatus;
+import com.pkce.authserver.admin.repository.AdminRepository;
 import com.pkce.authserver.repository.UserPasswordRepository;
 import com.pkce.authserver.superme.model.User;
 import com.pkce.authserver.superme.model.UserPassword;
@@ -11,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -26,6 +30,11 @@ import java.util.Set;
  *     blow up, so an empty hash would be wrong - the row is required to authenticate at all;
  *   - a soft-deleted account (deleted = true) is refused, which is modelled as "disabled" here so
  *     DaoAuthenticationProvider produces it without reimplementing the check.
+ *
+ * Admin-panel login (added): if the identifier is not found in mindfullP1.User at all, this falls
+ * back to mindfullAdmin.Admin/AdminPassword (same BCrypt scheme as SuperMeBE's admin AuthService).
+ * This is additive only - every identifier that already resolves against User behaves exactly as
+ * before and never reaches the admin lookup, so no existing SuperMeApp login is affected.
  */
 @Service
 @RequiredArgsConstructor
@@ -34,6 +43,7 @@ public class AppUserDetailsService implements UserDetailsService {
     private final SupermeUserLookup userLookup;
     private final UserPasswordRepository userPasswordRepository;
     private final LoginAttemptService loginAttemptService;
+    private final AdminRepository adminRepository;
 
     /**
      * A password that no PasswordEncoder can ever match, for the login paths where a password was
@@ -46,14 +56,39 @@ public class AppUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
-        User user = userLookup.findByIdentifier(identifier)
+        Optional<User> user = userLookup.findByIdentifier(identifier);
+        if (user.isPresent()) {
+            String passwordHash = userPasswordRepository.findByUser(user.get())
+                    .map(UserPassword::getPassword)
+                    .orElseThrow(() -> new UsernameNotFoundException("User has no password set: " + identifier));
+
+            return toUserDetails(user.get(), identifier, passwordHash);
+        }
+
+        return loadAdminByIdentifier(identifier);
+    }
+
+    private UserDetails loadAdminByIdentifier(String identifier) {
+        Admin admin = adminRepository.findByEmail(identifier)
+                .or(() -> adminRepository.findByPhone(identifier))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
 
-        String passwordHash = userPasswordRepository.findByUser(user)
-                .map(UserPassword::getPassword)
-                .orElseThrow(() -> new UsernameNotFoundException("User has no password set: " + identifier));
+        String passwordHash = Optional.ofNullable(admin.getPassword())
+                .map(com.pkce.authserver.admin.model.AdminPassword::getHashedPassword)
+                .filter(hash -> hash != null && !hash.isBlank())
+                .orElseThrow(() -> new UsernameNotFoundException("Admin has no password set: " + identifier));
 
-        return toUserDetails(user, identifier, passwordHash);
+        boolean deleted = Boolean.TRUE.equals(admin.getDeleted());
+        boolean inactive = admin.getStatus() != AdminAccountStatus.ACTIVE;
+        boolean expired = admin.getExpiryDate() != null
+                && admin.getExpiryDate().isBefore(java.time.LocalDateTime.now());
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(identifier)
+                .password(passwordHash)
+                .disabled(deleted || inactive)
+                .accountExpired(expired)
+                .authorities(Set.of(new SimpleGrantedAuthority("ROLE_" + admin.getRole().name())))
+                .build();
     }
 
     /**
