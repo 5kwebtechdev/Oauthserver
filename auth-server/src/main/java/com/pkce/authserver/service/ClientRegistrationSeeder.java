@@ -58,6 +58,18 @@ public class ClientRegistrationSeeder implements ApplicationRunner {
     @Value("${app.security.admin-client.post-logout-redirect-uri:}")
     private String adminLogoutUri;
 
+    // Separate dev-only client for the admin panel (e.g. devadmin.supermeapp.com) - kept as its
+    // own client_id rather than a second redirect URI on admin-client, matching this project's
+    // established one-client-per-frontend pattern (see the primary-vs-additional pair above):
+    // registration is idempotent and never updates an already-seeded client, so a prod client's
+    // redirect URIs cannot be widened later just by editing env vars and restarting.
+    @Value("${app.security.admin-dev-client.id:}")
+    private String adminDevClientId;
+    @Value("${app.security.admin-dev-client.redirect-uris:}")
+    private String adminDevRedirectUris;
+    @Value("${app.security.admin-dev-client.post-logout-redirect-uri:}")
+    private String adminDevLogoutUri;
+
     @Override
     public void run(ApplicationArguments args) {
         register(clientId, redirectUris, postLogoutRedirectUri);
@@ -73,6 +85,14 @@ public class ClientRegistrationSeeder implements ApplicationRunner {
                 throw new IllegalArgumentException("Admin client needs a distinct client ID, callbacks and logout URL");
             }
             register(adminClientId, adminRedirectUris, adminLogoutUri);
+        }
+        if (!adminDevClientId.isBlank()) {
+            if (adminDevClientId.equals(clientId) || adminDevClientId.equals(additionalClientId)
+                    || adminDevClientId.equals(adminClientId)
+                    || adminDevRedirectUris.isBlank() || adminDevLogoutUri.isBlank()) {
+                throw new IllegalArgumentException("Admin dev client needs a distinct client ID, callbacks and logout URL");
+            }
+            register(adminDevClientId, adminDevRedirectUris, adminDevLogoutUri);
         }
     }
 

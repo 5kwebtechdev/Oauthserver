@@ -99,11 +99,20 @@ app:
       id: ${ADMIN_OAUTH_CLIENT_ID:}
       redirect-uris: ${ADMIN_OAUTH_REDIRECT_URIS:}
       post-logout-redirect-uri: ${ADMIN_OAUTH_POST_LOGOUT_REDIRECT_URI:}
+    admin-dev-client:
+      # Optional fourth client for a dev/staging admin FE domain (e.g. devadmin.supermeapp.com).
+      # Separate client id from admin-client on purpose - registration is idempotent and never
+      # widens an already-seeded client's redirect URIs after the fact, so prod and dev must be
+      # two distinct clients, not two redirect URIs on one. Blank by default.
+      id: ${ADMIN_DEV_OAUTH_CLIENT_ID:}
+      redirect-uris: ${ADMIN_DEV_OAUTH_REDIRECT_URIS:}
+      post-logout-redirect-uri: ${ADMIN_DEV_OAUTH_POST_LOGOUT_REDIRECT_URI:}
   frontend:
     # Picks the admin-branded /login page (LoginPageController.renderAdminLoginPage) instead
     # of the SuperMeApp one, when the pending authorization's client_id matches this. Blank by
     # default, so until ADMIN_OAUTH_CLIENT_ID is set the existing /login behavior is unchanged.
     admin-client-id: ${ADMIN_OAUTH_CLIENT_ID:}
+    admin-dev-client-id: ${ADMIN_DEV_OAUTH_CLIENT_ID:}
     admin-forgot-password-url: ${ADMIN_FE_FORGOT_PASSWORD_URL:}
     additional-client-id: ${SUPERME_OAUTH_CLIENT_ID:}
     additional-base-url: ${SUPERME_FE_BASE_URL:}

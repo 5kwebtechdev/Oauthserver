@@ -53,6 +53,9 @@ public class LoginPageController {
     private String adminClientId;
     @Value("${app.frontend.admin-forgot-password-url:}")
     private String adminForgotUrl;
+    // Dev admin client (e.g. devadmin.supermeapp.com) gets the same branded page as prod.
+    @Value("${app.frontend.admin-dev-client-id:}")
+    private String adminDevClientId;
 
     @GetMapping("/")
     public void home(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
@@ -71,8 +74,9 @@ public class LoginPageController {
             String[] ids = authorizationRequest.getParameterValues("client_id");
             additional = !additionalClientId.isBlank() && ids != null && ids.length == 1
                     && additionalClientId.equals(ids[0]);
-            isAdmin = !adminClientId.isBlank() && ids != null && ids.length == 1
-                    && adminClientId.equals(ids[0]);
+            isAdmin = (!adminClientId.isBlank() || !adminDevClientId.isBlank())
+                    && ids != null && ids.length == 1
+                    && (adminClientId.equals(ids[0]) || adminDevClientId.equals(ids[0]));
         }
         if (isAdmin) {
             renderAdminLoginPage(request, response);
