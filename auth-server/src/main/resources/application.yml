@@ -114,6 +114,11 @@ app:
     admin-client-id: ${ADMIN_OAUTH_CLIENT_ID:}
     admin-dev-client-id: ${ADMIN_DEV_OAUTH_CLIENT_ID:}
     admin-forgot-password-url: ${ADMIN_FE_FORGOT_PASSWORD_URL:}
+    # SuperMeBE root the admin login page's own role-detect JS calls directly (same endpoint
+    # the Angular admin FE already calls). Dev falls back to the prod URL if unset, matching
+    # every other admin-dev-* property's blank-by-default pattern.
+    admin-business-api-url: ${ADMIN_BUSINESS_API_URL:https://api.supermeapp.com/v1}
+    admin-dev-business-api-url: ${ADMIN_DEV_BUSINESS_API_URL:}
     additional-client-id: ${SUPERME_OAUTH_CLIENT_ID:}
     additional-base-url: ${SUPERME_FE_BASE_URL:}
     additional-signup-url: ${SUPERME_FE_SIGNUP_URL:}
