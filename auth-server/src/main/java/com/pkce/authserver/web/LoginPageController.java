@@ -757,6 +757,16 @@ public class LoginPageController {
         boolean loggedOut = request.getParameter("logout") != null;
         String pageForgotUrl = adminForgotUrl.isBlank() ? "#" : adminForgotUrl;
 
+        // TurnstileLoginFilter intercepts every POST to a URL ending "/login" - including
+        // this page's form - unconditionally once TURNSTILE_SECRET_KEY is set (see its
+        // Javadoc: it's a filter, not an opt-in per page). Without this widget present, a
+        // future enabling of Turnstile would silently reject every admin login with no
+        // visible error cause. Rendered only when a real site key exists, matching the
+        // SuperMeApp page's own behavior.
+        String turnstileWidget = turnstileSiteKey.isBlank()
+                ? ""
+                : "<div class=\"cf-turnstile\" data-sitekey=\"" + turnstileSiteKey + "\"></div>";
+
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter writer = response.getWriter()) {
             writer.write("""
@@ -825,9 +835,11 @@ public class LoginPageController {
                               <span></span>
                               <a href="%s">Forgot password?</a>
                             </div>
+                            %s
                             <button type="submit" class="submit">Log In</button>
                           </form>
                         </div>
+                        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
                       </body>
                     </html>
                     """.formatted(
@@ -836,7 +848,8 @@ public class LoginPageController {
                     captchaFailed ? "<div class=\"alert alert-danger\">Captcha verification failed - please try again.</div>" : "",
                     csrfToken.getParameterName(),
                     csrfToken.getToken(),
-                    pageForgotUrl
+                    pageForgotUrl,
+                    turnstileWidget
             ));
         }
     }
