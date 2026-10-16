@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 
+// ===================== RATE LIMITING CODE =====================
 /**
  * Brute-force / abuse protection on every unauthenticated endpoint worth throttling - the login
  * form and the compat JSON login, the token endpoint, every endpoint that sends a real email, every
@@ -39,6 +40,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         this.securityEventService = securityEventService;
     }
 
+    // ----- RATE LIMITING CODE: per-request check, 429 on bucket exhaustion -----
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -62,6 +64,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
     }
 
+    // ----- RATE LIMITING CODE: which endpoints are throttled, and under which bucket -----
     /**
      * Matching is on exact suffixes rather than prefixes because the same endpoint is served under
      * more than one base path (this app's own /api/auth/... and the SuperMeBE-compatible

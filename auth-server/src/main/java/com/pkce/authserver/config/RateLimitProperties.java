@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+// ===================== RATE LIMITING CODE =====================
+// Capacity/refill knobs for RateLimitFilter's buckets, bound from app.rate-limit.* in
+// application.yml (see that file's rate-limit: block).
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "app.rate-limit")

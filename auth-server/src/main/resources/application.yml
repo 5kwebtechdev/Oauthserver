@@ -145,6 +145,10 @@ app:
     # this server authenticates every existing admin without this flag. Turn it on only to
     # let POST /api/admin/admins (AdminRegistrationService) create NEW admin accounts here.
     writes-enabled: ${ADMIN_WRITES_ENABLED:false}
+  # ===================== RATE LIMITING CODE =====================
+  # Per-category request caps enforced by RateLimitFilter (brute-force / abuse protection on
+  # login, token, OTP, verify and google-login). See RateLimitFilter.category() for which
+  # endpoints map to which bucket below.
   rate-limit:
     login:
       capacity: 10

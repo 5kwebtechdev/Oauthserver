@@ -82,6 +82,7 @@ public class DefaultSecurityConfig {
                         // Preserve saved OAuth requests; direct logins return to the frontend.
                         .defaultSuccessUrl(frontendBaseUrl, false)
                         .permitAll())
+                // ----- RATE LIMITING CODE: wired in before Turnstile -----
                 // Cheapest check first: in-memory rate limit before the Turnstile filter's
                 // outbound call to Cloudflare, so a flood gets rejected without paying for
                 // a network round trip on every single request.
@@ -133,6 +134,7 @@ public class DefaultSecurityConfig {
         return source;
     }
 
+    // ----- RATE LIMITING CODE: bean definition -----
     @Bean
     public RateLimitFilter rateLimitFilter(RateLimitProperties properties, SecurityEventService securityEventService) {
         return new RateLimitFilter(properties, securityEventService);

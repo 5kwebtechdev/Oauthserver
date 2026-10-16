@@ -124,6 +124,7 @@ public class AuthorizationServerConfig {
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 )
+                // ----- RATE LIMITING CODE: wired into /oauth2/token's chain too -----
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
