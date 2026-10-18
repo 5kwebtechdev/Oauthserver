@@ -12,6 +12,9 @@ import com.pkce.authserver.repository.UserPasswordRepository;
 import com.pkce.authserver.security.AdminLoginContextFilter;
 import com.pkce.authserver.superme.model.User;
 import com.pkce.authserver.superme.model.UserPassword;
+import com.pkce.authserver.supermedev.model.UserDev;
+import com.pkce.authserver.supermedev.model.UserPasswordDev;
+import com.pkce.authserver.supermedev.repository.UserPasswordDevRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -56,6 +59,8 @@ public class AppUserDetailsService implements UserDetailsService {
     private final LoginAttemptService loginAttemptService;
     private final AdminRepository adminRepository;
     private final AdminDevRepository adminDevRepository;
+    private final SupermeUserDevLookup userDevLookup;
+    private final UserPasswordDevRepository userPasswordDevRepository;
 
     /**
      * A password that no PasswordEncoder can ever match, for the login paths where a password was
@@ -74,6 +79,9 @@ public class AppUserDetailsService implements UserDetailsService {
         }
         if (adminClient == AdminLoginContextFilter.AdminClient.PROD) {
             return loadAdminByIdentifier(identifier);
+        }
+        if (adminClient == AdminLoginContextFilter.AdminClient.APK_DEV) {
+            return loadUserDevByIdentifier(identifier);
         }
 
         Optional<User> user = userLookup.findByIdentifier(identifier);
@@ -132,6 +140,31 @@ public class AppUserDetailsService implements UserDetailsService {
                 .disabled(deleted || inactive)
                 .accountExpired(expired)
                 .authorities(Set.of(new SimpleGrantedAuthority("ROLE_" + admin.getRole().name())))
+                .build();
+    }
+
+    /**
+     * Dev-database counterpart of the default User lookup above, for APK_DEV clients (e.g.
+     * devapk.supermeapp.com) - checks UserDevRepository/superme_db instead of mindfullP1.User, so
+     * identity resolves against the same database devapis.supermeapp.com actually reads/writes.
+     * See UserDev's Javadoc. Unlike the default path there is no admin-table fallback: a dev
+     * client authenticating a non-existent dev user should simply fail, not accidentally resolve
+     * against prod admin data.
+     */
+    private UserDetails loadUserDevByIdentifier(String identifier) {
+        UserDev user = userDevLookup.findByIdentifier(identifier)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
+
+        String passwordHash = userPasswordDevRepository.findByUser(user)
+                .map(UserPasswordDev::getPassword)
+                .orElseThrow(() -> new UsernameNotFoundException("User has no password set: " + identifier));
+
+        boolean deleted = Boolean.TRUE.equals(user.getDeleted());
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(identifier)
+                .password(passwordHash)
+                .disabled(!user.isEnabled() || deleted)
+                .authorities(Set.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())))
                 .build();
     }
 

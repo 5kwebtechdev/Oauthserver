@@ -4,6 +4,13 @@ spring:
     url: ${AUTH_DB_URL}
     username: ${DB_PRIMARY_USERNAME}
     password: ${DB_PRIMARY_PASSWORD}
+  primary-dev:
+    datasource:
+      # Same reasoning as the base application.yml block, but this profile's real primary
+      # datasource is keyed by AUTH_DB_URL, not DB_PRIMARY_URL - mirror that for the fallback.
+      jdbc-url: ${DB_PRIMARY_DEV_URL:${AUTH_DB_URL}}
+      username: ${DB_PRIMARY_DEV_USERNAME:${DB_PRIMARY_USERNAME}}
+      password: ${DB_PRIMARY_DEV_PASSWORD:${DB_PRIMARY_PASSWORD}}
   flyway:
     url: ${AUTH_DB_URL}
     user: ${DB_PRIMARY_USERNAME}

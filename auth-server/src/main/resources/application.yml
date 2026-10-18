@@ -16,6 +16,20 @@ spring:
     username: ${DB_PRIMARY_USERNAME:root}
     password: ${DB_PRIMARY_PASSWORD:Root@1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  primary-dev:
+    datasource:
+      # SuperMeBE's DEV primary database (superme_db) - a real, separate physical database from
+      # mindfullP1 above, same reasoning as admin-dev below but for the shared end-user table -
+      # see PrimaryDevDataSourceConfig. DB_PRIMARY_DEV_URL/USERNAME/PASSWORD default to the real
+      # primary datasource's own values when unset (application-prod.yml overrides this block
+      # the same way it overrides spring.datasource itself, for the same reason). jdbc-url, not
+      # url: this bean binds @ConfigurationProperties straight onto HikariDataSource (like
+      # AdminDataSourceConfig), which only understands "jdbcUrl" - "url" is a DataSourceProperties/
+      # DataSourceBuilder-only alias that only the original spring.datasource.url uses.
+      jdbc-url: ${DB_PRIMARY_DEV_URL:${DB_PRIMARY_URL:jdbc:mysql://187.127.142.16:3306/}mindfullP1?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8}
+      username: ${DB_PRIMARY_DEV_USERNAME:${DB_PRIMARY_USERNAME:root}}
+      password: ${DB_PRIMARY_DEV_PASSWORD:${DB_PRIMARY_PASSWORD:Root@1234}}
+      driver-class-name: com.mysql.cj.jdbc.Driver
   admin:
     datasource:
       # Separate schema (same MySQL box, different database) for SuperMeBE's admin-panel

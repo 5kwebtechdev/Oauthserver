@@ -10,19 +10,22 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * Carries "which admin client (if any) is the pending OAuth authorization for" from the saved
- * authorization request through to AppUserDetailsService, which has no other way to know which
- * client a /login POST is authenticating for - UserDetailsService.loadUserByUsername only
- * receives the identifier, not the HttpServletRequest.
+ * Carries "which non-default client (if any) is the pending OAuth authorization for" from the
+ * saved authorization request through to AppUserDetailsService, which has no other way to know
+ * which client a /login POST is authenticating for - UserDetailsService.loadUserByUsername only
+ * receives the identifier, not the HttpServletRequest. Named for its original purpose (admin
+ * routing); APK_DEV was added later for the same underlying need, not worth a rename.
  *
- * Two things this enables, both in AppUserDetailsService:
+ * What this enables, all in AppUserDetailsService:
  *   - Admin-panel logins (either variant) are restricted to the Admin table only, never falling
  *     back to the shared SuperMeApp User table - without this, someone entering a regular
  *     end-user account's credentials on the admin login page authenticates successfully as that
  *     account, and only fails later, confusingly, on every admin API call.
- *   - devadmin.supermeapp.com logins check the DEV admin database (AdminDevRepository), not the
- *     prod one - this one process serves both admin.supermeapp.com and devadmin.supermeapp.com,
- *     which are two genuinely different physical databases, not just different client ids.
+ *   - devadmin.supermeapp.com logins check the DEV admin database (AdminDevRepository), not prod.
+ *   - APK_DEV (e.g. devapk.supermeapp.com) logins check the DEV primary database
+ *     (UserDevRepository/superme_db) instead of prod's mindfullP1 - same reasoning as admin-dev:
+ *     this one process serves both prod and dev clients, which read genuinely different physical
+ *     databases, not just different client ids against the same data.
  *
  * ThreadLocal because Spring Security's authentication machinery (DaoAuthenticationProvider ->
  * UserDetailsService) runs on the same request thread with no request-scoped bean plumbed
@@ -31,13 +34,14 @@ import java.io.IOException;
  */
 public class AdminLoginContextFilter extends OncePerRequestFilter {
 
-    public enum AdminClient { NONE, PROD, DEV }
+    public enum AdminClient { NONE, PROD, DEV, APK_DEV }
 
     private static final ThreadLocal<AdminClient> ADMIN_CLIENT = new ThreadLocal<>();
 
     /** Kept for callers that only care whether this is an admin login at all, of either variant. */
     public static boolean isAdminLoginPending() {
-        return currentAdminClient() != AdminClient.NONE;
+        AdminClient value = currentAdminClient();
+        return value == AdminClient.PROD || value == AdminClient.DEV;
     }
 
     public static AdminClient currentAdminClient() {
@@ -47,10 +51,12 @@ public class AdminLoginContextFilter extends OncePerRequestFilter {
 
     private final String adminClientId;
     private final String adminDevClientId;
+    private final String apkDevClientId;
 
-    public AdminLoginContextFilter(String adminClientId, String adminDevClientId) {
+    public AdminLoginContextFilter(String adminClientId, String adminDevClientId, String apkDevClientId) {
         this.adminClientId = adminClientId;
         this.adminDevClientId = adminDevClientId;
+        this.apkDevClientId = apkDevClientId;
     }
 
     @Override
@@ -75,6 +81,9 @@ public class AdminLoginContextFilter extends OncePerRequestFilter {
                 }
                 if (!adminClientId.isBlank() && adminClientId.equals(ids[0])) {
                     return AdminClient.PROD;
+                }
+                if (!apkDevClientId.isBlank() && apkDevClientId.equals(ids[0])) {
+                    return AdminClient.APK_DEV;
                 }
             }
         }

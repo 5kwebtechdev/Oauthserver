@@ -40,6 +40,8 @@ public class DefaultSecurityConfig {
     private String adminClientId;
     @Value("${app.frontend.admin-dev-client-id:}")
     private String adminDevClientId;
+    @Value("${app.frontend.apk-dev-client-id:}")
+    private String apkDevClientId;
 
     /**
      * Catch-all chain: the login form shown mid-authorization-code-flow, the (demo-only)
@@ -159,7 +161,7 @@ public class DefaultSecurityConfig {
 
     @Bean
     public AdminLoginContextFilter adminLoginContextFilter() {
-        return new AdminLoginContextFilter(adminClientId, adminDevClientId);
+        return new AdminLoginContextFilter(adminClientId, adminDevClientId, apkDevClientId);
     }
 
     /**
