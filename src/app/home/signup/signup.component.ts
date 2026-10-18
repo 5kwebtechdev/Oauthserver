@@ -1372,6 +1372,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         // Save the pet through the existing registration/OAuth completion
         // flow before advancing, just as for Self signup. Navigating alone
         // leaves backend step 5 unchanged and resumes at this same screen.
+        if (this.isOAuthSignup) {
+          // This is the one and only backend call for the whole Google/Apple
+          // Self or Child wizard now - see submitProfileDetails' comment on
+          // why the Profile step no longer calls it. unlockPotential:true
+          // here finishes onboarding in the same request that saves the pet,
+          // instead of a separate step 5 round-trip, and
+          // continueAfterUnlock() establishes the real PKCE session and logs
+          // the user straight in.
+          this.completeGoogleOnboardingFlow(role, true, true);
+          return;
+        }
         this.registerChildOrSelfFromSession(role, true);
         return;
       }
@@ -1559,12 +1570,26 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    // A new Google account is created only after the completed details form.
-    // Include parents here so family setup uses the resulting session too.
     // isOAuthSignup (not just the single oauth_signup_pending_submission flag)
     // so this still routes correctly even if that one marker was lost - see
     // isOAuthSignup's Javadoc-equivalent comment for why that can happen.
     if (sessionStorage.getItem('oauth_signup_pending_submission') === 'true' || this.isOAuthSignup) {
+      // Self (and Child, which registers the same way - see
+      // registerChildOrSelfFromSession's comment) does not call the backend
+      // here at all. It waits until every step - profile AND pet - is
+      // collected, then submits once from the Pet step with unlockPotential
+      // included, which both creates the account and finishes onboarding in
+      // a single call. Calling the backend at every intermediate step used to
+      // leave the account "logged in" (AuthService.setSession()) well before
+      // a real PKCE session existed, and once the dashboard's own API calls
+      // started 401ing against that ad-hoc session, Pet selection would get
+      // kicked back to login mid-flow even though the account itself had
+      // registered successfully. Parent has no further step after this one
+      // in this wizard, so it still submits immediately.
+      if (role === 'self' || role === 'child') {
+        this.navigateToSignupStep(4);
+        return;
+      }
       this.completeGoogleOnboardingFlow(role);
       return;
     }
