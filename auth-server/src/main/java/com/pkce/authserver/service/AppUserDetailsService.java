@@ -4,6 +4,7 @@ import com.pkce.authserver.admin.model.Admin;
 import com.pkce.authserver.admin.model.AdminAccountStatus;
 import com.pkce.authserver.admin.repository.AdminRepository;
 import com.pkce.authserver.repository.UserPasswordRepository;
+import com.pkce.authserver.security.AdminLoginContextFilter;
 import com.pkce.authserver.superme.model.User;
 import com.pkce.authserver.superme.model.UserPassword;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +32,12 @@ import java.util.Set;
  *   - a soft-deleted account (deleted = true) is refused, which is modelled as "disabled" here so
  *     DaoAuthenticationProvider produces it without reimplementing the check.
  *
- * Admin-panel login (added): if the identifier is not found in mindfullP1.User at all, this falls
- * back to mindfullAdmin.Admin/AdminPassword (same BCrypt scheme as SuperMeBE's admin AuthService).
- * This is additive only - every identifier that already resolves against User behaves exactly as
- * before and never reaches the admin lookup, so no existing SuperMeApp login is affected.
+ * Admin-panel login (added): if the pending authorization is for the admin client
+ * (AdminLoginContextFilter.isAdminLoginPending), only mindfullAdmin.Admin/AdminPassword is ever
+ * consulted (same BCrypt scheme as SuperMeBE's admin AuthService) - mindfullP1.User is skipped
+ * entirely, so a regular SuperMeApp end-user account can never successfully authenticate into an
+ * admin-client session just because its credentials happen to be valid. For every other client,
+ * behavior is unchanged: User first, falling back to Admin only if not found there.
  */
 @Service
 @RequiredArgsConstructor
@@ -56,6 +59,11 @@ public class AppUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
+        if (AdminLoginContextFilter.isAdminLoginPending()) {
+            // Admin-client login: Admin table only, never User - see class Javadoc.
+            return loadAdminByIdentifier(identifier);
+        }
+
         Optional<User> user = userLookup.findByIdentifier(identifier);
         if (user.isPresent()) {
             String passwordHash = userPasswordRepository.findByUser(user.get())

@@ -1,5 +1,6 @@
 package com.pkce.authserver.config;
 
+import com.pkce.authserver.security.AdminLoginContextFilter;
 import com.pkce.authserver.security.RateLimitFilter;
 import com.pkce.authserver.security.TurnstileLoginFilter;
 import com.pkce.authserver.service.SecurityEventService;
@@ -35,6 +36,11 @@ public class DefaultSecurityConfig {
     @Value("${app.frontend.base-url}")
     private String frontendBaseUrl;
 
+    @Value("${app.frontend.admin-client-id:}")
+    private String adminClientId;
+    @Value("${app.frontend.admin-dev-client-id:}")
+    private String adminDevClientId;
+
     /**
      * Catch-all chain: the login form shown mid-authorization-code-flow, the (demo-only)
      * password-reset API called directly by the Angular app, and anything else outside
@@ -44,7 +50,8 @@ public class DefaultSecurityConfig {
     @Bean
     @Order(3)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, RateLimitFilter rateLimitFilter,
-                                                            TurnstileLoginFilter turnstileLoginFilter)
+                                                            TurnstileLoginFilter turnstileLoginFilter,
+                                                            AdminLoginContextFilter adminLoginContextFilter)
             throws Exception {
         http
                 .authorizeHttpRequests((authorize) -> authorize
@@ -87,7 +94,11 @@ public class DefaultSecurityConfig {
                 // outbound call to Cloudflare, so a flood gets rejected without paying for
                 // a network round trip on every single request.
                 .addFilterBefore(turnstileLoginFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(rateLimitFilter, TurnstileLoginFilter.class);
+                .addFilterBefore(rateLimitFilter, TurnstileLoginFilter.class)
+                // Must run before UsernamePasswordAuthenticationFilter (which triggers
+                // AppUserDetailsService.loadUserByUsername) so the admin-vs-not context is
+                // set before authentication happens - see AdminLoginContextFilter's Javadoc.
+                .addFilterBefore(adminLoginContextFilter, RateLimitFilter.class);
 
         return http.build();
     }
@@ -146,6 +157,11 @@ public class DefaultSecurityConfig {
         return new TurnstileLoginFilter(turnstileVerificationService, securityEventService);
     }
 
+    @Bean
+    public AdminLoginContextFilter adminLoginContextFilter() {
+        return new AdminLoginContextFilter(adminClientId, adminDevClientId);
+    }
+
     /**
      * Prevent Spring Boot from auto-registering RateLimitFilter as a plain servlet
      * filter (it would then run a second time, outside Spring Security's chain, on
@@ -154,6 +170,15 @@ public class DefaultSecurityConfig {
     @Bean
     public FilterRegistrationBean<RateLimitFilter> rateLimitFilterRegistration(RateLimitFilter rateLimitFilter) {
         FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>(rateLimitFilter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    /** Same reasoning as rateLimitFilterRegistration above - wired into the chain explicitly. */
+    @Bean
+    public FilterRegistrationBean<AdminLoginContextFilter> adminLoginContextFilterRegistration(
+            AdminLoginContextFilter adminLoginContextFilter) {
+        FilterRegistrationBean<AdminLoginContextFilter> registration = new FilterRegistrationBean<>(adminLoginContextFilter);
         registration.setEnabled(false);
         return registration;
     }
