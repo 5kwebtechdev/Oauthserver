@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.Customizer;
@@ -115,7 +116,18 @@ public class AuthorizationServerConfig {
                 // not apply - and would otherwise 403 every public-client token request.
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests((authorize) -> authorize.anyRequest().authenticated())
+                // OIDC discovery and the JWKS endpoint are meant to be publicly readable per
+                // spec (and per this project's own FRONTEND_AUTH_INTEGRATION.md, which
+                // documents GET /.well-known/openid-configuration as the first call any real
+                // app makes) - unlike /oauth2/token etc., there is no client-authentication
+                // step for either of these that could otherwise satisfy anyRequest().authenticated()
+                // below, so without this they 403 for anyone without an existing session
+                // cookie. That accidentally "worked" for a browser that was already logged in
+                // (4203/4204 testing), but failed for a fresh/incognito visit - exactly what
+                // surfaced testing the APK dev client.
+                .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers(HttpMethod.GET, "/.well-known/**", "/oauth2/jwks").permitAll()
+                        .anyRequest().authenticated())
                 // Browser-navigated authorization requests without a session fall through
                 // to the login page; API-style requests (token/jwks/userinfo) get a 401.
                 .exceptionHandling((exceptions) -> exceptions
