@@ -40,12 +40,14 @@ describe('Google signup request sequencing', () => {
     auth.getDashboardRoute = () => '/authenticated/user';
     social = Object.create(SocialMediaComponent.prototype);
     Object.assign(social, { authService: auth, onboardingState: onboarding,
-      isSocialLoginInProgress: true,
+      isSocialLoginInProgress: true, pkceAuth: { enabled: false },
       router: { navigate: jasmine.createSpy().and.resolveTo(true) },
       analytics: { logLogin: jasmine.createSpy(), setUserId: jasmine.createSpy() },
       crashlytics: { recordException: jasmine.createSpy() } });
     signup = Object.create(SignupComponent.prototype);
     Object.assign(signup, { authService: auth, onboardingState: onboarding,
+      pkceAuth: { enabled: false, googleLogin: jasmine.createSpy().and.resolveTo() },
+      pets: [{ name: "Dragon", apiName: "Dragon-Age1-Happy.webp" }], selectedPetIndex: 0,
       registrationInProgress: false, profileContinueInProgress: false, managedChildSignup: false,
       signupCredentialState: { getPassword: () => null },
       signupForm: new FormGroup({ email: new FormControl(identity.email) }),
@@ -203,9 +205,8 @@ describe('Google signup request sequencing', () => {
     expect(sessionStorage.getItem('familyCode')).toBeNull();
     expect(sessionStorage.getItem('oauth_signup_id_token')).toBe('google-proof');
     await signup.registerOrProceed();
-    const request = http.expectOne('/v1/auth/oauth2/mobile-login');
-    expect(request.request.body.name).toBe('Chosen Name');
-    request.flush({ token: 'fresh-session', user: { id: 901, relationship: 'SELF', onboardingStep: 4 } });
+    http.expectNone('/v1/auth/oauth2/mobile-login');
+    expect(auth.setSession).not.toHaveBeenCalled();
     expect(signup.navigateToSignupStep).toHaveBeenCalledWith(4);
     expect(signup.registrationInProgress).toBeFalse();
   });
@@ -224,34 +225,40 @@ describe('Google signup request sequencing', () => {
     expect(sessionStorage.getItem('oauth_signup_id_token')).toBe(identity.idToken);
   }));
 
-  it('submits completed details once at Continue and uses mobile-login for later onboarding actions', async () => {
-    await authenticateNewUser();
-    await signup.registerOrProceed();
-    await signup.registerOrProceed();
-    const request = http.expectOne('/v1/auth/oauth2/mobile-login');
-    expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual(jasmine.objectContaining({
-      provider: 'google', providerId: 'google-sub', idToken: 'google-proof',
-      email: 'new@example.test', name: 'Chosen Name', username: 'chosenuser', dob: '2000-01-01',
-      role: 'SELF', profileCompleted: true
-    }));
-    http.expectNone('/v1/api/auth/complete-google-profile');
-    expect(signup.registrationInProgress).toBeTrue();
-    request.flush({ token: 'superme-session', user: { id: 42, onboardingStep: 5 } });
-    expect(auth.setSession).toHaveBeenCalledTimes(1);
-    expect(sessionStorage.getItem('oauth_signup_pending_submission')).toBeNull();
-    expect(signup.navigateToSignupStep).toHaveBeenCalledWith(4);
-
-    signup.completeGoogleOnboardingFlow('self');
-    const completion = http.expectOne('/v1/auth/oauth2/mobile-login');
-    expect(completion.request.body.providerId).toBe('google-sub');
-    http.expectNone('/v1/api/auth/complete-google-profile');
-    completion.flush({ user: { id: 42, onboardingStep: 5 } });
-  });
+  for (const role of ['self', 'child'] as const) {
+    it(`submits ${role} profile, pet and completion once and waits for PKCE`, async () => {
+      await authenticateNewUser(role);
+      signup.pkceAuth.enabled = true;
+      let finish!: () => void;
+      signup.pkceAuth.googleLogin.and.returnValue(new Promise<void>(resolve => finish = resolve));
+      await signup.registerOrProceed();
+      http.expectNone('/v1/auth/oauth2/mobile-login');
+      expect(auth.setSession).not.toHaveBeenCalled();
+      expect(signup.navigateToSignupStep).toHaveBeenCalledWith(4);
+      signup.step = 4;
+      signup.proceedWithAvatar();
+      signup.proceedWithAvatar();
+      const request = http.expectOne('/v1/auth/oauth2/mobile-login');
+      expect(request.request.body).toEqual(jasmine.objectContaining({
+        provider: 'google', providerId: 'google-sub', idToken: 'google-proof',
+        email: 'new@example.test', name: 'Google Name', username: 'chosenuser', dob: '2000-01-01',
+        role: role.toUpperCase(), profileCompleted: true, petName: 'Dragon', unlockPotential: true
+      }));
+      request.flush({ token: 'legacy-token', user: { id: 42, relationship: 'SELF', asChild: role === 'child', onboardingStep: 7 } });
+      expect(auth.setSession).not.toHaveBeenCalled();
+      expect(signup.pkceAuth.googleLogin).toHaveBeenCalledOnceWith('google-proof');
+      expect(signup.registrationInProgress).toBeTrue();
+      signup.proceedWithAvatar();
+      http.expectNone('/v1/auth/oauth2/mobile-login');
+      expect(signup.navCtrl.navigateRoot).not.toHaveBeenCalled();
+      finish();
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+  }
 
   it('keeps the profile draft when mobile-login returns step 3 without saving it', async () => {
     await authenticateNewUser();
-    await signup.registerOrProceed();
+    signup.completeGoogleOnboardingFlow(sessionStorage.getItem('signup_role') || 'self');
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({
       token: 'premature-session', user: { id: 42, relationship: 'SELF', onboardingStep: 3 }
     });
@@ -294,17 +301,18 @@ describe('Google signup request sequencing', () => {
     expect(signup.validateReferralBeforeContinue).toHaveBeenCalledTimes(1);
     resolve(true);
     await first;
-    http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'session', user: { id: 42, onboardingStep: 5 } });
+    http.expectNone('/v1/auth/oauth2/mobile-login');
+    expect(signup.navigateToSignupStep).toHaveBeenCalledWith(4);
   });
 
   it('retains the details and Google proof on a failed submission so it can be retried', async () => {
     await authenticateNewUser();
-    await signup.registerOrProceed();
+    signup.completeGoogleOnboardingFlow(sessionStorage.getItem('signup_role') || 'self');
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({ message: 'Try again' }, { status: 503, statusText: 'Unavailable' });
     expect(signup.registrationInProgress).toBeFalse();
     expect(sessionStorage.getItem('oauth_signup_pending_submission')).toBe('true');
     expect(sessionStorage.getItem('oauth_signup_id_token')).toBe('google-proof');
-    await signup.registerOrProceed();
+    signup.completeGoogleOnboardingFlow(sessionStorage.getItem('signup_role') || 'self');
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'session', user: { id: 42, onboardingStep: 5 } });
   });
 
@@ -319,7 +327,7 @@ describe('Google signup request sequencing', () => {
       queryParams: { role: 'parent' }, animated: false
     });
     const family: any = Object.create(FamilyOnboardComponent.prototype);
-    Object.assign(family, { authService: auth, familyCode: 'ABC123', onboardingState: onboarding,
+    Object.assign(family, { authService: auth, pkceAuth: { enabled: false }, familyCode: 'ABC123', onboardingState: onboarding,
       core: { triggerToasrt: jasmine.createSpy() } });
     auth.isLoggedIn = () => true;
     spyOn(family, 'navigateWithoutHistory');
@@ -361,7 +369,7 @@ describe('Google signup request sequencing', () => {
       });
       http.expectNone('/v1/auth/oauth2/mobile-login');
       const family: any = Object.create(FamilyOnboardComponent.prototype);
-      Object.assign(family, { authService: auth, familyCode: 'ABC123', onboardingState: onboarding,
+      Object.assign(family, { authService: auth, pkceAuth: { enabled: false }, familyCode: 'ABC123', onboardingState: onboarding,
         core: { triggerToasrt: jasmine.createSpy() } });
       spyOn(family, 'navigateWithoutHistory');
       family.completeGoogleParentSignup();
@@ -405,7 +413,7 @@ describe('Google signup request sequencing', () => {
   it('requires Google proof before a pending registration can submit', async () => {
     await authenticateNewUser();
     sessionStorage.removeItem('oauth_signup_id_token');
-    await signup.registerOrProceed();
+    signup.completeGoogleOnboardingFlow(sessionStorage.getItem('signup_role') || 'self');
     http.expectNone('/v1/auth/oauth2/mobile-login');
     http.expectNone('/v1/api/auth/complete-google-profile');
     expect(signup.registrationInProgress).toBeFalse();
@@ -417,7 +425,7 @@ describe('Google signup request sequencing', () => {
     sessionStorage.setItem('signup_role', 'child');
     signup.isEditingPendingChildOnboarding = false;
     await authenticateNewUser('child');
-    await signup.registerOrProceed();
+    signup.completeGoogleOnboardingFlow(sessionStorage.getItem('signup_role') || 'self');
     const user = { id: 829, name: 'Existing Parent', username: 'existingparent',
       email: 'new@example.test', relationship: 'PARENT', gender: 'prefer_not_to_say',
       dateOfBirth: '1998-08-31', onboardingStep: 7, family: { id: 210 } };
@@ -466,7 +474,7 @@ describe('Google signup request sequencing', () => {
   it('continues submitted Google details when the server still reports profile step 4', async () => {
     await authenticateNewUser();
     sessionStorage.removeItem('oauth_signup_pending_submission');
-    await signup.registerOrProceed();
+    signup.completeGoogleOnboardingFlow(sessionStorage.getItem('signup_role') || 'self');
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'valid-session',
       user: { id: 42, relationship: 'SELF', onboardingStep: 4 } });
     expect(auth.setSession).toHaveBeenCalledTimes(1);
@@ -479,7 +487,7 @@ describe('Google signup request sequencing', () => {
   it('advances a new pending Child after 201 even when the response is SELF + asChild at step 4', async () => {
     sessionStorage.setItem('signup_role', 'child');
     await authenticateNewUser('child');
-    await signup.registerOrProceed();
+    signup.completeGoogleOnboardingFlow(sessionStorage.getItem('signup_role') || 'self');
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'created-child-session',
       user: { id: 900, relationship: 'SELF', asChild: true, onboardingStep: 4 } },
       { status: 201, statusText: 'Created' });
@@ -498,7 +506,7 @@ describe('Google signup request sequencing', () => {
 
   it('advances a new Self after 201 at step 4 instead of returning to details', async () => {
     await authenticateNewUser();
-    await signup.registerOrProceed();
+    signup.completeGoogleOnboardingFlow(sessionStorage.getItem('signup_role') || 'self');
     const user = { id: 901, relationship: 'SELF', asChild: false, onboardingStep: 4 };
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'created-self-session', user },
       { status: 201, statusText: 'Created' });
@@ -512,10 +520,95 @@ describe('Google signup request sequencing', () => {
 
   it('still rejects an invalid response without a session instead of advancing onboarding', async () => {
     await authenticateNewUser();
-    await signup.registerOrProceed();
+    signup.completeGoogleOnboardingFlow(sessionStorage.getItem('signup_role') || 'self');
     http.expectOne('/v1/auth/oauth2/mobile-login').flush({ user: { id: 42, onboardingStep: 4 } });
     expect(auth.setSession).not.toHaveBeenCalled();
     expect(signup.errorMessage).toContain('invalid server response');
     expect(sessionStorage.getItem('oauth_signup_pending_submission')).toBe('true');
   });
+  it('retries only the session handoff after registration succeeds', async () => {
+    await authenticateNewUser();
+    signup.pkceAuth.enabled = true;
+    signup.pkceAuth.googleLogin.and.rejectWith(new Error('Network unavailable'));
+    await signup.registerOrProceed();
+    signup.step = 4;
+    signup.proceedWithAvatar();
+    http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'legacy-token',
+      user: { id: 42, relationship: 'SELF', onboardingStep: 7 } });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(auth.setSession).not.toHaveBeenCalled();
+    expect(signup.navCtrl.navigateRoot).not.toHaveBeenCalled();
+    expect(signup.errorMessage).toContain('account is saved');
+    expect(sessionStorage.getItem('oauth_signup_id_token')).toBe('google-proof');
+    signup.pkceAuth.googleLogin.and.resolveTo();
+    signup.proceedWithAvatar();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    http.expectNone('/v1/auth/oauth2/mobile-login');
+    expect(signup.pkceAuth.googleLogin).toHaveBeenCalledTimes(2);
+    expect(sessionStorage.getItem('oauth_signup_id_token')).toBeNull();
+  });
+
+  it('keeps Parent family setup and provider proof after establishing PKCE', async () => {
+    await authenticateNewUser('parent');
+    signup.pkceAuth.enabled = true;
+    await signup.registerOrProceed();
+    http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'legacy-token',
+      user: { id: 42, relationship: 'PARENT', onboardingStep: 4 } });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(auth.setSession).not.toHaveBeenCalled();
+    expect(signup.pkceAuth.googleLogin).toHaveBeenCalledOnceWith('google-proof');
+    expect(sessionStorage.getItem('oauth_signup_id_token')).toBe('google-proof');
+    expect(onboarding.getResumeNavigation()).toEqual({
+      url: '/home/instructions-for-parent', queryParams: { role: 'parent' }
+    });
+    expect(signup.navCtrl.navigateRoot).not.toHaveBeenCalled();
+  });
+
+  it('uses PKCE for returning web Google users without a legacy local session', async () => {
+    social.pkceAuth = { enabled: true, googleLogin: jasmine.createSpy().and.resolveTo() };
+    await social.continueGoogleAuthentication(identity, loading);
+    expect(social.pkceAuth.googleLogin).toHaveBeenCalledOnceWith('google-proof');
+    http.expectNone('/v1/auth/oauth2/mobile-login');
+    expect(auth.setSession).not.toHaveBeenCalled();
+    expect(social.router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('uses backend-verified identity for new web Google users', async () => {
+    social.pkceAuth = { enabled: true, googleLogin: jasmine.createSpy().and.rejectWith({
+      status: 404, error: { registrationRequired: true, email: identity.email,
+        name: 'Verified Name', providerId: identity.providerId }
+    }) };
+    await social.continueGoogleAuthentication(identity, loading);
+    expect(sessionStorage.getItem('google_signup_name')).toBe('Verified Name');
+    expect(social.router.navigate).toHaveBeenCalledWith(['/signup'], {
+      queryParams: { step: 1 }, replaceUrl: true
+    });
+    http.expectNone('/v1/auth/oauth2/mobile-login');
+    expect(auth.setSession).not.toHaveBeenCalled();
+  });
+
+  it('does not start registration when web Google verification fails', async () => {
+    social.pkceAuth = { enabled: true, googleLogin: jasmine.createSpy().and.rejectWith({ status: 401 }) };
+    await expectAsync(social.continueGoogleAuthentication(identity, loading)).toBeRejected();
+    expect(social.router.navigate).not.toHaveBeenCalled();
+    expect(auth.setSession).not.toHaveBeenCalled();
+  });
+
+  it('preserves the real PKCE token while Parent family details are saved', () => {
+    const family: any = Object.create(FamilyOnboardComponent.prototype);
+    Object.assign(family, { authService: auth, pkceAuth: { enabled: true },
+      familyCode: 'ABC123', onboardingState: onboarding, core: { triggerToasrt: jasmine.createSpy() } });
+    sessionStorage.setItem('oauth_signup_provider', 'google');
+    sessionStorage.setItem('google_signup_provider_id', identity.providerId);
+    sessionStorage.setItem('google_signup_email', identity.email);
+    sessionStorage.setItem('oauth_signup_id_token', identity.idToken);
+    spyOn(family, 'navigateWithoutHistory');
+    family.completeGoogleParentSignup();
+    const user = { id: 42, relationship: 'PARENT', onboardingStep: 6 };
+    http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'legacy-token', user });
+    expect(auth.setSession).not.toHaveBeenCalled();
+    expect(auth.updateUserData).toHaveBeenCalledWith(user);
+    expect(family.navigateWithoutHistory).toHaveBeenCalledWith('/signup', { step: 5, role: 'parent' });
+  });
+
 });

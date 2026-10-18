@@ -14,6 +14,7 @@ import {
   UserCredential
 } from 'firebase/auth';
 import { firstValueFrom, timeout } from 'rxjs';
+import { PkceAuthService } from '../../services/pkce-auth.service';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
@@ -75,6 +76,7 @@ export class SocialMediaComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private pkceAuth: PkceAuthService,
     private router: Router,
     private platform: Platform,
     private loadingCtrl: LoadingController,
@@ -238,11 +240,24 @@ export class SocialMediaComponent implements OnInit {
   }
 
   private async continueGoogleAuthentication(profile: GoogleOAuthProfile, loading: any): Promise<void> {
-    // Google authentication supplies proof only. This read-only lookup does
-    // not create a SuperMe account; mobile-login remains the token verifier.
-    const result = await firstValueFrom(
-      this.authService.checkEmailExists(profile.email).pipe(timeout({ first: 20_000 }))
-    );
+    let result: { exists: boolean };
+    if (this.pkceAuth.enabled) {
+      try {
+        await this.pkceAuth.googleLogin(profile.idToken);
+        await this.finishSocialLogin(loading);
+        return;
+      } catch (error: any) {
+        if (error?.status !== 404 || error?.error?.registrationRequired !== true) throw error;
+        // Use the identity verified by the backend for the read-only profile fields.
+        profile = { ...profile, name: error.error.name, email: error.error.email,
+          providerId: error.error.providerId };
+        result = { exists: false };
+      }
+    } else {
+      result = await firstValueFrom(
+        this.authService.checkEmailExists(profile.email).pipe(timeout({ first: 20_000 }))
+      );
+    }
     if (typeof result?.exists !== 'boolean') {
       throw new Error('Unable to check your account. Please try Google sign-in again.');
     }
@@ -259,7 +274,7 @@ export class SocialMediaComponent implements OnInit {
     sessionStorage.removeItem('signup_role');
     // A deleted account can reuse the same Google identity. Start its profile
     // draft afresh while retaining the freshly obtained provider proof.
-    ['signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
+    ['oauth_signup_session_pending', 'signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
       'show_child_welcome_after_family'].forEach(key => sessionStorage.removeItem(key));
     sessionStorage.setItem('oauth_signup_pending_submission', 'true');
     this.onboardingState.clearRegistrationDraft();

@@ -2,7 +2,7 @@ import { BadgeSocketService } from './badge-socket.service';
 import { FamilyService } from './family.service';
 import { AuthService } from './auth.service';
 import { HttpClient } from '@angular/common/http';
-import { Subject, of, firstValueFrom } from 'rxjs';
+import { Subject, Observable, of, firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PkceAuthService } from './pkce-auth.service';
 
@@ -31,6 +31,26 @@ describe('PKCE session bridge', () => {
     await service.init();
     expect(auth.setSession).toHaveBeenCalledWith({ token: 'new-access', userId: 7, user: { id: 7, relationship: 'PARENT' } });
     expect(localStorage.getItem('superme_oidc_refresh_token')).toBe('new-refresh');
+  });
+  it('uses the configured client for Google login and waits before starting PKCE', async () => {
+    let reply!: (value: unknown) => void;
+    const post = jasmine.createSpy().and.returnValue(new Promise(resolve => reply = resolve));
+    oauth.hasValidAccessToken = () => false;
+    const http = { post: (...args: any[]) => new Observable((subscriber: any) => {
+      post(...args).then((value: any) => { subscriber.next(value); subscriber.complete(); });
+    }) };
+    service = new PkceAuthService(oauth, { get: (type: unknown) => type === HttpClient ? http : auth } as any);
+    Object.defineProperty(service, 'enabled', { value: true });
+    const pending = service.googleLogin('google-proof');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(post).toHaveBeenCalledWith(environment.oauth.issuer + '/api/auth/google-login',
+      { idToken: 'google-proof' }, { withCredentials: true, params: { client_id: environment.oauth.clientId } });
+    expect(oauth.initCodeFlow).not.toHaveBeenCalled();
+    expect(auth.setSession).not.toHaveBeenCalled();
+    reply({});
+    await pending;
+    expect(oauth.initCodeFlow).toHaveBeenCalledTimes(1);
+    expect(auth.setSession).not.toHaveBeenCalled();
   });
   it('coordinates concurrent refresh requests into one token exchange', async () => {
     await Promise.all([service.refresh(), service.refresh()]);

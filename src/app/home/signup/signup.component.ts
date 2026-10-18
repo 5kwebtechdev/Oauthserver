@@ -1311,6 +1311,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   proceedWithAvatar() {
     if (this.registrationInProgress) return;
+    if (this.pkceAuth.enabled && sessionStorage.getItem('oauth_signup_session_pending') === 'true') {
+      this.finishGooglePkceLogin();
+      return;
+    }
 
     if (this.step === 4 && !this.hasSelectedPet) {
       this.core.triggerToasrt('Please choose your pet to continue.');
@@ -1455,6 +1459,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    */
   async registerOrProceed(): Promise<void> {
     if (this.profileContinueInProgress || this.registrationInProgress) return;
+    if (this.pkceAuth.enabled && sessionStorage.getItem('oauth_signup_session_pending') === 'true') {
+      this.finishGooglePkceLogin();
+      return;
+    }
     this.profileContinueInProgress = true;
     try {
       await this.submitProfileDetails();
@@ -3464,6 +3472,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     includePet = false
   ): void {
     if (this.registrationInProgress) return;
+    if (this.pkceAuth.enabled && sessionStorage.getItem('oauth_signup_session_pending') === 'true') {
+      this.finishGooglePkceLogin();
+      return;
+    }
     this.registrationInProgress = true;
     this.errorMessage = null;
     this.loadingService.show();
@@ -3517,9 +3529,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         sessionStorage.getItem('google_signup_name'),
         persistedDraft.name
       )
-      : profile.name
-        || this.profileForm.get('name')?.value
-        || sessionStorage.getItem('google_signup_name')
+      : sessionStorage.getItem('google_signup_name')
         || persistedDraft.name;
 
     const googlePayload: any = {
@@ -3648,8 +3658,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     onboardingRequest.pipe(
       timeout({ first: 30000 }),
       finalize(() => {
-        this.registrationInProgress = false;
-        this.loadingService.forceHide();
+        if (!this.googleSessionInProgress) {
+          this.registrationInProgress = false;
+          this.loadingService.forceHide();
+        }
       })
     ).subscribe({
       next: (response) => {
@@ -3692,12 +3704,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           return;
         }
         if (response.token && userId) {
-          this.authService.setSession(
-            { token: response.token, userId, expiresIn: response.expiresIn, user: responseUser },
-            false
-          );
+          if (!(provider === 'google' && this.pkceAuth.enabled)) {
+            this.authService.setSession(
+              { token: response.token, userId, expiresIn: response.expiresIn, user: responseUser },
+              false
+            );
+          }
           if (pendingGoogleSignup) sessionStorage.removeItem('oauth_signup_pending_submission');
-        } else if (Object.keys(responseUser).length) {
+        } else if (!(provider === 'google' && this.pkceAuth.enabled) && Object.keys(responseUser).length) {
           this.authService.updateUserData(responseUser);
         }
 
@@ -3718,6 +3732,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           onboardingStep: resolvedStep
         };
         this.onboardingState.saveRegistrationDraft(responseDraft, resolvedStep, 'EMAIL');
+
+        if (provider === 'google' && this.pkceAuth.enabled) {
+          sessionStorage.setItem('oauth_signup_session_pending', 'true');
+          this.finishGooglePkceLogin();
+          return;
+        }
 
         // The successful OAuth submission established this account. Keep
         // its credentials until activation is complete, so the
@@ -3796,6 +3816,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     responseStep: number | null
   ): void {
     const user = response.user;
+    if (this.pkceAuth.enabled) {
+      this.onboardingState.clearRegistrationDraft();
+      sessionStorage.setItem('oauth_signup_session_pending', 'true');
+      this.finishGooglePkceLogin();
+      return;
+    }
     this.authService.setSession({
       token: response.token, userId: user.id, expiresIn: response.expiresIn, user
     }, false);
@@ -3830,6 +3856,34 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
+  private googleSessionInProgress = false;
+
+  private finishGooglePkceLogin(idToken = sessionStorage.getItem('oauth_signup_id_token') || ''): void {
+    if (this.googleSessionInProgress) return;
+    if (!idToken) {
+      this.registrationInProgress = false;
+      this.loadingService.forceHide();
+      this.errorMessage = 'Your account is saved. Please sign in with Google again to finish signing in.';
+      return;
+    }
+    this.googleSessionInProgress = true;
+    this.registrationInProgress = true;
+    this.errorMessage = null;
+    this.loadingService.show();
+    void this.pkceAuth.googleLogin(idToken).then(() => {
+      // The callback creates the local session only after the token exchange.
+      if (this.onboardingState.isOnboardingComplete()) this.clearGoogleSignupSession();
+      else sessionStorage.removeItem('oauth_signup_session_pending');
+    }).catch(() => {
+      // Keep proof and the saved-account marker: Next retries login only.
+      this.errorMessage = 'Your account is saved, but sign-in did not finish. Tap Next to retry. If it keeps failing, sign in with Google again.';
+    }).finally(() => {
+      this.googleSessionInProgress = false;
+      this.registrationInProgress = false;
+      this.loadingService.forceHide();
+    });
+  }
+
   private clearGoogleSignupSession(): void {
     try {
       ['signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
@@ -3838,7 +3892,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         'oauth_signup_id_token', 'oauth_signup_access_token', 'oauth_signup_server_auth_code',
         'oauth_signup_identity_token', 'oauth_signup_authorization_code',
         'oauth_signup_raw_nonce', 'oauth_signup_client_id',
-        'oauth_signup_is_development_mock', 'oauth_signup_pending_submission',
+        'oauth_signup_is_development_mock', 'oauth_signup_pending_submission', 'oauth_signup_session_pending',
         'signup_profile',
         'signup_role', 'signup_avatar', 'signup_pet', 'requestedIdentifier',
         'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
@@ -4273,6 +4327,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private continueAfterUnlock(completedUserData?: RegistrationDraftData, googleIdToken?: string): void {
+    if (this.pkceAuth.enabled && googleIdToken) {
+      this.finishGooglePkceLogin(googleIdToken);
+      return;
+    }
     // Child users reach this welcome screen only after a successful family
     // link and are already logged in. Continue directly without a second login.
     if (this.authService.isLoggedIn()) {
@@ -4328,27 +4386,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
       this.clearDeferredParentWelcomeState();
       this.registrationInProgress = false;
-
-      // The account above was created via SuperMeBE's legacy oauth2-login endpoint, so
-      // AuthService.setSession() has only ever built an ad-hoc local session - no real
-      // OIDC session exists on this server, no ID token, nothing for the interceptor's
-      // 401-triggered logout to actually invalidate. The dashboard's own API calls then
-      // 401 (whatever guards them expects a genuine PKCE session) and bounce back to
-      // login, even though the account itself registered successfully. On a PKCE-enabled
-      // build, finish the job properly instead: call the auth-server's own
-      // /api/auth/google-login with just the ID token (no profile fields - the account
-      // is already complete, so this is a plain login, not the registration branch) to
-      // establish a real session, then run the normal authorization-code flow. See
-      // PkceAuthService.googleLogin's Javadoc-equivalent comment for the full mechanics.
-      if (this.pkceAuth.enabled && googleIdToken) {
-        void this.pkceAuth.googleLogin(googleIdToken).catch((error) => {
-          console.error('[Signup] Could not finish establishing the PKCE session after Google signup', error);
-          this.loadingService.forceHide();
-          const route = this.authService.getDashboardRoute() || '/home';
-          this.navigateReplacing(route);
-        });
-        return;
-      }
 
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/home';

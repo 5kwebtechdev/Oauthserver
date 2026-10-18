@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 import { Injectable, Injector } from '@angular/core';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { Capacitor } from '@capacitor/core';
@@ -66,30 +66,15 @@ export class PkceAuthService {
     ));
     await this.login();
   }
-  /**
-   * Finishes a Google/Apple account (already fully registered via SuperMeBE's own
-   * oauth2-login endpoint - see SignupComponent.continueAfterUnlock) by establishing a REAL
-   * PKCE/OIDC session for it, instead of the ad-hoc local session AuthService.setSession()
-   * builds from that legacy endpoint's response. Reuses the auth-server's existing
-   * /api/auth/google-login (GoogleLoginController): called with only an idToken and no
-   * registration profile fields, it finds the already-complete account and behaves as a
-   * plain login, setting this server's own session cookie - the same cookie
-   * /oauth2/authorize then needs to complete the code flow without re-prompting (see
-   * ClientRegistrationSeeder's requireAuthorizationConsent(false)).
-   *
-   * Without this, a Google-signed-up user never has a real ID token or auth-server session,
-   * so the dashboard's first API calls (interceptor-guarded on a valid PKCE session) 401,
-   * which AuthService's interceptor answers by logging out - landing back on the login page
-   * instead of continuing, even though the account itself was created successfully.
-   */
+  /** Verifies Google proof in this client's database, then starts the PKCE exchange. */
   async googleLogin(idToken: string): Promise<void> {
     await this.init();
     if (this.error) throw new Error(this.error);
     await firstValueFrom(this.injector.get(HttpClient).post(
       environment.oauth.issuer + '/api/auth/google-login',
       { idToken },
-      { withCredentials: true }
-    ));
+      { withCredentials: true, params: { client_id: environment.oauth.clientId } }
+    ).pipe(timeout({ first: 20_000 })));
     await this.login();
   }
   async login(returnUrl = ''): Promise<void> {
