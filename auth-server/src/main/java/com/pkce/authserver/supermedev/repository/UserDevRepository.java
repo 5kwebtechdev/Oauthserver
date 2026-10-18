@@ -4,6 +4,7 @@ import com.pkce.authserver.superme.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
+import java.util.List;
 
 /**
  * Reads the SAME User entity class prod uses (com.pkce.authserver.superme.model.User), just
@@ -15,6 +16,8 @@ import java.util.Optional;
  * a slim duplicate entity (the earlier approach here) could only support login, not that payload.
  */
 public interface UserDevRepository extends JpaRepository<User, Long> {
+
+    List<User> findByOauth2ProviderIdAndOauth2ProviderType(String providerId, String providerType);
 
     Optional<User> findByEmail(String email);
 

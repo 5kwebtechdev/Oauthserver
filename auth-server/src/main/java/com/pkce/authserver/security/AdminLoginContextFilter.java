@@ -71,22 +71,27 @@ public class AdminLoginContextFilter extends OncePerRequestFilter {
     }
 
     private AdminClient computeAdminClient(HttpServletRequest request) {
+        // Direct SPA Google login can precede /oauth2/authorize, so no saved
+        // request exists yet. Only this endpoint accepts explicit client context.
+        if ("/api/auth/google-login".equals(request.getServletPath())
+                && request.getParameter("client_id") != null) {
+            return clientForId(request.getParameter("client_id"));
+        }
         var session = request.getSession(false);
         var saved = session == null ? null : session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
         if (saved instanceof SavedRequest savedRequest) {
             String[] ids = savedRequest.getParameterValues("client_id");
             if (ids != null && ids.length == 1) {
-                if (!adminDevClientId.isBlank() && adminDevClientId.equals(ids[0])) {
-                    return AdminClient.DEV;
-                }
-                if (!adminClientId.isBlank() && adminClientId.equals(ids[0])) {
-                    return AdminClient.PROD;
-                }
-                if (!apkDevClientId.isBlank() && apkDevClientId.equals(ids[0])) {
-                    return AdminClient.APK_DEV;
-                }
+                return clientForId(ids[0]);
             }
         }
+        return AdminClient.NONE;
+    }
+
+    private AdminClient clientForId(String id) {
+        if (!adminDevClientId.isBlank() && adminDevClientId.equals(id)) return AdminClient.DEV;
+        if (!adminClientId.isBlank() && adminClientId.equals(id)) return AdminClient.PROD;
+        if (!apkDevClientId.isBlank() && apkDevClientId.equals(id)) return AdminClient.APK_DEV;
         return AdminClient.NONE;
     }
 }

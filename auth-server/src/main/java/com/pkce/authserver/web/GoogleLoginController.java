@@ -1,6 +1,7 @@
 package com.pkce.authserver.web;
 
 import com.pkce.authserver.service.AppUserDetailsService;
+import com.pkce.authserver.security.AdminLoginContextFilter;
 import com.pkce.authserver.service.GoogleLoginService;
 import com.pkce.authserver.service.GoogleSignupHandoffService;
 import com.pkce.authserver.service.SessionLoginHelper;
@@ -55,7 +56,8 @@ public class GoogleLoginController {
             result = googleLoginService.verifyAndUpsert(request.idToken());
         } catch (GoogleLoginService.AccountNotRegisteredException e) {
             GoogleLoginService.GoogleIdentity identity = e.getIdentity();
-            if (!hasRegistrationProfile(request)) {
+            if (!hasRegistrationProfile(request)
+                    || AdminLoginContextFilter.currentAdminClient() == AdminLoginContextFilter.AdminClient.APK_DEV) {
                 // Google does not disclose DOB, gender or family role. Ask the FE to collect those
                 // real values before creating a SuperMe account; never invent profile data.
                 Map<String, Object> body = new HashMap<>();
@@ -63,7 +65,8 @@ public class GoogleLoginController {
                 body.put("message", "Complete your profile to finish Google sign-in");
                 body.put("registrationRequired", true);
                 body.put("email", identity.email());
-                body.put("name", firstNonBlank(request.name(), identity.name()));
+                body.put("providerId", identity.providerId());
+                body.put("name", identity.name());
                 body.put("pictureUrl", identity.pictureUrl());
                 body.put("requiredFields", new String[]{"gender", "dateOfBirth", "relationship"});
                 body.put("handoffTicket", googleSignupHandoffService.issue(request.idToken(), identity));
