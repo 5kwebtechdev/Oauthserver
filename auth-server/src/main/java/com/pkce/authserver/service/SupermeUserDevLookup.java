@@ -1,6 +1,6 @@
 package com.pkce.authserver.service;
 
-import com.pkce.authserver.supermedev.model.UserDev;
+import com.pkce.authserver.superme.model.User;
 import com.pkce.authserver.supermedev.repository.UserDevRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,8 +12,8 @@ import java.util.Optional;
 /**
  * Dev-schema counterpart of SupermeUserLookup - identical identifier-resolution logic (email
  * first, then the same phone-candidate generation), just against UserDevRepository/superme_db
- * instead of SupermeUserRepository/mindfullP1. See UserDev's Javadoc for why this dev datasource
- * exists at all.
+ * instead of SupermeUserRepository/mindfullP1. See UserDevRepository's Javadoc for why this reads
+ * the same User entity class rather than a separate dev-only one.
  */
 @Service
 @RequiredArgsConstructor
@@ -21,14 +21,14 @@ public class SupermeUserDevLookup {
 
     private final UserDevRepository userRepository;
 
-    public Optional<UserDev> findByIdentifier(String identifier) {
+    public Optional<User> findByIdentifier(String identifier) {
         if (identifier == null || identifier.isBlank()) {
             return Optional.empty();
         }
         String trimmed = identifier.trim();
 
         if (isValidEmail(trimmed)) {
-            Optional<UserDev> byEmail = userRepository.findByEmail(trimmed);
+            Optional<User> byEmail = userRepository.findByEmail(trimmed);
             if (byEmail.isPresent()) {
                 return byEmail;
             }
@@ -36,9 +36,9 @@ public class SupermeUserDevLookup {
         return findByAnyPhoneCandidate(trimmed);
     }
 
-    private Optional<UserDev> findByAnyPhoneCandidate(String phone) {
+    private Optional<User> findByAnyPhoneCandidate(String phone) {
         for (String candidate : phoneLookupCandidates(phone)) {
-            Optional<UserDev> u = userRepository.findByPhone(candidate);
+            Optional<User> u = userRepository.findByPhone(candidate);
             if (u.isPresent()) return u;
         }
         return Optional.empty();

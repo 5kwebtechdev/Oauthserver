@@ -25,6 +25,14 @@ import java.util.Properties;
  * onboarding and routes straight back into the signup wizard despite a perfectly successful
  * login.
  *
+ * Scans the SAME entity package as PrimaryDataSourceConfig (com.pkce.authserver.superme.model) -
+ * not a slim duplicate entity. A JPA entity class isn't bound to one persistence unit forever;
+ * Hibernate happily builds two independent EntityManagerFactories from the same classes against
+ * two different DataSources. This matters because UserInfoAccessTokenResponseCustomizer's "user"
+ * token payload needs the FULL User shape (family, avatar, pet, coins, onboardingStep, ...), not
+ * just the few fields AppUserDetailsService needs to check a password - an earlier, slim UserDev
+ * entity only covered login and left that payload builder still reading prod data.
+ *
  * DB_PRIMARY_DEV_URL/USERNAME/PASSWORD default to the real primary datasource's own values when
  * unset (see application.yml and application-prod.yml, which override this the same way they
  * override the primary datasource itself) - ddl-auto=validate needs a real connection at
@@ -55,7 +63,13 @@ public class PrimaryDevDataSourceConfig {
 
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.pkce.authserver.supermedev.model");
+        // Deliberately NOT com.pkce.authserver.entity too (unlike PrimaryDataSourceConfig) -
+        // LoginAttempt/OtpCode/SecurityEvent are this auth-server's OWN tables, living in its
+        // own primary database (managed by this project's Flyway migrations), not in
+        // SuperMeBE's superme_db. Scanning them here would make ddl-auto=validate look for
+        // those tables in superme_db at startup and fail - only the externally-owned
+        // SuperMeBE tables (User, Family, Avatar, Pet, ...) exist in both databases.
+        em.setPackagesToScan("com.pkce.authserver.superme.model");
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Properties props = new Properties();

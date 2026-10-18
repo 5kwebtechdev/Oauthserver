@@ -4,6 +4,7 @@ import com.nimbusds.jwt.JWTParser;
 import com.pkce.authserver.service.SupermeUserInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationContext;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -44,10 +45,20 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
 
     private final SupermeUserInfoService userInfoService;
 
+    @Value("${app.frontend.apk-dev-client-id:}")
+    private String apkDevClientId;
+
     @Override
     public void accept(OAuth2AccessTokenAuthenticationContext context) {
         OAuth2AccessTokenAuthenticationToken authResult = context.getAuthentication();
         String tokenValue = authResult.getAccessToken().getTokenValue();
+
+        // APK_DEV's User identity lives in SuperMeBE's dev database (superme_db), a genuinely
+        // different physical database from the mindfullP1.User every other client reads - see
+        // SupermeUserInfoService.userPayloadForDev's Javadoc for why this must branch here
+        // rather than always using the prod lookup.
+        boolean isApkDev = !apkDevClientId.isBlank()
+                && apkDevClientId.equals(authResult.getRegisteredClient().getClientId());
 
         String subject;
         String authProvider;
@@ -62,7 +73,10 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
             return;
         }
 
-        userInfoService.userPayloadFor(subject, authProvider, socialProviderId).ifPresentOrElse(
+        var payload = isApkDev
+                ? userInfoService.userPayloadForDev(subject, authProvider, socialProviderId)
+                : userInfoService.userPayloadFor(subject, authProvider, socialProviderId);
+        payload.ifPresentOrElse(
                 userPayload -> {
                     Map<String, Object> merged = new HashMap<>(authResult.getAdditionalParameters());
                     merged.put("user", userPayload);

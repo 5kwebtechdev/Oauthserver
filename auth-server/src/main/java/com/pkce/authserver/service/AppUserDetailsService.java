@@ -12,8 +12,6 @@ import com.pkce.authserver.repository.UserPasswordRepository;
 import com.pkce.authserver.security.AdminLoginContextFilter;
 import com.pkce.authserver.superme.model.User;
 import com.pkce.authserver.superme.model.UserPassword;
-import com.pkce.authserver.supermedev.model.UserDev;
-import com.pkce.authserver.supermedev.model.UserPasswordDev;
 import com.pkce.authserver.supermedev.repository.UserPasswordDevRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -147,25 +145,20 @@ public class AppUserDetailsService implements UserDetailsService {
      * Dev-database counterpart of the default User lookup above, for APK_DEV clients (e.g.
      * devapk.supermeapp.com) - checks UserDevRepository/superme_db instead of mindfullP1.User, so
      * identity resolves against the same database devapis.supermeapp.com actually reads/writes.
-     * See UserDev's Javadoc. Unlike the default path there is no admin-table fallback: a dev
-     * client authenticating a non-existent dev user should simply fail, not accidentally resolve
-     * against prod admin data.
+     * See UserDevRepository's Javadoc: this reads the same User entity as the default path, just
+     * through a different EntityManagerFactory, so it can reuse toUserDetails() directly. Unlike
+     * the default path there is no admin-table fallback: a dev client authenticating a
+     * non-existent dev user should simply fail, not accidentally resolve against prod admin data.
      */
     private UserDetails loadUserDevByIdentifier(String identifier) {
-        UserDev user = userDevLookup.findByIdentifier(identifier)
+        User user = userDevLookup.findByIdentifier(identifier)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
 
         String passwordHash = userPasswordDevRepository.findByUser(user)
-                .map(UserPasswordDev::getPassword)
+                .map(UserPassword::getPassword)
                 .orElseThrow(() -> new UsernameNotFoundException("User has no password set: " + identifier));
 
-        boolean deleted = Boolean.TRUE.equals(user.getDeleted());
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(identifier)
-                .password(passwordHash)
-                .disabled(!user.isEnabled() || deleted)
-                .authorities(Set.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())))
-                .build();
+        return toUserDetails(user, identifier, passwordHash);
     }
 
     /**

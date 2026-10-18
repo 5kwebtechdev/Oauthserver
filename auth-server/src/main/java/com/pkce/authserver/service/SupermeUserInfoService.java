@@ -36,6 +36,7 @@ public class SupermeUserInfoService {
             };
 
     private final SupermeUserLookup userLookup;
+    private final SupermeUserDevLookup userDevLookup;
     private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
@@ -50,7 +51,26 @@ public class SupermeUserInfoService {
 
     @Transactional(readOnly = true)
     public Optional<Map<String, Object>> userPayloadFor(String identifier, String authProvider, String socialProviderId) {
-        return userLookup.findByIdentifier(identifier)
+        return buildPayload(userLookup.findByIdentifier(identifier), authProvider, socialProviderId);
+    }
+
+    /**
+     * Dev-datasource counterpart, for the /oauth2/token "user" payload of an APK_DEV client (e.g.
+     * devapk.supermeapp.com) - see UserInfoAccessTokenResponseCustomizer, which picks this over
+     * userPayloadFor based on the issuing RegisteredClient's id. Without this, a dev-client login
+     * correctly resolved against superme_db (AppUserDetailsService) would still have its "user"
+     * token payload built from prod's mindfullP1.User, which either returns a different account's
+     * data or - for an identifier that only exists in superme_db - nothing at all, breaking the
+     * Angular app's OIDC login (it requires this payload's "id" to complete sign-in).
+     */
+    @Transactional(readOnly = true)
+    public Optional<Map<String, Object>> userPayloadForDev(String identifier, String authProvider, String socialProviderId) {
+        return buildPayload(userDevLookup.findByIdentifier(identifier), authProvider, socialProviderId);
+    }
+
+    private Optional<Map<String, Object>> buildPayload(
+            Optional<com.pkce.authserver.superme.model.User> user, String authProvider, String socialProviderId) {
+        return user
                 .map(UserMapper::toDto)
                 .map(this::toMap)
                 .map(payload -> {

@@ -1,12 +1,13 @@
 package com.pkce.authserver.supermedev.repository;
 
-import com.pkce.authserver.supermedev.model.UserDev;
-import com.pkce.authserver.supermedev.model.UserPasswordDev;
+import com.pkce.authserver.superme.model.User;
+import com.pkce.authserver.superme.model.UserPassword;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface UserPasswordDevRepository extends JpaRepository<UserPasswordDev, Long> {
+/** Dev-datasource counterpart of UserPasswordRepository - see UserDevRepository's Javadoc. */
+public interface UserPasswordDevRepository extends JpaRepository<UserPassword, Long> {
 
-    Optional<UserPasswordDev> findByUser(UserDev user);
+    Optional<UserPassword> findByUser(User user);
 }
