@@ -48,6 +48,19 @@ public class LoginPageController {
     @Value("${app.frontend.additional-continue-with-email-url:}")
     private String additionalEmailUrl;
 
+    // Dev client for the SuperMeApp mobile/APK web build (e.g. devapk.supermeapp.com) - same
+    // SuperMeApp-branded page as primary/additional, just its own set of frontend URLs.
+    @Value("${app.frontend.apk-dev-client-id:}")
+    private String apkDevClientId;
+    @Value("${app.frontend.apk-dev-base-url:}")
+    private String apkDevBaseUrl;
+    @Value("${app.frontend.apk-dev-signup-url:}")
+    private String apkDevSignupUrl;
+    @Value("${app.frontend.apk-dev-forgot-password-url:}")
+    private String apkDevForgotUrl;
+    @Value("${app.frontend.apk-dev-continue-with-email-url:}")
+    private String apkDevEmailUrl;
+
     // Admin panel: a separate, much simpler branded page (see renderAdminLoginPage) - admin
     // accounts don't self-serve signup or Google sign-in, so this never touches the big
     // SuperMeApp template above/below, only adds an early-return branch in login().
@@ -79,12 +92,15 @@ public class LoginPageController {
         var session = request.getSession(false);
         var saved = session == null ? null : session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
         boolean additional = false;
+        boolean isApkDev = false;
         boolean isAdmin = false;
         boolean isAdminDev = false;
         if (saved instanceof org.springframework.security.web.savedrequest.SavedRequest authorizationRequest) {
             String[] ids = authorizationRequest.getParameterValues("client_id");
             additional = !additionalClientId.isBlank() && ids != null && ids.length == 1
                     && additionalClientId.equals(ids[0]);
+            isApkDev = !apkDevClientId.isBlank() && ids != null && ids.length == 1
+                    && apkDevClientId.equals(ids[0]);
             boolean isAdminProd = !adminClientId.isBlank() && ids != null && ids.length == 1
                     && adminClientId.equals(ids[0]);
             isAdminDev = !adminDevClientId.isBlank() && ids != null && ids.length == 1
@@ -97,10 +113,14 @@ public class LoginPageController {
             renderAdminLoginPage(request, response, businessApiUrl);
             return;
         }
-        String pageBaseUrl = additional && !additionalBaseUrl.isBlank() ? additionalBaseUrl : frontendBaseUrl;
-        String pageSignupUrl = additional && !additionalSignupUrl.isBlank() ? additionalSignupUrl : frontendBaseUrl;
-        String pageForgotUrl = additional && !additionalForgotUrl.isBlank() ? additionalForgotUrl : forgotPasswordUrl;
-        String pageEmailUrl = additional && !additionalEmailUrl.isBlank() ? additionalEmailUrl : continueWithEmailUrl;
+        String pageBaseUrl = isApkDev && !apkDevBaseUrl.isBlank() ? apkDevBaseUrl
+                : additional && !additionalBaseUrl.isBlank() ? additionalBaseUrl : frontendBaseUrl;
+        String pageSignupUrl = isApkDev && !apkDevSignupUrl.isBlank() ? apkDevSignupUrl
+                : additional && !additionalSignupUrl.isBlank() ? additionalSignupUrl : frontendBaseUrl;
+        String pageForgotUrl = isApkDev && !apkDevForgotUrl.isBlank() ? apkDevForgotUrl
+                : additional && !additionalForgotUrl.isBlank() ? additionalForgotUrl : forgotPasswordUrl;
+        String pageEmailUrl = isApkDev && !apkDevEmailUrl.isBlank() ? apkDevEmailUrl
+                : additional && !additionalEmailUrl.isBlank() ? additionalEmailUrl : continueWithEmailUrl;
         CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
         boolean captchaFailed = request.getParameter("captcha") != null;
         boolean hasError = request.getParameter("error") != null && !captchaFailed;

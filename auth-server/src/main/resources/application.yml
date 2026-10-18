@@ -123,6 +123,13 @@ app:
       id: ${ADMIN_DEV_OAUTH_CLIENT_ID:}
       redirect-uris: ${ADMIN_DEV_OAUTH_REDIRECT_URIS:}
       post-logout-redirect-uri: ${ADMIN_DEV_OAUTH_POST_LOGOUT_REDIRECT_URI:}
+    apk-dev-client:
+      # Optional fifth client for a dev SuperMeApp mobile/APK web domain (e.g.
+      # devapk.supermeapp.com). Separate client id from additional-client on purpose - that one
+      # stays exactly as-is, serving the real prod 4204 build. Blank by default.
+      id: ${APK_DEV_OAUTH_CLIENT_ID:}
+      redirect-uris: ${APK_DEV_OAUTH_REDIRECT_URIS:}
+      post-logout-redirect-uri: ${APK_DEV_OAUTH_POST_LOGOUT_REDIRECT_URI:}
   frontend:
     # Picks the admin-branded /login page (LoginPageController.renderAdminLoginPage) instead
     # of the SuperMeApp one, when the pending authorization's client_id matches this. Blank by
@@ -140,6 +147,11 @@ app:
     additional-signup-url: ${SUPERME_FE_SIGNUP_URL:}
     additional-forgot-password-url: ${SUPERME_FE_FORGOT_PASSWORD_URL:}
     additional-continue-with-email-url: ${SUPERME_FE_CONTINUE_WITH_EMAIL_URL:}
+    apk-dev-client-id: ${APK_DEV_OAUTH_CLIENT_ID:}
+    apk-dev-base-url: ${APK_DEV_FE_BASE_URL:}
+    apk-dev-signup-url: ${APK_DEV_FE_SIGNUP_URL:}
+    apk-dev-forgot-password-url: ${APK_DEV_FE_FORGOT_PASSWORD_URL:}
+    apk-dev-continue-with-email-url: ${APK_DEV_FE_CONTINUE_WITH_EMAIL_URL:}
     base-url: ${FE_BASE_URL:http://localhost:4200/}
     forgot-password-url: ${FE_FORGOT_PASSWORD_URL:http://localhost:4200/forgot-password}
     continue-with-email-url: ${FE_CONTINUE_WITH_EMAIL_URL:http://localhost:4200/continue-with-email}

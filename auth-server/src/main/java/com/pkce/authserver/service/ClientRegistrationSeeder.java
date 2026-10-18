@@ -70,6 +70,16 @@ public class ClientRegistrationSeeder implements ApplicationRunner {
     @Value("${app.security.admin-dev-client.post-logout-redirect-uri:}")
     private String adminDevLogoutUri;
 
+    // Dev client for the SuperMeApp mobile/APK web build (e.g. devapk.supermeapp.com) - same
+    // reasoning as admin-dev-client above: its own client_id, not a second redirect URI on the
+    // existing additional-client (which stays exactly as-is, serving the real prod 4204 build).
+    @Value("${app.security.apk-dev-client.id:}")
+    private String apkDevClientId;
+    @Value("${app.security.apk-dev-client.redirect-uris:}")
+    private String apkDevRedirectUris;
+    @Value("${app.security.apk-dev-client.post-logout-redirect-uri:}")
+    private String apkDevLogoutUri;
+
     @Override
     public void run(ApplicationArguments args) {
         register(clientId, redirectUris, postLogoutRedirectUri);
@@ -93,6 +103,14 @@ public class ClientRegistrationSeeder implements ApplicationRunner {
                 throw new IllegalArgumentException("Admin dev client needs a distinct client ID, callbacks and logout URL");
             }
             register(adminDevClientId, adminDevRedirectUris, adminDevLogoutUri);
+        }
+        if (!apkDevClientId.isBlank()) {
+            if (apkDevClientId.equals(clientId) || apkDevClientId.equals(additionalClientId)
+                    || apkDevClientId.equals(adminClientId) || apkDevClientId.equals(adminDevClientId)
+                    || apkDevRedirectUris.isBlank() || apkDevLogoutUri.isBlank()) {
+                throw new IllegalArgumentException("APK dev client needs a distinct client ID, callbacks and logout URL");
+            }
+            register(apkDevClientId, apkDevRedirectUris, apkDevLogoutUri);
         }
     }
 
