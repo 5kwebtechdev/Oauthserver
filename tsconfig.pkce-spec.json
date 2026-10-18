@@ -1,4 +1,4 @@
 {
   "extends": "./tsconfig.spec.json",
-  "include": ["src/app/core/services/pkce-auth.service.spec.ts", "src/app/core/interceptors/pkce.interceptor.spec.ts", "src/**/*.d.ts"]
+  "include": ["src/app/core/services/pkce-auth.service.spec.ts", "src/app/core/interceptors/pkce.interceptor.spec.ts", "src/app/core/components/pkce-entry.component.spec.ts", "src/**/*.d.ts"]
 }

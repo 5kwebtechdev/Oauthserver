@@ -30,8 +30,31 @@ describe('PKCE entry routing', () => {
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
-  it('resumes profile setup for a social account', async () => {
+  it('resumes profile setup for an in-progress Parent signup', async () => {
+    sessionStorage.setItem('pkce_social_onboarding_resume', 'true');
     user.authProvider = 'google';
+    await component.ngOnInit();
+
+    expect(onboarding.getResumeNavigation).toHaveBeenCalledOnceWith(user);
+    expect(router.navigate).toHaveBeenCalledOnceWith(['/signup'], {
+      queryParams: { step: 2, role: 'child' }
+    });
+    expect(sessionStorage.getItem('pkce_social_onboarding_resume')).toBeNull();
+  });
+
+  it('sends a returning Google account with a stale incomplete step to the dashboard', async () => {
+    user.authProvider = 'google';
+    sessionStorage.setItem('pkce_return_url', '/signup?step=2');
+    await component.ngOnInit();
+
+    expect(onboarding.getResumeNavigation).not.toHaveBeenCalled();
+    expect(router.navigateByUrl).toHaveBeenCalledOnceWith('/authed/child-home');
+    expect(sessionStorage.getItem('pkce_return_url')).toBeNull();
+  });
+
+  it('keeps Apple social onboarding resume behavior', async () => {
+    user.authProvider = 'apple';
+    onboarding.isSocialOnboarding = jasmine.createSpy().and.returnValue(true);
     await component.ngOnInit();
 
     expect(onboarding.getResumeNavigation).toHaveBeenCalledOnceWith(user);

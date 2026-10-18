@@ -3870,7 +3870,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.registrationInProgress = true;
     this.errorMessage = null;
     this.loadingService.show();
-    void this.pkceAuth.googleLogin(idToken).then(() => {
+    void this.pkceAuth.googleLogin(idToken, true).then(() => {
       // The callback creates the local session only after the token exchange.
       if (this.onboardingState.isOnboardingComplete()) this.clearGoogleSignupSession();
       else sessionStorage.removeItem('oauth_signup_session_pending');

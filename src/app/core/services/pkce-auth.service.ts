@@ -67,7 +67,11 @@ export class PkceAuthService {
     await this.login();
   }
   /** Verifies Google proof in this client's database, then starts the PKCE exchange. */
-  async googleLogin(idToken: string): Promise<void> {
+  async googleLogin(idToken: string, resumeSignup = false): Promise<void> {
+    // Returning accounts may have stale signup state in this tab. Only the
+    // explicit in-progress signup session should resume onboarding at callback.
+    if (resumeSignup) sessionStorage.setItem('pkce_social_onboarding_resume', 'true');
+    else sessionStorage.removeItem('pkce_social_onboarding_resume');
     await this.init();
     if (this.error) throw new Error(this.error);
     await firstValueFrom(this.injector.get(HttpClient).post(

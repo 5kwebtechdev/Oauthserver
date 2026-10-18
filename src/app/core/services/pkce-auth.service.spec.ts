@@ -52,6 +52,20 @@ describe('PKCE session bridge', () => {
     expect(oauth.initCodeFlow).toHaveBeenCalledTimes(1);
     expect(auth.setSession).not.toHaveBeenCalled();
   });
+  it('marks only an in-progress Google signup for onboarding resume after PKCE', async () => {
+    const post = jasmine.createSpy().and.returnValue(of({ authenticated: true }));
+    service = new PkceAuthService(oauth, { get: (type: unknown) => type === HttpClient ? { post } : auth } as any);
+    Object.defineProperty(service, 'enabled', { value: true });
+
+    await service.googleLogin('google-proof', true);
+    expect(sessionStorage.getItem('pkce_social_onboarding_resume')).toBe('true');
+
+    oauth.initCodeFlow.calls.reset();
+    sessionStorage.removeItem('oauth_signup_session_pending');
+    await service.googleLogin('returning-google-proof');
+    expect(sessionStorage.getItem('pkce_social_onboarding_resume')).toBeNull();
+    expect(oauth.initCodeFlow).toHaveBeenCalledTimes(1);
+  });
   it('coordinates concurrent refresh requests into one token exchange', async () => {
     await Promise.all([service.refresh(), service.refresh()]);
     expect(oauth.refreshToken).toHaveBeenCalledTimes(1);

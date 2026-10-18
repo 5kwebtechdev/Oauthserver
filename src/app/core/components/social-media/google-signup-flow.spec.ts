@@ -246,7 +246,7 @@ describe('Google signup request sequencing', () => {
       }));
       request.flush({ token: 'legacy-token', user: { id: 42, relationship: 'SELF', asChild: role === 'child', onboardingStep: 7 } });
       expect(auth.setSession).not.toHaveBeenCalled();
-      expect(signup.pkceAuth.googleLogin).toHaveBeenCalledOnceWith('google-proof');
+      expect(signup.pkceAuth.googleLogin).toHaveBeenCalledOnceWith('google-proof', true);
       expect(signup.registrationInProgress).toBeTrue();
       signup.proceedWithAvatar();
       http.expectNone('/v1/auth/oauth2/mobile-login');
@@ -556,7 +556,7 @@ describe('Google signup request sequencing', () => {
       user: { id: 42, relationship: 'PARENT', onboardingStep: 4 } });
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(auth.setSession).not.toHaveBeenCalled();
-    expect(signup.pkceAuth.googleLogin).toHaveBeenCalledOnceWith('google-proof');
+    expect(signup.pkceAuth.googleLogin).toHaveBeenCalledOnceWith('google-proof', true);
     expect(sessionStorage.getItem('oauth_signup_id_token')).toBe('google-proof');
     expect(onboarding.getResumeNavigation()).toEqual({
       url: '/home/instructions-for-parent', queryParams: { role: 'parent' }

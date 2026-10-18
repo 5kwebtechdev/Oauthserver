@@ -25,7 +25,7 @@ jobs:
       - name: Check TypeScript
         run: npx tsc --noEmit -p tsconfig.app.json
       - name: Test PKCE session and API integration
-        run: npx ng test --ts-config tsconfig.pkce-spec.json --include='src/app/core/services/pkce-auth.service.spec.ts' --include='src/app/core/interceptors/pkce.interceptor.spec.ts' --watch=false --browsers=ChromeHeadless
+        run: npx ng test --ts-config tsconfig.pkce-spec.json --include='src/app/core/services/pkce-auth.service.spec.ts' --include='src/app/core/interceptors/pkce.interceptor.spec.ts' --include='src/app/core/components/pkce-entry.component.spec.ts' --watch=false --browsers=ChromeHeadless
       - name: Test Google signup sequencing
         run: npx ng test --ts-config tsconfig.google-signup-spec.json --include='src/app/core/components/social-media/google-signup-flow.spec.ts' --watch=false --browsers=ChromeHeadless
       - name: Build PKCE web app (dev)
