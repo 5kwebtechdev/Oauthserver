@@ -115,9 +115,21 @@ export class PkceAuthService {
   }
   logoutUrl(): string | null {
     if (!this.enabled || !this.oauth.logoutUrl) return null;
+    const idToken = this.oauth.getIdToken();
+    // No ID token means no real OIDC session was ever established on this
+    // tab (e.g. a Google/Apple signup that authenticated through the legacy
+    // SuperMeBE endpoint and called AuthService.setSession() directly,
+    // without ever exercising the authorization-code flow). Hitting
+    // /connect/logout then has nothing to invalidate server-side, and
+    // Spring's RP-initiated logout endpoint 400s on a literal "null"
+    // id_token_hint (URLSearchParams coerces the JS null to that string) -
+    // surfacing as a Whitelabel Error Page instead of landing on the
+    // dashboard. Returning null here makes AuthService.logout() skip the
+    // external redirect and fall back to its local navigation instead.
+    if (!idToken) return null;
     const url = new URL(this.oauth.logoutUrl);
     url.searchParams.set('client_id', environment.oauth.clientId);
-    url.searchParams.set('id_token_hint', this.oauth.getIdToken());
+    url.searchParams.set('id_token_hint', idToken);
     url.searchParams.set('post_logout_redirect_uri', window.location.origin + '/');
     return url.toString();
   }
