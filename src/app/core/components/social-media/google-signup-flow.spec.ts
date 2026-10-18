@@ -178,6 +178,39 @@ describe('Google signup request sequencing', () => {
     expect(onboarding.getRegistrationState()?.savedData.socialRolePending).toBeTrue();
   });
 
+  it('preserves the Google SDK identity when registration-required omits identity fields', async () => {
+    social.pkceAuth.enabled = true;
+    social.pkceAuth.googleLogin = jasmine.createSpy().and.rejectWith({
+      status: 404,
+      error: { registrationRequired: true, handoffTicket: 'ticket' }
+    });
+
+    await social.continueGoogleAuthentication(identity, loading);
+
+    expect(sessionStorage.getItem('google_signup_email')).toBe(identity.email);
+    expect(sessionStorage.getItem('google_signup_provider_id')).toBe(identity.providerId);
+    expect(sessionStorage.getItem('oauth_signup_id_token')).toBe(identity.idToken);
+    expect(sessionStorage.getItem('oauth_signup_pending_submission')).toBe('true');
+    expect(onboarding.getRegistrationState()?.savedData.email).toBe(identity.email);
+    http.expectNone('/v1/auth/oauth2/mobile-login');
+  });
+
+  it('uses the same-tab Google proof cache if session storage loses the token before Pet submit', () => {
+    sessionStorage.setItem('oauth_signup_pending_submission', 'true');
+    sessionStorage.setItem('google_signup_email', identity.email);
+    sessionStorage.setItem('google_signup_provider_id', identity.providerId);
+    sessionStorage.setItem('signup_pet', 'Dragon-Age1-Happy.webp');
+    signup.pkceAuth.getGoogleSignupProof = jasmine.createSpy().and.returnValue(identity.idToken);
+
+    signup.completeGoogleOnboardingFlow('self', true, true);
+
+    const request = http.expectOne('/v1/auth/oauth2/mobile-login');
+    expect(request.request.body.idToken).toBe(identity.idToken);
+    expect(request.request.body.email).toBe(identity.email);
+    request.flush({ token: 'signup-session', user: { id: 42, onboardingStep: 7 } });
+    expect(sessionStorage.getItem('oauth_signup_id_token')).toBeNull();
+  });
+
   it('hydrates a BE-started Google signup at role selection and skips OTP/password for every role', async () => {
     sessionStorage.setItem('managed_child_signup', 'true');
     auth.exchangeGoogleSignupHandoff = jasmine.createSpy().and.returnValue(of(identity));

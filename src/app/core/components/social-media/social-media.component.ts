@@ -249,8 +249,17 @@ export class SocialMediaComponent implements OnInit {
       } catch (error: any) {
         if (error?.status !== 404 || error?.error?.registrationRequired !== true) throw error;
         // Use the identity verified by the backend for the read-only profile fields.
-        profile = { ...profile, name: error.error.name, email: error.error.email,
-          providerId: error.error.providerId };
+        // Keep the Google SDK's verified identity fields when an older or
+        // client-specific auth-server response omits optional display data.
+        // Spreading undefined response fields here used to erase email or
+        // providerId, leaving the wizard unable to submit its final signup.
+        profile = {
+          ...profile,
+          name: String(error.error?.name || profile.name || '').trim(),
+          email: String(error.error?.email || profile.email || '').trim(),
+          providerId: String(error.error?.providerId || profile.providerId || '').trim(),
+          avatarUrl: String(error.error?.pictureUrl || profile.avatarUrl || '').trim()
+        };
         result = { exists: false };
       }
     } else {
@@ -551,10 +560,18 @@ export class SocialMediaComponent implements OnInit {
       sessionStorage.setItem('signup_via_google', 'true');
       sessionStorage.setItem('signup_via_oauth', 'true');
       sessionStorage.setItem('oauth_signup_provider', provider);
-      sessionStorage.setItem('google_signup_email', data.email);
-      sessionStorage.setItem('google_signup_name', data.name);
-      sessionStorage.setItem('google_signup_avatar', data.avatarUrl);
-      sessionStorage.setItem('google_signup_provider_id', data.providerId);
+      const email = String(data.email || '').trim();
+      const name = String(data.name || '').trim();
+      const avatarUrl = String(data.avatarUrl || '').trim();
+      const providerId = String(data.providerId || '').trim();
+      if (email) sessionStorage.setItem('google_signup_email', email);
+      else sessionStorage.removeItem('google_signup_email');
+      if (name) sessionStorage.setItem('google_signup_name', name);
+      else sessionStorage.removeItem('google_signup_name');
+      if (avatarUrl) sessionStorage.setItem('google_signup_avatar', avatarUrl);
+      else sessionStorage.removeItem('google_signup_avatar');
+      if (providerId) sessionStorage.setItem('google_signup_provider_id', providerId);
+      else sessionStorage.removeItem('google_signup_provider_id');
 
       if (data.idToken) {
         sessionStorage.setItem('oauth_signup_id_token', data.idToken);
@@ -604,7 +621,8 @@ export class SocialMediaComponent implements OnInit {
         sessionStorage.removeItem('oauth_signup_is_development_mock');
       }
 
-      sessionStorage.setItem('requestedIdentifier', data.email);
+      if (email) sessionStorage.setItem('requestedIdentifier', email);
+      else sessionStorage.removeItem('requestedIdentifier');
     } catch (e) {}
   }
 
@@ -660,6 +678,7 @@ export class SocialMediaComponent implements OnInit {
   }
 
   private clearOAuthSignupSession(): void {
+    this.pkceAuth.clearGoogleSignupProof?.();
     try {
       [
         'signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',

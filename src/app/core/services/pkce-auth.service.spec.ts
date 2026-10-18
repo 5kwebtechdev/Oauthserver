@@ -51,6 +51,9 @@ describe('PKCE session bridge', () => {
     await pending;
     expect(oauth.initCodeFlow).toHaveBeenCalledTimes(1);
     expect(auth.setSession).not.toHaveBeenCalled();
+    expect(service.getGoogleSignupProof()).toBe('google-proof');
+    service.clearGoogleSignupProof();
+    expect(service.getGoogleSignupProof()).toBe('');
   });
   it('marks only an in-progress Google signup for onboarding resume after PKCE', async () => {
     const post = jasmine.createSpy().and.returnValue(of({ authenticated: true }));

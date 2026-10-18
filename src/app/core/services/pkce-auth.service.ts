@@ -13,6 +13,7 @@ export class PkceAuthService {
   private loggingOut = false;
   private renewal?: Promise<void>;
   private initialization?: Promise<void>;
+  private googleSignupProof = '';
   constructor(private oauth: OAuthService, private injector: Injector) {}
 
   init(): Promise<void> {
@@ -68,6 +69,10 @@ export class PkceAuthService {
   }
   /** Verifies Google proof in this client's database, then starts the PKCE exchange. */
   async googleLogin(idToken: string, resumeSignup = false): Promise<void> {
+    // Keep the verified proof in this singleton as a same-tab fallback while
+    // the social signup wizard moves between routes. Session storage remains
+    // the reload-safe copy; this covers accidental removal during navigation.
+    if (idToken) this.googleSignupProof = idToken;
     // Returning accounts may have stale signup state in this tab. Only the
     // explicit in-progress signup session should resume onboarding at callback.
     if (resumeSignup) sessionStorage.setItem('pkce_social_onboarding_resume', 'true');
@@ -81,6 +86,8 @@ export class PkceAuthService {
     ).pipe(timeout({ first: 20_000 })));
     await this.login();
   }
+  getGoogleSignupProof(): string { return this.googleSignupProof; }
+  clearGoogleSignupProof(): void { this.googleSignupProof = ''; }
   async login(returnUrl = ''): Promise<void> {
     await this.init();
     if (this.error) throw new Error(this.error);

@@ -3517,7 +3517,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       || persistedDraft.socialProviderId
       || '';
     const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
-    const idToken    = sessionStorage.getItem('oauth_signup_id_token') || '';
+    const idToken    = sessionStorage.getItem('oauth_signup_id_token')
+      || this.pkceAuth.getGoogleSignupProof?.()
+      || '';
+    if (idToken && !sessionStorage.getItem('oauth_signup_id_token')) {
+      sessionStorage.setItem('oauth_signup_id_token', idToken);
+    }
     const accessToken = sessionStorage.getItem('oauth_signup_access_token') || '';
     const serverAuthCode = sessionStorage.getItem('oauth_signup_server_auth_code') || '';
     const identityToken = sessionStorage.getItem('oauth_signup_identity_token') || '';
@@ -3890,6 +3895,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private clearGoogleSignupSession(): void {
+    this.pkceAuth.clearGoogleSignupProof?.();
     try {
       ['signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
         'google_signup_email', 'google_signup_name',
