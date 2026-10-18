@@ -1654,6 +1654,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private resetTransientStepUi(): void {
+    // An error belongs to the step that raised it. Leaving it set made a failure
+    // on the Pet step render on the Profile step after the wizard moved back,
+    // which read as "the Profile step is broken" when it never ran anything.
+    this.errorMessage = null;
     this.openBirthdayPicker = false;
     this.showCountryCodeModal = false;
     this.countrySearch = '';
