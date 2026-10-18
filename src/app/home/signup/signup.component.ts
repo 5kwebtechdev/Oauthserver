@@ -637,6 +637,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
 
       this.step = Number(stepParam) || 1;
+      // A step change always means the previous request (if any) is done
+      // with as far as this screen is concerned - registrationInProgress
+      // guards both the Next button and selectPet()/proceedWithAvatar(), so
+      // if an earlier call's response handler left it stuck true (e.g. an
+      // unexpected response shape it didn't account for), arriving at a new
+      // step would otherwise silently freeze every tap on this one with no
+      // visible error - exactly what landing on Pet selection unable to
+      // select a pet looks like from the outside.
+      this.registrationInProgress = false;
       // Handle special step cases
       if (stepParam === '0.1') {
         this.step = 0.1;
