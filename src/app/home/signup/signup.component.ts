@@ -13,6 +13,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { firstValueFrom, Subscription, timeout, finalize, filter } from 'rxjs';
 import { CredentialSaverService } from '../../core/services/credential-saver.service';
 import { SignupCredentialStateService } from '../../core/services/signup-credential-state.service';
+import { PkceAuthService } from '../../core/services/pkce-auth.service';
 import { StoredGender, toApiGender, toStoredGender } from '../../core/models/gender.model';
 import {
   OnboardingStateService,
@@ -551,7 +552,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private onboardingState: OnboardingStateService,
     private ngZone: NgZone,
     private avatarService: AvatarService,
-    private platform: Platform
+    private platform: Platform,
+    private pkceAuth: PkceAuthService
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -3688,8 +3690,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         // Pet and Unlock steps update that same account instead of calling
         // /auth/register and triggering duplicate email/phone validation.
         if (unlockPotential || resolvedStep >= 7) {
+          // Capture before clearGoogleSignupSession() removes oauth_signup_id_token -
+          // continueAfterUnlock needs it to finish establishing a real PKCE session.
+          const completedIdToken = provider === 'google' ? idToken : undefined;
           this.clearGoogleSignupSession();
-          this.continueAfterUnlock(responseDraft);
+          this.continueAfterUnlock(responseDraft, completedIdToken);
           return;
         }
 
@@ -4233,7 +4238,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     });
   }
 
-  private continueAfterUnlock(completedUserData?: RegistrationDraftData): void {
+  private continueAfterUnlock(completedUserData?: RegistrationDraftData, googleIdToken?: string): void {
     // Child users reach this welcome screen only after a successful family
     // link and are already logged in. Continue directly without a second login.
     if (this.authService.isLoggedIn()) {
@@ -4289,6 +4294,28 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
       this.clearDeferredParentWelcomeState();
       this.registrationInProgress = false;
+
+      // The account above was created via SuperMeBE's legacy oauth2-login endpoint, so
+      // AuthService.setSession() has only ever built an ad-hoc local session - no real
+      // OIDC session exists on this server, no ID token, nothing for the interceptor's
+      // 401-triggered logout to actually invalidate. The dashboard's own API calls then
+      // 401 (whatever guards them expects a genuine PKCE session) and bounce back to
+      // login, even though the account itself registered successfully. On a PKCE-enabled
+      // build, finish the job properly instead: call the auth-server's own
+      // /api/auth/google-login with just the ID token (no profile fields - the account
+      // is already complete, so this is a plain login, not the registration branch) to
+      // establish a real session, then run the normal authorization-code flow. See
+      // PkceAuthService.googleLogin's Javadoc-equivalent comment for the full mechanics.
+      if (this.pkceAuth.enabled && googleIdToken) {
+        void this.pkceAuth.googleLogin(googleIdToken).catch((error) => {
+          console.error('[Signup] Could not finish establishing the PKCE session after Google signup', error);
+          this.loadingService.forceHide();
+          const route = this.authService.getDashboardRoute() || '/home';
+          this.navigateReplacing(route);
+        });
+        return;
+      }
+
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/home';
       this.navigateReplacing(route);
