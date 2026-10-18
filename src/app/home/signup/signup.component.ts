@@ -113,6 +113,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (
         sessionStorage.getItem('signup_via_oauth') === 'true'
         || sessionStorage.getItem('signup_via_google') === 'true'
+        // Defense in depth: signup_via_oauth/signup_via_google are the primary
+        // markers, but both are written in the same storeOAuthSignupSession()
+        // call as google_signup_provider_id/oauth_signup_provider. If only the
+        // primary pair is ever lost (observed in the field: a Google signup on
+        // this exact step falling through to the plain email/password register
+        // call, which 400s with "Either email or phone must be provided" since
+        // nothing here was ever typed), these still identify an in-progress
+        // OAuth signup and must not be ignored.
+        || !!sessionStorage.getItem('google_signup_provider_id')
+        || !!sessionStorage.getItem('oauth_signup_provider')
       ) {
         return true;
       }
@@ -141,6 +151,30 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public get oauthAccountEmail(): string {
     if (!this.isOAuthSignup) return '';
     return this.resolveAppleAccountEmail(this.signupForm?.get('email')?.value);
+  }
+
+  /**
+   * Google/Apple never supply a username - only name/email - and the profile step otherwise
+   * leaves it for the user to type from scratch even though we already have enough to suggest
+   * one. Only fills an EMPTY control, and only once per page load (not on every keystroke) via
+   * the step===2 check at its call site, so it never fights a username the user is actively
+   * typing or has already set.
+   */
+  private suggestUsernameFromOAuthIdentityIfEmpty(): void {
+    if (!this.isOAuthSignup) return;
+    const usernameControl = this.profileForm.get('username');
+    if (!usernameControl || usernameControl.value) return;
+
+    const source = this.oauthAccountName || this.oauthAccountEmail.split('@')[0] || '';
+    const sanitized = source
+      .normalize('NFKD')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toLowerCase()
+      .slice(0, 15);
+    if (!sanitized) return;
+
+    usernameControl.setValue(sanitized);
+    usernameControl.markAsDirty();
   }
 
   /** The immutable account name supplied by Apple or returned by our backend. */
@@ -650,6 +684,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           replaceUrl: true
         });
         return;
+      }
+
+      if (this.step === 2) {
+        this.suggestUsernameFromOAuthIdentityIfEmpty();
       }
 
       this.enforceParentFlowRestrictions();
@@ -1512,7 +1550,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // A new Google account is created only after the completed details form.
     // Include parents here so family setup uses the resulting session too.
-    if (sessionStorage.getItem('oauth_signup_pending_submission') === 'true') {
+    // isOAuthSignup (not just the single oauth_signup_pending_submission flag)
+    // so this still routes correctly even if that one marker was lost - see
+    // isOAuthSignup's Javadoc-equivalent comment for why that can happen.
+    if (sessionStorage.getItem('oauth_signup_pending_submission') === 'true' || this.isOAuthSignup) {
       this.completeGoogleOnboardingFlow(role);
       return;
     }
