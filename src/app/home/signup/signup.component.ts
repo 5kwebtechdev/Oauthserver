@@ -3955,6 +3955,21 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     } catch (e) {}
   }
 
+  /**
+   * The wizard reached a submission with no identity to submit: no typed email or
+   * phone, and no Google proof left to finish that account's sign-in with. Telling
+   * the user to "sign in with Google again" while leaving them on a form that can
+   * never submit just strands them, so send them to Login, where that is a button.
+   */
+  private abandonSignupWithoutIdentity(): void {
+    this.registrationInProgress = false;
+    this.loadingService.forceHide();
+    this.onboardingState.clearRegistrationDraft();
+    this.clearGoogleSignupSession();
+    this.core.triggerToasrt('Please sign in with Google again to continue setting up your account.');
+    this.navigateReplacing('/login');
+  }
+
   private registerChildOrSelfFromSession(role: 'child' | 'self', includePet: boolean = false) {
     if (this.registrationInProgress) {
       return;
@@ -3967,6 +3982,22 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.completeGoogleOnboardingFlow(role, false, includePet);
       return;
     }
+
+    // A Google account that already completed a submission once has had both its
+    // session markers (clearGoogleSignupSession) and its draft (clearRegistrationDraft)
+    // cleared, so isOAuthSignup reads false on a re-entry into the wizard. Falling
+    // through from here runs the email/password registration, which can only fail:
+    // a Google signup never collected an email or a password to send. If the verified
+    // Google proof is still held, finish that account's sign-in instead of asking for
+    // credentials this flow never had.
+    const googleProof = sessionStorage.getItem('oauth_signup_id_token')
+      || this.pkceAuth.getGoogleSignupProof?.()
+      || '';
+    if (this.pkceAuth.enabled && googleProof && !this.signupCredentialState.getPassword()) {
+      this.finishGooglePkceLogin(googleProof);
+      return;
+    }
+
     this.registrationInProgress = true;
     this.loadingService.show();
 
@@ -4027,9 +4058,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
     } else {
       if (!identifier) {
-        this.registrationInProgress = false;
-        this.loadingService.forceHide();
-        this.core.triggerToasrt('Please sign in with Google again to continue setting up your account.');
+        this.abandonSignupWithoutIdentity();
         return;
       }
       const contactNumber = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
@@ -4039,9 +4068,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Never send a registration request that the API can only reject because
     // the signup identity was lost during navigation or storage restoration.
     if (!payload.email && !payload.phone) {
-      this.registrationInProgress = false;
-      this.loadingService.forceHide();
-      this.core.triggerToasrt('Please sign in with Google again to continue setting up your account.');
+      this.abandonSignupWithoutIdentity();
       return;
     }
 
