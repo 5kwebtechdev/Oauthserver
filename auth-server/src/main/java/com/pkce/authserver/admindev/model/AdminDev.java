@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,8 +28,13 @@ import java.time.LocalDateTime;
  * this, a password reset done against the dev SuperMeBE (which correctly updates
  * superme_db_admin) silently has no effect on login, because this server was still checking
  * the prod database's unchanged password hash.
+ *
+ * @Table is required here (unlike Admin.java): the real table in both databases is named
+ * "Admin" - Hibernate otherwise defaults to the Java class name ("AdminDev"), which exists
+ * nowhere.
  */
 @Entity
+@Table(name = "Admin")
 @Getter
 @Setter
 public class AdminDev {
