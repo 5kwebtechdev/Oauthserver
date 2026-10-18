@@ -3657,7 +3657,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (pendingGoogleSignup && (!idToken || !providerId || !email)) {
       this.registrationInProgress = false;
       this.loadingService.forceHide();
-      this.errorMessage = 'Please sign in with Google again to continue setting up your account.';
+      // Name the missing piece. This guard fires at the end of the wizard, after
+      // the account's details are already filled in, so "sign in again" on its own
+      // gives neither the user nor a bug report any idea which part of the Google
+      // identity was lost between sign-in and submission.
+      const missing = [
+        !idToken ? 'proof' : null,
+        !providerId ? 'provider id' : null,
+        !email ? 'email' : null
+      ].filter(Boolean).join(', ');
+      console.error('[OAuth signup] Google identity incomplete at submission', {
+        missing,
+        hasIdToken: !!idToken,
+        hasProviderId: !!providerId,
+        hasEmail: !!email,
+        sessionKeys: Object.keys(sessionStorage).filter(k => k.startsWith('oauth_') || k.startsWith('google_') || k.startsWith('signup_'))
+      });
+      this.errorMessage = `Please sign in with Google again to continue setting up your account. (missing: ${missing})`;
       this.core.triggerToasrt(this.errorMessage);
       return;
     }
@@ -3827,7 +3843,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   ): void {
     const user = response.user;
     if (this.pkceAuth.enabled) {
-      this.onboardingState.clearRegistrationDraft();
+      // Do NOT clear the draft before the login attempt: it holds the fallback
+      // copies of email and socialProviderId that completeGoogleOnboardingFlow reads
+      // when session storage has lost them. finishGooglePkceLogin can fail and
+      // explicitly tells the user to "tap Next to retry" - with the draft already
+      // wiped, that retry finds an incomplete Google identity and dead-ends on
+      // "sign in with Google again" instead. Defer the discard to success.
+      this.staleDraftPendingDiscard = true;
       sessionStorage.setItem('oauth_signup_session_pending', 'true');
       this.finishGooglePkceLogin();
       return;
@@ -3867,8 +3889,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private googleSessionInProgress = false;
+  /** Set when the saved draft describes a different account than the backend authenticated. */
+  private staleDraftPendingDiscard = false;
 
-  private finishGooglePkceLogin(idToken = sessionStorage.getItem('oauth_signup_id_token') || ''): void {
+  // Same idToken resolution completeGoogleOnboardingFlow uses: session storage is the
+  // reload-safe copy, the in-memory proof is the same-tab fallback for when a route
+  // transition loses the key. Reading only session storage here made this path fail
+  // ("sign in with Google again") in exactly the cases that fallback exists to cover.
+  private finishGooglePkceLogin(
+    idToken = sessionStorage.getItem('oauth_signup_id_token')
+      || this.pkceAuth.getGoogleSignupProof?.()
+      || ''
+  ): void {
     if (this.googleSessionInProgress) return;
     if (!idToken) {
       this.registrationInProgress = false;
@@ -3884,6 +3916,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // The callback creates the local session only after the token exchange.
       if (this.onboardingState.isOnboardingComplete()) this.clearGoogleSignupSession();
       else sessionStorage.removeItem('oauth_signup_session_pending');
+      // Drop a draft that described a different account than the one the backend
+      // actually authenticated (see resumeReturnedGoogleAccount) - only now that
+      // sign-in succeeded, so a failed attempt can still fall back to it on retry.
+      if (this.staleDraftPendingDiscard) {
+        this.staleDraftPendingDiscard = false;
+        this.onboardingState.clearRegistrationDraft();
+      }
     }).catch(() => {
       // Keep proof and the saved-account marker: Next retries login only.
       this.errorMessage = 'Your account is saved, but sign-in did not finish. Tap Next to retry. If it keeps failing, sign in with Google again.';
