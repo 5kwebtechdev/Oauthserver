@@ -114,6 +114,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (
         sessionStorage.getItem('signup_via_oauth') === 'true'
         || sessionStorage.getItem('signup_via_google') === 'true'
+        // Keep the flow on the OAuth registration path even if one of the
+        // descriptive provider markers is lost during a route reload. This
+        // flag is set only after Google has returned a verified identity and
+        // is required by completeGoogleOnboardingFlow before it submits.
+        || sessionStorage.getItem('oauth_signup_pending_submission') === 'true'
         // Defense in depth: signup_via_oauth/signup_via_google are the primary
         // markers, but both are written in the same storeOAuthSignupSession()
         // call as google_signup_provider_id/oauth_signup_provider. If only the
@@ -3921,6 +3926,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const password = this.signupCredentialState.getPassword() || this.password?.value;
     const persistedDraft = this.onboardingState.getRegistrationState()?.savedData || {};
     const identifier = this.requestedIdentifier
+      || sessionStorage.getItem('google_signup_email')
+      || this.onboardingState.getRegistrationState()?.savedData?.email
       || persistedDraft.email
       || persistedDraft.phone
       || this.email?.value
@@ -3961,7 +3968,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // include email or phone depending on loginMode or identifier content
     if (this.loginMode === 'email' || (identifier && identifier.includes && identifier.includes('@'))) {
-      payload.email = identifier;
+      if (identifier) payload.email = identifier;
       // Contact number collected on the profile step (separate from the
       // login identifier) — only relevant when they signed up via email.
       const profilePhoneVal = profile.phone || this.profileForm.get('phone')?.value;
@@ -3970,8 +3977,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         payload.phone = contactCode + profilePhoneVal;
       }
     } else {
+      if (!identifier) {
+        this.registrationInProgress = false;
+        this.loadingService.forceHide();
+        this.core.triggerToasrt('Please sign in with Google again to continue setting up your account.');
+        return;
+      }
       const contactNumber = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
       payload.phone = contactNumber + identifier;
+    }
+
+    // Never send a registration request that the API can only reject because
+    // the signup identity was lost during navigation or storage restoration.
+    if (!payload.email && !payload.phone) {
+      this.registrationInProgress = false;
+      this.loadingService.forceHide();
+      this.core.triggerToasrt('Please sign in with Google again to continue setting up your account.');
+      return;
     }
 
     // dateOfBirth

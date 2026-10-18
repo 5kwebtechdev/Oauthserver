@@ -72,6 +72,16 @@ describe('Google signup request sequencing', () => {
     Object.entries(savedLocal).forEach(([key, value]) => localStorage.setItem(key, value));
   });
 
+  it('retains the Google signup path when only the verified submission marker remains', () => {
+    sessionStorage.removeItem('signup_via_google');
+    sessionStorage.removeItem('signup_via_oauth');
+    sessionStorage.removeItem('oauth_signup_provider');
+    sessionStorage.removeItem('google_signup_provider_id');
+    sessionStorage.setItem('oauth_signup_pending_submission', 'true');
+
+    expect(signup.isOAuthSignup).toBeTrue();
+  });
+
   it('routes an unregistered Apple account through the FE signup wizard', fakeAsync(() => {
     const appleIdentity = {
       provider: 'apple', providerId: 'apple-sub', email: 'new.apple@example.test',
