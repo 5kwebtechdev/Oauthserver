@@ -16,6 +16,15 @@ spring:
       driver-class-name: org.h2.Driver
       username: sa
       password:
+  admin-dev:
+    datasource:
+      # Own throwaway H2 schema too - without this override, application.yml's nested
+      # ${DB_ADMIN_DEV_URL:${DB_ADMIN_URL:...}} default would resolve to a real remote
+      # MySQL URL, and ddl-auto=validate would try to connect to it at test context startup.
+      jdbc-url: jdbc:h2:mem:authserver_admin_dev_test;MODE=MySQL;DB_CLOSE_DELAY=-1
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
   jpa:
     # Flyway is the schema source of truth; Hibernate's "validate" mode compares against
     # the H2Dialect's own type expectations (e.g. BOOLEAN) rather than the MySQL-specific
@@ -53,6 +62,8 @@ spring:
 
 app:
   admin-datasource:
+    ddl-auto: create-drop
+  admin-dev-datasource:
     ddl-auto: create-drop
   security:
     issuer: http://localhost:9000

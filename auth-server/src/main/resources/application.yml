@@ -27,6 +27,22 @@ spring:
       maximum-pool-size: 8
       minimum-idle: 2
       connection-timeout: 20000
+  admin-dev:
+    datasource:
+      # SuperMeBE's DEV admin-panel staff database (a real, separate physical database from
+      # mindfullAdmin above, not just a different name - e.g. superme_db_admin) - see
+      # AdminDevDataSourceConfig. DB_ADMIN_DEV_URL/USERNAME/PASSWORD default to the prod
+      # admin ones above when unset, deliberately: ddl-auto=validate needs a real connection
+      # at startup, so an unset dev-specific var must still resolve to something real rather
+      # than crash the whole app at boot - it just means dev admin login keeps checking the
+      # prod database (today's actual, buggy behavior) until these are explicitly set.
+      jdbc-url: ${DB_ADMIN_DEV_URL:${DB_ADMIN_URL:jdbc:mysql://187.127.142.16:3306/mindfullAdmin?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8}}
+      username: ${DB_ADMIN_DEV_USERNAME:${DB_ADMIN_USERNAME:root}}
+      password: ${DB_ADMIN_DEV_PASSWORD:${DB_ADMIN_PASSWORD:Root@1234}}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      maximum-pool-size: 8
+      minimum-idle: 2
+      connection-timeout: 20000
   jpa:
     hibernate:
       ddl-auto: validate

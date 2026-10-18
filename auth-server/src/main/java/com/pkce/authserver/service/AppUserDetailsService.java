@@ -2,7 +2,12 @@ package com.pkce.authserver.service;
 
 import com.pkce.authserver.admin.model.Admin;
 import com.pkce.authserver.admin.model.AdminAccountStatus;
+import com.pkce.authserver.admin.model.AdminPassword;
 import com.pkce.authserver.admin.repository.AdminRepository;
+import com.pkce.authserver.admindev.model.AdminDev;
+import com.pkce.authserver.admindev.model.AdminDevAccountStatus;
+import com.pkce.authserver.admindev.model.AdminPasswordDev;
+import com.pkce.authserver.admindev.repository.AdminDevRepository;
 import com.pkce.authserver.repository.UserPasswordRepository;
 import com.pkce.authserver.security.AdminLoginContextFilter;
 import com.pkce.authserver.superme.model.User;
@@ -32,12 +37,15 @@ import java.util.Set;
  *   - a soft-deleted account (deleted = true) is refused, which is modelled as "disabled" here so
  *     DaoAuthenticationProvider produces it without reimplementing the check.
  *
- * Admin-panel login (added): if the pending authorization is for the admin client
- * (AdminLoginContextFilter.isAdminLoginPending), only mindfullAdmin.Admin/AdminPassword is ever
- * consulted (same BCrypt scheme as SuperMeBE's admin AuthService) - mindfullP1.User is skipped
- * entirely, so a regular SuperMeApp end-user account can never successfully authenticate into an
- * admin-client session just because its credentials happen to be valid. For every other client,
- * behavior is unchanged: User first, falling back to Admin only if not found there.
+ * Admin-panel login (added): if the pending authorization is for an admin client
+ * (AdminLoginContextFilter.currentAdminClient), only the matching Admin table is ever consulted
+ * (same BCrypt scheme as SuperMeBE's admin AuthService) - mindfullP1.User is skipped entirely, so
+ * a regular SuperMeApp end-user account can never successfully authenticate into an admin-client
+ * session just because its credentials happen to be valid. PROD checks mindfullAdmin via
+ * AdminRepository; DEV checks SuperMeBE's dev admin database via AdminDevRepository - these are
+ * two genuinely different physical databases (see AdminDevDataSourceConfig), not just different
+ * client ids reading the same data. For every other (non-admin) client, behavior is unchanged:
+ * User first, falling back to the prod Admin table only if not found there.
  */
 @Service
 @RequiredArgsConstructor
@@ -47,6 +55,7 @@ public class AppUserDetailsService implements UserDetailsService {
     private final UserPasswordRepository userPasswordRepository;
     private final LoginAttemptService loginAttemptService;
     private final AdminRepository adminRepository;
+    private final AdminDevRepository adminDevRepository;
 
     /**
      * A password that no PasswordEncoder can ever match, for the login paths where a password was
@@ -59,8 +68,11 @@ public class AppUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
-        if (AdminLoginContextFilter.isAdminLoginPending()) {
-            // Admin-client login: Admin table only, never User - see class Javadoc.
+        AdminLoginContextFilter.AdminClient adminClient = AdminLoginContextFilter.currentAdminClient();
+        if (adminClient == AdminLoginContextFilter.AdminClient.DEV) {
+            return loadAdminDevByIdentifier(identifier);
+        }
+        if (adminClient == AdminLoginContextFilter.AdminClient.PROD) {
             return loadAdminByIdentifier(identifier);
         }
 
@@ -82,12 +94,36 @@ public class AppUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
 
         String passwordHash = Optional.ofNullable(admin.getPassword())
-                .map(com.pkce.authserver.admin.model.AdminPassword::getHashedPassword)
+                .map(AdminPassword::getHashedPassword)
                 .filter(hash -> hash != null && !hash.isBlank())
                 .orElseThrow(() -> new UsernameNotFoundException("Admin has no password set: " + identifier));
 
         boolean deleted = Boolean.TRUE.equals(admin.getDeleted());
         boolean inactive = admin.getStatus() != AdminAccountStatus.ACTIVE;
+        boolean expired = admin.getExpiryDate() != null
+                && admin.getExpiryDate().isBefore(java.time.LocalDateTime.now());
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(identifier)
+                .password(passwordHash)
+                .disabled(deleted || inactive)
+                .accountExpired(expired)
+                .authorities(Set.of(new SimpleGrantedAuthority("ROLE_" + admin.getRole().name())))
+                .build();
+    }
+
+    /** Dev-database counterpart of loadAdminByIdentifier - see class Javadoc. */
+    private UserDetails loadAdminDevByIdentifier(String identifier) {
+        AdminDev admin = adminDevRepository.findByEmail(identifier)
+                .or(() -> adminDevRepository.findByPhone(identifier))
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
+
+        String passwordHash = Optional.ofNullable(admin.getPassword())
+                .map(AdminPasswordDev::getHashedPassword)
+                .filter(hash -> hash != null && !hash.isBlank())
+                .orElseThrow(() -> new UsernameNotFoundException("Admin has no password set: " + identifier));
+
+        boolean deleted = Boolean.TRUE.equals(admin.getDeleted());
+        boolean inactive = admin.getStatus() != AdminDevAccountStatus.ACTIVE;
         boolean expired = admin.getExpiryDate() != null
                 && admin.getExpiryDate().isBefore(java.time.LocalDateTime.now());
         return org.springframework.security.core.userdetails.User.builder()
