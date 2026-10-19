@@ -2,6 +2,7 @@ package com.pkce.authserver;
 
 import com.pkce.authserver.service.HandoffTicketRedeemer;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
@@ -23,6 +24,8 @@ class HandoffTicketRedeemerTest {
 
     private EmbeddedDatabase database;
     private JdbcTemplate jdbc;
+    private EmbeddedDatabase devDatabase;
+    private JdbcTemplate devJdbc;
     private HandoffTicketRedeemer redeemer;
 
     @BeforeEach
@@ -30,6 +33,9 @@ class HandoffTicketRedeemerTest {
         database = new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
                 .generateUniqueName(true).build();
         jdbc = new JdbcTemplate(database);
+        devDatabase = new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
+                .generateUniqueName(true).build();
+        devJdbc = new JdbcTemplate(devDatabase);
         // H2-native types; the production table is MySQL (see the deployment DDL), but what is
         // under test here is the claim-once logic, which is plain SQL either way.
         jdbc.execute("""
@@ -43,7 +49,24 @@ class HandoffTicketRedeemerTest {
                   used_at TIMESTAMP NULL
                 )
                 """);
-        redeemer = new HandoffTicketRedeemer(jdbc);
+        devJdbc.execute("""
+                CREATE TABLE app_handoff_ticket (
+                  id IDENTITY PRIMARY KEY,
+                  ticket VARCHAR(64) NOT NULL UNIQUE,
+                  user_id BIGINT NOT NULL,
+                  subject VARCHAR(255) NOT NULL,
+                  issued_at TIMESTAMP NOT NULL,
+                  expires_at TIMESTAMP NOT NULL,
+                  used_at TIMESTAMP NULL
+                )
+                """);
+        redeemer = new HandoffTicketRedeemer(jdbc, devJdbc, "apk-dev");
+    }
+
+    @AfterEach
+    void shutdownDatabases() {
+        database.shutdown();
+        devDatabase.shutdown();
     }
 
     private void insert(String ticket, Instant expiresAt) {
@@ -56,6 +79,26 @@ class HandoffTicketRedeemerTest {
         insert("good-ticket", Instant.now().plusSeconds(60));
 
         assertThat(redeemer.redeem("good-ticket")).isEqualTo("user@example.test");
+    }
+
+    @Test
+    void devClientRedeemsTicketFromTheDevDatabase() {
+        devJdbc.update("INSERT INTO app_handoff_ticket (ticket, user_id, subject, issued_at, expires_at) VALUES (?,?,?,?,?)",
+                "dev-ticket", 7L, "dev@example.test", Timestamp.from(Instant.now()),
+                Timestamp.from(Instant.now().plusSeconds(60)));
+
+        assertThat(redeemer.redeem("dev-ticket", "apk-dev")).isEqualTo("dev@example.test");
+    }
+
+    @Test
+    void productionClientCannotRedeemDevDatabaseTicket() {
+        devJdbc.update("INSERT INTO app_handoff_ticket (ticket, user_id, subject, issued_at, expires_at) VALUES (?,?,?,?,?)",
+                "dev-only-ticket", 7L, "dev@example.test", Timestamp.from(Instant.now()),
+                Timestamp.from(Instant.now().plusSeconds(60)));
+
+        assertThatThrownBy(() -> redeemer.redeem("dev-only-ticket", "production-client"))
+                .isInstanceOf(HandoffTicketRedeemer.TicketNotRedeemableException.class);
+        assertThat(redeemer.redeem("dev-only-ticket", "apk-dev")).isEqualTo("dev@example.test");
     }
 
     @Test

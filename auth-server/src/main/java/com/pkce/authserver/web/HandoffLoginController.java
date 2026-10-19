@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -46,11 +47,12 @@ public class HandoffLoginController {
 
     @PostMapping("/handoff-login")
     public ResponseEntity<Map<String, Object>> handoffLogin(@Valid @RequestBody HandoffLoginRequest request,
+                                                            @RequestParam(name = "client_id", required = false) String clientId,
                                                             HttpServletRequest httpRequest,
                                                             HttpServletResponse httpResponse) {
         String subject;
         try {
-            subject = redeemer.redeem(request.ticket());
+            subject = redeemer.redeem(request.ticket(), clientId);
         } catch (HandoffTicketRedeemer.TicketNotRedeemableException e) {
             // One response for expired, spent and unknown alike - nothing to learn by guessing.
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
