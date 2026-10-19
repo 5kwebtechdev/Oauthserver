@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { environment } from '../environments/environment';
 import { PkceEntryComponent } from './core/components/pkce-entry.component';
+import { HandoffLandingComponent } from './core/components/handoff-landing.component';
 import { NgModule } from '@angular/core';
 import { ActivatedRouteSnapshot, PreloadAllModules, RouterModule, RouterStateSnapshot, Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/authe-guard/authe-guard';
@@ -11,6 +12,8 @@ const routes: Routes = [
   ...(environment.oauth.enabled && !Capacitor.isNativePlatform() ? [
     { path: 'login', component: PkceEntryComponent },
     { path: 'callback', component: PkceEntryComponent },
+    // Where an app hand-off lands: redeems the one-time pass, then continues as a normal session.
+    { path: 'land', component: HandoffLandingComponent },
     { path: 'home/login', redirectTo: 'login', pathMatch: 'full' as const }
   ] : []),
   // The app entry point owns the first-launch walkthrough. Keep this route

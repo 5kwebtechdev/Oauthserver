@@ -88,6 +88,24 @@ export class PkceAuthService {
   }
   getGoogleSignupProof(): string { return this.googleSignupProof; }
   clearGoogleSignupProof(): void { this.googleSignupProof = ''; }
+  /**
+   * Signs this browser in using the one-time pass an app put in the URL, then runs the normal
+   * authorization-code flow, which now completes without prompting because the exchange set this
+   * server's session cookie. Mirrors googleLogin: redeem a proof, then start the standard flow.
+   *
+   * The pass is spent server-side the moment it is redeemed, so reloading this page or sharing
+   * the link signs nobody in.
+   */
+  async handoffLogin(ticket: string, returnUrl = ''): Promise<void> {
+    await this.init();
+    if (this.error) throw new Error(this.error);
+    await firstValueFrom(this.injector.get(HttpClient).post(
+      environment.oauth.issuer + '/api/auth/handoff-login',
+      { ticket },
+      { withCredentials: true }
+    ).pipe(timeout({ first: 20_000 })));
+    await this.login(returnUrl);
+  }
   async login(returnUrl = ''): Promise<void> {
     await this.init();
     if (this.error) throw new Error(this.error);
