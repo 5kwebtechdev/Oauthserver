@@ -49,6 +49,11 @@ export class HandoffLinkService {
    * user just signs in there as they would have anyway.
    */
   async openWithSession(url: string): Promise<void> {
+    const native = Capacitor.isNativePlatform();
+    // Reserve a browser tab during the click; browsers block window.open after an awaited request.
+    const browserTab = native ? null : window.open('about:blank', '_blank');
+    if (browserTab) browserTab.opener = null;
+
     let target = url;
     if (this.isOwnDomain(url) && this.authService.isLoggedIn()) {
       try {
@@ -62,7 +67,15 @@ export class HandoffLinkService {
         console.warn('[Handoff] Could not obtain a sign-in pass; opening the link as a normal visit', error);
       }
     }
-    this.openExternally(target);
+    if (native) {
+      this.openExternally(target);
+      return;
+    }
+    if (browserTab && !browserTab.closed) {
+      browserTab.location.replace(target);
+      return;
+    }
+    window.location.assign(target);
   }
 
   private async requestTicket(): Promise<string> {
