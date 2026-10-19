@@ -821,6 +821,20 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.errorMessage = null;
     } catch (error) {
       console.error('[Signup] Unable to resume Google signup handoff', error);
+      // The ticket is single-use, so arriving here with one already spent is normal:
+      // a reload of this URL, or a second visit, exchanges a ticket the server has
+      // dropped. When the app's own Google entry point stored the verified identity
+      // before navigating (see SocialMediaComponent.continueGoogleAuthentication),
+      // that identity is still valid and the wizard can simply continue - sending the
+      // user back to Login over a spent ticket would discard a signup in progress.
+      const identityHeld = !!sessionStorage.getItem('oauth_signup_id_token')
+        && !!sessionStorage.getItem('google_signup_email')
+        && !!sessionStorage.getItem('google_signup_provider_id');
+      if (identityHeld) {
+        this.step = 1;
+        this.errorMessage = null;
+        return;
+      }
       this.core.triggerToasrt('Google sign-up could not be resumed. Please try Google sign-in again.');
       await this.router.navigate(['/login'], { replaceUrl: true });
     } finally {

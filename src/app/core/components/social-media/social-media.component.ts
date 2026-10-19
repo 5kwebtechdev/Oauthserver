@@ -241,6 +241,7 @@ export class SocialMediaComponent implements OnInit {
 
   private async continueGoogleAuthentication(profile: GoogleOAuthProfile, loading: any): Promise<void> {
     let result: { exists: boolean };
+    let googleSignupTicket = '';
     if (this.pkceAuth.enabled) {
       try {
         await this.pkceAuth.googleLogin(profile.idToken);
@@ -249,22 +250,14 @@ export class SocialMediaComponent implements OnInit {
       } catch (error: any) {
         if (error?.status !== 404 || error?.error?.registrationRequired !== true) throw error;
 
-        // Same route the auth-server's own /login page takes for an unregistered
-        // Google identity: hand the wizard the server's one-time ticket and let it
-        // exchange that for the verified identity (SignupComponent's
-        // completeGoogleSignupHandoff). Both entry points then run the identical
-        // flow. Keeping the identity server-side also means the wizard can recover
-        // it after a reload or a route change, rather than depending on session
-        // storage surviving every step - the failure mode this flow kept hitting.
-        const handoffTicket = String(error?.error?.handoffTicket || '').trim();
-        if (handoffTicket) {
-          await this.finishSocialLogin(loading);
-          void this.router.navigate(['/signup'], {
-            queryParams: { step: 1, googleSignupTicket: handoffTicket },
-            replaceUrl: true
-          });
-          return;
-        }
+        // Carry the server's one-time ticket into the wizard, the same way the
+        // auth-server's own /login page does, so both entry points resolve the
+        // identity through completeGoogleSignupHandoff. The locally held Google
+        // SDK identity is still stored below rather than discarded: the ticket is
+        // single-use and its exchange can fail (expired, consumed, offline), and
+        // throwing away an identity we already have in hand to depend on that
+        // round trip would be strictly less robust than keeping both.
+        googleSignupTicket = String(error?.error?.handoffTicket || '').trim();
 
         // Use the identity verified by the backend for the read-only profile fields.
         // Keep the Google SDK's verified identity fields when an older or
@@ -319,7 +312,10 @@ export class SocialMediaComponent implements OnInit {
       onboardingStep: 3
     }, 3, 'EMAIL');
     await this.router.navigate(['/signup'], {
-      queryParams: { step: 1 },
+      queryParams: {
+        step: 1,
+        ...(googleSignupTicket ? { googleSignupTicket } : {})
+      },
       replaceUrl: true
     });
     await this.finishSocialLogin(loading);
