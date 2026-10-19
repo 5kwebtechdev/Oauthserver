@@ -120,7 +120,7 @@ export const PROFILE_FAQS: FaqItem[] = [
 export class ProfileFactsComponent implements OnInit {
   @Input() faqs: FaqItem[] = [];
   @Input() heading: string = `FAQ's`;
-  @Input() variant: 'default' | 'warm' = 'default';
+  @Input() variant: 'default' | 'warm' | 'family' = 'default';
 
   ngOnInit(): void {
     if (!this.faqs || this.faqs.length === 0) {

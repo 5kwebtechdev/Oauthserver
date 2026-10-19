@@ -25,12 +25,12 @@
         </div>
 
         <div class="learning-details-byline">
-          <span class="learning-details-byline__avatar">
+          <span class="learning-details-byline__avatar" *ngIf="articleAuthorName">
             <img [src]="articleAuthorImage" [alt]="articleAuthorName" (error)="useAuthorFallback($event)">
           </span>
 
-          <span class="learning-details-byline__author">
-            <small>Blog By</small>
+          <span class="learning-details-byline__author" *ngIf="articleAuthorName">
+            <small>Published By</small>
             <strong>{{ articleAuthorName }}</strong>
           </span>
 
@@ -41,7 +41,7 @@
             </span>
             <span *ngIf="articlePublishedDate">
               <img src="assets/figma/learning-details/calendar.svg" alt="" aria-hidden="true">
-              {{ articlePublishedDate }}
+              Published On: {{ articlePublishedDate }}
             </span>
           </span>
         </div>
@@ -50,6 +50,10 @@
       <section class="learning-details-article article-content" *ngIf="primaryArticleContent"
         [innerHTML]="primaryArticleContent">
       </section>
+
+      <p class="learning-details-tags" *ngIf="article.tags?.length" aria-label="Article tags">
+        <span *ngFor="let tag of article.tags">{{ tag }}</span>
+      </p>
 
       <ad-banner class="learning-details-ads" screen="ARTICLES" variant="article-details"></ad-banner>
 

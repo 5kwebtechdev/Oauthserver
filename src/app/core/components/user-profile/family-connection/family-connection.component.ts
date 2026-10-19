@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { FamilyActionsService } from '../../../services/family-actions.service';
 import { displayName } from '../../../models/display-name';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -26,9 +27,39 @@ import { Clipboard } from '@capacitor/clipboard';
   selector: 'family-connection',
   imports: [CommonModule, FormsModule, IonicModule, QRCodeComponent, SupermeNavigatorComponent, ProfileFactsComponent, SupermePetComponent, SupermeButtonComponent, SupermePopupComponent, InstructioListComponent],
   templateUrl: './family-connection.component.html',
-  styleUrls: ['./family-connection.component.scss']
+  styleUrls: ['./family-connection.component.scss', './parent-family.component.scss']
 })
 export class FamilyConnectionComponent implements OnInit, OnDestroy {
+  @Input() embedded = false;
+  showFamilyFaqs = false;
+  get parentCreatedOn(): string {
+    if (!this.createdOn) return '';
+    const date = new Date(this.createdOn);
+    return Number.isNaN(date.getTime()) ? this.createdOn
+      : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).replace(',', '');
+  }
+  get parentMembers(): FamilyMember[] {
+    return this.members.filter(member => !this.isChildMember(member));
+  }
+  get childMembers(): FamilyMember[] {
+    return this.members.filter(member => this.isChildMember(member));
+  }
+  get emptyChildSlots(): number[] {
+    return Array.from({ length: Math.max(0, 2 - this.childMembers.length) }, (_, index) => index);
+  }
+  parentCardBadge(member: FamilyMember, isCreator = false): string {
+    if (isCreator) return 'Parent /Creator' + (member.you ? '/You' : '');
+    if (member.coParent || member.relationship === 'Co-Parent') {
+      return 'Co Parent' + (member.you ? ' / You' : '');
+    }
+    return this.getBadgeText(member);
+  }
+  inviteCoParent(): void {
+    void this.familyActions.shareFamilyCodeWithCoParent(this.familyCode);
+  }
+  addChild(): void {
+    this.familyActions.openAddChild(this.familyCode);
+  }
   readonly displayName = displayName;
   familyName: string = 'Your Family';
   familyStatus: string = 'ACTIVE';
@@ -60,7 +91,8 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
     private coreAuthService: CoreAuthService,
     public parentImageService: ParentImageService,
     private childSelfImageService: ChildSelfImageService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private familyActions: FamilyActionsService
   ) { }
 
   // Return the first uppercase initial for a name (safe for template bindings)
@@ -413,6 +445,17 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
         }
         this.applyFamilyDetailsResponse(response);
         this.isLoading = false;
+        // The status API can omit the creation timestamp. Keep member data from
+        // that response, and read the existing family-details API for the date.
+        if (this.isParentUser() && !this.createdOn && response?.hasFamily) {
+          this.authService.getFamilyDetails().pipe(take(1)).subscribe({
+            next: details => {
+              this.createdOn = this.formatCreatedOn((details as any)?.family?.createdOn || (details as any)?.createdOn);
+              this.cdr.detectChanges();
+            },
+            error: () => { /* Date is optional; leave it hidden if unavailable. */ }
+          });
+        }
       },
       error: (error) => {
         console.error('Error loading family status:', error);

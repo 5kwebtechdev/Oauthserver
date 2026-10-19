@@ -19,11 +19,12 @@ import { ParentImageService } from '../../services/parent-image.service';
 import { ChildSelfImageService } from '../../services/child-self-image.service';
 import { SkeletonImageComponent } from '../skeleton-image/skeleton-image.component';
 import { PetAgeService } from '../../services/pet-age.service';
+import { FamilyConnectionComponent } from './family-connection/family-connection.component';
 
 @Component({
   selector: 'user-profile',
   standalone: true,
-  imports: [CommonModule, SupermeNavigatorComponent, IonicModule, SupermeCoinsStatsComponent, ProfileContentCardComponent, SocialMediaComponent, SupermePopupComponent, SkeletonImageComponent],
+  imports: [CommonModule, SupermeNavigatorComponent, IonicModule, SupermeCoinsStatsComponent, ProfileContentCardComponent, SocialMediaComponent, SupermePopupComponent, SkeletonImageComponent, FamilyConnectionComponent],
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.scss']
 })
@@ -108,8 +109,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
     // Load user data from localStorage (set during login)
     this.loadUserDataFromStorage();
     // Load user stats from localStorage first, then API if not available
-    if (this.isParentProfile()) this.loadFamilyDetails();
-    else this.loadUserStatsFromStorage();
+    // Parent family data/actions are owned by the embedded FamilyConnectionComponent.
+    if (!this.isParentProfile()) this.loadUserStatsFromStorage();
     // Subscribe to user data changes from CoreAuthService (primary source of truth)
     // This will reactively update the UI when user data changes (e.g., from edit-profile)
     this.coreAuthService.userData$.subscribe(userData => {

@@ -85,15 +85,21 @@ describe('LoginComponent password handling', () => {
     expect(component.loading).toBeTrue();
   });
 
-  it('uses a saved identifier without restoring its password', async () => {
+  it('fills the selected OS credential pair after entry and submits it masked', async () => {
     credentialSaver.suggest.and.resolveTo({
       identifier: 'saved@example.com', password: 'old-password', mode: 'email'
     });
     component.ngOnInit();
+    component.ionViewWillEnter();
+    component.ionViewDidEnter();
     await Promise.resolve();
 
     expect(component.email?.value).toBe('saved@example.com');
-    expect(component.password?.value).toBe('');
+    expect(component.password?.value).toBe('old-password');
+    expect(component.hidePassword).toBeTrue();
+    authService.login.and.returnValue(NEVER);
+    component.onSubmit();
+    expect(authService.login).toHaveBeenCalledWith({ email: 'saved@example.com', password: 'old-password' });
   });
 
   it('does not replace the email selected by the system password manager with a stale saved identifier', async () => {
@@ -101,11 +107,33 @@ describe('LoginComponent password handling', () => {
       identifier: 'old@example.com', password: 'old-password', mode: 'email'
     });
     component.ngOnInit();
+    component.ionViewDidEnter();
     component.signInForm.patchValue({ email: 'chosen@example.com', password: 'chosen-password' });
     await Promise.resolve();
 
     expect(component.email?.value).toBe('chosen@example.com');
     expect(component.password?.value).toBe('chosen-password');
+  });
+
+  it('ignores a picker result returned after leaving the login screen', async () => {
+    credentialSaver.suggest.and.resolveTo({ identifier: 'saved@example.com', password: 'selected', mode: 'email' });
+    component.ionViewDidEnter();
+    component.ionViewWillLeave();
+    await Promise.resolve();
+    expect(component.password?.value).toBe('');
+    expect(component.email?.value).toBe('');
+  });
+
+  it('accepts change-only WebView autofill including after a failed attempt', () => {
+    authService.login.and.returnValue(throwError(() => ({ status: 401 })));
+    component.signInForm.patchValue({ email: 'user@example.com', password: 'wrong' });
+    component.onSubmit();
+    const input = component.passwordInputRef.nativeElement;
+    input.value = ' selected password ';
+    component.onPasswordAutofill({ target: input } as unknown as Event);
+    expect(component.password?.value).toBe(' selected password ');
+    expect(component.isLoginFormValid()).toBeTrue();
+    expect(component.hidePassword).toBeTrue();
   });
 
   it('clears the password after a failed login but keeps the email and error', () => {

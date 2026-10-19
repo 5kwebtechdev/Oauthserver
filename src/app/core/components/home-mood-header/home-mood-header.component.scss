@@ -39,7 +39,7 @@
 }
 .mood-stat--leaderboard { width: 65px; }
 .mood-stat--leaderboard > img { width: 40px; height: 40px; }
-.mood-stat--leaderboard strong { font-size: 10px; letter-spacing: -.25px; white-space: nowrap; }
+.mood-stat--leaderboard strong { white-space: nowrap; }
 .mood-stats__divider { width: 1px; height: 42px; }
 // Each crop is the matching pet layer from Figma's six-state mood sheet.
 .mood-pet--panda {

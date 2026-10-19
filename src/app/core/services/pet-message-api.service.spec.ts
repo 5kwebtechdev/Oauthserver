@@ -31,6 +31,7 @@ describe('Home overlay referral API contract', () => {
     expect(req.request.params.get('eventId')).toBe('reward/1');
     expect(req.request.body).toBeNull();
     expect(req.request.headers.get('X-Skip-Profile-Selector')).toBe('true');
+    expect(req.request.headers.get('x-skip-loading')).toBe('1');
     req.flush(claim);
   });
   it('passes a claimed reward eventId to dismissal', () => {
@@ -38,6 +39,7 @@ describe('Home overlay referral API contract', () => {
     const req = http.expectOne(request => request.url.endsWith('/overlay/dismiss'));
     expect(req.request.params.get('type')).toBe('DAILY_LOGIN');
     expect(req.request.params.get('eventId')).toBe('reward-1');
+    expect(req.request.headers.get('x-skip-loading')).toBe('1');
     req.flush({});
   });
   it('sends the referral type and encoded eventId, keeping a null body', () => {

@@ -34,6 +34,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   public loginError: string | null = null;
   public hasLoggedInBefore = false;
   private returnUrl: string = '';
+  private credentialRequestVersion = 0;
 
   @ViewChild('passwordInput') passwordInputRef!: ElementRef<HTMLInputElement>;
 
@@ -198,7 +199,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.hasLoggedInBefore = localStorage.getItem('has_logged_in_before') === 'true';
 
     console.log('LoginComponent initialized');
-    void this.suggestSavedCredentials();
 
     // ion-router-outlet is capped to a centered readable column on tablet/
     // desktop by default (see global.scss); this page builds its own wide
@@ -225,6 +225,15 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.clearPassword();
   }
 
+  ionViewDidEnter(): void {
+    // Wait until entry-time clearing has finished before opening the OS picker.
+    void this.suggestSavedCredentials();
+  }
+
+  ionViewWillLeave(): void {
+    this.clearPassword();
+  }
+
   @HostListener('window:pageshow')
   onPageShow(event?: PageTransitionEvent): void {
     // Clear a browser back/forward-cache restore, but do not erase a password
@@ -233,6 +242,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   private clearPassword(): void {
+    this.credentialRequestVersion++;
     this.password?.reset('', { emitEvent: false });
     if (this.passwordInputRef?.nativeElement) {
       this.passwordInputRef.nativeElement.value = '';
@@ -254,6 +264,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.signInForm.get('email')?.markAsDirty();
   }
 
+  onPasswordAutofill(event: Event): void {
+    // Some WebViews report autofill as change rather than input.
+    this.password?.setValue((event.target as HTMLInputElement).value);
+    this.password?.markAsDirty();
+  }
+
   navigateToSignup(): void {
     this.returnToRoleSelection();
   }
@@ -271,8 +287,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   private async suggestSavedCredentials(): Promise<void> {
+    const requestVersion = ++this.credentialRequestVersion;
+    const initialEmail = this.email?.value;
+    const initialPassword = this.password?.value;
     const credentials = await this.credentialSaverService.suggest();
-    if (!credentials) {
+    if (!credentials || requestVersion !== this.credentialRequestVersion) {
       return;
     }
 
@@ -280,12 +299,15 @@ export class LoginComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Do not overwrite an email the user typed or selected from Android's
-    // password manager while the saved-identifier lookup was pending.
-    if (this.email?.value) return;
+    // Preserve any edits or WebView autofill received while the picker was open.
+    if (this.email?.value !== initialEmail || this.password?.value !== initialPassword) return;
 
+    // suggest() reads the explicitly selected Android Credential Manager result,
+    // never credentials from app storage. Keep the selected pair together.
+    this.hidePassword = true;
     this.signInForm.patchValue({
-      email: credentials.identifier
+      email: credentials.identifier,
+      password: credentials.password
     });
   }
 

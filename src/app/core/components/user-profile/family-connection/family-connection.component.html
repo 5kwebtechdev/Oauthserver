@@ -1,11 +1,70 @@
-<ion-content>
-    <superme-navigator *ngIf="!showInstructions" heading="My Family" backIcon="arrowSvg"
+<ion-content *ngIf="!embedded"><ng-container *ngTemplateOutlet="familyContent"></ng-container></ion-content>
+<ng-container *ngIf="embedded" [ngTemplateOutlet]="familyContent"></ng-container>
+<ng-template #familyContent>
+    <superme-navigator *ngIf="!showInstructions && !embedded" heading="My Family" backIcon="arrowSvg"
         (back)="onBackFromFamily()"></superme-navigator>
 
-    <main *ngIf="!showInstructions" class="family-connection" role="main" aria-labelledby="family-heading">
+    <main *ngIf="!showInstructions" class="family-connection" [class.family-connection--embedded]="embedded" [class.family-connection--parent]="isParentUser()" role="main" aria-labelledby="family-heading">
 
         <div class="family-mode d-flex flex-column gap-3" *ngIf="(familyHasFamily || isLoading) && !isSelfUser() && !isSelfUserWithIndependentGrowth()">
-            <section class="family-container-main" *ngIf="!isLoading">
+                        <section class="parent-family" *ngIf="!isLoading && isParentUser()" aria-label="My Family">
+                <header class="parent-family__header" id="family-heading">
+                    <div class="parent-family__identity">
+                        <h2>{{ familyName }}</h2>
+                        <p *ngIf="createdOn">Created on: {{ parentCreatedOn }}</p>
+                    </div>
+                    <div class="parent-family__code" *ngIf="familyCode">
+                        <div><span>Family Code</span>
+                            <button type="button" (click)="copyFamilyCode()" aria-label="Copy family code">
+                                {{ familyCode }}<img src="assets/figma/my-family/copy.svg" alt="" width="12" height="12">
+                            </button>
+                        </div>
+                        <span class="parent-family__divider" aria-hidden="true"></span>
+                        <button type="button" (click)="openQrModal()" aria-label="Open family QR code">
+                            <img src="assets/figma/my-family/qr.svg" alt="" width="16" height="16">
+                        </button>
+                    </div>
+                </header>
+                <span *ngIf="copyFeedbackMessage" class="parent-family__feedback" role="status" aria-live="polite">{{ copyFeedbackMessage }}</span>
+                <div class="parent-family__grid">
+                    <ng-container *ngIf="creator" [ngTemplateOutlet]="parentMember" [ngTemplateOutletContext]="{ $implicit: creator, isCreator: true }"></ng-container>
+                    <ng-container *ngFor="let member of parentMembers" [ngTemplateOutlet]="parentMember" [ngTemplateOutletContext]="{ $implicit: member }"></ng-container>
+                    <button *ngIf="!parentMembers.length && creator" type="button" class="parent-family__add" (click)="inviteCoParent()">
+                        <span class="parent-family__add-icon"><img src="assets/figma/my-family/invite.svg" alt="" width="24" height="24"><span>+</span></span>
+                        Invite Co Parent
+                    </button>
+                    <ng-container *ngFor="let member of childMembers" [ngTemplateOutlet]="parentMember" [ngTemplateOutletContext]="{ $implicit: member }"></ng-container>
+                    <button *ngFor="let slot of emptyChildSlots" type="button" class="parent-family__add" (click)="addChild()">
+                        <span class="parent-family__add-icon"><img src="assets/figma/my-family/person.svg" alt="" width="24" height="24"><span>+</span></span>
+                        Add Child
+                    </button>
+                </div>
+                <button class="parent-family__faq-toggle" type="button" (click)="showFamilyFaqs = !showFamilyFaqs"
+                    [attr.aria-expanded]="showFamilyFaqs" aria-controls="parent-family-faqs">
+                    Check FAQ’s<img src="assets/figma/my-family/chevron.svg" alt="" width="16" height="16" [class.expanded]="showFamilyFaqs">
+                </button>
+                <profile-facts *ngIf="showFamilyFaqs" id="parent-family-faqs" [faqs]="familyFaqs" heading="" variant="family"></profile-facts>
+            </section>
+            <ng-template #parentMember let-member let-isCreator="isCreator">
+                <article class="parent-family__member">
+                    <button class="parent-family__member-profile" type="button"
+                        [disabled]="!canViewMember(member) || isSwitchingMember" (click)="viewChildMember(member)"
+                        [attr.aria-label]="canViewMember(member) ? 'View as ' + displayName(member) : displayName(member)">
+                        <span class="parent-family__avatar" [class.is-you]="member.you">
+                            <img *ngIf="getMemberAvatar(member)?.url as avatar; else memberInitial" [src]="avatar" [alt]="displayName(member) + ' avatar'">
+                            <ng-template #memberInitial><span [ngStyle]="parentImageService.getAvatarStyle(getInitial(member.name), isFemale(member), 56)">{{ getInitial(member.name) }}</span></ng-template>
+                        </span>
+                        <strong>{{ displayName(member) }}</strong>
+                        <span class="parent-family__age" *ngIf="member.age !== null && member.age !== undefined">{{ member.age }} years old</span>
+                    </button>
+                    <span class="parent-family__badge" [class.is-you]="member.you">{{ parentCardBadge(member, isCreator) }}</span>
+                    <button *ngIf="canRemoveMember(member)" class="parent-family__remove" type="button" (click)="removeMember(member)"
+                        [attr.aria-label]="'Remove ' + displayName(member) + ' from family'">
+                        <img src="assets/figma/my-family/delete.svg" alt="" width="16" height="16">Remove
+                    </button>
+                </article>
+            </ng-template>
+            <section class="family-container-main" *ngIf="!isLoading && !isParentUser()">
                 <div class="family-code-container" *ngIf="isParentUser()">
                     <div class="family-code-label">
                         <p>Your Family Code</p>
@@ -188,7 +247,7 @@
 
 
         <!-- faqs -->
-        <section class="family-faqs" *ngIf="!isSelfUserWithIndependentGrowth()">
+        <section class="family-faqs" *ngIf="!isSelfUserWithIndependentGrowth() && !isParentUser()">
             <profile-facts [faqs]="familyFaqs"></profile-facts>
         </section>
     </main>
@@ -214,93 +273,33 @@
         </div>
     </main>
 
-    <!-- Full-screen QR Code Modal -->
-    <div class="qr-modal-overlay" *ngIf="showQrModal" (click)="closeQrModal()" role="dialog" aria-modal="true"
-        aria-labelledby="qr-modal-title">
+    <!-- Shared dynamic QR: retain the canvas selector used by shareQrCode(). -->
+    <ion-modal class="family-qr-modal" [isOpen]="showQrModal" (didDismiss)="closeQrModal()" aria-label="Family QR code">
+      <ng-template>
+       <div class="qr-modal-overlay family-qr" (keydown.escape)="closeQrModal()">
         <div class="qr-modal-content" (click)="$event.stopPropagation()">
-            <button class="qr-close-btn" (click)="closeQrModal()" aria-label="Close QR code modal">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M18 6L6 18M6 6L18 18" stroke="#282527" stroke-width="2" stroke-linecap="round" />
-                </svg>
+            <button type="button" class="qr-close-btn" (click)="closeQrModal()" aria-label="Close QR code modal">
+                <img src="assets/figma/my-family/close.svg" alt="" width="24" height="24">
             </button>
-
             <div class="qr-modal-body">
-
-
-                <div class="qr-code-wrapper">
-                    <qrcode [qrdata]="qrCodeData" [width]="280" [errorCorrectionLevel]="'M'" [elementType]="'canvas'"
-                        [margin]="2" cssClass="qr-canvas">
-                    </qrcode>
+                <qrcode [qrdata]="qrCodeData" [width]="249" [errorCorrectionLevel]="'M'" [elementType]="'canvas'" [margin]="2" cssClass="qr-canvas"></qrcode>
+                <button type="button" class="share-qr" (click)="shareQrCode()">
+                    <span><img src="assets/figma/my-family/share.svg" alt="" width="16" height="16"></span>Share QR code
+                </button>
+                <div class="or-separator"><img src="assets/figma/my-family/line.svg" alt=""><span>OR</span><img src="assets/figma/my-family/line.svg" alt=""></div>
+                <div class="family-qr__code">
+                    <p>Facing errors?<br>Try entering the code instead.</p>
+                    <button type="button" (click)="copyFamilyCode()" aria-label="Copy family code">
+                        {{ familyCode }}<span><img src="assets/figma/my-family/copy-large.svg" alt="" width="16" height="16"></span>
+                    </button>
+                    <span *ngIf="copyFeedbackMessage" role="status" aria-live="polite">{{ copyFeedbackMessage }}</span>
                 </div>
-                <div class="share-qr" (click)="shareQrCode()" role="button" tabindex="0" 
-                    (keydown.enter)="shareQrCode()" (keydown.space)="shareQrCode()"
-                    aria-label="Share QR code">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="14" viewBox="0 0 12 14" fill="none">
-                        <path
-                            d="M10 13.3333C9.44444 13.3333 8.97222 13.1389 8.58333 12.75C8.19444 12.3611 8 11.8889 8 11.3333C8 11.2667 8.01667 11.1111 8.05 10.8667L3.36667 8.13333C3.18889 8.3 2.98333 8.43056 2.75 8.525C2.51667 8.61944 2.26667 8.66667 2 8.66667C1.44444 8.66667 0.972222 8.47222 0.583333 8.08333C0.194444 7.69444 0 7.22222 0 6.66667C0 6.11111 0.194444 5.63889 0.583333 5.25C0.972222 4.86111 1.44444 4.66667 2 4.66667C2.26667 4.66667 2.51667 4.71389 2.75 4.80833C2.98333 4.90278 3.18889 5.03333 3.36667 5.2L8.05 2.46667C8.02778 2.38889 8.01389 2.31389 8.00833 2.24167C8.00278 2.16944 8 2.08889 8 2C8 1.44444 8.19444 0.972222 8.58333 0.583333C8.97222 0.194444 9.44444 0 10 0C10.5556 0 11.0278 0.194444 11.4167 0.583333C11.8056 0.972222 12 1.44444 12 2C12 2.55556 11.8056 3.02778 11.4167 3.41667C11.0278 3.80556 10.5556 4 10 4C9.73333 4 9.48333 3.95278 9.25 3.85833C9.01667 3.76389 8.81111 3.63333 8.63333 3.46667L3.95 6.2C3.97222 6.27778 3.98611 6.35278 3.99167 6.425C3.99722 6.49722 4 6.57778 4 6.66667C4 6.75556 3.99722 6.83611 3.99167 6.90833C3.98611 6.98056 3.97222 7.05555 3.95 7.13333L8.63333 9.86667C8.81111 9.7 9.01667 9.56944 9.25 9.475C9.48333 9.38056 9.73333 9.33333 10 9.33333C10.5556 9.33333 11.0278 9.52778 11.4167 9.91667C11.8056 10.3056 12 10.7778 12 11.3333C12 11.8889 11.8056 12.3611 11.4167 12.75C11.0278 13.1389 10.5556 13.3333 10 13.3333ZM10 12C10.1889 12 10.3472 11.9361 10.475 11.8083C10.6028 11.6806 10.6667 11.5222 10.6667 11.3333C10.6667 11.1444 10.6028 10.9861 10.475 10.8583C10.3472 10.7306 10.1889 10.6667 10 10.6667C9.81111 10.6667 9.65278 10.7306 9.525 10.8583C9.39722 10.9861 9.33333 11.1444 9.33333 11.3333C9.33333 11.5222 9.39722 11.6806 9.525 11.8083C9.65278 11.9361 9.81111 12 10 12ZM2 7.33333C2.18889 7.33333 2.34722 7.26944 2.475 7.14167C2.60278 7.01389 2.66667 6.85556 2.66667 6.66667C2.66667 6.47778 2.60278 6.31944 2.475 6.19167C2.34722 6.06389 2.18889 6 2 6C1.81111 6 1.65278 6.06389 1.525 6.19167C1.39722 6.31944 1.33333 6.47778 1.33333 6.66667C1.33333 6.85556 1.39722 7.01389 1.525 7.14167C1.65278 7.26944 1.81111 7.33333 2 7.33333ZM10 2.66667C10.1889 2.66667 10.3472 2.60278 10.475 2.475C10.6028 2.34722 10.6667 2.18889 10.6667 2C10.6667 1.81111 10.6028 1.65278 10.475 1.525C10.3472 1.39722 10.1889 1.33333 10 1.33333C9.81111 1.33333 9.65278 1.39722 9.525 1.525C9.39722 1.65278 9.33333 1.81111 9.33333 2C9.33333 2.18889 9.39722 2.34722 9.525 2.475C9.65278 2.60278 9.81111 2.66667 10 2.66667Z"
-                            fill="#282527" />
-                    </svg>
-                    <p>Share QR code 1</p>
-                </div>
-
-                <div class="or-separator">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="128" height="1" viewBox="0 0 128 1" fill="none">
-                        <path d="M0.5 0.5H126.75" stroke="url(#paint0_linear_12002_52356)" stroke-linecap="round" />
-                        <defs>
-                            <linearGradient id="paint0_linear_12002_52356" x1="0.5" y1="1" x2="126.75" y2="1"
-                                gradientUnits="userSpaceOnUse">
-                                <stop stop-color="#282527" stop-opacity="0.2" />
-                                <stop offset="0.5" stop-color="#282527" />
-                                <stop offset="1" stop-color="#282527" stop-opacity="0.2" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span>OR</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="128" height="1" viewBox="0 0 128 1" fill="none">
-                        <path d="M0.5 0.5H126.75" stroke="url(#paint0_linear_12002_52356)" stroke-linecap="round" />
-                        <defs>
-                            <linearGradient id="paint0_linear_12002_52356" x1="0.5" y1="1" x2="126.75" y2="1"
-                                gradientUnits="userSpaceOnUse">
-                                <stop stop-color="#282527" stop-opacity="0.2" />
-                                <stop offset="0.5" stop-color="#282527" />
-                                <stop offset="1" stop-color="#282527" stop-opacity="0.2" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-
-                <div class="family-code-container" *ngIf="isParentUser()">
-
-                    <div class="family-code-label">
-                        <p>Facing errors?<br>Try entering the code instead.</p>
-                        <h1 (click)="copyFamilyCode()" role="button" tabindex="0" 
-                            (keydown.enter)="copyFamilyCode()" (keydown.space)="copyFamilyCode()"
-                            [attr.aria-label]="copyFeedbackMessage === 'Copied!' ? 'Family code copied' : 'Copy family code ' + familyCode"
-                            [class.is-copied]="copyFeedbackMessage === 'Copied!'" style="cursor: pointer;">
-                            {{ familyCode }}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="15"
-                                viewBox="0 0 13 15" fill="none">
-                                <path
-                                    d="M11.3333 12H4C3.63333 12 3.31944 11.8694 3.05833 11.6083C2.79722 11.3472 2.66667 11.0333 2.66667 10.6667V1.33333C2.66667 0.966667 2.79722 0.652778 3.05833 0.391667C3.31944 0.130556 3.63333 0 4 0H8.66667L12.6667 4V10.6667C12.6667 11.0333 12.5361 11.3472 12.275 11.6083C12.0139 11.8694 11.7 12 11.3333 12ZM8 4.66667V1.33333H4V10.6667H11.3333V4.66667H8ZM1.33333 14.6667C0.966667 14.6667 0.652778 14.5361 0.391667 14.275C0.130556 14.0139 0 13.7 0 13.3333V4H1.33333V13.3333H8.66667V14.6667H1.33333Z"
-                                    fill="#282527" />
-                            </svg>
-                        </h1>
-                        <span *ngIf="copyFeedbackMessage"
-                            class="family-code-copy-feedback"
-                            [class.family-code-copy-feedback--error]="copyFeedbackIsError"
-                            role="status" aria-live="polite">
-                            <span aria-hidden="true">{{ copyFeedbackIsError ? '!' : '✓' }}</span>
-                            {{ copyFeedbackMessage }}
-                        </span>
-                    </div>
-
-                </div>
-
-
-
             </div>
         </div>
     </div>
+
+      </ng-template>
+    </ion-modal>
 
     <!-- Remove Member Confirmation Popup -->
     <app-superme-popup 
@@ -316,4 +315,4 @@
         (secondaryAction)="cancelRemoveMember()">
     </app-superme-popup>
 
-</ion-content>
+</ng-template>

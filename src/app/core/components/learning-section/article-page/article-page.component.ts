@@ -190,11 +190,12 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     return String(
       article?.publishedBy
       || article?.author?.name
+      || (typeof article?.author === 'string' ? article.author : '')
       || article?.authorName
       || article?.createdByName
       || article?.createdBy?.name
       || createdBy
-      || 'SuperMeApp'
+      || ''
     );
   }
 
@@ -230,15 +231,15 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
   get articlePublishedDate(): string {
     const article = this.article as any;
-    const value = article?.publishedAt || article?.createdAt || article?.updatedAt;
+    const value = article?.publishedAt || article?.publishedDate;
     if (!value) return '';
 
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return '';
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat('en-GB', {
       month: 'long',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric', timeZone: 'UTC'
     }).format(date);
   }
 
@@ -554,7 +555,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   }
 
   private prepareArticleContent(content: string | null | undefined): void {
-    const html = String(content || '').trim();
+    const html = String(content || '').trim().replace(/<(\/?)h1\b/gi, '<$1h2');
     this.primaryArticleContent = html;
     this.secondaryArticleContent = '';
     if (!html || typeof document === 'undefined') return;

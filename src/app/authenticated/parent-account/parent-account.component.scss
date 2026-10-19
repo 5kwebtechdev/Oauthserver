@@ -1,5 +1,9 @@
 @use '../../../theme/breakpoints' as bp;
 
+$avatar-ring-gradient: conic-gradient(from -90deg, #a5a3d2 0deg, #8b8dcb 72deg,
+  #f3bf9d 142deg, #ee3e7e 238deg, #83c2b4 302deg,
+  #efbd9a 330deg, #a5a3d2 360deg);
+
 :host {
   display: block;
   min-height: 100%;
@@ -251,7 +255,9 @@ button {
     img {
       width: 40px;
       height: 40px;
-      border: 2px solid #8b8dcb;
+      border: 2px solid transparent;
+      background: linear-gradient(#c7acd9, #c7acd9) padding-box,
+        $avatar-ring-gradient border-box;
       border-radius: 50%;
       object-fit: cover;
     }
@@ -262,10 +268,14 @@ button {
       bottom: 2px;
       width: 6px;
       height: 6px;
-      border: 0.5px solid #ffffff;
+      border: 0.5px solid #282527;
       border-radius: 50%;
       background: #4caf50;
     }
+  }
+
+  &--selected .switcher-child__avatar i {
+    border-color: #ffffff;
   }
 
   &__details {
@@ -2851,7 +2861,12 @@ button {
 :host .parent-header.parent-header--referral {
   flex-wrap: nowrap; gap: 8px; min-height: 40px;
   .parent-header__identity { flex: 1 1 0; min-width: 0; gap: 6px; }
-  .parent-avatar { width: 40px; height: 40px; flex: 0 0 40px; }
+  .parent-avatar {
+    width: 40px; height: 40px; flex: 0 0 40px;
+    border: 3px solid transparent;
+    background: linear-gradient(#c7acd9, #c7acd9) padding-box,
+      $avatar-ring-gradient border-box;
+  }
   .parent-header__copy { min-width: 0; gap: 0; }
   .parent-header__copy strong, .parent-header__copy span {
     color: #282527; font: 500 13px/18px var(--font-sans);
@@ -2860,14 +2875,16 @@ button {
   .parent-header__copy strong { font-weight: 600; }
   .parent-header__tools { gap: 6px; }
   .parent-coin-pill {
-    flex-direction: column; gap: 0; padding: 0; min-width: 0;
-    height: auto; min-height: 0; background: transparent; border: 0; box-shadow: none;
-    img { width: 28px; height: 28px; }
+    flex-direction: row; gap: 2px; padding: 1px 3px; min-width: 0;
+    height: 32px; min-height: 32px; flex: 0 0 auto;
+    border: 1px solid transparent; border-radius: 31px;
+    background: linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(135deg, #8b8dcb, #f2bf98, #ff2d79) border-box;
+    box-shadow: 0 0 4px #6b656a33;
+    img { width: 28px; height: 28px; flex: 0 0 28px; }
     span {
-      padding: 1px 5px; border: 1px solid transparent; border-radius: 16px;
-      background: linear-gradient(#f6f2fb, #f6f2fb) padding-box,
-        linear-gradient(135deg, #8b8dcb, #f2bf98, #ff2d79) border-box;
-      font: 600 13px/18px var(--font-sans); white-space: nowrap;
+      color: #432477;
+      font: 800 13px/1.4 var(--font-sans); white-space: nowrap;
     }
   }
   .notification-button, .parent-refer-button {

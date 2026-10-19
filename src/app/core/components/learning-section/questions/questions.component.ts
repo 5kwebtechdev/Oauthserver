@@ -1,6 +1,7 @@
 import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, IonContent } from '@ionic/angular';
+import { IonicModule, IonContent, Platform } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
@@ -133,16 +134,16 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     leaveChallengePopupConfig: SupermePopupConfig = {
         image: 'assets/Images-Transparent/Image-Leaving-Learning.webp',
         imageAlt: 'Leaving Learning',
-        heading: 'You\'re Making Great Progress!',
-        subtitle: 'If you leave now, you\'ll need to restart from the beginning.',
+        heading: 'Don\'t quit now!',
+        subtitle: 'Finish the quiz to keep your progress. If you leave now, you\'ll need to restart from the beginning.',
         primaryCTA: {
-            text: 'Keep going',
+            text: 'Finish the quiz',
             buttonStyle: 'green',
             callback: () => this.showLeaveChallengePopup = false,
             buttonMedium: true
         },
         secondaryCTA: {
-            text: 'Exit',
+            text: 'Quit quiz',
             buttonStyle: 'bronze-transparent',
             callback: () => this.quitQuiz(),
             buttonMedium: true
@@ -201,13 +202,31 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     isSubmitting = false;
     private returnUrl = '/authed/content';
     private profileUserId: string | number | null = null;
+    private backButtonSubscription?: Subscription;
 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
         private learningService: LearningService,
-        private petAgeService: PetAgeService
+        private petAgeService: PetAgeService,
+        private platform: Platform
     ) { }
+
+    ionViewWillEnter(): void {
+        this.backButtonSubscription?.unsubscribe();
+        this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(100, () => {
+            if (this.showLeaveChallengePopup) {
+                this.showLeaveChallengePopup = false;
+            } else if (!this.showContentTimeExhaustPopup && !this.isSubmitting) {
+                this.onCancel();
+            }
+        });
+    }
+
+    ionViewWillLeave(): void {
+        this.backButtonSubscription?.unsubscribe();
+        this.backButtonSubscription = undefined;
+    }
 
     ngOnInit() {
         // getCurrentNavigation() is null by the time ngOnInit runs (navigation already complete).
@@ -445,6 +464,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.ionViewWillLeave();
         this.stopTimer();
     }
 

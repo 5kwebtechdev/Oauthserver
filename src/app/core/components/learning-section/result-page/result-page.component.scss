@@ -1,7 +1,8 @@
 .result-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
   padding: 16px;
 }
 
@@ -373,6 +374,20 @@ h2{
 }
 
 .continue-button {
-  margin-top: auto;
-  margin-bottom: 24px;
+  width: 100%;
+}
+
+.result-footer {
+  background: #fff;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  box-shadow: none;
+
+  &::before {
+    display: none;
+  }
+
+  superme-button {
+    display: block;
+    width: 100%;
+  }
 }

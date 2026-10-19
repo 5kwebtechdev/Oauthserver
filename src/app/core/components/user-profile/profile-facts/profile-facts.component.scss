@@ -105,6 +105,16 @@ details::-webkit-details-marker {
 }
 
 /* Warm variant */
+.facts--family {
+  .fact-item-list { gap: 12px; }
+  .fact-item { border-radius: 12px; box-shadow: 0 0 2px 2px rgba(107,101,106,.1); }
+  .fact-item summary.fact-main { min-height: 42px; padding: 8px 10px; gap: 8px; }
+  .fact-question { font: 600 13px/18px 'Nunito', sans-serif; }
+  .fact-icon { width: 16px; height: 16px; }
+  .family-chevron { transform: rotate(-90deg); }
+  .fact-item[open] .family-chevron { transform: rotate(90deg); }
+}
+
 .facts--warm .fact-question,
 .facts--warm .fact-desc,
 .facts--warm .facts-heading {
