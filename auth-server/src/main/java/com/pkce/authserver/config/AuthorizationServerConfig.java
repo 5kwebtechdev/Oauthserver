@@ -6,6 +6,8 @@ import com.pkce.authserver.security.PkceAwarePublicClientAuthenticationConverter
 import com.pkce.authserver.security.PkceAwarePublicClientAuthenticationProvider;
 import com.pkce.authserver.security.PkceAwareRefreshTokenGenerator;
 import com.pkce.authserver.security.RateLimitFilter;
+import com.pkce.authserver.security.AdminLogoutRevocationFilter;
+import com.pkce.authserver.service.AdminTokenSessionStore;
 import com.pkce.authserver.security.UserInfoAccessTokenResponseCustomizer;
 import com.pkce.authserver.service.ReuseDetectingAuthorizationService;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +46,7 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -74,7 +77,8 @@ public class AuthorizationServerConfig {
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, RateLimitFilter rateLimitFilter,
                                                                         RegisteredClientRepository registeredClientRepository,
                                                                         OAuth2AuthorizationService authorizationService,
-                                                                        UserInfoAccessTokenResponseCustomizer userInfoAccessTokenResponseCustomizer)
+                                                                        UserInfoAccessTokenResponseCustomizer userInfoAccessTokenResponseCustomizer,
+                                                                        AdminTokenSessionStore adminTokenSessions)
             throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 new OAuth2AuthorizationServerConfigurer();
@@ -116,6 +120,17 @@ public class AuthorizationServerConfig {
                 // not apply - and would otherwise 403 every public-client token request.
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
+                // Runs ahead of the OIDC logout endpoint so an admin's access token is marked
+                // revoked as they log out - Spring's own logout never invalidates it. Placed
+                // before the endpoint rather than replacing its response handling, which would
+                // mean re-implementing session invalidation and the post-logout redirect; see
+                // AdminLogoutRevocationFilter's Javadoc. Anchored on LogoutFilter because the
+                // authorization server's own endpoint filters have no registered order and
+                // cannot be used as a reference point; the filter restricts itself to
+                // /connect/logout, so sitting early in the chain costs nothing.
+                .addFilterBefore(new AdminLogoutRevocationFilter(
+                                authorizationService, registeredClientRepository, adminTokenSessions),
+                        LogoutFilter.class)
                 // OIDC discovery and the JWKS endpoint are meant to be publicly readable per
                 // spec (and per this project's own FRONTEND_AUTH_INTEGRATION.md, which
                 // documents GET /.well-known/openid-configuration as the first call any real

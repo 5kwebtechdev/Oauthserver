@@ -1,6 +1,7 @@
 package com.pkce.authserver.security;
 
 import com.nimbusds.jwt.JWTParser;
+import com.pkce.authserver.service.AdminTokenSessionStore;
 import com.pkce.authserver.service.SupermeUserInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,7 @@ import java.util.function.Consumer;
 public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2AccessTokenAuthenticationContext> {
 
     private final SupermeUserInfoService userInfoService;
+    private final AdminTokenSessionStore adminTokenSessions;
 
     @Value("${app.frontend.apk-dev-client-id:}")
     private String apkDevClientId;
@@ -52,13 +54,18 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
     public void accept(OAuth2AccessTokenAuthenticationContext context) {
         OAuth2AccessTokenAuthenticationToken authResult = context.getAuthentication();
         String tokenValue = authResult.getAccessToken().getTokenValue();
+        String clientId = authResult.getRegisteredClient().getClientId();
+
+        // This hook is the one place every issued access token passes through, for both the
+        // authorization_code and refresh_token grants, which is exactly what the admin session
+        // audit needs. Admin clients only - recordIssued ignores anything else.
+        recordAdminSession(clientId, tokenValue);
 
         // APK_DEV's User identity lives in SuperMeBE's dev database (superme_db), a genuinely
         // different physical database from the mindfullP1.User every other client reads - see
         // SupermeUserInfoService.userPayloadForDev's Javadoc for why this must branch here
         // rather than always using the prod lookup.
-        boolean isApkDev = !apkDevClientId.isBlank()
-                && apkDevClientId.equals(authResult.getRegisteredClient().getClientId());
+        boolean isApkDev = !apkDevClientId.isBlank() && apkDevClientId.equals(clientId);
 
         String subject;
         String authProvider;
@@ -84,5 +91,27 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
                 },
                 () -> log.warn("Access token subject '{}' has no matching user - omitting 'user' from the token response", subject)
         );
+    }
+
+    /**
+     * Audits an issued admin access token so logout can revoke it before its natural expiry.
+     * Parses the token separately from the block above because that one returns early when the
+     * "user" payload cannot be built - an admin principal has no SuperMeApp user row, which is
+     * the normal case here, and the session must still be recorded.
+     */
+    private void recordAdminSession(String clientId, String tokenValue) {
+        if (!adminTokenSessions.isAdminClient(clientId)) return;
+        try {
+            var claims = JWTParser.parse(tokenValue).getJWTClaimsSet();
+            if (claims.getJWTID() == null || claims.getExpirationTime() == null) return;
+            adminTokenSessions.recordIssued(
+                    clientId,
+                    claims.getJWTID(),
+                    claims.getSubject(),
+                    claims.getIssueTime() == null ? java.time.Instant.now() : claims.getIssueTime().toInstant(),
+                    claims.getExpirationTime().toInstant());
+        } catch (java.text.ParseException e) {
+            log.warn("Could not read the admin access token's id - logout will not be able to revoke it early", e);
+        }
     }
 }
