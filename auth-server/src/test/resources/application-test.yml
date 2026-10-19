@@ -1,3 +1,14 @@
+server:
+  servlet:
+    session:
+      cookie:
+        # Production sets Secure (see application.yml - the cookie must survive a cross-site
+        # XHR). MockMvc and the test server speak plain HTTP, where a Secure cookie is never
+        # sent back, so every session-based test would fail on a detail that is correct in
+        # production. SameSite stays none to match production's behaviour.
+        same-site: none
+        secure: false
+
 spring:
   datasource:
     # USER joins VALUE in NON_KEYWORDS because SuperMeBE's user table is literally named

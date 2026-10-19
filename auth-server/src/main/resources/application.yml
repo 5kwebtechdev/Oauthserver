@@ -1,6 +1,19 @@
 server:
   port: 9000
   forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        # This server is an identity provider for frontends on OTHER origins
+        # (devapk/devadmin/admin.supermeapp.com), so its session cookie has to survive being set
+        # by a cross-site XHR: /api/auth/google-login and /api/auth/handoff-login both establish
+        # the session that the following /oauth2/authorize then relies on. Without SameSite=None
+        # a browser defaults the cookie to Lax and silently DISCARDS it in that cross-site
+        # response - the request succeeds, the session is created server-side, and the very next
+        # authorize still shows the login page because the cookie was never kept. Secure is
+        # required alongside it: browsers reject SameSite=None without it.
+        same-site: none
+        secure: true
 
 spring:
   application:
