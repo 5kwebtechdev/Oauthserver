@@ -52,7 +52,8 @@ public class HandoffLoginController {
                                                             HttpServletResponse httpResponse) {
         String subject;
         try {
-            subject = redeemer.redeem(request.ticket(), clientId);
+            subject = redeemer.redeem(request.ticket(), clientId,
+                    httpRequest.getHeader("User-Agent"), clientIp(httpRequest));
         } catch (HandoffTicketRedeemer.TicketNotRedeemableException e) {
             // One response for expired, spent and unknown alike - nothing to learn by guessing.
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
@@ -79,5 +80,22 @@ public class HandoffLoginController {
         body.put("username", userDetails.getUsername());
         body.put("redirectTo", redirectTo);
         return ResponseEntity.ok(body);
+    }
+
+    /**
+     * Requests arrive through Cloudflare and nginx, so getRemoteAddr() is a proxy rather than
+     * the browser - an audit trail of proxy addresses records nothing. X-Forwarded-For gains an
+     * entry per hop, so the first is the client. Client-supplied and therefore an audit note
+     * only; nothing here may ever decide access.
+     */
+    private static String clientIp(HttpServletRequest request) {
+        String cloudflare = request.getHeader("CF-Connecting-IP");
+        if (cloudflare != null && !cloudflare.isBlank()) return cloudflare.trim();
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            int comma = forwarded.indexOf(',');
+            return (comma > 0 ? forwarded.substring(0, comma) : forwarded).trim();
+        }
+        return request.getRemoteAddr();
     }
 }

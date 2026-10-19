@@ -69,17 +69,34 @@ public class HandoffTicketRedeemer {
 
     /** Routes dev-client tickets to the same dev database where SuperMeBE issued them. */
     public String redeem(String ticket, String clientId) {
+        return redeem(ticket, clientId, null, null);
+    }
+
+    /**
+     * Also records where the pass was used. The device that asked for it and the browser that
+     * redeems it are different devices by definition, so holding both ends is what turns the row
+     * into a readable hand-off: this account moved from that app to this browser, at this time.
+     */
+    public String redeem(String ticket, String clientId, String userAgent, String ipAddress) {
         if (ticket == null || ticket.isBlank()) throw new TicketNotRedeemableException();
         JdbcTemplate tickets = apkDevClientId != null && !apkDevClientId.isBlank()
                 && apkDevClientId.equals(clientId) ? devJdbcTemplate : jdbcTemplate;
 
         // Claim first: only the request that actually flips used_at may proceed.
+        //
+        // The clock is the DATABASE's, not this process's. SuperMeBE writes expires_at through a
+        // connection set to Asia/Kolkata and this server reads through one set to UTC, so a Java
+        // Instant sent from here was being compared against a timestamp stored five and a half
+        // hours apart - which silently kept 60-second passes usable for hours. UTC_TIMESTAMP()
+        // on both sides is the same instant whatever each connection's session zone is.
         int claimed = tickets.update("""
                         UPDATE app_handoff_ticket
-                           SET used_at = ?
-                         WHERE ticket = ? AND used_at IS NULL AND expires_at > ?
+                           SET used_at = UTC_TIMESTAMP(),
+                               redeemed_user_agent = ?,
+                               redeemed_ip = ?
+                         WHERE ticket = ? AND used_at IS NULL AND expires_at > UTC_TIMESTAMP()
                         """,
-                Timestamp.from(Instant.now()), ticket, Timestamp.from(Instant.now()));
+                trim(userAgent, 512), trim(ipAddress, 64), ticket);
         if (claimed != 1) throw new TicketNotRedeemableException();
 
         String subject = tickets.query(
@@ -88,5 +105,12 @@ public class HandoffTicketRedeemer {
                 ticket);
         if (subject == null || subject.isBlank()) throw new TicketNotRedeemableException();
         return subject;
+    }
+
+    /** A client-supplied header must never be what makes the claim fail. */
+    private static String trim(String value, int max) {
+        if (value == null || value.isBlank()) return null;
+        String trimmed = value.trim();
+        return trimmed.length() <= max ? trimmed : trimmed.substring(0, max);
     }
 }
