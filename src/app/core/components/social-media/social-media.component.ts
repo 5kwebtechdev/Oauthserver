@@ -248,6 +248,24 @@ export class SocialMediaComponent implements OnInit {
         return;
       } catch (error: any) {
         if (error?.status !== 404 || error?.error?.registrationRequired !== true) throw error;
+
+        // Same route the auth-server's own /login page takes for an unregistered
+        // Google identity: hand the wizard the server's one-time ticket and let it
+        // exchange that for the verified identity (SignupComponent's
+        // completeGoogleSignupHandoff). Both entry points then run the identical
+        // flow. Keeping the identity server-side also means the wizard can recover
+        // it after a reload or a route change, rather than depending on session
+        // storage surviving every step - the failure mode this flow kept hitting.
+        const handoffTicket = String(error?.error?.handoffTicket || '').trim();
+        if (handoffTicket) {
+          await this.finishSocialLogin(loading);
+          void this.router.navigate(['/signup'], {
+            queryParams: { step: 1, googleSignupTicket: handoffTicket },
+            replaceUrl: true
+          });
+          return;
+        }
+
         // Use the identity verified by the backend for the read-only profile fields.
         // Keep the Google SDK's verified identity fields when an older or
         // client-specific auth-server response omits optional display data.
@@ -310,7 +328,14 @@ export class SocialMediaComponent implements OnInit {
   private async buildWebGoogleOAuthProfile(result: UserCredential): Promise<GoogleOAuthProfile> {
     const user = result.user;
     const oauthCredential = GoogleAuthProvider.credentialFromResult(result);
-    const idToken = String(oauthCredential?.idToken || await user.getIdToken()).trim();
+    // Only Google's own ID token is usable here. user.getIdToken() returns a
+    // FIREBASE token instead (iss: securetoken.google.com/<project>, aud: <project>),
+    // which the auth-server's GoogleIdentityVerifier rejects outright - it checks the
+    // issuer and audience against Google's. Falling back to it silently sent a token
+    // of the wrong type whenever Firebase did not surface the OAuth credential, so the
+    // two Google buttons were not sending the same thing at all: the auth-server's own
+    // login page posts the Google credential from Google Identity Services every time.
+    const idToken = String(oauthCredential?.idToken || '').trim();
     const accessToken = String(oauthCredential?.accessToken || '').trim();
     const providerId = String(user.providerData[0]?.uid || user.uid || '').trim();
     const email = String(user.email || '').trim();
