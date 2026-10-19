@@ -65,6 +65,7 @@ public class DefaultSecurityConfig {
                         .requestMatchers("/.well-known/appspecific/**").permitAll()
                         .requestMatchers("/api/auth/forgot-password/**").permitAll()
                         .requestMatchers("/api/auth/google-login").permitAll()
+                        .requestMatchers("/api/auth/handoff-login").permitAll()
                         .requestMatchers("/api/auth/google-signup-handoff").permitAll()
                         .requestMatchers("/api/auth/continue-with-email/**").permitAll()
                         // Registration is open by necessity - the caller has no account yet. It
@@ -83,7 +84,7 @@ public class DefaultSecurityConfig {
                 // sees this server's CSRF cookie - same reasoning as the OAuth2 token
                 // endpoint in AuthorizationServerConfig.
                 .csrf((csrf) -> csrf.ignoringRequestMatchers(
-                        "/api/auth/forgot-password/**", "/api/auth/google-login",
+                        "/api/auth/forgot-password/**", "/api/auth/google-login", "/api/auth/handoff-login",
                         "/api/auth/google-signup-handoff",
                         "/api/auth/continue-with-email/**", "/api/auth/register", "/api/auth/register/**",
                         "/v1/**"))
@@ -129,6 +130,8 @@ public class DefaultSecurityConfig {
         credentialedConfig.setAllowedHeaders(List.of("*"));
         credentialedConfig.setAllowCredentials(true);
         source.registerCorsConfiguration("/api/auth/google-login", credentialedConfig);
+        // Sets the session cookie the handoff relies on, so the browser must be allowed to store it.
+        source.registerCorsConfiguration("/api/auth/handoff-login", credentialedConfig);
         source.registerCorsConfiguration("/api/auth/google-signup-handoff", statelessConfig);
         source.registerCorsConfiguration("/api/auth/continue-with-email/**", credentialedConfig);
         source.registerCorsConfiguration("/api/auth/register", credentialedConfig);
