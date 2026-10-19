@@ -58,11 +58,7 @@ export class HandoffLinkService {
     if (this.isOwnDomain(url) && this.authService.isLoggedIn()) {
       try {
         const ticket = await this.requestTicket();
-        if (ticket) {
-          const withTicket = new URL(url, window.location.href);
-          withTicket.searchParams.set('t', ticket);
-          target = withTicket.toString();
-        }
+        if (ticket) target = this.buildHandoffUrl(url, ticket);
       } catch (error) {
         console.warn('[Handoff] Could not obtain a sign-in pass; opening the link as a normal visit', error);
       }
@@ -76,6 +72,14 @@ export class HandoffLinkService {
       return;
     }
     window.location.assign(target);
+  }
+
+  private buildHandoffUrl(destinationUrl: string, ticket: string): string {
+    const destination = new URL(destinationUrl, window.location.href);
+    const landing = new URL('/land', destination.origin);
+    landing.searchParams.set('t', ticket);
+    landing.searchParams.set('next', `${destination.pathname}${destination.search}${destination.hash}`);
+    return landing.toString();
   }
 
   private async requestTicket(): Promise<string> {

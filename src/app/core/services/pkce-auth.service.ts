@@ -100,7 +100,7 @@ export class PkceAuthService {
     await this.init();
     if (this.error) throw new Error(this.error);
     await firstValueFrom(this.injector.get(HttpClient).post(
-      environment.oauth.issuer + '/api/auth/handoff-login',
+      `${environment.oauth.issuer}/api/auth/handoff-login?client_id=${encodeURIComponent(environment.oauth.clientId)}`,
       { ticket },
       { withCredentials: true }
     ).pipe(timeout({ first: 20_000 })));
