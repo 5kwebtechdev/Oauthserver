@@ -1,9 +1,12 @@
 <ng-container *ngIf="presentation === 'inline'" [ngTemplateOutlet]="moodContent"></ng-container>
 <ng-container *ngIf="presentation === 'entry'" [ngTemplateOutlet]="compactMoodPicker"></ng-container>
 <ng-container *ngIf="presentation === 'dropdown' && dialogOpen">
-  <button type="button" class="home-mood-dropdown__backdrop" aria-label="Close mood choices" [disabled]="saving" (click)="closeDialog()"></button>
+  <button type="button" class="home-mood-dropdown__backdrop" aria-label="Close mood choices" [disabled]="saving || !hasSavedMood" (click)="closeDialog()"></button>
   <div class="home-mood-dropdown" role="group" aria-label="Choose your mood">
     <p class="home-mood-dropdown__title">How are you feeling?</p>
+    <button *ngIf="hasSavedMood" class="home-mood-dropdown__close" type="button" aria-label="Close mood picker" [disabled]="saving" (click)="closeDialog()">
+      <img src="assets/figma/mood-popup/close.svg" alt="">
+    </button>
     <ng-container [ngTemplateOutlet]="compactMoodPicker"></ng-container>
   </div>
 </ng-container>
@@ -26,10 +29,10 @@
   <button type="button" class="entry-mood-submit" [disabled]="!popupSelection || saving || dailyLimitReached"
     (click)="setVibe()">{{ saving ? 'Saving…' : 'Set the Vibe' }}</button>
 </div></ng-template>
-<ion-modal *ngIf="presentation === 'dialog'" class="home-mood-dialog" [isOpen]="dialogOpen" [backdropDismiss]="!saving" (didDismiss)="closeDialog()">
+<ion-modal *ngIf="presentation === 'dialog'" class="home-mood-dialog" [isOpen]="dialogOpen" [backdropDismiss]="hasSavedMood && !saving" [canDismiss]="hasSavedMood && !saving" (didDismiss)="closeDialog()">
   <ng-template>
     <div class="home-mood-dialog__body">
-      <button class="home-mood-dialog__close" type="button" aria-label="Close mood picker" [disabled]="saving" (click)="closeDialog()">
+      <button *ngIf="hasSavedMood" class="home-mood-dialog__close" type="button" aria-label="Close mood picker" [disabled]="saving" (click)="closeDialog()">
         <img src="assets/figma/mood-popup/close.svg" alt="">
       </button>
       <header class="home-mood-dialog__heading">

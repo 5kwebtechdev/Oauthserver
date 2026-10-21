@@ -297,7 +297,9 @@ export class AuthService {
     console.log('[AuthService] Full API URL:', loginUrl);
     console.log('[AuthService] Base API URL from environment:', this.apiUrl);
 
-    return this.http.post<AuthResponse>(loginUrl, credentials)
+    return this.http.post<AuthResponse>(loginUrl, credentials, {
+      headers: new HttpHeaders({ 'X-Skip-Profile-Selector': 'true' })
+    })
       .pipe(
         tap({
           next: (response) => {
@@ -1400,7 +1402,9 @@ export class AuthService {
     });
 
     // Use a lightweight endpoint to validate token
-    return this.http.get<any>(`${this.apiUrl}/auth/validate`, { headers }).pipe(
+    return this.http.get<any>(`${this.apiUrl}/auth/validate`, {
+      headers: headers.set('X-Skip-Profile-Selector', 'true')
+    }).pipe(
       map(() => true),
       catchError((error) => {
         console.log('[AuthService] Session validation failed:', error.status);

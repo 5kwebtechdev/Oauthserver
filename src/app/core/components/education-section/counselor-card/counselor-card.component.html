@@ -2,6 +2,7 @@
               <div class="counselor-card__top">
                 <div class="counselor-card__photo">
                   <app-profile-image
+                    [fallbackCategory]="counselor.entityType === 'ACADEMY' ? 'academy' : (education ? 'tutor' : 'counselor')"
                     [src]="getProfileImage(counselor)"
                     [name]="getName(counselor)"
                     [alt]="getName(counselor) + ' profile image'">

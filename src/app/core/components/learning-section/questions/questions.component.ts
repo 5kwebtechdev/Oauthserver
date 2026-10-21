@@ -11,7 +11,7 @@ import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/s
 import { Challenge, ChallengeQuestion, QuestionOption } from 'src/app/core/models/learning.models';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
-import { environment } from 'src/environments/environment';
+import { ShareLinkService } from '../../../services/share-link.service';
 
 interface Question {
     id: number;
@@ -55,12 +55,11 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     async shareQuiz(): Promise<void> {
         if (!this.challenge?.challengeId) return;
         const title = this.challenge.name || this.quizTitle;
-        const baseUrl = String(environment.publicWebUrl || 'https://supermeapp.com').replace(/\/+$/, '');
         try {
             await Share.share({
                 title,
                 text: `Try ${title} on SuperMe!`,
-                url: `${baseUrl}/authed/content/description/${encodeURIComponent(this.challenge.challengeId)}`,
+                url: this.shareLinks.buildListingLink('quiz', this.challenge.challengeId),
                 dialogTitle: `Share ${title}`
             });
         } catch (error: any) {
@@ -209,7 +208,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private learningService: LearningService,
         private petAgeService: PetAgeService,
-        private platform: Platform
+        private platform: Platform,
+        private shareLinks: ShareLinkService
     ) { }
 
     ionViewWillEnter(): void {

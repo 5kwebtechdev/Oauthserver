@@ -16,6 +16,7 @@ export interface MoodData {
 
 export interface VibesDisplayResponse {
   userId: number;
+  assignedTo?: string | number;
   userName: string;
   relationship: string;
   mood: string;

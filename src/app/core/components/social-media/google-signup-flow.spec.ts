@@ -351,7 +351,7 @@ describe('Google signup request sequencing', () => {
     expect(onboarding.getRegistrationState()).toBeNull();
     expect(onboarding.getResumeNavigation(user)).toBeNull();
     expect(user.onboardingStep).toBe(7);
-    expect(signup.navCtrl.navigateRoot).toHaveBeenCalledWith('/parent-account', { animated: false });
+    expect(signup.navCtrl.navigateRoot).toHaveBeenCalledWith('/parent-account', { animated: false, replaceUrl: true });
     http.expectNone('/v1/auth/oauth2/mobile-login');
   });
 

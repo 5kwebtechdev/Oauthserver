@@ -128,13 +128,14 @@
                 <section class="child-event-cards" *ngIf="showsPlannerEvents" aria-label="Events">
                     <header class="child-event-cards__header">
                         <h2><img src="assets/figma/home-glance/upcoming-events.webp" alt="" />Upcoming Events</h2>
-                        <button type="button" (click)="openAllEvents()">View all</button>
+                        <button type="button" disabled>View all</button>
                     </header>
                     <div class="child-event-cards__rail">
                         <button type="button" class="child-event-card" *ngFor="let event of childEventItems"
                             (click)="openChildEventDetail(event)">
-                            <img [src]="getChildEventIcon(event)" alt="" />
-                            <span>
+                            <span class="child-event-card__icon" aria-hidden="true"
+                                [style.--event-icon]="'url(' + getChildEventIcon(event) + ')'"></span>
+                            <span class="child-event-card__content">
                                 <strong>{{ getChildItemTitle(event) }}</strong>
                                 <em>{{ getChildEventSubtitle(event) }}</em>
                             </span>

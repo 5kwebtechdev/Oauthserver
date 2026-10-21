@@ -2344,11 +2344,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     return this.glancePlannerCards.length > 0;
   }
 
-  /** Upcoming personal events for the current month, resolved without demo data. */
+  /** Upcoming personal events from today through the next 30 calendar days. */
   get glanceUpcomingEvents(): any[] {
     const today = this.glanceStartOfDay(new Date());
-    const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    monthEnd.setHours(23, 59, 59, 999);
+    const windowEndExclusive = new Date(today);
+    windowEndExclusive.setDate(windowEndExclusive.getDate() + 31);
 
     return this.glanceUpcomingEventRaw
       .map(event => {
@@ -2357,7 +2357,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       })
       .filter((event: any) => {
         const occurrence = event?.__glanceEventDate as Date | undefined;
-        return !!occurrence && occurrence >= today && occurrence <= monthEnd;
+        return !!occurrence && occurrence >= today && occurrence < windowEndExclusive;
       })
       .sort((left, right) => left.__glanceEventDate.getTime() - right.__glanceEventDate.getTime());
   }
@@ -2376,17 +2376,32 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     this.glancePlannerLoading = true;
-    // Compare both existing endpoints before rendering calendar rows as Planner.
+    const isParentHome = (this.isParentOverride ?? this.authService.isParentUser());
+    const windowEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30);
+    const monthDates: string[] = [formatted];
+    if (isParentHome) {
+      const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+      while (nextMonth <= windowEnd) {
+        monthDates.push(`${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}-01`);
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+      }
+    }
+    // Parent Planner can expose child Events through its calendar projection,
+    // including in the next month. Keep /events/all as the preferred full record.
     forkJoin({
-      calendar: this.calendarService.getUserPlannerCalendarMonth(formatted),
-      events: this.eventApi.getEvents()
+      calendars: forkJoin(monthDates.map(date => this.calendarService.getUserPlannerCalendarMonth(date))),
+      events: this.eventApi.getEvents().pipe(catchError(() => of([])))
     }).subscribe({
-      next: ({ calendar, events }: { calendar: any; events: any[] }) => {
+      next: ({ calendars, events }: { calendars: any[]; events: any[] }) => {
+        const calendar = calendars[0];
         const calendarEvents = Array.isArray(calendar?.events) ? calendar.events : [];
-        // The calendar endpoint supplies Planner schedules, while /events/all
-        // supplies personal Events. Calendar timetable rows may have event-like
-        // fields, so do not feed them into Upcoming Events.
-        this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents([], events || []);
+        const projectedEvents = isParentHome
+          ? calendars.reduce((all: any[], month: any) => all.concat(Array.isArray(month?.events) ? month.events : []), [])
+            .filter((item: any) => isHomePersonalEvent(item))
+            .map((item: any) => ({ ...item, name: item.name || item.title,
+              eventDate: item.eventDate || item.event_date || item.startDate || item.start_date }))
+          : [];
+        this.glanceUpcomingEventRaw = this.mergeGlanceUpcomingEvents(projectedEvents, events || []);
         const eventMirrors = calendarEvents.filter((item: any) => this.isConfirmedEventMirror(item));
         const plannerCandidates = calendarEvents.filter((item: any) => this.isGlancePlannerSchedule(item));
         this.glancePlannerRaw = plannerCandidates.filter((item: any) => !this.isConfirmedEventMirror(item));
@@ -2552,11 +2567,16 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const year = referenceDate.getFullYear();
     const month = referenceDate.getMonth();
     if (recurrence === 'YEARLY') {
-      if (original.getMonth() !== month) return null;
-      return new Date(year, month, Math.min(original.getDate(), new Date(year, month + 1, 0).getDate()));
+      const occurrence = (candidateYear: number) => new Date(candidateYear, original.getMonth(),
+        Math.min(original.getDate(), new Date(candidateYear, original.getMonth() + 1, 0).getDate()));
+      const thisYear = occurrence(year);
+      return thisYear >= referenceDate ? thisYear : occurrence(year + 1);
     }
     if (recurrence === 'MONTHLY') {
-      return new Date(year, month, Math.min(original.getDate(), new Date(year, month + 1, 0).getDate()));
+      const occurrence = (candidateYear: number, candidateMonth: number) => new Date(candidateYear, candidateMonth,
+        Math.min(original.getDate(), new Date(candidateYear, candidateMonth + 1, 0).getDate()));
+      const thisMonth = occurrence(year, month);
+      return thisMonth >= referenceDate ? thisMonth : occurrence(year, month + 1);
     }
     return this.glanceStartOfDay(original);
   }
@@ -2582,12 +2602,15 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   private isGlancePersonalEventRecord(item: any): boolean {
     // These fields are required by the personal Event API contract. A calendar
     // timetable mirrored as an event-shaped row must not enter Upcoming Events.
+    const parentCalendarProjection = (this.isParentOverride ?? this.authService.isParentUser())
+      && Boolean(item?.startDate || item?.start_date)
+      && isHomePersonalEvent(item);
     return isHomePersonalEvent(item)
       && Boolean(String(item?.name || '').trim())
       && Boolean(String(item?.eventDate || item?.event_date || '').trim())
-      && Boolean(String(item?.eventType || item?.event_type || '').trim())
-      && typeof (item?.isPrivate ?? item?.is_private) === 'boolean'
-      && typeof (item?.allDay ?? item?.all_day) === 'boolean';
+      && (parentCalendarProjection || (Boolean(String(item?.eventType || item?.event_type || '').trim())
+        && typeof (item?.isPrivate ?? item?.is_private) === 'boolean'
+        && typeof (item?.allDay ?? item?.all_day) === 'boolean'));
   }
 
   private glancePlannerOccursOnDate(item: any, date: Date): boolean {

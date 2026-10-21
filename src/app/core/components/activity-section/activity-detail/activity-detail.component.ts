@@ -575,6 +575,10 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     return `assets/app-assets/activity-detail/${name}-${theme}.svg`;
   }
 
+  get showHighPriority(): boolean {
+    return this.habit?.type !== 'timetable' && this.habit?.priority?.toLowerCase() === 'high';
+  }
+
   private formatActivityDate(value: Date | string): string {
     const date = new Date(value);
     if (isNaN(date.getTime())) return '—';

@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { getProfileImageInitials } from '../../utils/profile-image.util';
+import { eduHubProfileFrame } from './eduhub-profile-frame';
 
 @Component({
   selector: 'app-profile-image',
@@ -14,6 +15,26 @@ export class ProfileImageComponent implements OnChanges {
   @Input() src: string | null | undefined;
   @Input() name: string | null | undefined;
   @Input() alt = '';
+  @Input() fallbackCategory = '';
+
+  get frame() { return eduHubProfileFrame(this.fallbackCategory); }
+
+  @HostBinding('class.eduhub-fallback')
+  get hasCategoryFallback(): boolean { return !this.showImage && !!this.frame; }
+
+  @HostBinding('style.width.px')
+  get fallbackWidth(): number | null { return this.hasCategoryFallback ? this.frame!.width : null; }
+
+  @HostBinding('style.height.px')
+  get fallbackHeight(): number | null { return this.hasCategoryFallback ? this.frame!.height : null; }
+
+  get listingInitials(): string {
+    const words = String(this.name || '').trim().split(/\s+/)
+      .map(word => word.replace(/[^\p{L}\p{N}]/gu, '')).filter(Boolean);
+    return words.length > 1
+      ? (Array.from(words[0])[0] + Array.from(words[words.length - 1])[0]).toLocaleUpperCase()
+      : this.initials;
+  }
 
   imageFailed = false;
 

@@ -5,7 +5,7 @@
               (keydown.space)="openFromKeyboard($event)">
               <div class="listing-card__top">
                 <div class="listing-card__image" [class.listing-card__image--empty]="!item.image">
-                  <app-profile-image [src]="item.image" [name]="item.name" [alt]="item.name"></app-profile-image>
+                  <app-profile-image [fallbackCategory]="category + ' ' + (item.entityType || '')" [src]="item.image" [name]="item.name" [alt]="item.name"></app-profile-image>
                 </div>
 
                 <div class="listing-card__details">

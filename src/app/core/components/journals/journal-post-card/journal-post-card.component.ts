@@ -1,6 +1,7 @@
 import { Component, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { dailyMoodRecord } from '../../../services/daily-mood-records.service';
 
 export interface JournalEntry {
   id?: string | number;
@@ -95,28 +96,11 @@ export class JournalPostCardComponent implements OnInit {
   }
 
   getEmotion(entry: JournalEntry): { label: string; image: string } | null {
-    const mood = (entry.mood || '').toLowerCase();
-    if (!mood) return null;
-
-    const emotionMap: { [k: string]: { label: string; image: string } } = {
-      happy: { label: 'Happy', image: 'assets/figma/journal/mood-happy.webp' },
-      excited: { label: 'Excited', image: 'assets/figma/journal/mood-excited.webp' },
-      calm: { label: 'Calm', image: 'assets/figma/journal/mood-calm.webp' },
-      sad: { label: 'Sad', image: 'assets/figma/journal/mood-sad.webp' },
-      anxious: { label: 'Anxious', image: 'assets/figma/journal/mood-anxious.webp' },
-      frustrated: { label: 'Frustrated', image: 'assets/figma/journal/mood-frustrated.webp' },
-      frustated: { label: 'Frustated', image: 'assets/figma/journal/mood-frustrated.webp' },
-      angry: { label: 'Angry', image: 'assets/figma/journal/mood-frustrated.webp' }
-    };
-
-    return emotionMap[mood] || null;
+    return dailyMoodRecord(entry.mood);
   }
 
   getMoodTone(mood?: string): 'great' | 'okay' | 'low' {
-    const value = (mood || '').trim().toLowerCase();
-    if (['happy', 'excited', 'calm', 'great', 'good', 'joyful'].includes(value)) return 'great';
-    if (['sad', 'low', 'unwell', 'bad', 'upset'].includes(value)) return 'low';
-    return 'okay';
+    return dailyMoodRecord(mood)?.tone || 'okay';
   }
 
   getTagIcon(tag: string): string {

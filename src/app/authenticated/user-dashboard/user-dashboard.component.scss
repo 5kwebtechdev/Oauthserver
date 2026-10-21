@@ -2125,6 +2125,14 @@ footer {
   background: #fff;
   box-shadow: 0 16px 48px rgba(40, 37, 39, .2);
   > img { display: block; width: 100%; height: auto; }
+  &__gift-status {
+    margin: 0;
+    padding: 0 18px 18px;
+    color: #432477;
+    font-size: 14px;
+    text-align: center;
+    button { border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+  }
   &__close {
     position: absolute;
     top: 12px;

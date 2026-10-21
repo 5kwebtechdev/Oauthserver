@@ -681,9 +681,7 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
       fullAddress,
       phone: this.firstText(item.phone),
       email: this.firstText(item.email),
-      image: /station(?:e|ar)y/i.test(this.categoryLabel)
-        ? ''
-        : this.firstText(item.imageUrls?.[0], item.imageUrl, item.thumbnailUrl),
+      image: this.firstText(item.imageUrls?.[0], item.imageUrl, item.thumbnailUrl),
       verified: !!item.verified,
       distanceKm: this.toFiniteNumber(item.distanceKm ?? item.distance),
       latitude: this.toFiniteNumber(item.latitude),

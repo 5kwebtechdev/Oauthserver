@@ -1,5 +1,6 @@
 import { ElementRef } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+import { convertToParamMap } from '@angular/router';
 import { NEVER, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
 
@@ -27,6 +28,43 @@ describe('LoginComponent password handling', () => {
   });
 
   afterEach(() => component.ngOnDestroy());
+
+  it('returns Parent login to the signup entry that opened it', () => {
+    const navigateRoot = jasmine.createSpy().and.resolveTo(true);
+    (component as any).navCtrl = { navigateRoot };
+    (component as any).route = { snapshot: { queryParamMap: convertToParamMap({ from: 'signup-entry' }) } };
+    component.goBack();
+    expect(navigateRoot).toHaveBeenCalledOnceWith('/signup', {
+      queryParams: { step: 0.1, reviewPrevious: true }, animated: false, replaceUrl: true
+    });
+  });
+
+  it('uses the same single back action for Android, without invoking the global handler', () => {
+    const navigateRoot = jasmine.createSpy().and.resolveTo(true);
+    const next = jasmine.createSpy('next');
+    (component as any).navCtrl = { navigateRoot };
+    (component as any).router = { url: '/login?from=signup-entry' };
+    (component as any).route = { snapshot: { queryParamMap: convertToParamMap({ from: 'signup-entry' }) } };
+    (component as any).handleSystemBack(next);
+    expect(navigateRoot).toHaveBeenCalledTimes(1);
+    expect(next).not.toHaveBeenCalled();
+    (component as any).router.url = '/signup?step=1';
+    (component as any).handleSystemBack(next);
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns a direct Login entry to role selection without pushing another Login history entry', () => {
+    const navigateRoot = jasmine.createSpy().and.resolveTo(true);
+    const resetRoleSelection = jasmine.createSpy('resetRoleSelection');
+    (component as any).navCtrl = { navigateRoot };
+    (component as any).onboardingState = { resetRoleSelection };
+    (component as any).route = { snapshot: { queryParamMap: convertToParamMap({}) } };
+    component.goBack();
+    expect(resetRoleSelection).toHaveBeenCalledTimes(1);
+    expect(navigateRoot).toHaveBeenCalledOnceWith('/signup', {
+      queryParams: { step: 1 }, animated: false, replaceUrl: true
+    });
+  });
 
   it('starts blank and clears restored values on revisit and page restore while retaining email', () => {
     component.signInForm.patchValue({ email: 'user@example.com', password: 'old-password' });

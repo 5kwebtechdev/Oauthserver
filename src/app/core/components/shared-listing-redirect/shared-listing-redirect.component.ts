@@ -58,6 +58,7 @@ export class SharedListingRedirectComponent implements OnInit {
   private internalRoute(type: SharedListingType, id: string): string {
     const encodedId = encodeURIComponent(id);
     switch (type) {
+      case 'quiz': return `/authed/content/description/${encodedId}`;
       case 'counselor': return `/authed/counselors/${encodedId}`;
       case 'event': return `/authed/education/events?sharedId=${encodedId}`;
       case 'workshop': return `/authed/education/workshops?sharedId=${encodedId}`;
@@ -72,7 +73,7 @@ export class SharedListingRedirectComponent implements OnInit {
   }
 
   private isSupportedType(type: SharedListingType): boolean {
-    return ['tutor', 'counselor', 'academy', 'event', 'workshop', 'shop', 'book'].includes(type);
+    return ['quiz', 'tutor', 'counselor', 'academy', 'event', 'workshop', 'shop', 'book'].includes(type);
   }
 
   private redirectToStore(): void {

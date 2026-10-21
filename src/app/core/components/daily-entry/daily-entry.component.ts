@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, NgZone, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, Input, NgZone, OnChanges, OnDestroy, OnInit, Optional } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { App } from '@capacitor/app';
 import { Capacitor, PluginListenerHandle } from '@capacitor/core';
 import { firstValueFrom, Subscription, timeout } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
+import { CoinService } from '../../services/coin.service';
 import { ApiOverlayType, PetMessageApiService, PetMessageApiResponse, isReferralOverlay } from '../../services/pet-message-api.service';
 import { ReferralTestPopupComponent } from './referral-test-popup.component';
 import { ENABLE_REFERRAL_TEST_POPUP } from './referral-popup-testing.config';
@@ -13,13 +14,15 @@ import { StreakRestoreApi } from '../../api/streak-restore.api';
 import { StreakMilestoneComponent } from '../streak-milestone/streak-milestone.component';
 import { MoodSelectorComponent } from '../mood-selector/mood-selector.component';
 import { messageWithUsername } from '../../models/greeting-username';
+import { NotificationNavigationService } from '../../services/notification-navigation.service';
+import { Platform } from '@ionic/angular';
 
 /** One owner for entry overlays, independent of the destination route. */
 @Component({
   selector: 'app-daily-entry', standalone: true,
   imports: [CommonModule, StreakMilestoneComponent, MoodSelectorComponent, ReferralTestPopupComponent],
   template: `
-    <div *ngIf="active && !blocked" class="entry-backdrop"
+    <div *ngIf="active && !blocked && !destinationOpening" class="entry-backdrop"
       [class.entry-backdrop--referral-received]="active === 'REFERRAL_RECEIVED' && referralTestUiEnabled"
       [class.entry-backdrop--referral-joined]="active === 'REFERRAL_JOINED' && referralTestUiEnabled"
       role="dialog" aria-modal="true" [attr.aria-label]="isReferral ? 'Referral celebration' : 'Daily check-in'">
@@ -33,9 +36,6 @@ import { messageWithUsername } from '../../models/greeting-username';
         [notice]="notice" (restore)="restore()"
         (continue)="dismiss()"></app-streak-milestone>
       <ng-template #prompt><section *ngIf="active === 'MOOD_PROMPT'" class="entry-mood-sheet" aria-labelledby="entry-mood-title">
-        <button class="entry-mood-close" type="button" aria-label="Close mood popup" [disabled]="busy" (click)="dismiss()">
-          <img src="assets/figma/mood-popup/close.svg" alt="">
-        </button>
         <header class="entry-mood-heading">
           <h2 id="entry-mood-title">How are you feeling now?</h2>
           <p>Select a mood to update your vibe.</p>
@@ -56,15 +56,9 @@ import { messageWithUsername } from '../../models/greeting-username';
     .entry-mood-heading { width:100%; padding:2px 28px 0; text-align:center; }
     .entry-mood-heading h2 { margin:0; color:#432477; font-size:20px; font-weight:700; line-height:27px; white-space:nowrap; }
     .entry-mood-heading p { margin:0; color:#432477; font-size:13px; font-weight:600; line-height:18px; }
-    .entry-mood-close { position:absolute; z-index:1; top:12px; right:16px; width:36px; height:36px; margin:0; padding:8px;
-      border:0; border-radius:50%; background:transparent; cursor:pointer; }
-    .entry-mood-close img { display:block; width:20px; height:20px; }
-    .entry-mood-close:focus-visible { outline:2px solid #432477; }
-    .entry-mood-close:disabled { opacity:.5; }
     .entry-mood-sheet mood-selector { width:100%; }
     @media(max-width:350px) { .entry-mood-heading { padding-inline:20px; }
-      .entry-mood-heading h2 { font-size:clamp(16px,5vw,20px); }
-      .entry-mood-close { right:10px; } }
+      .entry-mood-heading h2 { font-size:clamp(16px,5vw,20px); } }
   `]
 })
 export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
@@ -88,6 +82,7 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
   private finishedKey = '';
   private lastAttempt = 0;
   private subscriptions = new Subscription();
+  private backButtonSubscription?: Subscription;
   private listener?: PluginListenerHandle;
   private timer?: ReturnType<typeof setInterval>;
   private seen = new Set<string>();
@@ -96,15 +91,31 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(private auth: AuthService, private api: PetMessageApiService,
     private streak: StreakRestoreApi, private router: Router, private zone: NgZone,
-    private userService: UserService) {}
+    private userService: UserService,
+    @Optional() private notificationNavigation?: NotificationNavigationService,
+    @Optional() private platform?: Platform,
+    @Optional() private coins?: CoinService) {}
 
   get isReward(): boolean { return this.active === 'DAILY_LOGIN' || this.active === 'STREAK_MILESTONE'; }
   get isReferral(): boolean { return isReferralOverlay(this.active); }
+  get destinationOpening(): boolean { return this.notificationNavigation?.isOpeningDestination ?? false; }
+  get mandatoryMoodOpen(): boolean { return this.active === 'MOOD_PROMPT' && !this.blocked && !this.destinationOpening; }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscape(event: KeyboardEvent): void {
+    if (this.mandatoryMoodOpen) event.preventDefault();
+  }
 
   ngOnChanges(): void { if (!this.blocked) this.wake(); }
 
   ngOnInit(): void {
+    this.backButtonSubscription = this.platform?.backButton.subscribeWithPriority(1000, processNextHandler => {
+      if (!this.mandatoryMoodOpen) processNextHandler();
+    });
     this.subscriptions.add(this.router.events.subscribe(event => { if (event instanceof NavigationEnd) this.wake(); }));
+    if (this.notificationNavigation) {
+      this.subscriptions.add(this.notificationNavigation.destinationSettled$.subscribe(() => this.wake()));
+    }
     this.subscriptions.add(this.auth.isAuthenticated$.subscribe(() => this.wake()));
     document.addEventListener('visibilitychange', this.wake);
     window.addEventListener('online', this.wake);
@@ -121,6 +132,8 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
   private context(): string {
     const user = this.auth.getUserData();
     if (!this.auth.isLoggedIn() || !user || document.visibilityState === 'hidden') return '';
+    // Let a tapped notification finish routing before presenting the daily overlay.
+    if (this.router.navigated === false) return '';
     if (localStorage.getItem('family_parent_user_data')) return '';
     if (/\/(login|signup|sign-up|join-family|instructions-for|select-role|family-onboard)(\/|\?|$)/.test(this.router.url)) return '';
     const id = user.id ?? user.userId ?? this.auth.getUserId();
@@ -170,7 +183,7 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
     if (key !== this.entryKey) { this.active = null; this.referralEvent = null; this.rewardEventId = null; this.entryKey = key; this.finishedKey = ''; this.lastAttempt = 0; }
     // New referrals can arrive after today's normal entry queue has finished.
     const retryInterval = key === this.finishedKey ? 30_000 : 10_000;
-    if (!key || this.busy || this.active || Date.now() - this.lastAttempt < retryInterval) return;
+    if (!key || this.destinationOpening || this.busy || this.active || Date.now() - this.lastAttempt < retryInterval) return;
     this.busy = true;
     this.lastAttempt = Date.now();
     try {
@@ -178,6 +191,9 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
       for (let attempt = 0; attempt < 5; attempt++) {
         const response = await firstValueFrom(this.api.getHomeOverlay(true).pipe(timeout(15_000)));
         if (this.destroyed || this.blocked || this.context() !== key) return;
+        // A tap can arrive while the read-only eligibility request is in flight.
+        // Wait to claim/present any reward until its destination is on screen.
+        if (this.destinationOpening) { this.lastAttempt = 0; return; }
         let type = response.hasOverlay ? response.overlayType : null;
         const isParent = String(this.auth.getUserData()?.relationship).toUpperCase() === 'PARENT';
         // Bonus coins are already celebrated by the reward/streak popup. Acknowledge
@@ -189,7 +205,12 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
           this.markSeen(type);
           continue;
         }
-        if (isParent && (!type || type === 'NONE')) { this.finishedKey = key; return; }
+        if (isParent && (!type || type === 'NONE')) {
+          this.finishedKey = key;
+          // The server may have credited today's login bonus during entry.
+          if (this.coins) this.subscriptions.add(this.coins.loadAccountCoinHistory().subscribe({ error: () => {} }));
+          return;
+        }
         if (isReferralOverlay(type)) {
           if (response.eventId == null || !String(response.eventId).trim()) return;
           if (!this.referralTestUiEnabled || this.hasSeen(type, response.eventId)) {
@@ -202,7 +223,11 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
           this.notice = '';
           this.active = type;
           // Reward credit already happened on the server; refresh, never add amount locally.
-          this.subscriptions.add(this.userService.refreshStats().subscribe({ error: () => {} }));
+          if (isParent && this.coins) {
+            this.subscriptions.add(this.coins.loadAccountCoinHistory().subscribe({ error: () => {} }));
+          } else {
+            this.subscriptions.add(this.userService.refreshStats().subscribe({ error: () => {} }));
+          }
           return;
         }
         if (!type || type === 'NONE') {
@@ -265,8 +290,15 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   async dismiss(): Promise<void> {
+    await this.dismissActive(false);
+  }
+
+  private async dismissActive(moodSaved: boolean): Promise<void> {
     const type = this.active;
     if (!type || this.busy) return;
+    // The server's MOOD_PROMPT is the required daily check-in. Only the
+    // selector's successful moodSaved event may consume it.
+    if (type === 'MOOD_PROMPT' && !moodSaved) return;
     const key = this.entryKey;
     if (isReferralOverlay(type)) {
       const eventId = this.referralEvent?.eventId;
@@ -300,7 +332,7 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  moodSaved(): void { void this.dismiss(); }
+  moodSaved(): void { void this.dismissActive(true); }
 
   async restore(): Promise<void> {
     if (this.busy || !this.canRestore) return;
@@ -325,6 +357,7 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy(): void {
     this.destroyed = true;
     this.subscriptions.unsubscribe();
+    this.backButtonSubscription?.unsubscribe();
     if (this.timer) clearInterval(this.timer);
     document.removeEventListener('visibilitychange', this.wake);
     window.removeEventListener('online', this.wake);

@@ -18,9 +18,9 @@
       <div class="activity-heading">
         <h1>{{ habit.title }}</h1>
         <p>Created on {{ habit.createdAt | date:'MMM d, y' }}</p>
-        <div class="activity-badges">
-          <span *ngIf="habit.type !== 'timetable'" class="priority-pill priority-{{ habit.priority | lowercase }}">
-            <img [src]="detailIcon('priority')" alt="" />{{ habit.priority | titlecase }}
+        <div class="activity-badges" *ngIf="showHighPriority || tagText || hasRoutine()">
+          <span *ngIf="showHighPriority" class="priority-pill priority-high">
+            <img [src]="detailIcon('priority')" alt="" />High Priority
           </span>
           <span class="category-pill" *ngIf="tagText || hasRoutine()">
             <img [src]="detailIcon('category')" alt="" />{{ tagText || getRoutineName() }}

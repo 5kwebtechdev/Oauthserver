@@ -1,74 +1,98 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
-import { By } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
+import { Location } from '@angular/common';
+import { Router } from '@angular/router';
+import { ToastController } from '@ionic/angular';
+import { BehaviorSubject, of } from 'rxjs';
 import { JournalInputComponent } from './journal-input.component';
+import { DailyMoodRecordsService, dailyMoodRecord, moodDateKey } from '../../../services/daily-mood-records.service';
+import { AuthApi } from '../../../api/auth.api';
+import { AuthService } from '../../../services/auth.service';
+import { RefreshService } from '../../../services/refresh.service';
 
-describe('JournalInputComponent', () => {
-  let component: JournalInputComponent;
+describe('Journal read-only daily mood', () => {
   let fixture: ComponentFixture<JournalInputComponent>;
-
+  let records: BehaviorSubject<any>;
+  let http: any;
+  let bodyStyle: string;
   beforeEach(async () => {
+    bodyStyle = document.body.style.cssText;
+    records = new BehaviorSubject({ [moodDateKey()]: dailyMoodRecord('HAPPY') });
+    http = { post: jasmine.createSpy().and.returnValue(of({})) };
     await TestBed.configureTestingModule({
-      declarations: [JournalInputComponent],
-      imports: [FormsModule]
+      imports: [JournalInputComponent],
+      providers: [
+        { provide: DailyMoodRecordsService, useValue: { watch: () => records } },
+        { provide: HttpClient, useValue: http },
+        { provide: Router, useValue: { navigate: jasmine.createSpy().and.resolveTo(true) } },
+        { provide: AuthApi, useValue: { getToken: () => null } },
+        { provide: AuthService, useValue: { getCurrentUserAge: () => 12 } },
+        { provide: RefreshService, useValue: { notifyJournalAdded: () => {} } },
+        { provide: ToastController, useValue: {} },
+        { provide: Location, useValue: { back: () => {} } },
+      ],
     }).compileComponents();
-  });
-
-  beforeEach(() => {
     fixture = TestBed.createComponent(JournalInputComponent);
-    component = fixture.componentInstance;
     fixture.detectChanges();
   });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  afterEach(() => {
+    fixture.destroy();
+    document.body.style.cssText = bodyStyle;
   });
 
-  it('should initialize with default values', () => {
-    expect(component.text).toBe('');
-    expect(component.selected).toEqual({});
-    expect(component.sections.length).toBe(7); // All sections defined
-  });
-
-  it('should emit save with text', () => {
-    spyOn(component.save, 'emit');
-    component.text = 'test note';
+  it('shows a display-only mood and the specified information text', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.journal-vibe__value')?.textContent).toContain('Happy');
+    expect(el.querySelectorAll('[data-section="emotions"] .journal-option').length).toBe(0);
+    (el.querySelector('.journal-vibe__info') as HTMLButtonElement).click();
     fixture.detectChanges();
-    const btn = fixture.debugElement.query(By.css('.save')).nativeElement as HTMLButtonElement;
-    btn.click();
-    expect(component.save.emit).toHaveBeenCalledWith('test note');
+    expect(el.querySelector('[role="status"]')?.textContent?.trim()).toBe(
+      'This mood comes from your home screen and updates automatically even after you save your journal.');
+    records.next({ [moodDateKey()]: dailyMoodRecord('NEUTRAL') });
+    fixture.detectChanges();
+    expect(el.querySelector('.journal-vibe__value')?.textContent).toContain('Calm');
   });
 
-  it('should select and deselect options correctly', () => {
-    // Select an option
-    component.selectOption('emotions', 0);
-    expect(component.selected['emotions']).toBe(0);
-    expect(component.isSelected('emotions', 0)).toBe(true);
-
-    // Select again to deselect
-    component.selectOption('emotions', 0);
-    expect(component.selected['emotions']).toBe(null);
-    expect(component.isSelected('emotions', 0)).toBe(false);
+  it('shows loading feedback while the shared mood request is pending', () => {
+    records.next({});
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.journal-vibe__value')?.textContent)
+      .toContain('Loading today’s mood');
+    records.next({ [moodDateKey()]: dailyMoodRecord('NEUTRAL') });
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.journal-vibe__value')?.textContent)
+      .toContain('Calm');
   });
 
-  it('should track sections by key', () => {
-    const section = component.sections[0];
-    expect(component.trackBySection(0, section)).toBe(section.key);
+  it('preserves other journal fields and only copies the shared mood for API compatibility', async () => {
+    const component = fixture.componentInstance;
+    component.text = 'A good day';
+    component.selectOption('sleep', 0);
+    component.selectOption('emotions', 3);
+    expect(component.selected['emotions']).toBeUndefined();
+    await component.submit();
+    const body = http.post.calls.mostRecent().args[1] as FormData;
+    expect(body.get('notes')).toBe('A good day');
+    expect(body.get('sleep')).toBe('deep');
+    expect(body.get('emotions')).toBe('happy');
   });
 
-  it('should reset form correctly', () => {
-    component.text = 'test';
-    component.selected = { emotions: 0 };
-    component.selectedFile = {} as File;
-    component.imagePreviewUrl = 'test.jpg';
-    component.uploadedImageUrl = 'uploaded.jpg';
-
-    component.resetForm();
-
-    expect(component.text).toBe('');
-    expect(component.selected).toEqual({});
-    expect(component.selectedFile).toBe(null);
-    expect(component.imagePreviewUrl).toBe(null);
-    expect(component.uploadedImageUrl).toBe(null);
-  });
+  [360, 375, 390, 414].forEach(width => it(`keeps the selected-vibe card and tooltip within ${width}px`, () => {
+    const host = fixture.nativeElement as HTMLElement;
+    // Karma hides its context body; make it measurable for this layout test.
+    document.body.style.setProperty('display', 'block', 'important');
+    host.style.cssText = `display:block; width:${width}px; height:900px; position:relative`;
+    document.body.appendChild(host);
+    // Measure the actual compose shell independently of Ionic's unhydrated
+    // test wrapper, which has no layout without a running router outlet.
+    host.appendChild(host.querySelector('.journal-compose__shell')!);
+    fixture.componentInstance.moodInfoOpen = true;
+    fixture.detectChanges();
+    const card = host.querySelector('.journal-vibe') as HTMLElement;
+    const tooltip = host.querySelector('.journal-vibe__tooltip') as HTMLElement;
+    expect(card.clientWidth).toBeGreaterThan(280);
+    expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth);
+    expect(tooltip.getBoundingClientRect().right).toBeLessThanOrEqual(card.getBoundingClientRect().right);
+    expect(tooltip.getBoundingClientRect().left).toBeGreaterThanOrEqual(card.getBoundingClientRect().left);
+  }));
 });

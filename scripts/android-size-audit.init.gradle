@@ -1,0 +1,9 @@
+// Opt-in local size measurement ONLY. Never use these unsigned artifacts for release.
+// Normal assembleRelease/bundleRelease signing validation remains unchanged.
+gradle.beforeProject { project ->
+    project.plugins.withId('com.android.application') {
+        project.androidComponents.finalizeDsl { androidDsl ->
+            androidDsl.buildTypes.release.signingConfig = null
+        }
+    }
+}

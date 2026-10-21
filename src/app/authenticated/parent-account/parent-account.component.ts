@@ -9,6 +9,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, firstValueFrom, forkJoin, map, Observable, of, Subject, takeUntil } from 'rxjs';
 import { UserService } from '../../core/services/user.service';
+import { CoinService } from '../../core/services/coin.service';
 import { IonicModule } from "@ionic/angular";
 import { MoodService } from '../../core/services/mood.service';
 import { MoodTransition, VibesDisplayResponse } from '../../core/models/mood.model';
@@ -425,7 +426,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         private toastService: CustomToastService,
         private learningService: LearningService,
         private http: HttpClient,
-        private familyActions: FamilyActionsService
+        private familyActions: FamilyActionsService,
+        private coinService: CoinService
     ) { }
 
     assignLearningReward(event: { item?: any; coins?: number } | null): void {
@@ -526,6 +528,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.refreshService.registerRefreshHandler('ParentAccount', () => this.onGlobalRefresh());
         this.platform.resume.pipe(takeUntil(this.destroy$)).subscribe(() => {
             this.refreshUnreadNotificationCount();
+            this.refreshParentCoins();
             void this.loadChildren();
         });
         // Redirect non-parent users
@@ -647,6 +650,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     }
 
     async ionViewWillEnter(): Promise<void> {
+        this.refreshParentCoins();
         // Fires on initial load AND every time this screen becomes active (return from navigation).
         this.activityCard?.switchTab('all');
         this.refreshUnreadNotificationCount();
@@ -721,6 +725,13 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         }).url
             || this.userService.getUserAvatarUrl()
             || '';
+    }
+
+    private refreshParentCoins(): void {
+        this.coinService.loadAccountCoinHistory().pipe(takeUntil(this.destroy$)).subscribe({
+            // Keep the last known balance if the server is temporarily unavailable.
+            error: () => {}
+        });
     }
 
     /**
@@ -1558,6 +1569,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
      * Session validation is already handled by the authenticated shell.
      */
     private async onGlobalRefresh(): Promise<void> {
+        this.refreshParentCoins();
         await Promise.all([
             this.loadChildren(),
             firstValueFrom(

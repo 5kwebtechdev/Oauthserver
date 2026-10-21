@@ -8,6 +8,8 @@ import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
 import { AuthService } from '../../../services/auth.service';
 import { RefreshService } from '../../../services/refresh.service';
+import { Subscription } from 'rxjs';
+import { DailyMoodRecord, DailyMoodRecordsService, moodDateKey } from '../../../services/daily-mood-records.service';
 
 interface JournalOption {
   label: string;
@@ -55,22 +57,13 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   submitting = false;
   isAge16Plus = false;
   editingEntryId: string | number | null = null;
+  dailyMood: DailyMoodRecord | null = null;
+  moodLoading = true;
+  moodInfoOpen = false;
+  private moodSubscription?: Subscription;
+  private entryDay: string | null = null;
 
   readonly under16Sections: JournalSection[] = [
-    {
-      key: 'emotions',
-      title: 'How are you feeling?',
-      icon: 'assets/figma/journal/mood.svg',
-      columns: 4,
-      options: [
-        { label: 'Happy', image: 'assets/figma/journal/mood-happy.webp' },
-        { label: 'Excited', image: 'assets/figma/journal/mood-excited.webp' },
-        { label: 'Calm', image: 'assets/figma/journal/mood-calm.webp' },
-        { label: 'Sad', image: 'assets/figma/journal/mood-sad.webp' },
-        { label: 'Anxious', image: 'assets/figma/journal/mood-anxious.webp' },
-        { label: 'Frustated', image: 'assets/figma/journal/mood-frustrated.webp' },
-      ],
-    },
     {
       key: 'sleep',
       title: 'How was your sleep?',
@@ -149,7 +142,6 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   ];
 
   readonly age16PlusSections: JournalSection[] = [
-    this.under16Sections[0],
     {
       key: 'carrying', title: 'What are you feeling today?', icon: 'assets/figma/journal/adult/carrying.svg', columns: 4,
       options: [
@@ -216,6 +208,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
     private readonly refreshService: RefreshService,
     private readonly toastController: ToastController,
     private readonly location: Location,
+    private readonly dailyMoods: DailyMoodRecordsService,
   ) {}
 
   ngOnInit(): void {
@@ -223,15 +216,26 @@ export class JournalInputComponent implements OnInit, OnDestroy {
     const entry = history?.state?.journalEntry as any;
     if (entry?.id != null) {
       this.editingEntryId = entry.id;
+      const rawDate = entry.date || entry.creationDate;
+      const date = rawDate ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(String(rawDate)) ? `${rawDate}T12:00:00` : rawDate) : null;
+      this.entryDay = date && !Number.isNaN(date.getTime()) ? moodDateKey(date) : null;
       this.text = entry.text || entry.notes || '';
       this.restoreSelections(entry);
       this.restoreImages(entry);
     } else {
       this.text = this.initialText || '';
     }
+    this.moodSubscription = this.dailyMoods.watch(() =>
+      this.entryDay ? [new Date(`${this.entryDay}T12:00:00`)] : [],
+    ).subscribe(records => {
+      const day = this.entryDay || moodDateKey();
+      this.moodLoading = !(moodDateKey() in records);
+      this.dailyMood = records[day] ?? null;
+    });
   }
 
   ngOnDestroy(): void {
+    this.moodSubscription?.unsubscribe();
     this.revokePreviewUrls();
   }
 
@@ -240,7 +244,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   }
 
   get isPostEnabled(): boolean {
-    return this.selected['emotions'] != null && !this.submitting;
+    return !!this.dailyMood && !this.submitting;
   }
 
   get canAddMoreImages(): boolean {
@@ -248,6 +252,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   }
 
   selectOption(section: string, index: number): void {
+    if (section === 'emotions') return;
     if (section === 'carrying') {
       if (this.selectedFeelings.includes(index)) {
         this.selectedFeelings = this.selectedFeelings.filter(selectedIndex => selectedIndex !== index);
@@ -257,7 +262,6 @@ export class JournalInputComponent implements OnInit, OnDestroy {
       return;
     }
     this.selected[section] = this.selected[section] === index ? null : index;
-    if (section === 'emotions' && this.selected['emotions'] != null) this.emotionError = null;
   }
 
   isSelected(section: string, index: number): boolean {
@@ -279,14 +283,17 @@ export class JournalInputComponent implements OnInit, OnDestroy {
 
   async submit(): Promise<void> {
     if (this.submitting) return;
-    if (this.selected['emotions'] == null) {
-      this.emotionError = 'How are you feeling? Pick an emotion to continue.';
+    if (!this.dailyMood) {
+      this.emotionError = 'Your daily mood is not available yet. Complete your mood check-in from Home.';
       this.scrollToMood();
       return;
     }
 
     const formData = new FormData();
     formData.append('notes', this.text || '');
+    // Retain the existing journal request contract. This is a read-only copy
+    // of the daily record; cards/calendar always resolve the live mood API.
+    formData.append('emotions', this.dailyMood.mood);
     this.sections.forEach((section) => {
       if (section.key === 'carrying') {
         if (this.selectedFeelings.length) {
@@ -422,7 +429,6 @@ export class JournalInputComponent implements OnInit, OnDestroy {
 
   private restoreSelections(entry: any): void {
     const values: Record<string, string> = {
-      emotions: entry.emotions ?? entry.mood,
       sleep: entry.sleep,
       health: entry.health,
       hobbies: entry.hobbies,

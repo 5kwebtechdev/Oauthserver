@@ -64,6 +64,19 @@ describe('Notification navigation', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/authed/academy/course/56', {replaceUrl:false});
     expect(http.post.calls.mostRecent().args[0]).toMatch(/\/user\/notifications\/1201\/read$/);
   });
+  it('holds the global popup until notification routing settles', async () => {
+    const pending = new Subject<boolean>();
+    router.navigateByUrl.and.returnValue(new Promise(resolve => pending.subscribe(resolve)));
+    const settled = jasmine.createSpy('settled');
+    service.destinationSettled$.subscribe(settled);
+    service.open({ actionScreen: 'TASK', actionReferenceId: 12 });
+    expect(service.isOpeningDestination).toBeTrue();
+    pending.next(true);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(service.isOpeningDestination).toBeFalse();
+    expect(settled).toHaveBeenCalledTimes(1);
+  });
   it('never treats the entity reference as a notification ID', () => {
     service.open({actionScreen:'COURSE', actionReferenceId:56});
     expect(http.post).not.toHaveBeenCalled();

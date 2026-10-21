@@ -81,7 +81,7 @@
 
         <p class="signup-entry-login">
           {{ isManagedChildSignup ? 'Does your child already have an account?' : 'Already have an account?' }}
-          <a [routerLink]="['/login']">Login</a>
+          <a [routerLink]="['/login']" [queryParams]="{ from: 'signup-entry' }">Login</a>
         </p>
       </div>
     </section>
@@ -212,6 +212,7 @@
     </section>
 
     <div *ngIf="step === 1" [@slideIn] class="role-step role-step--figma">
+      <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
       <div class="role-hero role-hero--figma">
         <h2 class="role-hero__title">Who’s Using the App?</h2>
         <p class="role-hero__subtitle">Choose your journey. You can always connect<br />accounts later.</p>

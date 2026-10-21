@@ -12,6 +12,16 @@ export interface BirthdayPopupStatus {
     alreadyClaimedThisYear: boolean;
 }
 
+export interface BirthdayGiftClaimResponse {
+    success: boolean;
+    userId: number;
+    awarded: boolean;
+    reason: 'AWARDED' | 'ALREADY_CLAIMED_THIS_YEAR' | 'NOT_BIRTHDAY' | string;
+    amountAwarded: number;
+    balance: number;
+    year: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CoinApi {
     private base = environment.apiUrl || '';
@@ -35,9 +45,15 @@ export class CoinApi {
      * Get coin history for the user
      * @returns Observable with coin transaction history
      */
-    getCoinHistory(): Observable<any> {
+    getCoinHistory(authenticatedAccountOnly = false): Observable<any> {
         const url = `${this.base}/coins/history`;
-        return this.http.get(url, { headers: this.headers() });
+        const accountId = authenticatedAccountOnly ? this.authApi.getUserId() : null;
+        return this.http.get(url, {
+            headers: authenticatedAccountOnly
+                ? this.headers().set('X-Skip-Profile-Selector', 'true')
+                : this.headers(),
+            params: accountId ? { forUserId: accountId } : {}
+        });
     }
 
     getBirthdayPopupStatus(userId?: number): Observable<BirthdayPopupStatus> {
@@ -46,5 +62,13 @@ export class CoinApi {
             headers: this.headers(),
             params: userId == null ? {} : { userId: String(userId) }
         });
+    }
+
+    claimBirthdayGift(userId?: number): Observable<BirthdayGiftClaimResponse> {
+        return this.http.post<BirthdayGiftClaimResponse>(
+            `${this.base}/coins/birthday-gift/claim`,
+            userId == null ? null : { userId },
+            { headers: this.headers() }
+        );
     }
 }

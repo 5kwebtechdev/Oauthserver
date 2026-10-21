@@ -35,22 +35,23 @@
 .entry-mood-art {
   position: relative;
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 56px;
   place-items: center;
   overflow: visible;
 }
 
 .entry-mood-art img {
   display: block;
-  width: 50px;
-  height: 40px;
+  width: 54px;
+  height: 48px;
   max-width: none;
+  object-fit: contain;
 }
 
 .entry-mood-art--calm img {
   width: 58px;
-  height: 50px;
+  height: 48px;
 }
 
 .entry-mood-selected-mark {
@@ -131,6 +132,23 @@
   line-height: 20px;
   text-align: center;
 }
+
+.home-mood-dropdown__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.home-mood-dropdown__close img { width: 18px; height: 18px; }
+.home-mood-dropdown__close:focus-visible { outline: 2px solid #432477; border-radius: 6px; }
 
 .home-mood-dropdown .entry-mood-options {
   grid-template-columns: repeat(3, minmax(0, 1fr));

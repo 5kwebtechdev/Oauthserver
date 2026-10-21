@@ -93,7 +93,10 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
         this.showTargetDigits = false;
         this.coinAnimDone = false;
         this.clearAnimTimers();
-        this.coinService.loadCoinHistory().subscribe({
+        const history = this.authService.isParentUser()
+            ? this.coinService.loadAccountCoinHistory()
+            : this.coinService.loadCoinHistory();
+        history.subscribe({
             next: (response) => {
                 if (response?.totalCoins != null) {
                     this.coinTotal = this.normalizeCoinTotal(response.totalCoins);

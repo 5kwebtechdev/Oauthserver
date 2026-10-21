@@ -7,7 +7,7 @@ import { OnboardingStateService } from '../services/onboarding-state.service';
  * Resolves the first screen before HomePage is created, preventing onboarding
  * screens from flashing while a returning user is redirected.
  */
-export const startupGuard: CanActivateFn = () => {
+export const startupGuard: CanActivateFn = (route) => {
     const router = inject(Router);
     const authService = inject(AuthService);
     const onboardingState = inject(OnboardingStateService);
@@ -29,6 +29,10 @@ export const startupGuard: CanActivateFn = () => {
         onboardingState.markExistingUser();
         return router.parseUrl(authService.getDashboardRoute());
     }
+
+    // Deliberate Back from role selection may review the landing walkthrough.
+    // Its usual startup redirect would otherwise reopen signup/login instantly.
+    if (route.queryParamMap?.get('reviewPrevious') === 'true') return true;
 
     const registrationResume = onboardingState.getResumeNavigation();
     if (registrationResume) {

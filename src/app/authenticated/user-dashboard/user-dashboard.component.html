@@ -14,6 +14,13 @@
      (keydown.escape)="dismissBirthdayDialog()">
   <div class="birthday-dialog">
     <img src="assets/figma/home-birthday/dialog-art.png" alt="Happy Birthday! It's your special day! Here's to a year full of new adventures, amazing learning and all the exciting things that make you, you! A little birthday gift for you: 200 coins." />
+    <p *ngIf="birthdayGiftClaiming" class="birthday-dialog__gift-status" role="status">Claiming your birthday gift…</p>
+    <p *ngIf="birthdayGiftAwarded" class="birthday-dialog__gift-status" role="status">200 birthday coins added to your balance!</p>
+    <p *ngIf="birthdayGiftAlreadyClaimed" class="birthday-dialog__gift-status" role="status">Your birthday gift was already claimed this year.</p>
+    <p *ngIf="birthdayGiftUnavailable" class="birthday-dialog__gift-status" role="status">The birthday gift is not available today.</p>
+    <div *ngIf="birthdayGiftClaimError" class="birthday-dialog__gift-status" role="alert">
+      Birthday gift could not be claimed. <button type="button" (click)="retryBirthdayGiftClaim()">Try again</button>
+    </div>
     <button type="button" class="birthday-dialog__close" aria-label="Close birthday greeting" (click)="dismissBirthdayDialog()">
       <img src="assets/figma/home-birthday/close.svg" alt="" />
     </button>

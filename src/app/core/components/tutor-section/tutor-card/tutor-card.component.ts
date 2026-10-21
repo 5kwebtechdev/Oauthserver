@@ -390,14 +390,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
             .filter(item => source.endpoint === 'shops' || this.isActiveDirectoryListing(item))
             .map(item => {
               const preview = this.mapExternalPreview(item, fallbackImage);
-              // The Stationery API currently returns the shared blue pouch
-              // artwork as a successful image URL for every listing. Treat it
-              // as missing so each listing gets the neutral empty image state.
-              if (categoryKey === 'stationery') preview.image = '';
               if (source.endpoint === 'shops') {
                 preview.shop = {
                   name: preview.name,
-                  image: categoryKey === 'stationery' ? '' : String(item.imageUrls?.[0] || item.imageUrl || item.thumbnailUrl || ''),
+                  image: String(item.imageUrls?.[0] || item.imageUrl || item.thumbnailUrl || ''),
                   verified: !!item.verified,
                   fullAddress: String(item.exactLocation?.trim() || item.address?.trim() || ''),
                   unlocked: !!(item.unlocked ?? item.isUnlocked),

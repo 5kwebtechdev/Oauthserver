@@ -12,6 +12,7 @@
         <div class="tc__top">
           <div class="tc__avatar-wrap" (click)="openAvatarViewer(t)" role="button" aria-label="View photo">
             <app-profile-image class="tc__avatar"
+              [fallbackCategory]="itemLabel"
               [src]="t.avatar"
               [name]="t.name || itemLabel"
               [alt]="(t.name || itemLabel) + ' photo'"></app-profile-image>

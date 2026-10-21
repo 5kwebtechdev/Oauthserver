@@ -50,16 +50,16 @@ import { AuthService } from 'src/app/core/services/auth.service';
           <div *ngIf="contentMode !== 'parenting'" class="reward-card-summary">
             <h3>{{ item?.title }}</h3>
             <div class="reward-card-summary__meta">
-              <span>
+              <span class="reward-card-summary__coins">
                 <img src="assets/icons/superme-coin.webp" alt="">
                 {{ getItemCoins(item) }}
+                <span *ngIf="isRewardAssigned(item)" class="reward-card-summary__assigned-coins">
+                  +<img src="assets/icons/superme-coin.webp" alt="">{{ getRewardCoins(item) }}
+                </span>
               </span>
               <span>
                 <img class="learning-meta-icon learning-meta-icon--time" src="assets/figma/child-learning/schedule.svg" alt="">
                 {{ getItemDuration(item) }}
-              </span>
-              <span *ngIf="isRewardAssigned(item)" class="reward-card-summary__assigned-coins">
-                +{{ getRewardCoins(item) }} coins
               </span>
             </div>
           </div>
@@ -800,6 +800,16 @@ import { AuthService } from 'src/app/core/services/auth.service';
             flex: 0 0 16px;
             object-fit: contain;
             filter: none;
+          }
+
+          .reward-card-summary__coins {
+            gap: 2px;
+          }
+
+          .reward-card-summary__assigned-coins {
+            gap: 1px;
+            color: #4caf50;
+            font-weight: 700;
           }
         }
 

@@ -12,6 +12,7 @@ import { ChangePetComponent } from './change-pet/change-pet.component';
 import { SupermePopupComponent } from '../superme-popup/superme-popup.component';
 import { AuthService as CoreAuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
+import { CoinService } from '../../services/coin.service';
 import { MoodService } from '../../services/mood.service';
 import { VibesDisplayResponse } from '../../models/mood.model';
 import { AuthService, FamilyMember } from '../../../../package/api/auth.service';
@@ -64,7 +65,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
     private moodService: MoodService,
     private childSelfImageService: ChildSelfImageService,
     public parentImageService: ParentImageService,
-    private petAgeService: PetAgeService
+    private petAgeService: PetAgeService,
+    private coinService: CoinService
   ) {
     // Subscribe to user profile changes
     this.userService.getUserProfile$().subscribe(profile => {
@@ -111,6 +113,7 @@ export class UserProfileComponent implements OnInit, OnChanges {
     // Load user stats from localStorage first, then API if not available
     // Parent family data/actions are owned by the embedded FamilyConnectionComponent.
     if (!this.isParentProfile()) this.loadUserStatsFromStorage();
+    else this.coinService.loadAccountCoinHistory().subscribe({ error: () => {} });
     // Subscribe to user data changes from CoreAuthService (primary source of truth)
     // This will reactively update the UI when user data changes (e.g., from edit-profile)
     this.coreAuthService.userData$.subscribe(userData => {

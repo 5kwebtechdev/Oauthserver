@@ -29,7 +29,7 @@
     </div>
     <div class="post-content">
       <div class="post-mood" [class]="'post-mood post-mood--' + getMoodTone(entry.mood)">
-        {{ entry.mood || 'Mood' }}
+        {{ entry.mood || 'No mood recorded' }}
       </div>
 
       <div class="post-tags" *ngIf="getFilteredTags(entry).length > 0">
@@ -54,7 +54,7 @@
       </div>
 
       <div class="post-activity-counts" *ngIf="isPastEntry(entry) && hasActivityCounts(entry)">
-        <span><img src="assets/figma/journal/growth.svg" alt="" aria-hidden="true" />{{ entry.habitCountCompleted || 0 }}/{{ entry.habitCountTotal || 0 }}</span>
+        <span><img src="assets/icons/Habit.webp" alt="" aria-hidden="true" />{{ entry.habitCountCompleted || 0 }}/{{ entry.habitCountTotal || 0 }}</span>
         <span><img src="assets/icons/Task.svg" alt="" aria-hidden="true" />{{ entry.taskCountCompleted || 0 }}/{{ entry.taskCountTotal || 0 }}</span>
       </div>
       
