@@ -123,6 +123,22 @@
             },
             "ci": {
               "progress": false
+            },
+            "auth2": {
+              "fileReplacements": [
+                { "replace": "src/environments/environment.ts", "with": "src/environments/environment.auth2.ts" },
+                { "replace": "src/app/core/services/apple-sign-in.development-mock.ts", "with": "src/app/core/services/apple-sign-in.production-mock.ts" }
+              ],
+              "outputHashing": "all",
+              "baseHref": "/"
+            },
+            "auth2-dev": {
+              "fileReplacements": [
+                { "replace": "src/environments/environment.ts", "with": "src/environments/environment.auth2-dev.ts" },
+                { "replace": "src/app/core/services/apple-sign-in.development-mock.ts", "with": "src/app/core/services/apple-sign-in.production-mock.ts" }
+              ],
+              "outputHashing": "all",
+              "baseHref": "/"
             }
           },
           "defaultConfiguration": "production"
@@ -142,6 +158,14 @@
             },
             "ci": {
               "progress": false
+            },
+            "auth2": {
+              "buildTarget": "app:build:auth2",
+              "port": 4204
+            },
+            "auth2-dev": {
+              "buildTarget": "app:build:auth2-dev",
+              "port": 4044
             }
           },
           "defaultConfiguration": "development"

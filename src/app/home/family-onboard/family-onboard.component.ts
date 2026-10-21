@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, FormControl, Validators, ReactiveFormsModule } 
 import { Router, ActivatedRoute } from '@angular/router';
 import { FamilyService } from '../../core/services/family.service';
 import { CoreService } from '../../core/services/core.service';
+import { PkceAuthService } from '../../core/services/pkce-auth.service';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { CredentialSaverService } from '../../core/services/credential-saver.service';
@@ -138,6 +139,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         private alertController: AlertController,
         private navCtrl: NavController,
         private authService: AuthService,
+        private pkceAuth: PkceAuthService,
         private userService: UserService,
         private credentialSaverService: CredentialSaverService,
         private signupCredentialState: SignupCredentialStateService,
@@ -1428,7 +1430,9 @@ Thank you!`;
             next: (response) => {
                 this.isLoading = false;
                 const userId = response.user?.id;
-                if (response.token && userId) {
+                if (provider === 'google' && this.pkceAuth.enabled) {
+                    this.authService.updateUserData(response.user);
+                } else if (response.token && userId) {
                     this.authService.setSession(
                         { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
                         false

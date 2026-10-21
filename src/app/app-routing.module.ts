@@ -1,10 +1,20 @@
 import { NgModule } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
+import { environment } from '../environments/environment';
+import { PkceEntryComponent } from './core/components/pkce-entry.component';
+import { HandoffLandingComponent } from './core/components/handoff-landing.component';
 import { ActivatedRouteSnapshot, PreloadAllModules, RouterModule, RouterStateSnapshot, Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/authe-guard/authe-guard';
 import { legacyAuthedRedirectGuard } from './core/authe-guard/authe-guard';
 import { OurPoliciesComponent } from './core/components/user-profile/our-policies/our-policies.component';
 
 const routes: Routes = [
+  ...(environment.oauth.enabled && !Capacitor.isNativePlatform() ? [
+    { path: 'login', component: PkceEntryComponent },
+    { path: 'callback', component: PkceEntryComponent },
+    { path: 'land', component: HandoffLandingComponent },
+    { path: 'home/login', redirectTo: 'login', pathMatch: 'full' as const }
+  ] : []),
   // The app entry point owns the first-launch walkthrough. Keep this route
   // ahead of the public auth routes so a fresh browser/native install gets
   // the same four-slide introduction as the mobile app before login/signup.

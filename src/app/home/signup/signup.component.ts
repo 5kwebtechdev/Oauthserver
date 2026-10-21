@@ -13,6 +13,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { firstValueFrom, Subscription, timeout, finalize, filter } from 'rxjs';
 import { CredentialSaverService } from '../../core/services/credential-saver.service';
 import { SignupCredentialStateService } from '../../core/services/signup-credential-state.service';
+import { PkceAuthService } from '../../core/services/pkce-auth.service';
 import { StoredGender, toApiGender, toStoredGender } from '../../core/models/gender.model';
 import {
   OnboardingStateService,
@@ -113,6 +114,21 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (
         sessionStorage.getItem('signup_via_oauth') === 'true'
         || sessionStorage.getItem('signup_via_google') === 'true'
+        // Keep the flow on the OAuth registration path even if one of the
+        // descriptive provider markers is lost during a route reload. This
+        // flag is set only after Google has returned a verified identity and
+        // is required by completeGoogleOnboardingFlow before it submits.
+        || sessionStorage.getItem('oauth_signup_pending_submission') === 'true'
+        // Defense in depth: signup_via_oauth/signup_via_google are the primary
+        // markers, but both are written in the same storeOAuthSignupSession()
+        // call as google_signup_provider_id/oauth_signup_provider. If only the
+        // primary pair is ever lost (observed in the field: a Google signup on
+        // this exact step falling through to the plain email/password register
+        // call, which 400s with "Either email or phone must be provided" since
+        // nothing here was ever typed), these still identify an in-progress
+        // OAuth signup and must not be ignored.
+        || !!sessionStorage.getItem('google_signup_provider_id')
+        || !!sessionStorage.getItem('oauth_signup_provider')
       ) {
         return true;
       }
@@ -143,6 +159,30 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return this.resolveAppleAccountEmail(this.signupForm?.get('email')?.value);
   }
 
+  /**
+   * Google/Apple never supply a username - only name/email - and the profile step otherwise
+   * leaves it for the user to type from scratch even though we already have enough to suggest
+   * one. Only fills an EMPTY control, and only once per page load (not on every keystroke) via
+   * the step===2 check at its call site, so it never fights a username the user is actively
+   * typing or has already set.
+   */
+  private suggestUsernameFromOAuthIdentityIfEmpty(): void {
+    if (!this.isOAuthSignup) return;
+    const usernameControl = this.profileForm.get('username');
+    if (!usernameControl || usernameControl.value) return;
+
+    const source = this.oauthAccountName || this.oauthAccountEmail.split('@')[0] || '';
+    const sanitized = source
+      .normalize('NFKD')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toLowerCase()
+      .slice(0, 15);
+    if (!sanitized) return;
+
+    usernameControl.setValue(sanitized);
+    usernameControl.markAsDirty();
+  }
+
   /** The immutable account name supplied by Apple or returned by our backend. */
   public get appleAccountName(): string {
     return this.isAppleOAuthSignup ? this.oauthAccountName : '';
@@ -165,6 +205,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public avatarSelected: string | null = null;
 
   public errorMessage: string | null = null;
+  public socialHandoffPending = false;
   // Referral code UI and value
   public showReferral: boolean = false;
   public referralCode: string = '';
@@ -516,7 +557,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private onboardingState: OnboardingStateService,
     private ngZone: NgZone,
     private avatarService: AvatarService,
-    private platform: Platform
+    private platform: Platform,
+    private pkceAuth: PkceAuthService
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -570,6 +612,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
       const stepParam = params['step'];
       const roleParam = params['role'];
+      const googleSignupTicket = String(params['googleSignupTicket'] || '').trim();
+      if (googleSignupTicket) {
+        this.socialHandoffPending = true;
+        this.step = 1;
+        void this.completeGoogleSignupHandoff(googleSignupTicket);
+        return;
+      }
       const managedChildParam = params['managedChild'] === 'true';
       this.managedChildSignup = managedChildParam
         || sessionStorage.getItem(SignupComponent.MANAGED_CHILD_SIGNUP_KEY) === 'true';
@@ -593,6 +642,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
 
       this.step = Number(stepParam) || 1;
+      // A step change always means the previous request (if any) is done
+      // with as far as this screen is concerned - registrationInProgress
+      // guards both the Next button and selectPet()/proceedWithAvatar(), so
+      // if an earlier call's response handler left it stuck true (e.g. an
+      // unexpected response shape it didn't account for), arriving at a new
+      // step would otherwise silently freeze every tap on this one with no
+      // visible error - exactly what landing on Pet selection unable to
+      // select a pet looks like from the outside.
+      this.registrationInProgress = false;
       // Handle special step cases
       if (stepParam === '0.1') {
         this.step = 0.1;
@@ -642,6 +700,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           replaceUrl: true
         });
         return;
+      }
+
+      if (this.step === 2) {
+        this.suggestUsernameFromOAuthIdentityIfEmpty();
       }
 
       this.enforceParentFlowRestrictions();
@@ -702,6 +764,82 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         }
       } catch (e) { /* ignore */ }
     })
+  }
+
+  private async completeGoogleSignupHandoff(ticket: string): Promise<void> {
+    // Strip the opaque, single-use ticket from the address bar before making
+    // any further requests or loading third-party content.
+    // Remove any stale child-creation mode, then let the user choose Self,
+    // Child, or Parent before moving to the profile screen.
+    this.managedChildSignup = false;
+    this.roleSelected = undefined;
+    [
+      SignupComponent.MANAGED_CHILD_SIGNUP_KEY,
+      SignupComponent.MANAGED_CHILD_FAMILY_CODE_KEY,
+      SignupComponent.MANAGED_CHILD_SUCCESS_EMAIL_KEY
+    ].forEach(key => sessionStorage.removeItem(key));
+    sessionStorage.removeItem('signup_role');
+    await this.router.navigate(['/signup'], {
+      queryParams: { step: 1 },
+      replaceUrl: true
+    });
+    try {
+      const profile = await firstValueFrom(
+        this.authService.exchangeGoogleSignupHandoff(ticket).pipe(timeout({ first: 15_000 }))
+      );
+      if (!profile?.idToken || !profile.providerId || !profile.email) {
+        throw new Error('The Google signup handoff did not contain a complete identity.');
+      }
+
+      sessionStorage.setItem('signup_via_google', 'true');
+      sessionStorage.setItem('signup_via_oauth', 'true');
+      sessionStorage.setItem('oauth_signup_provider', 'google');
+      sessionStorage.setItem('oauth_signup_pending_submission', 'true');
+      sessionStorage.setItem('oauth_signup_id_token', profile.idToken);
+      sessionStorage.setItem('google_signup_email', profile.email);
+      sessionStorage.setItem('google_signup_name', profile.name || '');
+      sessionStorage.setItem('google_signup_avatar', profile.avatarUrl || '');
+      sessionStorage.setItem('google_signup_provider_id', profile.providerId);
+      this.signupForm.patchValue({ email: profile.email });
+      this.profileForm.patchValue({ name: profile.name || '' });
+      this.requestedIdentifier = profile.email;
+      this.onboardingState.clearRegistrationDraft();
+      this.onboardingState.saveRegistrationDraft({
+        email: profile.email,
+        name: profile.name || '',
+        authProvider: 'google',
+        socialProviderId: profile.providerId,
+        socialOnboarding: true,
+        socialDetailsCompleted: false,
+        socialRolePending: true,
+        selectedSignupRole: undefined,
+        relationship: undefined,
+        asChild: false,
+        onboardingStep: 3
+      }, 3, 'EMAIL');
+      this.step = 1;
+      this.errorMessage = null;
+    } catch (error) {
+      console.error('[Signup] Unable to resume Google signup handoff', error);
+      // The ticket is single-use, so arriving here with one already spent is normal:
+      // a reload of this URL, or a second visit, exchanges a ticket the server has
+      // dropped. When the app's own Google entry point stored the verified identity
+      // before navigating (see SocialMediaComponent.continueGoogleAuthentication),
+      // that identity is still valid and the wizard can simply continue - sending the
+      // user back to Login over a spent ticket would discard a signup in progress.
+      const identityHeld = !!sessionStorage.getItem('oauth_signup_id_token')
+        && !!sessionStorage.getItem('google_signup_email')
+        && !!sessionStorage.getItem('google_signup_provider_id');
+      if (identityHeld) {
+        this.step = 1;
+        this.errorMessage = null;
+        return;
+      }
+      this.core.triggerToasrt('Google sign-up could not be resumed. Please try Google sign-in again.');
+      await this.router.navigate(['/login'], { replaceUrl: true });
+    } finally {
+      this.socialHandoffPending = false;
+    }
   }
 
   get email() {
@@ -1192,6 +1330,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   proceedWithAvatar() {
     if (this.registrationInProgress) return;
+    if (this.pkceAuth.enabled && sessionStorage.getItem('oauth_signup_session_pending') === 'true') {
+      this.finishGooglePkceLogin();
+      return;
+    }
 
     if (this.step === 4 && !this.hasSelectedPet) {
       this.core.triggerToasrt('Please choose your pet to continue.');
@@ -1253,6 +1395,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         // Save the pet through the existing registration/OAuth completion
         // flow before advancing, just as for Self signup. Navigating alone
         // leaves backend step 5 unchanged and resumes at this same screen.
+        if (this.isOAuthSignup) {
+          // This is the one and only backend call for the whole Google/Apple
+          // Self or Child wizard now - see submitProfileDetails' comment on
+          // why the Profile step no longer calls it. unlockPotential:true
+          // here finishes onboarding in the same request that saves the pet,
+          // instead of a separate step 5 round-trip, and
+          // continueAfterUnlock() establishes the real PKCE session and logs
+          // the user straight in.
+          this.completeGoogleOnboardingFlow(role, true, true);
+          return;
+        }
         this.registerChildOrSelfFromSession(role, true);
         return;
       }
@@ -1325,6 +1478,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    */
   async registerOrProceed(): Promise<void> {
     if (this.profileContinueInProgress || this.registrationInProgress) return;
+    if (this.pkceAuth.enabled && sessionStorage.getItem('oauth_signup_session_pending') === 'true') {
+      this.finishGooglePkceLogin();
+      return;
+    }
     this.profileContinueInProgress = true;
     try {
       await this.submitProfileDetails();
@@ -1440,9 +1597,26 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    // A new Google account is created only after the completed details form.
-    // Include parents here so family setup uses the resulting session too.
-    if (sessionStorage.getItem('oauth_signup_pending_submission') === 'true') {
+    // isOAuthSignup (not just the single oauth_signup_pending_submission flag)
+    // so this still routes correctly even if that one marker was lost - see
+    // isOAuthSignup's Javadoc-equivalent comment for why that can happen.
+    if (sessionStorage.getItem('oauth_signup_pending_submission') === 'true' || this.isOAuthSignup) {
+      // Self (and Child, which registers the same way - see
+      // registerChildOrSelfFromSession's comment) does not call the backend
+      // here at all. It waits until every step - profile AND pet - is
+      // collected, then submits once from the Pet step with unlockPotential
+      // included, which both creates the account and finishes onboarding in
+      // a single call. Calling the backend at every intermediate step used to
+      // leave the account "logged in" (AuthService.setSession()) well before
+      // a real PKCE session existed, and once the dashboard's own API calls
+      // started 401ing against that ad-hoc session, Pet selection would get
+      // kicked back to login mid-flow even though the account itself had
+      // registered successfully. Parent has no further step after this one
+      // in this wizard, so it still submits immediately.
+      if (role === 'self' || role === 'child') {
+        this.navigateToSignupStep(4);
+        return;
+      }
       this.completeGoogleOnboardingFlow(role);
       return;
     }
@@ -1495,6 +1669,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private resetTransientStepUi(): void {
+    // An error belongs to the step that raised it. Leaving it set made a failure
+    // on the Pet step render on the Profile step after the wizard moved back,
+    // which read as "the Profile step is broken" when it never ran anything.
+    this.errorMessage = null;
     this.openBirthdayPicker = false;
     this.showCountryCodeModal = false;
     this.countrySearch = '';
@@ -3321,6 +3499,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     includePet = false
   ): void {
     if (this.registrationInProgress) return;
+    if (this.pkceAuth.enabled && sessionStorage.getItem('oauth_signup_session_pending') === 'true') {
+      this.finishGooglePkceLogin();
+      return;
+    }
     this.registrationInProgress = true;
     this.errorMessage = null;
     this.loadingService.show();
@@ -3357,7 +3539,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       || persistedDraft.socialProviderId
       || '';
     const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
-    const idToken    = sessionStorage.getItem('oauth_signup_id_token') || '';
+    const idToken    = sessionStorage.getItem('oauth_signup_id_token')
+      || this.pkceAuth.getGoogleSignupProof?.()
+      || '';
+    if (idToken && !sessionStorage.getItem('oauth_signup_id_token')) {
+      sessionStorage.setItem('oauth_signup_id_token', idToken);
+    }
     const accessToken = sessionStorage.getItem('oauth_signup_access_token') || '';
     const serverAuthCode = sessionStorage.getItem('oauth_signup_server_auth_code') || '';
     const identityToken = sessionStorage.getItem('oauth_signup_identity_token') || '';
@@ -3374,9 +3561,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         sessionStorage.getItem('google_signup_name'),
         persistedDraft.name
       )
-      : profile.name
-        || this.profileForm.get('name')?.value
-        || sessionStorage.getItem('google_signup_name')
+      : sessionStorage.getItem('google_signup_name')
         || persistedDraft.name;
 
     const googlePayload: any = {
@@ -3494,7 +3679,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (pendingGoogleSignup && (!idToken || !providerId || !email)) {
       this.registrationInProgress = false;
       this.loadingService.forceHide();
-      this.errorMessage = 'Please sign in with Google again to continue setting up your account.';
+      // Name the missing piece. This guard fires at the end of the wizard, after
+      // the account's details are already filled in, so "sign in again" on its own
+      // gives neither the user nor a bug report any idea which part of the Google
+      // identity was lost between sign-in and submission.
+      const missing = [
+        !idToken ? 'proof' : null,
+        !providerId ? 'provider id' : null,
+        !email ? 'email' : null
+      ].filter(Boolean).join(', ');
+      console.error('[OAuth signup] Google identity incomplete at submission', {
+        missing,
+        hasIdToken: !!idToken,
+        hasProviderId: !!providerId,
+        hasEmail: !!email,
+        sessionKeys: Object.keys(sessionStorage).filter(k => k.startsWith('oauth_') || k.startsWith('google_') || k.startsWith('signup_'))
+      });
+      this.errorMessage = `Please sign in with Google again to continue setting up your account. (missing: ${missing})`;
       this.core.triggerToasrt(this.errorMessage);
       return;
     }
@@ -3505,8 +3706,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     onboardingRequest.pipe(
       timeout({ first: 30000 }),
       finalize(() => {
-        this.registrationInProgress = false;
-        this.loadingService.forceHide();
+        if (!this.googleSessionInProgress) {
+          this.registrationInProgress = false;
+          this.loadingService.forceHide();
+        }
       })
     ).subscribe({
       next: (response) => {
@@ -3549,12 +3752,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           return;
         }
         if (response.token && userId) {
-          this.authService.setSession(
-            { token: response.token, userId, expiresIn: response.expiresIn, user: responseUser },
-            false
-          );
+          if (!(provider === 'google' && this.pkceAuth.enabled)) {
+            this.authService.setSession(
+              { token: response.token, userId, expiresIn: response.expiresIn, user: responseUser },
+              false
+            );
+          }
           if (pendingGoogleSignup) sessionStorage.removeItem('oauth_signup_pending_submission');
-        } else if (Object.keys(responseUser).length) {
+        } else if (!(provider === 'google' && this.pkceAuth.enabled) && Object.keys(responseUser).length) {
           this.authService.updateUserData(responseUser);
         }
 
@@ -3576,13 +3781,22 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         };
         this.onboardingState.saveRegistrationDraft(responseDraft, resolvedStep, 'EMAIL');
 
+        if (provider === 'google' && this.pkceAuth.enabled) {
+          sessionStorage.setItem('oauth_signup_session_pending', 'true');
+          this.finishGooglePkceLogin();
+          return;
+        }
+
         // The successful OAuth submission established this account. Keep
         // its credentials until activation is complete, so the
         // Pet and Unlock steps update that same account instead of calling
         // /auth/register and triggering duplicate email/phone validation.
         if (unlockPotential || resolvedStep >= 7) {
+          // Capture before clearGoogleSignupSession() removes oauth_signup_id_token -
+          // continueAfterUnlock needs it to finish establishing a real PKCE session.
+          const completedIdToken = provider === 'google' ? idToken : undefined;
           this.clearGoogleSignupSession();
-          this.continueAfterUnlock(responseDraft);
+          this.continueAfterUnlock(responseDraft, completedIdToken);
           return;
         }
 
@@ -3650,6 +3864,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     responseStep: number | null
   ): void {
     const user = response.user;
+    if (this.pkceAuth.enabled) {
+      // Do NOT clear the draft before the login attempt: it holds the fallback
+      // copies of email and socialProviderId that completeGoogleOnboardingFlow reads
+      // when session storage has lost them. finishGooglePkceLogin can fail and
+      // explicitly tells the user to "tap Next to retry" - with the draft already
+      // wiped, that retry finds an incomplete Google identity and dead-ends on
+      // "sign in with Google again" instead. Defer the discard to success.
+      this.staleDraftPendingDiscard = true;
+      sessionStorage.setItem('oauth_signup_session_pending', 'true');
+      this.finishGooglePkceLogin();
+      return;
+    }
     this.authService.setSession({
       token: response.token, userId: user.id, expiresIn: response.expiresIn, user
     }, false);
@@ -3684,7 +3910,53 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
+  private googleSessionInProgress = false;
+  /** Set when the saved draft describes a different account than the backend authenticated. */
+  private staleDraftPendingDiscard = false;
+
+  // Same idToken resolution completeGoogleOnboardingFlow uses: session storage is the
+  // reload-safe copy, the in-memory proof is the same-tab fallback for when a route
+  // transition loses the key. Reading only session storage here made this path fail
+  // ("sign in with Google again") in exactly the cases that fallback exists to cover.
+  private finishGooglePkceLogin(
+    idToken = sessionStorage.getItem('oauth_signup_id_token')
+      || this.pkceAuth.getGoogleSignupProof?.()
+      || ''
+  ): void {
+    if (this.googleSessionInProgress) return;
+    if (!idToken) {
+      this.registrationInProgress = false;
+      this.loadingService.forceHide();
+      this.errorMessage = 'Your account is saved. Please sign in with Google again to finish signing in.';
+      return;
+    }
+    this.googleSessionInProgress = true;
+    this.registrationInProgress = true;
+    this.errorMessage = null;
+    this.loadingService.show();
+    void this.pkceAuth.googleLogin(idToken, true).then(() => {
+      // The callback creates the local session only after the token exchange.
+      if (this.onboardingState.isOnboardingComplete()) this.clearGoogleSignupSession();
+      else sessionStorage.removeItem('oauth_signup_session_pending');
+      // Drop a draft that described a different account than the one the backend
+      // actually authenticated (see resumeReturnedGoogleAccount) - only now that
+      // sign-in succeeded, so a failed attempt can still fall back to it on retry.
+      if (this.staleDraftPendingDiscard) {
+        this.staleDraftPendingDiscard = false;
+        this.onboardingState.clearRegistrationDraft();
+      }
+    }).catch(() => {
+      // Keep proof and the saved-account marker: Next retries login only.
+      this.errorMessage = 'Your account is saved, but sign-in did not finish. Tap Next to retry. If it keeps failing, sign in with Google again.';
+    }).finally(() => {
+      this.googleSessionInProgress = false;
+      this.registrationInProgress = false;
+      this.loadingService.forceHide();
+    });
+  }
+
   private clearGoogleSignupSession(): void {
+    this.pkceAuth.clearGoogleSignupProof?.();
     try {
       ['signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
         'google_signup_email', 'google_signup_name',
@@ -3692,13 +3964,28 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         'oauth_signup_id_token', 'oauth_signup_access_token', 'oauth_signup_server_auth_code',
         'oauth_signup_identity_token', 'oauth_signup_authorization_code',
         'oauth_signup_raw_nonce', 'oauth_signup_client_id',
-        'oauth_signup_is_development_mock', 'oauth_signup_pending_submission',
+        'oauth_signup_is_development_mock', 'oauth_signup_pending_submission', 'oauth_signup_session_pending',
         'signup_profile',
         'signup_role', 'signup_avatar', 'signup_pet', 'requestedIdentifier',
         'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
         sessionStorage.removeItem(k);
       });
     } catch (e) {}
+  }
+
+  /**
+   * The wizard reached a submission with no identity to submit: no typed email or
+   * phone, and no Google proof left to finish that account's sign-in with. Telling
+   * the user to "sign in with Google again" while leaving them on a form that can
+   * never submit just strands them, so send them to Login, where that is a button.
+   */
+  private abandonSignupWithoutIdentity(): void {
+    this.registrationInProgress = false;
+    this.loadingService.forceHide();
+    this.onboardingState.clearRegistrationDraft();
+    this.clearGoogleSignupSession();
+    this.core.triggerToasrt('Please sign in with Google again to continue setting up your account.');
+    this.navigateReplacing('/login');
   }
 
   private registerChildOrSelfFromSession(role: 'child' | 'self', includePet: boolean = false) {
@@ -3713,6 +4000,22 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.completeGoogleOnboardingFlow(role, false, includePet);
       return;
     }
+
+    // A Google account that already completed a submission once has had both its
+    // session markers (clearGoogleSignupSession) and its draft (clearRegistrationDraft)
+    // cleared, so isOAuthSignup reads false on a re-entry into the wizard. Falling
+    // through from here runs the email/password registration, which can only fail:
+    // a Google signup never collected an email or a password to send. If the verified
+    // Google proof is still held, finish that account's sign-in instead of asking for
+    // credentials this flow never had.
+    const googleProof = sessionStorage.getItem('oauth_signup_id_token')
+      || this.pkceAuth.getGoogleSignupProof?.()
+      || '';
+    if (this.pkceAuth.enabled && googleProof && !this.signupCredentialState.getPassword()) {
+      this.finishGooglePkceLogin(googleProof);
+      return;
+    }
+
     this.registrationInProgress = true;
     this.loadingService.show();
 
@@ -3721,6 +4024,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const password = this.signupCredentialState.getPassword() || this.password?.value;
     const persistedDraft = this.onboardingState.getRegistrationState()?.savedData || {};
     const identifier = this.requestedIdentifier
+      || sessionStorage.getItem('google_signup_email')
+      || this.onboardingState.getRegistrationState()?.savedData?.email
       || persistedDraft.email
       || persistedDraft.phone
       || this.email?.value
@@ -3761,7 +4066,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // include email or phone depending on loginMode or identifier content
     if (this.loginMode === 'email' || (identifier && identifier.includes && identifier.includes('@'))) {
-      payload.email = identifier;
+      if (identifier) payload.email = identifier;
       // Contact number collected on the profile step (separate from the
       // login identifier) — only relevant when they signed up via email.
       const profilePhoneVal = profile.phone || this.profileForm.get('phone')?.value;
@@ -3770,8 +4075,19 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         payload.phone = contactCode + profilePhoneVal;
       }
     } else {
+      if (!identifier) {
+        this.abandonSignupWithoutIdentity();
+        return;
+      }
       const contactNumber = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
       payload.phone = contactNumber + identifier;
+    }
+
+    // Never send a registration request that the API can only reject because
+    // the signup identity was lost during navigation or storage restoration.
+    if (!payload.email && !payload.phone) {
+      this.abandonSignupWithoutIdentity();
+      return;
     }
 
     // dateOfBirth
@@ -4126,7 +4442,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     });
   }
 
-  private continueAfterUnlock(completedUserData?: RegistrationDraftData): void {
+  private continueAfterUnlock(completedUserData?: RegistrationDraftData, googleIdToken?: string): void {
+    if (this.pkceAuth.enabled && googleIdToken) {
+      this.finishGooglePkceLogin(googleIdToken);
+      return;
+    }
     // Child users reach this welcome screen only after a successful family
     // link and are already logged in. Continue directly without a second login.
     if (this.authService.isLoggedIn()) {
@@ -4182,6 +4502,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
       this.clearDeferredParentWelcomeState();
       this.registrationInProgress = false;
+
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/home';
       this.navigateReplacing(route);

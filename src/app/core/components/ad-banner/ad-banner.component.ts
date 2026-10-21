@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../services/auth.service';
+import { HandoffLinkService } from '../../services/handoff-link.service';
 
 export type AdScreen =
   // Student screens
@@ -90,7 +91,8 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     private http: HttpClient,
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private handoffLinks: HandoffLinkService
   ) {}
 
   ngOnInit(): void {
@@ -238,7 +240,10 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
   onAdClick(ad: AdItem): void {
     try {
       if (ad.clickActionType === 'EXTERNAL_URL' && ad.externalUrl) {
-        window.open(ad.externalUrl, '_blank', 'noopener,noreferrer');
+        // Carries the signed-in user across to our own pages so the browser does not ask them to
+        // sign in again; any other destination opens as a plain link with nothing attached. See
+        // HandoffLinkService for why the pass is one-time and why native needs '_system'.
+        void this.handoffLinks.openWithSession(ad.externalUrl);
         return;
       }
       if (ad.clickActionType === 'IN_APP_SCREEN' && ad.inAppScreen) {

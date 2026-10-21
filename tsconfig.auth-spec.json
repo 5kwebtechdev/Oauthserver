@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/core/components/pkce-entry.component.spec.ts",
+    "src/app/core/components/social-media/google-signup-flow.spec.ts",
+    "src/app/core/interceptors/pkce.interceptor.spec.ts",
+    "src/app/core/services/pkce-auth.service.spec.ts",
+    "src/app/core/services/onboarding-state.service.spec.ts",
+    "src/app/home/login/login.component.spec.ts",
+    "src/app/home/signup/signup-back-navigation.spec.ts",
+    "src/app/home/signup/signup-dob-restriction.spec.ts",
+    "src/app/home/signup/signup-username-length.spec.ts",
+    "src/app/home/signup/signup-pet.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
+import { PkceAuthService } from './pkce-auth.service';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subject, timer, of, firstValueFrom } from 'rxjs';
-import { tap, map, catchError } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject, timer, of, EMPTY, from, firstValueFrom } from 'rxjs';
+import { tap, map, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -73,6 +74,8 @@ export interface AuthResponse {
     } | null;
     onboardingStep?: number;
     emailVerified?: boolean;
+    authProvider?: 'google' | 'apple';
+    socialProviderId?: string;
   };
   expiresIn?: number;
 }
@@ -155,6 +158,7 @@ export class AuthService {
   private isMobilePlatform: boolean = false;
 
   constructor(
+    private pkce: PkceAuthService,
     private http: HttpClient,
     private router: Router,
     private navCtrl: NavController,
@@ -205,6 +209,7 @@ export class AuthService {
    * Check if there's a valid session in localStorage
    */
   private hasValidSession(): boolean {
+    if (this.pkce.enabled && !this.pkce.token) return false;
     const token = localStorage.getItem(this.TOKEN_KEY);
     const userId = localStorage.getItem(this.USER_ID_KEY);
     const lastActivity = localStorage.getItem(this.LAST_ACTIVITY_KEY);
@@ -288,6 +293,9 @@ export class AuthService {
    * Login user with credentials
    */
   login(credentials: LoginCredentials): Observable<AuthResponse> {
+    if (this.pkce.enabled) {
+      return from(this.pkce.loginAfterRegistration(credentials)).pipe(switchMap(() => EMPTY));
+    }
     const loginUrl = `${this.apiUrl}/auth/login`;
     console.log('[AuthService] Login attempt with:', {
       endpoint: loginUrl,
@@ -509,6 +517,14 @@ export class AuthService {
   checkEmailExists(email: string) {
     const url = `${this.apiUrl}/api/public/check-mail-already-exists`;
     return this.http.get<{ exists: boolean }>(url, { params: { email } });
+  }
+
+  exchangeGoogleSignupHandoff(ticket: string): Observable<{
+    provider: 'google'; providerId: string; email: string; name: string; avatarUrl: string; idToken: string;
+  }> {
+    return this.http.post<{
+      provider: 'google'; providerId: string; email: string; name: string; avatarUrl: string; idToken: string;
+    }>(`${environment.oauth.issuer}/api/auth/google-signup-handoff`, { ticket });
   }
 
   checkUsernameExists(username: string): Observable<boolean> {
@@ -733,6 +749,7 @@ export class AuthService {
    * session server-side (e.g. revoke the token, drop device registration).
    */
   logoutUser(userId: string | number): Observable<{ success: boolean; message: string }> {
+    if (this.pkce.enabled) return of({ success: true, message: 'Logout handled by the authorization server.' });
     const token = this.getToken();
     const headers = new HttpHeaders({
       Authorization: token?.startsWith('Bearer ') ? token : `Bearer ${token || ''}`
@@ -752,7 +769,7 @@ export class AuthService {
     // to finish before this method resolves — the caller/navigation must not
     // treat the user as logged out until the old session data is actually gone.
     const userId = this.getUserId();
-    if (userId) {
+    if (userId && !this.pkce.enabled) {
       try {
         await firstValueFrom(this.logoutUser(userId));
       } catch (error) {
@@ -765,6 +782,7 @@ export class AuthService {
     // Start device-token cleanup while the old session is still identifiable,
     // but revoke all local/in-memory access immediately rather than waiting on
     // network or native sign-out operations.
+    const oidcLogout = await this.pkce.prepareLogout();
     const pushCleanup = this.pushNotifications.clearToken().catch(() => {});
     this.clearLocalUserState();
     this.analytics.clearUserId();
@@ -773,7 +791,7 @@ export class AuthService {
     // Logout should always stay inside the current app host. During local
     // development, sending web users to environment.publicWebUrl jumps from
     // localhost to the production marketing site and makes logout look broken.
-    const navigation = redirectToLogin
+    const navigation = redirectToLogin && !oidcLogout
       ? this.navCtrl.navigateRoot('/login', { animated: false })
       : Promise.resolve(true);
 
@@ -782,6 +800,8 @@ export class AuthService {
       pushCleanup,
       this.authSessionCleanup.clearExternalAuthSessions()
     ]);
+
+    if (oidcLogout && redirectToLogin) { window.location.assign(oidcLogout); return; }
 
     if (redirectToLogin && typeof window !== 'undefined' && !window.location.pathname.endsWith('/login')) {
       window.location.replace('/login');

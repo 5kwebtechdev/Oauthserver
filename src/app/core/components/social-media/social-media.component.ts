@@ -14,6 +14,7 @@ import {
   UserCredential
 } from 'firebase/auth';
 import { firstValueFrom, timeout } from 'rxjs';
+import { PkceAuthService } from '../../services/pkce-auth.service';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
@@ -75,6 +76,7 @@ export class SocialMediaComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private pkceAuth: PkceAuthService,
     private router: Router,
     private platform: Platform,
     private loadingCtrl: LoadingController,
@@ -238,11 +240,44 @@ export class SocialMediaComponent implements OnInit {
   }
 
   private async continueGoogleAuthentication(profile: GoogleOAuthProfile, loading: any): Promise<void> {
-    // Google authentication supplies proof only. This read-only lookup does
-    // not create a SuperMe account; mobile-login remains the token verifier.
-    const result = await firstValueFrom(
-      this.authService.checkEmailExists(profile.email).pipe(timeout({ first: 20_000 }))
-    );
+    let result: { exists: boolean };
+    let googleSignupTicket = '';
+    if (this.pkceAuth.enabled) {
+      try {
+        await this.pkceAuth.googleLogin(profile.idToken);
+        await this.finishSocialLogin(loading);
+        return;
+      } catch (error: any) {
+        if (error?.status !== 404 || error?.error?.registrationRequired !== true) throw error;
+
+        // Carry the server's one-time ticket into the wizard, the same way the
+        // auth-server's own /login page does, so both entry points resolve the
+        // identity through completeGoogleSignupHandoff. The locally held Google
+        // SDK identity is still stored below rather than discarded: the ticket is
+        // single-use and its exchange can fail (expired, consumed, offline), and
+        // throwing away an identity we already have in hand to depend on that
+        // round trip would be strictly less robust than keeping both.
+        googleSignupTicket = String(error?.error?.handoffTicket || '').trim();
+
+        // Use the identity verified by the backend for the read-only profile fields.
+        // Keep the Google SDK's verified identity fields when an older or
+        // client-specific auth-server response omits optional display data.
+        // Spreading undefined response fields here used to erase email or
+        // providerId, leaving the wizard unable to submit its final signup.
+        profile = {
+          ...profile,
+          name: String(error.error?.name || profile.name || '').trim(),
+          email: String(error.error?.email || profile.email || '').trim(),
+          providerId: String(error.error?.providerId || profile.providerId || '').trim(),
+          avatarUrl: String(error.error?.pictureUrl || profile.avatarUrl || '').trim()
+        };
+        result = { exists: false };
+      }
+    } else {
+      result = await firstValueFrom(
+        this.authService.checkEmailExists(profile.email).pipe(timeout({ first: 20_000 }))
+      );
+    }
     if (typeof result?.exists !== 'boolean') {
       throw new Error('Unable to check your account. Please try Google sign-in again.');
     }
@@ -253,10 +288,13 @@ export class SocialMediaComponent implements OnInit {
       return;
     }
 
-    const selectedRole = this.getSelectedSignupRole();
+    // A new social account must choose Self, Child, or Parent as part of the
+    // FE signup flow. Do not inherit role or managed-child state from an earlier attempt.
+    this.clearManagedChildSignupContext();
+    sessionStorage.removeItem('signup_role');
     // A deleted account can reuse the same Google identity. Start its profile
-    // draft afresh while retaining the freshly obtained provider proof and role.
-    ['signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
+    // draft afresh while retaining the freshly obtained provider proof.
+    ['oauth_signup_session_pending', 'signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
       'show_child_welcome_after_family'].forEach(key => sessionStorage.removeItem(key));
     sessionStorage.setItem('oauth_signup_pending_submission', 'true');
     this.onboardingState.clearRegistrationDraft();
@@ -267,14 +305,17 @@ export class SocialMediaComponent implements OnInit {
       socialProviderId: profile.providerId,
       socialOnboarding: true,
       socialDetailsCompleted: false,
-      socialRolePending: !selectedRole,
-      selectedSignupRole: selectedRole || undefined,
-      relationship: selectedRole?.toUpperCase(),
-      asChild: selectedRole === 'child',
+      socialRolePending: true,
+      selectedSignupRole: undefined,
+      relationship: undefined,
+      asChild: false,
       onboardingStep: 3
     }, 3, 'EMAIL');
     await this.router.navigate(['/signup'], {
-      queryParams: selectedRole ? { step: 2, role: selectedRole } : { step: 1 },
+      queryParams: {
+        step: 1,
+        ...(googleSignupTicket ? { googleSignupTicket } : {})
+      },
       replaceUrl: true
     });
     await this.finishSocialLogin(loading);
@@ -283,7 +324,14 @@ export class SocialMediaComponent implements OnInit {
   private async buildWebGoogleOAuthProfile(result: UserCredential): Promise<GoogleOAuthProfile> {
     const user = result.user;
     const oauthCredential = GoogleAuthProvider.credentialFromResult(result);
-    const idToken = String(oauthCredential?.idToken || await user.getIdToken()).trim();
+    // Only Google's own ID token is usable here. user.getIdToken() returns a
+    // FIREBASE token instead (iss: securetoken.google.com/<project>, aud: <project>),
+    // which the auth-server's GoogleIdentityVerifier rejects outright - it checks the
+    // issuer and audience against Google's. Falling back to it silently sent a token
+    // of the wrong type whenever Firebase did not surface the OAuth credential, so the
+    // two Google buttons were not sending the same thing at all: the auth-server's own
+    // login page posts the Google credential from Google Identity Services every time.
+    const idToken = String(oauthCredential?.idToken || '').trim();
     const accessToken = String(oauthCredential?.accessToken || '').trim();
     const providerId = String(user.providerData[0]?.uid || user.uid || '').trim();
     const email = String(user.email || '').trim();
@@ -503,6 +551,11 @@ export class SocialMediaComponent implements OnInit {
         await this.presentToast('Sign-in failed: invalid server response. Please try again.');
       },
       error: async (err) => {
+        if (this.isUnknownOAuthAccountError(err)) {
+          await this.finishSocialLogin(loading);
+          await this.enterOAuthSignupWizard(profile, provider);
+          return;
+        }
         await this.finishSocialLogin(loading);
         this.clearOAuthSignupSession();
         console.error('[SocialMedia] OAuth login error:', err);
@@ -528,10 +581,18 @@ export class SocialMediaComponent implements OnInit {
       sessionStorage.setItem('signup_via_google', 'true');
       sessionStorage.setItem('signup_via_oauth', 'true');
       sessionStorage.setItem('oauth_signup_provider', provider);
-      sessionStorage.setItem('google_signup_email', data.email);
-      sessionStorage.setItem('google_signup_name', data.name);
-      sessionStorage.setItem('google_signup_avatar', data.avatarUrl);
-      sessionStorage.setItem('google_signup_provider_id', data.providerId);
+      const email = String(data.email || '').trim();
+      const name = String(data.name || '').trim();
+      const avatarUrl = String(data.avatarUrl || '').trim();
+      const providerId = String(data.providerId || '').trim();
+      if (email) sessionStorage.setItem('google_signup_email', email);
+      else sessionStorage.removeItem('google_signup_email');
+      if (name) sessionStorage.setItem('google_signup_name', name);
+      else sessionStorage.removeItem('google_signup_name');
+      if (avatarUrl) sessionStorage.setItem('google_signup_avatar', avatarUrl);
+      else sessionStorage.removeItem('google_signup_avatar');
+      if (providerId) sessionStorage.setItem('google_signup_provider_id', providerId);
+      else sessionStorage.removeItem('google_signup_provider_id');
 
       if (data.idToken) {
         sessionStorage.setItem('oauth_signup_id_token', data.idToken);
@@ -581,11 +642,64 @@ export class SocialMediaComponent implements OnInit {
         sessionStorage.removeItem('oauth_signup_is_development_mock');
       }
 
-      sessionStorage.setItem('requestedIdentifier', data.email);
+      if (email) sessionStorage.setItem('requestedIdentifier', email);
+      else sessionStorage.removeItem('requestedIdentifier');
     } catch (e) {}
   }
 
+  private isUnknownOAuthAccountError(error: any): boolean {
+    const code = String(error?.error?.error || error?.error?.code || '').toLowerCase();
+    const message = String(error?.error?.message || error?.error || '').toLowerCase();
+    return code === 'registration_required'
+      || (Number(error?.status) === 404
+        && /user not found|account not found|not registered/.test(message));
+  }
+
+  private async enterOAuthSignupWizard(
+    profile: OAuthSignupSessionData,
+    provider: OAuthProviderName
+  ): Promise<void> {
+    // New Google/Apple identities always start at role selection, even if a
+    // previous attempt left a role or managed-child state in session storage.
+    this.clearManagedChildSignupContext();
+    sessionStorage.removeItem('signup_role');
+    ['signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
+      'show_child_welcome_after_family'].forEach(key => sessionStorage.removeItem(key));
+    this.storeOAuthSignupSession(provider, profile);
+    sessionStorage.setItem('oauth_signup_pending_submission', 'true');
+    this.onboardingState.clearRegistrationDraft();
+    this.onboardingState.saveRegistrationDraft({
+      email: profile.email,
+      name: profile.name,
+      authProvider: provider,
+      socialProviderId: profile.providerId,
+      socialOnboarding: true,
+      socialDetailsCompleted: false,
+      socialRolePending: true,
+      selectedSignupRole: undefined,
+      relationship: undefined,
+      asChild: false,
+      onboardingStep: 3
+    }, 3, 'EMAIL');
+    await this.router.navigate(['/signup'], {
+      queryParams: { step: 1 },
+      replaceUrl: true
+    });
+  }
+
+  private clearManagedChildSignupContext(): void {
+    [
+      'managed_child_signup',
+      'managed_child_family_code',
+      'managed_child_success_email',
+      'create_child_after_family',
+      'family_children_refresh_pending',
+      'managed_child_parent_welcome_pending'
+    ].forEach(key => sessionStorage.removeItem(key));
+  }
+
   private clearOAuthSignupSession(): void {
+    this.pkceAuth.clearGoogleSignupProof?.();
     try {
       [
         'signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',

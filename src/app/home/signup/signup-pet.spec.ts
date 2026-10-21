@@ -15,7 +15,11 @@ describe('Signup pet continuation', () => {
       pets: [{ apiName: 'PANDA' }, { apiName: 'OWL' }],
       registrationInProgress: false,
       managedChildSignup: false,
-      onboardingState: { updateRegistrationDraft: jasmine.createSpy() },
+      pkceAuth: { enabled: false },
+      onboardingState: {
+        updateRegistrationDraft: jasmine.createSpy(),
+        isSocialOnboarding: () => false
+      },
       authService: {
         isLoggedIn: () => false,
         getUserRelationship: () => 'SELF'

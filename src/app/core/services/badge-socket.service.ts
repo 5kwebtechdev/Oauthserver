@@ -127,7 +127,9 @@ export class BadgeSocketService implements OnDestroy {
             return;
         }
 
-        const effectiveUserId = userId || this.extractUserIdFromToken(token);
+        const effectiveUserId = this.normalizeUserId(userId)
+            || this.normalizeUserId(this.authApi.getUserId())
+            || this.extractUserIdFromToken(token);
         if (!effectiveUserId) {
             console.warn('[BadgeSocket] Could not determine userId, skipping connection');
             return;
@@ -366,14 +368,26 @@ export class BadgeSocketService implements OnDestroy {
     }
     
 
+    private normalizeUserId(value: unknown): string | null {
+        const id = Number(value);
+        return Number.isSafeInteger(id) && id > 0 ? String(id) : null;
+    }
+
     private extractUserIdFromToken(token: string): string | null {
         try {
             const cleanToken = token.startsWith('Bearer ') ? token.substring(7) : token;
             const parts = cleanToken.split('.');
             if (parts.length !== 3) return null;
 
-            const payload = JSON.parse(atob(parts[1]));
-            return payload.id?.toString() || payload.sub || null;
+            const decode = (part: string) => {
+                const base64 = part.replace(/-/g, '+').replace(/_/g, '/');
+                return JSON.parse(atob(base64 + '='.repeat((4 - base64.length % 4) % 4)));
+            };
+            const header = decode(parts[0]);
+            const payload = decode(parts[1]);
+            // Auth2 subjects identify email/phone, not the numeric badge topic.
+            return this.normalizeUserId(payload.id ?? payload.userId
+                ?? (header.alg === 'HS256' ? payload.sub : null));
         } catch (error) {
             console.error('[BadgeSocket] Failed to extract userId from token:', error);
             return null;
