@@ -32,6 +32,7 @@ import { EventApi } from '../../../api/event.api';
 import { CalendarApi } from '../../../api/calendar.api';
 import { getEventTypeIcon } from '../event-type-icon';
 import { isCalendarMirrorOfPersonalEvent, isHomePersonalEvent, isHomePlannerSchedule } from '../home-calendar-kind';
+import { eventOccurrences } from '../personal-event-occurrences';
 import { activityRewardIconHtml } from '../activity-reward-icon';
 import { CustomToastService } from '../../../services/custom-toast.service';
 
@@ -2507,7 +2508,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   async openUpcomingEvents(): Promise<void> {
-    await this.router.navigate(['/authed/activity-page']);
+    await this.router.navigate(['/authed/events-list'], { state: { origin: this.router.url } });
   }
 
   getGlancePlannerDateRange(source: any): string {
@@ -2560,25 +2561,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   private getGlanceUpcomingEventOccurrence(event: any, referenceDate: Date): Date | null {
-    const original = this.getGlanceLocalDate(event?.eventDate || event?.event_date || event?.startDate || event?.start_date);
-    if (!original) return null;
-
-    const recurrence = String(event?.recurrence || '').toUpperCase();
-    const year = referenceDate.getFullYear();
-    const month = referenceDate.getMonth();
-    if (recurrence === 'YEARLY') {
-      const occurrence = (candidateYear: number) => new Date(candidateYear, original.getMonth(),
-        Math.min(original.getDate(), new Date(candidateYear, original.getMonth() + 1, 0).getDate()));
-      const thisYear = occurrence(year);
-      return thisYear >= referenceDate ? thisYear : occurrence(year + 1);
-    }
-    if (recurrence === 'MONTHLY') {
-      const occurrence = (candidateYear: number, candidateMonth: number) => new Date(candidateYear, candidateMonth,
-        Math.min(original.getDate(), new Date(candidateYear, candidateMonth + 1, 0).getDate()));
-      const thisMonth = occurrence(year, month);
-      return thisMonth >= referenceDate ? thisMonth : occurrence(year, month + 1);
-    }
-    return this.glanceStartOfDay(original);
+    const normalized = { ...event, eventDate: event?.eventDate || event?.event_date || event?.startDate || event?.start_date };
+    return eventOccurrences(normalized, referenceDate, 'upcoming')[0]?.date ?? null;
   }
 
   private mergeGlanceUpcomingEvents(calendarEvents: any[], personalEvents: any[]): any[] {

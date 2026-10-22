@@ -146,6 +146,9 @@ const routes: Routes = [
         path: 'activity-detail/:id',
         component: ActivityDetailComponent
       }, {
+        path: 'events-list',
+        loadComponent: () => import('../core/components/activity-section/events-list/events-list.component').then(m => m.EventsListComponent)
+      }, {
         path: 'event-detail/:id',
         loadComponent: () => import('../core/components/activity-section/event-detail/event-detail.component').then(m => m.EventDetailComponent)
       }, {

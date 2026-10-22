@@ -703,6 +703,9 @@
               <span>{{ option.label }}</span>
             </button>
           </div>
+          <p class="event-month-end-note" *ngIf="eventRecurrence === 'MONTHLY' && eventDate?.getDate() === 31">
+            In months without a 31st, this event will appear on the last day of the month.
+          </p>
         </div>
       </section>
 

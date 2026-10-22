@@ -2080,6 +2080,13 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   gap: 16px;
 }
 
+.event-month-end-note {
+  color: #67616f;
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0;
+}
+
 .event-section-header,
 .event-priority-card,
 .event-card-trigger {

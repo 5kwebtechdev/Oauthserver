@@ -128,9 +128,18 @@
                 <section class="child-event-cards" *ngIf="showsPlannerEvents" aria-label="Events">
                     <header class="child-event-cards__header">
                         <h2><img src="assets/figma/home-glance/upcoming-events.webp" alt="" />Upcoming Events</h2>
-                        <button type="button" disabled>View all</button>
+                        <button type="button" (click)="openAllEvents()">View all</button>
                     </header>
-                    <div class="child-event-cards__rail">
+                    <div class="child-event-cards__empty" *ngIf="childEventItems.length === 0" role="status">
+                        <span class="child-event-cards__empty-icon" aria-hidden="true">
+                            <img src="assets/figma/planner-daily/upcoming-events-empty.png" alt="" />
+                        </span>
+                        <div class="child-event-cards__empty-copy">
+                            <strong>You have no events added</strong>
+                            <span>Your events may not fall within 30 days of the selected date.</span>
+                        </div>
+                    </div>
+                    <div class="child-event-cards__rail" *ngIf="childEventItems.length > 0">
                         <button type="button" class="child-event-card" *ngFor="let event of childEventItems"
                             (click)="openChildEventDetail(event)">
                             <span class="child-event-card__icon" aria-hidden="true"

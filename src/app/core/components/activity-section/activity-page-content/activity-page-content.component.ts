@@ -22,6 +22,7 @@ import { Observable, Subscription, filter, skip, take, forkJoin, of, catchError 
 import { LongPressDirective } from '../../../directives/gestureControlDirective';
 import { getEventTypeIcon } from '../event-type-icon';
 import { isCalendarMirrorOfPersonalEvent, isHomePersonalEvent, isHomePlannerSchedule, plannerEditTab } from '../home-calendar-kind';
+import { clampedMonthDay, localDay, upcomingOccurrencesWithinDays } from '../personal-event-occurrences';
 
 interface PlannerScheduleCard {
     id: string;
@@ -574,8 +575,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     get showsPlannerEvents(): boolean {
-        return (this.childCalendarTab === 'all' || this.childCalendarTab === 'planner')
-            && this.childEventItems.length > 0;
+        return this.childCalendarTab === 'all' || this.childCalendarTab === 'planner';
     }
 
     get hasChildCalendarContent(): boolean {
@@ -587,7 +587,20 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     openAllEvents(): void {
-        void this.router.navigate(['/authed/education/events']);
+        const childId = this.authService.isParentUser() ? this.profileSelector.getChildId() : null;
+        // Parent Calendar receives the selected child's events from the calendar
+        // endpoint. Keep those real records available if /events/all omits them.
+        const calendarEvents = childId == null ? [] : this.childEventItems.map(({ __plannerEventDate, ...event }) => ({
+            ...event,
+            name: event.name || event.title,
+            eventDate: event.eventDate || event.event_date || event.startDate || event.start_date
+                || (__plannerEventDate ? this.dateKey(__plannerEventDate) : null)
+        }));
+        // Use the canonical route: the legacy /authed guard redirects and
+        // drops navigation extras, including the selected child's records.
+        void this.router.navigate(['/events-list'], {
+            state: { origin: this.router.url, childId, calendarEvents }
+        });
     }
 
     openChildEventDetail(event: any): void {
@@ -639,10 +652,10 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     getChildEventSubtitle(event: any): string {
-        const eventDate = this.getLocalDate(event?.startDate || event?.eventDate);
+        const eventDate = this.getLocalDate(event?.__plannerEventDate || event?.startDate || event?.eventDate);
         if (!eventDate) return event?.allDay ? 'All day' : this.getChildItemTime(event);
 
-        const today = this.startOfDay(new Date());
+        const today = this.startOfDay(this.selectedDate);
         const eventDay = this.startOfDay(eventDate);
         const difference = Math.round((eventDay.getTime() - today.getTime()) / 86400000);
         if (difference === 0) return 'Today';
@@ -807,6 +820,9 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
             const month = new Date(date.getFullYear(), date.getMonth(), 1);
             visibleMonths.set(this.dateKey(month), month);
         });
+        const windowEnd = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth(), this.selectedDate.getDate() + 30);
+        const endMonth = new Date(windowEnd.getFullYear(), windowEnd.getMonth(), 1);
+        visibleMonths.set(this.dateKey(endMonth), endMonth);
         const months = [...visibleMonths.values()];
         this.plannerLoading = true;
         this.subscriptions.add(
@@ -826,7 +842,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     const response = responses[0];
                     const allEvents = response.events || [];
                     const plannerItems = allEvents.filter(item => this.isPlannerSchedule(item));
-                    const eventItems = allEvents.filter(item => this.isPersonalEventRecord(item)
+                    const eventItems = responses.reduce<any[]>((all, month) => all.concat(month.events || []), []).filter(item => this.isPersonalEventRecord(item)
                         && !personalEvents.some(event => isCalendarMirrorOfPersonalEvent(item, event)));
 
                     responses.forEach((monthResponse, index) => {
@@ -841,8 +857,15 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     });
                     this.childPlannerItems = this.mergeDuplicatePlannerSchedules(plannerItems);
                     this.childEventItems = [...personalEvents, ...eventItems]
-                        .filter(event => this.eventOccursOnSelectedDate(event, selectedDateString))
-                        .sort((left, right) => this.getPlannerStartTimestamp(left) - this.getPlannerStartTimestamp(right));
+                        .reduce<any[]>((items, event) => {
+                            const normalized = { ...event, eventDate: event.eventDate || event.event_date || event.startDate || event.start_date };
+                            return items.concat(upcomingOccurrencesWithinDays(normalized, this.selectedDate, 30)
+                                .map(occurrence => ({ ...event, __plannerEventDate: occurrence.date })));
+                        }, [])
+                        .filter((event, index, list) => list.findIndex(candidate => String(candidate.id) === String(event.id)
+                            && String(candidate.name || candidate.title) === String(event.name || event.title)
+                            && String(candidate.__plannerEventDate) === String(event.__plannerEventDate)) === index)
+                        .sort((left, right) => left.__plannerEventDate.getTime() - right.__plannerEventDate.getTime());
                     this.plannerLoadError = !!response.loadError;
                     this.plannerLoading = false;
                     try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
@@ -927,7 +950,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
             const visibleMonthStartsBeforeEvent = new Date(selectedYear, selectedMonth, 1) < new Date(start.getFullYear(), start.getMonth(), 1);
             if (visibleMonthStartsBeforeEvent) return [];
             const occurrence = new Date(selectedYear, selectedMonth, Math.min(start.getDate(), monthEnd.getDate()));
-            return [this.dateKey(occurrence)];
+            return occurrence >= start ? [this.dateKey(occurrence)] : [];
         }
 
         const dates: string[] = [];
@@ -943,11 +966,17 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     private eventOccursOnSelectedDate(event: any, selectedDate: string): boolean {
-        const eventDate = String(event?.eventDate || event?.event_date || event?.startDate || event?.start_date || '').slice(0, 10);
-        if (eventDate === selectedDate) return true;
-        if (String(event?.recurrence).toUpperCase() === 'YEARLY') return eventDate.slice(5) === selectedDate.slice(5);
-        if (String(event?.recurrence).toUpperCase() === 'MONTHLY') return eventDate.slice(8) === selectedDate.slice(8);
-        return false;
+        const original = localDay(event?.eventDate || event?.event_date || event?.startDate || event?.start_date);
+        const selected = localDay(selectedDate);
+        if (!original || !selected || selected < original) return false;
+        const recurrence = String(event?.recurrence || '').toUpperCase();
+        if (recurrence === 'YEARLY' && original.getMonth() === selected.getMonth()) {
+            return clampedMonthDay(selected.getFullYear(), original.getMonth(), original.getDate()).getTime() === selected.getTime();
+        }
+        if (recurrence === 'MONTHLY') {
+            return clampedMonthDay(selected.getFullYear(), selected.getMonth(), original.getDate()).getTime() === selected.getTime();
+        }
+        return original.getTime() === selected.getTime();
     }
 
     private isPlannerSchedule(item: any): boolean {
