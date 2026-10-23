@@ -92,6 +92,17 @@ public class DefaultSecurityConfig {
                         // Preserve saved OAuth requests; direct logins return to the frontend.
                         .defaultSuccessUrl(frontendBaseUrl, false)
                         .permitAll())
+                // formLogin() above registers "/login" as the AuthenticationEntryPoint for the
+                // WHOLE chain, including /v1/**. If anything inside the compat API (e.g.
+                // SupermeAuthCompatController's session-login) throws an AuthenticationException,
+                // ExceptionTranslationFilter would otherwise 302-redirect that XHR to /login - a
+                // path with no CORS headers registered below - so the browser blocks it as a CORS
+                // error instead of surfacing the real error. The compat API is called by fetch/XHR,
+                // which can't follow a redirect into a login page anyway, so give it a plain 401
+                // (covered by the "/v1/**" CORS config) instead of the redirect.
+                .exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
+                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                        new AntPathRequestMatcher("/v1/**")))
                 // ----- RATE LIMITING CODE: wired in before Turnstile -----
                 // Cheapest check first: in-memory rate limit before the Turnstile filter's
                 // outbound call to Cloudflare, so a flood gets rejected without paying for
