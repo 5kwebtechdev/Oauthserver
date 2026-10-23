@@ -8,12 +8,19 @@ import { APP_CONFIG } from './app-config';
  *
  * This client does receive a refresh_token (auth-server overrides Spring Authorization
  * Server's default refusal to issue one to a secretless/public client - see
- * BE/ARCHITECTURE.md section 8), used by authInterceptor on a 401. useSilentRefresh below
- * is a second, independent renewal path: a hidden iframe reloads /oauth2/authorize with
- * a fresh PKCE run; since the auth-server's login session cookie is same-site (same
- * registrable domain, "localhost", different port) it is still sent, so an active
- * session yields a fresh token with no visible redirect or re-login even if the refresh
- * token itself were ever unavailable.
+ * BE/ARCHITECTURE.md section 8), used by authInterceptor on a 401.
+ *
+ * useSilentRefresh is intentionally disabled (see below). It used to run a hidden
+ * iframe that reloaded /oauth2/authorize on a fresh PKCE run; because the auth-server
+ * login session cookie is same-site (same registrable domain, "localhost", different
+ * port) it was still sent, so an active server-side session silently handed back a new
+ * token with no visible redirect or re-login - even for a user who had closed the tab
+ * without logging out. That's the "it auto-logs me back in" bug. Disabling it means a
+ * user with no valid local token always hits a real /oauth2/authorize redirect instead
+ * of the invisible iframe path. Note this alone does not force a fresh login prompt if
+ * the auth-server session cookie is still alive - Spring Security can still
+ * auto-approve that visible redirect too. Killing/shortening that server-side session
+ * (or calling end-session on tab close) is the other half of the fix.
  */
 export const authCodeFlowConfig: AuthConfig = {
   issuer: APP_CONFIG.authIssuer,
@@ -30,7 +37,7 @@ export const authCodeFlowConfig: AuthConfig = {
   requireHttps: false, // local http dev only
   strictDiscoveryDocumentValidation: false,
   sessionChecksEnabled: false,
-  useSilentRefresh: true,
+  useSilentRefresh: false,
   silentRefreshRedirectUri: window.location.origin + '/silent-refresh.html',
   silentRefreshTimeout: 5000,
   timeoutFactor: 0.75,
