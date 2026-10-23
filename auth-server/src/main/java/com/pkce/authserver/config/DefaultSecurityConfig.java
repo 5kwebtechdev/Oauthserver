@@ -16,8 +16,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -100,9 +102,21 @@ public class DefaultSecurityConfig {
                 // error instead of surfacing the real error. The compat API is called by fetch/XHR,
                 // which can't follow a redirect into a login page anyway, so give it a plain 401
                 // (covered by the "/v1/**" CORS config) instead of the redirect.
-                .exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
-                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                        new AntPathRequestMatcher("/v1/**")))
+                //
+                // Both mappings are registered explicitly here, /v1/** first: when
+                // ExceptionHandlingConfigurer has more than one defaultAuthenticationEntryPointFor
+                // mapping, requests that don't match ANY of them fall back to whichever mapping was
+                // inserted FIRST - not necessarily formLogin's. Registering the catch-all
+                // (AnyRequestMatcher, same loginPage("/login") formLogin uses) ourselves, after the
+                // /v1/** one, keeps that catch-all as the real default for every other request
+                // (e.g. a plain "GET /") while /v1/** still wins its own, more specific match.
+                .exceptionHandling(exceptions -> exceptions
+                        .defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                                new AntPathRequestMatcher("/v1/**"))
+                        .defaultAuthenticationEntryPointFor(
+                                new LoginUrlAuthenticationEntryPoint("/login"),
+                                AnyRequestMatcher.INSTANCE))
                 // ----- RATE LIMITING CODE: wired in before Turnstile -----
                 // Cheapest check first: in-memory rate limit before the Turnstile filter's
                 // outbound call to Cloudflare, so a flood gets rejected without paying for
