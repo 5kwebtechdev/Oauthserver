@@ -281,13 +281,13 @@ describe('Google signup request sequencing', () => {
       signup.step = 4;
       signup.proceedWithAvatar();
       signup.proceedWithAvatar();
-      const request = http.expectOne('/v1/auth/oauth2/mobile-login');
+      const request = http.expectOne(req => req.url.endsWith('/api/auth/register'));
       expect(request.request.body).toEqual(jasmine.objectContaining({
-        provider: 'google', providerId: 'google-sub', idToken: 'google-proof',
-        email: 'new@example.test', name: 'Google Name', username: 'chosenuser', dob: '2000-01-01',
-        role: role.toUpperCase(), profileCompleted: true, petName: 'Dragon', unlockPotential: true
+        googleIdToken: 'google-proof', email: 'new@example.test', name: 'Google Name',
+        username: 'chosenuser', dateOfBirth: '2000-01-01', relationship: role.toUpperCase(),
+        petName: 'Dragon', unlockPotential: true
       }));
-      request.flush({ token: 'legacy-token', user: { id: 42, relationship: 'SELF', asChild: role === 'child', onboardingStep: 7 } });
+      request.flush({ access_token: 'auth-server-token', redirectTo: '/oauth2/authorize' });
       expect(auth.setSession).not.toHaveBeenCalled();
       expect(signup.pkceAuth.googleLogin).toHaveBeenCalledOnceWith('google-proof', true);
       expect(signup.registrationInProgress).toBeTrue();
@@ -576,8 +576,9 @@ describe('Google signup request sequencing', () => {
     await signup.registerOrProceed();
     signup.step = 4;
     signup.proceedWithAvatar();
-    http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'legacy-token',
-      user: { id: 42, relationship: 'SELF', onboardingStep: 7 } });
+    http.expectOne(req => req.url.endsWith('/api/auth/register')).flush({
+      access_token: 'auth-server-token', redirectTo: '/oauth2/authorize'
+    });
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(auth.setSession).not.toHaveBeenCalled();
     expect(signup.navCtrl.navigateRoot).not.toHaveBeenCalled();
@@ -595,8 +596,9 @@ describe('Google signup request sequencing', () => {
     await authenticateNewUser('parent');
     signup.pkceAuth.enabled = true;
     await signup.registerOrProceed();
-    http.expectOne('/v1/auth/oauth2/mobile-login').flush({ token: 'legacy-token',
-      user: { id: 42, relationship: 'PARENT', onboardingStep: 4 } });
+    http.expectOne(req => req.url.endsWith('/api/auth/register')).flush({
+      access_token: 'auth-server-token', redirectTo: '/oauth2/authorize'
+    });
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(auth.setSession).not.toHaveBeenCalled();
     expect(signup.pkceAuth.googleLogin).toHaveBeenCalledOnceWith('google-proof', true);
