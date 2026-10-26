@@ -32,6 +32,29 @@ describe('PKCE session bridge', () => {
     expect(auth.setSession).toHaveBeenCalledWith({ token: 'new-access', userId: 7, user: { id: 7, relationship: 'PARENT' } });
     expect(localStorage.getItem('superme_oidc_refresh_token')).toBe('new-refresh');
   });
+  it('recovers from a stale cached OIDC session by clearing it and retrying once', async () => {
+    // A long-lived browser profile can accumulate a stale nonce/PKCE verifier/discovery
+    // document under the superme_oidc_ prefix that makes the next sign-in attempt throw,
+    // even though a fresh profile (incognito, another browser) would succeed immediately.
+    localStorage.setItem('superme_oidc_nonce', 'stale-nonce-from-a-prior-deployment');
+    oauth.loadDiscoveryDocumentAndTryLogin = jasmine.createSpy().and.callFake(async () => {
+      if (localStorage.getItem('superme_oidc_nonce')) throw new Error('stale nonce mismatch');
+      localStorage.setItem('superme_oidc_refresh_token', 'new-refresh');
+    });
+    await service.init();
+    expect(oauth.loadDiscoveryDocumentAndTryLogin).toHaveBeenCalledTimes(2);
+    expect(localStorage.getItem('superme_oidc_nonce')).toBeNull();
+    expect(auth.setSession).toHaveBeenCalledWith({ token: 'new-access', userId: 7, user: { id: 7, relationship: 'PARENT' } });
+    expect(service.error).toBe('');
+  });
+  it('surfaces the generic sign-in error only after a retry also fails', async () => {
+    oauth.loadDiscoveryDocumentAndTryLogin = jasmine.createSpy().and.callFake(async () => {
+      throw new Error('auth server unreachable');
+    });
+    await service.init();
+    expect(oauth.loadDiscoveryDocumentAndTryLogin).toHaveBeenCalledTimes(2);
+    expect(service.error).toBe('Could not connect to sign in. Please try again.');
+  });
   it('uses the configured client for Google login and waits before starting PKCE', async () => {
     let reply!: (value: unknown) => void;
     const post = jasmine.createSpy().and.returnValue(new Promise(resolve => reply = resolve));

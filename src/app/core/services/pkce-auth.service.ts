@@ -36,26 +36,46 @@ export class PkceAuthService {
       customTokenParameters: ['user'], showDebugInformation: false
     });
     try {
-      await this.oauth.loadDiscoveryDocumentAndTryLogin();
-      if (!this.oauth.hasValidAccessToken() && this.oauth.getRefreshToken()) await this.refresh();
-      // On reload an older token may already have passed its renewal timer.
-      if (this.oauth.hasValidAccessToken() && this.oauth.getRefreshToken()
-          && this.oauth.getAccessTokenExpiration() - Date.now() <= 150000) await this.refresh();
-      if (this.oauth.hasValidAccessToken()) this.syncSession();
-      else {
+      await this.tryLoginOnce();
+    } catch (err) {
+      // The OIDC session state (nonce, PKCE verifier, cached discovery document) lives in
+      // localStorage — not sessionStorage — so on a long-lived, frequently-used browser
+      // profile it can go stale across deployments/client-id changes and make the next
+      // loadDiscoveryDocumentAndTryLogin() throw, even though a guaranteed-fresh profile
+      // (incognito, another browser) works fine. Clear it and retry once before giving up.
+      console.error('[PkceAuthService] sign-in failed, retrying after clearing stale OIDC state', err);
+      this.clearOidcStorage();
+      try {
+        await this.tryLoginOnce();
+      } catch (err2) {
+        console.error('[PkceAuthService] sign-in failed after retry', err2);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_id');
         localStorage.removeItem('user_data');
+        this.error = 'Could not connect to sign in. Please try again.';
       }
-      this.oauth.events.subscribe(event => {
-        if (event.type === 'token_expires' && (event as { info?: string }).info === 'access_token') void this.refresh().catch(() => {});
-      });
-    } catch {
+    }
+  }
+  private async tryLoginOnce(): Promise<void> {
+    await this.oauth.loadDiscoveryDocumentAndTryLogin();
+    if (!this.oauth.hasValidAccessToken() && this.oauth.getRefreshToken()) await this.refresh();
+    // On reload an older token may already have passed its renewal timer.
+    if (this.oauth.hasValidAccessToken() && this.oauth.getRefreshToken()
+        && this.oauth.getAccessTokenExpiration() - Date.now() <= 150000) await this.refresh();
+    if (this.oauth.hasValidAccessToken()) this.syncSession();
+    else {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_id');
       localStorage.removeItem('user_data');
-      this.error = 'Could not connect to sign in. Please try again.';
     }
+    this.oauth.events.subscribe(event => {
+      if (event.type === 'token_expires' && (event as { info?: string }).info === 'access_token') void this.refresh().catch(() => {});
+    });
+  }
+  private clearOidcStorage(): void {
+    Object.keys(localStorage)
+      .filter(key => key.startsWith('superme_oidc_'))
+      .forEach(key => localStorage.removeItem(key));
   }
   async loginAfterRegistration(credentials: { email?: string; phone?: string; password: string }): Promise<void> {
     await this.init();
