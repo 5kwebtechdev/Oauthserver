@@ -1611,10 +1611,21 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // a real PKCE session existed, and once the dashboard's own API calls
       // started 401ing against that ad-hoc session, Pet selection would get
       // kicked back to login mid-flow even though the account itself had
-      // registered successfully. Parent has no further step after this one
-      // in this wizard, so it still submits immediately.
+      // registered successfully. Parent signup collects its family choice
+      // on the separate Family Space screen before submitting registration.
       if (role === 'self' || role === 'child') {
         this.navigateToSignupStep(4);
+        return;
+      }
+      const signupProvider = sessionStorage.getItem('oauth_signup_provider')
+        || (sessionStorage.getItem('signup_via_google') === 'true' ? 'google' : '');
+      if (role === 'parent' && this.pkceAuth.enabled && signupProvider === 'google') {
+        // Collect the parent's create-or-join family choice before creating
+        // the Google account so registration includes the selected family.
+        void this.navCtrl.navigateRoot('/home/instructions-for-parent', {
+          queryParams: { role: 'parent' },
+          animated: false
+        });
         return;
       }
       this.completeGoogleOnboardingFlow(role);
@@ -3592,6 +3603,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         : `${countryCode}${profilePhone}`;
     }
     if (role === 'child') {
+      // A child starts as an unlinked SELF account. After PKCE login the
+      // dashboard sends them to the family-code screen, which links the
+      // account through the authenticated family endpoint.
+      googlePayload.relationship = 'SELF';
       googlePayload.asChild = true;
     }
 
@@ -3671,9 +3686,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       });
     }
 
+    const savedSignupDraft = this.onboardingState.getRegistrationState()?.savedData || {};
     const pendingGoogleSignup = provider === 'google'
       && sessionStorage.getItem('oauth_signup_pending_submission') === 'true';
-    if (pendingGoogleSignup && (!idToken || !providerId || !email)) {
+    const completedGoogleParentSignup = provider === 'google'
+      && role === 'parent'
+      && this.pkceAuth.enabled
+      && savedSignupDraft.socialFamilyCompleted === true
+      && (!savedSignupDraft.socialProviderId || savedSignupDraft.socialProviderId === providerId);
+    if ((pendingGoogleSignup || completedGoogleParentSignup) && (!idToken || !providerId || !email)) {
       this.registrationInProgress = false;
       this.loadingService.forceHide();
       // Name the missing piece. This guard fires at the end of the wizard, after
@@ -3696,10 +3717,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.core.triggerToasrt(this.errorMessage);
       return;
     }
-    // New APK Google signups are created by Auth2.0 after the user completes
-    // the profile wizard. Existing/legacy provider flows keep their old handler.
+    // Google PKCE signups use Auth2.0 for both registration and later
+    // onboarding updates. Legacy provider flows keep their existing handler.
     const authServerGoogleRegistration = provider === 'google'
-      && pendingGoogleSignup && this.pkceAuth.enabled;
+      && this.pkceAuth.enabled
+      && (pendingGoogleSignup || completedGoogleParentSignup);
     const onboardingRequest = authServerGoogleRegistration
       ? this.authService.registerGoogleSignup(googlePayload)
       : this.authService.googleOAuthLogin(googlePayload);

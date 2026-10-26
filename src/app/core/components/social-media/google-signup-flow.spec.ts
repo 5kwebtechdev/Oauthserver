@@ -282,11 +282,13 @@ describe('Google signup request sequencing', () => {
       signup.proceedWithAvatar();
       signup.proceedWithAvatar();
       const request = http.expectOne(req => req.url.endsWith('/api/auth/register'));
-      expect(request.request.body).toEqual(jasmine.objectContaining({
+      const expectedRegistration: any = {
         googleIdToken: 'google-proof', email: 'new@example.test', name: 'Google Name',
-        username: 'chosenuser', dateOfBirth: '2000-01-01', relationship: role.toUpperCase(),
+        username: 'chosenuser', dateOfBirth: '2000-01-01', relationship: 'SELF',
         petName: 'Dragon', unlockPotential: true
-      }));
+      };
+      if (role === 'child') expectedRegistration.asChild = true;
+      expect(request.request.body).toEqual(jasmine.objectContaining(expectedRegistration));
       request.flush({ access_token: 'auth-server-token', redirectTo: '/oauth2/authorize' });
       expect(auth.setSession).not.toHaveBeenCalled();
       expect(signup.pkceAuth.googleLogin).toHaveBeenCalledOnceWith('google-proof', true);
@@ -592,21 +594,18 @@ describe('Google signup request sequencing', () => {
     expect(sessionStorage.getItem('oauth_signup_id_token')).toBeNull();
   });
 
-  it('keeps Parent family setup and provider proof after establishing PKCE', async () => {
+  it('routes a new Google parent to family choices before registration', async () => {
     await authenticateNewUser('parent');
     signup.pkceAuth.enabled = true;
     await signup.registerOrProceed();
-    http.expectOne(req => req.url.endsWith('/api/auth/register')).flush({
-      access_token: 'auth-server-token', redirectTo: '/oauth2/authorize'
+
+    expect(signup.navCtrl.navigateRoot).toHaveBeenCalledOnceWith('/home/instructions-for-parent', {
+      queryParams: { role: 'parent' }, animated: false
     });
-    await new Promise(resolve => setTimeout(resolve, 0));
+    http.expectNone(req => req.url.endsWith('/api/auth/register'));
     expect(auth.setSession).not.toHaveBeenCalled();
-    expect(signup.pkceAuth.googleLogin).toHaveBeenCalledOnceWith('google-proof', true);
+    expect(signup.pkceAuth.googleLogin).not.toHaveBeenCalled();
     expect(sessionStorage.getItem('oauth_signup_id_token')).toBe('google-proof');
-    expect(onboarding.getResumeNavigation()).toEqual({
-      url: '/home/instructions-for-parent', queryParams: { role: 'parent' }
-    });
-    expect(signup.navCtrl.navigateRoot).not.toHaveBeenCalled();
   });
 
   it('uses PKCE for returning web Google users without a legacy local session', async () => {
