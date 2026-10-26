@@ -85,7 +85,7 @@ public class LoginPageController {
         response.sendRedirect(frontendBaseUrl);
     }
 
-    @GetMapping("/login")
+    @GetMapping({"/login", "/apklogin", "/adminlogin"})
     public void login(HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) throws Exception {
         // The saved authorization request determines the client; never accept a return URL
         // supplied directly to /login. Each link is a configured frontend URL.
@@ -107,6 +107,24 @@ public class LoginPageController {
                     && adminDevClientId.equals(ids[0]);
             isAdmin = isAdminProd || isAdminDev;
         }
+        String loginPath = request.getServletPath();
+        if ("/login".equals(loginPath)) {
+            if (isAdmin) {
+                redirectToLoginPage(request, response, "/adminlogin");
+                return;
+            }
+            if (isApkDev) {
+                redirectToLoginPage(request, response, "/apklogin");
+                return;
+            }
+        } else if ("/adminlogin".equals(loginPath) && !isAdmin) {
+            redirectToLoginPage(request, response, "/login");
+            return;
+        } else if ("/apklogin".equals(loginPath) && !isApkDev) {
+            redirectToLoginPage(request, response, "/login");
+            return;
+        }
+
         if (isAdmin) {
             String businessApiUrl = isAdminDev && !adminDevBusinessApiUrl.isBlank()
                     ? adminDevBusinessApiUrl : adminBusinessApiUrl;
@@ -789,6 +807,20 @@ public class LoginPageController {
                     googleClientId
             ));
         }
+    }
+
+    /** Keep only known login status flags when dispatching to the client-specific page. */
+    private void redirectToLoginPage(HttpServletRequest request,
+                                     jakarta.servlet.http.HttpServletResponse response,
+                                     String path) throws java.io.IOException {
+        java.util.List<String> status = java.util.stream.Stream.of("error", "captcha", "logout")
+                .filter(name -> request.getParameter(name) != null)
+                .map(name -> name + "=" + java.net.URLEncoder.encode(
+                        request.getParameter(name), java.nio.charset.StandardCharsets.UTF_8))
+                .toList();
+        String target = request.getContextPath() + path
+                + (status.isEmpty() ? "" : "?" + String.join("&", status));
+        response.sendRedirect(response.encodeRedirectURL(target));
     }
 
     /**

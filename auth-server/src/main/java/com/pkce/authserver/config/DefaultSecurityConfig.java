@@ -60,6 +60,8 @@ public class DefaultSecurityConfig {
         http
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/error").permitAll()
+                        // Selected from the saved OAuth client by LoginPageController.
+                        .requestMatchers("/apklogin", "/adminlogin").permitAll()
                         // Chrome DevTools auto-probes this on any site with DevTools
                         // open; harmless, but left unauthenticated it would otherwise
                         // get cached as the "saved request" and could hijack the
