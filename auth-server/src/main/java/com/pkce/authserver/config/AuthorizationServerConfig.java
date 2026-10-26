@@ -5,7 +5,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.pkce.authserver.security.PkceAwarePublicClientAuthenticationConverter;
 import com.pkce.authserver.security.PkceAwarePublicClientAuthenticationProvider;
 import com.pkce.authserver.security.PkceAwareRefreshTokenGenerator;
-import com.pkce.authserver.security.AdminToAppClientAccountSwitchFilter;
+import com.pkce.authserver.security.CrossClientAccountSwitchFilter;
 import com.pkce.authserver.security.RateLimitFilter;
 import com.pkce.authserver.security.AdminLogoutRevocationFilter;
 import com.pkce.authserver.service.AdminTokenSessionStore;
@@ -71,6 +71,9 @@ public class AuthorizationServerConfig {
     @Value("${app.frontend.apk-dev-client-id:}")
     private String apkDevClientId;
 
+    @Value("${app.frontend.admin-dev-client-id:}")
+    private String adminDevClientId;
+
     /**
      * Highest-priority filter chain: everything under /oauth2/**, /.well-known/** and
      * /connect/** (OIDC). PKCE is enforced automatically for public clients (no secret)
@@ -125,10 +128,10 @@ public class AuthorizationServerConfig {
                 // not apply - and would otherwise 403 every public-client token request.
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
-                // An existing admin SSO session must not be accepted by the APK client. Keep
-                // the pending authorization request and make the user authenticate through
-                // the APK login form, whose client context checks the dev SuperMeApp account DB.
-                .addFilterBefore(new AdminToAppClientAccountSwitchFilter(apkDevClientId),
+                // Do not let the shared auth-server SSO session silently cross between the
+                // APK and admin dev clients. Preserve the authorization request and send the
+                // user to the correct branded login form for the target account store.
+                .addFilterBefore(new CrossClientAccountSwitchFilter(apkDevClientId, adminDevClientId),
                         AbstractPreAuthenticatedProcessingFilter.class)
                 // Runs ahead of the OIDC logout endpoint so an admin's access token is marked
                 // revoked as they log out - Spring's own logout never invalidates it. Placed

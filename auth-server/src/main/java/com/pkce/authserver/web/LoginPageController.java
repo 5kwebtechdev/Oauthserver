@@ -845,6 +845,7 @@ public class LoginPageController {
         boolean captchaFailed = request.getParameter("captcha") != null;
         boolean hasError = request.getParameter("error") != null && !captchaFailed;
         boolean loggedOut = request.getParameter("logout") != null;
+        boolean appAccountSwitch = "app".equals(request.getParameter("account_switch"));
         String pageForgotUrl = adminForgotUrl.isBlank() ? "#" : adminForgotUrl;
 
         // TurnstileLoginFilter intercepts every POST to a URL ending "/login" - including
@@ -909,11 +910,13 @@ public class LoginPageController {
                           .alert { padding: 0.6rem 0.75rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; }
                           .alert-danger { background: #fdf2f2; color: #9b1c1c; border: 1px solid #f8b4b4; }
                           .alert-success { background: #f3faf7; color: #0e6245; border: 1px solid #84e1bc; }
+                          .alert-info { background: #f3eefb; color: #583296; border: 1px solid #ded0f2; }
                         </style>
                       </head>
                       <body>
                         <div class="brand"><img src="%s" alt="SuperMe"><span>SuperMe Admin</span></div>
                         <div class="card">
+                          %s
                           %s
                           %s
                           %s
@@ -980,6 +983,7 @@ public class LoginPageController {
                     </html>
                     """.formatted(
                     ADMIN_LOGO_DATA,
+                    appAccountSwitch ? "<div class=\"alert alert-info\" role=\"status\">This browser is signed in to SuperMeApp. Enter your SuperMe Admin credentials to continue.</div>" : "",
                     hasError ? "<div class=\"alert alert-danger\">Invalid email or password.</div>" : "",
                     loggedOut ? "<div class=\"alert alert-success\">You have been signed out.</div>" : "",
                     captchaFailed ? "<div class=\"alert alert-danger\">Captcha verification failed - please try again.</div>" : "",
