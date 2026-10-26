@@ -501,6 +501,16 @@ public class LoginPageController {
                             width: 100%%;
                             overflow: hidden;
                           }
+                          #google-signin-button > div {
+                            width: 100%% !important;
+                            max-width: 100%% !important;
+                          }
+                          #google-signin-button > div > div,
+                          #google-signin-button [role="button"] {
+                            width: 100%% !important;
+                            max-width: 100%% !important;
+                            min-width: 0 !important;
+                          }
                           .signup-row {
                             margin: 1.5rem 0 0;
                             text-align: center;
