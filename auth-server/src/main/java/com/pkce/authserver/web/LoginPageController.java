@@ -143,6 +143,7 @@ public class LoginPageController {
         boolean captchaFailed = request.getParameter("captcha") != null;
         boolean hasError = request.getParameter("error") != null && !captchaFailed;
         boolean loggedOut = request.getParameter("logout") != null;
+        boolean adminAccountSwitch = "admin".equals(request.getParameter("account_switch"));
 
         // Cloudflare's auto-render (class="cf-turnstile" + data-sitekey) auto-injects a
         // hidden cf-turnstile-response input into the enclosing form with zero extra JS -
@@ -563,6 +564,11 @@ public class LoginPageController {
                             background: var(--success-bg);
                             border-color: var(--success-border);
                           }
+                          .alert-info {
+                            color: #3f2a72;
+                            background: #f4efff;
+                            border-color: #d8c9ff;
+                          }
                           .text-muted {
                             color: var(--muted);
                           }
@@ -653,6 +659,7 @@ public class LoginPageController {
                             </aside>
                             <div class="auth-card" id="signin-pane">
                               <form class="form-signin" method="post" action="/login">
+                            %s
                             %s
                             %s
                             %s
@@ -797,6 +804,7 @@ public class LoginPageController {
                     hasError ? "<div class=\"alert alert-danger\">Invalid email or password.</div>" : "",
                     loggedOut ? "<div class=\"alert alert-success\">You have been signed out.</div>" : "",
                     captchaFailed ? "<div class=\"alert alert-danger\">Captcha verification failed - please try again.</div>" : "",
+                    adminAccountSwitch ? "<div class=\"alert alert-info\" role=\"status\">This browser is signed in to SuperMe Admin. Enter your SuperMeApp account credentials to continue.</div>" : "",
                     csrfToken.getParameterName(),
                     csrfToken.getToken(),
                     turnstileWidget,

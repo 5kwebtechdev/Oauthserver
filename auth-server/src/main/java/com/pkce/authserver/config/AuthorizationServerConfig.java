@@ -5,6 +5,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.pkce.authserver.security.PkceAwarePublicClientAuthenticationConverter;
 import com.pkce.authserver.security.PkceAwarePublicClientAuthenticationProvider;
 import com.pkce.authserver.security.PkceAwareRefreshTokenGenerator;
+import com.pkce.authserver.security.AdminToAppClientAccountSwitchFilter;
 import com.pkce.authserver.security.RateLimitFilter;
 import com.pkce.authserver.security.AdminLogoutRevocationFilter;
 import com.pkce.authserver.service.AdminTokenSessionStore;
@@ -31,6 +32,7 @@ import org.springframework.security.oauth2.server.authorization.authentication.P
 import org.springframework.security.oauth2.server.authorization.web.authentication.PublicClientAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AccessTokenResponseAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
@@ -65,6 +67,9 @@ public class AuthorizationServerConfig {
 
     @Value("${app.security.cors.allowed-origins}")
     private String allowedOrigin;
+
+    @Value("${app.frontend.apk-dev-client-id:}")
+    private String apkDevClientId;
 
     /**
      * Highest-priority filter chain: everything under /oauth2/**, /.well-known/** and
@@ -120,6 +125,11 @@ public class AuthorizationServerConfig {
                 // not apply - and would otherwise 403 every public-client token request.
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
+                // An existing admin SSO session must not be accepted by the APK client. Keep
+                // the pending authorization request and make the user authenticate through
+                // the APK login form, whose client context checks the dev SuperMeApp account DB.
+                .addFilterBefore(new AdminToAppClientAccountSwitchFilter(apkDevClientId),
+                        AbstractPreAuthenticatedProcessingFilter.class)
                 // Runs ahead of the OIDC logout endpoint so an admin's access token is marked
                 // revoked as they log out - Spring's own logout never invalidates it. Placed
                 // before the endpoint rather than replacing its response handling, which would
