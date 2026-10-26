@@ -3586,6 +3586,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     ).trim();
     if (profilePhone) {
       const countryCode = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
+      googlePayload.countryCode = countryCode;
       googlePayload.phone = profilePhone.startsWith('+')
         ? profilePhone
         : `${countryCode}${profilePhone}`;
@@ -3695,9 +3696,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.core.triggerToasrt(this.errorMessage);
       return;
     }
-    // The backend uses the same OAuth endpoint for initial profile submission
-    // and each later onboarding action on this provider identity.
-    const onboardingRequest = this.authService.googleOAuthLogin(googlePayload);
+    // New APK Google signups are created by Auth2.0 after the user completes
+    // the profile wizard. Existing/legacy provider flows keep their old handler.
+    const authServerGoogleRegistration = provider === 'google'
+      && pendingGoogleSignup && this.pkceAuth.enabled;
+    const onboardingRequest = authServerGoogleRegistration
+      ? this.authService.registerGoogleSignup(googlePayload)
+      : this.authService.googleOAuthLogin(googlePayload);
 
     onboardingRequest.pipe(
       timeout({ first: 30000 }),
@@ -3740,7 +3745,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           onboardingStep: resolvedStep
         };
         const userId = responseUser.id;
-        if (pendingGoogleSignup && (!response.token || !userId)) {
+        if (pendingGoogleSignup && !authServerGoogleRegistration && (!response.token || !userId)) {
           this.registrationInProgress = false;
           this.loadingService.forceHide();
           this.errorMessage = 'Sign-up failed: invalid server response. Please try again.';
@@ -3757,6 +3762,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           if (pendingGoogleSignup) sessionStorage.removeItem('oauth_signup_pending_submission');
         } else if (!(provider === 'google' && this.pkceAuth.enabled) && Object.keys(responseUser).length) {
           this.authService.updateUserData(responseUser);
+        }
+
+        if (authServerGoogleRegistration) {
+          // Auth2.0 returns the created account's OIDC session redirect, not a
+          // legacy app token/user object. The PKCE login below fetches the
+          // canonical user payload after the server session has been created.
+          sessionStorage.removeItem('oauth_signup_pending_submission');
         }
 
         const responseData = this.getRegistrationResponseDraft(response);

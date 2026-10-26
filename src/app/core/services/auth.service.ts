@@ -657,6 +657,44 @@ export class AuthService {
     return this.googleOAuthLogin(payload);
   }
 
+  /** Create a Google signup through the authorization server's verified registration flow. */
+  registerGoogleSignup(profile: any): Observable<any> {
+    const googleIdToken = profile?.idToken || profile?.googleIdToken;
+    const countryCode = String(profile?.countryCode || profile?.phoneCountryCode || '').trim();
+    const rawPhone = String(profile?.phone || '').trim();
+    const nationalPhone = rawPhone && countryCode && rawPhone.startsWith(countryCode)
+      ? rawPhone.slice(countryCode.length)
+      : rawPhone;
+    const request = {
+      name: profile?.name,
+      username: profile?.username,
+      email: profile?.email,
+      gender: toApiGender(profile?.gender),
+      relationship: String(profile?.relationship || profile?.role || '').toUpperCase(),
+      dateOfBirth: profile?.dateOfBirth || profile?.dob,
+      phone: nationalPhone ? nationalPhone.replace(/\D/g, '') : undefined,
+      countryCode: countryCode || undefined,
+      familyCode: profile?.familyCode,
+      familyName: profile?.familyName,
+      petName: profile?.petName,
+      avatarName: profile?.avatarName,
+      avatarImageName: profile?.avatarImageName,
+      referralCode: profile?.referralCode,
+      asChild: profile?.asChild,
+      unlockPotential: profile?.unlockPotential,
+      googleIdToken
+    };
+
+    const headers = new HttpHeaders({
+      'X-Skip-Authorization': 'true',
+      'X-Skip-Profile-Selector': 'true'
+    });
+    return this.http.post<any>(`${environment.oauth.issuer}/api/auth/register`, request, {
+      headers,
+      withCredentials: true
+    });
+  }
+
   sendLoginOtp(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/api/auth/send-otp`, { email });
   }
