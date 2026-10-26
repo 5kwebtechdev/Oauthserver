@@ -295,9 +295,9 @@ an explicit browser-to-app account-flow handoff needs a deliberate design.
 - Registered app client ID, callback(s), and post-logout URI.
 - Matching HTTPS issuer on both auth and resource services.
 - Mail credentials for OTP/reset: the previously shown server settings were empty.
-- `SUPERME_WRITES_ENABLED=true` only when account registration, reset and provider
-  linking against the shared database are intended. Previously it was false, which
-  disables registration and password-reset writes.
+- The Auth2.0 deployment script sets `SUPERME_WRITES_ENABLED=true` so account
+  registration works. This also enables password-reset and provider-linking writes
+  against the shared database.
 - Correct Google client audience and optional Turnstile configuration.
 
 ## Acceptance checklist for the frontend agent

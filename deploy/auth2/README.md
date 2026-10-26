@@ -45,6 +45,9 @@ nano /root/Auth2.0/resource.env
 Replace **every `CHANGE_ME`** with the real database credentials and frontend
 URLs. Configure mail credentials if you use OTP/email flows. URLs in `auth.env`
 must use your deployed frontend, and both issuer settings must match exactly.
+The deployment script sets `SUPERME_WRITES_ENABLED=true` in the persistent auth
+server environment before starting services so Google account registration works.
+This also enables the other account-write operations gated by that setting.
 The frontend OAuth client ID must be `pkce-angular-auth2-client-4203`, or change
 `OAUTH_CLIENT_ID` to your actual client. A previously registered client keeps its
 existing callback URLs; environment changes do not update that database row.

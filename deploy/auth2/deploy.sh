@@ -139,6 +139,13 @@ install -m 0644 "$stage/auth2-auth.service" "$stage/auth2-resource.service" /etc
 ln -sfn "$release_dir" "$deploy_dir/current.next"
 mv -Tf "$deploy_dir/current.next" "$deploy_dir/current"
 systemctl daemon-reload
+# Google signup registration runs on Auth2.0; enforce the intended account-write
+# setting in the persistent environment before starting the auth service.
+if grep -q '^SUPERME_WRITES_ENABLED=' "$deploy_dir/auth.env"; then
+  sed -i 's/^SUPERME_WRITES_ENABLED=.*/SUPERME_WRITES_ENABLED=true/' "$deploy_dir/auth.env"
+else
+  printf '\nSUPERME_WRITES_ENABLED=true\n' >> "$deploy_dir/auth.env"
+fi
 systemctl enable "${services[@]}"
 systemctl restart "${services[@]}"
 wait_for_apps
