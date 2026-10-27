@@ -24,10 +24,14 @@ export class PushNotificationApi {
    * Registers an FCM token for the authenticated user.
    * deviceType: ANDROID | IOS | WEB
    */
-  registerToken(fcmToken: string, deviceType: string): Observable<any> {
-    const params = new HttpParams()
+  registerToken(fcmToken: string, deviceType: string, appBuildNumber?: string): Observable<any> {
+    let params = new HttpParams()
       .set('token', fcmToken)
       .set('deviceType', deviceType);
+    // Optional for compatibility; never guess a build when native metadata is unavailable.
+    if (appBuildNumber && /^\d+$/.test(appBuildNumber)) {
+      params = params.set('appBuildNumber', appBuildNumber);
+    }
 
     return this.http.post(
       `${this.base}/device/register`,

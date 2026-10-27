@@ -45,6 +45,8 @@ describe('Home Today at a Glance Figma states', () => {
         ...[HabitApi, TaskApi, CalendarApi, AuthApi, EventApi, CalendarService, CustomToastService,
           UserService, AuthService, ProfileSelectorService, HabitService, AutoAbortService,
           FocusTimerService, ModalController, HttpClient].map(provide => ({ provide, useValue: {} })),
+        { provide: AuthService, useValue: { isParentUser: () => false } },
+        { provide: EventApi, useValue: { getCachedEvent: () => null } },
         { provide: HabitService, useValue: { formatDateToYYYYMMDD: HabitService.prototype.formatDateToYYYYMMDD } }]
     }).compileComponents();
   });
@@ -465,7 +467,13 @@ describe('Home Today at a Glance Figma states', () => {
 
     const eventCard: HTMLButtonElement = f.nativeElement.querySelector('.glance-event-card');
     expect(eventCard).toBeTruthy();
-    expect(f.nativeElement.querySelector('.glance-upcoming .glance-outline-button')).toBeNull();
+    const viewAll: HTMLButtonElement = f.nativeElement.querySelector('.glance-upcoming .glance-outline-button');
+    expect(viewAll).toBeTruthy();
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    viewAll.click();
+    expect(navigate).toHaveBeenCalledOnceWith(['/events-list'], {
+      state: { origin: TestBed.inject(Router).url, childId: null, calendarEvents: [] }
+    });
     expect(f.nativeElement.querySelector('[aria-label="Delete event"]')).toBeNull();
     eventCard.click();
     expect(open).toHaveBeenCalledOnceWith(jasmine.objectContaining({ id: 7 }));
@@ -502,7 +510,7 @@ describe('Home Today at a Glance Figma states', () => {
           endDate: '2026-11-01', activities: []
         }] : [] });
       } };
-      (c as any).eventApi = { getEvents: () => of([]) };
+      (c as any).eventApi = { getEvents: () => of([]), getCachedEvent: () => null };
 
       c.loadGlancePlannerCards(true);
 

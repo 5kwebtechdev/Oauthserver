@@ -8,15 +8,15 @@
     </header>
 
     <section class="journal-vibe" data-section="emotions" aria-labelledby="selected-vibe-title">
+      <button type="button" class="journal-vibe__info" aria-label="About your selected vibe"
+        aria-controls="journal-mood-info" [attr.aria-expanded]="moodInfoOpen"
+        (click)="moodInfoOpen = !moodInfoOpen" (keydown.escape)="moodInfoOpen = false">
+        <img src="assets/figma/parent-home/info.svg" alt="" />
+      </button>
       <h2 id="selected-vibe-title"><img src="assets/figma/journal/mood.svg" alt="" />Your selected vibe</h2>
       <div class="journal-vibe__value">
         <img *ngIf="dailyMood" class="journal-vibe__image" [src]="dailyMood.image" [alt]="dailyMood.label" />
         <span>{{ dailyMood?.label || (moodLoading ? 'Loading today’s mood…' : 'No mood selected yet') }}</span>
-        <button type="button" class="journal-vibe__info" aria-label="About your selected vibe"
-          aria-controls="journal-mood-info" [attr.aria-expanded]="moodInfoOpen"
-          (click)="moodInfoOpen = !moodInfoOpen" (keydown.escape)="moodInfoOpen = false">
-          <img src="assets/figma/parent-home/info.svg" alt="" />
-        </button>
       </div>
       <div *ngIf="moodInfoOpen" id="journal-mood-info" class="journal-vibe__tooltip" role="status">
         This mood comes from your home screen and updates automatically even after you save your journal.
@@ -48,8 +48,8 @@
           <span
             class="journal-option__image"
             [class.journal-option__image--icon]="option.kind === 'icon'"
-            [class.journal-option__image--calm]="section.key === 'emotions' && option.label === 'Calm'"
-            [class.journal-option__image--anxious]="section.key === 'emotions' && option.label === 'Anxious'"
+
+
           >
             <img [src]="option.image" [alt]="option.label" />
             <span class="journal-option__check" *ngIf="isSelected(section.key, index)">
@@ -112,7 +112,7 @@
             </span>
             <span class="journal-photo__copy">
               <strong>Pin a Moment</strong>
-              <span>Choose from gallery</span>
+              <span>Choose from gallery · Max 2 MB per image</span>
             </span>
           </button>
         </div>

@@ -1,3 +1,4 @@
+import { MOOD_ASSETS } from '../models/mood-assets';
 import { Injectable } from '@angular/core';
 import { combineLatest, fromEvent, merge, Observable, of, timer, forkJoin } from 'rxjs';
 import { catchError, distinctUntilChanged, filter, map, scan, shareReplay, startWith, switchMap } from 'rxjs/operators';
@@ -23,7 +24,7 @@ export function dailyMoodRecord(value: string | null | undefined): DailyMoodReco
   return {
     mood,
     label: mood.charAt(0).toUpperCase() + mood.slice(1),
-    image: `assets/figma/child-home/moods/${mood === 'calm' ? 'Calm' : mood}.svg`,
+    image: MOOD_ASSETS[mood],
     tone: mood === 'sad' ? 'low' : mood === 'anxious' || mood === 'frustrated' ? 'okay' : 'great',
   };
 }

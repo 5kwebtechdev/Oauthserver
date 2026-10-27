@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": ["src/app/referral/**/*.spec.ts", "src/app/core/components/user-profile/refer-friend/refer-friend.component.spec.ts", "src/**/*.d.ts"]
+}

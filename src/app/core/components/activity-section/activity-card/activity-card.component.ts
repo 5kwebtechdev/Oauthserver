@@ -2508,7 +2508,17 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   async openUpcomingEvents(): Promise<void> {
-    await this.router.navigate(['/authed/events-list'], { state: { origin: this.router.url } });
+    const childId = (this.isParentOverride ?? this.authService.isParentUser())
+      ? this.profileSelectorService.getChildId() : null;
+    const calendarEvents = childId == null ? [] : this.glanceUpcomingEvents.map(({ __glanceEventDate, ...event }) => ({
+      ...event,
+      name: event.name || event.title,
+      eventDate: event.eventDate || event.event_date || event.startDate || event.start_date
+        || (__glanceEventDate ? this.glanceDateKey(__glanceEventDate) : null)
+    }));
+    await this.router.navigate(['/events-list'], {
+      state: { origin: this.router.url, childId, calendarEvents }
+    });
   }
 
   getGlancePlannerDateRange(source: any): string {

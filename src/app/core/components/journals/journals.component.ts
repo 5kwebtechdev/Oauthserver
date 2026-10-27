@@ -13,7 +13,7 @@ import { ViewAllComponent } from '../superme-navigator/view-all/view-all.compone
 
 import { JournalPostCardComponent } from './journal-post-card/journal-post-card.component';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
-import { DailyMoodRecord, DailyMoodRecordsService, moodDateKey } from '../../services/daily-mood-records.service';
+import { DailyMoodRecord, DailyMoodRecordsService, dailyMoodRecord, moodDateKey } from '../../services/daily-mood-records.service';
 
 export interface JournalEntry {
   id: string;
@@ -359,17 +359,8 @@ export class JournalsComponent implements OnInit, OnDestroy {
 
   /** Return emotion image mapping (if available) for a mood label */
   getEmotion(entry: JournalEntry): { label: string; image: string } | null {
-    const mood = (entry.mood || '').toLowerCase();
-    if (!mood) return null;
-
-    const emotionMap: { [k: string]: { label: string; image: string } } = {
-      happy: { label: 'Happy', image: 'assets/Images-Thumbnails/Image-Journal-Emotions1.jpg' },
-      excited: { label: 'Excited', image: 'assets/Images-Thumbnails/Image-Journal-Emotions2.jpg' },
-      angry: { label: 'Angry', image: 'assets/Images-Thumbnails/Image-Journal-Emotions3.jpg' },
-      sad: { label: 'Sad', image: 'assets/Images-Thumbnails/Image-Journal-Emotions4.jpg' }
-    };
-
-    return emotionMap[mood] || null;
+    const mood = String(entry.mood || '').trim().toLowerCase();
+    return dailyMoodRecord(mood === 'angry' ? 'frustrated' : mood);
   }
 
   getMoodLabel(mood: string): string {

@@ -224,7 +224,7 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
         // The legacy 24x20 `icons/Habit.webp` becomes visibly blurry at the
         // larger transaction-row size.
         if (/HABIT/.test(type)) return 'assets/figma/home-glance/tab-habit.webp';
-        if (/TASK/.test(type)) return 'assets/icons/Task.webp';
+        if (/TASK/.test(type)) return 'assets/figma/home-glance/tab-task.webp';
         // Spend/hint transactions use the same bright bulb shown on the quiz
         // hint card, instead of the legacy purple parenting bulb.
         if (type === 'HINT_USED' || item.count < 0) return 'assets/figma/quiz-question/raw-1.webp';

@@ -55,7 +55,7 @@
   position: relative;
   min-height: 98px;
   margin-bottom: 16px;
-  padding: 10px 12px 12px;
+  padding: 12px 14px 14px;
   border: 1px solid #321568;
   border-radius: 24px;
   background: #f6f3fb;
@@ -63,7 +63,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    margin: 0 0 10px;
+    margin: 0 34px 12px 0;
     color: #321568;
     font: 500 17px/24px var(--font-heading, 'Fredoka', sans-serif);
     img { width: 20px; height: 20px; }
@@ -78,21 +78,23 @@
 }
 .journal-vibe__image { width: 40px; height: 44px; object-fit: contain; }
 .journal-vibe__info {
+  position: absolute;
+  top: 10px;
+  right: 12px;
   display: grid;
   place-items: center;
-  flex: 0 0 28px;
-  width: 28px;
+  width: 32px;
   height: 32px;
-  padding: 4px;
+  padding: 9px;
   border: 0;
   background: transparent;
-  img { width: 20px; height: 20px; }
+  img { width: 14px; height: 14px; }
   &:focus-visible { outline: 2px solid #432477; border-radius: 50%; }
 }
 .journal-vibe__tooltip {
   position: absolute;
   z-index: 5;
-  bottom: 56px;
+  top: 38px;
   right: 8px;
   width: min(238px, calc(100% - 16px));
   box-sizing: border-box;
@@ -105,10 +107,10 @@
   &::after {
     content: '';
     position: absolute;
-    top: 100%;
-    left: 12px;
+    bottom: 100%;
+    right: 12px;
     border: 7px solid transparent;
-    border-top-color: #fff;
+    border-bottom-color: #fff;
   }
 }
 
@@ -191,21 +193,7 @@
   }
 }
 
-// These two source images include extra canvas around the emoji. Match the
-// crop used by the Figma card so every mood visual fills the same 64px area.
-.journal-option__image--calm > img {
-  width: 187%;
-  height: 133%;
-  max-width: none;
-  transform: translate(-23%, -5%);
-}
 
-.journal-option__image--anxious > img {
-  width: 110%;
-  height: 144%;
-  max-width: none;
-  transform: translate(-2%, -9%);
-}
 
 .journal-option__image--icon {
   display: flex;

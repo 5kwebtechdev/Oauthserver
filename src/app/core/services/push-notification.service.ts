@@ -185,7 +185,18 @@ export class PushNotificationService {
     }
 
     const deviceType = this.getDeviceType();
-    this.pushApi.registerToken(token, deviceType).subscribe({
+    let appBuildNumber: string | undefined;
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const info = await App.getInfo();
+        if (/^\d+$/.test(info.build)) appBuildNumber = info.build;
+      } catch {
+        // Registration must still work; an unknown build stays ineligible for
+        // birthday data-only rollout on the backend.
+        console.warn('[FCM] Installed build unavailable; registering without build metadata.');
+      }
+    }
+    this.pushApi.registerToken(token, deviceType, appBuildNumber).subscribe({
       next: () => console.log('[FCM] Token registered with backend.'),
       error: (err) => console.warn('[FCM] Backend token registration failed:', err)
     });
@@ -210,6 +221,13 @@ export class PushNotificationService {
         this.notificationNavigation.changed$.next();
         const { title, body } = notification as any;
         const data: Record<string, any> = (notification as any)?.data ?? {};
+
+        // The native Firebase service owns valid birthday data-only messages in
+        // every app state. Do not create a second local notification or toast.
+        if (Capacitor.getPlatform() === 'android' && !title && !body &&
+            ['BIRTHDAY_SELF', 'CHILD_BIRTHDAY_PARENT'].includes(data['type']) &&
+            ['notificationId', 'title', 'body', 'actionScreen', 'referenceId'].every(
+              key => typeof data[key] === 'string' && data[key].trim().length > 0)) return;
 
         console.group('%c[FCM] Foreground Notification Received', 'color: #4CAF50; font-weight: bold;');
         console.log('📬 Title       :', title);

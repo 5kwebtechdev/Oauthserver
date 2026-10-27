@@ -731,6 +731,56 @@
         font-size: 15px;
         font-weight: 700;
         padding: 8px 16px;
+        cursor: pointer;
+    }
+}
+
+.child-event-cards__empty {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    width: 100%;
+}
+
+.child-event-cards__empty-icon {
+    display: block;
+    height: 40px;
+    overflow: hidden;
+    position: relative;
+    width: 46px;
+
+    img {
+        height: 204.9%;
+        left: -48.4%;
+        max-width: none;
+        position: absolute;
+        top: -58.33%;
+        width: 174.41%;
+    }
+}
+
+.child-event-cards__empty-copy {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+        color: #282527;
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    span {
+        color: #6b656a;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+        max-width: 100%;
+        width: 221px;
     }
 }
 

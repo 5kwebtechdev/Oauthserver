@@ -2,6 +2,7 @@ import FirebaseCore
 import FirebaseMessaging
 import UIKit
 import Capacitor
+import UserNotifications
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -10,6 +11,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
+        // Add only our categories without replacing existing notification actions.
+        let notifications = UNUserNotificationCenter.current()
+        notifications.getNotificationCategories { existing in
+            var categories = existing
+            for identifier in ["BIRTHDAY_SELF", "CHILD_BIRTHDAY_PARENT"] {
+                if !categories.contains(where: { $0.identifier == identifier }) {
+                    categories.insert(UNNotificationCategory(identifier: identifier,
+                        actions: [], intentIdentifiers: [], options: []))
+                }
+            }
+            notifications.setNotificationCategories(categories)
+        }
         return true
     }
 

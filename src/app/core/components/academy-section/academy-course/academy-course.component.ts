@@ -7,8 +7,10 @@ import { CourseCard } from '../academy-section.component';
 import { AcademyLessonsComponent } from '../academy-lessons/academy-lessons.component';
 import { AcademyService, CourseDetailResponse, CourseLesson } from '../../../services/academy.service';
 import { CoinService } from '../../../services/coin.service';
-import { catchError, finalize } from 'rxjs/operators';
-import { of, take } from 'rxjs';
+import { ProfileStoreService } from '../../../services/profile-store.service';
+import { AuthService } from '../../../services/auth.service';
+import { catchError, finalize, skip, takeUntil } from 'rxjs/operators';
+import { of, Subject, take } from 'rxjs';
 
 type CourseLessonView = {
   title: string;
@@ -47,6 +49,8 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
   private lockedBannerTimeout: any;
   // Tracks lessons the user explicitly started in this session (guards against backend ONGOING side-effect on GET)
   private sessionStartedIds = new Set<number>();
+  private readonly destroy$ = new Subject<void>();
+  private readonly childRequestCancel$ = new Subject<void>();
   // API response data
   courseDetail: CourseDetailResponse | null = null;
   get learningMetadata() {
@@ -89,7 +93,9 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
     private modalCtrl: ModalController,
     private academyService: AcademyService,
     private navigation: NavigationService,
-    private coinService: CoinService
+    private coinService: CoinService,
+    private profileStore: ProfileStoreService,
+    private authService: AuthService
   ) { }
 
   // Return to the Learning screen that opened this course. The global history
@@ -105,6 +111,15 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (this.authService.isParentUser()) {
+      this.profileStore.selectionChanged$.pipe(skip(1), takeUntil(this.destroy$)).subscribe(() => {
+        this.childRequestCancel$.next();
+        const courseId = Number(this.courseDetail?.id ?? this.course?.id ?? this.route.snapshot.paramMap.get('id'));
+        this.courseDetail = null;
+        this.lessons = [];
+        if (Number.isSafeInteger(courseId) && courseId > 0) this.fetchCourseFromApi(courseId);
+      });
+    }
     this.loadWalletCoins();
     // If parent provided the course via `@Input()` or navigation state, use it
     if (this.course) {
@@ -207,6 +222,8 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
 
     this.academyService.getCourseById(courseId)
       .pipe(
+        takeUntil(this.destroy$),
+        takeUntil(this.childRequestCancel$),
         catchError(error => {
           console.error('Error fetching course:', error);
           this.loadError = 'Failed to load course details. Please try again.';
@@ -382,6 +399,10 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     clearTimeout(this.lockedBannerTimeout);
+    this.childRequestCancel$.next();
+    this.childRequestCancel$.complete();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onStartLesson(index: number): void {

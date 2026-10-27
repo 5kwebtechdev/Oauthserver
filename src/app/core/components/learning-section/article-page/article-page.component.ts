@@ -7,11 +7,11 @@ import { Share } from '@capacitor/share';
 import { Subject, of } from 'rxjs';
 import { map, switchMap, takeUntil } from 'rxjs/operators';
 import { SupermePopupConfig } from '../../superme-popup/superme-popup.component';
-import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { UserService } from 'src/app/core/services/user.service';
 import { Article, Challenge, LearningCardData } from 'src/app/core/models/learning.models';
 import { environment } from 'src/environments/environment';
 
@@ -33,8 +33,7 @@ interface HelpfulnessOption {
     CommonModule,
     RouterModule,
     IonicModule,
-    HttpClientModule,
-    AdBannerComponent
+    HttpClientModule
   ],
   providers: [LearningService]
 })
@@ -51,6 +50,8 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   feedbackError = '';
   feedbackSubmitted = false;
   showFeedbackPrompt = false;
+  rewardMessage = '';
+  showRewardAnimation = false;
 
   readonly helpfulnessOptions: HelpfulnessOption[] = [
     {
@@ -123,7 +124,8 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     private location: Location,
     private badgePopupService: BadgePopupService,
     private petAgeService: PetAgeService,
-    private authService: AuthService
+    private authService: AuthService,
+    private userService: UserService
   ) {
     this.isAuthenticated = this.authService.isLoggedIn();
     const navigationState = this.router.getCurrentNavigation()?.extras.state || history.state;
@@ -257,19 +259,11 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   }
 
   openMarkAsReadPopup(): void {
-    this.openFeedbackPrompt();
+    this.confirmMarkAsRead();
   }
 
   openFeedbackPrompt(): void {
-    if (!this.article || this.isArticleRead || !this.readTimerComplete || this.isMarking) return;
-    this.feedbackError = '';
-    this.showFeedbackPrompt = true;
-    // The prompt is rendered below the CTA. Bring it into view immediately so
-    // the user can rate the article as part of the same completion action.
-    setTimeout(() => {
-      document.querySelector<HTMLElement>('.learning-details-feedback')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
+    this.confirmMarkAsRead();
   }
 
   closeMarkPopup(): void {
@@ -277,20 +271,31 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   }
 
   confirmMarkAsRead(): void {
-    if (!this.article || this.isArticleRead || this.isMarking) return;
+    if (!this.article || this.isArticleRead || !this.readTimerComplete || this.isMarking) return;
     this.isMarking = true;
     this.actionError = '';
     this.learningService.markArticleComplete(
       this.article.id,
-      this.toArticleFeedback(this.selectedHelpfulness),
+      undefined,
       this.profileUserId
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-      next: (res) => {
-        console.log('Article marked as read response:', res);
+      next: () => {
         this.isMarking = false;
         this.showMarkPopup = false;
+        this.article = { ...this.article!, alreadyRead: true };
+        this.rewardMessage = `You have received ${this.articleCoins} coins for completing this article.`;
+        this.showRewardAnimation = this.articleCoins > 0;
+        this.showFeedbackPrompt = !this.feedbackSubmitted;
+        this.userService.refreshStats().pipe(takeUntil(this.destroy$)).subscribe({
+          next: stats => {
+            if (stats && Number.isFinite(stats.coins)) {
+              this.authService.updateUserData({ coins: stats.coins });
+            }
+          },
+          error: () => { /* Completion succeeded; wallet refresh can retry on the next screen. */ }
+        });
         this.petAgeService.recordActivity('articles');
         this.badgePopupService.check();
         if (typeof window !== 'undefined') {
@@ -298,7 +303,6 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
             detail: { id: this.article?.id, type: 'article' }
           }));
         }
-        void this.router.navigateByUrl(this.returnUrl);
       },
       error: (err) => {
         console.error('Failed to mark article as read:', err);
@@ -391,30 +395,24 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   }
 
   selectHelpfulness(value: HelpfulnessValue): void {
-    if (!this.article || this.isArticleRead || !this.showFeedbackPrompt || this.isSubmittingFeedback || this.feedbackSubmitted) return;
+    if (!this.article || !this.isArticleRead || !this.showFeedbackPrompt || this.isSubmittingFeedback || this.feedbackSubmitted) return;
     this.selectedHelpfulness = value;
     this.feedbackError = '';
 
     this.isSubmittingFeedback = true;
-    this.isMarking = true;
     this.learningService.markArticleComplete(this.article.id, this.toArticleFeedback(value), this.profileUserId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.isSubmittingFeedback = false;
-          this.isMarking = false;
           this.feedbackSubmitted = true;
           this.showFeedbackPrompt = false;
-          this.article = { ...this.article!, alreadyRead: true };
-          this.petAgeService.recordActivity('articles');
-          this.badgePopupService.check();
           try {
             localStorage.setItem(this.getFeedbackStorageKey(this.article!.id), value);
           } catch { /* Storage can be unavailable in restricted browser modes. */ }
         },
         error: () => {
           this.isSubmittingFeedback = false;
-          this.isMarking = false;
           this.selectedHelpfulness = null;
           this.feedbackError = 'We could not save your feedback. Please try again.';
         }

@@ -1,3 +1,4 @@
+import { MOOD_ASSET_ALIASES } from '../../core/models/mood-assets';
 import { FamilyActionsService } from '../../core/services/family-actions.service';
 import { Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
 import { NotificationNavigationService } from '../../core/services/notification-navigation.service';
@@ -253,16 +254,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public progressPercentage: number = 0;
     
     // Mood assets
-    private readonly moodAssetMap: Record<string, string> = {
-        'HAPPY': 'assets/Images-Transparent/Image-Mood-Happy.webp',
-        'VERY HAPPY': 'assets/Images-Transparent/Image-Mood-Very happy.webp',
-        'EXCITED': 'assets/Images-Transparent/Image-Mood-Excited.webp',
-        'SAD': 'assets/Images-Transparent/Image-Mood-Sad.webp',
-        'VERY SAD': 'assets/Images-Transparent/Image-Mood-Upset.webp',
-        'UPSET': 'assets/Images-Transparent/Image-Mood-Upset.webp',
-        'NERVOUS': 'assets/Images-Transparent/Image-Mood-Nervous.webp',
-        'NEUTRAL': 'assets/Images-Transparent/Mood-emoji-neutral-home.webp'
-    };
+    private readonly moodAssetMap = MOOD_ASSET_ALIASES;
     
     // Popup state
     

@@ -19,6 +19,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
 import { ProfileStoreService } from 'src/app/core/services/profile-store.service';
 import { ChildInfo } from 'src/app/core/models/child-info.model';
+import { selectedChildAge } from 'src/app/core/models/selected-child-age';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 import { LearningChallengeCardComponent } from '../learning-card/learning-challenge-card.component';
 import { LearningArticleCardComponent } from '../learning-card/learning-article-card.component';
@@ -816,7 +817,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
    * challenge categories endpoint.
    */
   private fetchMasterClassCategories(): Observable<LearningCategorySummary[]> {
-    return this.academyService.getCategories(this.learningProfileAge).pipe(
+    return this.academyService.getCategories(
+      this.learningProfileAge,
+      this.parentView ? this.selectedChildId : null
+    ).pipe(
       map((categories: AcademyCategory[]) => (categories || [])
         .filter(category => (category.status || 'ACTIVE').toUpperCase() === 'ACTIVE')
         .map(category => this.mapAcademyCategoryToSummary(category))),
@@ -1193,27 +1197,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   private calculateChildAge(child: ChildInfo | null | undefined): number | null {
-    const rawAge = child?.age;
-    const directAge = rawAge === null || rawAge === undefined || String(rawAge).trim() === ''
-      ? Number.NaN
-      : Number(rawAge);
-    if (Number.isFinite(directAge) && directAge >= 0) {
-      return Math.floor(directAge);
-    }
-
-    const dateOfBirth = String(child?.dateOfBirth || '').trim();
-    if (!dateOfBirth) return null;
-
-    const birthDate = new Date(dateOfBirth);
-    if (Number.isNaN(birthDate.getTime())) return null;
-
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDifference = today.getMonth() - birthDate.getMonth();
-    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age >= 0 ? age : null;
+    return selectedChildAge(child ?? null);
   }
 
   closeCategoryContent(): void {

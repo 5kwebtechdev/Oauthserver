@@ -1,6 +1,8 @@
+import { MOOD_ASSETS } from '../../models/mood-assets';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { Capacitor } from '@capacitor/core';
 import { PetAgeService, PetMood } from '../../services/pet-age.service';
 
 export type HomeMood = 'happy' | 'excited' | 'anxious' | 'sad' | 'frustrated' | 'calm';
@@ -34,6 +36,7 @@ export function homeLeaderboardRankLabel(rank: number | null | undefined): strin
   templateUrl: './home-mood-header.component.html', styleUrls: ['./home-mood-header.component.scss']
 })
 export class HomeMoodHeaderComponent {
+  readonly isNativeIos = Capacitor.getPlatform() === 'ios';
   @Input() mood: HomeMood | null = null;
   @Input() birthday = false;
   @Input() period: 'morning' | 'evening' | 'night' = 'morning';
@@ -58,7 +61,7 @@ export class HomeMoodHeaderComponent {
     return `assets/figma/home-mood-header/${this.pet}-latest-moods.png`;
   }
   get birthdayNegative(): boolean { return this.mood === 'sad' || this.mood === 'anxious' || this.mood === 'frustrated'; }
-  get emojiImage(): string { return `assets/figma/child-home/moods/${this.mood === 'calm' ? 'Calm' : this.mood}.svg`; }
+  get emojiImage(): string { return this.mood ? MOOD_ASSETS[this.mood] : ''; }
   get messageEnding(): string {
     const emoji: Record<string, string> = { panda: '🐼', dragon: '🐉', llama: '🦙', owl: '🦉' };
     return this.state.after.replace('🐼', emoji[this.pet] || '🐼');

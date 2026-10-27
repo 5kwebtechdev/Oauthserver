@@ -6,11 +6,15 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { AuthService, ReferralCodeResponse } from '../../../services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
+import { NavController } from '@ionic/angular';
+import { ContestBannerComponent } from '../../../../referral/components/contest-banner/contest-banner.component';
+import { CONTEST_DURATION_MONTHS } from '../../../../referral/contest/contest.data';
+import { ReferralShareService } from '../../../services/referral-share.service';
 
 @Component({
   standalone: true,
   selector: 'refer-friend',
-  imports: [CommonModule, SupermeNavigatorComponent, IonicModule],
+  imports: [CommonModule, SupermeNavigatorComponent, IonicModule, ContestBannerComponent],
   templateUrl: './refer-friend.component.html',
   styleUrls: ['./refer-friend.component.scss']
 })
@@ -25,7 +29,14 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   private readonly mobileAppLink = 'https://play.google.com/store/apps/details?id=com.superme.app';
   private destroy$ = new Subject<void>();
 
-  constructor(private authService: AuthService, private toastCtrl: ToastController) { }
+  readonly contestMonths = CONTEST_DURATION_MONTHS;
+
+  constructor(private authService: AuthService, private toastCtrl: ToastController,
+    private nav: NavController, private referralShare: ReferralShareService) { }
+
+  openContest(): void {
+    void this.nav.navigateForward('/authed/refer-friend/contest');
+  }
 
   ngOnInit(): void {
     this.initializeFaqs();
@@ -91,16 +102,7 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   }
 
   shareNow(): void {
-    if (!this.referralCode) return;
-
-    const message = this.buildShareMessage();
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  }
-
-  private buildShareMessage(): string {
-    const deepLink = `${this.getReferralBaseUrl()}?code=${encodeURIComponent(this.referralCode)}`;
-    return `🎁 I am gifting you 100 bonus coins on SuperMe App.\n\nManage your time, build habits that last and learn skills and achieve your goals - all while earning rewards!!!\n\n📲 Click below to join & your bonus coins will be added automatically!\n${deepLink}\n\n(Already have the app? Use code: ${this.referralCode})`;
+    this.referralShare.share(this.referralCode);
   }
 
   private getLoggedInUserName(): string {

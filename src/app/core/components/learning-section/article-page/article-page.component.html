@@ -55,8 +55,6 @@
         <span *ngFor="let tag of article.tags">{{ tag }}</span>
       </p>
 
-      <ad-banner class="learning-details-ads" screen="ARTICLES" variant="article-details"></ad-banner>
-
       <section class="learning-details-article article-content learning-details-article--secondary"
         *ngIf="secondaryArticleContent" [innerHTML]="secondaryArticleContent">
       </section>
@@ -90,7 +88,7 @@
       </section>
 
       <section class="learning-details-action" *ngIf="isAuthenticated && !isParentAssignment">
-        <button type="button" class="learning-details-action__button" (click)="openFeedbackPrompt()"
+        <button type="button" class="learning-details-action__button" (click)="confirmMarkAsRead()"
           [disabled]="isMarkAsReadDisabled" [class.learning-details-action__button--complete]="isArticleRead"
           [attr.aria-label]="isArticleRead ? 'Article already read' : (!readTimerComplete ? 'Read this article, available in ' + readTimerDisplay : 'Mark this article as read')">
           <ion-spinner *ngIf="isMarking" name="crescent"></ion-spinner>
@@ -111,6 +109,10 @@
           You’re ready to mark this as read!
         </p>
         <p class="learning-details-action__error" *ngIf="actionError" role="alert">{{ actionError }}</p>
+        <div class="learning-details-action__reward-confirmation" *ngIf="rewardMessage" role="status" aria-live="polite">
+          <img *ngIf="showRewardAnimation" src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
+          <span>{{ rewardMessage }}</span>
+        </div>
       </section>
       <section class="learning-details-action learning-details-action--parent" *ngIf="isAuthenticated && isParentAssignment">
         <button type="button" class="learning-details-action__button" [class.learning-details-action__button--complete]="parentAssignmentComplete" (click)="assignToChild()"
@@ -137,10 +139,11 @@
             <span class="learning-details-feedback__image">
               <img [src]="option.image" alt="" aria-hidden="true">
             </span>
-            <span class="visually-hidden">{{ option.label }}</span>
+            <span class="learning-details-feedback__label">{{ option.label }}</span>
           </button>
         </div>
         <p class="learning-details-feedback__error" *ngIf="feedbackError" role="alert">{{ feedbackError }}</p>
+        <button type="button" class="learning-details-feedback__skip" (click)="showFeedbackPrompt = false">Skip feedback</button>
       </section>
 
       <section *ngIf="feedbackSubmitted" class="learning-details-feedback-success" role="status" aria-live="polite">

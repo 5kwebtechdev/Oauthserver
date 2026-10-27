@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { NgIf } from '@angular/common';
 import { Capacitor } from '@capacitor/core';
-import { NavController, RefresherCustomEvent } from '@ionic/angular';
+import { IonicModule, NavController, RefresherCustomEvent } from '@ionic/angular';
+import { WebNavComponent } from '../core/components/web-shell/web-nav/web-nav.component';
 import { buttonStyles } from '../core/components/superme-button/button.types';
 import { AuthService } from '../core/services/auth.service';
 import { RefreshService } from '../core/services/refresh.service';
@@ -10,7 +12,8 @@ import { OnboardingStateService } from '../core/services/onboarding-state.servic
   selector: 'app-authenticated',
   templateUrl: './authenticated.component.html',
   styleUrls: ['./authenticated.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [NgIf, IonicModule, WebNavComponent],
 })
 export class AuthenticatedComponent implements OnInit {
   /**

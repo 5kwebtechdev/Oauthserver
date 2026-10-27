@@ -60,21 +60,19 @@ describe('visible calendar week dots', () => {
 });
 
 describe('Planner events in the calendar', () => {
-    it('passes the selected child’s visible calendar events to View all', () => {
+    it('opens the separate Events screen with the selected child’s calendar records', () => {
         const c: any = Object.create(ActivityPageContentComponent.prototype);
         const navigate = jasmine.createSpy().and.returnValue(Promise.resolve(true));
         Object.assign(c, {
             authService: { isParentUser: () => true },
             profileSelector: { getChildId: () => 42 },
-            router: { url: '/authed/activity-page?tab=all', navigate },
+            router: { url: '/activity-page?tab=planner', navigate },
             childEventItems: [{ id: 7, title: 'Math exam', startDate: '2026-11-05' }]
         });
         c.openAllEvents();
         expect(navigate).toHaveBeenCalledOnceWith(['/events-list'], {
-            state: {
-                origin: '/authed/activity-page?tab=all', childId: 42,
-                calendarEvents: [{ id: 7, title: 'Math exam', name: 'Math exam', startDate: '2026-11-05', eventDate: '2026-11-05' }]
-            }
+            state: { origin: '/activity-page?tab=planner', childId: 42,
+                calendarEvents: [{ id: 7, title: 'Math exam', name: 'Math exam', startDate: '2026-11-05', eventDate: '2026-11-05' }] }
         });
     });
 
@@ -98,11 +96,20 @@ describe('Planner events in the calendar', () => {
 
         expect(c.getChildDateActivities(selected).planner).toBeTrue();
         expect(c.childEventItems.length).toBe(1);
-        expect(c.childEventItems[0].name).toBe(event.name);
-        expect(key(c.childEventItems[0].__plannerEventDate)).toBe(event.eventDate);
+        expect(c.childEventItems[0]).toEqual(jasmine.objectContaining(event));
+        expect(c.childEventItems[0].__plannerEventDate).toEqual(selected);
         expect(c.showsPlannerEvents).toBeTrue();
-        expect(c.hasChildCalendarContent).toBeTrue();
+        expect(c.hasChildCalendarContent).toBeFalse();
         c.subscriptions.unsubscribe();
+    });
+});
+
+describe('Planner upcoming event window', () => {
+    it('keeps the Upcoming Events section visible when the window is empty', () => {
+        const c: any = Object.create(ActivityPageContentComponent.prototype);
+        c.childCalendarTab = 'planner';
+        c.childEventItems = [];
+        expect(c.showsPlannerEvents).toBeTrue();
     });
 });
 

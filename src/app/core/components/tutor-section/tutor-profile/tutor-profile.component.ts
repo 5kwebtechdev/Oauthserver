@@ -112,6 +112,10 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       || this.route.snapshot.routeConfig?.path?.startsWith('counselors/') === true;
   }
 
+  get profileFallbackCategory(): string {
+    return this.isCounselorProfile ? 'counselor' : this.isAcademyProfile() ? 'academy' : 'tutor';
+  }
+
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
     document.body.style.overflow = '';

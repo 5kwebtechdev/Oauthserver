@@ -23,7 +23,6 @@ import { WebNavComponent } from '../core/components/web-shell/web-nav/web-nav.co
 
 @NgModule({
   declarations: [
-    AuthenticatedComponent,
     SupermeTimelineComponent,
     ActivityTimelineComponent
   ],
@@ -32,6 +31,7 @@ import { WebNavComponent } from '../core/components/web-shell/web-nav/web-nav.co
   ],
   imports: [
     CommonModule,
+    AuthenticatedComponent,
     RouterModule,
     AuthenticatedRoutingModule,
     LongPressDirective,

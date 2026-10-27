@@ -455,15 +455,6 @@
   }
 }
 
-.learning-details-ads {
-  display: block;
-  width: 100%;
-}
-
-.learning-details-ads:empty {
-  display: none;
-}
-
 .learning-details-related {
   display: flex;
   width: 100%;
@@ -677,6 +668,31 @@
   &__error {
     color: #bb2124;
   }
+
+  &__reward-confirmation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #432477;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+
+    img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      animation: article-coin-pop 650ms ease-out both;
+    }
+  }
+}
+
+@keyframes article-coin-pop {
+  0% { opacity: 0; transform: translateY(14px) scale(0.5) rotate(-25deg); }
+  60% { opacity: 1; transform: translateY(-5px) scale(1.15) rotate(10deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
 }
 
 .learning-details-feedback {
@@ -684,35 +700,37 @@
   width: 100%;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding-top: 8px;
+  gap: 20px;
+  padding: 28px 12px 20px;
 
   h2 {
     width: 100%;
     margin: 0;
     color: var(--details-ink);
     font-family: var(--font-sans);
-    font-size: 15px;
-    font-weight: 600;
+    font-size: clamp(20px, 4.5vw, 28px);
+    font-weight: 500;
     line-height: normal;
     text-align: center;
   }
 
   &__options {
     display: flex;
+    width: 100%;
     align-items: center;
-    justify-content: center;
-    gap: 24px;
+    justify-content: space-around;
+    gap: 8px;
   }
 
   button {
     display: inline-flex;
-    min-width: 70px;
+    min-width: 0;
+    flex: 1;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0;
-    padding: 0 2px 3px;
+    gap: 12px;
+    padding: 8px 2px;
     border: 1px solid transparent;
     border-radius: 14px;
     background: transparent;
@@ -728,9 +746,23 @@
 
   }
 
+  .learning-details-feedback__skip {
+    min-width: 0;
+    padding: 6px 12px;
+    color: var(--details-purple);
+    font-size: 12px;
+    text-decoration: underline;
+  }
+
   &__option--active {
     border-color: var(--details-purple) !important;
     background: #fbe4ee !important;
+  }
+
+  &__label {
+    white-space: nowrap;
+    font-size: clamp(12px, 3.5vw, 18px);
+    line-height: 1.25;
   }
 
   &__image {

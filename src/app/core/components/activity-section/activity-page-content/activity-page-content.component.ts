@@ -582,8 +582,8 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         if (this.childCalendarTab === 'habit' || this.childCalendarTab === 'task') {
             return this.childVisibleItems.length > 0;
         }
-        if (this.childCalendarTab === 'planner') return this.childPlannerCards.length > 0 || this.childEventItems.length > 0;
-        return this.childVisibleItems.length > 0 || this.childPlannerCards.length > 0 || this.childEventItems.length > 0;
+        if (this.childCalendarTab === 'planner') return this.childPlannerCards.length > 0;
+        return this.childVisibleItems.length > 0 || this.childPlannerCards.length > 0;
     }
 
     openAllEvents(): void {
@@ -816,7 +816,9 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         const requestId = ++this.plannerRequestId;
         const contextKey = this.getPlannerContextKey(selectedDateString);
         const visibleMonths = new Map<string, Date>();
-        [this.selectedDate, ...this.childWeekDates].forEach(date => {
+        const upcomingWindowEnd = this.startOfDay(this.selectedDate);
+        upcomingWindowEnd.setDate(upcomingWindowEnd.getDate() + 30);
+        [this.selectedDate, upcomingWindowEnd, ...this.childWeekDates].forEach(date => {
             const month = new Date(date.getFullYear(), date.getMonth(), 1);
             visibleMonths.set(this.dateKey(month), month);
         });
@@ -842,7 +844,9 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     const response = responses[0];
                     const allEvents = response.events || [];
                     const plannerItems = allEvents.filter(item => this.isPlannerSchedule(item));
-                    const eventItems = responses.reduce<any[]>((all, month) => all.concat(month.events || []), []).filter(item => this.isPersonalEventRecord(item)
+                    const eventItems = responses.reduce<any[]>((items, monthResponse) =>
+                        items.concat(monthResponse.events || []), [])
+                        .filter((item: any) => this.isPersonalEventRecord(item)
                         && !personalEvents.some(event => isCalendarMirrorOfPersonalEvent(item, event)));
 
                     responses.forEach((monthResponse, index) => {
@@ -866,7 +870,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                             && String(candidate.name || candidate.title) === String(event.name || event.title)
                             && String(candidate.__plannerEventDate) === String(event.__plannerEventDate)) === index)
                         .sort((left, right) => left.__plannerEventDate.getTime() - right.__plannerEventDate.getTime());
-                    this.plannerLoadError = !!response.loadError;
+                    this.plannerLoadError = responses.some(monthResponse => !!monthResponse.loadError);
                     this.plannerLoading = false;
                     try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
                 },

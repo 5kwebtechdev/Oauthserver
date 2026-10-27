@@ -14,6 +14,7 @@ import { PetAgeService, PetType } from '../../services/pet-age.service';
 import { CalendarService } from '../../services/calendar.service';
 import { SupermePopupComponent, SupermePopupConfig } from '../superme-popup/superme-popup.component';
 import { timerSnapshot } from './timer-state';
+import { ActiveTimerPresentationService } from '../../services/active-timer-presentation.service';
 
 @Component({
   selector: 'app-superme-timer', standalone: true,
@@ -66,7 +67,8 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
     private zone: NgZone, private cd: ChangeDetectorRef,
     private habitApi: HabitApi, private taskApi: TaskApi, private habits: HabitService,
     private autoAbort: AutoAbortService, private badges: BadgePopupService,
-    private petAge: PetAgeService, private calendar: CalendarService) {}
+    private petAge: PetAgeService, private calendar: CalendarService,
+    private presentation: ActiveTimerPresentationService) {}
 
   get formattedTime(): string {
     return String(Math.floor(this.remainingSeconds / 60)).padStart(2, '0') + ':' + String(this.remainingSeconds % 60).padStart(2, '0');
@@ -84,6 +86,7 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
   ionViewDidEnter(): void {
     this.presented = true;
     this.tick();
+    if (!this.invalidSchedule && !this.expired && this.activityId) this.presentation.start(this.title, this.endTime);
     if (this.expired) void this.complete();
   }
 
@@ -93,7 +96,13 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
     this.tick();
     document.addEventListener('visibilitychange', this.visibility);
     void App.addListener('appStateChange', ({ isActive }) => {
-      this.zone.run(() => { if (isActive) this.tick(); else this.stopSound(); });
+      this.zone.run(() => {
+        if (isActive) { this.presentation.foreground(); this.tick(); }
+        else {
+          this.stopSound();
+          if (!this.completed && !this.invalidSchedule && !this.expired) this.presentation.background(this.title, this.endTime);
+        }
+      });
     }).then(handle => { if (this.destroyed) void handle.remove(); else this.appListener = handle; })
       .catch(() => { /* Browser visibilitychange remains available. */ });
     this.zone.runOutsideAngular(() => {
@@ -177,6 +186,7 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
         return;
       }
       this.completed = true;
+      this.presentation.stop();
       localStorage.removeItem('ongoing_' + this.activityType + '_' + this.activityId);
       this.autoAbort.cancelAutoAbort(this.activityId, this.activityType);
       this.calendar.clearCache();
@@ -214,6 +224,7 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
       if (this.activityType === 'tasks') this.habits.notifyTaskUpdated();
       else this.habits.notifyHabitStarted();
       this.completed = true;
+      this.presentation.stop();
       this.stopSound();
       await this.modal.dismiss({ aborted: true }, 'aborted');
     } catch {
@@ -232,6 +243,7 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.presentation.stop();
     this.destroyed = true;
     cancelAnimationFrame(this.frame);
     document.removeEventListener('visibilitychange', this.visibility);

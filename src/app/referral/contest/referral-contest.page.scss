@@ -1,0 +1,431 @@
+/* ==========================================================================
+   Refer & Win contest — Figma "Referral Contest" (316:39), 393 wide
+   Kept as flat, plain-CSS-compatible SCSS so the prototype can reuse it 1:1.
+   ========================================================================== */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  --cx-bg: #ebdffd;           /* page + "other prizes" card */
+  --cx-ink: #2b155e;
+  --cx-purple-600: #432477;   /* V1/AccentNew600main */
+  --cx-purple-step: #7341a7;  /* V1/AccentNew2 */
+  --cx-lilac: #c7acf3;
+  --cx-gold: #fdd679;
+  --cx-gold-deep: #fdbd31;
+  --cx-pink: #ff4f99;
+  --cx-neutral900: #282527;   /* V1/Neutral900 */
+  --cx-card: rgba(255, 255, 255, 0.88);
+  --cx-card-shadow: 0 8px 24px rgba(43, 20, 94, 0.1);
+  --cx-micro: 12px;           /* General/Micro */
+  --cx-caption: 13px;         /* General/Caption */
+  --cx-body-sm: 15px;         /* General/body-sm */
+  --cx-body: 17px;            /* General/body */
+  --cx-font-display: 'Fredoka', 'Nunito', system-ui, sans-serif;
+  --cx-font-body: 'Nunito', system-ui, sans-serif;
+}
+
+/* ---------- Header (inside ion-content, scrolls with the page) ---------- */
+.header {
+  min-height: calc(66px + var(--ion-safe-area-top, 0px));
+  padding: var(--ion-safe-area-top, 0) 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.back-btn {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.back-btn img { display: block; }
+
+/* 8-point seal: two #FF4F99 squares, one rotated 45° */
+.seal {
+  position: relative;
+  width: 63px;
+  height: 66px;
+  flex: 0 0 auto;
+}
+.seal__shape {
+  position: absolute;
+  border-radius: 12px;
+  background: var(--cx-pink);
+}
+.seal__shape--a { left: 5px; top: 7px; width: 51px; height: 51px; }
+.seal__shape--b { left: 5.544px; top: 7.544px; width: 50.912px; height: 50.912px; transform: rotate(-45deg); }
+.seal__content {
+  position: absolute;
+  left: calc(50% - 0.5px);
+  top: calc(50% - 2.5px);
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--cx-font-body);
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+.seal__num { margin-bottom: -2px; font-size: var(--cx-body); line-height: normal; color: var(--cx-gold); }
+.seal__txt { font-size: var(--cx-micro); line-height: 12px; color: #fff; }
+
+/* ---------- Page background ---------- */
+ion-content.contest {
+  width: 100%;
+  height: 0 !important;
+  flex: 1 1 0;
+  min-height: 0;
+  --padding-top: 0px;
+  --padding-bottom: 0px;
+  --background: var(--cx-bg);
+  font-family: var(--cx-font-body);
+  color: var(--cx-ink);
+}
+
+/* Preserve the supplied section gaps despite the app-wide direct-child reset. */
+ion-content.contest > .hero { margin-top: 12px !important; }
+ion-content.contest > .podium { margin-top: 8px !important; }
+
+/* ---------- Hero ---------- */
+.hero {
+  margin-top: 12px;           /* header → hero */
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.hero__title {
+  margin: 0;
+  font-family: var(--cx-font-display);
+  font-weight: 700;
+  font-size: 48px;
+  line-height: normal;
+  color: var(--cx-purple-600);
+  white-space: nowrap;
+}
+.hero__amp {
+  font-size: 36px;
+  background: linear-gradient(180deg, var(--cx-gold), var(--cx-gold-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero__sub {
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--cx-body);
+  line-height: 1.35;
+  color: var(--cx-purple-600);
+  white-space: nowrap;
+}
+.hero__sub strong { font-weight: 900; color: var(--cx-purple-step); }
+
+/* ---------- Podium ---------- */
+.podium {
+  position: relative;
+  margin-top: 8px;            /* hero → podium */
+  padding: 22px 16px 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  overflow: hidden;
+}
+.podium__spotlight { position: absolute; left: 56px; top: 0; pointer-events: none; }
+
+.slot {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+.slot--silver, .slot--bronze { width: 112px; }
+.slot--gold { width: 137px; }
+
+.slot__device {
+  position: relative;
+  margin-bottom: -8px;
+  object-fit: contain;
+  pointer-events: none;
+}
+.slot--silver .slot__device { width: 99px; height: 119px; }
+.slot--gold .slot__device { width: 123px; height: 150px; }
+.slot--bronze .slot__device { width: 98px; height: 119px; }
+
+/* Stand: cropped window of the podium artwork + label */
+.stand { position: relative; width: 100%; }
+.stand--silver { height: 86px; }
+.stand--bronze { height: 80px; }
+.stand__visual { position: relative; width: 100%; overflow: hidden; }
+.stand__visual img { position: absolute; max-width: none; pointer-events: none; }
+
+.stand--silver .stand__visual { aspect-ratio: 120 / 91.0995; }
+.stand--silver .stand__visual img { width: 100.261093%; height: 100.343947%; left: -0.003764%; top: -0.001842%; }
+
+.stand--gold .stand__visual { aspect-ratio: 382 / 362; }
+.stand--gold .stand__visual img { width: 100.261093%; height: 100.276579%; left: -0.074657%; top: -0.003325%; }
+
+.stand--bronze .stand__visual { aspect-ratio: 382 / 272; }
+.stand--bronze .stand__visual img { width: 100.261093%; height: 100.367775%; left: -0.013772%; top: -0.001364%; }
+
+.stand__name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-weight: 800;
+  font-size: var(--cx-micro);
+  line-height: normal;
+  color: var(--cx-neutral900);
+  white-space: nowrap;
+}
+.stand--silver .stand__name { top: calc(50% + 5.17px); }
+.stand--bronze .stand__name { top: calc(50% + 7.17px); }
+.stand--gold .stand__name { top: calc(50% + 12.1px); font-size: var(--cx-body-sm); }
+
+/* Decorative sparkles & confetti */
+.deco { position: absolute; pointer-events: none; }
+.spark--a { left: 22px; top: 10px; }
+.spark--b { left: 345px; top: 20px; }
+.spark--c { left: 118px; top: 44px; }
+.spark--d { left: 263px; top: 70px; }
+.spark--e { left: 365px; top: 120px; }
+.confetti {
+  width: 6px;
+  height: 18px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #ffe08a, #f2a51a);
+}
+.confetti--a { left: 47.42px; top: 52.36px; transform: rotate(28deg); }
+.confetti--b { left: 339.31px; top: 41.04px; transform: rotate(-32deg); }
+.confetti--c { left: 16.63px; top: 102.64px; transform: rotate(-18deg); }
+
+/* ---------- Prize cards row ---------- */
+.prize-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 16px 0;
+}
+.prize-card {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.prize-card--voucher {
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--cx-card);
+  border: 1px solid #fff;
+}
+.prize-card--more {
+  align-self: stretch;
+  gap: 12px;
+  padding: 20px 12px;
+  background: var(--cx-bg);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: var(--cx-card-shadow);
+}
+
+.chip {
+  padding: 5px 12px;
+  border-radius: 1000px;
+  background: linear-gradient(180deg, var(--cx-gold), var(--cx-gold-deep));
+  color: var(--cx-ink);
+  font-weight: 800;
+  font-size: var(--cx-caption);
+  white-space: nowrap;
+}
+
+/* Cropped windows of the prizes artwork sheet */
+.sprite { position: relative; flex: 0 0 auto; overflow: hidden; }
+.sprite img { position: absolute; max-width: none; pointer-events: none; }
+.sprite--vouchers { width: 108px; height: 88px; }
+.sprite--vouchers img { width: 100.546875%; height: 100.625%; left: -0.195313%; top: -0.29%; }
+.sprite--gifts { width: 139px; height: 104px; }
+.sprite--gifts img { width: 100.292197%; height: 100.998652%; left: -0.101045%; top: -0.563613%; }
+
+.voucher-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-weight: 700;
+  color: var(--cx-ink);
+  text-align: center;
+  white-space: nowrap;
+}
+.voucher-text__title { font-size: var(--cx-body); line-height: normal; }
+.voucher-text__amount { display: flex; align-items: center; gap: 2px; font-size: var(--cx-body); line-height: normal; }
+.voucher-text__amount strong { margin-left: 4px; font-weight: 700; font-size: 28px; }
+
+.prize-card__more {
+  margin: 0;
+  max-width: 163px;
+  font-weight: 700;
+  font-size: var(--cx-body);
+  line-height: normal;
+  color: var(--cx-ink);
+  text-align: center;
+}
+
+/* ---------- How to participate ---------- */
+.steps-wrap { padding: 16px 16px 0; }
+.steps-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--cx-card);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: var(--cx-card-shadow);
+}
+.steps-card__title {
+  margin: 0;
+  font-family: var(--cx-font-body);
+  font-weight: 800;
+  font-size: var(--cx-body);
+  line-height: normal;
+  color: var(--cx-ink);
+}
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+}
+.step {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+.step__icon {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  border-radius: 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 6px 7px rgba(43, 20, 94, 0.18));
+}
+.step__icon--purple { background-image: linear-gradient(135deg, #9a6bff 8.33%, #5b21d6 91.67%); }
+.step__icon--pink { background-image: linear-gradient(135deg, #ff6aa8 8.33%, #e0186f 91.67%); }
+.step__icon--green { background-image: linear-gradient(135deg, #3fdc8c 8.33%, #0f9b58 91.67%); }
+.step__num {
+  position: absolute;
+  left: -4px;
+  top: 40px;
+  width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  background: linear-gradient(180deg, #fdd479, var(--cx-gold-deep));
+  color: var(--cx-purple-600);
+  font-weight: 700;
+  font-size: var(--cx-micro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step__label {
+  font-weight: 700;
+  font-size: var(--cx-caption);
+  line-height: 1.25;
+  color: var(--cx-purple-600);
+}
+.step-arrow { padding-top: 21px; display: flex; }
+
+/* ---------- Legal ---------- */
+.legal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 0;
+}
+.legal__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cx-purple-600);
+  font-family: var(--cx-font-body);
+  font-weight: 700;
+  font-size: var(--cx-body-sm);
+  text-decoration: none;
+}
+.legal__link span { text-decoration: underline; text-underline-position: from-font; }
+.legal__divider { width: 1px; height: 18px; background: var(--cx-lilac); }
+
+/* ---------- Sticky CTA ---------- */
+.contest-footer {
+  background: var(--cx-bg);
+  padding: 10px 16px calc(8px + env(safe-area-inset-bottom));
+}
+.cta {
+  position: relative;
+  width: 100%;
+  height: 56px;
+  padding: 8px 16px;
+  border: 1px solid var(--cx-purple-600);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow: hidden;
+  color: #fff;
+  font-family: var(--cx-font-body);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.4;
+  background: linear-gradient(-82.8166deg, #20143f 0.18%, #7341a7 99.82%);
+  box-shadow: inset -2px -2px 2px #fff;
+  cursor: pointer;
+}
+.cta:active:not(:disabled) { transform: translateY(1px); }
+/* Inactive until the user has scrolled to the bottom (not specified in Figma) */
+.cta:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Preserve the 393px design while letting individual columns adapt. */
+.header, .hero, .podium, .prize-row, .steps-wrap, .legal { width: 100%; max-width: 430px; margin-inline: auto; box-sizing: border-box; }
+.slot--silver, .slot--bronze { flex: 112 1 0; min-width: 0; }
+.slot--gold { flex: 137 1 0; min-width: 0; }
+.slot__device { max-width: 100%; }
+.podium__spotlight { left: 50%; transform: translateX(-50%); }
+.spark--b { left: auto; right: 26px; }
+.spark--e { left: auto; right: 16px; }
+.confetti--b { left: auto; right: 48px; }
+.hero__sub { white-space: normal; }
+.contest-footer { flex: none; }
+.cta { max-width: 398px; margin-inline: auto; }
+.share-error { text-align: center; margin: 0 0 8px; font: 14px var(--cx-font-body); }
+.share-error button { color: var(--cx-purple-600); background: transparent; text-decoration: underline; }
+@media (max-width: 375px) {
+  .stand__name { font-size: 11px; }
+  .stand--gold .stand__name { font-size: 13px; }
+  .prize-card { padding-inline: 8px; }
+  .voucher-text__title { font-size: 15px; }
+  .voucher-text__amount { font-size: 15px; }
+  .voucher-text__amount strong { font-size: 25px; }
+  .legal { gap: 10px; }
+  .legal__link { font-size: 14px; }
+}

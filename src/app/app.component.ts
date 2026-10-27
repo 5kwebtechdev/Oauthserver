@@ -203,7 +203,8 @@ export class AppComponent implements OnInit, OnDestroy {
         // page's own .ion-page/ion-router-outlet has. Toggled on the outer/app
         // level here, ahead of the route even resolving, so there's no flash of
         // the narrow layout while navigating into the authenticated app.
-        const isAuthenticatedPath = routePath.startsWith('/app') || routePath.startsWith('/authed');
+        const isAuthenticatedPath = routePath.startsWith('/app') || routePath.startsWith('/authed')
+          || routePath === '/parent-account' || routePath.startsWith('/parent-account/');
         document.body.classList.toggle('authed-shell-active', isAuthenticatedPath);
 
         // Authenticated screens render their own skeleton/empty/error states.
