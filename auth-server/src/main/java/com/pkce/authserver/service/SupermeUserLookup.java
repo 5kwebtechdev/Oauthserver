@@ -40,11 +40,11 @@ public class SupermeUserLookup {
                 return byEmail;
             }
         }
-        return findByAnyPhoneCandidate(trimmed);
+        return findByAnyPhoneCandidate(trimmed, null);
     }
 
-    private Optional<User> findByAnyPhoneCandidate(String phone) {
-        for (String candidate : phoneLookupCandidates(phone)) {
+    private Optional<User> findByAnyPhoneCandidate(String phone, String countryCode) {
+        for (String candidate : phoneLookupCandidates(phone, countryCode)) {
             Optional<User> u = userRepository.findByPhone(candidate);
             if (u.isPresent()) return u;
         }
@@ -55,7 +55,7 @@ public class SupermeUserLookup {
         return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     }
 
-    private static List<String> phoneLookupCandidates(String phone) {
+    public static List<String> phoneLookupCandidates(String phone, String countryCode) {
         if (phone == null) return List.of();
         String raw = phone.trim();
         if (raw.isEmpty()) return List.of();
@@ -72,16 +72,33 @@ public class SupermeUserLookup {
         addUnique(out, raw);
         addUnique(out, stripped);
 
+        // Registration submits countryCode and phone separately. The user table stores only the
+        // phone string, and older records may contain either the national number or E.164 form.
+        // Check both representations so a formatting difference cannot permit a duplicate.
+        String digitsOnly = stripped.replaceAll("\\D", "");
+        String prefixDigits = countryCode == null ? "" : countryCode.replaceAll("\\D", "");
+        if (!prefixDigits.isEmpty() && !digitsOnly.isEmpty()) {
+            if (!stripped.startsWith("+") && !digitsOnly.startsWith(prefixDigits)) {
+                addUnique(out, "+" + prefixDigits + digitsOnly);
+                addUnique(out, "+" + prefixDigits + " " + digitsOnly);
+            } else if (digitsOnly.startsWith(prefixDigits) && digitsOnly.length() > prefixDigits.length()) {
+                // Also check the national-only form when the caller supplied an E.164 number.
+                addUnique(out, digitsOnly.substring(prefixDigits.length()));
+            }
+        } else if (prefixDigits.isEmpty() && digitsOnly.startsWith("91") && digitsOnly.length() == 12) {
+            // India is the only default country-code inference, matching the app's existing lookup.
+            addUnique(out, digitsOnly.substring(2));
+        }
+
         if (stripped.startsWith("+")) {
-            String digitsOnly = stripped.substring(1).replaceAll("\\D", "");
-            addUnique(out, "+" + digitsOnly);
+            String internationalDigits = stripped.substring(1).replaceAll("\\D", "");
+            addUnique(out, "+" + internationalDigits);
 
             // Also try "+CC <number>" variant for DBs that store a space.
-            if (digitsOnly.startsWith("91") && digitsOnly.length() > 2) {
-                addUnique(out, "+91 " + digitsOnly.substring(2));
+            if (internationalDigits.startsWith("91") && internationalDigits.length() > 2) {
+                addUnique(out, "+91 " + internationalDigits.substring(2));
             }
         } else {
-            String digitsOnly = stripped.replaceAll("\\D", "");
             addUnique(out, digitsOnly);
 
             // Try E.164-like variant.

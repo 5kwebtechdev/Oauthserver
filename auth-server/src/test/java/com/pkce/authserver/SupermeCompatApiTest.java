@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pkce.authserver.repository.SupermeUserRepository;
 import com.pkce.authserver.service.EmailService;
+import com.pkce.authserver.superme.model.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -182,6 +183,31 @@ class SupermeCompatApiTest {
                 "{\"phone\":\"" + phone + "\",\"password\":\"password@123\"}");
         assertThat(login.statusCode()).isEqualTo(200);
         assertThat(objectMapper.readTree(login.body()).get("token").asText()).isNotBlank();
+    }
+
+    @Test
+    void duplicatePhoneIsDetectedAcrossNationalAndInternationalFormatsBeforeRegistration() throws Exception {
+        String nationalPhone = "9" + String.format("%09d", Math.floorMod(System.nanoTime(), 1_000_000_000L));
+        User existing = SupermeUserFixture.user("phone-owner-" + System.nanoTime() + "@example.com");
+        existing.setPhone("+91" + nationalPhone);
+        userRepository.save(existing);
+
+        HttpResponse<String> phoneCheck = get("/v1/auth/check/alreadyRegistered?identifier="
+                + nationalPhone + "&countryCode=%2B91");
+        assertThat(phoneCheck.statusCode()).isEqualTo(200);
+        assertThat(objectMapper.readTree(phoneCheck.body()).get("status").asBoolean()).isTrue();
+
+        String newEmail = "new-phone-owner-" + System.nanoTime() + "@example.com";
+        String otp = sendAndCaptureOtp(newEmail);
+        post("/v1/api/auth/verify-otp", "{\"email\":\"" + newEmail + "\",\"otp\":\"" + otp + "\"}");
+        HttpResponse<String> registration = post("/v1/auth/register", """
+                {"name":"Duplicate Phone","gender":"male","relationship":"SELF",
+                 "email":"%s","phone":"%s","countryCode":"+91",
+                 "dateOfBirth":"2005-07-15"}
+                """.formatted(newEmail, nationalPhone));
+
+        assertThat(registration.statusCode()).isEqualTo(400);
+        assertThat(userRepository.findByEmail(newEmail)).isEmpty();
     }
 
     @Test

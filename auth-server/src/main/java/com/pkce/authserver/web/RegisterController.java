@@ -101,6 +101,12 @@ public class RegisterController {
     public ResponseEntity<Map<String, Object>> register(@RequestBody RegisterRequest request,
                                                         HttpServletRequest httpRequest,
                                                         HttpServletResponse httpResponse) {
+        if (registrationService.phoneIsTakenByAnotherAccount(
+                request.getEmail(), request.getPhone(), request.getCountryCode())) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "phone_already_registered",
+                    "message", "This phone number is already linked to another account."));
+        }
         try {
             verifyIdentifierOwnership(request);
         } catch (BadCredentialsException e) {

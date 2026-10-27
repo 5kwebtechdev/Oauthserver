@@ -30,6 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -104,13 +106,31 @@ public class UserRegistrationService {
      */
     @Transactional(readOnly = true)
     public boolean identifierIsTaken(String identifier) {
+        return identifierIsTaken(identifier, null);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean identifierIsTaken(String identifier, String countryCode) {
         if (identifier == null || identifier.isBlank()) {
             return false;
         }
         String trimmed = identifier.trim();
         return trimmed.contains("@")
                 ? userRepository.findByEmail(trimmed).isPresent()
-                : userRepository.findByPhone(trimmed).isPresent();
+                : !findPhoneMatches(trimmed, countryCode).isEmpty();
+    }
+
+    /** True when this phone is owned by an account other than the supplied email account. */
+    @Transactional(readOnly = true)
+    public boolean phoneIsTakenByAnotherAccount(String email, String phone, String countryCode) {
+        List<User> phoneMatches = findPhoneMatches(phone, countryCode);
+        if (phoneMatches.isEmpty()) {
+            return false;
+        }
+        User emailUser = email != null && !email.isBlank()
+                ? userRepository.findByEmail(email.trim()).orElse(null)
+                : null;
+        return emailUser == null || phoneMatches.stream().anyMatch(phoneUser -> !sameUser(phoneUser, emailUser));
     }
 
     @Transactional
@@ -135,14 +155,21 @@ public class UserRegistrationService {
             throw new RegistrationException("Relationship is required (CHILD, PARENT, SELF).");
         }
 
-        // Find an existing user by email, falling back to phone.
-        User existingUser = null;
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            existingUser = userRepository.findByEmail(request.getEmail().trim()).orElse(null);
+        // Check email and phone independently. Falling back to phone only when email is absent
+        // misses a new email paired with a number already owned by another account, and could
+        // patch that unrelated account during incomplete onboarding.
+        User emailUser = request.getEmail() != null && !request.getEmail().isBlank()
+                ? userRepository.findByEmail(request.getEmail().trim()).orElse(null)
+                : null;
+        List<User> phoneMatches = findPhoneMatches(request.getPhone(), request.getCountryCode());
+        if (phoneMatches.size() > 1) {
+            throw new RegistrationException("User already exists with the provided email or phone.");
         }
-        if (existingUser == null && request.getPhone() != null && !request.getPhone().isBlank()) {
-            existingUser = userRepository.findByPhone(request.getPhone().trim()).orElse(null);
+        User phoneUser = phoneMatches.isEmpty() ? null : phoneMatches.get(0);
+        if (phoneUser != null && (emailUser == null || !sameUser(phoneUser, emailUser))) {
+            throw new RegistrationException("User already exists with the provided email or phone.");
         }
+        User existingUser = emailUser;
 
         if (existingUser != null) {
             boolean isComplete = existingUser.getOnboardingStep() != null
@@ -274,6 +301,23 @@ public class UserRegistrationService {
 
         log.info("Registered new SuperMeApp user {} ({})", savedUser.getId(), savedUser.getName());
         return new Result(savedUser, true);
+    }
+
+    private List<User> findPhoneMatches(String phone, String countryCode) {
+        List<User> matches = new ArrayList<>();
+        for (String candidate : SupermeUserLookup.phoneLookupCandidates(phone, countryCode)) {
+            userRepository.findByPhone(candidate).ifPresent(found -> {
+                if (matches.stream().noneMatch(existing -> sameUser(existing, found))) {
+                    matches.add(found);
+                }
+            });
+        }
+        return matches;
+    }
+
+    private static boolean sameUser(User first, User second) {
+        return first != null && second != null && first.getId() != null
+                && first.getId().equals(second.getId());
     }
 
     /**

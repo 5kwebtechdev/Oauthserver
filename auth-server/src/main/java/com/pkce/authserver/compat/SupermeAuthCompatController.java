@@ -71,9 +71,10 @@ public class SupermeAuthCompatController {
 
     @GetMapping("/check/alreadyRegistered")
     public ResponseEntity<Map<String, Object>> checkAlreadyRegistered(
-            @RequestParam("identifier") String identifier) {
+            @RequestParam("identifier") String identifier,
+            @RequestParam(value = "countryCode", required = false) String countryCode) {
 
-        String message = registrationService.identifierIsTaken(identifier)
+        String message = registrationService.identifierIsTaken(identifier, countryCode)
                 ? "User already registered!"
                 : "User not found!";
 
@@ -94,6 +95,12 @@ public class SupermeAuthCompatController {
      */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        if (registrationService.phoneIsTakenByAnotherAccount(
+                request.getEmail(), request.getPhone(), request.getCountryCode())) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "User already exists with the provided email or phone.",
+                    "error", "registration_failed"));
+        }
         if (!StringUtils.hasText(request.getEmail()) || !otpService.consumeVerification(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                     "message", "Verify this email with an OTP before registering.",
