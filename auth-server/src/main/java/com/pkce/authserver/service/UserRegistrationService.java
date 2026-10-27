@@ -1,11 +1,15 @@
 package com.pkce.authserver.service;
 
 import com.pkce.authserver.config.SupermeProperties;
+import com.pkce.authserver.entity.ReferralPopupEvent;
+import com.pkce.authserver.entity.ReferralReward;
 import com.pkce.authserver.repository.AvatarRepository;
 import com.pkce.authserver.repository.CoinTransactionRepository;
 import com.pkce.authserver.repository.FamilyMemberRepository;
 import com.pkce.authserver.repository.FamilyRepository;
 import com.pkce.authserver.repository.PetRepository;
+import com.pkce.authserver.repository.ReferralPopupEventRepository;
+import com.pkce.authserver.repository.ReferralRewardRepository;
 import com.pkce.authserver.repository.SupermeUserRepository;
 import com.pkce.authserver.repository.UserPasswordRepository;
 import com.pkce.authserver.superme.dto.RegisterRequest;
@@ -29,6 +33,7 @@ import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Registration, ported from SuperMeBE's UserService.registerUser so an account created here is
@@ -41,11 +46,6 @@ import java.util.Set;
  *   - **The admin-email uniqueness check.** Theirs calls emailUniquenessValidator against a second
  *     datasource (mindfullAdmin). This server has one datasource and no business reading their
  *     admin tables, so an email already belonging to an admin is not rejected here.
- *   - **ReferralReward and ReferralPopupEvent rows.** Those two tables do not exist in mindfullP1
- *     yet - they are newer SuperMeBE code whose ddl-auto=update has not run against this database.
- *     Writing them would fail outright. The coin credits and CoinTransaction ledger entries, which
- *     are the part that actually affects a user's balance, are written. The consequence is that a
- *     referrer who was invited through this server does not get the "you earned 100 coins" pop-up.
  *   - **Badge/achievement triggers.** Those belong to subsystems this server does not carry.
  *
  * Everything here is gated on app.superme.writes-enabled: registration inserts rows into a live
@@ -76,6 +76,8 @@ public class UserRegistrationService {
     private final AvatarRepository avatarRepository;
     private final PetRepository petRepository;
     private final CoinTransactionRepository coinTransactionRepository;
+    private final ReferralRewardRepository referralRewardRepository;
+    private final ReferralPopupEventRepository referralPopupEventRepository;
     private final PasswordEncoder passwordEncoder;
     private final SupermeProperties supermeProperties;
 
@@ -243,6 +245,23 @@ public class UserRegistrationService {
             familyMemberRepository.save(member);
         }
 
+        if (referrer != null) {
+            LocalDateTime referralCreatedAt = LocalDateTime.now();
+            referralRewardRepository.save(ReferralReward.builder()
+                    .referrer(referrer)
+                    .referredUserId(savedUser.getId())
+                    .referredUserName(savedUser.getName())
+                    .coins(REFERRAL_BONUS_COINS)
+                    .notified(false)
+                    .createdAt(referralCreatedAt)
+                    .build());
+
+            recordReferralPopupEvent(savedUser.getId(), ReferralPopupEvent.Type.REFERRAL_RECEIVED,
+                    referrer.getId(), referralCreatedAt);
+            recordReferralPopupEvent(referrer.getId(), ReferralPopupEvent.Type.REFERRAL_JOINED,
+                    savedUser.getId(), referralCreatedAt);
+        }
+
         if (request.getFamilyCode() != null && !request.getFamilyCode().isBlank()) {
             Long registeredUserId = savedUser.getId();
             familyRepository.findByFamilyCode(request.getFamilyCode()).ifPresent(existedFamily -> {
@@ -281,6 +300,23 @@ public class UserRegistrationService {
         recordCoins(referrer, REFERRAL_BONUS_COINS, "REFERRAL_BONUS",
                 "Referral bonus: invited new user " + user.getName());
         return referrer;
+    }
+
+    private void recordReferralPopupEvent(Long recipientUserId, ReferralPopupEvent.Type type,
+                                          Long relatedUserId, LocalDateTime createdAt) {
+        if (referralPopupEventRepository.existsByRecipientUserIdAndTypeAndRelatedUserId(
+                recipientUserId, type, relatedUserId)) {
+            return;
+        }
+        referralPopupEventRepository.save(ReferralPopupEvent.builder()
+                .eventId(UUID.randomUUID().toString())
+                .recipientUserId(recipientUserId)
+                .type(type)
+                .relatedUserId(relatedUserId)
+                .amount(REFERRAL_BONUS_COINS)
+                .bothRewarded(true)
+                .createdAt(createdAt)
+                .build());
     }
 
     private User attachFamily(User user, Relationship relationship, String familyCode, RegisterRequest request) {
