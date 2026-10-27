@@ -229,6 +229,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public usernameAvailability: 'idle' | 'checking' | 'available' | 'taken' | 'unavailable' = 'idle';
   private usernameCheckTimer: ReturnType<typeof setTimeout> | null = null;
   private usernameCheckSubscription?: Subscription;
+  public profilePhoneAvailability: 'idle' | 'checking' | 'available' | 'taken' | 'unavailable' = 'idle';
+  private profilePhoneCheckTimer: ReturnType<typeof setTimeout> | null = null;
+  private profilePhoneCheckSubscription?: Subscription;
+  private checkedProfilePhone = '';
+  private checkedProfilePhoneCountry = '';
 
   // Use an accessor so we can defensively guard and log unexpected changes
   private _openBirthdayPicker = false;
@@ -877,8 +882,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if ((!this.isOAuthSignup || this.currentRole === 'parent') && (this.name?.invalid || this.dob()?.invalid)) return true;
     if (this.currentRole !== 'parent' && this.username?.invalid) return true;
     if (this.currentRole !== 'parent' && this.usernameAvailability !== 'available') return true;
-    // Phone and gender remain optional; Parent DOB is required for every provider. An avatar
-    // is still selected explicitly from the centralized age/gender mapping.
+    // Phone and gender remain optional; if a phone is entered, require a complete number and
+    // wait for the uniqueness check before allowing the user to continue.
+    const phone = String(this.profilePhone?.value || '').replace(/\D/g, '');
+    if (phone && (phone.length !== this.currentPhoneLength
+      || this.profilePhoneAvailability === 'checking'
+      || this.profilePhoneAvailability === 'taken')) return true;
     if (!this.avatarSelected) return true;
     return false;
   }
@@ -1528,6 +1537,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.core.triggerToasrt('Please select an avatar');
       return;
     }
+
+    if (!(await this.ensureProfilePhoneAvailable())) return;
 
     const dobVal = this.profileForm.get('dob')?.value;
     const parsedDob = dobVal ? new Date(dobVal) : null;
@@ -2381,6 +2392,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       phoneControl.markAsUntouched();
       phoneControl.updateValueAndValidity();
     }
+    if (String(this.profilePhone?.value || '').trim()) {
+      this.scheduleProfilePhoneAvailabilityCheck();
+    }
   }
 
   // Only allow numeric input
@@ -2622,10 +2636,98 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const numericValue = (input.value || '').replace(/[^0-9]/g, '');
 
     this.profileForm.patchValue({ phone: numericValue });
+    this.scheduleProfilePhoneAvailabilityCheck();
 
     setTimeout(() => {
       input.setSelectionRange(numericValue.length, numericValue.length);
     }, 0);
+  }
+
+  private scheduleProfilePhoneAvailabilityCheck(): void {
+    this.clearProfilePhoneAvailabilityCheck();
+    this.profilePhoneAvailability = 'idle';
+    this.checkedProfilePhone = '';
+    this.checkedProfilePhoneCountry = '';
+
+    const phone = String(this.profilePhone?.value || '').replace(/\D/g, '');
+    if (!phone || phone.length !== this.currentPhoneLength) return;
+
+    const countryCode = this.selectedCountry.code;
+    this.profilePhoneAvailability = 'checking';
+    this.profilePhoneCheckTimer = setTimeout(() => {
+      this.profilePhoneCheckTimer = null;
+      this.profilePhoneCheckSubscription = this.authService.checkPhoneExists(phone, countryCode)
+        .pipe(timeout(10000))
+        .subscribe({
+          next: exists => this.applyProfilePhoneAvailability(phone, countryCode, exists),
+          error: () => this.applyProfilePhoneAvailability(phone, countryCode, null)
+        });
+    }, 350);
+  }
+
+  private clearProfilePhoneAvailabilityCheck(): void {
+    if (this.profilePhoneCheckTimer) {
+      clearTimeout(this.profilePhoneCheckTimer);
+      this.profilePhoneCheckTimer = null;
+    }
+    this.profilePhoneCheckSubscription?.unsubscribe();
+    this.profilePhoneCheckSubscription = undefined;
+  }
+
+  private applyProfilePhoneAvailability(phone: string, countryCode: string, exists: boolean | null): void {
+    const currentPhone = String(this.profilePhone?.value || '').replace(/\D/g, '');
+    if (currentPhone !== phone || this.selectedCountry.code !== countryCode) return;
+
+    this.profilePhoneCheckSubscription = undefined;
+    this.checkedProfilePhone = exists === null ? '' : phone;
+    this.checkedProfilePhoneCountry = exists === null ? '' : countryCode;
+    this.profilePhoneAvailability = exists === null ? 'unavailable' : (exists ? 'taken' : 'available');
+  }
+
+  private async ensureProfilePhoneAvailable(): Promise<boolean> {
+    const phone = String(this.profilePhone?.value || '').replace(/\D/g, '');
+    if (!phone) {
+      this.clearProfilePhoneAvailabilityCheck();
+      this.profilePhoneAvailability = 'idle';
+      return true;
+    }
+    if (!this.isPhoneValid(phone)) {
+      this.profilePhone?.markAsTouched();
+      this.core.triggerToasrt(this.getPhoneErrorMessage());
+      return false;
+    }
+
+    const countryCode = this.selectedCountry.code;
+    if (this.checkedProfilePhone === phone && this.checkedProfilePhoneCountry === countryCode) {
+      if (this.profilePhoneAvailability === 'available') return true;
+      if (this.profilePhoneAvailability === 'taken') {
+        this.core.triggerToasrt('This phone number is already registered. Please use a different number.');
+        return false;
+      }
+    }
+
+    this.clearProfilePhoneAvailabilityCheck();
+    this.profilePhoneAvailability = 'checking';
+    try {
+      const exists = await firstValueFrom(
+        this.authService.checkPhoneExists(phone, countryCode).pipe(timeout(10000))
+      );
+      const currentPhone = String(this.profilePhone?.value || '').replace(/\D/g, '');
+      if (currentPhone !== phone || this.selectedCountry.code !== countryCode) {
+        this.scheduleProfilePhoneAvailabilityCheck();
+        return false;
+      }
+      this.applyProfilePhoneAvailability(phone, countryCode, exists);
+      if (exists) {
+        this.core.triggerToasrt('This phone number is already registered. Please use a different number.');
+        return false;
+      }
+      return true;
+    } catch {
+      this.applyProfilePhoneAvailability(phone, countryCode, null);
+      this.core.triggerToasrt('Could not check this phone number. Please try again.');
+      return false;
+    }
   }
 
   // OTP related methods
@@ -3000,6 +3102,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
     }
     this.clearUsernameCheckTimer();
+    this.clearProfilePhoneAvailabilityCheck();
     this.clearReferralValidationTimer();
     this.usernameCheckSubscription?.unsubscribe();
     this.subscription.unsubscribe();

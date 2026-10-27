@@ -469,6 +469,16 @@
                 inputmode="numeric" (input)="onProfilePhoneInput($event)" (keypress)="onKeyPress($event)"
                 placeholder="Enter your number" />
             </div>
+            <p class="username-validation"
+              [class.username-validation--success]="profilePhoneAvailability === 'available'"
+              [class.username-validation--error]="profilePhoneAvailability === 'taken' || profilePhoneAvailability === 'unavailable'"
+              *ngIf="profilePhoneAvailability !== 'idle'"
+              [attr.role]="profilePhoneAvailability === 'taken' || profilePhoneAvailability === 'unavailable' ? 'alert' : 'status'">
+              <span *ngIf="profilePhoneAvailability === 'checking'">Checking phone number availability...</span>
+              <span *ngIf="profilePhoneAvailability === 'available'">Phone number is available.</span>
+              <span *ngIf="profilePhoneAvailability === 'taken'">This phone number is already registered. Please use a different number.</span>
+              <span *ngIf="profilePhoneAvailability === 'unavailable'">Could not check the phone number. Tap Next to try again.</span>
+            </p>
           </div>
 
           <section class="profile-dob-field">
