@@ -219,7 +219,7 @@ public class LoginPageController {
                           }
                           .auth-shell {
                             width: 100%%;
-                            max-width: 23.75rem;
+                            max-width: 25.625rem;
                             position: relative;
                             margin: auto 0;
                             padding: 0.5rem 0;
@@ -230,7 +230,7 @@ public class LoginPageController {
                           }
                           .auth-heading h1 {
                             margin: 0;
-                            font-size: 0.875rem;
+                            font-size: 1.15rem;
                             font-weight: 700;
                             letter-spacing: -0.015em;
                             color: #1f1933;
@@ -239,7 +239,7 @@ public class LoginPageController {
                           .auth-heading p {
                             margin: 0.4rem 0 0;
                             color: var(--muted);
-                            font-size: 0.875rem;
+                            font-size: 1rem;
                           }
                           .auth-layout {
                             display: grid;
@@ -334,6 +334,11 @@ public class LoginPageController {
                             display: block;
                             filter: drop-shadow(0 0.6rem 0.7rem rgba(60, 40, 70, 0.12));
                             user-select: none;
+                            animation: panda-float 3.4s ease-in-out infinite;
+                          }
+                          @keyframes panda-float {
+                            0%%, 100%% { transform: translateY(0); }
+                            50%% { transform: translateY(-8px); }
                           }
                           .pink-arrow {
                             position: absolute;
@@ -516,19 +521,12 @@ public class LoginPageController {
                             display: flex;
                             justify-content: center;
                             align-items: center;
-                            min-height: 2.4rem;
+                            min-height: 3rem;
                             width: 100%%;
                             overflow: hidden;
                           }
                           #google-signin-button > div {
-                            width: 100%% !important;
                             max-width: 100%% !important;
-                          }
-                          #google-signin-button > div > div,
-                          #google-signin-button [role="button"] {
-                            width: 100%% !important;
-                            max-width: 100%% !important;
-                            min-width: 0 !important;
                           }
                           .signup-row {
                             margin: 1.5rem 0 0;
@@ -622,6 +620,7 @@ public class LoginPageController {
                           }
                           @media (prefers-reduced-motion: reduce) {
                             *, *::before, *::after { transition: none !important; }
+                            .panda-img { animation: none !important; }
                           }
                         </style>
                         <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -757,9 +756,8 @@ public class LoginPageController {
                               return;
                             }
                             var availableWidth = gBtnContainer.offsetWidth || 280;
-                            // Google Identity button width bounds: min 200, max 400
-                            // Reserve space for the Google iframe's horizontal margins.
-                            var targetWidth = Math.min(Math.max(availableWidth - 20, 200), 380);
+                            // Keep the Google rendered button aligned with the full form width.
+                            var targetWidth = Math.min(Math.max(availableWidth, 200), 400);
                             gBtnContainer.innerHTML = '';
                             google.accounts.id.renderButton(
                               gBtnContainer,
