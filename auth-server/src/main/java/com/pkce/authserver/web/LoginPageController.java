@@ -548,18 +548,69 @@ public class LoginPageController {
                             background: var(--line);
                             content: "";
                           }
+                          .google-signin-control {
+                            position: relative;
+                            visibility: hidden;
+                            width: 100%%;
+                            height: 48px;
+                            overflow: hidden;
+                            border-radius: 10px;
+                            background: #ffffff;
+                            box-shadow: inset 0 0 0 1px #ded9dd;
+                          }
+                          .google-signin-control.is-ready {
+                            visibility: visible;
+                          }
+                          .google-signin-control:hover {
+                            background: #f8f3f5;
+                          }
+                          .google-signin-control:focus-within,
+                          .google-signin-control.is-focused {
+                            outline: 3px solid var(--line-focus);
+                            outline-offset: 2px;
+                          }
+                          .google-signin-face {
+                            position: relative;
+                            z-index: 2;
+                            background: inherit;
+                            border-radius: inherit;
+                            box-shadow: inherit;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 10px;
+                            height: 100%%;
+                            padding: 0 16px;
+                            pointer-events: none;
+                            font-family: 'Nunito', sans-serif;
+                            font-size: 15px;
+                            font-weight: 600;
+                            color: #532b19;
+                            white-space: nowrap;
+                          }
+                          .google-signin-face svg {
+                            display: block;
+                            flex: 0 0 22px;
+                            width: 22px;
+                            height: 22px;
+                          }
+                          /* The Google-owned control receives real clicks and keyboard focus.
+                             The separate, aria-hidden face matches the app's branded button. */
                           #google-signin-button {
+                            position: absolute;
+                            inset: 0;
+                            z-index: 1;
                             display: flex;
                             justify-content: center;
                             align-items: center;
-                            min-height: 3rem;
                             width: 100%%;
-                            overflow: hidden;
-                            border-radius: 10px;
+                            height: 100%%;
                           }
                           #google-signin-button > div {
                             max-width: 100%% !important;
-                            transform: scaleY(1.45);
+                            /* Fill the 48px hit area with Google's 32px medium control.
+                               The visual face above it keeps the icon and text at their natural size. */
+                            transform: scaleY(1.5);
                           }
                           .signup-row {
                             margin: 2rem 0 0;
@@ -774,7 +825,18 @@ public class LoginPageController {
                             <a href="%s" style="display:none;" tabindex="-1" aria-hidden="true">Continue with email</a>
                           </form>
                           <div class="divider">OR</div>
-                          <div id="google-signin-button"></div>
+                          <div class="google-signin-control">
+                            <div class="google-signin-face" aria-hidden="true">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22" aria-hidden="true">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                              </svg>
+                              <span>Continue with Google</span>
+                            </div>
+                            <div id="google-signin-button"></div>
+                          </div>
                           <p id="google-signin-error" class="alert alert-danger" style="display:none; margin-top:0.75rem;"></p>
                             </div>
                           </div>
@@ -846,15 +908,29 @@ public class LoginPageController {
                             }
                             var availableWidth = gBtnContainer.offsetWidth || 280;
                             // Keep the Google rendered button aligned with the full form width.
-                            var targetWidth = Math.min(Math.max(availableWidth, 200), 400);
+                            var targetWidth = Math.min(Math.max(Math.floor(availableWidth), 120), 400);
                             gBtnContainer.innerHTML = '';
                             google.accounts.id.renderButton(
                               gBtnContainer,
                               { theme: 'outline', size: 'medium', type: 'standard', text: 'continue_with', shape: 'rectangular', logo_alignment: 'left', width: targetWidth }
                             );
+                            gBtnContainer.closest('.google-signin-control').classList.add('is-ready');
+                          }
+
+                          function syncGoogleButtonFocus() {
+                            var control = document.querySelector('.google-signin-control');
+                            if (control) {
+                              control.classList.toggle('is-focused', control.contains(document.activeElement));
+                            }
                           }
 
                           window.onload = function () {
+                            // Focus enters Google's cross-origin frame, so mirror it on our visible face.
+                            window.addEventListener('blur', function () {
+                              setTimeout(syncGoogleButtonFocus, 0);
+                            });
+                            window.addEventListener('focus', syncGoogleButtonFocus);
+                            document.addEventListener('focusin', syncGoogleButtonFocus);
                             if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                               google.accounts.id.initialize({
                                 client_id: '%s',
