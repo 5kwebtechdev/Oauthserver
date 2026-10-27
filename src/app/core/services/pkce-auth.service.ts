@@ -127,7 +127,7 @@ export class PkceAuthService {
     await firstValueFrom(this.injector.get(HttpClient).post(
       environment.oauth.issuer + '/v1/auth/session-login',
       { email: credentials.email, phone: credentials.phone, password: credentials.password },
-      { withCredentials: true }
+      { withCredentials: true, params: { client_id: environment.oauth.clientId } }
     ));
     await this.login();
   }
