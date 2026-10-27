@@ -168,6 +168,9 @@ public class LoginPageController {
                         <meta name="apple-mobile-web-app-capable" content="yes">
                         <meta name="apple-mobile-web-app-status-bar-style" content="default">
                         <title>Sign in | SuperMeApp</title>
+                        <link rel="preconnect" href="https://fonts.googleapis.com">
+                        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                        <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
                         <style>
                           :root {
                             color-scheme: light;
@@ -203,8 +206,8 @@ public class LoginPageController {
                             justify-content: center;
                             align-items: center;
                             padding: max(1.25rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
-                            color: var(--ink);
-                            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+                            color: #282527;
+                            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
                             background:
                               radial-gradient(ellipse at 12%% 18%%, #d4cde8 0, transparent 38rem),
                               radial-gradient(ellipse at 88%% 82%%, #f3bdcf 0, transparent 36rem),
@@ -225,21 +228,24 @@ public class LoginPageController {
                             padding: 0.5rem 0;
                           }
                           .auth-heading {
-                            margin: 0 0 1.7rem;
+                            margin: 0 0 2rem;
                             text-align: center;
                           }
                           .auth-heading h1 {
                             margin: 0;
-                            font-size: 1.15rem;
-                            font-weight: 700;
-                            letter-spacing: -0.015em;
-                            color: #1f1933;
-                            line-height: 1.25;
+                            color: #282527;
+                            font-family: 'Fredoka', 'Nunito', sans-serif;
+                            font-size: 1.25rem;
+                            font-weight: 500;
+                            line-height: 1.3;
                           }
                           .auth-heading p {
-                            margin: 0.4rem 0 0;
-                            color: var(--muted);
+                            margin: 0.25rem 0 0;
+                            color: #6b656a;
+                            font-family: 'Nunito', sans-serif;
                             font-size: 1rem;
+                            font-weight: 500;
+                            line-height: 1.3;
                           }
                           .auth-layout {
                             display: grid;
@@ -274,32 +280,35 @@ public class LoginPageController {
                           }
                           .speech-bubble strong {
                             display: block;
-                            color: var(--violet);
-                            font-size: 1.02rem;
-                            font-weight: 800;
+                            margin-bottom: 4px;
+                            color: #432477;
+                            font-family: 'Fredoka', 'Nunito', sans-serif;
+                            font-size: 1.3125rem;
+                            font-weight: 600;
                           }
                           .speech-bubble span {
                             display: block;
-                            margin-top: 0.3rem;
-                            color: var(--muted);
-                            font-size: 0.65rem;
-                            font-weight: 600;
-                            line-height: 1.4;
+                            margin-top: 0;
+                            color: #6b656a;
+                            font-size: 0.8125rem;
+                            font-weight: 700;
+                            line-height: 1.35;
                           }
                           .speech-tail {
                             position: absolute;
-                            bottom: -7px;
-                            right: 42px;
-                            width: 14px;
-                            height: 14px;
+                            bottom: -12px;
+                            right: 30px;
+                            width: 22px;
+                            height: 22px;
                             background: #ffffff;
-                            border-right: 1px solid #eee8f3;
-                            border-bottom: 1px solid #eee8f3;
+                            border-right: 2px solid rgba(67, 36, 119, 0.16);
+                            border-bottom: 2px solid rgba(67, 36, 119, 0.16);
                             transform: rotate(45deg);
                           }
                           .sparkle {
                             position: absolute;
                             pointer-events: none;
+                            animation: panda-sparkle 900ms ease-in-out infinite alternate;
                           }
                           .star-gold {
                             bottom: -4px;
@@ -332,13 +341,30 @@ public class LoginPageController {
                             width: 6.5rem;
                             height: auto;
                             display: block;
-                            filter: drop-shadow(0 0.6rem 0.7rem rgba(60, 40, 70, 0.12));
+                            filter: drop-shadow(0 14px 12px rgba(67, 36, 119, 0.16));
                             user-select: none;
-                            animation: panda-float 3.4s ease-in-out infinite;
+                            animation: panda-bounce 1.9s 900ms ease-in-out infinite;
                           }
-                          @keyframes panda-float {
-                            0%%, 100%% { transform: translateY(0); }
-                            50%% { transform: translateY(-8px); }
+                          @keyframes panda-bounce {
+                            0%%, 100%% { transform: translateY(0) rotate(-1deg); }
+                            45%% { transform: translateY(-11px) rotate(2deg); }
+                            70%% { transform: translateY(-3px) rotate(0); }
+                          }
+                          @keyframes panda-bubble {
+                            0%%, 15%% { transform: translateY(4px) scale(0.96); }
+                            45%%, 100%% { transform: translateY(0) scale(1); }
+                          }
+                          @keyframes panda-glow {
+                            0%%, 100%% { opacity: 0.55; transform: scale(0.88); }
+                            50%% { opacity: 0.95; transform: scale(1.06); }
+                          }
+                          @keyframes panda-sparkle {
+                            from { opacity: 0.25; transform: scale(0.65) rotate(-15deg); }
+                            to { opacity: 1; transform: scale(1.15) rotate(12deg); }
+                          }
+                          @keyframes panda-point {
+                            0%%, 100%% { transform: translateX(0); }
+                            50%% { transform: translateX(8px); }
                           }
                           .pink-arrow {
                             position: absolute;
@@ -357,13 +383,13 @@ public class LoginPageController {
                           }
                           .auth-card {
                             width: 100%%;
-                            padding: 1.1rem 0.8rem 1.2rem;
-                            border: 1px solid var(--line);
-                            border-radius: 1.25rem;
+                            padding: 1.5rem 1rem;
+                            border: 0;
+                            border-radius: 1.5rem;
                             background: var(--card-bg);
                             box-shadow:
-                              0 1rem 2.8rem rgba(55, 35, 80, 0.1),
-                              0 0.15rem 0.5rem rgba(55, 35, 80, 0.04);
+                              0 12px 40px rgba(67, 36, 119, 0.1),
+                              0 0 2px 2px rgba(107, 101, 106, 0.1);
                           }
                           .form-signin {
                             margin: 0;
@@ -375,7 +401,7 @@ public class LoginPageController {
                             color: var(--violet-deep);
                           }
                           .field {
-                            margin: 0 0 0.65rem;
+                            margin: 0 0 0.75rem;
                           }
                           .field label, .form-signin > p > label:not(.sr-only) {
                             display: block;
@@ -387,15 +413,18 @@ public class LoginPageController {
                           .form-control {
                             display: block;
                             width: 100%%;
-                            min-height: 3rem;
-                            padding: 0.75rem 1rem;
-                            border: 1px solid #eeecef;
+                            min-height: 3.6875rem;
+                            padding: 0.75em 24px;
+                            border: 0;
                             border-radius: 0.75rem;
                             background: #ffffff;
-                            color: var(--ink);
-                            font: inherit;
-                            font-size: 16px; /* 16px prevents mobile/Android Chrome auto-zoom on focus */
-                            box-shadow: 0 0 0 1px rgba(52, 32, 78, 0.035), inset 0 1px 3px rgba(52, 32, 78, 0.025);
+                            color: #282527;
+                            font-family: 'Nunito', sans-serif;
+                            font-size: 17px;
+                            font-weight: 500;
+                            line-height: 1.5;
+                            /* 16px or larger prevents mobile Chrome from zooming on focus. */
+                            box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
                             transition: border-color 0.18s ease, box-shadow 0.18s ease;
                             -webkit-appearance: none;
                             appearance: none;
@@ -406,7 +435,8 @@ public class LoginPageController {
                             box-shadow: 0 0 0 3px rgba(104, 64, 162, 0.18);
                           }
                           .form-control::placeholder {
-                            color: #9a94a5;
+                            color: #282527;
+                            opacity: 0.5;
                           }
                           select.form-control {
                             -webkit-appearance: menulist;
@@ -444,9 +474,9 @@ public class LoginPageController {
                             outline: none;
                           }
                           .forgot-row {
-                            margin: -0.25rem 0 1.65rem;
+                            margin: -0.25rem 0 2.25rem;
                             text-align: right;
-                            font-size: 0.65rem;
+                            font-size: 0.8125rem;
                           }
                           .forgot-link {
                             color: #553389;
@@ -463,12 +493,12 @@ public class LoginPageController {
                             justify-content: center;
                             align-items: center;
                             width: 100%%;
-                            min-height: 2.8rem;
+                            min-height: 3.5rem;
                             padding: 0.65rem 1.25rem;
                             border: 0;
                             border-radius: 0.8rem;
                             font: inherit;
-                            font-size: 0.875rem;
+                            font-size: 1rem;
                             font-weight: 700;
                             cursor: pointer;
                             touch-action: manipulation;
@@ -478,9 +508,10 @@ public class LoginPageController {
                           }
                           .btn-primary {
                             color: #ffffff;
-                            background: linear-gradient(135deg, #623696 0%%, #301f4c 100%%);
-                            border: 1px solid #714aa4;
-                            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+                            background: linear-gradient(90deg, #7341a7 0%%, #20143f 100%%);
+                            border: 1px solid #432477;
+                            border-radius: 20px;
+                            box-shadow: inset -2px -2px 2px #ffffff;
                           }
                           .btn-primary:hover {
                             filter: brightness(1.08);
@@ -504,9 +535,9 @@ public class LoginPageController {
                             display: flex;
                             align-items: center;
                             gap: 0.85rem;
-                            margin: 1.6rem 2.1rem 0.85rem;
+                            margin: 2rem 2.1rem 1rem;
                             color: var(--muted);
-                            font-size: 0.82rem;
+                            font-size: 1rem;
                             font-weight: 600;
                             text-transform: uppercase;
                             letter-spacing: 0.05em;
@@ -524,15 +555,19 @@ public class LoginPageController {
                             min-height: 3rem;
                             width: 100%%;
                             overflow: hidden;
+                            border-radius: 10px;
                           }
                           #google-signin-button > div {
                             max-width: 100%% !important;
+                            transform: scaleY(1.2);
                           }
                           .signup-row {
-                            margin: 1.5rem 0 0;
+                            margin: 2rem 0 0;
                             text-align: center;
-                            color: var(--ink-subtle);
-                            font-size: 0.8rem;
+                            color: #282527;
+                            font-size: 1rem;
+                            font-weight: 500;
+                            line-height: 1.45;
                           }
                           .signup-link {
                             color: #553389;
@@ -582,14 +617,62 @@ public class LoginPageController {
                             border: 0;
                           }
                           @media (min-width: 701px) {
-                            #signin-pane { padding: 1.6rem 1.1rem; }
+                            #signin-pane { padding: 1.5rem 1rem; }
                           }
                           @media (min-width: 701px) and (min-height: 601px) {
-                            .auth-shell { top: -1.3rem; }
+                            .auth-shell { top: -0.7rem; }
+                          }
+                          @media (min-width: 1100px) {
+                            .mascot-col {
+                              width: 245px;
+                              top: 1.375rem;
+                              right: calc(100%% - 1.25rem);
+                            }
+                            .speech-bubble {
+                              width: 220px;
+                              max-width: none;
+                              padding: 15px 18px;
+                              border: 2px solid rgba(67, 36, 119, 0.16);
+                              border-radius: 20px 20px 20px 5px;
+                              background: rgba(255, 255, 255, 0.94);
+                              box-shadow: 0 12px 30px rgba(67, 36, 119, 0.12);
+                              backdrop-filter: blur(8px);
+                              animation: panda-bubble 1.7s 850ms ease-in-out infinite alternate;
+                            }
+                            .panda-stage {
+                              width: 190px;
+                              height: 190px;
+                              margin-top: 5px;
+                            }
+                            .panda-circle {
+                              right: 14px;
+                              bottom: 4px;
+                              width: 150px;
+                              height: 150px;
+                              background: radial-gradient(circle, rgba(255, 243, 198, 0.95) 0 34%%, rgba(246, 172, 114, 0.28) 35%% 57%%, transparent 59%%);
+                              animation: panda-glow 1.8s ease-in-out infinite;
+                            }
+                            .panda-img {
+                              width: auto;
+                              height: 184px;
+                            }
+                            .pink-arrow {
+                              top: auto;
+                              right: -1.9rem;
+                              bottom: 82px;
+                              transform: none;
+                              animation: panda-point 900ms ease-in-out infinite;
+                            }
+                            .star-purple {
+                              top: 130px;
+                              right: 12px;
+                              transform: none;
+                              animation-delay: 280ms;
+                            }
                           }
                           @media (max-width: 700px) {
-                            .auth-shell { max-width: 22rem; }
-                            .auth-heading { margin-bottom: 1.25rem; }
+                            .auth-shell { max-width: 24.5625rem; }
+                            .auth-heading { margin-bottom: 2rem; }
                             .auth-layout { display: flex; flex-direction: column; gap: 1rem; }
                             .mascot-col {
                               position: relative;
@@ -610,8 +693,8 @@ public class LoginPageController {
                             .panda-img { width: 4.4rem; }
                             .panda-circle { width: 4.8rem; height: 4.8rem; }
                             .pink-arrow { display: none; }
-                            .auth-card { padding: 1.1rem 0.8rem 1.2rem; }
-                            .forgot-row { font-size: 0.75rem; }
+                            .auth-card { padding: 1.5rem 1rem; }
+                            .forgot-row { font-size: 0.8125rem; }
                             .forgot-link { display: inline-block; padding: 0.4rem 0; }
                             .signup-row { line-height: 1.6; }
                           }
@@ -620,7 +703,9 @@ public class LoginPageController {
                           }
                           @media (prefers-reduced-motion: reduce) {
                             *, *::before, *::after { transition: none !important; }
-                            .panda-img { animation: none !important; }
+                            .panda-img, .speech-bubble, .panda-circle, .pink-arrow, .sparkle {
+                              animation: none !important;
+                            }
                           }
                         </style>
                         <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -761,7 +846,7 @@ public class LoginPageController {
                             gBtnContainer.innerHTML = '';
                             google.accounts.id.renderButton(
                               gBtnContainer,
-                              { theme: 'outline', size: 'large', type: 'standard', text: 'continue_with', shape: 'rectangular', width: targetWidth }
+                              { theme: 'outline', size: 'large', type: 'standard', text: 'continue_with', shape: 'rectangular', logo_alignment: 'center', width: targetWidth }
                             );
                           }
 
