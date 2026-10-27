@@ -228,7 +228,7 @@ public class LoginPageController {
                             padding: 0.5rem 0;
                           }
                           .auth-heading {
-                            margin: 0 0 2rem;
+                            margin: 0 0 2.125rem;
                             text-align: center;
                           }
                           .auth-heading h1 {
@@ -363,8 +363,8 @@ public class LoginPageController {
                             to { opacity: 1; transform: scale(1.15) rotate(12deg); }
                           }
                           @keyframes panda-point {
-                            0%%, 100%% { transform: translateX(0); }
-                            50%% { transform: translateX(8px); }
+                            0%%, 100%% { transform: translate(0, -18px); }
+                            50%% { transform: translate(8px, -18px); }
                           }
                           .pink-arrow {
                             position: absolute;
@@ -401,7 +401,7 @@ public class LoginPageController {
                             color: var(--violet-deep);
                           }
                           .field {
-                            margin: 0 0 0.75rem;
+                            margin: 0 0 0.875rem;
                           }
                           .field label, .form-signin > p > label:not(.sr-only) {
                             display: block;
@@ -474,7 +474,7 @@ public class LoginPageController {
                             outline: none;
                           }
                           .forgot-row {
-                            margin: -0.25rem 0 2.25rem;
+                            margin: -0.4375rem 0 1.9375rem;
                             text-align: right;
                             font-size: 0.8125rem;
                           }
@@ -535,7 +535,7 @@ public class LoginPageController {
                             display: flex;
                             align-items: center;
                             gap: 0.85rem;
-                            margin: 2rem 2.1rem 1rem;
+                            margin: 1.5625rem 2.1rem 0.625rem;
                             color: var(--muted);
                             font-size: 1rem;
                             font-weight: 600;
@@ -617,7 +617,10 @@ public class LoginPageController {
                             border: 0;
                           }
                           @media (min-width: 701px) {
-                            #signin-pane { padding: 1.5rem 1rem; }
+                            #signin-pane { padding: 1.5rem 1rem 1.5625rem; }
+                          }
+                          @media (max-height: 740px) {
+                            .signup-row { margin-top: 1.5rem; }
                           }
                           @media (min-width: 701px) and (min-height: 601px) {
                             .auth-shell { top: -0.7rem; }
@@ -625,13 +628,13 @@ public class LoginPageController {
                           @media (min-width: 1100px) {
                             .mascot-col {
                               width: 245px;
-                              top: 1.375rem;
+                              top: 1.25rem;
                               right: calc(100%% - 1.25rem);
                             }
                             .speech-bubble {
                               width: 220px;
                               max-width: none;
-                              padding: 15px 18px;
+                              padding: 17px 18px;
                               border: 2px solid rgba(67, 36, 119, 0.16);
                               border-radius: 20px 20px 20px 5px;
                               background: rgba(255, 255, 255, 0.94);
@@ -642,7 +645,7 @@ public class LoginPageController {
                             .panda-stage {
                               width: 190px;
                               height: 190px;
-                              margin-top: 5px;
+                              margin-top: 13px;
                             }
                             .panda-circle {
                               right: 14px;
@@ -658,14 +661,15 @@ public class LoginPageController {
                             }
                             .pink-arrow {
                               top: auto;
-                              right: -1.9rem;
+                              right: -1.65rem;
                               bottom: 82px;
                               transform: none;
                               animation: panda-point 900ms ease-in-out infinite;
                             }
+                            .star-gold { left: -12px; }
                             .star-purple {
-                              top: 130px;
-                              right: 12px;
+                              top: 128px;
+                              right: 0;
                               transform: none;
                               animation-delay: 280ms;
                             }
