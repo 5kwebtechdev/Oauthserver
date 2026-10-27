@@ -559,7 +559,7 @@ public class LoginPageController {
                           }
                           #google-signin-button > div {
                             max-width: 100%% !important;
-                            transform: scaleY(1.2);
+                            transform: scaleY(1.45);
                           }
                           .signup-row {
                             margin: 2rem 0 0;
@@ -850,7 +850,7 @@ public class LoginPageController {
                             gBtnContainer.innerHTML = '';
                             google.accounts.id.renderButton(
                               gBtnContainer,
-                              { theme: 'outline', size: 'large', type: 'standard', text: 'continue_with', shape: 'rectangular', logo_alignment: 'left', width: targetWidth }
+                              { theme: 'outline', size: 'medium', type: 'standard', text: 'continue_with', shape: 'rectangular', logo_alignment: 'left', width: targetWidth }
                             );
                           }
 
