@@ -154,7 +154,8 @@ describe('PKCE session bridge', () => {
     Object.defineProperty(service, 'enabled', { value: true });
     await service.loginAfterRegistration({ email: 'new@example.com', password: 'new-password' });
     expect(post).toHaveBeenCalledWith(environment.oauth.issuer + '/v1/auth/session-login',
-      { email: 'new@example.com', phone: undefined, password: 'new-password' }, { withCredentials: true });
+      { email: 'new@example.com', phone: undefined, password: 'new-password' },
+      { withCredentials: true, params: { client_id: environment.oauth.clientId } });
     expect(oauth.initCodeFlow).toHaveBeenCalled();
   });
   it('rejects an external return URL' , async () => {
