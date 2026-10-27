@@ -294,7 +294,8 @@ export class SocialMediaComponent implements OnInit {
     sessionStorage.removeItem('signup_role');
     // A deleted account can reuse the same Google identity. Start its profile
     // draft afresh while retaining the freshly obtained provider proof.
-    ['oauth_signup_session_pending', 'signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
+    const referralCode = this.clearOAuthSignupDraftPreservingReferralLink();
+    ['oauth_signup_session_pending', 'signup_profile', 'signup_avatar', 'signup_pet', 'familyCode',
       'show_child_welcome_after_family'].forEach(key => sessionStorage.removeItem(key));
     sessionStorage.setItem('oauth_signup_pending_submission', 'true');
     this.onboardingState.clearRegistrationDraft();
@@ -309,6 +310,7 @@ export class SocialMediaComponent implements OnInit {
       selectedSignupRole: undefined,
       relationship: undefined,
       asChild: false,
+      ...(referralCode ? { referralCode } : {}),
       onboardingStep: 3
     }, 3, 'EMAIL');
     await this.router.navigate(['/signup'], {
@@ -663,7 +665,8 @@ export class SocialMediaComponent implements OnInit {
     // previous attempt left a role or managed-child state in session storage.
     this.clearManagedChildSignupContext();
     sessionStorage.removeItem('signup_role');
-    ['signup_profile', 'signup_avatar', 'signup_pet', 'familyCode', 'referralCode',
+    const referralCode = this.clearOAuthSignupDraftPreservingReferralLink();
+    ['signup_profile', 'signup_avatar', 'signup_pet', 'familyCode',
       'show_child_welcome_after_family'].forEach(key => sessionStorage.removeItem(key));
     this.storeOAuthSignupSession(provider, profile);
     sessionStorage.setItem('oauth_signup_pending_submission', 'true');
@@ -679,6 +682,7 @@ export class SocialMediaComponent implements OnInit {
       selectedSignupRole: undefined,
       relationship: undefined,
       asChild: false,
+      ...(referralCode ? { referralCode } : {}),
       onboardingStep: 3
     }, 3, 'EMAIL');
     await this.router.navigate(['/signup'], {
@@ -696,6 +700,27 @@ export class SocialMediaComponent implements OnInit {
       'family_children_refresh_pending',
       'managed_child_parent_welcome_pending'
     ].forEach(key => sessionStorage.removeItem(key));
+  }
+
+  /**
+   * Starting a fresh Google signup should discard stale wizard state while
+   * retaining a referral code that came from an invitation link. The deep-link
+   * handler marks invitation codes as locked so they can survive this reset.
+   */
+  private clearOAuthSignupDraftPreservingReferralLink(): string | undefined {
+    const code = (sessionStorage.getItem('referralCode') || '').trim().toUpperCase();
+    const preserveReferral = sessionStorage.getItem('referralCodeLocked') === 'true'
+      && /^[A-Z0-9]{8}$/.test(code);
+
+    if (preserveReferral) {
+      sessionStorage.setItem('referralCode', code);
+      sessionStorage.setItem('referralCodeLocked', 'true');
+      return code;
+    }
+
+    sessionStorage.removeItem('referralCode');
+    sessionStorage.removeItem('referralCodeLocked');
+    return undefined;
   }
 
   private clearOAuthSignupSession(): void {

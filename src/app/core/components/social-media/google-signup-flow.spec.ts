@@ -178,6 +178,17 @@ describe('Google signup request sequencing', () => {
     expect(onboarding.getRegistrationState()?.savedData.socialRolePending).toBeTrue();
   });
 
+  it('keeps a locked invitation referral code through new Google signup setup', async () => {
+    sessionStorage.setItem('referralCode', 'AB12CD34');
+    sessionStorage.setItem('referralCodeLocked', 'true');
+
+    await authenticateNewUser(null);
+
+    expect(sessionStorage.getItem('referralCode')).toBe('AB12CD34');
+    expect(sessionStorage.getItem('referralCodeLocked')).toBe('true');
+    expect(onboarding.getRegistrationState()?.savedData['referralCode']).toBe('AB12CD34');
+  });
+
   it('preserves the Google SDK identity when registration-required omits identity fields', async () => {
     social.pkceAuth.enabled = true;
     social.pkceAuth.googleLogin = jasmine.createSpy().and.rejectWith({
@@ -270,6 +281,8 @@ describe('Google signup request sequencing', () => {
 
   for (const role of ['self', 'child'] as const) {
     it(`submits ${role} profile, pet and completion once and waits for PKCE`, async () => {
+      sessionStorage.setItem('referralCode', 'AB12CD34');
+      sessionStorage.setItem('referralCodeLocked', 'true');
       await authenticateNewUser(role);
       signup.pkceAuth.enabled = true;
       let finish!: () => void;
@@ -285,7 +298,7 @@ describe('Google signup request sequencing', () => {
       const expectedRegistration: any = {
         googleIdToken: 'google-proof', email: 'new@example.test', name: 'Google Name',
         username: 'chosenuser', dateOfBirth: '2000-01-01', relationship: 'SELF',
-        petName: 'Dragon', unlockPotential: true
+        petName: 'Dragon', unlockPotential: true, referralCode: 'AB12CD34'
       };
       if (role === 'child') expectedRegistration.asChild = true;
       expect(request.request.body).toEqual(jasmine.objectContaining(expectedRegistration));
