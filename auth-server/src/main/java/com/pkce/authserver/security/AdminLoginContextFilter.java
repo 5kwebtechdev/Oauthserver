@@ -71,10 +71,12 @@ public class AdminLoginContextFilter extends OncePerRequestFilter {
     }
 
     private AdminClient computeAdminClient(HttpServletRequest request) {
-        // Direct SPA Google and handoff login can precede /oauth2/authorize, so no saved
-        // request exists yet. These proof-based endpoints accept explicit public client context.
+        // Direct SPA Google, handoff, and post-registration password login can precede
+        // /oauth2/authorize, so no saved request exists yet. These endpoints accept explicit
+        // public client context to select the account database for this login attempt.
         if (("/api/auth/google-login".equals(request.getServletPath())
-                || "/api/auth/handoff-login".equals(request.getServletPath()))
+                || "/api/auth/handoff-login".equals(request.getServletPath())
+                || "/v1/auth/session-login".equals(request.getServletPath()))
                 && request.getParameter("client_id") != null) {
             return clientForId(request.getParameter("client_id"));
         }
