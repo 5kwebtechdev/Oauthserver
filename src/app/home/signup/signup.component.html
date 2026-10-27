@@ -356,12 +356,12 @@
               <span>{{ isManagedChildSignup ? 'Your Child' : 'You' }} <strong>Up</strong></span>
             </h1>
             <div class="details-progress-copy">
-              <p class="profile-step-label">Step 4 of {{ isManagedChildSignup || currentRole === 'self' ? 5 : 6 }}</p>
+              <p class="profile-step-label">Step {{ isOAuthSignup ? 2 : 4 }} of {{ isManagedChildSignup || currentRole === 'self' ? 5 : 6 }}</p>
               <p class="profile-hero__title">
                 {{ isManagedChildSignup ? 'Tell us about your child!' : 'Tell us about yourself !' }}
               </p>
               <div class="profile-progress" role="progressbar" aria-label="Registration progress" aria-valuemin="1"
-                [attr.aria-valuemax]="isManagedChildSignup || currentRole === 'self' ? 5 : 6" aria-valuenow="4"><span></span></div>
+                [attr.aria-valuemax]="isManagedChildSignup || currentRole === 'self' ? 5 : 6" [attr.aria-valuenow]="isOAuthSignup ? 2 : 4"><span></span></div>
             </div>
           </div>
           <div class="details-header-illustration" aria-hidden="true">
