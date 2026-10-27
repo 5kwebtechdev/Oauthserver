@@ -93,6 +93,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         onboardingStep: number;
     } | null = null;
     private pendingOAuthFamilyCompletion = false;
+    private pendingPkceGoogleFamilyCompletion = false;
     readonly familyCodeFaqs = [
         {
             question: `What if my parent doesn't have an account yet?`,
@@ -739,8 +740,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             onboardingStep: 4
         }, 4);
 
-        // Google OAuth signup: backend creates the family via oauth2-login (familyName param).
-        // Do NOT pre-create the family here — it would create a duplicate.
+        // Social signup creates the family in the same registration request.
+        // Do NOT pre-create it here — that would create a duplicate.
         if (sessionStorage.getItem('signup_via_oauth') === 'true'
             || sessionStorage.getItem('signup_via_google') === 'true') {
             sessionStorage.setItem('familyCreator', 'true');
@@ -799,7 +800,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         }, 4);
         try { sessionStorage.removeItem('familyCreator'); } catch (e) { }
 
-        // Google OAuth signup: no password available — use oauth2-login instead
+        // Google signup has no password; submit profile and family data together.
         if (sessionStorage.getItem('signup_via_oauth') === 'true'
             || sessionStorage.getItem('signup_via_google') === 'true') {
             this.completeGoogleParentSignup();
@@ -962,6 +963,17 @@ Thank you!`;
 
     completeFamilySuccess(): void {
         if (this.isLoading) return;
+
+        if (this.pendingPkceGoogleFamilyCompletion) {
+            this.pendingPkceGoogleFamilyCompletion = false;
+            this.onboardingState.markExistingUser();
+            try { sessionStorage.setItem('family_connected_ack', 'Parent'); } catch (e) {}
+            const idToken = sessionStorage.getItem('oauth_signup_id_token')
+                || this.pkceAuth.getGoogleSignupProof?.()
+                || '';
+            this.startGoogleParentPkceLogin(idToken, true);
+            return;
+        }
 
         if (this.pendingOAuthFamilyCompletion) {
             this.pendingOAuthFamilyCompletion = false;
@@ -1312,10 +1324,10 @@ Thank you!`;
     }
 
     /**
-     * Complete OAuth signup for parent: calls oauth2-login with all collected profile + family data.
+     * Complete Parent social signup after the family choice.
      *
-     * Case A (creator):  sends familyName only  → backend creates the family in the same call
-     * Case B (joiner):   sends familyCode only  → backend links to existing family
+     * Case A (creator): sends familyName so registration creates a family.
+     * Case B (joiner): sends familyCode so registration links the parent.
      */
     private completeGoogleParentSignup(): void {
         if (
@@ -1337,7 +1349,9 @@ Thank you!`;
         const email      = sessionStorage.getItem('google_signup_email') || '';
         const providerId = sessionStorage.getItem('google_signup_provider_id') || '';
         const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
-        const idToken    = sessionStorage.getItem('oauth_signup_id_token') || '';
+        const idToken    = sessionStorage.getItem('oauth_signup_id_token')
+            || this.pkceAuth.getGoogleSignupProof?.()
+            || '';
         const accessToken = sessionStorage.getItem('oauth_signup_access_token') || '';
         const serverAuthCode = sessionStorage.getItem('oauth_signup_server_auth_code') || '';
         const identityToken = sessionStorage.getItem('oauth_signup_identity_token') || '';
@@ -1347,6 +1361,14 @@ Thank you!`;
         const isCreator  = sessionStorage.getItem('familyCreator') === 'true';
         const familyCode = sessionStorage.getItem('familyCode') || this.familyCode || '';
         const familyName = sessionStorage.getItem('familyName') || this.createdFamilyName || '';
+        const authServerGoogleRegistration = provider === 'google'
+            && this.pkceAuth.enabled
+            && sessionStorage.getItem('oauth_signup_pending_submission') === 'true';
+
+        if (authServerGoogleRegistration && !idToken) {
+            this.core.triggerToasrt('Please sign in with Google again to finish creating your account.');
+            return;
+        }
 
         const googlePayload: any = {
             provider,
@@ -1354,7 +1376,8 @@ Thank you!`;
             email,
             name:         profile.name || sessionStorage.getItem('google_signup_name') || '',
             avatarUrl,
-            role:         'PARENT',              // backend uses "role", not "relationship"
+            role:         'PARENT',
+            relationship: 'PARENT',
             referralCode: sessionStorage.getItem('referralCode') || null
         };
         if (profile.gender) {
@@ -1424,34 +1447,64 @@ Thank you!`;
         }
 
         this.isLoading = true;
-        // Submit family details for the same OAuth provider identity.
-        const request = this.authService.googleOAuthLogin(googlePayload);
+        // New Google signups use the authorization server registration API;
+        // legacy Google and Apple flows retain their existing mobile-login API.
+        const request = authServerGoogleRegistration
+            ? this.authService.registerGoogleSignup(googlePayload)
+            : this.authService.googleOAuthLogin(googlePayload);
         request.subscribe({
             next: (response) => {
                 this.isLoading = false;
-                const userId = response.user?.id;
-                if (provider === 'google' && this.pkceAuth.enabled) {
-                    this.authService.updateUserData(response.user);
-                } else if (response.token && userId) {
+                const responseUser = response?.user
+                    || response?.data?.user
+                    || response?.data
+                    || response
+                    || {};
+                const userId = responseUser?.id;
+                if (!authServerGoogleRegistration
+                    && provider === 'google'
+                    && this.pkceAuth.enabled
+                    && Object.keys(responseUser).length) {
+                    this.authService.updateUserData(responseUser);
+                } else if (!(provider === 'google' && this.pkceAuth.enabled)
+                    && response?.token
+                    && userId) {
                     this.authService.setSession(
-                        { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
+                        { token: response.token, userId, expiresIn: response.expiresIn, user: responseUser },
                         false
                     );
                 }
                 this.onboardingState.markExistingUser();
-                // Family setup is saved, but activation is still pending.
-                // Keep the shared draft and provider identity for refresh and
-                // the final action, for both Google and Apple.
+                // Keep the selected family and provider identity with the
+                // signup draft so the PKCE callback resumes at activation.
+                const onboardingStep = Number(responseUser?.onboardingStep) || 5;
                 this.onboardingState.updateRegistrationDraft({
-                    ...(response.user || {}),
+                    ...responseUser,
+                    relationship: 'PARENT',
+                    familyCode: responseUser?.familyCode || familyCode || undefined,
+                    familyName: responseUser?.familyName || familyName || undefined,
+                    familyRole: isCreator ? 'CREATOR' : 'CO_PARENT',
                     authProvider: provider,
                     socialProviderId: providerId,
                     selectedSignupRole: 'parent',
                     socialOnboarding: true,
                     socialDetailsCompleted: true,
-                    socialFamilyCompleted: true
-                });
+                    socialFamilyCompleted: true,
+                    socialRolePending: false,
+                    onboardingStep
+                }, onboardingStep);
                 try { sessionStorage.setItem('family_connected_ack', 'Parent'); } catch (e) {}
+
+                if (authServerGoogleRegistration) {
+                    sessionStorage.removeItem('oauth_signup_pending_submission');
+                    if (isCreator && this.showFamilyCreationSuccess(response)) {
+                        this.pendingPkceGoogleFamilyCompletion = true;
+                        return;
+                    }
+                    this.startGoogleParentPkceLogin(idToken);
+                    return;
+                }
+
                 if (isCreator && this.showFamilyCreationSuccess(response)) {
                     this.pendingOAuthFamilyCompletion = true;
                     return;
@@ -1487,6 +1540,25 @@ Thank you!`;
         return true;
     }
 
+    private startGoogleParentPkceLogin(idToken: string, retryFamilySuccess = false): void {
+        if (!idToken) {
+            if (retryFamilySuccess) this.pendingPkceGoogleFamilyCompletion = true;
+            this.core.triggerToasrt('Your family is saved. Please sign in with Google again to continue.');
+            return;
+        }
+
+        this.isLoading = true;
+        void this.pkceAuth.googleLogin(idToken, true).catch((error) => {
+            this.isLoading = false;
+            if (retryFamilySuccess) this.pendingPkceGoogleFamilyCompletion = true;
+            this.core.triggerToasrt(
+                error instanceof Error && error.message
+                    ? error.message
+                    : 'Your family is saved, but sign-in did not finish. Please try again.'
+            );
+        });
+    }
+
     private extractFamilyCode(response: any): string {
         let currentUser: any = null;
         try { currentUser = this.authService.getUserData(); } catch (e) {}
@@ -1500,6 +1572,8 @@ Thank you!`;
             response?.savedData?.family?.familyCode,
             response?.data?.familyCode,
             response?.data?.family?.familyCode,
+            response?.data?.user?.familyCode,
+            response?.data?.user?.family?.familyCode,
             currentUser?.familyCode,
             currentUser?.family?.familyCode,
             sessionStorage.getItem('familyCode')

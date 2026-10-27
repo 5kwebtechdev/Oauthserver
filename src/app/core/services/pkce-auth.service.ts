@@ -36,25 +36,89 @@ export class PkceAuthService {
       customTokenParameters: ['user'], showDebugInformation: false
     });
     try {
-      await this.oauth.loadDiscoveryDocumentAndTryLogin();
-      if (!this.oauth.hasValidAccessToken() && this.oauth.getRefreshToken()) await this.refresh();
-      // On reload an older token may already have passed its renewal timer.
-      if (this.oauth.hasValidAccessToken() && this.oauth.getRefreshToken()
-          && this.oauth.getAccessTokenExpiration() - Date.now() <= 150000) await this.refresh();
-      if (this.oauth.hasValidAccessToken()) this.syncSession();
-      else {
+      await this.tryLoginOnce();
+    } catch (err) {
+      const isAuthorizationCallback = new URLSearchParams(window.location.search).has('code');
+      // A callback's authorization code can only be redeemed once. If validation
+      // fails after the token endpoint has consumed it, clearing storage and
+      // replaying the same callback can never recover. Start one fresh PKCE flow
+      // instead; this also replaces stale nonce/verifier data in long-lived tabs.
+      if (this.restartCallbackWithFreshState()) return;
+      if (isAuthorizationCallback) {
+        console.error('[PkceAuthService] authorization callback failed; refusing to replay its one-time code', err);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_id');
         localStorage.removeItem('user_data');
+        this.error = 'Could not complete sign in. Please try again.';
+        return;
       }
-      this.oauth.events.subscribe(event => {
-        if (event.type === 'token_expires' && (event as { info?: string }).info === 'access_token') void this.refresh().catch(() => {});
-      });
-    } catch {
+
+      // The OIDC session state (nonce, PKCE verifier, cached discovery document) lives in
+      // localStorage — not sessionStorage — so on a long-lived, frequently-used browser
+      // profile it can go stale across deployments/client-id changes and make the next
+      // loadDiscoveryDocumentAndTryLogin() throw, even though a guaranteed-fresh profile
+      // (incognito, another browser) works fine. Clear it and retry once before giving up.
+      console.error('[PkceAuthService] sign-in failed, retrying after clearing stale OIDC state', err);
+      this.clearOidcStorage();
+      try {
+        await this.tryLoginOnce();
+      } catch (err2) {
+        console.error('[PkceAuthService] sign-in failed after retry', err2);
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_id');
+        localStorage.removeItem('user_data');
+        this.error = 'Could not connect to sign in. Please try again.';
+      }
+    }
+  }
+  private async tryLoginOnce(): Promise<void> {
+    await this.oauth.loadDiscoveryDocumentAndTryLogin();
+    if (new URLSearchParams(window.location.search).has('code')
+        && !this.oauth.hasValidAccessToken()) {
+      throw new Error('Authorization callback completed without a valid access token.');
+    }
+    if (!this.oauth.hasValidAccessToken() && this.oauth.getRefreshToken()) await this.refresh();
+    // On reload an older token may already have passed its renewal timer.
+    if (this.oauth.hasValidAccessToken() && this.oauth.getRefreshToken()
+        && this.oauth.getAccessTokenExpiration() - Date.now() <= 150000) await this.refresh();
+    if (this.oauth.hasValidAccessToken()) {
+      this.syncSession();
+      try { sessionStorage.removeItem('pkce_callback_recovery_attempted'); } catch { /* Best effort. */ }
+    }
+    else {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_id');
       localStorage.removeItem('user_data');
-      this.error = 'Could not connect to sign in. Please try again.';
+    }
+    this.oauth.events.subscribe(event => {
+      if (event.type === 'token_expires' && (event as { info?: string }).info === 'access_token') void this.refresh().catch(() => {});
+    });
+  }
+  private clearOidcStorage(): void {
+    Object.keys(localStorage)
+      .filter(key => key.startsWith('superme_oidc_'))
+      .forEach(key => localStorage.removeItem(key));
+  }
+  private restartCallbackWithFreshState(): boolean {
+    if (!new URLSearchParams(window.location.search).has('code')) return false;
+    const recoveryKey = 'pkce_callback_recovery_attempted';
+    try {
+      if (sessionStorage.getItem(recoveryKey) === 'true') return false;
+      sessionStorage.setItem(recoveryKey, 'true');
+    } catch {
+      // Without a session-scoped loop guard, leave the callback error visible.
+      return false;
+    }
+
+    this.clearOidcStorage();
+    window.history.replaceState({}, document.title, window.location.pathname);
+    try {
+      this.oauth.initCodeFlow();
+      return true;
+    } catch (error) {
+      sessionStorage.removeItem(recoveryKey);
+      console.error('[PkceAuthService] unable to restart authorization after callback failure', error);
+      return false;
     }
   }
   async loginAfterRegistration(credentials: { email?: string; phone?: string; password: string }): Promise<void> {
@@ -112,6 +176,7 @@ export class PkceAuthService {
     if (returnUrl.startsWith('/') && !returnUrl.startsWith('//') && !/^\/(login|callback)(?:[/?]|$)/.test(returnUrl)) {
       sessionStorage.setItem('pkce_return_url', returnUrl);
     }
+    sessionStorage.removeItem('pkce_callback_recovery_attempted');
     this.oauth.initCodeFlow();
   }
   get token(): string | null {
