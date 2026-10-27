@@ -525,6 +525,15 @@ export class AuthService {
     }>(`${environment.oauth.issuer}/api/auth/google-signup-handoff`, { ticket });
   }
 
+  checkPhoneExists(phone: string, countryCode: string): Observable<boolean> {
+    const url = `${environment.oauth.issuer}/v1/auth/check/alreadyRegistered`;
+    return this.http.get<{ status?: boolean; exists?: boolean }>(url, {
+      params: { identifier: phone, countryCode }
+    }).pipe(
+      map(response => Boolean(response?.status ?? response?.exists ?? false))
+    );
+  }
+
   checkUsernameExists(username: string): Observable<boolean> {
     const url = `${this.apiUrl}/auth/check/alreadyRegistered`;
     return this.http.get<{ status?: boolean; exists?: boolean }>(url, {
