@@ -1,10 +1,14 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NavigationService } from '../../../services/navigation.service';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { AcademyService, Course } from '../../../services/academy.service';
 import { AuthService } from '../../../services/auth.service';
+import { ProfileStoreService } from '../../../services/profile-store.service';
+import { selectedChildAge } from '../../../models/selected-child-age';
+import { ChildInfo } from '../../../models/child-info.model';
+import { combineLatest, Subject, takeUntil } from 'rxjs';
 
 interface AcademyLessonCard {
   title: string;
@@ -26,7 +30,7 @@ interface AcademyLessonCard {
   templateUrl: './academy-subject.component.html',
   styleUrls: ['./academy-subject.component.scss']
 })
-export class AcademySubjectComponent implements OnInit {
+export class AcademySubjectComponent implements OnInit, OnDestroy {
   @Input() title: string | undefined;
   @Input() description: string | undefined;
 
@@ -35,6 +39,9 @@ export class AcademySubjectComponent implements OnInit {
   categorySubtitle: string = '';
   age: number | null = null;
   isLoading: boolean = false;
+  private readonly destroy$ = new Subject<void>();
+  private readonly childRequestCancel$ = new Subject<void>();
+  private selectedChild: ChildInfo | null = null;
 
   private readonly defaultCourseThumbnail = 'assets/Images-Transparent/Academy-Course-Thubmnail1.webp';
   private readonly fallbackCourseThumbnails = [
@@ -61,19 +68,33 @@ export class AcademySubjectComponent implements OnInit {
     private route: ActivatedRoute,
     private academyService: AcademyService,
     private authService: AuthService,
-    private navigation: NavigationService
+    private navigation: NavigationService,
+    private profileStore: ProfileStoreService
   ) { }
 
   ngOnInit() {
     // Get category from query params
-    this.route.queryParams.subscribe(params => {
+    combineLatest([this.route.queryParams, this.profileStore.selectionChanged$])
+      .pipe(takeUntil(this.destroy$)).subscribe(([params, child]) => {
+      this.childRequestCancel$.next();
+      this.selectedChild = child;
       this.category = params['category'] || 'MANAGING_MONEY';
       const categoryInfo = this.categoryTitles[this.normalizeCategoryKey(this.category)];
       this.categoryTitle = params['title'] || categoryInfo?.title || this.formatCategoryTitle(this.category);
       this.categorySubtitle = params['subtitle'] || categoryInfo?.subtitle || '';
-      this.age = this.parseAge(params['age']);
-      this.loadCourses();
+      this.age = this.authService.isParentUser()
+        ? selectedChildAge(child)
+        : this.parseAge(params['age']);
+      this.lessons = [];
+      if (!this.authService.isParentUser() || child?.id != null) this.loadCourses();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.childRequestCancel$.next();
+    this.childRequestCancel$.complete();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadCourses() {
@@ -82,16 +103,18 @@ export class AcademySubjectComponent implements OnInit {
     // The category endpoint returns `assignedToChild` only when the current
     // child's id is supplied. This keeps parent assignments visible to the
     // right child without changing normal course navigation.
-    const forUserId = this.authService.getUserRelationship() === 'CHILD'
-      ? this.authService.getUserId()
-      : null;
+    const forUserId = this.authService.isParentUser()
+      ? this.selectedChild?.id ?? null
+      : this.authService.getUserRelationship() === 'CHILD'
+        ? this.authService.getUserId()
+        : null;
     const courses$ = this.academyService.getCoursesByCategory(
       this.category,
       this.age,
       forUserId,
     );
 
-    courses$.subscribe({
+    courses$.pipe(takeUntil(this.destroy$), takeUntil(this.childRequestCancel$)).subscribe({
       next: (courses: Course[]) => {
         console.log(`Courses from by-category API for ${this.category}:`, courses);
         console.log('Current category:', this.category);

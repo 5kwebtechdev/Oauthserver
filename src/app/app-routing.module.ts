@@ -1,10 +1,11 @@
+import { NgModule } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { environment } from '../environments/environment';
 import { PkceEntryComponent } from './core/components/pkce-entry.component';
 import { HandoffLandingComponent } from './core/components/handoff-landing.component';
-import { NgModule } from '@angular/core';
 import { ActivatedRouteSnapshot, PreloadAllModules, RouterModule, RouterStateSnapshot, Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/authe-guard/authe-guard';
+import { DashboardRedirectGuard } from './core/guards/dashboard-redirect.guard';
 import { legacyAuthedRedirectGuard } from './core/authe-guard/authe-guard';
 import { OurPoliciesComponent } from './core/components/user-profile/our-policies/our-policies.component';
 
@@ -12,7 +13,6 @@ const routes: Routes = [
   ...(environment.oauth.enabled && !Capacitor.isNativePlatform() ? [
     { path: 'login', component: PkceEntryComponent },
     { path: 'callback', component: PkceEntryComponent },
-    // Where an app hand-off lands: redeems the one-time pass, then continues as a normal session.
     { path: 'land', component: HandoffLandingComponent },
     { path: 'home/login', redirectTo: 'login', pathMatch: 'full' as const }
   ] : []),
@@ -105,8 +105,25 @@ const routes: Routes = [
   },
   {
     path: 'parent-account',
-    loadComponent: () => import('./authenticated/parent-account/parent-account.component').then(m => m.ParentAccountComponent),
+    // Mount the same authenticated shell as /home so web-nav is present on
+    // fresh login, reload, and direct Parent dashboard links.
+    loadComponent: () => import('./authenticated/authenticated.component').then(m => m.AuthenticatedComponent),
     canActivate: [authGuard],
+    children: [{
+      path: '',
+      loadComponent: () => import('./authenticated/parent-account/parent-account.component').then(m => m.ParentAccountComponent),
+      canActivate: [DashboardRedirectGuard],
+      data: { allowedRoles: ['PARENT'] }
+    }],
+  },
+  {
+    path: 'events-list',
+    loadComponent: () => import('./authenticated/authenticated.component').then(m => m.AuthenticatedComponent),
+    canActivate: [authGuard],
+    children: [{
+      path: '',
+      loadComponent: () => import('./core/components/activity-section/events-list/events-list.component').then(m => m.EventsListComponent)
+    }],
   },
   {
     path: 'home',

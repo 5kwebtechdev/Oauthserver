@@ -98,7 +98,7 @@
 
         <div class="directory-list" *ngIf="!loading && !loadError && visibleListings.length">
           <ng-container *ngFor="let item of visibleListings; let index = index; trackBy: trackListing">
-            <app-eduhub-shop-card [item]="item"
+            <app-eduhub-shop-card [item]="item" [category]="entityType + ' ' + categoryLabel"
               (viewDetails)="openListing(item)" (favourite)="toggleFavourite(item)"
               (share)="shareListing(item)" (directions)="openDirections(item)"
               (contact)="requestUnlock(item)"></app-eduhub-shop-card>

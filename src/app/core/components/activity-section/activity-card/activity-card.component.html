@@ -54,7 +54,7 @@
   </div>
 </ng-template>
 
-<!-- Current-month events shown above the day summary in the Home design. -->
+<!-- Upcoming events shown above the day summary in the Home design. -->
 <ng-template #upcomingEvents>
   <section class="glance-upcoming" aria-labelledby="glance-upcoming-title"
     *ngIf="glanceUpcomingEvents.length > 0">
@@ -65,7 +65,8 @@
         </span>
         <h3 id="glance-upcoming-title">Upcoming Events</h3>
       </div>
-      <button type="button" class="glance-outline-button" (click)="openUpcomingEvents()">View all</button>
+      <button type="button" class="glance-outline-button" (click)="openUpcomingEvents()"
+        aria-label="View all upcoming events">View all</button>
     </div>
 
     <div class="glance-upcoming__list" role="list">

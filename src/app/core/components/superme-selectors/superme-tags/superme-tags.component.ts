@@ -56,7 +56,6 @@ export class SupermeTagsComponent implements OnInit, OnDestroy, OnChanges {
   inputValue: string = '';
   inputPopupPosition: { left: number; top: number } | null = null;
   editingTagKey: any = null;
-  private readonly defaultCustomCategoryIcon = 'assets/icons/Personal.svg';
 
   private onDocClick?: any;
   // Delete confirmation popup state
@@ -258,7 +257,7 @@ export class SupermeTagsComponent implements OnInit, OnDestroy, OnChanges {
         this.showLimitErrorMessage();
       } else {
         if (this.serverManaged) {
-          this.add.emit({ value: val, icon: this.defaultCustomCategoryIcon });
+          this.add.emit({ value: val });
           this.cancelInputPopup();
           return;
         }
@@ -539,13 +538,15 @@ export class SupermeTagsComponent implements OnInit, OnDestroy, OnChanges {
   canEditTag(key: any): boolean {
     const tag = this.options.find(o => o.key === key);
     if (!tag) return false;
-    return this.allowEdit && tag.editable !== false && tag.system !== true;
+    return this.allowEdit && tag.editable !== false &&
+      (this.serverManaged ? tag.system === false : tag.type === 'custom');
   }
 
   canDeleteTag(key: any): boolean {
     const tag = this.options.find(o => o.key === key);
     if (!tag) return false;
-    return this.allowDelete && tag.deletable !== false && tag.system !== true;
+    return this.allowDelete && tag.deletable !== false &&
+      (this.serverManaged ? tag.system === false : tag.type === 'custom');
   }
 
   // UI state for maximum-limit error message

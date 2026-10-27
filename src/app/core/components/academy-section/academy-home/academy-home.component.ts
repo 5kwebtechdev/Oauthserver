@@ -1,10 +1,14 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { NavigationService } from '../../../services/navigation.service';
 import { AcademyCategory, AcademyService } from '../../../services/academy.service';
 import { AuthService } from '../../../services/auth.service';
+import { ProfileStoreService } from '../../../services/profile-store.service';
+import { selectedChildAge } from '../../../models/selected-child-age';
+import { ChildInfo } from '../../../models/child-info.model';
+import { Subject, takeUntil } from 'rxjs';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 
@@ -26,13 +30,16 @@ interface CategoryCard {
   templateUrl: './academy-home.component.html',
   styleUrls: ['./academy-home.component.scss']
 })
-export class AcademyHomeComponent {
+export class AcademyHomeComponent implements OnDestroy {
   @Input() title: string | undefined;
   @Input() description: string | undefined;
 
   categoryCards: CategoryCard[] = [];
   isLoadingCategories = false;
   categoryError = '';
+  private readonly destroy$ = new Subject<void>();
+  private readonly childRequestCancel$ = new Subject<void>();
+  private selectedChild: ChildInfo | null = null;
 
   private readonly cardColors = ['yellow', 'purple', 'pink', 'green'];
   private readonly fallbackImages = [
@@ -46,18 +53,39 @@ export class AcademyHomeComponent {
     private router: Router,
     private academyService: AcademyService,
     private navigation: NavigationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private profileStore: ProfileStoreService
   ) { }
 
   ngOnInit(): void {
-    this.loadCategories();
+    if (this.authService.isParentUser()) {
+      this.profileStore.selectionChanged$.pipe(takeUntil(this.destroy$)).subscribe(child => {
+        this.childRequestCancel$.next();
+        this.selectedChild = child;
+        this.categoryCards = [];
+        if (child?.id != null) this.loadCategories();
+      });
+    } else {
+      this.loadCategories();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.childRequestCancel$.next();
+    this.childRequestCancel$.complete();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private loadCategories(): void {
     this.isLoadingCategories = true;
     this.categoryError = '';
 
-    this.academyService.getCategories().subscribe({
+    const child = this.authService.isParentUser() ? this.selectedChild : null;
+    this.academyService.getCategories(
+      child ? selectedChildAge(child) : undefined,
+      child?.id ?? null
+    ).pipe(takeUntil(this.destroy$), takeUntil(this.childRequestCancel$)).subscribe({
       next: (categories) => {
         const activeCategories = (categories || [])
           .filter(category => (category.status || '').toUpperCase() === 'ACTIVE');
@@ -81,7 +109,9 @@ export class AcademyHomeComponent {
   }
 
   openSubject(card: CategoryCard): void {
-    const age = this.authService.getCurrentUserAge();
+    const age = this.authService.isParentUser()
+      ? selectedChildAge(this.selectedChild)
+      : this.authService.getCurrentUserAge();
     const queryParams: Record<string, string | number> = {
       category: card.category,
       categoryId: card.id,

@@ -5,9 +5,10 @@
   position: relative; min-height: 160px; padding: calc(env(safe-area-inset-top, 0px) + 18px) 24px 12px;
   overflow: hidden; background: linear-gradient(180deg, #ffe18d 0%, #ffe398 52%, #fff 100%);
 }
+.hero-toolbar { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; min-height: 42px; gap: 12px; }
 .back-button { position: relative; z-index: 2; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; background: transparent; color: #292630; }
 .back-button svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
-.hero-copy { position: relative; z-index: 1; margin-top: 24px; }
+.hero-copy { position: relative; z-index: 1; margin-top: 18px; }
 .hero-copy h1 { margin: 0; font-family: inherit; color: #282527; font-size: 28px; font-weight: 800; line-height: 38px; letter-spacing: 0; }
 .hero-copy p { margin: 0; color: #6b656a; font-size: 15px; font-weight: 500; line-height: 20px; }
 .hero-art { position: absolute; right: 24px; bottom: 4px; width: 100px; height: 100px; pointer-events: none; }
@@ -60,10 +61,10 @@
 .load-more { display: block; margin: 16px auto; cursor: pointer; }
 .load-more:disabled { opacity: .55; cursor: default; }
 .pagination-error { text-align: center; color: #b33850; font-size: 12px; }
-.share-rank { display: flex; flex-direction: column; align-items: center; padding: 17px 0 8px; }
-.share-rank__button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 19px; border: 0; border-radius: 22px; background: #48257c; color: #fff; font: 800 14px/1 var(--font-sans, 'Nunito', sans-serif); cursor: pointer; }
-.share-rank__button svg { width: 18px; height: 18px; }
-.share-rank__feedback { margin: 8px 0 0; color: #48257c; font-size: 12px; }
+.share-rank { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; }
+.share-rank__button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 0 13px; border: 1px solid #f5be32; border-radius: 22px; background: #ffd363; color: #282527; font: 800 13px/1 var(--font-sans, 'Nunito', sans-serif); white-space: nowrap; cursor: pointer; }
+.share-rank__button svg { width: 17px; height: 17px; flex: none; }
+.share-rank__feedback { margin: 4px 0 0; color: #48257c; font-size: 11px; text-align: right; }
 button:focus-visible { outline: 2px solid #4b237d; outline-offset: 2px; }
 @media (max-width: 374px) {
   .leaderboard-hero { padding-inline: 19px; }

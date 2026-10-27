@@ -18,36 +18,7 @@
             <div class="user-age" *ngIf="user?.age">{{ user.age }} yrs</div>
           </div>
         </div>
-        <div class="parent-family-tree" *ngIf="isParentProfile(); else rewardStats" aria-label="My Family" role="group">
-          <h2><img src="assets/figma/journal/adult/family.svg" alt="" aria-hidden="true">My Family</h2>
-          <ng-container *ngIf="creator; else noFamilyDetails">
-            <div class="parent-family-tree__grid">
-              <div class="parent-family-tree__creator">
-                <div class="parent-family-tree__avatar">
-                  <img *ngIf="getMemberAvatar(creator)?.url as avatar; else creatorInitial" [src]="avatar" [alt]="familyMemberName(creator) + ' avatar'">
-                  <ng-template #creatorInitial>{{ getInitial(creator.name) }}</ng-template>
-                </div>
-                <strong>{{ familyMemberName(creator) }}</strong>
-                <span *ngIf="creator.age">{{ creator.age }} years old</span>
-                <small>{{ creator.coParent ? 'Co Parent' : familyMemberRole(creator, true) }}{{ creator.you ? ' / You' : '' }}</small>
-              </div>
-              <div class="parent-family-tree__member" *ngFor="let member of members">
-                <div class="parent-family-tree__avatar">
-                  <img *ngIf="getMemberAvatar(member)?.url as avatar; else memberInitial" [src]="avatar" [alt]="familyMemberName(member) + ' avatar'">
-                  <ng-template #memberInitial>{{ getInitial(member.name) }}</ng-template>
-                </div>
-                <strong>{{ familyMemberName(member) }}</strong>
-                <span *ngIf="member.age">{{ member.age }} years old</span>
-                <small [class.is-child]="familyMemberRole(member) === 'Child'" [class.is-co-parent]="member.coParent">{{ member.coParent ? 'Co Parent' : familyMemberRole(member) }}</small>
-                <button *ngIf="creator.you && !creator.coParent" class="parent-family-tree__manage" type="button"
-                  [attr.aria-label]="'Manage ' + familyMemberName(member) + ' in My Family'" (click)="onMyFamily()">
-                  <ion-icon name="trash-outline" aria-hidden="true"></ion-icon> Remove
-                </button>
-              </div>
-            </div>
-          </ng-container>
-          <ng-template #noFamilyDetails><p>Family details are not available yet.</p></ng-template>
-        </div>
+        <family-connection *ngIf="isParentProfile(); else rewardStats" [embedded]="true"></family-connection>
         <ng-template #rewardStats><div class="user-stats">
           <superme-coins-stats [userCoins]="userCoins" [userStreaks]="userStreaks" [userDays]="userDays"
             [userBadges]="userBadges" coinsIcon="assets/icons/superme-coin.webp"

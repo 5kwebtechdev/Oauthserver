@@ -1,3 +1,5 @@
+import { MOOD_ASSET_ALIASES } from '../../core/models/mood-assets';
+import { FamilyActionsService } from '../../core/services/family-actions.service';
 import { Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
 import { NotificationNavigationService } from '../../core/services/notification-navigation.service';
 import { NotificationUnreadService } from '../../core/services/notification-unread.service';
@@ -8,6 +10,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, firstValueFrom, forkJoin, map, Observable, of, Subject, takeUntil } from 'rxjs';
 import { UserService } from '../../core/services/user.service';
+import { CoinService } from '../../core/services/coin.service';
 import { IonicModule } from "@ionic/angular";
 import { MoodService } from '../../core/services/mood.service';
 import { MoodTransition, VibesDisplayResponse } from '../../core/models/mood.model';
@@ -28,9 +31,6 @@ import { AcademySectionComponent } from '../../core/components/academy-section/a
 import { TutorCardComponent } from '../../core/components/tutor-section/tutor-card/tutor-card.component';
 import { ParentAnalyticsService, ParentAnalyticsBand, ParentAnalyticsResponseDto } from '../../core/services/parent-analytics.service';
 import { CustomToastService } from '../../core/services/custom-toast.service';
-import { REGISTRATION_ONBOARDING_STATE_KEY } from '../../core/services/onboarding-state.service';
-import { Share } from '@capacitor/share';
-import { Clipboard } from '@capacitor/clipboard';
 import { Capacitor } from '@capacitor/core';
 import { environment } from '../../../environments/environment';
 import { LearningService } from '../../core/services/learning.service';
@@ -254,16 +254,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public progressPercentage: number = 0;
     
     // Mood assets
-    private readonly moodAssetMap: Record<string, string> = {
-        'HAPPY': 'assets/Images-Transparent/Image-Mood-Happy.webp',
-        'VERY HAPPY': 'assets/Images-Transparent/Image-Mood-Very happy.webp',
-        'EXCITED': 'assets/Images-Transparent/Image-Mood-Excited.webp',
-        'SAD': 'assets/Images-Transparent/Image-Mood-Sad.webp',
-        'VERY SAD': 'assets/Images-Transparent/Image-Mood-Upset.webp',
-        'UPSET': 'assets/Images-Transparent/Image-Mood-Upset.webp',
-        'NERVOUS': 'assets/Images-Transparent/Image-Mood-Nervous.webp',
-        'NEUTRAL': 'assets/Images-Transparent/Mood-emoji-neutral-home.webp'
-    };
+    private readonly moodAssetMap = MOOD_ASSET_ALIASES;
     
     // Popup state
     
@@ -426,7 +417,9 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         private parentAnalyticsService: ParentAnalyticsService,
         private toastService: CustomToastService,
         private learningService: LearningService,
-        private http: HttpClient
+        private http: HttpClient,
+        private familyActions: FamilyActionsService,
+        private coinService: CoinService
     ) { }
 
     assignLearningReward(event: { item?: any; coins?: number } | null): void {
@@ -527,6 +520,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.refreshService.registerRefreshHandler('ParentAccount', () => this.onGlobalRefresh());
         this.platform.resume.pipe(takeUntil(this.destroy$)).subscribe(() => {
             this.refreshUnreadNotificationCount();
+            this.refreshParentCoins();
             void this.loadChildren();
         });
         // Redirect non-parent users
@@ -648,6 +642,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     }
 
     async ionViewWillEnter(): Promise<void> {
+        this.refreshParentCoins();
         // Fires on initial load AND every time this screen becomes active (return from navigation).
         this.activityCard?.switchTab('all');
         this.refreshUnreadNotificationCount();
@@ -722,6 +717,13 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         }).url
             || this.userService.getUserAvatarUrl()
             || '';
+    }
+
+    private refreshParentCoins(): void {
+        this.coinService.loadAccountCoinHistory().pipe(takeUntil(this.destroy$)).subscribe({
+            // Keep the last known balance if the server is temporarily unavailable.
+            error: () => {}
+        });
     }
 
     /**
@@ -1376,83 +1378,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
      * invitation details. Web keeps a graceful share/copy fallback.
      */
     async shareFamilyCodeWithCoParent(): Promise<void> {
-        const session = this.authService.getUserData();
-        const familyCode = (
-            this.familyCode
-            || this.extractFamilyCode(session?.user)
-            || this.extractFamilyCode(session)
-        ).trim().toUpperCase();
-
-        if (!familyCode) {
-            this.toastService.error('Family code is not available yet. Please try again.');
-            return;
-        }
-
-        this.familyCode = familyCode;
-        const publicWebUrl = String(environment.publicWebUrl || 'https://supermeapp.com').replace(/\/+$/, '');
-        const inviteParams = new URLSearchParams({
-            role: 'parent',
-            mode: 'join',
-            scannedCode: familyCode
-        });
-        const inviteLink = `${publicWebUrl}/join-family2?${inviteParams.toString()}`;
-        const configuredStoreUrl = this.platform.is('ios')
-            ? environment.firebase.remoteConfig.defaults.ios_store_url
-            : environment.firebase.remoteConfig.defaults.android_store_url;
-        const downloadLink = String(configuredStoreUrl || publicWebUrl).trim();
-        const text = [
-            'Hi! 👋',
-            '',
-            "Join our SuperMe Family so we can work together to support our child's growth, learning, habits and daily achievements.",
-            '',
-            `Family Invite Code: ${familyCode}`,
-            `Join here: ${inviteLink}`,
-            '',
-            "Once you join, you'll be able to:",
-            '✨ Track progress and milestones',
-            '✨ Celebrate streaks and achievements',
-            '📚 Assign learning activities and quizzes',
-            '💜 Stay connected and support our child together',
-            '',
-            `Download Link: ${downloadLink}`
-        ].join('\n');
-
-        try {
-            const canShare = await Share.canShare();
-            if (canShare.value) {
-                await Share.share({
-                    title: 'Join our SuperMe Family',
-                    text,
-                    dialogTitle: 'Share family code with co-parent'
-                });
-                return;
-            }
-        } catch (error) {
-            if (this.isShareCancellation(error)) return;
-            console.warn('[ParentAccount] Native family share unavailable:', error);
-        }
-
-        if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-            try {
-                await navigator.share({ title: 'Join our SuperMe Family', text });
-                return;
-            } catch (error) {
-                if (this.isShareCancellation(error)) return;
-            }
-        }
-
-        try {
-            await Clipboard.write({ string: text });
-            this.toastService.success('Family invite copied. You can share it with your co-parent.');
-        } catch (error) {
-            console.warn('[ParentAccount] Unable to copy family invitation:', error);
-            this.toastService.error('Unable to share the family invite. Please try again.');
-        }
-    }
-
-    private isShareCancellation(error: unknown): boolean {
-        const message = String((error as any)?.message || error || '').toLowerCase();
-        return message.includes('cancel') || message.includes('dismiss') || message.includes('abort');
+        await this.familyActions.shareFamilyCodeWithCoParent(this.familyCode);
     }
 
     openInsights(): void {
@@ -1460,65 +1386,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     }
 
     openAddChild(): void {
-        if (!this.familyCode) {
-            this.openFamilyConnection();
-            return;
-        }
-
-        // Keep the authenticated Parent available while the separate Child
-        // account is created, so the success screen can safely return here.
-        if (!this.authService.beginManagedChildParentSession()) {
-            this.toastService.error('Unable to start Add Child. Please sign in again and retry.');
-            return;
-        }
-
-        // The child must begin with an empty registration form. A Parent's
-        // previous onboarding draft can include their email, name, avatar and
-        // other personal data; SignupComponent restores that draft on init
-        // unless we clear it before entering the managed-child flow.
-        this.clearParentSignupDraftForChild();
-
-        try {
-            // Add Child from Parent Home returns directly to this screen; only
-            // the initial onboarding CTA defers the Parent welcome screen.
-            sessionStorage.removeItem('managed_child_parent_welcome_pending');
-            sessionStorage.setItem('managed_child_signup', 'true');
-            sessionStorage.setItem('managed_child_family_code', this.familyCode);
-            sessionStorage.setItem('signup_role', 'child');
-            sessionStorage.setItem('familyCode', this.familyCode);
-        } catch (error) {
-            console.warn('[ParentAccount] Unable to prepare the child signup flow', error);
-        }
-
-        this.router.navigate(['/signup'], {
-            queryParams: { step: 0.1, role: 'child', managedChild: true }
-        });
-    }
-
-    private clearParentSignupDraftForChild(): void {
-        try {
-            localStorage.removeItem(REGISTRATION_ONBOARDING_STATE_KEY);
-            [
-                'signup_profile',
-                'signup_role',
-                'signup_avatar',
-                'signup_pet',
-                'requestedIdentifier',
-                'loginMode',
-                'countryCode',
-                'referralCode',
-                'referralCodeLocked',
-                'signup_via_oauth',
-                'signup_via_google',
-                'oauth_signup_provider',
-                'google_signup_email',
-                'google_signup_name',
-                'google_signup_avatar',
-                'google_signup_provider_id'
-            ].forEach(key => sessionStorage.removeItem(key));
-        } catch (error) {
-            console.warn('[ParentAccount] Unable to clear Parent signup draft before adding a child', error);
-        }
+        this.familyActions.openAddChild(this.familyCode);
     }
 
     openMessageComposer(template?: 'celebrate' | 'encourage'): void {
@@ -1693,6 +1561,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
      * Session validation is already handled by the authenticated shell.
      */
     private async onGlobalRefresh(): Promise<void> {
+        this.refreshParentCoins();
         await Promise.all([
             this.loadChildren(),
             firstValueFrom(

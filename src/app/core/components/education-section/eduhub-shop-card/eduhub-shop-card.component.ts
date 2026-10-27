@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 
 export interface EduHubShopCard {
+  entityType?: string;
   name: string;
   image: string;
   verified: boolean;
@@ -21,6 +22,7 @@ export interface EduHubShopCard {
 })
 export class EduHubShopCardComponent {
   @Input({ required: true }) item!: EduHubShopCard;
+  @Input() category = '';
   @Output() viewDetails = new EventEmitter<void>();
   @Output() favourite = new EventEmitter<void>();
   @Output() share = new EventEmitter<void>();

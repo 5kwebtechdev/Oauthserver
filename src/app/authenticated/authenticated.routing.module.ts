@@ -110,6 +110,9 @@ const routes: Routes = [
         path: 'notifications',
         loadComponent: () => import('../core/components/user-profile/notification/notification.component').then(m => m.NotificationComponent)
       }, {
+        path: 'refer-friend/contest',
+        loadComponent: () => import('../referral/contest/referral-contest.page').then(m => m.ReferralContestPage)
+      }, {
         path: 'refer-friend',
         loadComponent: () => import('../core/components/user-profile/refer-friend/refer-friend.component').then(m => m.ReferFriendComponent)
       }, {
@@ -145,6 +148,9 @@ const routes: Routes = [
       }, {
         path: 'activity-detail/:id',
         component: ActivityDetailComponent
+      }, {
+        path: 'events-list',
+        loadComponent: () => import('../core/components/activity-section/events-list/events-list.component').then(m => m.EventsListComponent)
       }, {
         path: 'event-detail/:id',
         loadComponent: () => import('../core/components/activity-section/event-detail/event-detail.component').then(m => m.EventDetailComponent)

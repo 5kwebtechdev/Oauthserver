@@ -1,5 +1,5 @@
-import { PkceAuthService } from './pkce-auth.service';
 import { Injectable } from '@angular/core';
+import { PkceAuthService } from './pkce-auth.service';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, timer, of, EMPTY, from, firstValueFrom } from 'rxjs';
 import { tap, map, catchError, switchMap } from 'rxjs/operators';
@@ -305,7 +305,9 @@ export class AuthService {
     console.log('[AuthService] Full API URL:', loginUrl);
     console.log('[AuthService] Base API URL from environment:', this.apiUrl);
 
-    return this.http.post<AuthResponse>(loginUrl, credentials)
+    return this.http.post<AuthResponse>(loginUrl, credentials, {
+      headers: new HttpHeaders({ 'X-Skip-Profile-Selector': 'true' })
+    })
       .pipe(
         tap({
           next: (response) => {
@@ -785,8 +787,6 @@ export class AuthService {
    * session server-side (e.g. revoke the token, drop device registration).
    */
   logoutUser(userId: string | number): Observable<{ success: boolean; message: string }> {
-    // PKCE sessions are ended by /connect/logout on the issuer. The legacy
-    // business API cannot revoke tokens issued by this authorization server.
     if (this.pkce.enabled) return of({ success: true, message: 'Logout handled by the authorization server.' });
     const token = this.getToken();
     const headers = new HttpHeaders({
@@ -821,6 +821,7 @@ export class AuthService {
     // Start device-token cleanup while the old session is still identifiable,
     // but revoke all local/in-memory access immediately rather than waiting on
     // network or native sign-out operations.
+    const oidcLogout = await this.pkce.prepareLogout();
     const pushCleanup = this.pushNotifications.clearToken().catch(() => {});
     this.clearLocalUserState();
     this.analytics.clearUserId();
@@ -840,6 +841,7 @@ export class AuthService {
     ]);
 
     if (oidcLogout && redirectToLogin) { window.location.assign(oidcLogout); return; }
+
     if (redirectToLogin && typeof window !== 'undefined' && !window.location.pathname.endsWith('/login')) {
       window.location.replace('/login');
     }
@@ -1459,7 +1461,9 @@ export class AuthService {
     });
 
     // Use a lightweight endpoint to validate token
-    return this.http.get<any>(`${this.apiUrl}/auth/validate`, { headers }).pipe(
+    return this.http.get<any>(`${this.apiUrl}/auth/validate`, {
+      headers: headers.set('X-Skip-Profile-Selector', 'true')
+    }).pipe(
       map(() => true),
       catchError((error) => {
         console.log('[AuthService] Session validation failed:', error.status);

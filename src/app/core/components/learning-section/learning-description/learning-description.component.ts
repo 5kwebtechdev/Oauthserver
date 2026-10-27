@@ -62,7 +62,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
                 <img src="assets/icons/superme-coin.webp" alt="" class="meta-icon" />
                 {{challenge.coinsForCorrectAnswer || challenge.coins || 5}} coins
               </div>
-              <div class="meta-label">For Correct Answer</div>
+              <div class="meta-label">For Every Correct Answer</div>
             </div>
           </div>
         </div>

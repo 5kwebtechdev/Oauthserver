@@ -1,0 +1,170 @@
+{
+  "excited": {
+    "sourceSha256": "90b468cf7622eaf24914f5db207d40343ef4dfb872ba5a49c165cd85b2d95bcd",
+    "sha256": "4cf002c80a01b040c396efc1e415f1ad347be6fc780882ae779a2093becb1b55",
+    "sourceCanvas": [
+      50,
+      48
+    ],
+    "visibleBounds": [
+      8.3,
+      5.1,
+      40.9,
+      43.1
+    ],
+    "faceBounds": [
+      8.3,
+      11.7,
+      39.5,
+      41.7
+    ],
+    "normalizedArtworkBounds": [
+      18.102236421725244,
+      13.162939297124593,
+      84.76038338658148,
+      90.8626198083067
+    ],
+    "faceWidth": 64,
+    "faceBaseline": 88
+  },
+  "happy": {
+    "sourceSha256": "f05a5334fc5c7a4bbbe9d3baa4cc24b4c84790a2e00ec99317880aec5747b4c6",
+    "sha256": "1a0d98813a7026923a9458a1604add486addc96afd58bb04c837c3ca0300d39e",
+    "sourceCanvas": [
+      50,
+      40
+    ],
+    "visibleBounds": [
+      8.8,
+      0.7,
+      38.5,
+      38.7
+    ],
+    "faceBounds": [
+      8.8,
+      7.1,
+      38.5,
+      37.5
+    ],
+    "normalizedArtworkBounds": [
+      18.107382550335572,
+      8.96644295302014,
+      81.89261744966443,
+      90.5771812080537
+    ],
+    "faceWidth": 64,
+    "faceBaseline": 88
+  },
+  "calm": {
+    "sourceSha256": "7ba298e54029a350e57e22b64f2a98143465855d47a7dd75bd961c21424db669",
+    "sha256": "e5d73dced4a051031a8f8e0d0d4cb5435eb3538005cb2f53cde25c2d5c9098a2",
+    "sourceCanvas": [
+      65,
+      56
+    ],
+    "visibleBounds": [
+      11.9,
+      7.9,
+      53.3,
+      41.9
+    ],
+    "faceBounds": [
+      17,
+      12.2,
+      48.2,
+      41.9
+    ],
+    "normalizedArtworkBounds": [
+      7.6741214057508,
+      18.479233226837064,
+      92.32587859424919,
+      88
+    ],
+    "faceWidth": 64,
+    "faceBaseline": 88
+  },
+  "anxious": {
+    "sourceSha256": "c26696314b3107123b8fc8daf89071614cc8cec340cf312d043d8415687047c8",
+    "sha256": "6d335a5ee2619e087249c9ad30571040a0c52819c6d8c8642f7d7f1ed1f31460",
+    "sourceCanvas": [
+      50,
+      40
+    ],
+    "visibleBounds": [
+      7.1,
+      2.1,
+      40.5,
+      38.9
+    ],
+    "faceBounds": [
+      7.1,
+      5.8,
+      39.2,
+      37.6
+    ],
+    "normalizedArtworkBounds": [
+      18.099378881987587,
+      17.440993788819878,
+      84.48447204968944,
+      90.583850931677
+    ],
+    "faceWidth": 64,
+    "faceBaseline": 88
+  },
+  "sad": {
+    "sourceSha256": "7b8ee50a69afc4485da609264c621945f7961282889ae2977abfce0b4d10d9c9",
+    "sha256": "264850e4f98b191590906001b7b4e4a68f08c6d3c1f8e6cfaa1793c9d7daf30e",
+    "sourceCanvas": [
+      51,
+      40
+    ],
+    "visibleBounds": [
+      11.3,
+      0.6,
+      41.6,
+      39.1
+    ],
+    "faceBounds": [
+      11.3,
+      9.1,
+      41,
+      38
+    ],
+    "normalizedArtworkBounds": [
+      18.107382550335576,
+      7.677852348993293,
+      83.18120805369128,
+      90.36241610738256
+    ],
+    "faceWidth": 64,
+    "faceBaseline": 88
+  },
+  "frustrated": {
+    "sourceSha256": "69a8b333e1fa25aac4adc4190eed01ae969556b3dd84404b8b245e5355293adf",
+    "sha256": "cab6d22d2421ce7588fc45bd4621b51e08183a63ad048b95f9f36bd03866de43",
+    "sourceCanvas": [
+      50,
+      43
+    ],
+    "visibleBounds": [
+      10.7,
+      1.2,
+      41.6,
+      41.7
+    ],
+    "faceBounds": [
+      10.8,
+      9.3,
+      41.6,
+      40.6
+    ],
+    "normalizedArtworkBounds": [
+      17.896440129449836,
+      6.394822006472483,
+      81.89644012944984,
+      90.27831715210357
+    ],
+    "faceWidth": 64,
+    "faceBaseline": 88
+  }
+}

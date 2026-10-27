@@ -59,7 +59,7 @@ interface PlannerModeDraft {
 interface EventChoice {
   key: string;
   label: string;
-  icon: string;
+  icon?: string;
   id?: number;
   custom?: boolean;
 }
@@ -282,7 +282,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
   getCategoryIcon(value: string): string {
     const normalizedValue = (value || '').trim().toLowerCase();
-    return this.categoryIcons[normalizedValue] ? normalizedValue : 'personal';
+    return this.categoryIcons[normalizedValue] ? normalizedValue : '';
   }
 
   isCategorySelected(key: any): boolean {
@@ -296,6 +296,12 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
   selectCategory(key: any) {
     this.tagsComponent?.toggleSelection(key);
+  }
+
+  confirmCategoryTagDeletion(key: number, event: Event): void {
+    event.stopPropagation();
+    if (this.tagOptions.find(option => option.key === key)?.system !== false) return;
+    this.tagsComponent?.openDeleteConfirm(key);
   }
 
   openAddCategory(elRef?: any, event?: Event) {
@@ -325,6 +331,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   eventTypeErrorMessage = '';
 
   eventTypes: EventChoice[] = [];
+  eventTypeDeleteVisible = false;
+  eventTypeDeleteConfig: SupermePopupConfig = {};
+  private pendingEventTypeDelete: EventChoice | null = null;
 
   readonly recurrenceOptions: ReadonlyArray<EventChoice & { key: EventRecurrence }> = [
     { key: 'ONE_TIME', label: 'One Time', icon: 'assets/figma/activity-event/one-time.svg' },
@@ -552,8 +561,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
           value: t.name,
           system: t.system,
           editable: false,
-          deletable: !t.system,
-          type: t.system ? undefined : 'custom'
+          deletable: t.system === false,
+          type: t.system === false ? 'custom' : undefined
         }));
         // Re-sync pre-selected tags now that options are available
         this.syncSelectedTagsToComponent();
@@ -600,16 +609,15 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.eventTypes = [...this.eventTypes, {
       key,
       label: key,
-      icon: EVENT_TYPE_ICONS.default,
+      icon: undefined,
       custom: true
     }];
   }
 
   private mapEventType(type: EventTypeDto): EventChoice {
     const label = String(type.name || '').trim();
-    const icon = getEventTypeIcon(label);
-
-    return { key: label, label, icon, id: type.id, custom: !type.system };
+    return { key: label, label, icon: type.system === true ? getEventTypeIcon(label) : undefined,
+      id: type.id, custom: type.system === false };
   }
 
   selectActivityTab(tab: ActivityNavigationTab): void {
@@ -776,6 +784,39 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         this.savingEventType = false;
         this.eventTypeErrorMessage = error?.error?.message || error?.message || 'Unable to add this event type. Please try again.';
       }
+    });
+  }
+
+  confirmEventTypeDeletion(option: EventChoice): void {
+    if (!option.custom || option.id == null) return;
+    this.pendingEventTypeDelete = option;
+    this.eventTypeDeleteConfig = {
+      heading: `Delete “${option.label}” event type?`,
+      subtitle: 'This action cannot be undone.',
+      primaryCTA: { text: 'Delete', type: 'primary' },
+      secondaryCTA: { text: 'Cancel', type: 'secondary' },
+      backdrop: true,
+      showCloseButton: false
+    };
+    this.eventTypeDeleteVisible = true;
+  }
+
+  cancelEventTypeDeletion(): void {
+    this.eventTypeDeleteVisible = false;
+    this.pendingEventTypeDelete = null;
+  }
+
+  deleteCustomEventType(): void {
+    const option = this.pendingEventTypeDelete;
+    if (!option?.custom || option.id == null) return;
+    this.eventTypeDeleteVisible = false;
+    this.pendingEventTypeDelete = null;
+    this.eventApi.deleteEventType(option.id).subscribe({
+      next: () => {
+        this.eventTypes = this.eventTypes.filter(type => type.id !== option.id);
+        if (this.selectedEventType === option.key) this.selectedEventType = '';
+      },
+      error: (error) => this.toastService.error(error?.error?.message || 'Could not delete event type. Please try again.')
     });
   }
 
@@ -1352,7 +1393,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     if (!event?.value) return;
     this.tagsApi.createTag(event.value).subscribe({
       next: (created) => {
-        const newOpt = { key: created.id, value: created.name, system: false, editable: false, deletable: true, type: 'custom' };
+        const newOpt = { key: created.id, value: created.name, system: created.system, editable: false,
+          deletable: created.system === false, type: created.system === false ? 'custom' : undefined };
         this.tagOptions = [newOpt, ...this.tagOptions];
         if (this.tagsComponent) {
           this.tagsComponent.options = [...this.tagOptions];
@@ -1384,14 +1426,17 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   onTagDelete(event: any) {
     const id = event?.key ?? event;
     if (id == null) return;
-    this.tagsApi.deleteTag(Number(id)).subscribe({
+    const tagId = Number(id);
+    if (this.tagOptions.find(tag => tag.key === tagId)?.system !== false) return;
+    this.tagsApi.deleteTag(tagId).subscribe({
       next: () => {
-        this.tagOptions = this.tagOptions.filter(t => t.key !== Number(id));
+        this.tagOptions = this.tagOptions.filter(t => t.key !== tagId);
         if (this.tagsComponent) {
           this.tagsComponent.options = [...this.tagOptions];
-          if (this.tagsComponent.selectedKeys.includes(id)) {
+          if (this.tagsComponent.selectedKeys.some(key => String(key) === String(tagId))) {
             this.tagsComponent.selectedKeys = [];
             this.selectedTags = [];
+            this.tagsComponent.selectedKeysChange.emit([]);
           }
         }
         try { this.cd.detectChanges(); } catch (e) {}

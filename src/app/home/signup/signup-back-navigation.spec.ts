@@ -3,7 +3,7 @@ import { convertToParamMap, Router } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../../core/services/auth.service';
 import { OnboardingStateService } from '../../core/services/onboarding-state.service';
-import { guestGuard } from '../../core/authe-guard/authe-guard';
+import { guestGuard, startupGuard } from '../../core/authe-guard/authe-guard';
 import { SignupComponent, shouldRefreshSignupOnboarding } from './signup.component';
 
 describe('Signup profile back navigation', () => {
@@ -26,7 +26,7 @@ describe('Signup profile back navigation', () => {
     const { signup, navigateRoot } = profileStep(true);
     signup.goBack();
     expect(navigateRoot).toHaveBeenCalledWith('/signup', {
-      queryParams: { step: 1, reviewPrevious: true }, animated: false
+      queryParams: { step: 1, reviewPrevious: true }, animated: false, replaceUrl: true
     });
     expect(signup.profileForm.value).toEqual({ name: 'Entered name', username: 'chosen-name' });
   });
@@ -35,7 +35,7 @@ describe('Signup profile back navigation', () => {
     const { signup, navigateRoot } = profileStep(false);
     signup.goBack();
     expect(navigateRoot).toHaveBeenCalledWith('/signup', {
-      queryParams: { step: 0.3, reviewPrevious: true }, animated: false
+      queryParams: { step: 0.3, reviewPrevious: true }, animated: false, replaceUrl: true
     });
     expect(signup.profileForm.get('name')?.value).toBe('Entered name');
   });
@@ -44,7 +44,7 @@ describe('Signup profile back navigation', () => {
     const { signup, navigateRoot } = profileStep(false, null, true);
     signup.goBack();
     expect(navigateRoot).toHaveBeenCalledWith('/signup', {
-      queryParams: { step: 0.1, reviewPrevious: true, role: 'child', managedChild: true }, animated: false
+      queryParams: { step: 0.1, reviewPrevious: true, role: 'child', managedChild: true }, animated: false, replaceUrl: true
     });
   });
 
@@ -63,7 +63,7 @@ describe('Signup profile back navigation', () => {
     const { signup, navigateRoot } = profileStep(false);
     (signup as any).handleBrowserBack();
     expect(navigateRoot).toHaveBeenCalledWith('/signup', {
-      queryParams: { step: 0.3, reviewPrevious: true }, animated: false
+      queryParams: { step: 0.3, reviewPrevious: true }, animated: false, replaceUrl: true
     });
   });
 
@@ -103,5 +103,24 @@ describe('Signup profile back navigation', () => {
     signup.goBack();
     expect(logout).toHaveBeenCalledOnceWith();
     expect(navigateRoot).not.toHaveBeenCalled();
+  });
+
+  it('returns guest role selection to the walkthrough, not back to Login', () => {
+    const { signup, navigateRoot } = profileStep(false, null);
+    signup.step = 1;
+    signup.goBack();
+    expect(navigateRoot).toHaveBeenCalledOnceWith('/home?reviewPrevious=true', { animated: false, replaceUrl: true });
+  });
+
+  it('allows an explicit walkthrough review without startup redirecting to Signup or Login', () => {
+    TestBed.configureTestingModule({ providers: [
+      { provide: Router, useValue: { parseUrl: jasmine.createSpy('parseUrl'), createUrlTree: jasmine.createSpy('createUrlTree') } },
+      { provide: AuthService, useValue: { isLoggedIn: () => false } },
+      { provide: OnboardingStateService, useValue: {
+        getResumeNavigation: () => null, hasCompletedRoleSelection: () => true, hasSeenSplash: () => true
+      } }
+    ] });
+    const route = { queryParamMap: convertToParamMap({ reviewPrevious: 'true' }) } as any;
+    expect(TestBed.runInInjectionContext(() => startupGuard(route, {} as any))).toBeTrue();
   });
 });

@@ -1,3 +1,4 @@
+import { MOOD_ASSETS } from '../../models/mood-assets';
 import { CommonModule, Location } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
@@ -92,7 +93,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   activityBreakdown: ActivityBreakdownSegment[] = this.emptyActivityBreakdown();
   primaryMood: PrimaryMood = {
     label: 'No data',
-    icon: 'assets/figma/child-home/moods/Calm.svg',
+    icon: MOOD_ASSETS.calm,
   };
 
   private readonly destroy$ = new Subject<void>();
@@ -476,7 +477,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     const label = [...counts.entries()]
       .sort((first, second) => second[1] - first[1])[0]?.[0] || 'No data';
     const mood = normalizeHomeMood(label) || 'calm';
-    const icon = `assets/figma/child-home/moods/${mood === 'calm' ? 'Calm' : mood}.svg`;
+    const icon = MOOD_ASSETS[mood];
 
     return { label, icon };
   }

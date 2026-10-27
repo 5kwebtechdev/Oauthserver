@@ -103,27 +103,6 @@
             <span>Add Child</span>
           </button>
 
-          <button *ngIf="showInviteCoParentAction" type="button"
-            class="switcher-action switcher-action--invite" (click)="shareFamilyCodeWithCoParent()">
-            <span class="switcher-action__icon">
-              <img src="assets/figma/parent-home/invite-parent.svg" alt="" aria-hidden="true">
-              <i aria-hidden="true">+</i>
-            </span>
-            <span>Invite Co Parent</span>
-          </button>
-
-          <button *ngIf="coParent" type="button" class="switcher-co-parent"
-            (click)="openFamilyConnection()" [attr.aria-label]="'Open ' + coParent.name + ' profile'">
-            <span class="switcher-co-parent__avatar">
-              <img *ngIf="coParent.avatarUrl; else coParentInitial"
-                [src]="coParent.avatarUrl" [alt]="coParent.name + ' avatar'">
-              <ng-template #coParentInitial>
-                <span aria-hidden="true">{{ coParent.initial }}</span>
-              </ng-template>
-            </span>
-            <strong>{{ coParent.name }}</strong>
-            <small>Co-parent</small>
-          </button>
         </div>
 
       </section>
@@ -327,27 +306,6 @@
             <span>Add Child {{ slot }}</span>
           </button>
 
-          <button *ngIf="showInviteCoParentAction" type="button"
-            class="switcher-action switcher-action--empty-parent" (click)="shareFamilyCodeWithCoParent()">
-            <span class="switcher-action__icon">
-              <img src="assets/figma/parent-home/no-child-group.svg" alt="" aria-hidden="true">
-              <i aria-hidden="true">+</i>
-            </span>
-            <span>Invite Co Parent</span>
-          </button>
-
-          <button *ngIf="coParent" type="button" class="switcher-co-parent"
-            (click)="openFamilyConnection()" [attr.aria-label]="'Open ' + coParent.name + ' profile'">
-            <span class="switcher-co-parent__avatar">
-              <img *ngIf="coParent.avatarUrl; else emptyStateCoParentInitial"
-                [src]="coParent.avatarUrl" [alt]="coParent.name + ' avatar'">
-              <ng-template #emptyStateCoParentInitial>
-                <span aria-hidden="true">{{ coParent.initial }}</span>
-              </ng-template>
-            </span>
-            <strong>{{ coParent.name }}</strong>
-            <small>Co-parent</small>
-          </button>
         </div>
       </section>
 

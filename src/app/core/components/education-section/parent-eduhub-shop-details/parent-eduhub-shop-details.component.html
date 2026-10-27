@@ -12,7 +12,7 @@
     <main class="detail-content">
       <section class="profile-hero shop-profile-hero">
         <div class="avatar-wrap shop-avatar-wrap" role="button" tabindex="0" aria-label="View shop profile image" (click)="openProfileImage()" (keydown.enter)="openProfileImage()" (keydown.space)="$event.preventDefault(); openProfileImage()">
-          <app-profile-image class="avatar" [src]="item.image" [name]="item.name" [alt]="item.name"></app-profile-image>
+          <app-profile-image class="avatar" [fallbackCategory]="categoryLabel" [src]="item.image" [name]="item.name" [alt]="item.name"></app-profile-image>
           <span class="verified-badge" *ngIf="item.verified" aria-label="Verified listing">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.3 12.4 2.3 2.3 5.2-5.4" /></svg>
           </span>

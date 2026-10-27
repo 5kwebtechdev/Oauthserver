@@ -1526,3 +1526,9 @@ ion-content {
     --border-radius: 20px;
   }
 }
+// Mood exports share one normalized canvas; contextual dimensions may vary,
+// but every mood uses the same fitting/alignment rule in every screen.
+img[src*="/moods/normalized-v1/"] {
+  object-fit: contain;
+  object-position: center;
+}

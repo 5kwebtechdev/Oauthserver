@@ -2,5 +2,14 @@
   (error)="onImageError()">
 
 <ng-template #imageFallback>
-  <span class="profile-image-placeholder" role="img" [attr.aria-label]="name ? name + ' profile image unavailable' : 'Profile image unavailable'">{{ initials }}</span>
+  <span *ngIf="frame as visual; else plainInitials" class="eduhub-frame" role="img"
+    [attr.aria-label]="(name || 'Listing') + ' initials'">
+    <img class="eduhub-frame__art" [src]="'assets/figma/eduhub-initials/' + visual.asset" alt="" aria-hidden="true"
+      [style.width.%]="visual.imageWidth" [style.height.%]="visual.imageHeight"
+      [style.left.%]="visual.imageLeft" [style.top.%]="visual.imageTop">
+    <span class="eduhub-frame__initials" aria-hidden="true" [style.left.px]="visual.textX" [style.top.px]="visual.textY">{{ listingInitials }}</span>
+  </span>
+  <ng-template #plainInitials>
+    <span class="profile-image-placeholder" role="img" [attr.aria-label]="name ? name + ' profile image unavailable' : 'Profile image unavailable'">{{ initials }}</span>
+  </ng-template>
 </ng-template>

@@ -24,8 +24,9 @@ describe('Header mood picker limits', () => {
       ['Frustrated', 'UPSET'],
     ]);
   });
-  it('opens only when requested and closes without saving', () => {
+  it('opens the manual picker and closes without saving when a mood is already saved', () => {
     const { component, post } = picker();
+    (component as any).savedMoodKey = 'HAPPY';
     expect(component.dialogOpen).toBeFalse();
     component.editMood();
     expect(component.dialogOpen).toBeTrue();

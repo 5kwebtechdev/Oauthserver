@@ -1,3 +1,4 @@
+import { MOOD_ASSETS, MOOD_ASSET_ALIASES } from '../../models/mood-assets';
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -7,7 +8,7 @@ import { AuthApi } from '../../api/auth.api';
 import { MoodService } from '../../services/mood.service';
 import { VibesDisplayResponse } from '../../models/mood.model';
 import { AuthService } from '../../services/auth.service';
-import { Subscription } from 'rxjs';
+import { fromEvent, merge, Subscription, timer } from 'rxjs';
 
 export interface MoodOption { key: string; label: string; emoji?: string }
 type PopupMoodOption = { src: string; label: string; vibe: string; art: string };
@@ -25,6 +26,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   saving = false;
   get dailyLimitReached(): boolean { return this.setsToday >= 2; }
   closeDialog(): void {
+    if (this.saving || !this.hasSavedMood) return;
     this.dialogOpen = false;
     this.pickerOpen = false;
     this.popupSelection = null;
@@ -47,6 +49,8 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   private dailyMoodStateSubscription?: Subscription;
   private identitySubscription?: Subscription;
   private moodRequestVersion = 0;
+  private daySubscription?: Subscription;
+  private moodDate = this.currentDateKey();
 
   // selection state
   popupSelection: string | null = null;
@@ -60,17 +64,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   private readonly neutralAsset = 'assets/Images-Transparent/Mood-emoji-neutral-home.webp';
 
   // Mood to asset mapping (backend mood -> asset path)
-  private readonly moodAssetMap: Record<string, string> = {
-    'HAPPY': 'assets/figma/child-home/moods/happy.svg',
-    'VERY HAPPY': 'assets/figma/child-home/moods/happy.svg',
-    'EXCITED': 'assets/figma/child-home/moods/excited.svg',
-    'NERVOUS': 'assets/figma/child-home/moods/anxious.svg',
-    'ANXIOUS': 'assets/figma/child-home/moods/anxious.svg',
-    'SAD': 'assets/figma/child-home/moods/sad.svg',
-    'UPSET': 'assets/figma/child-home/moods/frustrated.svg',
-    'FRUSTRATED': 'assets/figma/child-home/moods/frustrated.svg',
-    'NEUTRAL': 'assets/figma/child-home/moods/Calm.svg'
-  };
+  private readonly moodAssetMap = MOOD_ASSET_ALIASES;
 
   private readonly moodLabelMap: Record<string, string> = {
     'HAPPY': 'Happy',
@@ -86,15 +80,28 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
 
   // Display order shared by the entry popup and mood pickers.
   popupOptions: PopupMoodOption[] = [
-    { src: 'assets/figma/child-home/moods/excited.svg', label: 'Excited', vibe: 'EXCITED', art: 'excited' },
-    { src: 'assets/figma/child-home/moods/happy.svg', label: 'Happy', vibe: 'HAPPY', art: 'happy' },
-    { src: 'assets/figma/child-home/moods/Calm.svg', label: 'Calm', vibe: 'NEUTRAL', art: 'calm' },
-    { src: 'assets/figma/child-home/moods/anxious.svg', label: 'Anxious', vibe: 'NERVOUS', art: 'anxious' },
-    { src: 'assets/figma/child-home/moods/sad.svg', label: 'Sad', vibe: 'SAD', art: 'sad' },
-    { src: 'assets/figma/child-home/moods/frustrated.svg', label: 'Frustrated', vibe: 'UPSET', art: 'frustrated' }
+    { src: MOOD_ASSETS.excited, label: 'Excited', vibe: 'EXCITED', art: 'excited' },
+    { src: MOOD_ASSETS.happy, label: 'Happy', vibe: 'HAPPY', art: 'happy' },
+    { src: MOOD_ASSETS.calm, label: 'Calm', vibe: 'NEUTRAL', art: 'calm' },
+    { src: MOOD_ASSETS.anxious, label: 'Anxious', vibe: 'NERVOUS', art: 'anxious' },
+    { src: MOOD_ASSETS.sad, label: 'Sad', vibe: 'SAD', art: 'sad' },
+    { src: MOOD_ASSETS.frustrated, label: 'Frustrated', vibe: 'UPSET', art: 'frustrated' }
   ];
 
   ngOnInit() {
+    this.daySubscription = merge(timer(0, 30_000), fromEvent(document, 'visibilitychange')).subscribe(() => {
+      if (this.moodDate !== this.currentDateKey()) {
+        this.moodDate = this.currentDateKey();
+        this.savedMoodKey = null;
+        this.setsToday = 0;
+        this.vibes = [];
+        this.popupSelection = null;
+        this.dialogOpen = false;
+        this.loadDailySetCount();
+        this.confirmedMoodChange.emit(this.savedMoodKey);
+        this.getTodayVibe();
+      }
+    });
     let activeUserId = '';
     this.identitySubscription = this.authService.userData$.subscribe(user => {
       const userId = String(user?.userId ?? user?.id ?? user?.memberId ?? '');
@@ -127,6 +134,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   }
 
   ngOnDestroy(): void {
+    this.daySubscription?.unsubscribe();
     this.dailyMoodStateSubscription?.unsubscribe();
     this.identitySubscription?.unsubscribe();
     this.moodRequestVersion++;
@@ -183,11 +191,13 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
         // this value happens below, once savedMoodKey is also up to date.
         if (vibe && typeof vibe.moodSetCountToday === 'number') {
           this.setsToday = this.toDailyCount(vibe.moodSetCountToday);
+          if (this.setsToday === 0) this.savedMoodKey = null;
         }
 
         if (vibe && vibe.mood) {
           const moodUpper = vibe.mood.toUpperCase();
-          const isDefaultNeutral = moodUpper === 'NEUTRAL' && this.setsToday === 0 && !this.savedMoodKey;
+          const isDefaultNeutral = vibe.moodSetCountToday === 0
+            || (moodUpper === 'NEUTRAL' && this.setsToday === 0 && !this.savedMoodKey);
           if (isDefaultNeutral) {
             // The backend uses NEUTRAL as its initial state. It is not a
             // user reaction, so first-time users must see the emoji picker.
@@ -265,6 +275,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges, OnDestro
   /** The summary is API driven, so it remains correct after navigation or a new login. */
   get hasSavedMood(): boolean {
     if (this.savedMoodKey) return true;
+    if (this.activeVibe?.moodSetCountToday === 0) return false;
     const apiMood = String(this.activeVibe?.mood || '').trim().toUpperCase();
     // Do not display the saved card for the backend's neutral default. A
     // locally confirmed set count makes NEUTRAL a real Calm selection.

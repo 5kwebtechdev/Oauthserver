@@ -1,3 +1,4 @@
+import { MOOD_ASSETS } from './mood-assets';
 export interface MoodTransition {
   userId: number;
   userName: string;
@@ -16,6 +17,7 @@ export interface MoodData {
 
 export interface VibesDisplayResponse {
   userId: number;
+  assignedTo?: string | number;
   userName: string;
   relationship: string;
   mood: string;
@@ -43,10 +45,14 @@ export interface VibesDisplayResponse {
 
 // Mood emoji mapping - only six available mood images
 export const MOOD_EMOJI_MAP: { [key: string]: string } = {
-  'Happy': 'assets/Images-Transparent/Image-Mood-Happy.webp',
-  'Very Happy': 'assets/Images-Transparent/Image-Mood-Very happy.webp',
-  'Excited': 'assets/Images-Transparent/Image-Mood-Excited.webp',
-  'Sad': 'assets/Images-Transparent/Image-Mood-Sad.webp',
-  'Upset': 'assets/Images-Transparent/Image-Mood-Upset.webp',
-  'Nervous': 'assets/Images-Transparent/Image-Mood-Nervous.webp',
+  'Calm': MOOD_ASSETS.calm,
+  'Neutral': MOOD_ASSETS.calm,
+  'Anxious': MOOD_ASSETS.anxious,
+  'Frustrated': MOOD_ASSETS.frustrated,
+  'Happy': MOOD_ASSETS.happy,
+  'Very Happy': MOOD_ASSETS.happy,
+  'Excited': MOOD_ASSETS.excited,
+  'Sad': MOOD_ASSETS.sad,
+  'Upset': MOOD_ASSETS.frustrated,
+  'Nervous': MOOD_ASSETS.anxious,
 };

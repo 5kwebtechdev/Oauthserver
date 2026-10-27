@@ -1,8 +1,10 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, Optional } from '@angular/core';
 import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { NavController } from '@ionic/angular';
+import { NavController, Platform } from '@ionic/angular';
+import { App } from '@capacitor/app';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../core/services/auth.service';
 import { OnboardingStateService } from '../core/services/onboarding-state.service';
 
@@ -26,12 +28,14 @@ export class HomePage implements OnInit, OnDestroy {
   private touchStartX = 0;
   private touchStartY = 0;
   private isStartingJourney = false;
+  private reviewBackSubscription?: Subscription;
 
   constructor(
     private readonly router: Router,
     private readonly navCtrl: NavController,
     private readonly authService: AuthService,
     private readonly onboardingState: OnboardingStateService,
+    @Optional() private readonly platform?: Platform,
   ) {}
 
   ngOnInit(): void {
@@ -45,10 +49,21 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     document.body.classList.add('onboarding-active');
+    if (Capacitor.getPlatform() === 'android') {
+      this.reviewBackSubscription = this.platform?.backButton.subscribeWithPriority(20, processNextHandler => {
+        if (!/^\/home\?/.test(this.router.url) || !this.router.url.includes('reviewPrevious=true')) {
+          processNextHandler();
+          return;
+        }
+        if (this.currentSlide > 0) this.showPreviousSlide();
+        else void App.exitApp();
+      });
+    }
     this.setOnboardingStatusBar();
   }
 
   ngOnDestroy(): void {
+    this.reviewBackSubscription?.unsubscribe();
     this.clearOnboardingPresentation();
 
     if (!Capacitor.isNativePlatform()) {

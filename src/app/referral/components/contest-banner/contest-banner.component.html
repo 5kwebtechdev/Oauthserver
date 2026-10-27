@@ -1,0 +1,27 @@
+<!-- Figma: Contest Banner (26909:35142) -->
+<button class="contest-banner" type="button" (click)="open.emit()" aria-label="Open Refer and Win contest">
+  <span class="contest-banner__sparkles" aria-hidden="true">
+    <span class="contest-banner__sparkle"></span>
+    <span class="contest-banner__sparkle"></span>
+    <span class="contest-banner__sparkle"></span>
+  </span>
+  <!-- Prize visual -->
+  <div class="contest-banner__visual" aria-hidden="true">
+    <img class="contest-banner__glow" src="assets/referral/contest/banner-glow.svg" width="103" height="104" alt="" />
+    <img class="contest-banner__phone" [src]="heroImage" alt="" />
+  </div>
+
+  <!-- Copy -->
+  <div class="contest-banner__copy">
+    <span class="contest-banner__chip">{{ months }}-MONTH CONTEST</span>
+    <div class="contest-banner__text">
+      <span class="contest-banner__title">Refer <span class="contest-banner__amp">&amp;</span> Win</span>
+      <span class="contest-banner__sub">Win an iPhone 18 Pro &amp; more</span>
+    </div>
+  </div>
+
+  <!-- Affordance -->
+  <span class="contest-banner__go" aria-hidden="true">
+    <img src="assets/referral/contest/chevron-right.svg" width="18" height="18" alt="" />
+  </span>
+</button>

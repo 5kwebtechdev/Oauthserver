@@ -31,6 +31,14 @@
   }
 }
 
+.event-card__image:has(.eduhub-fallback) {
+  width: auto;
+  height: auto;
+  flex-basis: auto;
+  border-radius: 0;
+  background: transparent;
+}
+
 .event-card__details {
   min-width: 0;
   flex: 1;

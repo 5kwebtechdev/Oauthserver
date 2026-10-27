@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap, catchError, of } from 'rxjs';
 import { CoinApi } from '../api/coin.api';
+import { AuthService } from './auth.service';
 
 export interface CoinHistoryItem {
     id: number;
@@ -22,13 +23,30 @@ export interface CoinHistory {
     providedIn: 'root'
 })
 export class CoinService {
+    private accountRequestId = 0;
     private coinHistorySubject = new BehaviorSubject<CoinHistoryItem[]>([]);
     public coinHistory$ = this.coinHistorySubject.asObservable();
 
     private totalCoinsSubject = new BehaviorSubject<number>(0);
     public totalCoins$ = this.totalCoinsSubject.asObservable();
 
-    constructor(private coinApi: CoinApi) { }
+    constructor(private coinApi: CoinApi, private auth: AuthService) { }
+
+    /** Parent wallet and header share the authenticated account's server balance. */
+    loadAccountCoinHistory(): Observable<any> {
+        const accountId = this.auth.getUserId();
+        const requestId = ++this.accountRequestId;
+        return this.coinApi.getCoinHistory(true).pipe(
+            tap(response => {
+                if (this.auth.getUserId() !== accountId || requestId !== this.accountRequestId) return;
+                const balance = response?.totalCoins;
+                if (balance == null || balance === '' || typeof balance === 'boolean') return;
+                const coins = Number(balance);
+                if (!Number.isFinite(coins) || coins < 0) return;
+                this.auth.updateUserData({ coins });
+            })
+        );
+    }
 
     /**
      * Load coin history from API
@@ -73,6 +91,7 @@ export class CoinService {
     }
 
     reset(): void {
+        this.accountRequestId++;
         this.coinHistorySubject.next([]);
         this.totalCoinsSubject.next(0);
     }

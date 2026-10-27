@@ -1,12 +1,14 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, NgZone, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { ReactiveFormsModule } from '@angular/forms';
 import { AuthService, LoginCredentials } from "../../core/services/auth.service";
 import { ChildSelfImageService } from '../../core/services/child-self-image.service';
 import { UserService } from '../../core/services/user.service';
-import { ActivatedRoute } from '@angular/router';
-import { IonicModule, NavController } from '@ionic/angular';
+import { ActivatedRoute, Router } from '@angular/router';
+import { IonicModule, NavController, Platform } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { Subscription } from 'rxjs';
 import { CredentialSaverService, SavedCredentials } from '../../core/services/credential-saver.service';
 import { OnboardingStateService } from '../../core/services/onboarding-state.service';
 import { SocialMediaComponent } from '../../core/components/social-media/social-media.component';
@@ -34,6 +36,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   public loginError: string | null = null;
   public hasLoggedInBefore = false;
   private returnUrl: string = '';
+  private credentialRequestVersion = 0;
+  private backSubscription?: Subscription;
+  private backInProgress = false;
 
   @ViewChild('passwordInput') passwordInputRef!: ElementRef<HTMLInputElement>;
 
@@ -46,7 +51,10 @@ export class LoginComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private credentialSaverService: CredentialSaverService,
     private navCtrl: NavController,
-    private onboardingState: OnboardingStateService
+    private onboardingState: OnboardingStateService,
+    @Optional() private platform?: Platform,
+    @Optional() private router?: Router,
+    @Optional() private ngZone?: NgZone
   ) {
     this.signInForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -197,8 +205,12 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this.hasLoggedInBefore = localStorage.getItem('has_logged_in_before') === 'true';
 
+    if (Capacitor.getPlatform() === 'android') {
+      this.backSubscription = this.platform?.backButton.subscribeWithPriority(20,
+        processNextHandler => this.handleSystemBack(processNextHandler));
+    }
+
     console.log('LoginComponent initialized');
-    void this.suggestSavedCredentials();
 
     // ion-router-outlet is capped to a centered readable column on tablet/
     // desktop by default (see global.scss); this page builds its own wide
@@ -216,12 +228,22 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.backSubscription?.unsubscribe();
     this.clearPassword();
     document.body.classList.remove('onboarding-active');
     document.body.classList.remove('login-web-full-bleed');
   }
 
   ionViewWillEnter(): void {
+    this.clearPassword();
+  }
+
+  ionViewDidEnter(): void {
+    // Wait until entry-time clearing has finished before opening the OS picker.
+    void this.suggestSavedCredentials();
+  }
+
+  ionViewWillLeave(): void {
     this.clearPassword();
   }
 
@@ -233,6 +255,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   private clearPassword(): void {
+    this.credentialRequestVersion++;
     this.password?.reset('', { emitEvent: false });
     if (this.passwordInputRef?.nativeElement) {
       this.passwordInputRef.nativeElement.value = '';
@@ -254,12 +277,41 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.signInForm.get('email')?.markAsDirty();
   }
 
+  onPasswordAutofill(event: Event): void {
+    // Some WebViews report autofill as change rather than input.
+    this.password?.setValue((event.target as HTMLInputElement).value);
+    this.password?.markAsDirty();
+  }
+
   navigateToSignup(): void {
     this.returnToRoleSelection();
   }
 
   goBack(): void {
-    this.returnToRoleSelection();
+    if (this.backInProgress) return;
+    this.backInProgress = true;
+    const origin = this.route.snapshot.queryParamMap?.get('from');
+    if (origin === 'signup-entry') {
+      void this.navCtrl.navigateRoot('/signup', {
+        queryParams: { step: 0.1, reviewPrevious: true }, animated: false, replaceUrl: true
+      }).finally(() => { this.backInProgress = false; });
+      return;
+    }
+    if (origin === 'landing') {
+      void this.navCtrl.navigateRoot('/home?reviewPrevious=true', { animated: false, replaceUrl: true })
+        .finally(() => { this.backInProgress = false; });
+      return;
+    }
+    this.returnToRoleSelection().finally(() => { this.backInProgress = false; });
+  }
+
+  private handleSystemBack(processNextHandler: () => void): void {
+    if (!/^\/(?:home\/)?login(?:[/?#]|$)/.test(this.router?.url ?? '')) {
+      processNextHandler();
+      return;
+    }
+    if (this.ngZone) this.ngZone.run(() => this.goBack());
+    else this.goBack();
   }
 
   navigateToForgotPassword(): void {
@@ -271,8 +323,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   private async suggestSavedCredentials(): Promise<void> {
+    const requestVersion = ++this.credentialRequestVersion;
+    const initialEmail = this.email?.value;
+    const initialPassword = this.password?.value;
     const credentials = await this.credentialSaverService.suggest();
-    if (!credentials) {
+    if (!credentials || requestVersion !== this.credentialRequestVersion) {
       return;
     }
 
@@ -280,20 +335,24 @@ export class LoginComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Do not overwrite an email the user typed or selected from Android's
-    // password manager while the saved-identifier lookup was pending.
-    if (this.email?.value) return;
+    // Preserve any edits or WebView autofill received while the picker was open.
+    if (this.email?.value !== initialEmail || this.password?.value !== initialPassword) return;
 
+    // suggest() reads the explicitly selected Android Credential Manager result,
+    // never credentials from app storage. Keep the selected pair together.
+    this.hidePassword = true;
     this.signInForm.patchValue({
-      email: credentials.identifier
+      email: credentials.identifier,
+      password: credentials.password
     });
   }
 
-  private returnToRoleSelection(): void {
+  private returnToRoleSelection(): Promise<boolean> {
     this.onboardingState.resetRoleSelection();
-    void this.navCtrl.navigateRoot('/signup', {
+    return this.navCtrl.navigateRoot('/signup', {
       queryParams: { step: 1 },
-      animated: false
+      animated: false,
+      replaceUrl: true
     });
   }
 

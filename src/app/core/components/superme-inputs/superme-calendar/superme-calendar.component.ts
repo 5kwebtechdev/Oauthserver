@@ -1,3 +1,4 @@
+import { MOOD_ASSETS, moodAsset } from '../../../models/mood-assets';
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
@@ -242,41 +243,7 @@ export class SupermeCalendarComponent implements OnChanges {
    * Get mood emoji path based on mood name
    */
   private getMoodEmojiPath(moodName: string): string {
-    const moodMap: { [key: string]: string } = {
-      'Happy': 'assets/Images-Transparent/Image-Mood-Happy.webp',
-      'Very Happy': 'assets/Images-Transparent/Image-Mood-Very happy.webp',
-      'Excited': 'assets/Images-Transparent/Image-Mood-Excited.webp',
-      'Sad': 'assets/Images-Transparent/Image-Mood-Sad.webp',
-      'Upset': 'assets/Images-Transparent/Image-Mood-Upset.webp',
-      'Nervous': 'assets/Images-Transparent/Image-Mood-Nervous.webp',
-    };
-
-    // Normalize input from backend: handle case/spacing/underscores/dashes consistently
-    const normalize = (s: string) => s
-      .trim()
-      .toLowerCase()
-      .replace(/[_\-\s]+/g, ' ') // collapse separators to single space
-      .replace(/\s+/g, ' ');
-
-    const canonicalByNormalized: { [key: string]: keyof typeof moodMap } = {
-      'happy': 'Happy',
-      'very happy': 'Very Happy',
-      'excited': 'Excited',
-      'sad': 'Sad',
-      'upset': 'Upset',
-      'nervous': 'Nervous',
-    };
-
-    const DEFAULT = moodMap['Happy'];
-    if (!moodName) return DEFAULT;
-
-    const norm = normalize(String(moodName));
-    const canonical = canonicalByNormalized[norm];
-    if (canonical && moodMap[canonical]) {
-      return moodMap[canonical];
-    }
-
-    return DEFAULT;
+    return moodAsset(moodName) || MOOD_ASSETS.happy;
   }
 
   /**

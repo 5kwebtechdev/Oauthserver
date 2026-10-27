@@ -197,7 +197,9 @@ export class AvatarService {
 
   private getLegacyAvatar(user: any): AvatarDefinition | null {
     const identifier = String(this.extractAvatarIdentifier(user) || '').trim();
-    const normalized = identifier.toLowerCase();
+    // Older family responses include paths such as "avatars/avatar3.webp".
+    // Resolve the filename before applying the legacy avatar-number mapping.
+    const normalized = identifier.split(/[\\/]/).pop()!.toLowerCase().replace(/\.(?:png|webp)$/i, '');
     let gender = this.normalizeGender(user?.gender);
     let index: number | null = null;
 

@@ -1,0 +1,48 @@
+<ion-content>
+  <main class="events-page">
+    <header class="events-heading">
+      <button type="button" class="back" aria-label="Back to Planner" (click)="back()">&#8249;</button>
+      <h1>Events</h1>
+    </header>
+
+    <nav class="mode-toggle" aria-label="Event time period">
+      <button type="button" [class.active]="mode === 'upcoming'" [attr.aria-current]="mode === 'upcoming' ? 'page' : null"
+        (click)="selectMode('upcoming')">Upcoming</button>
+      <button type="button" [class.active]="mode === 'past'" [attr.aria-current]="mode === 'past' ? 'page' : null"
+        (click)="selectMode('past')">Past</button>
+    </nav>
+
+    <label class="search"><span aria-hidden="true">⌕</span><input type="search" placeholder="Search events"
+      aria-label="Search events" [(ngModel)]="query" /></label>
+
+    <div class="pills" role="group" aria-label="Filter events by tag" *ngIf="!loading && !error">
+      <button type="button" class="pill" *ngFor="let pill of pills; trackBy: trackPill"
+        [class.active]="selectedCategory === pill.key" [attr.aria-pressed]="selectedCategory === pill.key"
+        (click)="selectedCategory = pill.key">
+        <img *ngIf="pill.icon" [src]="pill.icon" alt="" aria-hidden="true" />
+        <span>{{ pill.label }}</span><b>{{ pill.count }}</b>
+      </button>
+    </div>
+
+    <p class="status" *ngIf="loading" role="status">Loading events…</p>
+    <div class="status" *ngIf="error" role="alert">{{ error }} <button type="button" (click)="load()">Try again</button></div>
+
+    <ul class="event-list" *ngIf="!loading && !error && visibleOccurrences.length">
+      <li *ngFor="let item of visibleOccurrences; trackBy: trackOccurrence">
+        <button type="button" class="event-row" (click)="openEvent(item)">
+          <span class="event-icon" *ngIf="iconOf(item.event) as icon"><img [src]="icon" alt="" /></span>
+          <span class="event-text"><strong>{{ item.event.name }}</strong><small>{{ dateLabel(item) }}</small></span>
+          <span class="countdown">{{ countdown(item) }}</span>
+        </button>
+      </li>
+    </ul>
+
+    <p class="status" *ngIf="!loading && !error && !visibleOccurrences.length">
+      {{ query || selectedCategory !== 'all' ? 'No events match this filter.' : mode === 'upcoming' ? 'No upcoming events.' : 'No past events in the last year.' }}
+    </p>
+    <p class="recurrence-note" *ngIf="!loading && !error && mode === 'past' && visibleOccurrences.length">
+      Past events are shown for one year.
+    </p>
+    <button type="button" class="add-event" aria-label="Add event" (click)="addEvent()">+</button>
+  </main>
+</ion-content>

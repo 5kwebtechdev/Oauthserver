@@ -1,7 +1,7 @@
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { OAuthModule } from 'angular-oauth2-oidc';
 import { PkceAuthService } from './core/services/pkce-auth.service';
 import { PkceInterceptor } from './core/interceptors/pkce.interceptor';
-import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';

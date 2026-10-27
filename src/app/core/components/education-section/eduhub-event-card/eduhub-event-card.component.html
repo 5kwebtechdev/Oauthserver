@@ -1,7 +1,7 @@
             <article class="event-card">
               <div class="event-card__top">
                 <div class="event-card__image" [class.event-card__image--empty]="!getImage(item)">
-                  <app-profile-image [src]="getImage(item)" [name]="getDisplayName(item)" [alt]="getDisplayName(item)"></app-profile-image>
+                  <app-profile-image fallbackCategory="event" [src]="getImage(item)" [name]="getDisplayName(item)" [alt]="getDisplayName(item)"></app-profile-image>
                 </div>
 
                 <div class="event-card__details">

@@ -125,6 +125,9 @@ describe('LeaderboardComponent', () => {
     fixture.componentInstance.result = { ...response, currentUser: entry(4, 4, 'Fourth', 70) };
     fixture.detectChanges();
     expect(host.querySelector('.share-rank__button')?.textContent).toContain('Share your rank');
+    expect(host.querySelectorAll('.share-rank__button').length).toBe(1);
+    expect(host.querySelector('.leaderboard-hero .hero-toolbar .share-rank__button')).not.toBeNull();
+    expect(host.querySelector('.leaderboard-body .share-rank__button')).toBeNull();
     expect(host.querySelectorAll('.ranking-row--you').length).toBe(1);
     fixture.componentInstance.result = { ...response, currentUser: entry(2, 2, 'Second', 90) };
     fixture.detectChanges();
@@ -146,6 +149,12 @@ describe('LeaderboardComponent', () => {
       fixture.detectChanges();
       const page = host.querySelector('.leaderboard-page') as HTMLElement;
       expect(page.scrollWidth).withContext(`${width}px viewport`).toBeLessThanOrEqual(page.clientWidth + 1);
+      fixture.componentInstance.result = { ...response, currentUser: entry(4, 4, 'Fourth', 70) };
+      fixture.detectChanges();
+      const toolbar = host.querySelector('.hero-toolbar') as HTMLElement;
+      expect(toolbar.querySelector('.back-button')).not.toBeNull();
+      expect(toolbar.querySelector('.share-rank__button')).not.toBeNull();
+      expect(host.querySelectorAll('.share-rank__button').length).toBe(1);
     }
   });
 });

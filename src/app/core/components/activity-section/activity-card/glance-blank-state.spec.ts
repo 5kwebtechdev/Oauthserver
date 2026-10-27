@@ -45,6 +45,8 @@ describe('Home Today at a Glance Figma states', () => {
         ...[HabitApi, TaskApi, CalendarApi, AuthApi, EventApi, CalendarService, CustomToastService,
           UserService, AuthService, ProfileSelectorService, HabitService, AutoAbortService,
           FocusTimerService, ModalController, HttpClient].map(provide => ({ provide, useValue: {} })),
+        { provide: AuthService, useValue: { isParentUser: () => false } },
+        { provide: EventApi, useValue: { getCachedEvent: () => null } },
         { provide: HabitService, useValue: { formatDateToYYYYMMDD: HabitService.prototype.formatDateToYYYYMMDD } }]
     }).compileComponents();
   });
@@ -465,9 +467,73 @@ describe('Home Today at a Glance Figma states', () => {
 
     const eventCard: HTMLButtonElement = f.nativeElement.querySelector('.glance-event-card');
     expect(eventCard).toBeTruthy();
+    const viewAll: HTMLButtonElement = f.nativeElement.querySelector('.glance-upcoming .glance-outline-button');
+    expect(viewAll).toBeTruthy();
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    viewAll.click();
+    expect(navigate).toHaveBeenCalledOnceWith(['/events-list'], {
+      state: { origin: TestBed.inject(Router).url, childId: null, calendarEvents: [] }
+    });
     expect(f.nativeElement.querySelector('[aria-label="Delete event"]')).toBeNull();
     eventCard.click();
     expect(open).toHaveBeenCalledOnceWith(jasmine.objectContaining({ id: 7 }));
+  });
+  it('shows events through day 30 across a month boundary, but not day 31', () => {
+    jasmine.clock().install();
+    try {
+      jasmine.clock().mockDate(new Date(2026, 9, 20, 12));
+      const c = render('all', empty()).componentInstance;
+      c.glanceUpcomingEventRaw = [
+        { id: 1, name: 'Today', eventDate: '2026-10-20' },
+        { id: 2, name: 'Next month', eventDate: '2026-11-01' },
+        { id: 3, name: 'Day 30', eventDate: '2026-11-19' },
+        { id: 4, name: 'Day 31', eventDate: '2026-11-20' },
+        { id: 5, name: 'Yesterday', eventDate: '2026-10-19' }
+      ];
+      expect(c.glanceUpcomingEvents.map(event => event.name)).toEqual(['Today', 'Next month', 'Day 30']);
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+  it('shows a selected child’s next-month Planner event on parent Home', () => {
+    jasmine.clock().install();
+    try {
+      jasmine.clock().mockDate(new Date(2026, 9, 20, 12));
+      const c = render('all', empty()).componentInstance;
+      c.mode = 'list';
+      c.isParentOverride = true;
+      const requests: string[] = [];
+      (c as any).calendarService = { getUserPlannerCalendarMonth: (date: string) => {
+        requests.push(date);
+        return of({ events: date.startsWith('2026-11') ? [{
+          id: 52, plannerType: 'EVENT', title: 'Dad’s Birthday', startDate: '2026-11-01',
+          endDate: '2026-11-01', activities: []
+        }] : [] });
+      } };
+      (c as any).eventApi = { getEvents: () => of([]), getCachedEvent: () => null };
+
+      c.loadGlancePlannerCards(true);
+
+      expect(requests).toEqual(['2026-10-20', '2026-11-01']);
+      expect(c.glanceUpcomingEvents.map(event => event.name)).toEqual(['Dad’s Birthday']);
+      expect(c.glancePlannerCards.length).toBe(0);
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+  it('finds the next monthly and yearly occurrence beyond the current month', () => {
+    jasmine.clock().install();
+    try {
+      jasmine.clock().mockDate(new Date(2026, 11, 20, 12));
+      const c = render('all', empty()).componentInstance;
+      c.glanceUpcomingEventRaw = [
+        { id: 1, name: 'Monthly', eventDate: '2025-01-05', recurrence: 'MONTHLY' },
+        { id: 2, name: 'Yearly', eventDate: '2024-01-10', recurrence: 'YEARLY' }
+      ];
+      expect(c.glanceUpcomingEvents.map(event => event.name)).toEqual(['Monthly', 'Yearly']);
+    } finally {
+      jasmine.clock().uninstall();
+    }
   });
   it('keeps confirmed personal Events out of Planner cards and count', () => {
     const c = render('timetable', empty()).componentInstance;

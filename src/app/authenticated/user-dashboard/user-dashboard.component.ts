@@ -4,6 +4,7 @@ import { NotificationUnreadService } from '../../core/services/notification-unre
 import { HomeMoodHeaderComponent, HomeMood, normalizeHomeMood } from '../../core/components/home-mood-header/home-mood-header.component';
 import { isBirthdayToday } from './birthday-date';
 import { BirthdayPopupStatusService } from '../../core/services/birthday-popup-status.service';
+import { CoinApi } from '../../core/api/coin.api';
 import { CoinLeaderboardService } from '../../core/services/coin-leaderboard.service';
 import { displayName } from '../../core/models/display-name';
 import { greetingUsername, homeGreetingName, messageWithUsername } from '../../core/models/greeting-username';
@@ -132,6 +133,11 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public homeHeaderMood: HomeMood | null = null;
   public birthdayToday = false;
   public showBirthdayDialog = false;
+  public birthdayGiftClaiming = false;
+  public birthdayGiftAwarded = false;
+  public birthdayGiftAlreadyClaimed = false;
+  public birthdayGiftUnavailable = false;
+  public birthdayGiftClaimError = false;
   private birthdayDob: unknown = null;
   private birthdayUserId = '';
   private birthdayDateTimer: ReturnType<typeof setTimeout> | null = null;
@@ -262,6 +268,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private moodService: MoodService,
     private petAgeService: PetAgeService,
     private birthdayPopupStatus: BirthdayPopupStatusService,
+    private coinApi: CoinApi,
     private coinLeaderboard: CoinLeaderboardService
   ) {
     this.toast$ = this.toastService.toast$;
@@ -434,6 +441,49 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.showBirthdayDialog = false;
   }
 
+  retryBirthdayGiftClaim(): void {
+    const userId = Number(this.birthdayUserId);
+    if (Number.isSafeInteger(userId) && userId > 0) this.claimBirthdayGift(userId);
+  }
+
+  private claimBirthdayGift(userId: number): void {
+    if (this.birthdayGiftClaiming || this.birthdayGiftAwarded || this.birthdayGiftAlreadyClaimed) return;
+    this.birthdayGiftClaiming = true;
+    this.birthdayGiftClaimError = false;
+    this.coinApi.claimBirthdayGift().pipe(takeUntil(this.destroy$)).subscribe({
+      next: result => {
+        if (this.birthdayUserId !== String(userId)) return;
+        this.birthdayGiftClaiming = false;
+        if (result.userId !== userId) {
+          this.birthdayGiftClaimError = true;
+          return;
+        }
+        if (result.awarded && result.reason === 'AWARDED') {
+          this.birthdayGiftAwarded = true;
+        } else if (!result.awarded && result.reason === 'ALREADY_CLAIMED_THIS_YEAR') {
+          this.birthdayGiftAlreadyClaimed = true;
+        } else if (!result.awarded && result.reason === 'NOT_BIRTHDAY') {
+          this.birthdayGiftUnavailable = true;
+          return;
+        } else {
+          this.birthdayGiftClaimError = true;
+          return;
+        }
+        // The response balance is authoritative, including for idempotent retries.
+        if (Number.isFinite(result.balance) && result.balance >= 0) {
+          this.userService.updateCoinBalance(result.balance);
+          this.authService.updateUserData({ coins: result.balance });
+          this.userCoins = result.balance;
+        }
+      },
+      error: () => {
+        if (this.birthdayUserId !== String(userId)) return;
+        this.birthdayGiftClaiming = false;
+        this.birthdayGiftClaimError = true;
+      }
+    });
+  }
+
   private syncBirthdayState(): void {
     const now = new Date();
     this.birthdayToday = isBirthdayToday(this.birthdayDob, now);
@@ -494,12 +544,18 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         this.syncBirthdayState();
         if (this.birthdayUserId && this.birthdayUserId !== previousPopupUserId) {
           this.showBirthdayDialog = false;
+          this.birthdayGiftClaiming = false;
+          this.birthdayGiftAwarded = false;
+          this.birthdayGiftAlreadyClaimed = false;
+          this.birthdayGiftUnavailable = false;
+          this.birthdayGiftClaimError = false;
           this.birthdayPopupStatus.checkOnce(popupUserId)
             .pipe(takeUntil(this.destroy$))
             .subscribe(shouldShow => {
               if (shouldShow && this.birthdayUserId === String(popupUserId)
                 && this.birthdayPopupStatus.consume(popupUserId)) {
                 this.showBirthdayDialog = true;
+                this.claimBirthdayGift(popupUserId);
               }
             });
         }
@@ -514,7 +570,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           this.headerMoodUserId = moodUserId;
           this.homeHeaderMood = null;
           try {
-            if (moodUserId) this.homeHeaderMood = normalizeHomeMood(localStorage.getItem(`home_last_mood_${moodUserId}`));
+            if (moodUserId) this.homeHeaderMood = normalizeHomeMood(localStorage.getItem(`home_last_mood_${moodUserId}_${this.getLocalDateKey(new Date())}`));
           } catch { /* The API still supplies mood when storage is unavailable. */ }
         }
         if (userData) {
@@ -1203,10 +1259,11 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   onConfirmedHomeMood(mood: string | null): void {
     const normalized = normalizeHomeMood(mood);
-    if (!normalized) return;
     this.homeHeaderMood = normalized;
     try {
-      if (this.headerMoodUserId) localStorage.setItem(`home_last_mood_${this.headerMoodUserId}`, normalized);
+      if (this.headerMoodUserId && normalized) {
+        localStorage.setItem(`home_last_mood_${this.headerMoodUserId}_${this.getLocalDateKey(new Date())}`, normalized);
+      }
     } catch { /* Keep the current mood in memory when storage is unavailable. */ }
   }
 

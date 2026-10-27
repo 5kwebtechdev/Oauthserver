@@ -31,6 +31,10 @@
                 "input": "src/assets",
                 "output": "assets",
                 "ignore": [
+                  "figma/child-home/moods/*.svg",
+                  "figma/child-home/moods/*.webp",
+                  "figma/child-home/moods/calm-reference.png",
+                  "figma/child-home/moods/normalized-v1/manifest.json",
                   "figma/avatars/11-13-*.webp",
                   "figma/avatars/14-15-*.webp",
                   "figma/avatars/16-17-*.webp",
@@ -125,27 +129,17 @@
               "progress": false
             },
             "auth2": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "32kb",
-                  "maximumError": "100kb"
-                }
-              ],
               "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.auth2.ts"
-                },
-                {
-                  "replace": "src/app/core/services/apple-sign-in.development-mock.ts",
-                  "with": "src/app/core/services/apple-sign-in.production-mock.ts"
-                }
+                { "replace": "src/environments/environment.ts", "with": "src/environments/environment.auth2.ts" },
+                { "replace": "src/app/core/services/apple-sign-in.development-mock.ts", "with": "src/app/core/services/apple-sign-in.production-mock.ts" }
+              ],
+              "outputHashing": "all",
+              "baseHref": "/"
+            },
+            "auth2-dev": {
+              "fileReplacements": [
+                { "replace": "src/environments/environment.ts", "with": "src/environments/environment.auth2-dev.ts" },
+                { "replace": "src/app/core/services/apple-sign-in.development-mock.ts", "with": "src/app/core/services/apple-sign-in.production-mock.ts" }
               ],
               "outputHashing": "all",
               "baseHref": "/"

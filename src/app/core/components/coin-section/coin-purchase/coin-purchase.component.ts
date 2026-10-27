@@ -7,6 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { CoinService, CoinHistoryItem } from '../../../services/coin.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
     selector: 'app-coin-purchase',
@@ -21,7 +22,7 @@ export class CoinPurchaseComponent implements OnInit, OnDestroy, ViewWillEnter {
     isLoading: boolean = false;
     private destroy$ = new Subject<void>();
 
-    constructor(private router: Router, private coinService: CoinService) {}
+    constructor(private router: Router, private coinService: CoinService, private auth: AuthService) {}
 
     ngOnInit() {
         this.loadCoins();
@@ -38,7 +39,10 @@ export class CoinPurchaseComponent implements OnInit, OnDestroy, ViewWillEnter {
 
     private loadCoins(): void {
         this.isLoading = true;
-        this.coinService.loadCoinHistory()
+        const history = this.auth.isParentUser()
+            ? this.coinService.loadAccountCoinHistory()
+            : this.coinService.loadCoinHistory();
+        history
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {

@@ -1,0 +1,127 @@
+<!-- Figma: "Referral Contest" (26911:35163) -->
+
+<ion-content class="contest" [scrollEvents]="!ctaUnlocked()" (ionScroll)="checkScrolledToBottom()">
+  <!-- ============ Header: back + contest seal (scrolls with the page) ============ -->
+  <header class="header">
+    <button class="back-btn" type="button" aria-label="Back" (click)="goBack()">
+      <img src="assets/referral/contest/back.svg" width="48" height="48" alt="" />
+    </button>
+
+    <div class="seal" role="img" [attr.aria-label]="months + ' month contest'">
+      <span class="seal__shape seal__shape--a"></span>
+      <span class="seal__shape seal__shape--b"></span>
+      <span class="seal__content">
+        <span class="seal__num">{{ months }}</span>
+        <span class="seal__txt">Month<br />Contest</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- ============ Hero ============ -->
+  <section class="hero">
+    <h1 class="hero__title">REFER <span class="hero__amp">&amp;</span>WIN</h1>
+    <p class="hero__sub">
+      Invite your friends to SuperMeApp.<br />
+      More friends join. <strong>Bigger rewards!</strong>
+    </p>
+  </section>
+
+  <!-- ============ Podium: top 3 prizes ============ -->
+  <section class="podium" aria-label="Top 3 prizes">
+    <img class="podium__spotlight" src="assets/referral/contest/spotlight.svg" width="280" height="260" alt="" />
+
+    @for (prize of podium; track prize.rank) {
+      <div class="slot slot--{{ prize.tier }}">
+        <img class="slot__device" [src]="prize.image" [alt]="prize.label" />
+        <div class="stand stand--{{ prize.tier }}">
+          <div class="stand__visual">
+            <img [src]="prize.standImage" alt="" />
+          </div>
+          <span class="stand__name">{{ prize.label }}</span>
+        </div>
+      </div>
+    }
+
+    <!-- decorative sparkles + confetti -->
+    <img class="deco spark--a" src="assets/referral/contest/sparkle-18.svg" width="18" height="18" alt="" />
+    <img class="deco spark--b" src="assets/referral/contest/sparkle-22.svg" width="22" height="22" alt="" />
+    <img class="deco spark--c" src="assets/referral/contest/sparkle-12.svg" width="12" height="12" alt="" />
+    <img class="deco spark--d" src="assets/referral/contest/sparkle-14.svg" width="14" height="14" alt="" />
+    <img class="deco spark--e" src="assets/referral/contest/sparkle-12.svg" width="12" height="12" alt="" />
+    <i class="deco confetti confetti--a"></i>
+    <i class="deco confetti confetti--b"></i>
+    <i class="deco confetti confetti--c"></i>
+  </section>
+
+  <!-- ============ More prizes: vouchers + others ============ -->
+  <section class="prize-row">
+    <article class="prize-card prize-card--voucher">
+      <span class="chip">{{ voucher.ranks }}</span>
+      <div class="sprite sprite--vouchers"><img [src]="voucherArt" alt="" /></div>
+      <div class="voucher-text">
+        <span class="voucher-text__title">{{ voucher.title }}</span>
+        <span class="voucher-text__amount">
+          <span>{{ voucher.amountPrefix }}</span>
+          <strong>{{ voucher.amount }}</strong>
+        </span>
+      </div>
+    </article>
+
+    <article class="prize-card prize-card--more">
+      <div class="sprite sprite--gifts"><img [src]="giftsArt" alt="" /></div>
+      <p class="prize-card__more">{{ otherPrizesText }}</p>
+    </article>
+  </section>
+
+  <!-- ============ How to participate ============ -->
+  <section class="steps-wrap">
+    <div class="steps-card">
+      <h2 class="steps-card__title">How to participate?</h2>
+      <ol class="steps">
+        @for (step of steps; track step.index; let last = $last) {
+          <li class="step">
+            <div class="step__icon step__icon--{{ step.tone }}">
+              <img
+                [src]="'assets/referral/contest/icon-' + step.icon + '.svg'"
+                [width]="step.icon === 'friends' ? 26 : 24"
+                [height]="step.icon === 'friends' ? 26 : 24"
+                alt=""
+              />
+              <span class="step__num">{{ step.index }}</span>
+            </div>
+            <span class="step__label">{{ step.label }}</span>
+          </li>
+          @if (!last) {
+            <li class="step-arrow" aria-hidden="true">
+              <img src="assets/referral/contest/icon-chevron-16.svg" width="16" height="16" alt="" />
+            </li>
+          }
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ Legal links ============ -->
+  <nav class="legal">
+    <a class="legal__link" [href]="links.terms" (click)="openLegal($event, links.terms)" target="_blank" rel="noopener noreferrer">
+      <img src="assets/referral/contest/icon-terms.svg" width="18" height="18" alt="" />
+      <span>Terms &amp; Conditions</span>
+    </a>
+    <span class="legal__divider"></span>
+    <a class="legal__link" [href]="links.faqs" (click)="openLegal($event, links.faqs)" target="_blank" rel="noopener noreferrer">
+      <img src="assets/referral/contest/icon-faq.svg" width="18" height="18" alt="" />
+      <span>FAQs</span>
+    </a>
+  </nav>
+</ion-content>
+
+<!-- ============ Sticky CTA (enabled once the user reaches the bottom) ============ -->
+<ion-footer class="ion-no-border contest-footer">
+  @if (shareError()) {
+    <p class="share-error" role="status">{{ shareError() }} <button type="button" (click)="loadReferralCode()">Retry</button></p>
+  }
+  <button class="cta" type="button" [disabled]="!ctaUnlocked() || !referralCode()" (click)="inviteFriends()">
+    <img src="assets/referral/contest/icon-send.svg" width="24" height="24" alt="" />
+    <span>Invite Friends Now</span>
+  </button>
+</ion-footer>

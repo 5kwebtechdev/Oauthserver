@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule, ModalController, ToastController } from '@ionic/angular';
+import { IonicModule, ModalController, ToastController, NavController } from '@ionic/angular';
 import { of } from 'rxjs';
 import { ReferFriendComponent } from './refer-friend.component';
 import { AuthService } from '../../../services/auth.service';
@@ -14,6 +14,7 @@ describe('ReferFriendComponent mobile layout', () => {
     await TestBed.configureTestingModule({
       imports: [ReferFriendComponent, IonicModule.forRoot()],
       providers: [
+        { provide: NavController, useValue: { navigateForward: jasmine.createSpy('navigateForward') } },
         { provide: AuthService, useValue: {
           userData$: of({}),
           getUserData: () => ({ referralCode: 'NARADEHY' }),
@@ -35,6 +36,12 @@ describe('ReferFriendComponent mobile layout', () => {
   });
 
   afterEach(() => { page.remove(); fixture.destroy(); document.body.style.display = bodyDisplay; });
+
+  it('opens the contest from the banner with dynamic referral data preserved', () => {
+    page.querySelector<HTMLButtonElement>('.contest-banner')!.click();
+    expect(TestBed.inject(NavController).navigateForward).toHaveBeenCalledWith('/authed/refer-friend/contest');
+    expect(fixture.componentInstance.referralCode).toBe('NARADEHY');
+  });
 
   it('keeps the code, copy action, divider and Figma share icon inside the card on mobile', () => {
     for (const width of [320, 375, 393, 430]) {
@@ -85,7 +92,7 @@ describe('ReferFriendComponent mobile layout', () => {
     expect(page.querySelector('.rf-code-card__copy img')!.getBoundingClientRect().width).toBe(18);
     expect(page.querySelector('.rf-code-card__share img')!.getBoundingClientRect().width).toBe(40);
     for (const icon of Array.from(page.querySelectorAll<HTMLElement>('.rf-step__icon img'))) {
-      expect(icon.getBoundingClientRect().width).toBe(24);
+      expect(icon.getBoundingClientRect().width).toBe(icon.closest('.rf-step__icon--coin') ? 32 : 24);
     }
   });
 });

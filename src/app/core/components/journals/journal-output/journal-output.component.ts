@@ -1,15 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
 import { JournalPostCardComponent } from '../journal-post-card/journal-post-card.component';
 import { CalendarService } from '../../../services/calendar.service';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { RefreshService } from '../../../services/refresh.service';
+import { DailyMoodRecord, DailyMoodRecordsService, moodDateKey } from '../../../services/daily-mood-records.service';
 
 export interface JournalOutputEntry {
   id?: string | number;
@@ -52,7 +53,7 @@ interface MoodDay {
   templateUrl: './journal-output.component.html',
   styleUrls: ['./journal-output.component.scss'],
 })
-export class JournalOutputComponent implements OnInit, ViewWillEnter {
+export class JournalOutputComponent implements OnInit, OnDestroy, ViewWillEnter {
   @Input() entries: JournalOutputEntry[] = [];
 
   currentMonthDate = new Date();
@@ -61,6 +62,8 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
   errorMessage = '';
   entryPendingDelete: JournalOutputEntry | null = null;
   deleting = false;
+  private moodSubscription?: Subscription;
+  dailyMoodRecords: Record<string, DailyMoodRecord | null> = {};
 
   constructor(
     private readonly router: Router,
@@ -69,6 +72,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
     private readonly calendarService: CalendarService,
     private readonly route: ActivatedRoute,
     private readonly refreshService: RefreshService,
+    private readonly dailyMoods: DailyMoodRecordsService,
   ) {}
 
   ngOnInit(): void {
@@ -84,10 +88,23 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
       this.currentMonthDate = new Date();
       this.updateMonthLabel();
     }
+    this.watchMoods();
     this.loadEntriesFromApi(
       this.currentMonthDate.getMonth() + 1,
       this.currentMonthDate.getFullYear(),
     );
+  }
+
+  ngOnDestroy(): void { this.moodSubscription?.unsubscribe(); }
+
+  private watchMoods(): void {
+    this.moodSubscription?.unsubscribe();
+    this.moodSubscription = this.dailyMoods.watch(() => {
+      const today = new Date();
+      const start = new Date(today);
+      start.setDate(start.getDate() - 29);
+      return [start, today, this.currentMonthDate];
+    }).subscribe(records => { this.dailyMoodRecords = records; });
   }
 
   get filteredEntries(): JournalOutputEntry[] {
@@ -98,28 +115,26 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
         const date = this.entryDate(entry);
         return !!date && date.getMonth() === month && date.getFullYear() === year;
       })
+      .map(entry => {
+        const date = this.entryDate(entry);
+        return { ...entry, mood: date ? this.dailyMoodRecords[moodDateKey(date)]?.label || '' : '', emoji: undefined };
+      })
       .slice()
       .sort((a, b) => (this.entryDate(b)?.getTime() || 0) - (this.entryDate(a)?.getTime() || 0));
   }
 
   get moodDays(): MoodDay[] {
-    const byDate = new Map<string, JournalOutputEntry>();
-    for (const entry of this.entries || []) {
-      const date = this.entryDate(entry);
-      if (date) byDate.set(this.dateKey(date), entry);
-    }
-
     const result: MoodDay[] = [];
     const end = new Date();
     end.setHours(12, 0, 0, 0);
     for (let offset = 29; offset >= 0; offset -= 1) {
       const date = new Date(end);
       date.setDate(end.getDate() - offset);
-      const entry = byDate.get(this.dateKey(date));
+      const mood = this.dailyMoodRecords[this.dateKey(date)];
       result.push({
         key: this.dateKey(date),
-        tone: entry ? this.moodTone(entry.mood) : 'none',
-        label: `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}: ${entry?.mood || 'No entry'}`,
+        tone: mood?.tone || 'none',
+        label: `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}: ${mood?.label || 'No mood recorded'}`,
       });
     }
     return result;
@@ -255,6 +270,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
 
   private selectMonth(date: Date): void {
     this.currentMonthDate = date;
+    this.watchMoods();
     this.updateMonthLabel();
     this.loadEntriesFromApi(date.getMonth() + 1, date.getFullYear());
   }
@@ -297,7 +313,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
     return items.map((item) => {
       const date = item.creationDate && item.creationTime
         ? new Date(`${item.creationDate}T${item.creationTime}`)
-        : new Date(item.creationDate || item.date || '');
+        : new Date(item.creationDate ? `${item.creationDate}T12:00:00` : item.date || '');
       const tags: string[] = [];
 
       // Preserve every journal dimension returned by the API.  Previously the
@@ -344,7 +360,7 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
   private normalizeEntries(entries: JournalOutputEntry[]): JournalOutputEntry[] {
     return entries.map((entry) => ({
       ...entry,
-      date: entry.date ? new Date(entry.date) : undefined,
+      date: this.entryDate(entry) ?? undefined,
       images: Array.isArray(entry.images) ? entry.images : [],
     }));
   }
@@ -389,7 +405,8 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
 
   private entryDate(entry: JournalOutputEntry): Date | null {
     if (!entry?.date) return null;
-    const date = entry.date instanceof Date ? entry.date : new Date(entry.date);
+    const date = entry.date instanceof Date ? entry.date
+      : new Date(/^\d{4}-\d{2}-\d{2}$/.test(entry.date) ? `${entry.date}T12:00:00` : entry.date);
     return Number.isNaN(date.getTime()) ? null : date;
   }
 
@@ -398,13 +415,6 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-  }
-
-  private moodTone(mood?: string): MoodTone {
-    const value = (mood || '').trim().toLowerCase();
-    if (['happy', 'excited', 'calm', 'great', 'good', 'joyful'].includes(value)) return 'great';
-    if (['sad', 'low', 'unwell', 'bad', 'upset'].includes(value)) return 'low';
-    return 'okay';
   }
 
   private absoluteImageUrl(value: any): string {

@@ -1,0 +1,170 @@
+/* Refer & Win entry banner — Figma "Contest Banner" (26909:35142), 361 × 92 */
+
+:host {
+  display: block;
+  --cb-bg: #432477;        /* V1/AccentNew600main */
+  --cb-gold: #fdd679;
+  --cb-border: #ffe08a;
+  --cb-lilac: #c7acf3;
+  --cb-micro: 12px;        /* General/Micro */
+  --cb-caption: 13px;      /* General/Caption */
+}
+
+.contest-banner {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 92px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--cb-border);
+  border-radius: 24px;
+  background: var(--cb-bg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Nunito', system-ui, sans-serif;
+}
+.contest-banner:active { transform: scale(0.99); }
+.contest-banner:focus-visible { outline: 3px solid var(--cb-gold); outline-offset: 3px; }
+
+/* Only the decorative layer moves: copy and CTA stay above the light sweep.
+   Transform/opacity avoid layout work; the long pause keeps motion gentle. */
+.contest-banner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 42%;
+  background: linear-gradient(100deg, transparent 15%, rgba(255, 236, 180, 0.22) 48%, rgba(255, 255, 255, 0.16) 57%, transparent 85%);
+  transform: translateX(-140%) skewX(-18deg);
+  opacity: 0;
+  animation: contest-banner-shine 7.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes contest-banner-shine {
+  0% { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
+  8% { opacity: 0.85; }
+  36% { transform: translateX(300%) skewX(-18deg); opacity: 0.85; }
+  42%, 100% { transform: translateX(300%) skewX(-18deg); opacity: 0; }
+}
+.contest-banner__sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.contest-banner__sparkle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: #ffe8a3;
+  clip-path: polygon(50% 0, 63% 36%, 100% 50%, 63% 64%, 50% 100%, 37% 64%, 0 50%, 37% 36%);
+  opacity: 0.25;
+  animation: contest-banner-twinkle 7.5s ease-in-out infinite;
+
+  &:nth-child(1) { left: 8px; top: 13px; }
+  &:nth-child(2) { left: 69px; bottom: 10px; width: 6px; height: 6px; animation-delay: 1.2s; }
+  &:nth-child(3) { right: 19px; top: 12px; width: 7px; height: 7px; animation-delay: 2s; }
+}
+@keyframes contest-banner-twinkle {
+  0%, 32%, 100% { opacity: 0.25; transform: scale(0.8); }
+  16% { opacity: 0.8; transform: scale(1); }
+}
+
+/* Prize visual: glow + tilted phone */
+.contest-banner__visual {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 1px;
+}
+.contest-banner__glow {
+  position: absolute;
+  left: -17.5px;
+  top: -9.12px;
+  pointer-events: none;
+  opacity: 0.65;
+  animation: contest-banner-prize-glow 7.5s ease-in-out infinite;
+}
+@keyframes contest-banner-prize-glow {
+  0%, 45%, 100% { opacity: 0.65; }
+  22% { opacity: 0.95; }
+}
+.contest-banner__phone {
+  position: relative;
+  width: 61px;
+  height: 74px;
+  margin: 3.9px 4.85px;    /* rotated bounds 70.7 × 81.8 */
+  object-fit: contain;
+  transform: rotate(-8deg);
+}
+
+.contest-banner__copy {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  overflow: hidden;
+}
+.contest-banner__chip {
+  padding: 2px 8px;
+  border-radius: 40px;
+  background: var(--cb-gold);
+  color: var(--cb-bg);
+  font-size: var(--cb-micro);
+  font-weight: 800;
+  white-space: nowrap;
+}
+.contest-banner__text { display: flex; flex-direction: column; white-space: nowrap; }
+.contest-banner__title {
+  margin-bottom: -2px;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: normal;
+  color: #fff;
+}
+.contest-banner__amp { color: var(--cb-gold); }
+.contest-banner__sub {
+  font-weight: 700;
+  font-size: var(--cb-caption);
+  line-height: normal;
+  color: var(--cb-lilac);
+}
+
+.contest-banner__go {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 34px;
+  height: 34px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffe08a, #fdbd31);
+}
+
+.contest-banner__text { white-space: normal; }
+.contest-banner__sub { font-size: clamp(11px, 3.1vw, 13px); }
+.contest-banner__title { white-space: nowrap; }
+@media (max-width: 375px) {
+  .contest-banner { gap: 6px; padding-inline: 8px; }
+  .contest-banner__phone { width: 54px; margin-inline: 2px; }
+  .contest-banner__chip { font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contest-banner::after { animation: none; display: none; }
+  .contest-banner__sparkle { animation: none; opacity: 0.35; }
+  .contest-banner__glow { animation: none; opacity: 0.8; }
+}

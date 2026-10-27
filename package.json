@@ -4,9 +4,13 @@
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
   "scripts": {
+    "capacitor:copy:after": "node scripts/optimize-android-assets.mjs && node scripts/verify-mood-assets.mjs",
+    "android:optimize-assets": "node scripts/optimize-android-assets.mjs",
     "ng": "ng",
     "start": "ng serve",
+    "prebuild": "node scripts/verify-mood-assets.mjs",
     "build": "ng build",
+    "postbuild": "node scripts/verify-mood-assets.mjs www",
     "build:ios": "ng build --configuration production && node scripts/verify-avatar-assets.cjs && cap copy ios",
     "optimize:embedded-svg": "node scripts/optimize-embedded-svg-assets.mjs",
     "watch": "ng build --watch --configuration development",
@@ -91,6 +95,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "patch-package": "^8.0.1",
+    "sharp": "0.35.5",
     "typescript": "~5.6.3"
   },
   "description": "An Ionic project"

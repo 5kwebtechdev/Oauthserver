@@ -2125,6 +2125,14 @@ footer {
   background: #fff;
   box-shadow: 0 16px 48px rgba(40, 37, 39, .2);
   > img { display: block; width: 100%; height: auto; }
+  &__gift-status {
+    margin: 0;
+    padding: 0 18px 18px;
+    color: #432477;
+    font-size: 14px;
+    text-align: center;
+    button { border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+  }
   &__close {
     position: absolute;
     top: 12px;
@@ -2162,13 +2170,15 @@ footer {
   gap: 8px;
   .home-referral-tools { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
   .home-referral-tools .coin-pill {
-    display: flex; flex-direction: column; gap: 0; padding: 0;
-    min-width: 0; min-height: 0; border: 0; background: transparent; box-shadow: none;
+    display: inline-flex; flex-direction: row; align-items: center; gap: 3px;
+    padding: 2px 7px 2px 3px; min-width: 0; min-height: 34px;
+    border: 1px solid transparent; border-radius: 999px;
+    background: linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(135deg, #8b8dcb, #f2bf98, #ff2d79) border-box;
+    box-shadow: 0 0 4px #6b656a33;
     .coin-pill-icon { width: 28px; height: 28px; object-fit: contain; }
     span {
-      padding: 1px 5px; border: 1px solid transparent; border-radius: 16px;
-      background: linear-gradient(#f6f2fb, #f6f2fb) padding-box,
-        linear-gradient(135deg, #8b8dcb, #f2bf98, #ff2d79) border-box;
+      padding: 0; border: 0; background: transparent;
       color: #432478; font: 700 14px/20px var(--font-sans); white-space: nowrap;
     }
   }

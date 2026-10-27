@@ -8,7 +8,7 @@ import {
 import { Observable } from 'rxjs';
 import { take, switchMap } from 'rxjs/operators';
 import { ProfileSelectorService } from "../services/profile-selector-service";
-import { ChildInfo } from '../models/child-info.model';
+import { selectedChildAge } from '../models/selected-child-age';
 
 @Injectable()
 export class ProfileSelectorInterceptor implements HttpInterceptor {
@@ -37,31 +37,11 @@ export class ProfileSelectorInterceptor implements HttpInterceptor {
     const childId = this.validUserId(child?.id);
     if (!childId || !requestUserId || childId !== requestUserId) return req;
 
-    const age = this.getChildAge(child);
+    const age = selectedChildAge(child);
     const params = age === null
       ? req.params.delete('age')
       : req.params.set('age', String(age));
     return req.clone({ params });
-  }
-
-  private getChildAge(child: ChildInfo | null): number | null {
-    const dateOfBirth = String(child?.dateOfBirth || '').trim();
-    if (dateOfBirth) {
-      const birthDate = new Date(dateOfBirth);
-      if (!Number.isNaN(birthDate.getTime())) {
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDifference = today.getMonth() - birthDate.getMonth();
-        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) age--;
-        if (age >= 0) return age;
-      }
-    }
-
-    const rawAge = child?.age;
-    const age = rawAge === null || rawAge === undefined || String(rawAge).trim() === ''
-      ? Number.NaN
-      : Number(rawAge);
-    return Number.isFinite(age) && age >= 0 ? Math.floor(age) : null;
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -74,10 +54,9 @@ export class ProfileSelectorInterceptor implements HttpInterceptor {
       }));
     }
 
-    // Course assignment already receives the selected child in `childIds`.
-    // Do not append the profile-selector `forUserId`, because this endpoint's
-    // request contract is intentionally limited to courseId and childIds.
-    if (req.url.includes('/courses/assign')) {
+    // Assignments are parent-owned writes. Their targets are already supplied
+    // in childIds; a selected child's forUserId is not part of these contracts.
+    if (/\/(?:courses|challenges|articles)\/assign(?:[/?]|$)/.test(req.url)) {
       return next.handle(req);
     }
 

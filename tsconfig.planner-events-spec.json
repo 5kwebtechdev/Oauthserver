@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/core/components/activity-section/activity-card/glance-blank-state.spec.ts",
+    "src/app/core/components/activity-section/activity-page-content/activity-page-content.component.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

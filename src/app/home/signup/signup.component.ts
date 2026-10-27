@@ -1669,13 +1669,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
     void this.navCtrl.navigateRoot('/signup', {
       queryParams,
-      animated: false
+      animated: false,
+      replaceUrl: true
     });
   }
 
   private navigateReplacing(url: string): void {
     this.resetTransientStepUi();
-    void this.navCtrl.navigateRoot(url, { animated: false });
+    void this.navCtrl.navigateRoot(url, { animated: false, replaceUrl: true });
   }
 
   private resetTransientStepUi(): void {
@@ -1761,7 +1762,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       } else if (this.signupCredentialState.getPassword()) {
         this.navigateToSignupStep(0.3);
       } else {
-        this.navigateReplacing('/login');
+        // Role selection is entered from the walkthrough (or explicitly from
+        // Login). Returning to Login here made repeated Back presses bounce
+        // between these two screens forever.
+        this.navigateReplacing('/home?reviewPrevious=true');
       }
     } else if (this.step > 1) {
       const savedRole = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;

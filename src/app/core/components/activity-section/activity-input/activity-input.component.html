@@ -156,13 +156,17 @@
 
     <div class="category-card">
       <div class="category-pills" role="list">
-        <button type="button" *ngFor="let option of tagOptions" class="category-pill"
-          [class.selected]="isCategorySelected(option.key)" role="listitem"
-          (click)="selectCategory(option.key)">
-          <span class="category-pill-icon form-icon"
-            [ngClass]="'form-icon--' + getCategoryIcon(option.value)" aria-hidden="true"></span>
-          <span class="category-pill-text">{{ option.value }}</span>
-        </button>
+        <div *ngFor="let option of tagOptions" class="category-pill-item" role="listitem">
+          <button type="button" class="category-pill" [class.selected]="isCategorySelected(option.key)"
+            (click)="selectCategory(option.key)">
+            <span *ngIf="option.system === true && getCategoryIcon(option.value)" class="category-pill-icon form-icon"
+              [ngClass]="'form-icon--' + getCategoryIcon(option.value)" aria-hidden="true"></span>
+            <span class="category-pill-text">{{ option.value }}</span>
+          </button>
+          <button *ngIf="option.system === false" type="button" class="category-pill-delete"
+            [attr.aria-label]="'Delete ' + option.value + ' tag'"
+            (click)="confirmCategoryTagDeletion(option.key, $event)">×</button>
+        </div>
       </div>
 
       <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Pick a tag for this activity.</div>
@@ -595,13 +599,17 @@
 
         <div class="event-card event-type-card">
           <div class="event-pill-row" role="radiogroup" aria-label="Event type">
-            <button *ngFor="let option of eventTypes" type="button" class="event-pill"
-              [class.selected]="selectedEventType === option.key"
-              [attr.aria-checked]="selectedEventType === option.key" role="radio"
-              (click)="selectEventType(option.key)">
-              <img [src]="option.icon" alt="" aria-hidden="true">
-              <span>{{ option.label }}</span>
-            </button>
+            <div *ngFor="let option of eventTypes" class="event-pill-item">
+              <button type="button" class="event-pill" [class.selected]="selectedEventType === option.key"
+                [attr.aria-checked]="selectedEventType === option.key" role="radio"
+                (click)="selectEventType(option.key)">
+                <img *ngIf="option.icon" [src]="option.icon" alt="" aria-hidden="true">
+                <span>{{ option.label }}</span>
+              </button>
+              <button *ngIf="option.custom && option.id != null" type="button" class="event-pill-delete"
+                [attr.aria-label]="'Delete ' + option.label + ' event type'"
+                (click)="confirmEventTypeDeletion(option)">×</button>
+            </div>
           </div>
 
           <div *ngIf="addingEventType" class="event-custom-type">
@@ -695,6 +703,9 @@
               <span>{{ option.label }}</span>
             </button>
           </div>
+          <p class="event-month-end-note" *ngIf="eventRecurrence === 'MONTHLY' && eventDate?.getDate() === 31">
+            In months without a 31st, this event will appear on the last day of the month.
+          </p>
         </div>
       </section>
 
@@ -762,6 +773,10 @@
 <app-superme-popup [isVisible]="deletePopupVisible" [config]="deletePopupConfig" (primaryAction)="confirmDelete()"
   (secondaryAction)="cancelDelete()" (backdropClick)="cancelDelete()"
   (closeAction)="cancelDelete()"></app-superme-popup>
+
+<app-superme-popup [isVisible]="eventTypeDeleteVisible" [config]="eventTypeDeleteConfig"
+  (primaryAction)="deleteCustomEventType()" (secondaryAction)="cancelEventTypeDeletion()"
+  (backdropClick)="cancelEventTypeDeletion()" (closeAction)="cancelEventTypeDeletion()"></app-superme-popup>
 
 <app-superme-popup class="activity-overlap-popup" [isVisible]="overlapPopupVisible" [config]="overlapPopupConfig"
   (primaryAction)="closeOverlapPopup()" (backdropClick)="closeOverlapPopup()"

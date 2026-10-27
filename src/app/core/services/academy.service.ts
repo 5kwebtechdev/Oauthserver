@@ -261,13 +261,16 @@ export class AcademyService {
     );
   }
 
-  getCategories(ageOverride?: number | null): Observable<AcademyCategory[]> {
+  getCategories(ageOverride?: number | null, forUserId?: string | number | null): Observable<AcademyCategory[]> {
     let params = new HttpParams();
     const age = ageOverride === undefined
       ? this.authService.getCurrentUserAge()
       : ageOverride;
     if (age !== null) {
       params = params.set('age', String(age));
+    }
+    if (forUserId != null && String(forUserId).trim()) {
+      params = params.set('forUserId', String(forUserId));
     }
 
     return this.http.get<AcademyCategory[]>(`${this.base}/category`, {
@@ -314,17 +317,13 @@ export class AcademyService {
     );
   }
 
-  getAcademyFeed(
-    age?: number,
-    forUserId?: string | number | null,
-  ): Observable<AcademyFeedResponse> {
+  getAcademyFeed(age?: number): Observable<AcademyFeedResponse> {
     let params = new HttpParams();
     if (age != null) params = params.set('age', String(age));
-    if (forUserId != null && String(forUserId).trim()) {
-      params = params.set('forUserId', String(forUserId));
-    }
     return this.http.get<AcademyFeedResponse>(`${this.base}/courses/academy-feed`, {
-      headers: this.getHeaders(),
+      // This endpoint currently has no forUserId contract. Keep the request
+      // account-scoped even when a parent has selected a child elsewhere.
+      headers: this.getHeaders().set('X-Skip-Profile-Selector', 'true'),
       params,
     });
   }

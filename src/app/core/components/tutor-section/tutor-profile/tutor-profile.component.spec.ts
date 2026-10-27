@@ -50,6 +50,8 @@ describe('TutorProfileComponent category fields', () => {
       {} as any,
       {} as any,
       {} as any,
+      {} as any,
+      {} as any,
       {} as any
     );
 
@@ -63,6 +65,22 @@ describe('TutorProfileComponent category fields', () => {
         { categoryId: 7, selectedFieldOptions: { skill: ['DATA_SCIENCE'], skill_level: ['ADVANCED'] } }
       ]
     } as any;
+  });
+
+  it('uses the tutor frame even when the route has no category query parameter', () => {
+    (component as any).route = { snapshot: { data: {}, routeConfig: { path: 'tutors/:id' } } };
+    component.categoryKey = null;
+    expect(component.profileFallbackCategory).toBe('tutor');
+  });
+
+  it('uses the academy or counselor frame from profile identity, not a filter category', () => {
+    (component as any).route = { snapshot: { data: {}, routeConfig: { path: 'tutors/:id' } } };
+    component.categoryKey = 'LANGUAGES';
+    component.tutor = { ...component.tutor, entityType: 'ACADEMY' } as any;
+    expect(component.profileFallbackCategory).toBe('academy');
+
+    (component as any).route = { snapshot: { data: { entityType: 'COUNSELOR' }, routeConfig: { path: 'counselors/:id' } } };
+    expect(component.profileFallbackCategory).toBe('counselor');
   });
 
   [

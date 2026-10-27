@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/core/components/superme-selectors/superme-tags/superme-tags.component.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

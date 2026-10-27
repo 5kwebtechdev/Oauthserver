@@ -45,6 +45,13 @@
   }
 }
 
+.tc__avatar-wrap:has(.eduhub-fallback) {
+  width: auto;
+  height: auto;
+  flex-basis: auto;
+  .tc__avatar-zoom { display: none; }
+}
+
 .tc__avatar {
   width: 56px;
   height: 56px;

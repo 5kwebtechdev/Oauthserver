@@ -90,7 +90,9 @@ export class PetMessageApiService {
   /** Atomically reserve a daily/streak reward for this account before displaying it. */
   claimRewardOverlay(eventId: string | number): Observable<RewardOverlayClaimResponse> {
     return this.http.post<RewardOverlayClaimResponse>(`${this.base}/pet-message/home/overlay/claim`, null, {
-      headers: this.headers().set('X-Skip-Profile-Selector', 'true'),
+      // The daily-entry queue can run while another screen is visible.
+      // Its background claim must not cover that screen with a global loader.
+      headers: this.headers().set('X-Skip-Profile-Selector', 'true').set('x-skip-loading', '1'),
       params: new HttpParams().set('eventId', String(eventId)),
     });
   }
@@ -106,7 +108,7 @@ export class PetMessageApiService {
     if (eventId != null && String(eventId).trim()) params = params.set('eventId', String(eventId));
     const request = this.http
       .post(`${this.base}/pet-message/home/overlay/dismiss`, null, {
-        headers: this.headers().set('X-Skip-Profile-Selector', 'true'),
+        headers: this.headers().set('X-Skip-Profile-Selector', 'true').set('x-skip-loading', '1'),
         params,
       });
     // Referral acknowledgements must report failure so the UI can retry.

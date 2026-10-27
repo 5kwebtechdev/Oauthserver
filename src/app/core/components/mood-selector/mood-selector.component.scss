@@ -35,23 +35,21 @@
 .entry-mood-art {
   position: relative;
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 56px;
   place-items: center;
   overflow: visible;
 }
 
 .entry-mood-art img {
   display: block;
-  width: 50px;
-  height: 40px;
+  width: 54px;
+  height: 54px;
   max-width: none;
+  object-fit: contain;
 }
 
-.entry-mood-art--calm img {
-  width: 58px;
-  height: 50px;
-}
+
 
 .entry-mood-selected-mark {
   position: absolute;
@@ -131,6 +129,23 @@
   line-height: 20px;
   text-align: center;
 }
+
+.home-mood-dropdown__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.home-mood-dropdown__close img { width: 18px; height: 18px; }
+.home-mood-dropdown__close:focus-visible { outline: 2px solid #432477; border-radius: 6px; }
 
 .home-mood-dropdown .entry-mood-options {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -305,7 +320,7 @@
   align-items: center;
   justify-content: center;
   width: 50px;
-  height: 40px;
+  height: 50px;
   line-height: 0;
   transition: transform 140ms ease;
 
@@ -317,22 +332,9 @@
   }
 }
 
-.mood-option-art--frustrated {
-  width: 50px;
-  height: 43px;
-}
 
-.mood-option-art--calm {
-  width: 65px;
-  height: 56px;
 
-  // Calm has more transparent viewBox padding than the other exported mood
-  // artwork. Scale only its visible art while retaining the common layout box.
-  img {
-    transform: none;
-    transform-origin: center;
-  }
-}
+
 
 .mood-option-label {
   display: block;
@@ -359,9 +361,7 @@
     font-weight: 700;
   }
 
-  .mood-option-art {
-    transform: scale(1.04);
-  }
+
 }
 
 .mood-option-selected-mark {
@@ -610,18 +610,12 @@
 
   .mood-option-art {
     width: 46px;
-    height: 37px;
+    height: 46px;
   }
 
-  .mood-option-art--frustrated {
-    width: 46px;
-    height: 40px;
-  }
 
-  .mood-option-art--calm {
-    width: 57px;
-    height: 49px;
-  }
+
+
 
   .mood-option-label {
     font-size: 11px;

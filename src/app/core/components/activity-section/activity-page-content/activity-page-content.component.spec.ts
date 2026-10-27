@@ -10,6 +10,7 @@ describe('activity page Add navigation', () => {
             page.habitContent = { isPlannerCalendarDesign: true, childCalendarTab: selectedTab } as any;
             page.onAddHabit();
             expect(router.navigate).toHaveBeenCalledOnceWith(['/activity-input'], {
+                queryParams: { createType: expected },
                 state: { currentActive: expected, origin: router.url }
             });
         });
@@ -50,13 +51,31 @@ describe('visible calendar week dots', () => {
             c.selectedDate = new Date(year, month, 10);
             c.childCarouselStartDate = c.selectedDate;
             c.loadChildCalendarData();
-            expect(c.calendarService.getUserPlannerCalendarMonth).toHaveBeenCalledTimes(1);
+            // The selected month's calendar and the next month are both
+            // needed for the selected-date 30-day Upcoming Events window.
+            expect(c.calendarService.getUserPlannerCalendarMonth).toHaveBeenCalledTimes(2);
             c.subscriptions.unsubscribe();
         });
     }
 });
 
 describe('Planner events in the calendar', () => {
+    it('opens the separate Events screen with the selected child’s calendar records', () => {
+        const c: any = Object.create(ActivityPageContentComponent.prototype);
+        const navigate = jasmine.createSpy().and.returnValue(Promise.resolve(true));
+        Object.assign(c, {
+            authService: { isParentUser: () => true },
+            profileSelector: { getChildId: () => 42 },
+            router: { url: '/activity-page?tab=planner', navigate },
+            childEventItems: [{ id: 7, title: 'Math exam', startDate: '2026-11-05' }]
+        });
+        c.openAllEvents();
+        expect(navigate).toHaveBeenCalledOnceWith(['/events-list'], {
+            state: { origin: '/activity-page?tab=planner', childId: 42,
+                calendarEvents: [{ id: 7, title: 'Math exam', name: 'Math exam', startDate: '2026-11-05', eventDate: '2026-11-05' }] }
+        });
+    });
+
     it('marks and displays an event saved through the Event API', () => {
         const c: any = Object.create(ActivityPageContentComponent.prototype);
         const selected = new Date(2026, 9, 9);
@@ -76,10 +95,21 @@ describe('Planner events in the calendar', () => {
         c.loadChildCalendarData();
 
         expect(c.getChildDateActivities(selected).planner).toBeTrue();
-        expect(c.childEventItems).toEqual([event]);
+        expect(c.childEventItems.length).toBe(1);
+        expect(c.childEventItems[0]).toEqual(jasmine.objectContaining(event));
+        expect(c.childEventItems[0].__plannerEventDate).toEqual(selected);
         expect(c.showsPlannerEvents).toBeTrue();
-        expect(c.hasChildCalendarContent).toBeTrue();
+        expect(c.hasChildCalendarContent).toBeFalse();
         c.subscriptions.unsubscribe();
+    });
+});
+
+describe('Planner upcoming event window', () => {
+    it('keeps the Upcoming Events section visible when the window is empty', () => {
+        const c: any = Object.create(ActivityPageContentComponent.prototype);
+        c.childCalendarTab = 'planner';
+        c.childEventItems = [];
+        expect(c.showsPlannerEvents).toBeTrue();
     });
 });
 

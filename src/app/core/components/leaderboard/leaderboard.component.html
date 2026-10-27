@@ -1,9 +1,18 @@
 <ion-content class="leaderboard-content" fullscreen>
   <main class="leaderboard-page">
     <section class="leaderboard-hero" aria-labelledby="leaderboard-title">
-      <button class="back-button" type="button" aria-label="Go back" (click)="back()">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7"/></svg>
-      </button>
+      <div class="hero-toolbar">
+        <button class="back-button" type="button" aria-label="Go back" (click)="back()">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7"/></svg>
+        </button>
+        <div *ngIf="currentUserInTopTen" class="share-rank">
+          <button type="button" class="share-rank__button" (click)="shareRank()">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5M4 13v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Share your rank
+          </button>
+          <p *ngIf="shareFeedback" class="share-rank__feedback" role="status">{{ shareFeedback }}</p>
+        </div>
+      </div>
       <div class="hero-copy">
         <h1 id="leaderboard-title">Leaderboard</h1>
         <p>Earn coins, climb the ranks,<br>Be the best you!</p>
@@ -76,13 +85,6 @@
             </div>
           </div>
         </ng-container>
-        <div *ngIf="currentUserInTopTen" class="share-rank">
-          <button type="button" class="share-rank__button" (click)="shareRank()">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5M4 13v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Share your rank
-          </button>
-          <p *ngIf="shareFeedback" class="share-rank__feedback" role="status">{{ shareFeedback }}</p>
-        </div>
       </ng-container>
     </div>
   </main>

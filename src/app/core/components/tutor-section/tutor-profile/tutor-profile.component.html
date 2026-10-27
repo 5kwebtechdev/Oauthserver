@@ -15,7 +15,7 @@
           <button type="button" class="counselor-header-action counselor-header-action--round counselor-header-action--share" aria-label="Share counselor" (click)="shareTutor()"><span class="counselor-header-action__share" aria-hidden="true"></span></button>
         </div>
         <section class="counselor-profile-hero" *ngIf="tutor">
-          <div class="counselor-avatar-wrap" role="button" tabindex="0" aria-label="View profile image full screen" (click)="openProfileImage()" (keydown.enter)="openProfileImage()" (keydown.space)="$event.preventDefault(); openProfileImage()"><app-profile-image [src]="getProfileImage()" [name]="getDisplayName()" [alt]="getDisplayName() + ' profile image'"></app-profile-image><img *ngIf="isVerified()" class="counselor-verified" src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified"></div>
+          <div class="counselor-avatar-wrap" [class.avatar-wrap--fallback]="!getProfileImage()" role="button" tabindex="0" aria-label="View profile image full screen" (click)="openProfileImage()" (keydown.enter)="openProfileImage()" (keydown.space)="$event.preventDefault(); openProfileImage()"><app-profile-image [fallbackCategory]="profileFallbackCategory" [src]="getProfileImage()" [name]="getDisplayName()" [alt]="getDisplayName() + ' profile image'"></app-profile-image><img *ngIf="isVerified()" class="counselor-verified" src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified"></div>
           <div class="counselor-profile-copy"><h1>{{ getDisplayName() }}</h1><div class="counselor-profile-stats"><span><img src="assets/Icons-Neutral/Icon-Tutor-Experience.webp" alt="" aria-hidden="true">{{ getExperienceString() }}</span><button type="button" [disabled]="isLikeRequestInProgress" (click)="toggleLike()"><img src="assets/figma/parent-eduhub-inner/favorite.svg" alt="" aria-hidden="true">{{ getLikesCount() }} likes</button></div><span class="counselor-availability"><img src="assets/figma/eduhub-home/online-mode.svg" alt="" aria-hidden="true">{{ getContactModesString() }}</span></div>
         </section>
       </header>
@@ -122,8 +122,8 @@
         </button>
       </div>
       <section class="profile-hero" *ngIf="tutor">
-        <div class="avatar-wrap" role="button" tabindex="0" aria-label="View profile image full screen" (click)="openProfileImage()" (keydown.enter)="openProfileImage()" (keydown.space)="$event.preventDefault(); openProfileImage()">
-          <app-profile-image class="avatar" [src]="getProfileImage()" [name]="getDisplayName()"
+        <div class="avatar-wrap" [class.avatar-wrap--fallback]="!getProfileImage()" role="button" tabindex="0" aria-label="View profile image full screen" (click)="openProfileImage()" (keydown.enter)="openProfileImage()" (keydown.space)="$event.preventDefault(); openProfileImage()">
+          <app-profile-image class="avatar" [fallbackCategory]="profileFallbackCategory" [src]="getProfileImage()" [name]="getDisplayName()"
             [alt]="getDisplayName() + ' profile image'"></app-profile-image>
           <span class="verified-badge" *ngIf="isVerified()" aria-label="Verified tutor">
             <svg viewBox="0 0 24 24" aria-hidden="true">

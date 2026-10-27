@@ -9,8 +9,7 @@ describe('AuthenticatedComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AuthenticatedComponent ],
-      imports: [IonicModule.forRoot()]
+      imports: [IonicModule.forRoot(), AuthenticatedComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AuthenticatedComponent);

@@ -42,7 +42,7 @@
           <div class="login-password-wrap" [class.login-input-wrap--error]="password?.invalid && password?.dirty">
             <input #passwordInput id="login-password" formControlName="password" name="password"
               autocomplete="current-password" [type]="hidePassword ? 'password' : 'text'"
-              placeholder="Enter Your Password" />
+              placeholder="Enter Your Password" (change)="onPasswordAutofill($event)" />
             <button type="button" class="login-eye-btn" (click)="togglePasswordVisibility()"
               [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'">
               <img *ngIf="hidePassword" src="assets/icons/login-eye-figma.svg" alt="" aria-hidden="true" />

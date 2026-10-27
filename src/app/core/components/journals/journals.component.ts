@@ -13,6 +13,7 @@ import { ViewAllComponent } from '../superme-navigator/view-all/view-all.compone
 
 import { JournalPostCardComponent } from './journal-post-card/journal-post-card.component';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
+import { DailyMoodRecord, DailyMoodRecordsService, dailyMoodRecord, moodDateKey } from '../../services/daily-mood-records.service';
 
 export interface JournalEntry {
   id: string;
@@ -190,6 +191,7 @@ export class JournalsComponent implements OnInit, OnDestroy {
 
   public loading: boolean = false;
   private destroy$ = new Subject<void>();
+  private dailyMoodRecords: Record<string, DailyMoodRecord | null> = {};
 
   constructor(
     private router: Router,
@@ -197,10 +199,15 @@ export class JournalsComponent implements OnInit, OnDestroy {
     private authApi: AuthApi,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
-    private refreshService: RefreshService
+    private refreshService: RefreshService,
+    private dailyMoods: DailyMoodRecordsService,
   ) { }
 
   ngOnInit(): void {
+    this.dailyMoods.watch().pipe(takeUntil(this.destroy$)).subscribe(records => {
+      this.dailyMoodRecords = records;
+      this.cdr.markForCheck();
+    });
     if (!this.entries || this.entries.length === 0) {
       this.loadEntriesFromApi();
     } else {
@@ -224,11 +231,12 @@ export class JournalsComponent implements OnInit, OnDestroy {
   get latestEntry(): JournalEntry | null {
     if (!this.entries || this.entries.length === 0) return null;
     // Compare by date value (support Date or string)
-    return this.entries.reduce((latest, current) => {
+    const entry = this.entries.reduce((latest, current) => {
       const latestTime = new Date(latest.date).getTime();
       const currentTime = new Date(current.date).getTime();
       return currentTime > latestTime ? current : latest;
     });
+    return { ...entry, mood: this.dailyMoodRecords[moodDateKey(new Date(entry.date))]?.label || '' };
   }
 
   public loadEntriesFromApi(): void {
@@ -262,7 +270,7 @@ export class JournalsComponent implements OnInit, OnDestroy {
             if (item.creationDate && item.creationTime) {
               dateVal = new Date(`${item.creationDate}T${item.creationTime}`);
             } else if (item.creationDate) {
-              dateVal = new Date(item.creationDate);
+              dateVal = new Date(`${item.creationDate}T12:00:00`);
             } else if (item.date) {
               dateVal = new Date(item.date);
             }
@@ -351,17 +359,8 @@ export class JournalsComponent implements OnInit, OnDestroy {
 
   /** Return emotion image mapping (if available) for a mood label */
   getEmotion(entry: JournalEntry): { label: string; image: string } | null {
-    const mood = (entry.mood || '').toLowerCase();
-    if (!mood) return null;
-
-    const emotionMap: { [k: string]: { label: string; image: string } } = {
-      happy: { label: 'Happy', image: 'assets/Images-Thumbnails/Image-Journal-Emotions1.jpg' },
-      excited: { label: 'Excited', image: 'assets/Images-Thumbnails/Image-Journal-Emotions2.jpg' },
-      angry: { label: 'Angry', image: 'assets/Images-Thumbnails/Image-Journal-Emotions3.jpg' },
-      sad: { label: 'Sad', image: 'assets/Images-Thumbnails/Image-Journal-Emotions4.jpg' }
-    };
-
-    return emotionMap[mood] || null;
+    const mood = String(entry.mood || '').trim().toLowerCase();
+    return dailyMoodRecord(mood === 'angry' ? 'frustrated' : mood);
   }
 
   getMoodLabel(mood: string): string {

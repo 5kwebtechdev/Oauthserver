@@ -37,6 +37,21 @@ describe('Daily entry flow', () => {
     expect(api.claimRewardOverlay).toHaveBeenCalledOnceWith('reward-1');
   });
 
+  it('waits for a tapped notification destination before checking the daily overlay', async () => {
+    const destinationSettled$ = new Subject<void>();
+    const navigation = { isOpeningDestination: true, destinationSettled$ };
+    const entry = new DailyEntryComponent(auth, api, status,
+      { url: '/home', navigated: true, events: new Subject() } as any,
+      { run: (callback: () => void) => callback() } as any, userService, navigation as any);
+    await entry.check();
+    expect(api.getHomeOverlay).not.toHaveBeenCalled();
+    navigation.isOpeningDestination = false;
+    (entry as any).router.url = '/authed/activity-detail/455?type=habits';
+    await entry.check();
+    expect(entry.active).toBe('DAILY_LOGIN');
+    entry.ngOnDestroy();
+  });
+
   it('shows nothing when another device wins the reward claim', async () => {
     api.claimRewardOverlay.and.returnValue(of({ eventId: 'reward-1', claimed: false, type: null,
       dailyCoins: null, milestoneDay: null, milestoneCoins: null }));
@@ -310,7 +325,35 @@ describe('Daily entry flow', () => {
     await component.check();
     expect(storage.size).toBe(0);
     await component.dismiss();
+    expect(component.active).toBe('MOOD_PROMPT');
+    expect(api.dismissHomeOverlay).not.toHaveBeenCalled();
+    expect(storage.size).toBe(0);
+    api.getHomeOverlay.and.returnValue(of({ hasOverlay: false, overlayType: 'NONE' }));
+    component.moodSaved();
+    await Promise.resolve();
     expect(Array.from(storage.keys()).some(key => key.endsWith(':MOOD_PROMPT'))).toBeTrue();
+  });
+
+  it('intercepts Android Back only while the required mood popup is open', async () => {
+    let backHandler: ((next: () => void) => void) | undefined;
+    const next = jasmine.createSpy('next back handler');
+    const platform = { backButton: { subscribeWithPriority: jasmine.createSpy().and.callFake(
+      (_priority: number, handler: (next: () => void) => void) => { backHandler = handler; return { unsubscribe: () => {} }; }
+    ) } };
+    const entry = new DailyEntryComponent(auth, api, status,
+      { url: '/activity-page', events: new Subject() } as any,
+      { run: (callback: () => void) => callback() } as any, userService, undefined, platform as any);
+    auth.isAuthenticated$ = new Subject();
+    api.getHomeOverlay.and.returnValue(of({ hasOverlay: true, overlayType: 'MOOD_PROMPT' }));
+    entry.ngOnInit();
+    expect(platform.backButton.subscribeWithPriority).toHaveBeenCalledWith(1000, jasmine.any(Function));
+    await entry.check();
+    backHandler?.(next);
+    expect(next).not.toHaveBeenCalled();
+    entry.active = null;
+    backHandler?.(next);
+    expect(next).toHaveBeenCalledTimes(1);
+    entry.ngOnDestroy();
   });
 
   it('matches all supplied milestone rewards and celebrates only the exact day', () => {

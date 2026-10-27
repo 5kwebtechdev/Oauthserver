@@ -4,6 +4,27 @@ import { LearningService } from 'src/app/core/services/learning.service';
 import { LearningMainComponent } from './learning-main.component';
 
 describe('Learning pending category counts', () => {
+  it('keeps the selected child ID paired with their age when loading MasterClass categories', () => {
+    const getCategories = jasmine.createSpy('getCategories').and.returnValue(of([]));
+    const component = Object.create(LearningMainComponent.prototype) as LearningMainComponent;
+    Object.assign(component as any, {
+      parentView: true,
+      selectedChildId: 301,
+      selectedChild: { id: 301, age: 11 },
+      academyService: { getCategories },
+    });
+
+    (component as any).fetchMasterClassCategories().subscribe();
+    expect(getCategories).toHaveBeenCalledWith(11, 301);
+
+    Object.assign(component as any, {
+      selectedChildId: 302,
+      selectedChild: { id: 302, age: 15 },
+    });
+    (component as any).fetchMasterClassCategories().subscribe();
+    expect(getCategories).toHaveBeenCalledWith(15, 302);
+  });
+
   it('prefers the article-specific pending count over a generic summary total', () => {
     const service = Object.create(LearningService.prototype) as LearningService;
     const resolve = (service as any).resolvePendingCategoryCount.bind(service);

@@ -54,6 +54,7 @@
           (viewDetails)="onViewExternalDetails(listing)"></app-eduhub-event-card>
         <ng-template #externalPreview>
         <app-eduhub-shop-card *ngIf="listing.shop as shop; else genericPreview" class="eduhub-event-preview"
+          [category]="selectedCategoryKey"
           [item]="shop" (viewDetails)="onViewExternalDetails(listing)"
           (favourite)="toggleShopLike(listing)" (share)="shareShop(listing)"
           (directions)="openShopDirections(listing)" (contact)="openShopContact(listing)"></app-eduhub-shop-card>
@@ -71,7 +72,7 @@
           (click)="onViewExternalDetails(listing)"
           (keyup.enter)="onViewExternalDetails(listing)"
           (keyup.space)="onViewExternalDetails(listing); $event.preventDefault()">
-          <app-profile-image class="eduhub-tutor__avatar" [src]="listing.image" [name]="listing.name" [alt]="listing.name"></app-profile-image>
+          <app-profile-image class="eduhub-tutor__avatar" [fallbackCategory]="selectedCategoryKey" [src]="listing.image" [name]="listing.name" [alt]="listing.name"></app-profile-image>
           <div class="eduhub-tutor__body">
             <div class="eduhub-tutor__headline"><strong>{{ listing.name }}</strong></div>
             <p>{{ listing.description }}</p>

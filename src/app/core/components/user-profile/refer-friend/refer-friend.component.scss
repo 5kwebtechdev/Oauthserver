@@ -27,6 +27,8 @@
 }
 
 .rf-main { position: relative; z-index: 1; width: 100%; max-width: 430px; margin-inline: auto; }
+.contest-entry { display: block; padding: 8px 16px 0; }
+.contest-entry + .rf-hero { margin-top: 24px; }
 
 // Keep the shared navigator's back action, while using this screen's Figma icon.
 :host ::ng-deep .rf-nav {

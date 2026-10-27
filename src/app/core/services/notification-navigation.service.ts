@@ -48,6 +48,9 @@ export function notificationRoute(data: NotificationAction): string {
 @Injectable({ providedIn: 'root' })
 export class NotificationNavigationService {
   readonly changed$ = new Subject<void>();
+  readonly destinationSettled$ = new Subject<void>();
+  isOpeningDestination = false;
+  private destinationSequence = 0;
   private pending: NotificationAction | null = null;
   private waitingForRouter = false;
   private reading = new Set<string>();
@@ -56,11 +59,18 @@ export class NotificationNavigationService {
 
   /** Called only for user taps, never for notification receipt. */
   open(data: NotificationAction): void {
+    this.destinationSequence++;
+    this.isOpeningDestination = true;
     this.pending = data;
     this.resume();
   }
 
-  cancelPending(): void { this.pending = null; }
+  cancelPending(): void {
+    this.destinationSequence++;
+    this.pending = null;
+    this.isOpeningDestination = false;
+    this.destinationSettled$.next();
+  }
 
   resume(): void {
     if (!this.pending || !localStorage.getItem('auth_token')) return;
@@ -75,6 +85,7 @@ export class NotificationNavigationService {
       return;
     }
     const data = this.pending;
+    const sequence = this.destinationSequence;
     this.pending = null;
     const id = notificationId(data.actionReferenceId ?? data.referenceId);
     if (String(data.actionScreen).trim().toUpperCase() === 'PARENT_DASHBOARD' && id) {
@@ -82,7 +93,13 @@ export class NotificationNavigationService {
     }
     this.markPushRead(data.notificationId);
     void this.router.navigateByUrl(notificationRoute(data), { replaceUrl: false })
-      .catch(() => { /* Leave current screen intact if routing fails. */ });
+      .catch(() => { /* Leave current screen intact if routing fails. */ })
+      .finally(() => {
+        if (sequence === this.destinationSequence && !this.pending) {
+          this.isOpeningDestination = false;
+          this.destinationSettled$.next();
+        }
+      });
   }
 
   private markPushRead(value: unknown): void {

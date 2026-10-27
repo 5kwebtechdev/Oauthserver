@@ -5,12 +5,12 @@ import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 import { PgHostel, PgHostelsService } from '../../../services/pg-hostels.service';
-import { getProfileImageInitials } from '../../../utils/profile-image.util';
+import { ProfileImageComponent } from '../../profile-image/profile-image.component';
 import { EDUHUB_FAQS } from '../eduhub-faqs';
 
 @Component({
   selector: 'app-pg-hostel-details', standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, ProfileImageComponent],
   templateUrl: './pg-hostel-details.component.html',
   styleUrls: ['./pg-hostel-details.component.scss']
 })
@@ -31,7 +31,6 @@ export class PgHostelDetailsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void { this.request?.unsubscribe(); }
   back(): void { void this.router.navigateByUrl('/authed/education/pg-hostels'); }
   get title(): string { return String(this.item?.name || this.item?.title || 'PG / Hostel'); }
-  get initials(): string { return getProfileImageInitials(this.title); }
   get image(): string { return this.api.imageCandidates(this.item).find(url => !this.failedImages.has(url)) ?? ''; }
   onImageError(): void { this.failedImages.add(this.image); }
   get location(): string { return [this.item?.city, this.item?.state].filter(Boolean).join(', '); }

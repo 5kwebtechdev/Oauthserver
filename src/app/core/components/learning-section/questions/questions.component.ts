@@ -1,6 +1,7 @@
 import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, IonContent } from '@ionic/angular';
+import { IonicModule, IonContent, Platform } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
@@ -10,7 +11,7 @@ import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/s
 import { Challenge, ChallengeQuestion, QuestionOption } from 'src/app/core/models/learning.models';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
-import { environment } from 'src/environments/environment';
+import { ShareLinkService } from '../../../services/share-link.service';
 
 interface Question {
     id: number;
@@ -54,12 +55,11 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     async shareQuiz(): Promise<void> {
         if (!this.challenge?.challengeId) return;
         const title = this.challenge.name || this.quizTitle;
-        const baseUrl = String(environment.publicWebUrl || 'https://supermeapp.com').replace(/\/+$/, '');
         try {
             await Share.share({
                 title,
                 text: `Try ${title} on SuperMe!`,
-                url: `${baseUrl}/authed/content/description/${encodeURIComponent(this.challenge.challengeId)}`,
+                url: this.shareLinks.buildListingLink('quiz', this.challenge.challengeId),
                 dialogTitle: `Share ${title}`
             });
         } catch (error: any) {
@@ -133,16 +133,16 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     leaveChallengePopupConfig: SupermePopupConfig = {
         image: 'assets/Images-Transparent/Image-Leaving-Learning.webp',
         imageAlt: 'Leaving Learning',
-        heading: 'You\'re Making Great Progress!',
-        subtitle: 'If you leave now, you\'ll need to restart from the beginning.',
+        heading: 'Don\'t quit now!',
+        subtitle: 'Finish the quiz to keep your progress. If you leave now, you\'ll need to restart from the beginning.',
         primaryCTA: {
-            text: 'Keep going',
+            text: 'Finish the quiz',
             buttonStyle: 'green',
             callback: () => this.showLeaveChallengePopup = false,
             buttonMedium: true
         },
         secondaryCTA: {
-            text: 'Exit',
+            text: 'Quit quiz',
             buttonStyle: 'bronze-transparent',
             callback: () => this.quitQuiz(),
             buttonMedium: true
@@ -201,13 +201,32 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     isSubmitting = false;
     private returnUrl = '/authed/content';
     private profileUserId: string | number | null = null;
+    private backButtonSubscription?: Subscription;
 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
         private learningService: LearningService,
-        private petAgeService: PetAgeService
+        private petAgeService: PetAgeService,
+        private platform: Platform,
+        private shareLinks: ShareLinkService
     ) { }
+
+    ionViewWillEnter(): void {
+        this.backButtonSubscription?.unsubscribe();
+        this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(100, () => {
+            if (this.showLeaveChallengePopup) {
+                this.showLeaveChallengePopup = false;
+            } else if (!this.showContentTimeExhaustPopup && !this.isSubmitting) {
+                this.onCancel();
+            }
+        });
+    }
+
+    ionViewWillLeave(): void {
+        this.backButtonSubscription?.unsubscribe();
+        this.backButtonSubscription = undefined;
+    }
 
     ngOnInit() {
         // getCurrentNavigation() is null by the time ngOnInit runs (navigation already complete).
@@ -445,6 +464,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.ionViewWillLeave();
         this.stopTimer();
     }
 
