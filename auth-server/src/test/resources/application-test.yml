@@ -95,6 +95,9 @@ app:
     ddl-auto: validate
   security:
     issuer: http://localhost:9000
+    token:
+      access-token-ttl: PT45M
+      refresh-token-ttl: PT90M
     jwt:
       private-key-path: src/test/resources/test-keys/private_key.pem
       public-key-path: src/test/resources/test-keys/public_key.pem

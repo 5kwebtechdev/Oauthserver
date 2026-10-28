@@ -80,6 +80,12 @@ public class ClientRegistrationSeeder implements ApplicationRunner {
     @Value("${app.security.apk-dev-client.post-logout-redirect-uri:}")
     private String apkDevLogoutUri;
 
+    @Value("${app.security.token.access-token-ttl:PT45M}")
+    private String accessTokenTtl;
+
+    @Value("${app.security.token.refresh-token-ttl:PT90M}")
+    private String refreshTokenTtl;
+
     @Override
     public void run(ApplicationArguments args) {
         register(clientId, redirectUris, postLogoutRedirectUri);
@@ -110,16 +116,13 @@ public class ClientRegistrationSeeder implements ApplicationRunner {
                     || apkDevRedirectUris.isBlank() || apkDevLogoutUri.isBlank()) {
                 throw new IllegalArgumentException("APK dev client needs a distinct client ID, callbacks and logout URL");
             }
-            // Shorter-lived tokens for this dev-only client so expiry/renewal behavior can be
-            // tested quickly from devapk.supermeapp.com, without touching any other client
-            // (prod 4204, admin, admin-dev) - those keep the default 2min/30day settings below.
-            register(apkDevClientId, apkDevRedirectUris, apkDevLogoutUri,
-                    Duration.ofMinutes(3), Duration.ofMinutes(5));
+            register(apkDevClientId, apkDevRedirectUris, apkDevLogoutUri);
         }
     }
 
     private void register(String clientId, String redirectUris, String postLogoutRedirectUri) {
-        register(clientId, redirectUris, postLogoutRedirectUri, Duration.ofMinutes(2), Duration.ofDays(30));
+        register(clientId, redirectUris, postLogoutRedirectUri,
+                Duration.parse(accessTokenTtl), Duration.parse(refreshTokenTtl));
     }
 
     private void register(String clientId, String redirectUris, String postLogoutRedirectUri,
