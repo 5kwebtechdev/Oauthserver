@@ -281,6 +281,8 @@ button { font: inherit; }
   .future { background: #524f84; }
 }
 
+.task-theme .calendar-legend .future { background: #f04d0a; }
+
 @media (max-width: 359px) {
   .activity-hero, .progress-section, .calendar-section { padding-left: 12px; padding-right: 12px; }
   .info-row { grid-template-columns: minmax(112px, 42%) minmax(0, 1fr); }

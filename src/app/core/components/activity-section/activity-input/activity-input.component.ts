@@ -320,6 +320,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   reminderExpanded = false;
 
   eventDate: Date | null = null;
+  eventEndDate: Date | null = null;
   eventAllDay = false;
   eventHighPriority = false;
   eventInfoVisible = true;
@@ -743,6 +744,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   selectEventRecurrence(key: string): void {
     if (key === 'ONE_TIME' || key === 'MONTHLY' || key === 'YEARLY') {
       this.eventRecurrence = key;
+      if (key === 'ONE_TIME') this.eventEndDate = null;
     }
   }
 
@@ -827,6 +829,12 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   onEventDateChanged(): void {
     this.clearError('date');
     this.clearError('pastTime');
+    this.clearError('startAfterEnd');
+  }
+
+  onEventEndDateChanged(): void {
+    this.clearError('date');
+    this.clearError('startAfterEnd');
   }
 
   onEventAllDayChange(value: any): void {
@@ -1124,7 +1132,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         : ActivityInputComponent.PRIORITY_MAP[rawPriority] || '') as any;
 
       if (this.currentActive === 'events') {
-        this.eventDate = h.eventDate ? new Date(h.eventDate) : this.startDate;
+        this.eventDate = h.eventStartDate || h.eventDate ? new Date(h.eventStartDate || h.eventDate) : this.startDate;
+        this.eventEndDate = h.eventEndDate ? new Date(h.eventEndDate) : null;
         this.eventAllDay = !!(h.allDay ?? h.all_day);
         this.eventHighPriority = !!(h.highPriority ?? h.high_priority) || rawPriority === 'high' || rawPriority === '3';
         this.selectedEventType = String(h.eventType ?? h.event_type ?? '').trim();
@@ -1220,6 +1229,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.reminderOffset = null;
     this.reminderExpanded = false;
     this.eventDate = null;
+    this.eventEndDate = null;
     this.eventAllDay = false;
     this.eventHighPriority = false;
     this.eventInfoVisible = true;
@@ -1254,6 +1264,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   get isFormComplete(): boolean {
     if (this.currentActive === 'events') {
       if (!this.title?.trim() || !this.selectedEventType || !this.eventDate) return false;
+      if (this.eventRecurrence !== 'ONE_TIME' && (!this.eventEndDate || this.eventEndDate < this.eventDate)) return false;
       if (this.eventAllDay) return true;
       if (!this.startTime?.trim() || !this.endTime?.trim()) return false;
       if (this.isTimeInPast(this.startTime, this.eventDate)) return false;
@@ -1899,6 +1910,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     }
 
     const eventDate = this.formatDateStr(this.eventDate);
+    const eventEndDate = this.eventRecurrence === 'ONE_TIME' ? eventDate : this.formatDateStr(this.eventEndDate);
     const formattedStartTime = this.eventAllDay ? '' : this.toEventApiTime(this.startTime);
     const formattedEndTime = this.eventAllDay ? '' : this.toEventApiTime(this.endTime);
     const payload: EventPayload = {
@@ -1907,7 +1919,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       highPriority: this.eventHighPriority,
       eventType: this.selectedEventType,
       allDay: this.eventAllDay,
-      eventDate,
+      eventStartDate: eventDate,
+      eventEndDate,
       recurrence: this.eventRecurrence,
       reminderMinutesBefore: this.getEventReminderMinutes(),
       note: this.notes.trim() || null
@@ -1923,11 +1936,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       title: this.title.trim(),
       notes: this.notes.trim(),
       startDate: this.eventDate,
-      endDate: this.eventDate,
+      endDate: this.eventRecurrence === 'ONE_TIME' ? this.eventDate : this.eventEndDate,
       startTime: formattedStartTime,
       endTime: formattedEndTime,
       startTimeStamp: this.eventDate ? new Date(`${eventDate}T${formattedStartTime}`).getTime() : 0,
-      endTimeStamp: this.eventDate ? new Date(`${eventDate}T${formattedEndTime}`).getTime() : 0,
+      endTimeStamp: eventEndDate && formattedEndTime ? new Date(`${eventEndDate}T${formattedEndTime}`).getTime() : 0,
       type: 'events',
       isPrivate: this.isPrivate,
       selectedRoutine: '',
@@ -1952,21 +1965,21 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     request$.subscribe({
       next: (response) => {
         try {
-          const savedEvent = this.buildEventFromResponse(
-            response,
-            localEvent,
-            formattedStartTime,
-            formattedEndTime
-          );
+          if (!response.length) {
+            this.toastService.error('The event was saved, but its details could not be loaded. Please refresh the Planner.');
+            return;
+          }
+          const savedEvents = response.map(event => this.buildEventFromResponse(
+            event, localEvent, formattedStartTime, formattedEndTime));
           // Events are rendered by the Planner calendar, so notify the shared
           // Planner refresh channel instead of treating the event as a habit.
-          if (this.editingId) this.habitService.updateHabit(savedEvent, 'planner');
-          else this.habitService.addHabit(savedEvent, 'planner');
+          if (this.editingId) this.habitService.updateHabit(savedEvents[0], 'planner');
+          else this.habitService.addHabit(savedEvents[0], 'planner');
           if (this.editingId) {
             this.showSuccessToast(this.title.trim(), 'event', true);
             this.finalizeAndReturn();
           } else {
-            this.showCreationSuccess('event', savedEvent);
+            this.showCreationSuccess('event', savedEvents[0]);
           }
         } finally {
           this.isSubmitting = false;
@@ -2027,8 +2040,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         pastTime: !this.eventAllDay && this.isTimeInPast(this.startTime, this.eventDate),
         endTimeBeforeStart: !this.eventAllDay && this.isEndTimeNotAfterStart(this.startTime, this.endTime),
         endTimeSingleDay: !this.eventAllDay && this.isEndTimeCrossingMidnight(this.startTime, this.endTime),
-        date: !this.eventDate,
-        startAfterEnd: false,
+        date: !this.eventDate || (this.eventRecurrence !== 'ONE_TIME' && !this.eventEndDate),
+        startAfterEnd: this.eventRecurrence !== 'ONE_TIME' && !!(this.eventDate && this.eventEndDate && this.eventDate > this.eventEndDate),
         priority: false,
         notes: false,
         eventType: !this.selectedEventType
@@ -2101,7 +2114,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
   private buildEventFromResponse(response: any, baseEvent: Habit, fallbackStartTime: string, fallbackEndTime: string): Habit {
     const data = response || {};
-    const eventDate = String(data.eventDate || this.formatDateStr(this.eventDate) || '');
+    const eventDate = String(data.eventStartDate || data.eventDate || this.formatDateStr(this.eventDate) || '');
+    const eventEndDate = String(data.eventEndDate || eventDate);
     const allDay = !!data.allDay;
     const startTime = String(data.startTime ?? fallbackStartTime ?? '');
     const endTime = String(data.endTime ?? fallbackEndTime ?? '');
@@ -2112,11 +2126,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       title: String(data.name ?? baseEvent.title),
       notes: String(data.note ?? baseEvent.notes ?? ''),
       startDate: eventDate ? new Date(eventDate) : baseEvent.startDate,
-      endDate: eventDate ? new Date(eventDate) : baseEvent.endDate,
+      endDate: eventEndDate ? new Date(eventEndDate) : baseEvent.endDate,
       startTime,
       endTime,
       startTimeStamp: eventDate && startTime ? new Date(`${eventDate}T${startTime}`).getTime() : 0,
-      endTimeStamp: eventDate && endTime ? new Date(`${eventDate}T${endTime}`).getTime() : 0,
+      endTimeStamp: eventEndDate && endTime ? new Date(`${eventEndDate}T${endTime}`).getTime() : 0,
       priority: data.highPriority ? 'high' : 'medium',
       isPrivate: !!data.isPrivate,
       reminderOffset: this.normalizeEventReminderOffset(data.reminderMinutesBefore),

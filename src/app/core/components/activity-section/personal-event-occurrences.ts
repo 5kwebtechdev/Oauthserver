@@ -56,6 +56,16 @@ export function eventOccurrences(event: EventDto, reference: Date, mode: EventLi
   const recurrence = String(event.recurrence ?? 'ONE_TIME').toUpperCase();
   const candidates: Date[] = [];
 
+  if (event.seriesId != null) {
+    // The current Events API materializes each recurrence segment as its own
+    // record. Expanding one again would create duplicate future events.
+    const end = localDay(event.eventEndDate) || start;
+    const inMode = mode === 'upcoming' ? end >= today : end < today && end >= oldest;
+    if (!inMode) return [];
+    const visibleDate = mode === 'upcoming' && start < today ? today : start;
+    return [{ event, date: visibleDate, key: `${event.id}-${dateKey(start)}` }];
+  }
+
   if (recurrence === 'MONTHLY') {
     // Include enough months on either side of today to keep twelve future
     // occurrences and the full one-year past window, including short months.

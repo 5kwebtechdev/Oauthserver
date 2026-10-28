@@ -60,7 +60,8 @@ export class EventDetailComponent implements OnInit {
   }
 
   get eventName(): string { return this.event?.name || this.event?.title || 'Event'; }
-  get eventDate(): string { return String(this.event?.eventDate || this.event?.startDate || ''); }
+  get eventDate(): string { return String(this.event?.eventStartDate || this.event?.eventDate || this.event?.startDate || ''); }
+  get eventEndDate(): string { return String(this.event?.eventEndDate || this.eventDate); }
   get eventTypeIcon(): string { return getEventTypeIcon(this.event?.eventType, this.eventName); }
   get eventNote(): string { return this.event?.note || this.event?.notes || this.event?.description || ''; }
   get timeLabel(): string {

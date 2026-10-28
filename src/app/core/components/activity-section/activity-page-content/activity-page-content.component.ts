@@ -942,14 +942,13 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         const start = this.getLocalDate(this.isPersonalEventRecord(item)
             ? (item?.eventDate ?? item?.event_date ?? item?.startDate ?? item?.start_date)
             : (item?.startDate ?? item?.start_date ?? item?.eventDate ?? item?.event_date));
-        const end = this.getLocalDate(item?.endDate ?? item?.end_date) || start;
+        const end = this.getLocalDate(item?.eventEndDate ?? item?.endDate ?? item?.end_date) || start;
         if (!start) return [];
 
         const recurrence = String(item?.recurrence || '').toUpperCase();
-        // Repeating personal events are returned once by the events API, so
-        // derive the occurrence for the visible month rather than only marking
-        // their original creation date.
-        if (recurrence === 'MONTHLY' || recurrence === 'YEARLY') {
+        // Legacy recurring records need client-side projection; series records
+        // already represent concrete ranges returned by the Events API.
+        if (item?.seriesId == null && (recurrence === 'MONTHLY' || recurrence === 'YEARLY')) {
             if (recurrence === 'YEARLY' && start.getMonth() !== selectedMonth) return [];
             const visibleMonthStartsBeforeEvent = new Date(selectedYear, selectedMonth, 1) < new Date(start.getFullYear(), start.getMonth(), 1);
             if (visibleMonthStartsBeforeEvent) return [];
@@ -973,6 +972,10 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         const original = localDay(event?.eventDate || event?.event_date || event?.startDate || event?.start_date);
         const selected = localDay(selectedDate);
         if (!original || !selected || selected < original) return false;
+        if (event?.seriesId != null) {
+            const end = localDay(event?.eventEndDate || event?.endDate) || original;
+            return selected <= end;
+        }
         const recurrence = String(event?.recurrence || '').toUpperCase();
         if (recurrence === 'YEARLY' && original.getMonth() === selected.getMonth()) {
             return clampedMonthDay(selected.getFullYear(), original.getMonth(), original.getDate()).getTime() === selected.getTime();

@@ -65,8 +65,10 @@ export function isCalendarMirrorOfPersonalEvent(calendar: any, event: any): bool
   const calendarDay = day(calendar?.startDate || calendar?.start_date || calendar?.eventDate);
   const eventDay = day(event?.eventDate || event?.event_date);
   if (!calendarDay || !eventDay) return false;
+  const eventEndDay = day(event?.eventEndDate || eventDay);
   const recurrence = String(event?.recurrence || '').toUpperCase();
-  if (recurrence === 'YEARLY' ? calendarDay.slice(5) !== eventDay.slice(5)
+  if (event?.seriesId != null ? calendarDay < eventDay || calendarDay > eventEndDay
+    : recurrence === 'YEARLY' ? calendarDay.slice(5) !== eventDay.slice(5)
     : recurrence === 'MONTHLY' ? calendarDay.slice(8) !== eventDay.slice(8)
       : calendarDay !== eventDay) return false;
 

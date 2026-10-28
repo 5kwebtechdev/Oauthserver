@@ -52,8 +52,6 @@
         </div>
       </section>
 
-      <ad-banner class="lesson-ad" screen="ACCELERARY" variant="lesson"></ad-banner>
-
       <article class="lesson-reading">
         <p class="lesson-description" *ngIf="lesson.description">{{ lesson.description }}</p>
         <div class="lesson-content" [innerHTML]="lesson.content"></div>
@@ -82,6 +80,8 @@
           </section>
         </ng-template>
       </article>
+
+      <ad-banner class="lesson-ad" screen="ACCELERARY" variant="lesson"></ad-banner>
     </div>
 
     <footer class="lesson-footer">
