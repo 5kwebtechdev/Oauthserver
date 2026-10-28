@@ -40,7 +40,7 @@ public class RegisteredClientTokenSettingsUpdater implements ApplicationRunner {
             }
             TokenSettings current = client.getTokenSettings();
             TokenSettings updated = TokenSettings.builder()
-                    .settings(current.getSettings())
+                    .settings(settings -> settings.putAll(current.getSettings()))
                     .accessTokenTimeToLive(Duration.parse(accessTokenTtl))
                     .refreshTokenTimeToLive(Duration.parse(refreshTokenTtl))
                     .build();
