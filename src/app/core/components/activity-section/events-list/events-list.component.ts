@@ -137,7 +137,10 @@ export class EventsListComponent implements OnDestroy {
   }
 
   dateLabel(item: PersonalEventOccurrence): string {
-    return new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(item.date);
+    const format = new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    const start = localDay(item.event.eventStartDate || item.event.eventDate) || item.date;
+    const end = localDay(item.event.eventEndDate);
+    return end && end > start ? `${format.format(start)} – ${format.format(end)}` : format.format(start);
   }
 
   countdown(item: PersonalEventOccurrence): string {

@@ -64,19 +64,19 @@ ion-content {
   mask-size: contain;
 }
 
-.form-icon--edit { -webkit-mask-image: url('/assets/icons/edit.svg'); mask-image: url('/assets/icons/edit.svg'); }
-.form-icon--category { -webkit-mask-image: url('/assets/icons/category.svg'); mask-image: url('/assets/icons/category.svg'); }
-.form-icon--reminder-bell { -webkit-mask-image: url('/assets/icons/reminder-bell-figma.svg'); mask-image: url('/assets/icons/reminder-bell-figma.svg'); }
-.form-icon--reminder-add { -webkit-mask-image: url('/assets/icons/reminder-add-figma.svg'); mask-image: url('/assets/icons/reminder-add-figma.svg'); }
-.form-icon--study { -webkit-mask-image: url('/assets/icons/Study.svg'); mask-image: url('/assets/icons/Study.svg'); }
-.form-icon--health { -webkit-mask-image: url('/assets/icons/Health.svg'); mask-image: url('/assets/icons/Health.svg'); }
-.form-icon--skill { -webkit-mask-image: url('/assets/icons/Skill.svg'); mask-image: url('/assets/icons/Skill.svg'); }
-.form-icon--routine { -webkit-mask-image: url('/assets/icons/Routine.svg'); mask-image: url('/assets/icons/Routine.svg'); }
-.form-icon--personal { -webkit-mask-image: url('/assets/icons/Personal.svg'); mask-image: url('/assets/icons/Personal.svg'); }
-.form-icon--repeat { -webkit-mask-image: url('/assets/icons/repeat.svg'); mask-image: url('/assets/icons/repeat.svg'); }
-.form-icon--start-time-end-time { -webkit-mask-image: url('/assets/icons/Start-time-end-time.svg'); mask-image: url('/assets/icons/Start-time-end-time.svg'); }
-.form-icon--start-date-end-date { -webkit-mask-image: url('/assets/icons/Start-date-end-date.svg'); mask-image: url('/assets/icons/Start-date-end-date.svg'); }
-.form-icon--notes { -webkit-mask-image: url('/assets/icons/NOTES.svg'); mask-image: url('/assets/icons/NOTES.svg'); }
+.form-icon--edit { -webkit-mask-image: url('../../../../../assets/icons/edit.svg'); mask-image: url('../../../../../assets/icons/edit.svg'); }
+.form-icon--category { -webkit-mask-image: url('../../../../../assets/icons/category.svg'); mask-image: url('../../../../../assets/icons/category.svg'); }
+.form-icon--reminder-bell { -webkit-mask-image: url('../../../../../assets/icons/reminder-bell-figma.svg'); mask-image: url('../../../../../assets/icons/reminder-bell-figma.svg'); }
+.form-icon--reminder-add { -webkit-mask-image: url('../../../../../assets/icons/reminder-add-figma.svg'); mask-image: url('../../../../../assets/icons/reminder-add-figma.svg'); }
+.form-icon--study { -webkit-mask-image: url('../../../../../assets/icons/Study.svg'); mask-image: url('../../../../../assets/icons/Study.svg'); }
+.form-icon--health { -webkit-mask-image: url('../../../../../assets/icons/Health.svg'); mask-image: url('../../../../../assets/icons/Health.svg'); }
+.form-icon--skill { -webkit-mask-image: url('../../../../../assets/icons/Skill.svg'); mask-image: url('../../../../../assets/icons/Skill.svg'); }
+.form-icon--routine { -webkit-mask-image: url('../../../../../assets/icons/Routine.svg'); mask-image: url('../../../../../assets/icons/Routine.svg'); }
+.form-icon--personal { -webkit-mask-image: url('../../../../../assets/icons/Personal.svg'); mask-image: url('../../../../../assets/icons/Personal.svg'); }
+.form-icon--repeat { -webkit-mask-image: url('../../../../../assets/icons/repeat.svg'); mask-image: url('../../../../../assets/icons/repeat.svg'); }
+.form-icon--start-time-end-time { -webkit-mask-image: url('../../../../../assets/icons/Start-time-end-time.svg'); mask-image: url('../../../../../assets/icons/Start-time-end-time.svg'); }
+.form-icon--start-date-end-date { -webkit-mask-image: url('../../../../../assets/icons/Start-date-end-date.svg'); mask-image: url('../../../../../assets/icons/Start-date-end-date.svg'); }
+.form-icon--notes { -webkit-mask-image: url('../../../../../assets/icons/NOTES.svg'); mask-image: url('../../../../../assets/icons/NOTES.svg'); }
 
 $theme-colors: (
   habits: #8B8DCB,

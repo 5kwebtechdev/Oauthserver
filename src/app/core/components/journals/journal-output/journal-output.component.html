@@ -50,6 +50,11 @@
             <img src="assets/figma/journal/chevron-right.svg" alt="" />
           </button>
         </div>
+        <button *ngIf="isAtLatestMonth && !hasEntryForToday" type="button" class="journal-add"
+          aria-label="Add journal entry" (click)="onAddClick()">
+          <img src="assets/figma/journal/add.svg" alt="" aria-hidden="true" />
+          <span>Add entry</span>
+        </button>
       </div>
 
       <div class="journal-state journal-state--loading" *ngIf="loading" aria-live="polite">
@@ -77,11 +82,6 @@
       </div>
     </section>
   </main>
-
-  <button *ngIf="isAtLatestMonth && !hasEntryForToday" type="button" class="journal-add"
-    aria-label="Add journal entry" (click)="onAddClick()">
-    <img src="assets/figma/journal/add.svg" alt="" aria-hidden="true" />
-  </button>
 
   <div class="journal-delete-backdrop" *ngIf="entryPendingDelete" role="presentation" (click)="cancelDelete()">
     <section class="journal-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="journal-delete-title"

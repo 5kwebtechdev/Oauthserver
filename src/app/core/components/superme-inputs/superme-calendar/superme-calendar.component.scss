@@ -1,4 +1,5 @@
 .superme-calendar {
+  &.task-detail-theme { --future-status-color: #f04d0a; }
   background: linear-gradient(145deg, #FFF9FB 0%, #FEF2F7 100%);
   border: 1px solid rgba(144, 33, 77, 0.10);
   box-shadow: 0 2px 16px 0 rgba(144, 33, 77, 0.10), 0 1px 4px 0 rgba(107, 101, 106, 0.06);
@@ -242,7 +243,7 @@
         &.status-completed { background-color: #4CAF50; }
         &.status-skipped   { background-color: #BB2124; }
         &.status-pending   { background-color: #F04D0A; }
-        &.status-future    { background-color: #524f84; }
+        &.status-future    { background-color: var(--future-status-color, #524f84); }
       }
 
       // ── Today ───────────────────────────────────────────────────────────────
@@ -461,7 +462,7 @@
           &.status-skipped { background: transparent; }
           &.status-completed { color: #2d6830; }
           &.status-skipped { color: #bb2124; }
-          &.status-future { background: #524f84; border-radius: 50%; width: 8px; height: 8px; }
+          &.status-future { background: var(--future-status-color, #524f84); border-radius: 50%; width: 8px; height: 8px; }
         }
 
         &.status-completed-day p {

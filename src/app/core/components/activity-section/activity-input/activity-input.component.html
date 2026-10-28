@@ -644,9 +644,22 @@
             <img src="assets/figma/activity-event/event-date.svg" alt="">
           </span>
           <span class="event-picker-copy">
-            <strong>Event Date</strong>
-            <superme-datepicker #eventDateCtrl type="date" label="Event Date" [(ngModel)]="eventDate"
+            <strong>{{ eventRecurrence === 'ONE_TIME' ? 'Event Date' : 'Start Date' }}</strong>
+            <superme-datepicker #eventDateCtrl type="date" [label]="eventRecurrence === 'ONE_TIME' ? 'Event Date' : 'Start Date'" [(ngModel)]="eventDate"
               (ngModelChange)="onEventDateChanged()" [minDate]="today" placeholder=""></superme-datepicker>
+          </span>
+          <img class="event-picker-add" src="assets/figma/activity-event/add.svg" alt="" aria-hidden="true">
+        </div>
+
+        <div *ngIf="eventRecurrence !== 'ONE_TIME'" class="event-picker-card" [class.event-picker-card--empty]="!eventEndDate"
+          (click)="eventEndDateCtrl.toggleCalendar()">
+          <span class="event-picker-icon" aria-hidden="true">
+            <img src="assets/figma/activity-event/event-date.svg" alt="">
+          </span>
+          <span class="event-picker-copy">
+            <strong>End Date</strong>
+            <superme-datepicker #eventEndDateCtrl type="date" label="End Date" [(ngModel)]="eventEndDate"
+              (ngModelChange)="onEventEndDateChanged()" [minDate]="eventDate || today" placeholder=""></superme-datepicker>
           </span>
           <img class="event-picker-add" src="assets/figma/activity-event/add.svg" alt="" aria-hidden="true">
         </div>
@@ -679,7 +692,8 @@
           </div>
         </div>
 
-        <div *ngIf="attemptedSubmit && showDateError" class="field-error" role="alert">Select an event date.</div>
+        <div *ngIf="attemptedSubmit && showDateError" class="field-error" role="alert">Select {{ eventRecurrence === 'ONE_TIME' ? 'an event date' : 'start and end dates' }}.</div>
+        <div *ngIf="attemptedSubmit && showStartAfterEnd" class="field-error" role="alert">End date must be on or after the start date.</div>
         <div *ngIf="attemptedSubmit && showTimeError" class="field-error" role="alert">Select a start and end time, or choose All Day.</div>
         <div *ngIf="showPastTimeError" class="field-error" role="alert">That start time has already passed.</div>
         <div *ngIf="showEndTimeBeforeStart || showEndTimeSingleDayError" class="field-error" role="alert">End time must be later than start time.</div>

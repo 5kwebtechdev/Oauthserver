@@ -46,7 +46,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   private static readonly MAX_IMAGES = 3;
-  private static readonly MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+  private static readonly MAX_IMAGE_BYTES = 1 * 1024 * 1024;
   text = '';
   selected: Record<string, number | null> = {};
   selectedFeelings: number[] = [];
@@ -285,7 +285,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   async submit(): Promise<void> {
     if (this.submitting) return;
     if (this.uploadedImages.some(({ file }) => file && file.size > JournalInputComponent.MAX_IMAGE_BYTES)) {
-      this.imageUploadError = 'Each image must be 2 MB or less.';
+      this.imageUploadError = 'Each image must be 1 MB or less.';
       return;
     }
     if (!this.dailyMood) {
@@ -375,7 +375,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
         return;
       }
       if (file.size > JournalInputComponent.MAX_IMAGE_BYTES) {
-        this.imageUploadError = 'Each image must be 2 MB or less.';
+        this.imageUploadError = 'Each image must be 1 MB or less.';
         return;
       }
 

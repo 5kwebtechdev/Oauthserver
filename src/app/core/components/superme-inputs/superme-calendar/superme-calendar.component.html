@@ -1,4 +1,5 @@
 <div class="superme-calendar" [class.calendar-main-style]="useCalendarMainStyle"
+  [class.task-detail-theme]="activityDetailTheme === 'task' && !showMoodToggle"
   [class.activity-detail-style]="useActivityDetailStyle">
   <div class="calendar-header">
     <!-- Navigation with arrows for activity-calendar, month picker for other uses -->

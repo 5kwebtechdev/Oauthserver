@@ -25,7 +25,7 @@
             </div>
           </div>
           <div class="event-detail-info">
-            <div><span>Date</span><strong>{{ eventDate | date:'MMM d, y' }}</strong></div>
+            <div><span>Date</span><strong>{{ eventDate | date:'MMM d, y' }}<ng-container *ngIf="eventEndDate !== eventDate"> – {{ eventEndDate | date:'MMM d, y' }}</ng-container></strong></div>
             <div><span>Time</span><strong>{{ timeLabel }}</strong></div>
             <div><span>Repeat</span><strong>{{ recurrenceLabel }}</strong></div>
             <div *ngIf="eventNote"><span>Notes</span><strong>{{ eventNote }}</strong></div>

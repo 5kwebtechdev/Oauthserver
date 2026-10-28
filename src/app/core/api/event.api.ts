@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AuthApi } from './auth.api';
@@ -18,7 +18,8 @@ export interface EventPayload {
   highPriority: boolean;
   eventType: string;
   allDay: boolean;
-  eventDate: string;
+  eventStartDate: string;
+  eventEndDate: string;
   startTime?: string | null;
   endTime?: string | null;
   recurrence: 'ONE_TIME' | 'MONTHLY' | 'YEARLY';
@@ -26,8 +27,13 @@ export interface EventPayload {
   note?: string | null;
 }
 
-export interface EventDto extends EventPayload {
+export interface EventDto extends Omit<EventPayload, 'eventStartDate' | 'eventEndDate'> {
   id: number;
+  /** Normalized date for existing Planner consumers and older API records. */
+  eventDate: string;
+  eventStartDate?: string;
+  eventEndDate?: string;
+  seriesId?: number | null;
   completed: boolean;
   createdAt: string;
   updatedAt: string | null;
@@ -53,16 +59,19 @@ export class EventApi {
     return this.http.delete<void>(`${this.base}/events/types/${id}`, { headers: this.headers() });
   }
 
-  createEvent(payload: EventPayload): Observable<EventDto> {
-    return this.http.post<EventDto>(`${this.base}/events/add`, payload, { headers: this.headers() });
+  createEvent(payload: EventPayload): Observable<EventDto[]> {
+    return this.http.post<EventDto | EventDto[]>(`${this.base}/events/add`, payload, { headers: this.headers() })
+      .pipe(map(response => this.normalizeEvents(response)));
   }
 
-  updateEvent(id: string | number, payload: EventPayload): Observable<EventDto> {
-    return this.http.put<EventDto>(`${this.base}/events/update/${id}`, payload, { headers: this.headers() });
+  updateEvent(id: string | number, payload: EventPayload): Observable<EventDto[]> {
+    return this.http.put<EventDto | EventDto[]>(`${this.base}/events/update/${id}`, payload, { headers: this.headers() })
+      .pipe(map(response => this.normalizeEvents(response)));
   }
 
   getEvents(): Observable<EventDto[]> {
     return this.http.get<EventDto[]>(`${this.base}/events/all`, { headers: this.headers() }).pipe(
+      map(events => this.normalizeEvents(events)),
       tap(events => {
         this.cachedEvents.clear();
         (events || []).forEach(event => this.cachedEvents.set(Number(event.id), event));
@@ -76,7 +85,23 @@ export class EventApi {
   }
 
   getEvent(id: string | number): Observable<EventDto> {
-    return this.http.get<EventDto>(`${this.base}/events/${id}`, { headers: this.headers() });
+    return this.http.get<EventDto>(`${this.base}/events/${id}`, { headers: this.headers() })
+      .pipe(map(event => this.normalizeEvent(event)));
+  }
+
+  private normalizeEvents(response: EventDto | EventDto[] | null): EventDto[] {
+    return (Array.isArray(response) ? response : response ? [response] : [])
+      .map(event => this.normalizeEvent(event));
+  }
+
+  private normalizeEvent(event: EventDto): EventDto {
+    const startDate = event.eventStartDate || event.eventDate;
+    return {
+      ...event,
+      eventDate: startDate,
+      eventStartDate: startDate,
+      eventEndDate: event.eventEndDate || startDate
+    };
   }
 
   deleteEvent(id: string | number): Observable<string> {

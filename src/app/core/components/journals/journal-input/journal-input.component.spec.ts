@@ -77,6 +77,24 @@ describe('Journal read-only daily mood', () => {
     expect(body.get('emotions')).toBe('happy');
   });
 
+  it('accepts a 1 MB image and rejects an image one byte larger', async () => {
+    const component = fixture.componentInstance;
+    const select = async (file: File) => {
+      const input = { files: [file], value: 'selected' } as unknown as HTMLInputElement;
+      await component.onFileSelected({ target: input } as unknown as Event);
+      expect(input.value).toBe('');
+    };
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Max 1 MB per image');
+    await select(new File([new Uint8Array(1024 * 1024)], 'allowed.png', { type: 'image/png' }));
+    expect(component.uploadedImages.length).toBe(1);
+    expect(component.imageUploadError).toBeNull();
+
+    await select(new File([new Uint8Array(1024 * 1024 + 1)], 'too-large.png', { type: 'image/png' }));
+    expect(component.uploadedImages.length).toBe(1);
+    expect(component.imageUploadError).toBe('Each image must be 1 MB or less.');
+  });
+
   [360, 375, 390, 414].forEach(width => it(`keeps the selected-vibe card and tooltip within ${width}px`, () => {
     const host = fixture.nativeElement as HTMLElement;
     // Karma hides its context body; make it measurable for this layout test.

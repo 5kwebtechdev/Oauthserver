@@ -29,6 +29,16 @@ describe('personal event occurrences', () => {
     expect(eventOccurrences(birthday, new Date(2026, 9, 21), 'upcoming').length).toBe(1);
   });
 
+  it('does not expand backend-materialized recurrence segments a second time', () => {
+    const segment = { ...event('2026-11-01', 'YEARLY'), seriesId: 42, eventEndDate: '2026-12-31' };
+    expect(eventOccurrences(segment, new Date(2026, 9, 27), 'upcoming')
+      .map(item => item.date.getTime())).toEqual([new Date(2026, 10, 1).getTime()]);
+    expect(eventOccurrences(segment, new Date(2027, 0, 1), 'upcoming')).toEqual([]);
+    expect(eventOccurrences(segment, new Date(2026, 10, 15), 'upcoming')[0].date.getTime())
+      .toBe(new Date(2026, 10, 15).getTime());
+    expect(eventOccurrences(segment, new Date(2026, 10, 15), 'past')).toEqual([]);
+  });
+
   it('keeps distant one-time events but excludes past events older than a year', () => {
     expect(eventOccurrences(event('2030-01-01'), new Date(2026, 9, 22), 'upcoming').length).toBe(1);
     expect(eventOccurrences(event('2025-10-21'), new Date(2026, 9, 22), 'past').length).toBe(0);

@@ -6,13 +6,11 @@ import { Platform } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
-import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { ChallengeSubmissionResponse, Challenge } from 'src/app/core/models/learning.models';
-import { PetMood } from '../../superme-pet/superme-pet.component';
-import { environment } from 'src/environments/environment';
 import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
+import { ScoreStatusComponent } from './score-status.component';
 
 interface ResultNavigationState {
   submissionResult?: ChallengeSubmissionResponse | Record<string, unknown>;
@@ -28,7 +26,7 @@ interface ResultNavigationState {
     CommonModule,
     IonicModule,
     SupermeNavigatorComponent,
-    SupermePetComponent,
+    ScoreStatusComponent,
     SupermeInputsModule,
     SupermeButtonComponent
   ],
@@ -272,21 +270,6 @@ export class ResultPageComponent implements OnInit, OnDestroy {
     }
   }
 
-
-  getPetMood(): PetMood {
-    if (this.scorePercentage >= 80) {
-      return 'happy';
-    } else if (this.scorePercentage >= 40) {
-      return 'playful';
-    } else {
-      return 'base';
-    }
-  }
-
-
-  isExcellentScore(): boolean {
-    return this.scorePercentage >= 80;
-  }
 
   onCancel(): void {
     this.returnToUpdatedLearningList();
