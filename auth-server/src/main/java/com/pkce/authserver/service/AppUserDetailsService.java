@@ -114,7 +114,9 @@ public class AppUserDetailsService implements UserDetailsService {
                 .password(passwordHash)
                 .disabled(deleted || inactive)
                 .accountExpired(expired)
-                .authorities(Set.of(new SimpleGrantedAuthority("ROLE_" + admin.getRole().name())))
+                .authorities(Set.of(
+                        new SimpleGrantedAuthority("ROLE_" + admin.getRole().name()),
+                        new SimpleGrantedAuthority(AdminLoginContextFilter.ADMIN_ACCOUNT_AUTHORITY)))
                 .build();
     }
 
@@ -138,7 +140,9 @@ public class AppUserDetailsService implements UserDetailsService {
                 .password(passwordHash)
                 .disabled(deleted || inactive)
                 .accountExpired(expired)
-                .authorities(Set.of(new SimpleGrantedAuthority("ROLE_" + admin.getRole().name())))
+                .authorities(Set.of(
+                        new SimpleGrantedAuthority("ROLE_" + admin.getRole().name()),
+                        new SimpleGrantedAuthority(AdminLoginContextFilter.ADMIN_ACCOUNT_AUTHORITY)))
                 .build();
     }
 

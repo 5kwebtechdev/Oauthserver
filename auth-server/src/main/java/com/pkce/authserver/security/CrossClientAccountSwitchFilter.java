@@ -23,9 +23,6 @@ import java.util.Set;
  */
 public final class CrossClientAccountSwitchFilter extends OncePerRequestFilter {
 
-    private static final Set<String> ADMIN_ROLES = Set.of(
-            "ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_MANAGER", "ROLE_EXECUTIVE");
-
     private final Set<String> appClientIds;
     private final Set<String> adminClientIds;
     private final String apkDevClientId;
@@ -86,11 +83,13 @@ public final class CrossClientAccountSwitchFilter extends OncePerRequestFilter {
     }
 
     private boolean hasAdminSession() {
-        return hasAuthenticatedSession() && hasAnyRole(ADMIN_ROLES);
+        return hasAuthenticatedSession()
+                && hasAnyRole(Set.of(AdminLoginContextFilter.ADMIN_ACCOUNT_AUTHORITY));
     }
 
     private boolean hasAuthenticatedNonAdminSession() {
-        return hasAuthenticatedSession() && !hasAnyRole(ADMIN_ROLES);
+        return hasAuthenticatedSession()
+                && !hasAnyRole(Set.of(AdminLoginContextFilter.ADMIN_ACCOUNT_AUTHORITY));
     }
 
     private boolean hasAuthenticatedSession() {

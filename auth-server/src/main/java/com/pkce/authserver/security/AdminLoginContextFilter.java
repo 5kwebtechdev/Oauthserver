@@ -34,6 +34,9 @@ import java.io.IOException;
  */
 public class AdminLoginContextFilter extends OncePerRequestFilter {
 
+    /** Distinguishes principals loaded from an Admin table from app Users with admin-like roles. */
+    public static final String ADMIN_ACCOUNT_AUTHORITY = "AUTH_SERVER_ADMIN_ACCOUNT";
+
     public enum AdminClient { NONE, PROD, DEV, APK_DEV }
 
     private static final ThreadLocal<AdminClient> ADMIN_CLIENT = new ThreadLocal<>();
