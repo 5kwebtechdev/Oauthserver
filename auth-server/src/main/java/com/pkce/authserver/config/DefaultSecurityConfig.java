@@ -109,15 +109,17 @@ public class DefaultSecurityConfig {
                 // ExceptionHandlingConfigurer has more than one defaultAuthenticationEntryPointFor
                 // mapping, requests that don't match ANY of them fall back to whichever mapping was
                 // inserted FIRST - not necessarily formLogin's. Registering the catch-all
-                // (AnyRequestMatcher, same loginPage("/login") formLogin uses) ourselves, after the
-                // /v1/** one, keeps that catch-all as the real default for every other request
-                // (e.g. a plain "GET /") while /v1/** still wins its own, more specific match.
+                // ourselves, after the /v1/** one, keeps the frontend landing page as the real
+                // default for stale protected-page navigations (for example, after another tab
+                // logs out) while /v1/** still wins its own, more specific match. OAuth
+                // authorization requests use their separate chain and still go to /login when a
+                // user explicitly starts sign-in.
                 .exceptionHandling(exceptions -> exceptions
                         .defaultAuthenticationEntryPointFor(
                                 new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                                 new AntPathRequestMatcher("/v1/**"))
                         .defaultAuthenticationEntryPointFor(
-                                new LoginUrlAuthenticationEntryPoint("/login"),
+                                new LoginUrlAuthenticationEntryPoint(frontendBaseUrl),
                                 AnyRequestMatcher.INSTANCE))
                 // ----- RATE LIMITING CODE: wired in before Turnstile -----
                 // Cheapest check first: in-memory rate limit before the Turnstile filter's
