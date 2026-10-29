@@ -94,7 +94,11 @@ public class LoginPageController {
     @ResponseBody
     public void loginSessionStatus(HttpServletRequest request, HttpServletResponse response) {
         response.setHeader("Cache-Control", "no-store");
-        response.setStatus(request.getSession(false) == null
+        boolean appLogoutMarked = request.getCookies() != null
+                && java.util.Arrays.stream(request.getCookies())
+                .anyMatch(cookie -> com.pkce.authserver.security.AppLogoutLandingFilter.LOGOUT_MARKER_COOKIE
+                        .equals(cookie.getName()) && "1".equals(cookie.getValue()));
+        response.setStatus(appLogoutMarked || request.getSession(false) == null
                 ? HttpServletResponse.SC_UNAUTHORIZED
                 : HttpServletResponse.SC_NO_CONTENT);
     }
@@ -810,7 +814,7 @@ public class LoginPageController {
                                 checking = false;
                               }
                             };
-                            window.setInterval(checkSession, 5000);
+                            window.setInterval(checkSession, 3000);
                             document.addEventListener('visibilitychange', () => {
                               if (!document.hidden) checkSession();
                             });

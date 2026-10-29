@@ -19,6 +19,8 @@ import java.util.Set;
 public final class AppLogoutLandingFilter extends OncePerRequestFilter {
 
     private static final String LOGOUT_PATH = "/connect/logout";
+    private static final String AUTHORIZE_PATH = "/oauth2/authorize";
+    public static final String LOGOUT_MARKER_COOKIE = "SUPERME_APP_LOGOUT";
 
     private final Set<String> appClientIds;
     private final String landingUrl;
@@ -33,16 +35,30 @@ public final class AppLogoutLandingFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !LOGOUT_PATH.equals(request.getServletPath())
-                || !appClientIds.contains(normalize(request.getParameter("client_id")));
+        String clientId = normalize(request.getParameter("client_id"));
+        boolean appLogout = LOGOUT_PATH.equals(request.getServletPath()) && appClientIds.contains(clientId);
+        boolean newAppAuthorization = AUTHORIZE_PATH.equals(request.getServletPath())
+                && "GET".equalsIgnoreCase(request.getMethod()) && appClientIds.contains(clientId);
+        return !appLogout && !newAppAuthorization;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        if (AUTHORIZE_PATH.equals(request.getServletPath())) {
+            // A fresh, explicit Login action begins a new flow and should supersede the
+            // cross-tab logout marker left by the previous session.
+            response.addHeader("Set-Cookie", LOGOUT_MARKER_COOKIE
+                    + "=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Lax");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         HttpServletResponseWrapper landingResponse = new HttpServletResponseWrapper(response) {
             @Override
             public void sendRedirect(String location) throws IOException {
+                addHeader("Set-Cookie", LOGOUT_MARKER_COOKIE
+                        + "=1; Max-Age=120; Path=/; Secure; HttpOnly; SameSite=Lax");
                 super.sendRedirect(landingUrl);
             }
         };
