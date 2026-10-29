@@ -75,6 +75,7 @@ public class DefaultSecurityConfig {
                         .requestMatchers("/api/auth/google-login").permitAll()
                         .requestMatchers("/api/auth/handoff-login").permitAll()
                         .requestMatchers("/api/auth/google-signup-handoff").permitAll()
+                        .requestMatchers("/api/auth/login-session").permitAll()
                         .requestMatchers("/api/auth/continue-with-email/**").permitAll()
                         // Registration is open by necessity - the caller has no account yet. It
                         // still has to prove ownership of the email inside the request body (an

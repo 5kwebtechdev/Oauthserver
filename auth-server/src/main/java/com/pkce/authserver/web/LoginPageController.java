@@ -1,10 +1,12 @@
 package com.pkce.authserver.web;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.PrintWriter;
 
@@ -88,6 +90,15 @@ public class LoginPageController {
         response.sendRedirect(logoutLandingUrl);
     }
 
+    @GetMapping("/api/auth/login-session")
+    @ResponseBody
+    public void loginSessionStatus(HttpServletRequest request, HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-store");
+        response.setStatus(request.getSession(false) == null
+                ? HttpServletResponse.SC_UNAUTHORIZED
+                : HttpServletResponse.SC_NO_CONTENT);
+    }
+
     @GetMapping({"/login", "/apklogin", "/adminlogin"})
     public void login(HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) throws Exception {
         // A logout marker means the browser is finishing a logout flow, not starting an
@@ -102,6 +113,7 @@ public class LoginPageController {
         // The saved authorization request determines the client; never accept a return URL
         // supplied directly to /login. Each link is a configured frontend URL.
         var session = request.getSession(false);
+        boolean monitorSession = session != null;
         var saved = session == null ? null : session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
         boolean additional = false;
         boolean isApkDev = false;
@@ -777,6 +789,33 @@ public class LoginPageController {
                         </style>
                         <script src="https://accounts.google.com/gsi/client" async defer></script>
                         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+                        <script>
+                          (() => {
+                            if (!%s) return;
+                            let checking = false;
+                            const checkSession = async () => {
+                              if (checking) return;
+                              checking = true;
+                              try {
+                                const response = await fetch('/api/auth/login-session', {
+                                  credentials: 'same-origin',
+                                  cache: 'no-store'
+                                });
+                                if (response.status === 401) {
+                                  window.location.replace('%s');
+                                }
+                              } catch (_) {
+                                // Keep the sign-in page usable during temporary network failures.
+                              } finally {
+                                checking = false;
+                              }
+                            };
+                            window.setInterval(checkSession, 5000);
+                            document.addEventListener('visibilitychange', () => {
+                              if (!document.hidden) checkSession();
+                            });
+                          })();
+                        </script>
                       </head>
                       <body>
                         <main class="auth-shell">
@@ -987,7 +1026,9 @@ public class LoginPageController {
                     pageEmailUrl,
                     pageSignupUrl,
                     pageBaseUrl,
-                    googleClientId
+                    googleClientId,
+                    monitorSession,
+                    logoutLandingUrl
             ));
         }
     }
