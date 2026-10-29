@@ -95,6 +95,23 @@ class LoginPageControllerTest {
         assertThat(html).contains("ellipse at 12% 18%", "width: 100%;", "border-radius: 50%;");
         assertThat(html).doesNotContain("%%");
     }
+
+    @Test
+    void rejectedLoginPost_showsFriendlyErrorInsteadOfWhitelabelPage() throws Exception {
+        HttpClient http = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/login"))
+                .header("Accept", "text/html,application/xhtml+xml")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString("username=stale-session&password=invalid"))
+                .build();
+
+        HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(403);
+        assertThat(response.body()).contains("Please refresh the page and try again.");
+        assertThat(response.body()).doesNotContain("Whitelabel Error Page", "There was an unexpected error");
+    }
+
     @Test
     void additionalClientUsesItsOwnLoginLinks() throws Exception {
         var cookies = new java.net.CookieManager();
