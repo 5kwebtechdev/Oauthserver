@@ -59,6 +59,10 @@ public class DefaultSecurityConfig {
             throws Exception {
         http
                 .authorizeHttpRequests((authorize) -> authorize
+                        // The auth-server root is a public hand-off to the app, and the login
+                        // controller must be reachable for /login?logout to finish at the app
+                        // landing page after another tab invalidates this browser session.
+                        .requestMatchers("/", "/login").permitAll()
                         .requestMatchers("/error").permitAll()
                         // Selected from the saved OAuth client by LoginPageController.
                         .requestMatchers("/apklogin", "/adminlogin").permitAll()

@@ -85,7 +85,7 @@ public class LoginPageController {
 
     @GetMapping("/")
     public void home(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
-        response.sendRedirect(frontendBaseUrl);
+        response.sendRedirect(logoutLandingUrl);
     }
 
     @GetMapping({"/login", "/apklogin", "/adminlogin"})
