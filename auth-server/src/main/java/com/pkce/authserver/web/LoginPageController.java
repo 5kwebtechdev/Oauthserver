@@ -802,7 +802,7 @@ public class LoginPageController {
                                   cache: 'no-store'
                                 });
                                 if (response.status === 401) {
-                                  window.location.replace('%s');
+                                  window.location.replace('https://supermeapp.com/');
                                 }
                               } catch (_) {
                                 // Keep the sign-in page usable during temporary network failures.
@@ -1015,7 +1015,6 @@ public class LoginPageController {
                     </html>
                     """.formatted(
                     monitorSession,
-                    logoutLandingUrl,
                     PANDA_IMAGE_DATA,
                     hasError ? "<div class=\"alert alert-danger\">Invalid email or password.</div>" : "",
                     loggedOut ? "<div class=\"alert alert-success\">You have been signed out.</div>" : "",
