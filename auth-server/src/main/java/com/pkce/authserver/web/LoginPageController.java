@@ -103,8 +103,20 @@ public class LoginPageController {
                 : HttpServletResponse.SC_NO_CONTENT);
     }
 
+    private boolean hasAppLogoutMarker(HttpServletRequest request) {
+        jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+        return cookies != null && java.util.Arrays.stream(cookies)
+                .anyMatch(cookie -> com.pkce.authserver.security.AppLogoutLandingFilter.LOGOUT_MARKER_COOKIE
+                        .equals(cookie.getName()) && "1".equals(cookie.getValue()));
+    }
+
     @GetMapping({"/login", "/apklogin", "/adminlogin"})
     public void login(HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) throws Exception {
+        if ("/login".equals(request.getServletPath()) && hasAppLogoutMarker(request)) {
+            response.sendRedirect("https://supermeapp.com/");
+            return;
+        }
+
         // A logout marker means the browser is finishing a logout flow, not starting an
         // authorization request. Leave the auth-server host instead of rendering its login
         // page again. A user who explicitly clicks Login arrives with a saved /oauth2/authorize
@@ -117,7 +129,6 @@ public class LoginPageController {
         // The saved authorization request determines the client; never accept a return URL
         // supplied directly to /login. Each link is a configured frontend URL.
         var session = request.getSession(false);
-        boolean monitorSession = session != null;
         var saved = session == null ? null : session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
         boolean additional = false;
         boolean isApkDev = false;
@@ -795,28 +806,15 @@ public class LoginPageController {
                         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
                         <script>
                           (() => {
-                            if (!%s) return;
-                            let checking = false;
-                            const checkSession = async () => {
-                              if (checking) return;
-                              checking = true;
-                              try {
-                                const response = await fetch('/api/auth/login-session', {
-                                  credentials: 'same-origin',
-                                  cache: 'no-store'
-                                });
-                                if (response.status === 401) {
-                                  window.location.replace('https://supermeapp.com/');
-                                }
-                              } catch (_) {
-                                // Keep the sign-in page usable during temporary network failures.
-                              } finally {
-                                checking = false;
-                              }
+                            const redirectAfterSharedLogout = () => {
+                              const marker = document.cookie.split(';')
+                                .some(cookie => cookie.trim() === 'SUPERME_APP_LOGOUT=1');
+                              if (marker) window.location.replace('https://supermeapp.com/');
                             };
-                            window.setInterval(checkSession, 3000);
+                            redirectAfterSharedLogout();
+                            window.setInterval(redirectAfterSharedLogout, 3000);
                             document.addEventListener('visibilitychange', () => {
-                              if (!document.hidden) checkSession();
+                              if (!document.hidden) redirectAfterSharedLogout();
                             });
                           })();
                         </script>
@@ -1018,7 +1016,6 @@ public class LoginPageController {
                       </body>
                     </html>
                     """.formatted(
-                    monitorSession,
                     PANDA_IMAGE_DATA,
                     hasError ? "<div class=\"alert alert-danger\">Invalid email or password.</div>" : "",
                     loggedOut ? "<div class=\"alert alert-success\">You have been signed out.</div>" : "",

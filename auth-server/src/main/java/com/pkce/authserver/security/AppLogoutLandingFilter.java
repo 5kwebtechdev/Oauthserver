@@ -49,7 +49,7 @@ public final class AppLogoutLandingFilter extends OncePerRequestFilter {
             // A fresh, explicit Login action begins a new flow and should supersede the
             // cross-tab logout marker left by the previous session.
             response.addHeader("Set-Cookie", LOGOUT_MARKER_COOKIE
-                    + "=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Lax");
+                    + "=; Max-Age=0; Path=/; Secure; SameSite=Lax");
             filterChain.doFilter(request, response);
             return;
         }
@@ -58,7 +58,7 @@ public final class AppLogoutLandingFilter extends OncePerRequestFilter {
             @Override
             public void sendRedirect(String location) throws IOException {
                 addHeader("Set-Cookie", LOGOUT_MARKER_COOKIE
-                        + "=1; Max-Age=120; Path=/; Secure; HttpOnly; SameSite=Lax");
+                        + "=1; Max-Age=120; Path=/; Secure; SameSite=Lax");
                 super.sendRedirect(landingUrl);
             }
         };
