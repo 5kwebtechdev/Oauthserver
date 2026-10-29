@@ -34,5 +34,6 @@ app:
       post-logout-redirect-uri: ${OAUTH_POST_LOGOUT_REDIRECT_URI}
   frontend:
     base-url: ${FE_BASE_URL}
+    logout-landing-url: https://supermeapp.com/
     forgot-password-url: ${FE_FORGOT_PASSWORD_URL}
     continue-with-email-url: ${FE_CONTINUE_WITH_EMAIL_URL}

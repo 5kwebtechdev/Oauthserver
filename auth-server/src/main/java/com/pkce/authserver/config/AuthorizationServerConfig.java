@@ -8,6 +8,7 @@ import com.pkce.authserver.security.PkceAwareRefreshTokenGenerator;
 import com.pkce.authserver.security.CrossClientAccountSwitchFilter;
 import com.pkce.authserver.security.RateLimitFilter;
 import com.pkce.authserver.security.AdminLogoutRevocationFilter;
+import com.pkce.authserver.security.AppLogoutLandingFilter;
 import com.pkce.authserver.service.AdminTokenSessionStore;
 import com.pkce.authserver.security.UserInfoAccessTokenResponseCustomizer;
 import com.pkce.authserver.service.ReuseDetectingAuthorizationService;
@@ -67,6 +68,15 @@ public class AuthorizationServerConfig {
 
     @Value("${app.security.cors.allowed-origins}")
     private String allowedOrigin;
+
+    @Value("${app.security.client.id:}")
+    private String appClientId;
+
+    @Value("${app.security.additional-client.id:}")
+    private String additionalAppClientId;
+
+    @Value("${app.frontend.logout-landing-url:https://supermeapp.com/}")
+    private String appLogoutLandingUrl;
 
     @Value("${app.frontend.apk-dev-client-id:}")
     private String apkDevClientId;
@@ -143,6 +153,12 @@ public class AuthorizationServerConfig {
                 // /connect/logout, so sitting early in the chain costs nothing.
                 .addFilterBefore(new AdminLogoutRevocationFilter(
                                 authorizationService, registeredClientRepository, adminTokenSessions),
+                        LogoutFilter.class)
+                // Preserve the OIDC logout endpoint's validation and session invalidation, but
+                // route production app-client logouts to the public landing page instead of the
+                // auth-server host. Admin client logout destinations are unaffected.
+                .addFilterBefore(new AppLogoutLandingFilter(
+                                appClientId, additionalAppClientId, appLogoutLandingUrl),
                         LogoutFilter.class)
                 // OIDC discovery and the JWKS endpoint are meant to be publicly readable per
                 // spec (and per this project's own FRONTEND_AUTH_INTEGRATION.md, which

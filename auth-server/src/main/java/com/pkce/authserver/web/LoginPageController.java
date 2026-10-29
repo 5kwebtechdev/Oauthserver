@@ -31,6 +31,9 @@ public class LoginPageController {
     @Value("${app.frontend.base-url}")
     private String frontendBaseUrl;
 
+    @Value("${app.frontend.logout-landing-url:https://supermeapp.com/}")
+    private String logoutLandingUrl;
+
     @Value("${app.google.client-id}")
     private String googleClientId;
 
@@ -87,6 +90,15 @@ public class LoginPageController {
 
     @GetMapping({"/login", "/apklogin", "/adminlogin"})
     public void login(HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) throws Exception {
+        // A logout marker means the browser is finishing a logout flow, not starting an
+        // authorization request. Leave the auth-server host instead of rendering its login
+        // page again. A user who explicitly clicks Login arrives with a saved /oauth2/authorize
+        // request and continues through the normal login form below.
+        if ("/login".equals(request.getServletPath()) && request.getParameter("logout") != null) {
+            response.sendRedirect(logoutLandingUrl);
+            return;
+        }
+
         // The saved authorization request determines the client; never accept a return URL
         // supplied directly to /login. Each link is a configured frontend URL.
         var session = request.getSession(false);
