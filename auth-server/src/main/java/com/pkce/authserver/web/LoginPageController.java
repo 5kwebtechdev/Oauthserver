@@ -1015,6 +1015,8 @@ public class LoginPageController {
                     </html>
                     """.formatted(
                     PANDA_IMAGE_DATA,
+                    monitorSession,
+                    logoutLandingUrl,
                     hasError ? "<div class=\"alert alert-danger\">Invalid email or password.</div>" : "",
                     loggedOut ? "<div class=\"alert alert-success\">You have been signed out.</div>" : "",
                     captchaFailed ? "<div class=\"alert alert-danger\">Captcha verification failed - please try again.</div>" : "",
@@ -1026,9 +1028,7 @@ public class LoginPageController {
                     pageEmailUrl,
                     pageSignupUrl,
                     pageBaseUrl,
-                    googleClientId,
-                    monitorSession,
-                    logoutLandingUrl
+                    googleClientId
             ));
         }
     }
