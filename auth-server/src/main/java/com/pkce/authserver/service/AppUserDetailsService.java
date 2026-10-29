@@ -45,8 +45,9 @@ import java.util.Set;
  * session just because its credentials happen to be valid. PROD checks mindfullAdmin via
  * AdminRepository; DEV checks SuperMeBE's dev admin database via AdminDevRepository - these are
  * two genuinely different physical databases (see AdminDevDataSourceConfig), not just different
- * client ids reading the same data. For every other (non-admin) client, behavior is unchanged:
- * User first, falling back to the prod Admin table only if not found there.
+ * client ids reading the same data. All other clients authenticate only against the regular User
+ * table. This prevents admin credentials from producing app tokens whose user profile cannot be
+ * resolved by the application.
  */
 @Service
 @RequiredArgsConstructor
@@ -91,7 +92,7 @@ public class AppUserDetailsService implements UserDetailsService {
             return toUserDetails(user.get(), identifier, passwordHash);
         }
 
-        return loadAdminByIdentifier(identifier);
+        throw new UsernameNotFoundException("User not found: " + identifier);
     }
 
     private UserDetails loadAdminByIdentifier(String identifier) {

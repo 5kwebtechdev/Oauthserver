@@ -17,7 +17,7 @@ import java.util.Set;
 
 /**
  * The auth server has one browser SSO session, shared by all its OAuth clients. Do not silently
- * reuse an admin principal for the APK client or an app-user principal for the admin dev client.
+ * reuse an admin principal for an app client or an app-user principal for an admin client.
  * Preserve the pending authorization request and ask for credentials on the target client's
  * branded login page, where the existing client context selects the matching account store.
  */
@@ -26,13 +26,25 @@ public final class CrossClientAccountSwitchFilter extends OncePerRequestFilter {
     private static final Set<String> ADMIN_ROLES = Set.of(
             "ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_MANAGER", "ROLE_EXECUTIVE");
 
+    private final Set<String> appClientIds;
+    private final Set<String> adminClientIds;
     private final String apkDevClientId;
-    private final String adminDevClientId;
     private final RequestCache requestCache = new HttpSessionRequestCache();
 
     public CrossClientAccountSwitchFilter(String apkDevClientId, String adminDevClientId) {
+        this("", "", apkDevClientId, "", adminDevClientId);
+    }
+
+    public CrossClientAccountSwitchFilter(String appClientId, String additionalAppClientId,
+                                          String apkDevClientId, String adminClientId,
+                                          String adminDevClientId) {
+        this.appClientIds = java.util.stream.Stream.of(appClientId, additionalAppClientId, apkDevClientId)
+                .map(CrossClientAccountSwitchFilter::normalize).filter(value -> !value.isBlank())
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        this.adminClientIds = java.util.stream.Stream.of(adminClientId, adminDevClientId)
+                .map(CrossClientAccountSwitchFilter::normalize).filter(value -> !value.isBlank())
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
         this.apkDevClientId = normalize(apkDevClientId);
-        this.adminDevClientId = normalize(adminDevClientId);
     }
 
     @Override
@@ -44,11 +56,12 @@ public final class CrossClientAccountSwitchFilter extends OncePerRequestFilter {
         }
 
         String clientId = request.getParameter("client_id");
-        if (clientId.equals(apkDevClientId) && hasAdminSession()) {
-            switchAccount(request, response, "/apklogin?account_switch=admin");
+        if (appClientIds.contains(clientId) && hasAdminSession()) {
+            String loginPath = clientId.equals(apkDevClientId) ? "/apklogin" : "/login";
+            switchAccount(request, response, loginPath + "?account_switch=admin");
             return;
         }
-        if (clientId.equals(adminDevClientId) && hasAuthenticatedNonAdminSession()) {
+        if (adminClientIds.contains(clientId) && hasAuthenticatedNonAdminSession()) {
             switchAccount(request, response, "/adminlogin?account_switch=app");
             return;
         }
@@ -61,8 +74,7 @@ public final class CrossClientAccountSwitchFilter extends OncePerRequestFilter {
         return "GET".equalsIgnoreCase(request.getMethod())
                 && "/oauth2/authorize".equals(request.getServletPath())
                 && clientId != null
-                && ((!apkDevClientId.isBlank() && apkDevClientId.equals(clientId))
-                || (!adminDevClientId.isBlank() && adminDevClientId.equals(clientId)));
+                && (appClientIds.contains(clientId) || adminClientIds.contains(clientId));
     }
 
     private void switchAccount(HttpServletRequest request, HttpServletResponse response, String loginPath)

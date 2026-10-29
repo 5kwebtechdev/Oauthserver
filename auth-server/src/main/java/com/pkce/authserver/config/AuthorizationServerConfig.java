@@ -75,6 +75,9 @@ public class AuthorizationServerConfig {
     @Value("${app.security.additional-client.id:}")
     private String additionalAppClientId;
 
+    @Value("${app.frontend.admin-client-id:}")
+    private String adminClientId;
+
     @Value("${app.frontend.logout-landing-url:}")
     private String appLogoutLandingUrl;
 
@@ -138,10 +141,11 @@ public class AuthorizationServerConfig {
                 // not apply - and would otherwise 403 every public-client token request.
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
-                // Do not let the shared auth-server SSO session silently cross between the
-                // APK and admin dev clients. Preserve the authorization request and send the
-                // user to the correct branded login form for the target account store.
-                .addFilterBefore(new CrossClientAccountSwitchFilter(apkDevClientId, adminDevClientId),
+                // Do not let the shared auth-server SSO session silently cross between app
+                // and admin clients in prod or dev. Preserve the authorization request and
+                // send the user to the correct login form for the target account store.
+                .addFilterBefore(new CrossClientAccountSwitchFilter(appClientId, additionalAppClientId,
+                                apkDevClientId, adminClientId, adminDevClientId),
                         AbstractPreAuthenticatedProcessingFilter.class)
                 // Runs ahead of the OIDC logout endpoint so an admin's access token is marked
                 // revoked as they log out - Spring's own logout never invalidates it. Placed
