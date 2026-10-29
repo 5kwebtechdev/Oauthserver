@@ -37,17 +37,30 @@ public class FriendlyErrorController implements ErrorController {
                     .body(Map.of("status", status.value(), "error", status.getReasonPhrase(), "message", MESSAGE));
         }
 
-        // If rendering the sign-in page itself failed, do not redirect to it again and
-        // create a redirect loop. Return a minimal recovery page with an explicit retry link.
-        if (isLoginPage(request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI))) {
+        Object originalUri = request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI);
+
+        // A rejected login POST (for example, an expired CSRF token) should get a fresh
+        // login page. A failure while serving the GET /login itself must not loop.
+        if (isLoginPage(originalUri) && "POST".equalsIgnoreCase(request.getMethod())) {
+            return redirectToLogin();
+        }
+
+        // OAuth/API errors must retain their protocol status instead of being converted
+        // into a sign-in redirect (for example, invalid redirect_uri and logout hints).
+        // Also avoid a redirect loop if the sign-in page itself is unavailable.
+        if (isLoginPage(originalUri) || isProtocolEndpoint(originalUri)) {
             return ResponseEntity.status(status)
                     .contentType(MediaType.TEXT_HTML)
                     .header("Cache-Control", "no-store, no-cache, must-revalidate")
-                    .body("<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>Sign in unavailable</title>"
-                            + "<p>The sign-in page could not be loaded. Please try again.</p>"
+                    .body("<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>Request unavailable</title>"
+                            + "<p>The request could not be completed. Please try again.</p>"
                             + "<a href=\"https://authprod.supermeapp.com/login\">Open sign in</a></html>");
         }
 
+        return redirectToLogin();
+    }
+
+    private ResponseEntity<Void> redirectToLogin() {
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(LOGIN_URI)
                 .header("Cache-Control", "no-store, no-cache, must-revalidate")
@@ -59,6 +72,14 @@ public class FriendlyErrorController implements ErrorController {
             return false;
         }
         return "/login".equals(path) || "/adminlogin".equals(path) || "/apklogin".equals(path);
+    }
+
+    private boolean isProtocolEndpoint(Object originalUri) {
+        if (!(originalUri instanceof String path)) {
+            return false;
+        }
+        return path.startsWith("/oauth2/") || path.startsWith("/.well-known/")
+                || path.startsWith("/connect/") || path.startsWith("/api/") || path.startsWith("/v1/");
     }
 
     private HttpStatus resolveStatus(HttpServletRequest request) {

@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -118,6 +119,18 @@ public class DefaultSecurityConfig {
                 // /v1/** one, keeps that catch-all as the real default for every other request
                 // (e.g. a plain "GET /") while /v1/** still wins its own, more specific match.
                 .exceptionHandling(exceptions -> exceptions
+                        // A login form can outlive its server session in another tab. If
+                        // that stale form is submitted, CSRF rejects it before formLogin
+                        // runs. Send the browser to a fresh sign-in page instead of the
+                        // default bare 403; all other denied requests keep normal handling.
+                        .accessDeniedHandler((request, response, denied) -> {
+                            if ("POST".equalsIgnoreCase(request.getMethod())
+                                    && "/login".equals(request.getServletPath())) {
+                                response.sendRedirect("https://authprod.supermeapp.com/login");
+                            } else {
+                                new AccessDeniedHandlerImpl().handle(request, response, denied);
+                            }
+                        })
                         .defaultAuthenticationEntryPointFor(
                                 new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                                 new AntPathRequestMatcher("/v1/**"))

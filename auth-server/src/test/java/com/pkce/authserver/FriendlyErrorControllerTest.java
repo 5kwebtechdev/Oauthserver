@@ -40,6 +40,35 @@ class FriendlyErrorControllerTest {
     }
 
     @Test
+    void rejectedLoginPostRedirectsToFreshSignInPage() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Accept", "text/html,application/xhtml+xml");
+        request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, 403);
+        request.setAttribute(RequestDispatcher.ERROR_REQUEST_URI, "/login");
+        request.setMethod("POST");
+
+        var response = controller.error(request);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(302);
+        assertThat(response.getHeaders().getLocation()).hasToString("https://authprod.supermeapp.com/login");
+    }
+
+    @Test
+    void oauthProtocolErrorKeepsItsStatusAndDoesNotRedirect() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Accept", "text/html");
+        request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, 400);
+        request.setAttribute(RequestDispatcher.ERROR_REQUEST_URI, "/oauth2/authorize");
+
+        var response = controller.error(request);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(400);
+        assertThat(response.getHeaders().getLocation()).isNull();
+        assertThat(response.getBody().toString()).contains("https://authprod.supermeapp.com/login")
+                .doesNotContain("Whitelabel Error Page");
+    }
+
+    @Test
     void jsonErrorDoesNotExposeFrameworkDetails() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Accept", MediaType.APPLICATION_JSON_VALUE);
