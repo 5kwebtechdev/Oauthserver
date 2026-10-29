@@ -98,7 +98,7 @@ class LoginPageControllerTest {
 
     @Test
     void rejectedLoginPost_showsFriendlyErrorInsteadOfWhitelabelPage() throws Exception {
-        HttpClient http = HttpClient.newHttpClient();
+        HttpClient http = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).build();
         HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/login"))
                 .header("Accept", "text/html,application/xhtml+xml")
                 .header("Content-Type", "application/x-www-form-urlencoded")
@@ -107,9 +107,9 @@ class LoginPageControllerTest {
 
         HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(response.statusCode()).isEqualTo(403);
-        assertThat(response.body()).contains("Please refresh the page and try again.");
-        assertThat(response.body()).doesNotContain("Whitelabel Error Page", "There was an unexpected error");
+        assertThat(response.statusCode()).isEqualTo(302);
+        assertThat(response.headers().firstValue("Location"))
+                .contains("https://authprod.supermeapp.com/login");
     }
 
     @Test

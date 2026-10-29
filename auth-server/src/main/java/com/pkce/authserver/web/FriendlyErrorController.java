@@ -10,17 +10,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.net.URI;
 import java.util.Map;
 
 /**
- * Replaces Spring Boot's default Whitelabel error page with a safe, generic response.
- * Keep the actual status code for callers and monitoring, but never expose framework
- * details or stack traces to a browser.
+ * Sends browser errors back to the auth-server sign-in page instead of showing the
+ * Spring Boot Whitelabel page. JSON clients receive a small, safe error response.
  */
 @Controller
 public class FriendlyErrorController implements ErrorController {
 
-    private static final String MESSAGE = "Something went wrong. Please refresh the page and try again.";
+    private static final String MESSAGE = "Something went wrong. Please try again.";
+    private static final URI LOGIN_URI = URI.create("https://authprod.supermeapp.com/login");
 
     @RequestMapping("${server.error.path:${error.path:/error}}")
     @ResponseBody
@@ -35,33 +36,29 @@ public class FriendlyErrorController implements ErrorController {
                     .header("Cache-Control", "no-store, no-cache, must-revalidate")
                     .body(Map.of("status", status.value(), "error", status.getReasonPhrase(), "message", MESSAGE));
         }
-        return ResponseEntity.status(status)
-                .contentType(MediaType.TEXT_HTML)
+
+        // If rendering the sign-in page itself failed, do not redirect to it again and
+        // create a redirect loop. Return a minimal recovery page with an explicit retry link.
+        if (isLoginPage(request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI))) {
+            return ResponseEntity.status(status)
+                    .contentType(MediaType.TEXT_HTML)
+                    .header("Cache-Control", "no-store, no-cache, must-revalidate")
+                    .body("<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>Sign in unavailable</title>"
+                            + "<p>The sign-in page could not be loaded. Please try again.</p>"
+                            + "<a href=\"https://authprod.supermeapp.com/login\">Open sign in</a></html>");
+        }
+
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(LOGIN_URI)
                 .header("Cache-Control", "no-store, no-cache, must-revalidate")
-                .body("""
-                        <!doctype html>
-                        <html lang="en">
-                          <head>
-                            <meta charset="utf-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1">
-                            <meta name="robots" content="noindex, nofollow">
-                            <title>Request could not be completed</title>
-                            <style>
-                              body { margin: 0; min-height: 100vh; display: grid; place-items: center;
-                                padding: 24px; box-sizing: border-box; background: #f7f4fb;
-                                color: #29233a; font: 16px/1.5 system-ui, sans-serif; }
-                              main { max-width: 32rem; padding: 32px; border-radius: 16px;
-                                background: white; box-shadow: 0 8px 32px #29233a18; text-align: center; }
-                              h1 { margin-top: 0; font-size: 1.5rem; }
-                              a { display: inline-block; margin-top: 12px; color: #583296; }
-                            </style>
-                          </head>
-                          <body><main><h1>We couldn't complete that request</h1>
-                            <p>Something went wrong. Please refresh the page and try again.</p>
-                            <a href="/login">Return to sign in</a>
-                          </main></body>
-                        </html>
-                        """);
+                .build();
+    }
+
+    private boolean isLoginPage(Object originalUri) {
+        if (!(originalUri instanceof String path)) {
+            return false;
+        }
+        return "/login".equals(path) || "/adminlogin".equals(path) || "/apklogin".equals(path);
     }
 
     private HttpStatus resolveStatus(HttpServletRequest request) {
