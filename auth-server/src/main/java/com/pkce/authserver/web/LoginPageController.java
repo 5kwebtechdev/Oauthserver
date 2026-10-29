@@ -1014,9 +1014,9 @@ public class LoginPageController {
                       </body>
                     </html>
                     """.formatted(
-                    PANDA_IMAGE_DATA,
                     monitorSession,
                     logoutLandingUrl,
+                    PANDA_IMAGE_DATA,
                     hasError ? "<div class=\"alert alert-danger\">Invalid email or password.</div>" : "",
                     loggedOut ? "<div class=\"alert alert-success\">You have been signed out.</div>" : "",
                     captchaFailed ? "<div class=\"alert alert-danger\">Captcha verification failed - please try again.</div>" : "",
