@@ -31,7 +31,7 @@ public class LoginPageController {
     @Value("${app.frontend.base-url}")
     private String frontendBaseUrl;
 
-    @Value("${app.frontend.logout-landing-url:https://supermeapp.com/}")
+    @Value("${app.frontend.logout-landing-url:${app.frontend.base-url}}")
     private String logoutLandingUrl;
 
     @Value("${app.google.client-id}")

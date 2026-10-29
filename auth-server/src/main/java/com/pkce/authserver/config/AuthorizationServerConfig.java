@@ -75,7 +75,7 @@ public class AuthorizationServerConfig {
     @Value("${app.security.additional-client.id:}")
     private String additionalAppClientId;
 
-    @Value("${app.frontend.logout-landing-url:https://supermeapp.com/}")
+    @Value("${app.frontend.logout-landing-url:}")
     private String appLogoutLandingUrl;
 
     @Value("${app.frontend.apk-dev-client-id:}")
@@ -154,12 +154,6 @@ public class AuthorizationServerConfig {
                 .addFilterBefore(new AdminLogoutRevocationFilter(
                                 authorizationService, registeredClientRepository, adminTokenSessions),
                         LogoutFilter.class)
-                // Preserve the OIDC logout endpoint's validation and session invalidation, but
-                // route production app-client logouts to the public landing page instead of the
-                // auth-server host. Admin client logout destinations are unaffected.
-                .addFilterBefore(new AppLogoutLandingFilter(
-                                appClientId, additionalAppClientId, appLogoutLandingUrl),
-                        LogoutFilter.class)
                 // OIDC discovery and the JWKS endpoint are meant to be publicly readable per
                 // spec (and per this project's own FRONTEND_AUTH_INTEGRATION.md, which
                 // documents GET /.well-known/openid-configuration as the first call any real
@@ -182,6 +176,14 @@ public class AuthorizationServerConfig {
                 )
                 // ----- RATE LIMITING CODE: wired into /oauth2/token's chain too -----
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // This redirect override is configured only by application-prod.yml. Leave test/dev
+        // OAuth clients' registered post-logout redirects unchanged.
+        if (!appLogoutLandingUrl.isBlank()) {
+            http.addFilterBefore(new AppLogoutLandingFilter(
+                            appClientId, additionalAppClientId, appLogoutLandingUrl),
+                    LogoutFilter.class);
+        }
 
         return http.build();
     }
