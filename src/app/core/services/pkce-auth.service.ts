@@ -35,16 +35,23 @@ export class PkceAuthService {
       strictDiscoveryDocumentValidation: true, useSilentRefresh: false,
       customTokenParameters: ['user'], showDebugInformation: false
     });
+    // Captured BEFORE loadDiscoveryDocumentAndTryLogin() runs: the library strips code/state
+    // from the URL as part of processing the callback, even when that processing silently
+    // fails to produce a valid token (no exception thrown). Checking window.location.search
+    // AFTER that call - as this used to - can no longer tell a failed callback apart from a
+    // plain page load, since the code is already gone from the URL either way. That gap is
+    // exactly how "Sign in was not completed" (PkceEntryComponent's own fallback) could show
+    // up instead of the recovery below ever running.
+    const hadCode = new URLSearchParams(window.location.search).has('code');
     try {
-      await this.tryLoginOnce();
+      await this.tryLoginOnce(hadCode);
     } catch (err) {
-      const isAuthorizationCallback = new URLSearchParams(window.location.search).has('code');
       // A callback's authorization code can only be redeemed once. If validation
       // fails after the token endpoint has consumed it, clearing storage and
       // replaying the same callback can never recover. Start one fresh PKCE flow
       // instead; this also replaces stale nonce/verifier data in long-lived tabs.
-      if (this.restartCallbackWithFreshState()) return;
-      if (isAuthorizationCallback) {
+      if (this.restartCallbackWithFreshState(hadCode)) return;
+      if (hadCode) {
         console.error('[PkceAuthService] authorization callback failed; refusing to replay its one-time code', err);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_id');
@@ -61,7 +68,7 @@ export class PkceAuthService {
       console.error('[PkceAuthService] sign-in failed, retrying after clearing stale OIDC state', err);
       this.clearOidcStorage();
       try {
-        await this.tryLoginOnce();
+        await this.tryLoginOnce(hadCode);
       } catch (err2) {
         console.error('[PkceAuthService] sign-in failed after retry', err2);
         localStorage.removeItem('auth_token');
@@ -71,10 +78,9 @@ export class PkceAuthService {
       }
     }
   }
-  private async tryLoginOnce(): Promise<void> {
+  private async tryLoginOnce(hadCode: boolean): Promise<void> {
     await this.oauth.loadDiscoveryDocumentAndTryLogin();
-    if (new URLSearchParams(window.location.search).has('code')
-        && !this.oauth.hasValidAccessToken()) {
+    if (hadCode && !this.oauth.hasValidAccessToken()) {
       throw new Error('Authorization callback completed without a valid access token.');
     }
     if (!this.oauth.hasValidAccessToken() && this.oauth.getRefreshToken()) await this.refresh();
@@ -99,8 +105,8 @@ export class PkceAuthService {
       .filter(key => key.startsWith('superme_oidc_'))
       .forEach(key => localStorage.removeItem(key));
   }
-  private restartCallbackWithFreshState(): boolean {
-    if (!new URLSearchParams(window.location.search).has('code')) return false;
+  private restartCallbackWithFreshState(hadCode: boolean): boolean {
+    if (!hadCode) return false;
     const recoveryKey = 'pkce_callback_recovery_attempted';
     try {
       if (sessionStorage.getItem(recoveryKey) === 'true') return false;

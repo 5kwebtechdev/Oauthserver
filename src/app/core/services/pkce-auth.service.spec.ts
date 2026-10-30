@@ -47,6 +47,31 @@ describe('PKCE session bridge', () => {
     expect(auth.setSession).toHaveBeenCalledWith({ token: 'new-access', userId: 7, user: { id: 7, relationship: 'PARENT' } });
     expect(service.error).toBe('');
   });
+  it('still auto-restarts the flow when the library strips the callback code from the URL before silently failing', async () => {
+    // Regression test for the real bug this was shipped for: angular-oauth2-oidc's
+    // loadDiscoveryDocumentAndTryLogin() strips code/state from the URL as part of
+    // processing the callback, even when that processing ends without a valid token and
+    // without throwing. Checking window.location.search AFTER that call (the old code)
+    // could no longer tell "this callback just failed" apart from "this was never a
+    // callback at all" - both look like a bare URL by then - so the auto-restart below
+    // never ran, and the admin saw PkceEntryComponent's raw "Sign in was not completed"
+    // fallback instead. hadCode is captured BEFORE the library call specifically to
+    // survive that URL stripping.
+    history.pushState({}, '', '/callback?code=stale-one-time-code&state=xyz');
+    oauth.hasValidAccessToken = () => false;
+    oauth.loadDiscoveryDocumentAndTryLogin = jasmine.createSpy().and.callFake(async () => {
+      history.replaceState({}, '', '/callback'); // library strips code/state, still no token
+    });
+
+    try {
+      await service.init();
+      expect(oauth.initCodeFlow).toHaveBeenCalledTimes(1);
+      expect(sessionStorage.getItem('pkce_callback_recovery_attempted')).toBe('true');
+      expect(service.error).toBe('');
+    } finally {
+      history.pushState({}, '', '/');
+    }
+  });
   it('surfaces the generic sign-in error only after a retry also fails', async () => {
     oauth.loadDiscoveryDocumentAndTryLogin = jasmine.createSpy().and.callFake(async () => {
       throw new Error('auth server unreachable');
