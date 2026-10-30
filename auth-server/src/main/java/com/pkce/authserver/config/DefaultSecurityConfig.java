@@ -46,6 +46,11 @@ public class DefaultSecurityConfig {
     @Value("${app.frontend.apk-dev-client-id:}")
     private String apkDevClientId;
 
+    // Was hardcoded to the prod domain - see FriendlyErrorController for the same issue
+    // and fix. Each environment supplies its own value via AUTH_SERVER_LOGIN_URL.
+    @Value("${app.security.login-url:https://authprod.supermeapp.com/login}")
+    private String loginUrl = "https://authprod.supermeapp.com/login";
+
     /**
      * Catch-all chain: the login form shown mid-authorization-code-flow, the (demo-only)
      * password-reset API called directly by the Angular app, and anything else outside
@@ -129,7 +134,7 @@ public class DefaultSecurityConfig {
                         .accessDeniedHandler((request, response, denied) -> {
                             if ("POST".equalsIgnoreCase(request.getMethod())
                                     && "/login".equals(request.getServletPath())) {
-                                response.sendRedirect("https://authprod.supermeapp.com/login");
+                                response.sendRedirect(loginUrl);
                             } else {
                                 new AccessDeniedHandlerImpl().handle(request, response, denied);
                             }

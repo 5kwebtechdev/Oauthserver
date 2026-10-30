@@ -108,8 +108,10 @@ class LoginPageControllerTest {
         HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
 
         assertThat(response.statusCode()).isEqualTo(302);
-        assertThat(response.headers().firstValue("Location"))
-                .contains("https://authprod.supermeapp.com/login");
+        // Domain-agnostic on purpose: this environment's own login-url (app.security.login-url),
+        // not a hardcoded one - see DefaultSecurityConfig/FriendlyErrorController/AdminLogoutController.
+        assertThat(response.headers().firstValue("Location").orElseThrow())
+                .contains("/login");
     }
 
     @Test

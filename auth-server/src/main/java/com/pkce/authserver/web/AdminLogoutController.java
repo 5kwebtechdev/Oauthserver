@@ -53,6 +53,11 @@ public class AdminLogoutController {
     @Value("${app.frontend.admin-dev-client-id:}")
     private String adminDevClientId;
 
+    // Was hardcoded to the prod domain - see FriendlyErrorController for the same issue
+    // and fix. Each environment supplies its own value via AUTH_SERVER_LOGIN_URL.
+    @Value("${app.security.login-url:https://authprod.supermeapp.com/login}")
+    private String loginUrl = "https://authprod.supermeapp.com/login";
+
     @GetMapping("/adminlogout")
     public ResponseEntity<Void> logout(@RequestParam(name = "id_token_hint", required = false) String id_token_hint,
                                         @RequestParam(name = "post_logout_redirect_uri", required = false) String post_logout_redirect_uri,
@@ -119,7 +124,7 @@ public class AdminLogoutController {
                 // fall through to the default below
             }
         }
-        return URI.create("https://authprod.supermeapp.com/login");
+        return URI.create(loginUrl);
     }
 
     private String registeredPostLogoutUri(String clientId) {

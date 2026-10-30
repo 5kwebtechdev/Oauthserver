@@ -2,6 +2,7 @@ package com.pkce.authserver.web;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,7 +22,13 @@ import java.util.Map;
 public class FriendlyErrorController implements ErrorController {
 
     private static final String MESSAGE = "Something went wrong. Please try again.";
-    private static final URI LOGIN_URI = URI.create("https://authprod.supermeapp.com/login");
+
+    // Was hardcoded to the prod domain - broke the dev auth server (main branch, now the
+    // same codebase as authprod) by sending its own error redirects to the PROD login page
+    // instead of its own. Each environment supplies its own value via AUTH_SERVER_LOGIN_URL;
+    // the default below matches prod's previous hardcoded behavior unchanged.
+    @Value("${app.security.login-url:https://authprod.supermeapp.com/login}")
+    private String loginUrl = "https://authprod.supermeapp.com/login";
 
     @RequestMapping("${server.error.path:${error.path:/error}}")
     @ResponseBody
@@ -54,7 +61,7 @@ public class FriendlyErrorController implements ErrorController {
                     .header("Cache-Control", "no-store, no-cache, must-revalidate")
                     .body("<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>Request unavailable</title>"
                             + "<p>The request could not be completed. Please try again.</p>"
-                            + "<a href=\"https://authprod.supermeapp.com/login\">Open sign in</a></html>");
+                            + "<a href=\"" + loginUrl + "\">Open sign in</a></html>");
         }
 
         return redirectToLogin();
@@ -62,7 +69,7 @@ public class FriendlyErrorController implements ErrorController {
 
     private ResponseEntity<Void> redirectToLogin() {
         return ResponseEntity.status(HttpStatus.FOUND)
-                .location(LOGIN_URI)
+                .location(URI.create(loginUrl))
                 .header("Cache-Control", "no-store, no-cache, must-revalidate")
                 .build();
     }

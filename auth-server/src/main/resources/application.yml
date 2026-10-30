@@ -130,6 +130,11 @@ app:
       key-id: ${JWT_KEY_ID:898ea867dbac475f}
     cors:
       allowed-origins: ${FE_ORIGIN:http://localhost:4200}
+    # Used by FriendlyErrorController/DefaultSecurityConfig/AdminLogoutController for their
+    # error/access-denied redirects to the sign-in page. Was hardcoded to the prod domain,
+    # which broke this dev deployment's own error pages (sent them to the PROD login page).
+    # authprod's own env sets this to https://authprod.supermeapp.com/login.
+    login-url: ${AUTH_SERVER_LOGIN_URL:https://auth.supermeapp.com/login}
     client:
       id: ${OAUTH_CLIENT_ID:pkce-angular-client}
       redirect-uris: ${OAUTH_REDIRECT_URIS:http://localhost:4200/callback}
