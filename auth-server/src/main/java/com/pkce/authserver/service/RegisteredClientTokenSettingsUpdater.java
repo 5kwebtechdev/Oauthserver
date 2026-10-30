@@ -23,10 +23,10 @@ public class RegisteredClientTokenSettingsUpdater implements ApplicationRunner {
     private final JdbcTemplate jdbcTemplate;
     private final RegisteredClientRepository registeredClientRepository;
 
-    @Value("${app.security.token.access-token-ttl:PT45M}")
+    @Value("${app.security.token.access-token-ttl:PT15M}")
     private String accessTokenTtl;
 
-    @Value("${app.security.token.refresh-token-ttl:PT90M}")
+    @Value("${app.security.token.refresh-token-ttl:PT25M}")
     private String refreshTokenTtl;
 
     @Override

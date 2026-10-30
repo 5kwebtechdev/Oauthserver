@@ -120,8 +120,8 @@ spring:
 app:
   security:
     token:
-      access-token-ttl: ${ACCESS_TOKEN_TTL:PT45M}
-      refresh-token-ttl: ${REFRESH_TOKEN_TTL:PT90M}
+      access-token-ttl: ${ACCESS_TOKEN_TTL:PT15M}
+      refresh-token-ttl: ${REFRESH_TOKEN_TTL:PT25M}
 #    issuer: ${AUTH_ISSUER:http://localhost:9000}
     issuer: ${AUTH_ISSUER:https://auth.supermeapp.com}
     jwt:

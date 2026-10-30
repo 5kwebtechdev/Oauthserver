@@ -80,10 +80,10 @@ public class ClientRegistrationSeeder implements ApplicationRunner {
     @Value("${app.security.apk-dev-client.post-logout-redirect-uri:}")
     private String apkDevLogoutUri;
 
-    @Value("${app.security.token.access-token-ttl:PT45M}")
+    @Value("${app.security.token.access-token-ttl:PT15M}")
     private String accessTokenTtl;
 
-    @Value("${app.security.token.refresh-token-ttl:PT90M}")
+    @Value("${app.security.token.refresh-token-ttl:PT25M}")
     private String refreshTokenTtl;
 
     @Override
