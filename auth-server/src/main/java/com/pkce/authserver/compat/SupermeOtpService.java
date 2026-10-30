@@ -117,11 +117,11 @@ public class SupermeOtpService {
 
         OtpData otpData = otpStore.get(normalizedEmail);
         if (otpData == null) {
-            throw new OtpException("No OTP found for this email. Please request a new OTP.");
+            throw new OtpException("Your OTP has expired. Please request a new OTP.");
         }
         if (otpData.isExpired()) {
             otpStore.remove(normalizedEmail);
-            throw new OtpException("OTP has expired. Please request a new OTP.");
+            throw new OtpException("Your OTP has expired. Please request a new OTP.");
         }
         if (normalizedOtp == null || !otpData.otp().equals(normalizedOtp)) {
             if (otpData.attempts().incrementAndGet() >= MAX_ATTEMPTS) {

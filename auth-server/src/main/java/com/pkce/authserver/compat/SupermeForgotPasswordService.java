@@ -122,7 +122,7 @@ public class SupermeForgotPasswordService {
         OtpData otpData = otpStore.get(normalizedEmail);
 
         if (otpData == null) {
-            throw new ResetException("No OTP found for this email. Please request a new OTP.");
+            throw new ResetException("Your OTP has expired. Please request a new OTP.");
         }
         if (otpData.isExpired()) {
             otpStore.remove(normalizedEmail);

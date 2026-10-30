@@ -238,7 +238,7 @@ class SupermeCompatApiTest {
         HttpResponse<String> unknown = post("/v1/api/auth/verify-otp",
                 "{\"email\":\"never-asked-" + System.nanoTime() + "@yopmail.com\",\"otp\":\"1234\"}");
         assertThat(objectMapper.readTree(unknown.body()).get("message").asText())
-                .isEqualTo("No OTP found for this email. Please request a new OTP.");
+                .isEqualTo("Your OTP has expired. Please request a new OTP.");
     }
 
     /**
