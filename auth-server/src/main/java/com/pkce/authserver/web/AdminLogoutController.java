@@ -54,8 +54,8 @@ public class AdminLogoutController {
     private String adminDevClientId;
 
     @GetMapping("/adminlogout")
-    public ResponseEntity<Void> logout(@RequestParam(required = false) String id_token_hint,
-                                        @RequestParam(required = false) String post_logout_redirect_uri,
+    public ResponseEntity<Void> logout(@RequestParam(name = "id_token_hint", required = false) String id_token_hint,
+                                        @RequestParam(name = "post_logout_redirect_uri", required = false) String post_logout_redirect_uri,
                                         HttpServletRequest request) {
         endAuthorizationBestEffort(id_token_hint);
         endSessionBestEffort(request);
