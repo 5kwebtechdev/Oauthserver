@@ -112,22 +112,10 @@ public class LoginPageController {
 
     @GetMapping({"/login", "/apklogin", "/adminlogin"})
     public void login(HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) throws Exception {
-        if ("/login".equals(request.getServletPath()) && hasAppLogoutMarker(request)) {
-            response.sendRedirect("https://supermeapp.com/");
-            return;
-        }
-
-        // A logout marker means the browser is finishing a logout flow, not starting an
-        // authorization request. Leave the auth-server host instead of rendering its login
-        // page again. A user who explicitly clicks Login arrives with a saved /oauth2/authorize
-        // request and continues through the normal login form below.
-        if ("/login".equals(request.getServletPath()) && request.getParameter("logout") != null) {
-            response.sendRedirect(logoutLandingUrl);
-            return;
-        }
-
         // The saved authorization request determines the client; never accept a return URL
-        // supplied directly to /login. Each link is a configured frontend URL.
+        // supplied directly to /login. Each link is a configured frontend URL. Computed up
+        // front (rather than after the app-logout-marker check below) so that check can tell
+        // an admin login attempt apart from an app one - see isAdmin use below.
         var session = request.getSession(false);
         var saved = session == null ? null : session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
         boolean additional = false;
@@ -146,6 +134,26 @@ public class LoginPageController {
                     && adminDevClientId.equals(ids[0]);
             isAdmin = isAdminProd || isAdminDev;
         }
+
+        // A logout marker means the browser is finishing an APP logout flow, not starting an
+        // authorization request - leave the auth-server host instead of rendering its login
+        // page again. Excludes admin: an admin login attempt must never be redirected away by
+        // a marker left behind by an unrelated app/website logout on the same browser (that
+        // marker says nothing about the admin session, which has its own, separate client id).
+        if ("/login".equals(request.getServletPath()) && hasAppLogoutMarker(request) && !isAdmin) {
+            response.sendRedirect("https://supermeapp.com/");
+            return;
+        }
+
+        // A logout marker means the browser is finishing a logout flow, not starting an
+        // authorization request. Leave the auth-server host instead of rendering its login
+        // page again. A user who explicitly clicks Login arrives with a saved /oauth2/authorize
+        // request and continues through the normal login form below.
+        if ("/login".equals(request.getServletPath()) && request.getParameter("logout") != null) {
+            response.sendRedirect(logoutLandingUrl);
+            return;
+        }
+
         String loginPath = request.getServletPath();
         if ("/login".equals(loginPath)) {
             if (isAdmin) {
