@@ -1,0 +1,353 @@
+@use 'sass:math';
+
+// Figma shadows / one-off values — rgba has no token yet.
+$icon-shadow: rgba(40, 37, 39, 0.5); /* not in design tokens — Figma icon drop shadow */
+$mood-shadow: rgba(67, 36, 119, 0.5); /* not in design tokens — Figma mood chip shadow */
+
+// Artwork aspect ratio (1806 × 871) and the hero's fixed height in px.
+$art-ratio: calc(1806 / 871);
+$hero-height: 174px;
+
+:host {
+  display: block;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+p {
+  margin: 0;
+}
+
+.halloween-background {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Artwork stage. Same as `object-fit: cover; object-position: center top` on the artwork: the stage is
+// as wide as the hero (never narrower than the artwork needs to cover its height) and horizontally centred, and
+// every layer is positioned in % of it, so overlays stay glued to the painted elements.
+// ---------------------------------------------------------------------------------------------
+.stage {
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 0;
+  width: 100%;
+  min-width: calc(#{$hero-height} * #{$art-ratio});
+  aspect-ratio: 1806 / 871;
+  transform: translateX(-50%);
+  isolation: isolate;
+  pointer-events: none;
+  user-select: none;
+  // Lets bats and leaves travel in cqw / cqh (% of the artwork), so paths stay locked to the scenery.
+  container-type: size;
+}
+
+.plate,
+.layer {
+  position: absolute;
+  max-width: none;
+  -webkit-user-drag: none;
+}
+
+.plate {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// Ghosts --------------------------------------------------------------------------------------
+.ghost {
+  animation: ghost-float var(--dur) ease-in-out var(--delay) infinite;
+}
+
+// Light layers (screen blend: adds amber light on top of the painted light) -------------------
+.glow {
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+
+.face {
+  animation: face-flicker var(--dur) linear var(--delay) infinite;
+}
+
+.lantern {
+  animation: lantern-pulse var(--dur) ease-in-out var(--delay) infinite;
+}
+
+.bulbs {
+  animation: bulbs-pulse var(--dur) ease-in-out var(--delay) infinite;
+}
+
+// Moon ----------------------------------------------------------------------------------------
+// Centred on the painted moon (79.07% / 27.32% of the artwork, ~15.5% wide).
+.moon-glow,
+.moon-halo {
+  position: absolute;
+  left: 79.07%;
+  top: 27.32%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+.moon-glow {
+  width: 15.2%;
+  background: radial-gradient(circle, #fff0b0 0%, #ffe9a0 62%, rgba(255, 233, 160, 0) 100%); /* not in design tokens */
+  animation: moon-pulse 6s ease-in-out infinite;
+}
+
+.moon-halo {
+  width: 27%;
+  background: radial-gradient(circle, rgba(255, 224, 140, 0.9) 0%, rgba(255, 224, 140, 0) 68%); /* not in design tokens */
+  animation: moon-halo 7s ease-in-out -2s infinite;
+}
+
+// Stars ---------------------------------------------------------------------------------------
+.star {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  fill: #fff4c8; /* not in design tokens */
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.4);
+  animation: twinkle var(--dur) ease-in-out var(--delay) infinite;
+}
+
+// Bats ----------------------------------------------------------------------------------------
+// The sprite box sits where the bat was painted. Three copies of the sprite, clipped to the left wing,
+// the torso and the right wing, share that box; the wings swing about the shoulder (--from / --to
+// are the torso's edges in %, --py the shoulder height in %). The wings reach 4% into the torso so no
+// seam opens up mid-beat, and the torso is drawn last to cover the join.
+.bat {
+  position: absolute;
+  max-width: none;
+
+  &.has-tour {
+    animation: bat-tour 24s linear var(--tour-delay) infinite;
+  }
+}
+
+// Nested wrappers, one motion each, all filling the bat's box.
+.bat-sway,
+.bat-drift,
+.bat-stroke {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.bat-sway {
+  animation: loiter-x var(--tx) ease-in-out var(--phase) infinite alternate;
+}
+.bat-drift {
+  animation: loiter-y var(--ty) ease-in-out var(--phase) infinite alternate;
+}
+.bat-stroke {
+  animation: stroke var(--flap) ease-in-out var(--phase) infinite;
+}
+.bat .wing,
+.bat .torso {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+.bat .wing-l {
+  clip-path: inset(0 calc(100% - (var(--from) + 4) * 1%) 0 0);
+  transform-origin: calc(var(--from) * 1%) calc(var(--py) * 1%);
+  animation: flap-l var(--flap) ease-in-out var(--phase) infinite;
+}
+.bat .wing-r {
+  clip-path: inset(0 0 0 calc((var(--to) - 4) * 1%));
+  transform-origin: calc(var(--to) * 1%) calc(var(--py) * 1%);
+  animation: flap-r var(--flap) ease-in-out var(--phase) infinite;
+}
+.bat .torso {
+  clip-path: inset(0 calc(100% - var(--to) * 1%) 0 calc(var(--from) * 1%));
+}
+
+// Leaves --------------------------------------------------------------------------------------
+.leaf {
+  position: absolute;
+  top: 0;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  opacity: 0;
+  will-change: transform;
+}
+.leaf-1 {
+  animation: leaf-fall-a 18s linear var(--delay) infinite;
+}
+.leaf-2 {
+  animation: leaf-fall-b 18s linear var(--delay) infinite;
+}
+.leaf-a {
+  fill: #e8641e; /* not in design tokens — sampled from the artwork's maple leaves */
+}
+.leaf-b {
+  fill: #cf3f14; /* not in design tokens */
+}
+.leaf-vein {
+  fill: none;
+  stroke: rgba(120, 30, 5, 0.55);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+}
+
+
+// ---------------------------------------------------------------------------------------------
+// Motion. transform / opacity only, so it stays on the compositor.
+// ---------------------------------------------------------------------------------------------
+
+// Moon: brightens and dims by roughly 5–8% over a 6s loop.
+@keyframes moon-pulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.12; }
+}
+@keyframes moon-halo {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.09; }
+}
+
+// Ghosts: 2–4px of vertical float with a tiny sideways drift.
+@keyframes ghost-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  35% { transform: translate3d(var(--dx), calc(var(--dy) * -0.6), 0); }
+  70% { transform: translate3d(calc(var(--dx) * -0.5), calc(var(--dy) * -1), 0); }
+}
+
+// Pumpkin faces: a steady faint glow with an amber flicker near the end of each loop.
+@keyframes face-flicker {
+  0%, 52% { opacity: 0.1; }
+  58% { opacity: 0.5; }
+  62% { opacity: 0.16; }
+  68% { opacity: 0.58; }
+  74% { opacity: 0.28; }
+  82% { opacity: 0.46; }
+  91% { opacity: 0.14; }
+  100% { opacity: 0.1; }
+}
+
+// Lanterns and fairy lights: irregular warm pulses (different loop lengths keep them out of step).
+@keyframes lantern-pulse {
+  0%, 100% { opacity: 0.04; }
+  17% { opacity: 0.38; }
+  33% { opacity: 0.16; }
+  54% { opacity: 0.5; }
+  72% { opacity: 0.22; }
+  88% { opacity: 0.4; }
+}
+@keyframes bulbs-pulse {
+  0%, 100% { opacity: 0; }
+  21% { opacity: 0.55; }
+  39% { opacity: 0.14; }
+  62% { opacity: 0.7; }
+  81% { opacity: 0.24; }
+}
+
+// Stars: a short twinkle, then a long rest.
+@keyframes twinkle {
+  0%, 78%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  86% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+  93% { opacity: 0.45; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+// Bats: the wings beat about the shoulder (the painted pose is the middle of the stroke), the body
+// rises a little on each downstroke, and the bat loiters in a lazy loop, leaning into it.
+@keyframes flap-l {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(12deg); }
+  75% { transform: rotate(-12deg); }
+}
+@keyframes flap-r {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
+@keyframes stroke {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(0.6px); }
+  75% { transform: translateY(-0.6px); }
+}
+@keyframes loiter-x {
+  from { transform: translateX(calc(var(--lx) * -1)) rotate(-5deg); }
+  to { transform: translateX(var(--lx)) rotate(5deg); }
+}
+@keyframes loiter-y {
+  from { transform: translateY(calc(var(--ly) * -1)); }
+  to { transform: translateY(var(--ly)); }
+}
+
+// Each bat flies away and returns every 24s, offset so the sky stays lively.
+// The teleport happens only while both positions are outside the clipped artwork.
+@keyframes bat-tour {
+  0%, 8% { transform: translate3d(0, 0, 0); animation-timing-function: ease-in; }
+  18% { transform: translate3d(calc(var(--exit) * 0.5), -2cqh, 0); animation-timing-function: linear; }
+  30% { transform: translate3d(var(--exit), -4cqh, 0); }
+  30.01%, 43% { transform: translate3d(var(--enter), 4cqh, 0); animation-timing-function: ease-out; }
+  58% { transform: translate3d(calc(var(--enter) * 0.45), -1cqh, 0); animation-timing-function: ease-out; }
+  76%, 100% { transform: translate3d(0, 0, 0); }
+}
+
+// Leaves. A leaf is not a stone: it accelerates to a slow terminal speed, rocks side to side as it
+// slides on the air (tilting into each swing), drifts with the wind, then touches down, flops flat
+// (foreshortened, as the ground is seen at a slant), rests, and is carried off by a gust.
+// 18s loop: 4–40% fall · 40–46% touchdown · 46–62% rest · 62–70% gust · rest of the loop unseen.
+@mixin leaf-keyframes($name, $sway, $rock, $laps, $spin, $rest) {
+  $steps: 36;
+  $end-rot: $rock * math.cos(360deg * $laps) + $spin;
+
+  @keyframes #{$name} {
+    0%, 1% { opacity: 0; transform: translate3d(0, calc(var(--ground) * -0.05), 0) rotate(0deg); }
+    @for $i from 0 through $steps {
+      $p: math.div($i, $steps);
+      $env: math.min(1, math.div($p, 0.1));
+      $x: $sway * math.sin(360deg * $laps * $p) * $env;
+      $y: -0.05 + 1.05 * math.pow($p, 1.15);
+      $r: $rock * math.cos(360deg * $laps * $p) * $env + $spin * $p;
+      #{4% + $i * 1%} {
+        @if $i == 0 { opacity: 1; }
+        transform: translate3d(calc(var(--drift) * #{$p} + #{$x}cqw), calc(var(--ground) * #{$y}), 0) scaleY(1) rotate(#{$r}deg);
+      }
+    }
+    42% { transform: translate3d(calc(var(--drift) + 0.2cqw), var(--ground), 0) scaleY(0.72) rotate(#{$rest + 16}deg); }
+    44% { transform: translate3d(calc(var(--drift) + 0.35cqw), var(--ground), 0) scaleY(0.52) rotate(#{$rest - 6}deg); }
+    46%, 62% { transform: translate3d(calc(var(--drift) + 0.4cqw), var(--ground), 0) scaleY(0.48) rotate(#{$rest}deg); opacity: 1; }
+    66% { transform: translate3d(calc(var(--drift) + 1.8cqw), calc(var(--ground) - 0.5cqh), 0) scaleY(0.85) rotate(#{$rest + 70}deg); opacity: 0.85; }
+    70%, 100% { transform: translate3d(calc(var(--drift) + 5cqw), calc(var(--ground) - 0.9cqh), 0) scaleY(0.6) rotate(#{$rest + 150}deg); opacity: 0; }
+  }
+}
+@include leaf-keyframes(leaf-fall-a, 1.15, 36, 3.4, 40, 24);
+@include leaf-keyframes(leaf-fall-b, 1.3, 40, 3, -55, -30);
+
+// Nobody sees it: freeze every loop (set from the component when off-screen / tab hidden).
+:host(.is-paused) .stage * {
+  animation-play-state: paused;
+}
+
+// Respect the system setting: show the artwork exactly as painted.
+@media (prefers-reduced-motion: reduce) {
+  .stage * {
+    animation: none !important;
+  }
+  // The painted bats stay put (they are part of the artwork); only added effects are hidden.
+  .glow,
+  .moon-glow,
+  .moon-halo,
+  .star,
+  .leaf {
+    opacity: 0 !important;
+  }
+}

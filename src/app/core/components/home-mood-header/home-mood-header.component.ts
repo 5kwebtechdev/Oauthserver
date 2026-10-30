@@ -1,9 +1,18 @@
 import { MOOD_ASSETS } from '../../models/mood-assets';
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import { PetAgeService, PetMood } from '../../services/pet-age.service';
+import { HalloweenBackgroundComponent } from './halloween-background.component';
+
+// 31 October 2026, midnight through midnight in the app's India time zone.
+const HALLOWEEN_START = Date.UTC(2026, 9, 30, 18, 30);
+const HALLOWEEN_END = Date.UTC(2026, 9, 31, 18, 30);
+
+export function isHalloweenHeaderTime(now: number): boolean {
+  return now >= HALLOWEEN_START && now < HALLOWEEN_END;
+}
 
 export type HomeMood = 'happy' | 'excited' | 'anxious' | 'sad' | 'frustrated' | 'calm';
 interface MoodPresentation { label: string; before: string; emphasis: string; after: string; petMood: PetMood; }
@@ -32,10 +41,13 @@ export function homeLeaderboardRankLabel(rank: number | null | undefined): strin
 
 @Component({
   selector: 'app-home-mood-header', standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HalloweenBackgroundComponent],
   templateUrl: './home-mood-header.component.html', styleUrls: ['./home-mood-header.component.scss']
 })
-export class HomeMoodHeaderComponent {
+export class HomeMoodHeaderComponent implements OnInit, OnDestroy {
+  showHalloween = isHalloweenHeaderTime(Date.now());
+  private halloweenTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly refreshHalloween = () => this.scheduleHalloweenWindow();
   readonly isNativeIos = Capacitor.getPlatform() === 'ios';
   @Input() mood: HomeMood | null = null;
   @Input() birthday = false;
@@ -48,6 +60,23 @@ export class HomeMoodHeaderComponent {
   @Input() moodPickerOpen = false;
   @Output() moodEdit = new EventEmitter<void>();
   constructor(private readonly pets: PetAgeService) {}
+  ngOnInit(): void {
+    this.scheduleHalloweenWindow();
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', this.refreshHalloween);
+  }
+  ngOnDestroy(): void {
+    if (this.halloweenTimer) clearTimeout(this.halloweenTimer);
+    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', this.refreshHalloween);
+  }
+  private scheduleHalloweenWindow(): void {
+    if (this.halloweenTimer) clearTimeout(this.halloweenTimer);
+    const now = Date.now();
+    this.showHalloween = isHalloweenHeaderTime(now);
+    const nextBoundary = now < HALLOWEEN_START ? HALLOWEEN_START : now < HALLOWEEN_END ? HALLOWEEN_END : null;
+    if (nextBoundary !== null) {
+      this.halloweenTimer = setTimeout(this.refreshHalloween, Math.min(nextBoundary - now, 24 * 60 * 60 * 1000));
+    }
+  }
   get state(): MoodPresentation {
     if (!this.birthday) return STATES[this.mood ?? 'default'];
     const birthdayState = this.mood === 'sad' || this.mood === 'anxious' || this.mood === 'frustrated' ? BIRTHDAY_NEGATIVE : BIRTHDAY_POSITIVE;

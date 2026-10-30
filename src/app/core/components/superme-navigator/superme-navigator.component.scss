@@ -18,6 +18,19 @@
   padding:10px 16px 0px 16px;
 }
 
+.navigator-inner.center-heading .navigator-heading-wrap {
+  position: absolute;
+  left: 50%;
+  width: min(70%, 280px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.navigator-inner.center-heading .navigator-heading {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
 .left-group {
   display: flex;
   align-items: center;

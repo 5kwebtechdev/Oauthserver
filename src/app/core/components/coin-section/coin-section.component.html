@@ -1,40 +1,55 @@
 <ion-content>
     <div class="coin-page">
 
-        <!-- ── Header Card ── -->
-        <div [ngClass]="{ 'coin-card': true, 'parent-view': isParent }">
-            <div class="header">
-                <p>Ready to Treat Yourself?</p>
-                <a [routerLink]="['/authed','bot-helpline']" class="robot-link" aria-label="Helpline">
-                    <img src="assets/Icons-Neutral/Icon-Chatbot.webp" alt="Robot" class="robot-icon">
+        <!-- Shared vault header; the account and selected pet determine its role variant. -->
+        <section class="coin-card" [class.parent-view]="isParent" aria-label="Your Coin Vault">
+            <div class="vault-heading">
+                <h1>Your Coin <span>Vault<img src="assets/figma/coins-header/underline.svg" alt="" aria-hidden="true"></span></h1>
+                <a [routerLink]="['/authed','bot-helpline']" class="vault-help" aria-label="Coin help">
+                    <img [src]="isParent ? 'assets/figma/coins-header/chat.svg' : 'assets/figma/coins-header/forum.svg'" alt="" aria-hidden="true">
                 </a>
             </div>
 
-            <div class="coins" [class.coins--rolling]="showTargetDigits && !coinAnimDone" [class.coins--done]="coinAnimDone">
-                <img src="assets/icons/superme-coin.webp" alt="SuperMe coin" class="coin-icon">
-                <span class="coin-value" *ngIf="isLoading || coinTotal <= 0">0</span>
-                <div class="coin-value-roller" *ngIf="!isLoading && coinTotal > 0">
-                    <span class="digit-col" *ngFor="let d of coinDigits; let i = index"
-                          [style.--target]="showTargetDigits ? (10 + d) : 0"
-                          [style.--stagger]="((coinDigits.length - 1 - i) * 80) + 'ms'">
-                        <span class="digit-strip">
-                            <span class="digit" *ngFor="let n of digitRange">{{ n }}</span>
-                        </span>
-                    </span>
+            <div class="vault-stats" aria-live="polite">
+                <div class="vault-balance" [class.vault-balance--rolling]="showTargetDigits && !coinAnimDone" [class.vault-balance--done]="coinAnimDone">
+                    <img src="assets/figma/coins-header/coin.png" alt="" aria-hidden="true">
+                    <div>
+                        <strong *ngIf="isLoading || coinTotal <= 0">0</strong>
+                        <strong class="coin-value-roller" *ngIf="!isLoading && coinTotal > 0" [attr.aria-label]="formattedCoinTotal">
+                            <span class="digit-col" *ngFor="let d of coinDigits; let i = index" aria-hidden="true"
+                                  [style.--target]="showTargetDigits ? (10 + d) : 0"
+                                  [style.--stagger]="((coinDigits.length - 1 - i) * 80) + 'ms'">
+                                <span class="digit-strip"><span class="digit" *ngFor="let n of digitRange">{{ n }}</span></span>
+                            </span>
+                        </strong>
+                        <span>Current coins</span>
+                    </div>
+                </div>
+                <div class="vault-divider" aria-hidden="true"></div>
+                <div class="vault-lifetime">
+                    <div class="vault-lifetime-row">
+                        <span class="vault-stat-icon vault-stat-icon--earn"><img src="assets/figma/coins-header/earn-arrow.svg" alt="" aria-hidden="true"></span>
+                        <div><strong>{{ formattedEarnings }}</strong><span>Lifetime earnings</span></div>
+                    </div>
+                    <div class="vault-lifetime-row">
+                        <span class="vault-stat-icon vault-stat-icon--spend"><img src="assets/figma/coins-header/spend-arrow.svg" alt="" aria-hidden="true"></span>
+                        <div><strong>{{ formattedSpending }}</strong><span>Lifetime spends</span></div>
+                    </div>
                 </div>
             </div>
 
-            <div *ngIf="!isParent" class="panda-message d-flex space-between w-100">
-                <app-speech-bubble [message]="message" type="talking" arrowSide="right">
-                </app-speech-bubble>
-                <img *ngIf="isCoinPanda" class="coin-panda-image"
-                    src="assets/figma/child-learning/header-pet.webp" alt="Panda buddy">
-                <superme-pet *ngIf="!isCoinPanda" [mood]="coinPetMood"></superme-pet>
+            <div *ngIf="!isParent" class="vault-companion">
+                <div class="vault-speech">{{ message }}</div>
+                <div class="vault-character" [ngClass]="'vault-character--' + coinCharacter" role="img" [attr.aria-label]="coinCharacter + ' coin companion'">
+                    <img [src]="coinCharacter === 'panda' ? 'assets/figma/coins-header/panda.png' : coinCharacter === 'llama' ? 'assets/figma/coins-header/llama.png' : 'assets/figma/coins-header/owl-dragon.png'" alt="">
+                </div>
             </div>
 
-            <superme-button *ngIf="!isParent" (click)="onRedeem()" text="Redeem" type="gold" size="large"></superme-button>
-            <superme-button *ngIf="isParent" (click)="onAddCoins()" text="Add" type="gold" size="large"></superme-button>
-        </div>
+            <button class="vault-action" type="button" (click)="isParent ? onAddCoins() : onRedeem()">
+                <img [src]="isParent ? 'assets/figma/coins-header/add.svg' : 'assets/figma/coins-header/redeem.svg'" alt="" aria-hidden="true">
+                {{ isParent ? 'Add Coins' : 'Redeem Coins' }}
+            </button>
+        </section>
 
         <!-- ── History Section ── -->
         <div class="coin-list-section">

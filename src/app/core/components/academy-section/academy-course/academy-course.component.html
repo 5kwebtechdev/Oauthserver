@@ -103,7 +103,7 @@
                 <span><ion-icon name="time-outline" aria-hidden="true"></ion-icon>{{ getLessonDuration(lesson) }}</span>
                 <i aria-hidden="true"></i>
                 <span class="lesson-card__coins" *ngIf="lesson.coins != null">
-                  <img [src]="learningCoinAsset" alt="" aria-hidden="true">{{ lesson.coins }}
+                  <img [src]="learningCoinAsset" alt="" aria-hidden="true">+{{ lesson.coins }}
                 </span>
               </span>
             </span>

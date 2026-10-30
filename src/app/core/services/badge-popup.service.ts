@@ -83,6 +83,7 @@ export class BadgePopupService {
             pendingCount: res.pendingCount ?? 1,
             primaryButton: res.primaryButton || 'Awesome',
             secondaryButton: res.secondaryButton || 'View all Badges',
+            earnedDate: res.earnedDate || res.achievedAt || undefined,
         };
     }
 

@@ -296,7 +296,7 @@ describe('Home Today at a Glance Figma states', () => {
         const calendar = GLANCE_BLANK_STATES[key].secondaryRoute === 'calendar';
         expect(route.calls.mostRecent().args[0]).toEqual(['/authed/activity-page']);
         if (calendar) {
-          expect(route).toHaveBeenCalledOnceWith(['/authed/activity-page'], { queryParams: { tab: 'all' } });
+          expect(route).toHaveBeenCalledOnceWith(['/authed/activity-page'], { queryParams: { tab } });
         }
       }
     });

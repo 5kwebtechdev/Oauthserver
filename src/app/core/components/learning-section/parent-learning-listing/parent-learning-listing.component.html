@@ -82,7 +82,7 @@
             <div class="parent-learning-row__meta">
               <span>
                 <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
-                {{ item.coins || 0 }}
+                +{{ item.coins || 0 }}
               </span>
               <span *ngIf="getItemDuration(item) as duration">
                 <img src="assets/figma/parent-home/parent-learning-clock.svg" alt="" aria-hidden="true">

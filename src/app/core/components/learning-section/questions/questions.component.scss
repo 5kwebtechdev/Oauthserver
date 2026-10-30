@@ -5,12 +5,27 @@
 }
 
 .quiz-question-content {
+    --quiz-accent: #ac2456;
+    --quiz-pale: #fcf3f6;
+    --quiz-selected: #f0a5bc;
+    --quiz-option-shadow: rgba(240, 165, 188, 0.5);
+    --quiz-button: radial-gradient(circle at center, #cf3359 0%, #ac2456 100%);
     --background: #ffffff;
     --padding-top: 0;
     --padding-bottom: 0;
     --padding-start: 0;
     --padding-end: 0;
 }
+
+.quiz-question-content--parent {
+    --quiz-accent: #432477;
+    --quiz-pale: #ebe6f5;
+    --quiz-selected: #af97d8;
+    --quiz-option-shadow: rgba(175, 151, 216, 0.5);
+    --quiz-button: linear-gradient(180deg, #7341a7 0%, #5b338f 49%, #432477 100%);
+}
+
+.quiz-question-content--parent .quiz-status-label { color: #432477; }
 
 .quiz-question-page,
 .quiz-loading-state {
@@ -71,7 +86,7 @@
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: #432477;
+    background: var(--quiz-accent);
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
@@ -85,7 +100,7 @@
 .quiz-visual-option:focus-visible,
 .quiz-hint-card:focus-visible,
 .quiz-check-button:focus-visible {
-    outline: 3px solid rgba(67, 36, 119, 0.36);
+    outline: 3px solid var(--quiz-accent);
     outline-offset: 2px;
 }
 
@@ -96,7 +111,7 @@
     min-height: 64px;
     padding: 8px 12px;
     border-radius: 16px;
-    background: #ebe6f5;
+    background: var(--quiz-pale);
     box-shadow: 0 0 2px 1px rgba(175, 151, 216, 0.5);
 }
 
@@ -123,7 +138,7 @@
 .quiz-status-label,
 .quiz-status-item strong {
     overflow: hidden;
-    color: #432477;
+    color: var(--quiz-accent);
     font-family: var(--font-sans);
     text-align: left;
     text-overflow: ellipsis;
@@ -131,6 +146,7 @@
 }
 
 .quiz-status-label {
+    color: #6b656a;
     font-size: 13px;
     font-weight: 500;
     line-height: 1.2;
@@ -145,7 +161,7 @@
 .quiz-status-divider {
     width: 1px;
     height: 32px;
-    background: rgba(67, 36, 119, 0.28);
+    background: color-mix(in srgb, var(--quiz-accent) 28%, transparent);
 }
 
 .quiz-content {
@@ -206,7 +222,7 @@
     border: 1px solid transparent;
     border-radius: 16px;
     background: #ffffff;
-    box-shadow: 0 0 2px 1px rgba(175, 151, 216, 0.5);
+    box-shadow: 0 0 2px 1px var(--quiz-option-shadow);
     color: #282527;
     cursor: pointer;
     font-family: var(--font-sans);
@@ -231,8 +247,8 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: #ebe6f5;
-    color: #432477;
+    background: var(--quiz-pale);
+    color: var(--quiz-accent);
     font-family: var(--font-sans);
     font-size: 20px;
     font-weight: 800;
@@ -261,10 +277,10 @@
 
 .quiz-option.is-selected,
 .quiz-visual-option.is-selected {
-    border-color: #432477;
-    background: #af97d8;
-    box-shadow: 0 0 2px 1px rgba(67, 36, 119, 0.5);
-    color: #432477;
+    border-color: var(--quiz-accent);
+    background: var(--quiz-selected);
+    box-shadow: 0 0 2px 1px var(--quiz-option-shadow);
+    color: var(--quiz-accent);
 }
 
 .quiz-option.is-selected .quiz-option-letter,
@@ -329,8 +345,8 @@
     margin: -4px 0 0;
     padding: 10px 12px;
     border-radius: 12px;
-    background: #f4edff;
-    color: #432477;
+    background: var(--quiz-pale);
+    color: var(--quiz-accent);
     font-family: var(--font-sans);
     font-size: 14px;
     font-weight: 600;
@@ -443,10 +459,10 @@
     width: 100%;
     min-height: 48px;
     padding: 12px 16px;
-    border: 1px solid #432477;
+    border: 1px solid var(--quiz-accent);
     border-radius: 16px;
-    background: linear-gradient(180deg, #7341a7 0%, #5b338f 49%, #432477 100%);
-    box-shadow: inset -1px -1px 2px #ebe6f5;
+    background: var(--quiz-button);
+    box-shadow: inset -1px -1px 2px var(--quiz-pale);
     color: #ffffff;
     cursor: pointer;
     font-family: var(--font-sans);
@@ -724,3 +740,26 @@
 .quiz-hint-meta > span:last-child { white-space: normal; }
 .quiz-hint-card { grid-template-columns: 72px minmax(0, 1fr); }
 .quiz-hint-meta { grid-column: 2; justify-self: start; }
+
+// The SELF and CHILD quiz uses the pink learning palette from Figma.
+// Parenting quizzes keep the existing purple palette above.
+.quiz-question-content:not(.quiz-question-content--parent) {
+    .quiz-status-card { grid-template-columns: 1fr 1fr; box-shadow: 0 0 2px 1px rgba(175, 151, 216, .5); }
+    .quiz-status-item:first-child { justify-content: flex-start; }
+    .quiz-status-item:last-child { justify-content: flex-end; text-align: right; }
+    .quiz-status-item:last-child .quiz-status-label,
+    .quiz-status-item:last-child strong { text-align: right; }
+    .quiz-status-divider { display: none; }
+    .quiz-content { margin-top: 16px; }
+    .quiz-question-copy { gap: 8px; }
+    .quiz-options { gap: 16px; margin-top: 8px; }
+    .quiz-option-text, .quiz-visual-option-text { font-weight: 600; }
+    .quiz-hint-card { grid-template-columns: 72px minmax(0, 1fr) max-content; margin-top: 16px; }
+    .quiz-hint-meta { grid-column: 3; }
+    .quiz-check-button { margin-top: 14px; }
+}
+
+@media (max-width: 350px) {
+    .quiz-question-content:not(.quiz-question-content--parent) .quiz-hint-card { grid-template-columns: 60px minmax(0, 1fr); }
+    .quiz-question-content:not(.quiz-question-content--parent) .quiz-hint-meta { grid-column: 2; }
+}

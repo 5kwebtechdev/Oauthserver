@@ -76,7 +76,7 @@
             <span class="learning-details-related__meta">
               <span>
                 <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
-                {{ relatedChallenge.coins || 0 }}
+                +{{ relatedChallenge.coins || 0 }}
               </span>
               <span *ngIf="getRelatedDuration(relatedChallenge) as duration">
                 <img src="assets/figma/learning-details/schedule.svg" alt="" aria-hidden="true">
@@ -97,7 +97,7 @@
             <span>{{ isArticleRead ? 'Already Read' : 'Read This' }}</span>
             <span class="learning-details-action__reward" *ngIf="articleCoins > 0">
               <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
-              {{ articleCoins }}
+              +{{ articleCoins }}
             </span>
           </ng-container>
         </button>
@@ -121,7 +121,7 @@
           <ng-container *ngIf="!isAssigningToChild">
             <span>{{ parentAssignmentComplete ? 'Assigned' : 'Assign' }}</span>
             <span class="learning-details-action__reward" *ngIf="!parentAssignmentComplete">
-              <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true"> {{ assignmentCoins }}
+              <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true"> +{{ assignmentCoins }}
             </span>
           </ng-container>
         </button>

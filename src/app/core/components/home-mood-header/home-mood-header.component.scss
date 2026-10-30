@@ -6,6 +6,14 @@
   &.home-period-evening { background-image: url('../../../../assets/Images-Thumbnails/HeaderV2-evening.webp'); }
   &.home-period-night { background-image: url('../../../../assets/Images-Thumbnails/HeaderV2-night.webp'); }
   &.mood-header--birthday { background-image: url('../../../../assets/figma/home-birthday/background.png'); }
+  &.mood-header--halloween { background-image: none; background-color: #7045a1; }
+}
+.mood-header--halloween {
+  .mood-message, .mood-pill, .mood-pet, .mood-stats { z-index: 1; }
+  .mood-stats { background: transparent; backdrop-filter: none; }
+  &, &.home-period-evening, &.home-period-night {
+    .mood-stat { color: #282527; text-shadow: none; }
+  }
 }
 .mood-message {
   position: absolute; top: 8px; left: 8px; width: 245px; max-width: 68%; height: 74px;

@@ -22,7 +22,7 @@
           <li *ngFor="let milestone of state.visible" [class.just-reached]="celebrating && milestone.days === state.completedDays" [class.completed]="milestone.days <= state.completedDays" [attr.aria-label]="milestone.days + ' days, ' + milestone.coins + ' coins, ' + (milestone.days <= state.completedDays ? 'completed' : 'upcoming')">
             <span class="marker"><span class="marker-icon"><img [src]="assets + (milestone.days <= state.completedDays ? 'flame.webp' : 'lock.svg')" alt=""></span></span>
             <span>{{ milestone.days }} Days</span>
-            <span class="coins"><img src="assets/icons/superme-coin.webp" alt="">{{ milestone.coins }}</span>
+            <span class="coins"><img src="assets/icons/superme-coin.webp" alt="">+{{ milestone.coins }}</span>
           </li>
         </ol>
       </ng-container>

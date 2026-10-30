@@ -97,6 +97,19 @@ describe('StreaksSectionComponent API mapping', () => {
     expect(component.isMilestoneClaimed(component.milestones[1])).toBeFalse();
   });
 
+  it('shows total streak days against the next milestone, not days since the previous milestone', () => {
+    const { component } = create();
+    component.status = { ...status, currentStreak: 51, nextMilestoneDay: 60, nextMilestoneCoins: 410 };
+    component.milestones = [
+      { days: 30, coins: 200, claimed: true },
+      { days: 60, coins: 410, claimed: false }
+    ];
+
+    expect(component.currentDays).toBe(51);
+    expect(component.nextMilestone?.days).toBe(60);
+    expect(component.milestoneProgress).toBe(85);
+  });
+
   it('requests a new month and ignores a cancelled older response', () => {
     const october = new Subject<StreakCalendarResponse>();
     const calendar = jasmine.createSpy('getStreakCalendar').and.callFake((_year: number, month: number) =>

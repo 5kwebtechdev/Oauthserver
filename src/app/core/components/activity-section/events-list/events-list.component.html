@@ -12,7 +12,7 @@
         (click)="selectMode('past')">Past</button>
     </nav>
 
-    <label class="search"><span aria-hidden="true">⌕</span><input type="search" placeholder="Search events"
+    <label class="search"><span aria-hidden="true">⌕</span><input type="search" placeholder="Search events, e.g. Rahul"
       aria-label="Search events" [(ngModel)]="query" /></label>
 
     <div class="pills" role="group" aria-label="Filter events by tag" *ngIf="!loading && !error">
@@ -27,15 +27,20 @@
     <p class="status" *ngIf="loading" role="status">Loading events…</p>
     <div class="status" *ngIf="error" role="alert">{{ error }} <button type="button" (click)="load()">Try again</button></div>
 
-    <ul class="event-list" *ngIf="!loading && !error && visibleOccurrences.length">
-      <li *ngFor="let item of visibleOccurrences; trackBy: trackOccurrence">
-        <button type="button" class="event-row" (click)="openEvent(item)">
+    <div class="event-groups" *ngIf="!loading && !error && visibleOccurrences.length">
+      <section class="event-group" *ngFor="let group of groups">
+        <h2>{{ group.label }}</h2>
+        <ul class="event-list">
+      <li *ngFor="let item of group.items; trackBy: trackOccurrence">
+        <button type="button" class="event-row" [class.today]="isToday(item)" (click)="openEvent(item)">
           <span class="event-icon" *ngIf="iconOf(item.event) as icon"><img [src]="icon" alt="" /></span>
           <span class="event-text"><strong>{{ item.event.name }}</strong><small>{{ dateLabel(item) }}</small></span>
           <span class="countdown">{{ countdown(item) }}</span>
         </button>
       </li>
     </ul>
+      </section>
+    </div>
 
     <p class="status" *ngIf="!loading && !error && !visibleOccurrences.length">
       {{ query || selectedCategory !== 'all' ? 'No events match this filter.' : mode === 'upcoming' ? 'No upcoming events.' : 'No past events in the last year.' }}

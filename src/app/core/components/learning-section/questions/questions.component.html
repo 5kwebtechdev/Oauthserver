@@ -1,4 +1,4 @@
-<ion-content #content fullscreen class="quiz-question-content" [class.quiz-question-content--web]="isWebBrowser">
+<ion-content #content fullscreen class="quiz-question-content" [class.quiz-question-content--web]="isWebBrowser" [class.quiz-question-content--parent]="isParentQuiz">
     <ng-container *ngIf="currentQuestion as question">
         <div class="quiz-question-page">
             <header class="quiz-header">
@@ -14,7 +14,7 @@
 
             <section class="quiz-status-card" aria-label="Quiz progress">
                 <div class="quiz-status-item">
-                    <img class="quiz-status-icon" src="assets/figma/quiz-question/asset-5.svg" alt="" aria-hidden="true" />
+                    <img class="quiz-status-icon" [src]="isParentQuiz ? 'assets/figma/quiz-question/asset-5.svg' : 'assets/figma/quiz-question/schedule-pink.svg'" alt="" aria-hidden="true" />
                     <div>
                         <span class="quiz-status-label">Time Left</span>
                         <strong>{{ timerDisplay }}</strong>

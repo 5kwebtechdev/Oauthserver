@@ -60,7 +60,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
             <div class="meta">
               <div class="meta-value">
                 <img src="assets/icons/superme-coin.webp" alt="" class="meta-icon" />
-                {{challenge.coinsForCorrectAnswer || challenge.coins || 5}} coins
+                +{{challenge.coinsForCorrectAnswer || challenge.coins || 5}} coins
               </div>
               <div class="meta-label">For Every Correct Answer</div>
             </div>
@@ -75,9 +75,9 @@ import { Challenge } from 'src/app/core/models/learning.models';
       <button class="start-journey w-100" [class.assignment-complete]="isParentAssignment && assignmentComplete"
         (click)="isParentAssignment ? assignToChild() : startJourney()"
         [disabled]="isAssigningToChild || assignmentComplete || (isParentAssignment && !parentAssignmentChildId)">
-        <span *ngIf="!isAssigningToChild">{{ assignmentComplete ? 'Assigned' : (isParentAssignment ? 'Assign' : 'Start your journey') }}</span>
+        <span *ngIf="!isAssigningToChild">{{ assignmentComplete ? 'Assigned' : (isParentAssignment ? 'Assign' : 'Start') }}</span>
         <span *ngIf="isParentAssignment && !isAssigningToChild && !assignmentComplete" class="assignment-coin-reward">
-          <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true"> {{ assignmentCoins }}
+          <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true"> +{{ assignmentCoins }}
         </span>
         <span *ngIf="isAssigningToChild">Assigning...</span>
       </button>

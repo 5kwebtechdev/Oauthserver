@@ -22,13 +22,14 @@ import { AppCheckInterceptor } from './core/interceptors/app-check.interceptor';
 import { NetworkIssueComponent } from './core/components/network-issue/network-issue.component';
 import { SupermeButtonComponent } from './core/components/superme-button/superme-button.component';
 import { SupermePopupComponent } from './core/components/superme-popup/superme-popup.component';
+import { BadgeArtComponent } from './core/components/badge-section/badge-art.component';
 
 @NgModule({
   declarations: [
     AppComponent,
   ],
 
-  imports: [OAuthModule.forRoot(), BrowserModule, CommonModule, IonicModule.forRoot(), AppRoutingModule, BrowserAnimationsModule, HttpClientModule, SupermeLoadingComponent, NetworkIssueComponent, SupermeButtonComponent, SupermePopupComponent, DailyEntryComponent],
+  imports: [OAuthModule.forRoot(), BrowserModule, CommonModule, IonicModule.forRoot(), AppRoutingModule, BrowserAnimationsModule, HttpClientModule, SupermeLoadingComponent, NetworkIssueComponent, SupermeButtonComponent, SupermePopupComponent, BadgeArtComponent, DailyEntryComponent],
   providers: [
     { provide: APP_INITIALIZER, multi: true, useFactory: (auth: PkceAuthService) => () => auth.init(), deps: [PkceAuthService] },
     { provide: HTTP_INTERCEPTORS, useClass: PkceInterceptor, multi: true },

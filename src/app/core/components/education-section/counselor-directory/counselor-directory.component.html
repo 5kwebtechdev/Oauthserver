@@ -114,7 +114,7 @@
         <div class="counselor-list" *ngIf="!isLoading && !errorMessage && visibleCounselors.length">
           <ng-container *ngFor="let counselor of visibleCounselors; let index = index; trackBy: trackCounselor">
             <app-counselor-card [counselor]="counselor" [guest]="isGuestView" [education]="entityType !== 'COUNSELOR'" [categoryKey]="educationFilters?.categoryKey || ''" (viewProfile)="openProfile($event)"></app-counselor-card>
-            <ad-banner *ngIf="index === 2" class="counselor-ad" [screen]="eduAdScreen" variant="eduhub-inner" aria-label="Featured EduHub offers"></ad-banner>
+            <ad-banner *ngIf="index === 3" class="counselor-ad" [screen]="eduAdScreen" variant="eduhub-inner" aria-label="Featured EduHub offers"></ad-banner>
           </ng-container>
         </div>
       </section>

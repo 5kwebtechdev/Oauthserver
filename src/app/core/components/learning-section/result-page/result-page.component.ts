@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
@@ -11,6 +11,10 @@ import { SupermeButtonComponent } from '../../superme-button/superme-button.comp
 import { ChallengeSubmissionResponse, Challenge } from 'src/app/core/models/learning.models';
 import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
 import { ScoreStatusComponent } from './score-status.component';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { BadgeApi } from 'src/app/core/api/badge.api';
+import { BadgeCard, mapBadgeResponse } from '../../badge-section/badge-view-model';
+import { BadgeArtComponent } from '../../badge-section/badge-art.component';
 
 interface ResultNavigationState {
   submissionResult?: ChallengeSubmissionResponse | Record<string, unknown>;
@@ -26,6 +30,7 @@ interface ResultNavigationState {
     CommonModule,
     IonicModule,
     SupermeNavigatorComponent,
+    BadgeArtComponent,
     ScoreStatusComponent,
     SupermeInputsModule,
     SupermeButtonComponent
@@ -44,6 +49,7 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   // Results from submission
   submissionResult: ChallengeSubmissionResponse | null = null;
   badges: any[] = [];
+  badgeCards: BadgeCard[] = [];
   challenge: Challenge | null = null;
   timeTaken = 0;
 
@@ -65,12 +71,15 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   hasSubmissionResult = false;
 
   private backButtonSub?: Subscription;
+  private badgeProgressSub?: Subscription;
 
   constructor(
     private router: Router,
     private loadingService: LoadingService,
     private platform: Platform,
-    private badgePopupService: BadgePopupService
+    private badgePopupService: BadgePopupService,
+    private badgeApi: BadgeApi,
+    @Optional() private authService?: AuthService
   ) {
     // Get data from router state
     const navigation = this.router.getCurrentNavigation();
@@ -97,7 +106,18 @@ export class ResultPageComponent implements OnInit, OnDestroy {
     try { this.loadingService.reset(); } catch (e) { }
     if (this.submissionResult) {
       this.applySubmissionResult(this.submissionResult);
-      console.log('[ResultPage] badges from API:', JSON.stringify(this.badges, null, 2));
+      this.badgeCards = this.selectResultBadges(mapBadgeResponse({
+        badges: this.badges.map(badge => ({ ...badge, title: badge.title || badge.name }))
+      }).progress);
+      // The submission only includes challenge-related badges. The existing
+      // badge-progress endpoint supplies the second card and current totals.
+      this.badgeProgressSub = this.badgeApi.getBadgeProgress().subscribe({
+        next: response => {
+          const cards = mapBadgeResponse(response).progress;
+          if (cards.length) this.badgeCards = this.selectResultBadges(cards);
+        },
+        error: () => { /* Keep submission badge progress when this request fails. */ }
+      });
     } else {
       console.warn('No submission result found in router state');
     }
@@ -120,7 +140,14 @@ export class ResultPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.backButtonSub?.unsubscribe();
+    this.badgeProgressSub?.unsubscribe();
     window.removeEventListener('popstate', this.handlePopState);
+  }
+
+  private selectResultBadges(cards: BadgeCard[]): BadgeCard[] {
+    const preferred = ['Quiz Ace', 'Daily Learner'];
+    return preferred.map(name => cards.find(card => card.name === name))
+      .filter((card): card is BadgeCard => !!card).slice(0, 2);
   }
 
   private handlePopState = (_event: PopStateEvent) => {
@@ -134,7 +161,13 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   private returnToUpdatedLearningList(): void {
     this.clearStoredResult();
     const challengeId = Number(this.challenge?.challengeId ?? (this.challenge as any)?.id);
-    this.router.navigateByUrl(this.returnUrl, {
+    // The generic content route opens the child feed even for a signed-in
+    // parent. A parent's completed quiz belongs to their own quiz listing.
+    const returnUrl = this.authService?.isParentUser() &&
+      (this.returnUrl === '/authed/content' || this.returnUrl.startsWith('/authed/content?'))
+      ? '/authed/parent-learning?category=quizzes'
+      : this.returnUrl;
+    this.router.navigateByUrl(returnUrl, {
       replaceUrl: true,
       state: Number.isFinite(challengeId) && challengeId > 0
         ? { completedChallengeId: challengeId }
@@ -285,8 +318,9 @@ export class ResultPageComponent implements OnInit, OnDestroy {
 
 
   getFormattedTime(): string {
-    const minutes = Math.floor(this.timeTaken / 60);
-    const seconds = this.timeTaken % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const elapsedSeconds = Number.isFinite(this.timeTaken) ? Math.max(0, Math.floor(this.timeTaken)) : 0;
+    const minutes = Math.floor(elapsedSeconds / 60);
+    const seconds = elapsedSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 }

@@ -39,13 +39,13 @@
         </div>
         <div class="overview-item reward">
           <img src="assets/icons/superme-coin.webp" alt="" />
-          <div><span>Reward</span><strong *ngIf="nextMilestone; else rewardsDone">{{ nextMilestone.coins }} <small>Coins</small></strong><ng-template #rewardsDone><strong>All earned</strong></ng-template></div>
+          <div><span>Reward</span><strong *ngIf="nextMilestone; else rewardsDone">+{{ nextMilestone.coins }} <small>Coins</small></strong><ng-template #rewardsDone><strong>All earned</strong></ng-template></div>
         </div>
       </div>
       <div class="progress-track" role="progressbar" [attr.aria-valuenow]="milestoneProgress" aria-valuemin="0" aria-valuemax="100" aria-label="Progress toward next milestone">
         <div class="progress-fill" [style.width.%]="milestoneProgress"></div>
       </div>
-      <p class="progress-caption" *ngIf="nextMilestone; else completedCaption">{{ currentDays - milestoneStart }} of {{ nextMilestone.days - milestoneStart }} days completed</p>
+      <p class="progress-caption" *ngIf="nextMilestone; else completedCaption">{{ currentDays }} of {{ nextMilestone.days }} days completed</p>
       <ng-template #completedCaption><p class="progress-caption">Every milestone reached</p></ng-template>
 
       <h2>Milestones</h2>
@@ -53,7 +53,7 @@
         <div class="milestone" *ngFor="let item of milestones" [class.reached]="isMilestoneClaimed(item)">
           <span class="milestone-node"><img *ngIf="!isMilestoneClaimed(item)" src="assets/figma/streak-milestones/lock.svg" alt="Locked" /><img *ngIf="isMilestoneClaimed(item)" class="claimed-flame" src="assets/app-assets/activity-detail/progress-streak-hd.webp" alt="Reached" /></span>
           <span class="milestone-days">{{ item.days }} Days</span>
-          <span class="milestone-coins"><img src="assets/icons/superme-coin.webp" alt="" />{{ item.coins }}</span>
+          <span class="milestone-coins"><img src="assets/icons/superme-coin.webp" alt="" />+{{ item.coins }}</span>
         </div>
       </div>
     </section>

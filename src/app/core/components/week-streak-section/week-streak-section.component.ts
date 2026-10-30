@@ -41,8 +41,8 @@ export class WeekStreakSectionComponent {
 
   get milestoneRewardLabel(): string {
     if (this.daysToNextMilestone != null && this.nextMilestoneCoins != null) {
-      return `${this.daysToNextMilestone} more ${this.daysToNextMilestone === 1 ? 'day' : 'days'} to earn ${this.nextMilestoneCoins} coins`;
+      return `${this.daysToNextMilestone} more ${this.daysToNextMilestone === 1 ? 'day' : 'days'} to earn +${this.nextMilestoneCoins} coins`;
     }
-    return `${this.remainingDays} more ${this.remainingDays === 1 ? 'day' : 'days'} to earn ${this.rewardCoins} coins`;
+    return `${this.remainingDays} more ${this.remainingDays === 1 ? 'day' : 'days'} to earn +${this.rewardCoins} coins`;
   }
 }

@@ -96,7 +96,7 @@
           <ng-container *ngFor="let item of visibleItems; let index = index; trackBy: trackItem">
             <app-eduhub-event-card [item]="item" [entityType]="itemEntityType(item)" (viewDetails)="openDetails($event)"></app-eduhub-event-card>
 
-            <ad-banner *ngIf="index === 2" class="events-ad" [screen]="eduAdScreen" variant="eduhub-inner"
+            <ad-banner *ngIf="index === 3" class="events-ad" [screen]="eduAdScreen" variant="eduhub-inner"
               aria-label="Featured EduHub offers"></ad-banner>
           </ng-container>
         </div>

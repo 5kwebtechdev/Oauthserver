@@ -1,188 +1,170 @@
-.coin-panda-image {
-    width: 96px;
-    height: auto;
-    object-fit: contain;
-    flex-shrink: 0;
-}
-
-// The speech bubble has no width cap, so in a space-between flex row it can
-// greedily take the available width and squeeze the pet next to it down to
-// almost nothing. Give the bubble room to shrink and keep the pet at a
-// fixed, always-visible size, matching the panda image's treatment above.
-.panda-message {
-    align-items: flex-end;
+// The Figma vault is shared by child, self and parent accounts.
+.coin-card {
+    position: relative;
+    isolation: isolate;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 480px;
+    min-height: 352px;
+    margin: 0 auto;
+    padding: 8px 16px 12px;
+    overflow: hidden;
+    border-radius: 24px;
+    color: #282527;
+    background: #ffeb9a url('/assets/figma/coins-header/background.png') center center / cover no-repeat;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
-
-    app-speech-bubble {
-        flex: 1 1 auto;
-        min-width: 0;
-    }
-
-    superme-pet {
-        display: block;
-        flex-shrink: 0;
-    }
+    font-family: var(--font-sans, 'Nunito', sans-serif);
 }
 
-// ── Keyframe animations ──────────────────────────────────────────────────────
+.coin-card.parent-view { min-height: 224px; }
 
+.vault-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 40px;
+    z-index: 1;
+    h1 {
+        margin: 0;
+        font: 500 20px/1.3 var(--font-heading, 'Fredoka', sans-serif);
+        white-space: nowrap;
+        span { position: relative; color: #d8840d; }
+        img { position: absolute; left: 0; bottom: -5px; width: 45px; height: 5px; }
+    }
+}
+.vault-help {
+    display: grid;
+    place-items: center;
+    flex: 0 0 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #fdd679;
+    img { width: 24px; height: 24px; }
+}
+.vault-stats {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    min-width: 0;
+    min-height: 96px;
+    padding: 6px 12px;
+    border: 1px solid #fff;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 0 2px 1px rgba(107,101,106,.1);
+    z-index: 1;
+}
+.vault-balance {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1 1 50%;
+    min-width: 0;
+    img { width: 48px; height: 48px; object-fit: contain; flex: none; }
+    div { display: flex; flex-direction: column; min-width: 0; }
+    strong { font: 900 clamp(20px, 6vw, 28px)/1.15 var(--font-sans, 'Nunito', sans-serif); white-space: nowrap; }
+    div > span { color: #6b656a; font: 600 15px/1.3 var(--font-sans, 'Nunito', sans-serif); white-space: nowrap; }
+    .coin-value-roller { display: inline-flex; overflow: hidden; }
+    .digit-col { display: inline-block; height: 1.15em; overflow: hidden; }
+    .digit-strip {
+        display: flex; flex-direction: column;
+        transform: translateY(calc(-1.15em * var(--target, 0)));
+        transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+        transition-delay: var(--stagger, 0ms);
+        will-change: transform;
+    }
+    .digit { display: flex; align-items: center; justify-content: center; height: 1.15em; flex-shrink: 0; }
+    &--rolling > img { animation: coinBob .35s ease-in-out infinite; }
+    &--done > img { animation: coinIconPop .55s cubic-bezier(.36,.07,.19,.97) both; }
+    &--done .coin-value-roller { animation: rollerGlow 1.4s ease-out .15s both; }
+    &--done::after {
+        content: ''; position: absolute; width: 40px; height: 40px; left: 20px; top: 50%;
+        border: 2px solid rgba(255,215,0,.55); border-radius: 50%; pointer-events: none;
+        transform: translateY(-50%) scale(.5); animation: ringBurst .65s ease-out both;
+    }
+}
+.vault-balance { position: relative; }
 @keyframes coinIconPop {
-    0%   { transform: scale(1) rotate(0deg); }
-    30%  { transform: scale(1.35) rotate(-12deg); }
-    55%  { transform: scale(0.9) rotate(8deg); }
-    75%  { transform: scale(1.12) rotate(-4deg); }
-    100% { transform: scale(1) rotate(0deg); }
+    0% { transform: scale(1) rotate(0); }
+    30% { transform: scale(1.35) rotate(-12deg); }
+    55% { transform: scale(.9) rotate(8deg); }
+    75% { transform: scale(1.12) rotate(-4deg); }
+    100% { transform: scale(1) rotate(0); }
 }
-
-@keyframes coinBob {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50%      { transform: translateY(-3px) scale(1.06); }
-}
-
+@keyframes coinBob { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.06); } }
 @keyframes rollerGlow {
-    0%   { filter: drop-shadow(0 0 0 transparent); }
-    35%  { filter: drop-shadow(0 0 14px rgba(255, 220, 80, 0.85)) drop-shadow(0 0 30px rgba(255, 180, 0, 0.4)); }
+    0% { filter: drop-shadow(0 0 0 transparent); }
+    35% { filter: drop-shadow(0 0 14px rgba(255,220,80,.85)) drop-shadow(0 0 30px rgba(255,180,0,.4)); }
     100% { filter: drop-shadow(0 0 0 transparent); }
 }
-
 @keyframes ringBurst {
-    0%   { transform: translateY(-50%) scale(0.5); opacity: 0.7; border-width: 3px; }
+    0% { transform: translateY(-50%) scale(.5); opacity: .7; border-width: 3px; }
     100% { transform: translateY(-50%) scale(2.8); opacity: 0; border-width: 1px; }
 }
-
-@keyframes itemSlideIn {
-    from {
-        opacity: 0;
-        transform: translateX(28px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+.vault-divider { flex: 0 0 1px; background: #e3cbaa; }
+.vault-lifetime { display: flex; flex: 1 1 50%; flex-direction: column; justify-content: center; gap: 8px; min-width: 0; }
+.vault-lifetime-row {
+    display: flex; align-items: center; gap: 8px; min-width: 0;
+    div { display: flex; flex-direction: column; min-width: 0; }
+    strong { font: 700 15px/1.25 var(--font-sans, 'Nunito', sans-serif); white-space: nowrap; }
+    span:not(.vault-stat-icon) { color: #6b656a; font: 600 13px/1.3 var(--font-sans, 'Nunito', sans-serif); white-space: nowrap; }
 }
-
-@keyframes countBounceIn {
-    0%   { opacity: 0; transform: scale(0.4); }
-    60%  { opacity: 1; transform: scale(1.2); }
-    80%  { transform: scale(0.92); }
-    100% { transform: scale(1); }
+.vault-stat-icon {
+    display: grid; place-items: center; flex: 0 0 28px; height: 28px; border-radius: 50%;
+    img { width: 16px; height: 16px; }
+    &--earn { background: #e8f5e9; }
+    &--spend { background: #f8e9e9; }
 }
-
-// ── Header card ─────────────────────────────────────────────────────────────
-.coin-card {
-    width: 100%;
-    border-radius: 0 0 48px 48px;
-    background: linear-gradient(109deg, #BE6F03 1.38%, #EBA235 50.47%, #CB7D0C 98.62%);
-    padding: 16px 16px 24px;
+.vault-companion {
     position: relative;
-    color: white;
+    height: 122px;
+    min-height: 122px;
+    z-index: 1;
 }
-
-.coin-card.parent-view {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+.vault-speech {
+    position: absolute;
+    left: 0; top: 0;
+    box-sizing: border-box;
+    width: min(70%, 245px);
+    min-height: 76px;
+    padding: 8px 31px 8px 12px;
+    background: url('/assets/figma/coins-header/speech.svg') center / 100% 100% no-repeat;
+    font: 600 13px/1.5 var(--font-sans, 'Nunito', sans-serif);
 }
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    p {
-        color: #FDFDFD;
-        font-family: var(--font-heading);
-        font-size: 16px;
-        font-weight: 500;
-        margin: 0;
-    }
-}
-
-.robot-icon {
-    width: 56px;
-    height: 56px;
-}
-
-.coins {
-    display: flex;
-    align-items: center;
-    position: relative;
-
-    .coin-icon {
-        width: 40px;
-        height: auto;
-        aspect-ratio: 20/23;
-    }
-
-    .coin-value {
-        color: #FDFDFD;
-        font-family: var(--font-sans);
-        font-size: 32px;
-        font-weight: 700;
-        line-height: 140%;
-    }
-
-    // While digits are rolling, bob the coin icon
-    &--rolling .coin-icon {
-        animation: coinBob 0.35s ease-in-out infinite;
-    }
-
-    // When rolling finishes: pop the coin icon + glow the digits + ring burst
-    &--done .coin-icon {
-        animation: coinIconPop 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-    }
-
-    &--done .coin-value-roller {
-        animation: rollerGlow 1.4s ease-out 0.15s both;
-    }
-
-    &--done::after {
-        content: '';
-        position: absolute;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        border: 2px solid rgba(255, 215, 0, 0.55);
-        left: 20px;
-        top: 50%;
-        transform: translateY(-50%) scale(0.5);
-        animation: ringBurst 0.65s ease-out both;
-        pointer-events: none;
-    }
-}
-
-// ── Digit roller (slot-machine counter) ─────────────────────────────────────
-.coin-value-roller {
-    display: inline-flex;
+.vault-character {
+    position: absolute; right: -5px; bottom: -10px;
+    width: 124px; height: 144px;
     overflow: hidden;
+    pointer-events: none;
+    img { position: absolute; max-width: none; }
+    &--panda img, &--llama img { width: 155px; height: 156px; left: -18px; top: -9px; }
+    &--owl img, &--dragon img { width: 226px; height: 226px; top: -47px; }
+    &--owl img { left: -5px; }
+    &--dragon img { left: -116px; }
 }
-
-.digit-col {
-    height: 1.15em;
-    overflow: hidden;
-    display: inline-block;
-    font-family: var(--font-sans);
-    font-size: 32px;
-    font-weight: 700;
-    line-height: 1.15;
-    color: #FDFDFD;
+.vault-action {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    width: 100%; min-height: 44px; padding: 8px 12px;
+    border: 1px solid #d8840d; border-bottom-width: 2px; border-radius: 16px;
+    background: radial-gradient(ellipse at center, #fdd679 0%, #fdca55 50%, #fdbd31 100%);
+    color: #46300f; font: 800 15px/1.3 var(--font-sans, 'Nunito', sans-serif);
+    position: relative; z-index: 2; cursor: pointer;
+    img { width: 24px; height: 24px; }
 }
-
-.digit-strip {
-    display: flex;
-    flex-direction: column;
-    transform: translateY(calc(-1.15em * var(--target, 0)));
-    transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
-    transition-delay: var(--stagger, 0ms);
-    will-change: transform;
-}
-
-.digit {
-    height: 1.15em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+.vault-action:focus-visible, .vault-help:focus-visible { outline: 3px solid #432477; outline-offset: 2px; }
+@media (max-width: 374px) {
+    .coin-card { padding-inline: 12px; }
+    .vault-stats { gap: 8px; padding-inline: 8px; }
+    .vault-balance img { width: 40px; height: 40px; }
+    .vault-balance strong { font-size: 21px; }
+    .vault-balance div > span { font-size: 12px; }
+    .vault-lifetime-row { gap: 4px; }
+    .vault-lifetime-row strong { font-size: 13px; }
+    .vault-lifetime-row span:not(.vault-stat-icon) { font-size: 10px; }
+    .vault-stat-icon { flex-basis: 24px; height: 24px; }
+    .vault-speech { font-size: 12px; }
 }
 
 // ── List section ─────────────────────────────────────────────────────────────
@@ -523,134 +505,7 @@
         box-sizing: border-box;
     }
 
-    :host-context(html:not(.plt-capacitor)) .coin-card {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-rows: auto auto auto auto;
-        column-gap: clamp(28px, 5vw, 72px);
-        width: 100%;
-        min-height: 360px;
-        padding: clamp(26px, 3vw, 38px) clamp(28px, 4vw, 52px) 30px;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.64);
-        border-radius: 34px;
-        background:
-            radial-gradient(circle at 85% 18%, rgba(255, 240, 168, 0.32), transparent 26%),
-            radial-gradient(circle at 12% 90%, rgba(190, 111, 3, 0.24), transparent 38%),
-            linear-gradient(120deg, #b86600 0%, #e99a22 48%, #f4b53b 72%, #c97808 100%);
-        box-shadow: 0 22px 52px rgba(125, 73, 5, 0.20);
-        box-sizing: border-box;
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coin-card::before,
-    :host-context(html:not(.plt-capacitor)) .coin-card::after {
-        content: '';
-        position: absolute;
-        border-radius: 50%;
-        pointer-events: none;
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coin-card::before {
-        width: 240px;
-        height: 240px;
-        top: -130px;
-        right: 18%;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        background: rgba(255, 255, 255, 0.06);
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coin-card::after {
-        width: 150px;
-        height: 150px;
-        right: -54px;
-        bottom: -60px;
-        background: rgba(67, 36, 119, 0.08);
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coin-card .header {
-        grid-column: 1 / -1;
-        position: relative;
-        z-index: 1;
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coin-card .header p {
-        font-size: clamp(18px, 1.7vw, 23px);
-    }
-
-    :host-context(html:not(.plt-capacitor)) .robot-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 52px;
-        height: 52px;
-        border: 1px solid rgba(255, 255, 255, 0.34);
-        border-radius: 17px;
-        background: rgba(255, 255, 255, 0.14);
-        transition: transform 180ms ease, background 180ms ease;
-    }
-
-    :host-context(html:not(.plt-capacitor)) .robot-link:hover {
-        transform: translateY(-3px) rotate(3deg);
-        background: rgba(255, 255, 255, 0.24);
-    }
-
-    :host-context(html:not(.plt-capacitor)) .robot-icon {
-        width: 40px;
-        height: 40px;
-        object-fit: contain;
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coins {
-        grid-column: 1;
-        align-self: center;
-        z-index: 1;
-        gap: 12px;
-        min-height: 88px;
-        margin-top: 6px;
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coins .coin-icon {
-        width: 72px;
-        height: 72px;
-        aspect-ratio: 1;
-        object-fit: contain;
-        filter: drop-shadow(0 8px 12px rgba(120, 61, 0, 0.30));
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coins .coin-value,
-    :host-context(html:not(.plt-capacitor)) .coins .digit-col {
-        font-size: clamp(44px, 5vw, 64px);
-        font-family: var(--font-heading, 'Fredoka', sans-serif);
-    }
-
-    :host-context(html:not(.plt-capacitor)) .panda-message {
-        grid-column: 1 / -1;
-        position: relative;
-        z-index: 1;
-        align-items: center;
-        margin-top: 4px;
-    }
-
-    :host-context(html:not(.plt-capacitor)) .panda-message app-speech-bubble {
-        max-width: calc(100% - 210px);
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coin-panda-image {
-        width: 180px;
-        height: 170px;
-        max-height: none;
-        object-fit: contain;
-        filter: drop-shadow(0 10px 14px rgba(71, 40, 5, 0.24));
-        animation: web-coin-pet-float 3.6s ease-in-out infinite;
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coin-card > superme-button {
-        grid-column: 1 / -1;
-        position: relative;
-        z-index: 1;
-        width: min(100%, 420px);
-        margin: 10px auto 0;
-    }
+    :host-context(html:not(.plt-capacitor)) .coin-card { max-width: 480px; }
 
     :host-context(html:not(.plt-capacitor)) .coin-list-section {
         width: 100%;
@@ -706,22 +561,6 @@
     :host-context(html:not(.plt-capacitor)) .coin-page {
         width: min(calc(100% - 32px), 820px);
         padding-top: 20px;
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coin-card {
-        min-height: 330px;
-        padding: 24px;
-        border-radius: 28px;
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coins .coin-icon {
-        width: 62px;
-        height: 62px;
-    }
-
-    :host-context(html:not(.plt-capacitor)) .coin-panda-image {
-        width: 150px;
-        height: 144px;
     }
 
     :host-context(html:not(.plt-capacitor)) .coin-list-section {

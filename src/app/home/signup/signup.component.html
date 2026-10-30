@@ -888,6 +888,7 @@
     <div class="age-modal" *ngIf="showAgeSuggestionModal" role="dialog" aria-modal="true">
       <div class="age-modal__content">
         <h3 class="age-modal__title">Personalized Experience Available</h3>
+        <p class="age-modal__subtitle" *ngIf="ageEligibilityReason">{{ ageEligibilityReason }}</p>
         <p class="age-modal__subtitle">{{ ageSuggestionSubtitle }}</p>
       </div>
       <div class="age-modal__actions">
@@ -897,7 +898,7 @@
           [ngClass]="isPrimaryAgeSuggestion(role) ? 'age-modal__btn--primary' : 'age-modal__btn--secondary'"
           (click)="selectSuggestedRole(role)">Try {{ getRoleDisplayName(role) }} Role</button>
       </div>
-      <p class="age-modal__footer">You can always switch role in<br>profile if you prefer</p>
+      <p class="age-modal__footer">Available roles depend on age and family status.</p>
     </div>
 
     <!-- Access restricted popup for users under 8 years -->

@@ -1,4 +1,5 @@
-<section class="mood-header" [ngClass]="[birthday ? 'mood-header--birthday' : 'home-period-' + period, birthdayNegative ? 'mood-header--birthday-negative' : '', isNativeIos ? 'mood-header--ios-native' : '']" [attr.data-home-period]="period" aria-label="Your mood and progress">
+<section class="mood-header" [ngClass]="[birthday ? 'mood-header--birthday' : 'home-period-' + period, birthdayNegative ? 'mood-header--birthday-negative' : '', isNativeIos ? 'mood-header--ios-native' : '', showHalloween ? 'mood-header--halloween' : '']" [attr.data-home-period]="period" aria-label="Your mood and progress">
+  <app-halloween-background *ngIf="showHalloween" aria-hidden="true"></app-halloween-background>
   <div class="mood-message">
     <img class="mood-message__shape" src="assets/figma/home-mood-header/speech-bubble.svg" alt="">
     <span class="mood-message__copy" aria-live="polite">{{ state.before }}<strong>{{ state.emphasis }}</strong>{{ messageEnding }}</span>

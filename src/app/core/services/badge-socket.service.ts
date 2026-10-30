@@ -25,6 +25,7 @@ export interface BadgePopupData {
     pendingCount?: number;
     primaryButton?: string;
     secondaryButton?: string;
+    earnedDate?: string;
 }
 
 /**
@@ -347,7 +348,8 @@ export class BadgeSocketService implements OnDestroy {
             shareMessage: data.shareMessage || `I earned the ${title} badge on SuperMe! 🚀`,
             currentLevel,
             totalLevels: data.totalLevels || 1,
-            isMaxLevel: data.isMaxLevel || false
+            isMaxLevel: data.isMaxLevel || false,
+            earnedDate: data.earnedDate || data.achievedAt || undefined
         };
     }
 

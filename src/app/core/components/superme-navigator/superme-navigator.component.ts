@@ -13,6 +13,7 @@ import { AuthBackButtonComponent } from '../auth-back-button/auth-back-button.co
 })
 export class SupermeNavigatorComponent implements OnInit {
   @Input() heading: string = '';
+  @Input() centerHeading = false;
 
   // Optional subtext shown below the main heading (e.g. address / location label)
   @Input() subtext?: string;

@@ -1,5 +1,5 @@
 <div class="navigator-root" [class.warm]="variant === 'warm'">
-  <div class="navigator-inner">
+  <div class="navigator-inner" [class.center-heading]="centerHeading">
     <div class="left-group">
       <superme-auth-back-button
         *ngIf="!hideBack && backStyle === 'auth' && backIcon !== 'cancel'"

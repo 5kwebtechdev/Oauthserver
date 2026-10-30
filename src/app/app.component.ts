@@ -28,6 +28,8 @@ import { AppUpdateBlockReason, AppUpdateService } from './core/services/app-upda
 import { SupermePopupConfig } from './core/components/superme-popup/superme-popup.component';
 import { PushNotificationService } from './core/services/push-notification.service';
 import { AuthService as CoreAuthService } from './core/services/auth.service';
+import { BADGE_CATALOG, TIERS } from './core/components/badge-section/badge-catalog';
+import { BADGE_ART, BadgeArt } from './core/components/badge-section/badge-art.generated';
 
 @Component({
   selector: 'app-root',
@@ -452,7 +454,8 @@ export class AppComponent implements OnInit, OnDestroy {
               shareMessage: badge.shareMessage || 'I earned a badge on SuperMe! 🚀',
               currentLevel,
               totalLevels: badge.totalLevels || 1,
-              isMaxLevel: badge.isMaxLevel || false
+              isMaxLevel: badge.isMaxLevel || false,
+              earnedDate: badge.earnedDate || badge.achievedAt || undefined
             };
             this.badgeSocketService.enqueueBadge(badgeData);
           }
@@ -526,6 +529,31 @@ export class AppComponent implements OnInit, OnDestroy {
 
   getLocalBadgeIcon(name?: string): string {
     return this.LOCAL_BADGE_ICONS[name || ''] || 'assets/Images-Transparent/Image-Badge-Reward.webp';
+  }
+
+  getAchievementArt(badge: BadgePopupData): BadgeArt | null {
+    const definition = BADGE_CATALOG.find(item => item.name.toLowerCase() === badge.name?.trim().toLowerCase());
+    const level = Math.max(1, Math.min(TIERS.length, Math.trunc(Number(badge.currentLevel) || 1)));
+    return definition ? BADGE_ART[`${definition.id}-${level}`] || null : null;
+  }
+
+  getAchievementTier(badge: BadgePopupData): string {
+    const level = Math.max(1, Math.min(TIERS.length, Math.trunc(Number(badge.currentLevel) || 1)));
+    return TIERS[level - 1];
+  }
+
+  async shareBadgeAchievement(): Promise<void> {
+    if (!this.currentBadge) return;
+    const text = this.currentBadge.shareMessage || `I earned the ${this.currentBadge.name} badge on SuperMeApp!`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Badge Achieved', text });
+      } else {
+        await navigator.clipboard.writeText(text);
+      }
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === 'AbortError')) console.warn('[Badge] Share unavailable', error);
+    }
   }
 
   /**

@@ -9,6 +9,21 @@ import { ArticlePageComponent } from './article-page/article-page.component';
 describe('Parent Home quiz assignment flow', () => {
   const quiz: any = { id: 42, challengeId: 42, type: 'quiz', title: 'Chemistry quiz', name: 'Chemistry quiz' };
 
+  it('shows each content ID once when quiz and puzzle feeds overlap', () => {
+    const section = Object.create(LearningSectionComponent.prototype) as LearningSectionComponent;
+    const duplicatePuzzle = { ...quiz, type: 'puzzle' };
+    const nextPuzzle = { id: 43, type: 'puzzle', title: 'Different puzzle' };
+    const article = { id: 42, type: 'article', title: 'Article with the same numeric ID' };
+
+    const cards = (section as any).pickDistinctLatestItems([
+      [quiz],
+      [duplicatePuzzle, nextPuzzle],
+      [article]
+    ]);
+
+    expect(cards).toEqual([quiz, nextPuzzle, article]);
+  });
+
   it('opens the assignment preview without assigning or navigating twice', () => {
     const navigate = jasmine.createSpy('navigate');
     const section = Object.create(LearningSectionComponent.prototype) as LearningSectionComponent;

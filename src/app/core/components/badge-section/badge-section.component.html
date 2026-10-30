@@ -10,8 +10,8 @@
       </div>
     </header>
     <nav *ngIf="!allIndividuals" class="badge-tabs" role="tablist" aria-label="Badges">
-      <button id="progress-tab" type="button" role="tab" aria-controls="progress-panel" [attr.aria-selected]="tab === 'progress'" [class.active]="tab === 'progress'" (click)="tab = 'progress'">In progress</button>
-      <button id="earned-tab" type="button" role="tab" aria-controls="earned-panel" [attr.aria-selected]="tab === 'earned'" [class.active]="tab === 'earned'" (click)="tab = 'earned'">Earned</button>
+      <button id="progress-tab" type="button" role="tab" aria-controls="progress-panel" [attr.aria-selected]="tab === 'progress'" [class.active]="tab === 'progress'" (click)="selectTab('progress')">In progress</button>
+      <button id="earned-tab" type="button" role="tab" aria-controls="earned-panel" [attr.aria-selected]="tab === 'earned'" [class.active]="tab === 'earned'" (click)="selectTab('earned')">Earned</button>
     </nav>
     <section *ngIf="loading" class="status" role="status"><ion-spinner name="crescent"></ion-spinner><p>Loading badges…</p></section>
     <section *ngIf="!loading && error" class="status" role="alert"><h2>Badges couldn’t be loaded</h2><p>Please check your connection or sign in again.</p><button type="button" class="retry" (click)="loadBadges()">Try again</button></section>
@@ -36,17 +36,17 @@
   </main>
   <app-superme-popup [isVisible]="sharePopupVisible" [config]="sharePopupConfig" (closeAction)="sharePopupVisible = false" (backdropClick)="sharePopupVisible = false"></app-superme-popup>
   <ng-template #coreCard let-badge="badge" let-progress="progress" let-top="top">
-    <button type="button" class="badge-card" [class.earned-card]="!progress" [class.top-card]="top" [attr.data-tier]="badge.tier" (click)="openDetail(badge)">
+    <button type="button" class="badge-card" [class.earned-card]="!progress" [class.top-card]="top" [class.progress-settled]="progress && !!badge.progress && settledProgress.has(badge.key)" [class.earned-reveal]="!progress && earnedRevealActive" [attr.data-tier]="badge.tier" (click)="openDetail(badge)">
       <span *ngIf="badge.levelLabel" class="tier-label">{{ badge.levelLabel }}</span>
       <app-badge-art [art]="badge.art" [src]="badge.icon" [label]="badge.name"></app-badge-art>
-      <div class="card-copy"><h3>{{ badge.name }}</h3><p>{{ badge.description }}</p>
-        <div *ngIf="progress && badge.percent !== null" class="progress-row"><span class="progress-track" role="progressbar" [attr.aria-label]="badge.name + ' progress'" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="badge.percent"><span [style.width.%]="badge.percent"></span></span><span class="progress-value">{{ badge.progress | number:'1.0-0' }}/{{ badge.target | number:'1.0-0' }}</span></div>
+      <div class="card-copy"><h3>{{ badge.name }}</h3><p [title]="badge.cardDescription">{{ badge.cardDescription }}</p>
+        <div *ngIf="progress && badge.percent !== null" class="progress-row"><span class="progress-track" role="progressbar" [attr.aria-label]="badge.name + ' progress'" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="badge.percent"><span [style.width.%]="displayedPercent(badge)"></span></span><span class="progress-value" aria-hidden="true">{{ displayedProgress(badge) | number:'1.0-0' }}/{{ badge.target | number:'1.0-0' }}</span><span class="sr-only">{{ badge.progress | number:'1.0-0' }} of {{ badge.target | number:'1.0-0' }}</span></div>
         <span *ngIf="progress && badge.percent === null" class="unavailable">Progress unavailable</span>
         <time *ngIf="!progress && badge.earnedDate" [attr.datetime]="badge.earnedDate">{{ badge.earnedDate | date:'MMM dd, yyyy':'UTC' }}</time>
       </div>
     </button>
   </ng-template>
-  <ng-template #individualCard let-badge="badge"><article class="individual-card"><app-badge-art [art]="badge.art" [src]="badge.icon" [label]="badge.name"></app-badge-art><h3 [title]="badge.name">{{ badge.name }}</h3><time *ngIf="badge.earnedDate" [attr.datetime]="badge.earnedDate">{{ badge.earnedDate | date:'MMM dd, yyyy':'UTC' }}</time></article></ng-template>
+  <ng-template #individualCard let-badge="badge"><article class="individual-card" [class.earned-reveal]="earnedRevealActive"><app-badge-art [art]="badge.art" [src]="badge.icon" [label]="badge.name"></app-badge-art><h3 [title]="badge.name">{{ badge.name }}</h3><time *ngIf="badge.earnedDate" [attr.datetime]="badge.earnedDate">{{ badge.earnedDate | date:'MMM dd, yyyy':'UTC' }}</time></article></ng-template>
   <ng-template #individualEmpty><div class="individual-empty"><h3>No badges yet!</h3><p>Stay consistent with your habits and<br /> tasks to earn your first badge.</p></div></ng-template>
   <ion-modal class="badge-detail-modal" [isOpen]="selected !== null" (didDismiss)="selected = null" [backdropDismiss]="true" aria-label="Badge details">
     <ng-template><section *ngIf="selected as badge" class="badge-detail">

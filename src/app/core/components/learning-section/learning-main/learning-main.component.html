@@ -170,7 +170,7 @@
                     </ng-template>
                     <div class="parent-learning-card-item__footer">
                       <div class="parent-learning-card-item__rewards">
-                        <span><img src="assets/icons/superme-coin.webp" alt="Coins">{{ item.coins || 0 }}</span>
+                        <span><img src="assets/icons/superme-coin.webp" alt="Coins">+{{ item.coins || 0 }}</span>
                         <ng-container *ngIf="isParentItemAssigned(item) && getParentBonusCoins(item) as bonus">
                           <span class="parent-learning-card-item__bonus">+{{ bonus }} coins</span>
                         </ng-container>
@@ -406,7 +406,7 @@
                     <strong>{{ item.title }}</strong>
                     <span *ngIf="getParentItemDetail(item) as detail" class="child-learning-item__detail">{{ detail }}</span>
                     <span class="child-learning-item__rewards">
-                      <span><img src="assets/icons/superme-coin.webp" alt="Coins">{{ item.coins || 0 }}</span>
+                      <span><img src="assets/icons/superme-coin.webp" alt="Coins">+{{ item.coins || 0 }}</span>
                       <ng-container *ngIf="isParentItemAssigned(item) && getParentBonusCoins(item) as bonus">
                         <span class="child-learning-item__bonus">+{{ bonus }} coins</span>
                       </ng-container>

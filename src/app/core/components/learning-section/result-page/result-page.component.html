@@ -1,37 +1,21 @@
 <ion-content>
-  <superme-navigator heading="" backIcon="cancel" (back)="onCancel()">
+  <superme-navigator [heading]="challenge?.name || 'Quiz Result'" [centerHeading]="true" backIcon="cancel" (back)="onCancel()">
   </superme-navigator>
   <div class="result-container">
     <app-score-status [score]="scorePercentage" [correctAnswers]="correctAnswers"
       [totalQuestions]="totalQuestions"></app-score-status>
 
-    <div class="reward-u-got">
+    <div class="reward-u-got" aria-label="Quiz reward and completion time">
       <div class="reward-item">
-        <span class="plus">+</span>
         <img [src]="rewardCoinIcon" alt="Coins" class="reward-icon" />
-        <span class="reward-count">{{ coinsEarned }}</span>
+        <span class="reward-count">+{{ coinsEarned }}</span>
+      </div>
+      <span class="reward-divider" aria-hidden="true"></span>
+      <div class="reward-item">
+        <svg class="reward-clock" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 6v6l4 3" /></svg>
+        <time class="reward-time">{{ getFormattedTime() }}</time>
       </div>
     </div>
-
-    <section class="result-details" *ngIf="hasSubmissionResult" aria-label="Challenge result summary">
-      <p class="completion-message">
-        {{ firstCompletion
-          ? 'First completion — rewards added!'
-          : challengeCompleted
-            ? 'Completed again — this attempt is saved.'
-            : 'Your attempt is saved.' }}
-      </p>
-      <div class="result-stats">
-        <div class="result-stat">
-          <span>Score</span>
-          <strong>{{ scorePercentage }}%</strong>
-        </div>
-        <div class="result-stat">
-          <span>Total coins</span>
-          <strong>{{ totalCoins }}</strong>
-        </div>
-      </div>
-    </section>
 
     <!-- Overall Feedback -->
     <!-- <div class="feedback-section" *ngIf="overallFeedback">
@@ -43,30 +27,27 @@
       <p class="first-completion-text">🎉 First time completing this challenge!</p>
     </div> -->
 
-    <!-- Badges Section -->
-    <div class="badges-section" *ngIf="badges.length > 0">
-      <div class="badge-grid w-100 d-flex">
-        <div *ngFor="let badge of badges" class="badge-card w-100">
-          <div class="badge-content">
-            <div class="badge-info">
-              <p class="progress-text">{{ badge.progress }}/{{ badge.target }}</p>
-              <div class="badge-visual">
-                <div class="badge-icon-container">
-                  <img [src]="getBadgeIconUrl(badge)" [alt]="badge.title || badge.name" class="badge-icon"
-                       (error)="onBadgeImageError($event, badge)" />
-                </div>
-                <superme-completion [completionPercentage]="getBadgeCompletionPercent(badge)"
-                  [borderColor]="getScoreColor()" [innerText]="''" [belowText]="''">
-                </superme-completion>
-              </div>
+    <section class="badges-section" *ngIf="badgeCards.length" aria-label="Your Badge Progress">
+      <h2 class="badge-section-title">Your Badge Progress</h2>
+      <div class="badge-grid">
+        <article *ngFor="let badge of badgeCards" class="badge-card">
+          <span class="badge-tier" *ngIf="badge.levelLabel">{{ badge.levelLabel }}</span>
+          <app-badge-art [art]="badge.art" [src]="badge.icon" [label]="badge.name"></app-badge-art>
+          <div class="badge-copy">
+            <h3 class="badge-name">{{ badge.name }}</h3>
+            <p class="badge-description">{{ badge.cardDescription }}</p>
+            <div class="badge-progress" *ngIf="badge.percent !== null; else progressUnavailable">
+              <span class="badge-progress-track" role="progressbar" [attr.aria-label]="badge.name + ' progress'"
+                aria-valuemin="0" [attr.aria-valuemax]="badge.target" [attr.aria-valuenow]="badge.progress">
+                <span [style.width.%]="badge.percent"></span>
+              </span>
+              <span class="badge-progress-value">{{ badge.progress }}/{{ badge.target }}</span>
             </div>
-            <p class="badge-name">{{ badge.title || badge.name }}</p>
-            <p class="badge-level-text">{{ badge.levelText || badge.level }}</p>
-            <p class="badge-description">{{ badge.description }}</p>
+            <ng-template #progressUnavailable><span class="progress-unavailable">Progress unavailable</span></ng-template>
           </div>
-        </div>
+        </article>
       </div>
-    </div>
+    </section>
 
   </div>
 </ion-content>

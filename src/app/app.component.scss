@@ -167,182 +167,134 @@
 }
 
 
-// Global Badge Popup Styles
-$bg: #ffffff;
-$accent: #90214d;
-$green: #4CAF50;
-$text: #282527;
-$font-nunito: var(--font-sans);
+// Full-screen badge achievement, shared by polled and socket awards.
+.badge-achievement-screen {
+  position: fixed;
+  z-index: 99999;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: calc(env(safe-area-inset-top, 0px) + 18px) 16px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  background: #fff;
+  color: #282527;
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  box-sizing: border-box;
+}
 
-.global-badge-popup.congrats-popup {
-    position: fixed;
-    inset: 0;
-    background: $bg;
-    z-index: 99999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 32px 24px;
-    box-sizing: border-box;
+.badge-achievement-header {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  min-height: 44px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+}
 
-    .congrats-close {
-        position: absolute;
-        top: calc(env(safe-area-inset-top, 0px) + 24px);
-        right: 24px;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: background 0.2s;
+.badge-achievement-close,
+.badge-achievement-share {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #282527;
+  cursor: pointer;
+}
+.badge-achievement-close { font-size: 33px; font-weight: 300; line-height: 1; }
+.badge-achievement-share svg { width: 24px; height: 24px; }
+.badge-achievement-close:focus-visible,
+.badge-achievement-share:focus-visible { outline: 3px solid #8b8dcb; border-radius: 8px; }
 
-        &:hover {
-            background: rgba(0, 0, 0, 0.04);
-        }
+.badge-achievement-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 480px;
+  min-height: 490px;
+  margin: 0 auto;
+  padding-bottom: min(10vh, 80px);
+  box-sizing: border-box;
+}
 
-        svg {
-            width: 18px;
-            height: 18px;
-        }
-    }
+.badge-achievement-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(100%, 380px);
+  height: min(80vw, 320px);
+  max-height: 320px;
+  isolation: isolate;
+}
+.badge-achievement-rays {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 8deg, rgba(178, 115, 245, .13) 0deg 14deg, transparent 14deg 30deg);
+  mask-image: radial-gradient(circle, transparent 0 26%, #000 52%, transparent 72%);
+}
+.badge-achievement-art app-badge-art {
+  width: clamp(160px, 50vw, 200px);
+  height: clamp(160px, 50vw, 200px);
+  filter: drop-shadow(0 8px 16px rgba(111, 55, 157, .18));
+}
+.badge-achievement-confetti {
+  position: absolute;
+  top: 50%;
+  width: 72px;
+  height: 150px;
+  object-fit: contain;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.badge-achievement-confetti--left { left: 0; transform: translateY(-50%) scaleX(-1); }
+.badge-achievement-confetti--right { right: 0; }
 
-    .congrats-img {
-        position: relative;
-        width: 320px;
-        height: 220px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 12px;
+.badge-achievement-copy { width: 100%; text-align: center; }
+.badge-achievement-tier {
+  display: inline-block;
+  min-width: 92px;
+  padding: 5px 16px;
+  border-radius: 999px;
+  background: #a83608;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.badge-achievement-copy h1 {
+  margin: 8px 0 4px;
+  font-family: var(--font-heading, 'Fredoka', sans-serif);
+  font-size: clamp(26px, 7vw, 32px);
+  line-height: 1.15;
+  font-weight: 600;
+}
+.badge-achievement-copy p {
+  max-width: 340px;
+  margin: 0 auto;
+  color: #6b656a;
+  font-size: 16px;
+  line-height: 1.45;
+}
+.badge-achievement-copy time {
+  display: block;
+  margin-top: 16px;
+  color: #432477;
+  font-size: 14px;
+  font-weight: 700;
+}
 
-        .ring {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            border-radius: 105px;
-            border: 5px solid $green;
-            background: #fff;
-            box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            &::before {
-                content: '';
-                position: absolute;
-                inset: 0;
-                border-radius: inherit;
-                box-shadow: inset 0 0 24px 10px rgba(76, 175, 80, 0.28);
-                border: 2px solid rgba(76, 175, 80, 0.12);
-            }
-
-            .badge-wrap {
-                position: relative;
-                z-index: 2;
-                width: 140px;
-                height: 140px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 8px;
-                background: #fff;
-            }
-
-            .badge-icon {
-                width: 72px;
-                height: 72px;
-                object-fit: contain;
-            }
-        }
-
-        .confetti {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 90px;
-        }
-
-        .confetti.left {
-            left: 0;
-            transform: translateY(-50%) scaleX(-1);
-        }
-
-        .confetti.right {
-            right: 0;
-        }
-    }
-
-    .congrats-text {
-        text-align: center;
-        font-family: $font-nunito;
-        margin-bottom: 16px;
-
-        h1 {
-            color: $text;
-            font-size: 25px;
-            font-weight: 500;
-            margin: 0 0 8px;
-        }
-
-        h2 {
-            color: $text;
-            font-size: 20px;
-            font-weight: 600;
-            opacity: 0.7;
-            margin: 0 0 12px;
-        }
-
-        p {
-            color: $green;
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .level-info {
-            color: $accent;
-            font-size: 14px;
-            font-weight: 500;
-            opacity: 0.8;
-            margin-top: 8px;
-        }
-    }
-
-    .awesome-cta {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        align-items: stretch;
-        justify-content: center;
-        width: 100%;
-        max-width: 360px;
-
-        superme-button {
-            width: 100%;
-            display: block;
-
-            ::ng-deep .button {
-                width: 100% !important;
-                display: flex !important;
-                margin: 0 !important;
-                box-sizing: border-box;
-
-                p {
-                    white-space: nowrap;
-                    font-size: 15px;
-                }
-            }
-        }
-
-        @media (min-width: 480px) {
-            flex-direction: row;
-        }
-    }
+@media (max-height: 650px) {
+  .badge-achievement-body { min-height: 430px; padding-bottom: 0; }
+  .badge-achievement-art { height: 220px; }
+  .badge-achievement-art app-badge-art { width: 155px; height: 155px; }
 }

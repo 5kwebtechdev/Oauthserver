@@ -24,7 +24,7 @@ describe('Completed quiz navigation history', () => {
     introduction.challenge = challenge;
     introduction.startJourney();
     expect(stack[2]).toBe('/authed/content/questions/7');
-    const quiz = new QuestionsComponent(router, null!, null!, null!, null!);
+    const quiz = new QuestionsComponent(router, null!, null!, null!, null!, null!);
     quiz.challenge = challenge;
     (quiz as any).navigateToResult({ totalQuestions: 5, correctCount: 5 });
     expect(stack[2]).toBe('/authed/content/result');
@@ -43,6 +43,27 @@ describe('Completed quiz navigation history', () => {
     expect(router.navigate).toHaveBeenCalledOnceWith(['/authed/content/questions'], { replaceUrl: true });
   });
 
+  it('returns a parent to their own quizzes instead of the child content feed', () => {
+    const navigateByUrl = jasmine.createSpy('navigateByUrl');
+    const router = {
+      getCurrentNavigation: () => ({ extras: { state: {
+        submissionResult: { totalQuestions: 5, correctCount: 4 },
+        source: '/authed/content',
+        challenge: { challengeId: 7 }
+      } } }),
+      navigateByUrl
+    } as any;
+    const parentAuth = { isParentUser: () => true } as any;
+    const result = new ResultPageComponent(router, null!, null!, null!, parentAuth);
+
+    result.onContinue();
+
+    expect(navigateByUrl).toHaveBeenCalledOnceWith(
+      '/authed/parent-learning?category=quizzes',
+      { replaceUrl: true, state: { completedChallengeId: 7 } }
+    );
+  });
+
   it('asks before Android Back leaves an unfinished quiz and only quits after confirmation', () => {
     let onHardwareBack: (() => void) | undefined;
     const unsubscribe = jasmine.createSpy('unsubscribe');
@@ -56,7 +77,7 @@ describe('Completed quiz navigation history', () => {
       }
     } as any;
     const router = { navigateByUrl: jasmine.createSpy('navigateByUrl') } as any;
-    const quiz = new QuestionsComponent(router, null!, null!, null!, platform);
+    const quiz = new QuestionsComponent(router, null!, null!, null!, platform, null!);
 
     quiz.ionViewWillEnter();
     onHardwareBack!();

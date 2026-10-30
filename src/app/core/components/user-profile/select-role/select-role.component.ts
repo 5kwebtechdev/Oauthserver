@@ -10,6 +10,7 @@ import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-in
 import { NavigationService } from '../../../services/navigation.service';
 import { FamilyService } from '../../../services/family.service';
 import { AuthService } from '../../../services/auth.service';
+import { EligibilityOption, RoleEligibilityResponse, RoleEligibilityService } from '../../../services/role-eligibility.service';
 import { take } from 'rxjs/operators';
 import { QRCodeComponent } from 'angularx-qrcode';
 
@@ -23,9 +24,21 @@ import { QRCodeComponent } from 'angularx-qrcode';
 		<div class="role-flow-shell">
 			<superme-navigator heading="Select the role" backIcon="arrowSvg" (back)="goBack()"></superme-navigator>
 			<div class="role-options">
-			<div class="role-selector container p-0" *ngIf="shouldShowChildRole()" data-role="child" role="button" tabindex="0"
+			<div class="role-selector container p-0" *ngIf="roleOption('self') && !roleOption('self')?.current" data-role="self" role="button" [attr.tabindex]="canSelectRole('self') ? 0 : -1"
+				(click)="selectRole('self')" (keydown)="onKeySelect($event, 'self')"
+				[class.active]="selectedRole === 'self'" [class.ineligible]="!canSelectRole('self')" [attr.aria-disabled]="!canSelectRole('self')" [attr.aria-pressed]="selectedRole === 'self'">
+				<div class="row">
+					<div class="col-6">
+						<h2 style="padding-left:10px;">Self</h2>
+						<h4 style="padding-left:10px;">Continue your personal journey</h4>
+					</div>
+					<div class="col-6"></div>
+				</div>
+				<p class="role-reason" *ngIf="roleReason('self')">{{ roleReason('self') }}</p>
+			</div>
+			<div class="role-selector container p-0" *ngIf="shouldShowChildRole()" data-role="child" role="button" [attr.tabindex]="canSelectRole('child') ? 0 : -1"
 				(click)="selectRole('child')" (keydown)="onKeySelect($event, 'child')"
-				[class.active]="selectedRole === 'child'" [attr.aria-pressed]="selectedRole === 'child'">
+				[class.active]="selectedRole === 'child'" [class.ineligible]="!canSelectRole('child')" [attr.aria-disabled]="!canSelectRole('child')" [attr.aria-pressed]="selectedRole === 'child'">
 
 				<div class="row">
 					<div class="col-6">
@@ -38,11 +51,12 @@ import { QRCodeComponent } from 'angularx-qrcode';
 						<img src="assets/Images-Transparent/Image-Role-Child.webp" alt="Child role">
 					</div>
 				</div>
+				<p class="role-reason" *ngIf="roleReason('child')">{{ roleReason('child') }}</p>
 			</div>
 
-			<div class="role-selector container p-0" *ngIf="shouldShowParentRole()" data-role="parent" role="button" tabindex="0"
+			<div class="role-selector container p-0" *ngIf="shouldShowParentRole()" data-role="parent" role="button" [attr.tabindex]="canSelectRole('parent') ? 0 : -1"
 				(click)="selectRole('parent')" (keydown)="onKeySelect($event, 'parent')"
-				[class.active]="selectedRole === 'parent'" [attr.aria-pressed]="selectedRole === 'parent'">
+				[class.active]="selectedRole === 'parent'" [class.ineligible]="!canSelectRole('parent')" [attr.aria-disabled]="!canSelectRole('parent')" [attr.aria-pressed]="selectedRole === 'parent'">
 
 				<div class="row">
 					<div class="col-6 p-l-0 image-parent">
@@ -56,7 +70,9 @@ import { QRCodeComponent } from 'angularx-qrcode';
 						<h4 style="text-align: right; padding-right: 10px;">Track progress</h4>
 					</div>
 				</div>
+				<p class="role-reason" *ngIf="roleReason('parent')">{{ roleReason('parent') }}</p>
 			</div>
+			<p class="role-reason" *ngIf="roleEligibility?.ageSwitchConfirmationRequired">Please confirm your age to switch from Child to Self.</p>
 
 			<!--
 		<div class="role-selector container p-0" data-role="self" style="margin-top: 25px">
@@ -74,7 +90,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 		</div>
 		-->
 			<div>
-				<superme-button type="green" size="full" text="Save & Continue" [disabled]="!selectedRole" (click)="save()"></superme-button>
+				<superme-button type="green" size="full" text="Save & Continue" [disabled]="!selectedRole || eligibilityLoading || isSubmitting" (click)="save()"></superme-button>
 			</div>
 			</div>
 		</div>
@@ -370,6 +386,17 @@ import { QRCodeComponent } from 'angularx-qrcode';
   &.active::before {
     opacity: 1;
   }
+}
+
+.role-selector.ineligible {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.role-reason {
+  margin: 0 14px 12px;
+  font-size: 14px;
+  color: #625b64;
 }
 
 .toggle-buttons {
@@ -776,6 +803,9 @@ export class RoleSelectComponent implements OnDestroy {
   userAccountType: 'child' | 'parent' | 'self' | null = null;
   userAge: number | null = null;
   userDob: string | null = null;
+  roleEligibility: RoleEligibilityResponse | null = null;
+  eligibilityLoading = false;
+  private eligibilityRequest = 0;
 
   roleSelectionInstructions: string[] = [
     'Switching from Self to Parent lets this account create a family or join an existing family as a parent.',
@@ -1235,7 +1265,8 @@ export class RoleSelectComponent implements OnDestroy {
     private navigationService: NavigationService,
     private familyService: FamilyService,
     private toastController: ToastController,
-    private authService: AuthService
+    private authService: AuthService,
+    private roleEligibilityService: RoleEligibilityService
   ) {
     this.loadUserData();
   }
@@ -1263,6 +1294,30 @@ export class RoleSelectComponent implements OnDestroy {
         : this.userDob
           ? this.calculateAge(this.userDob)
           : null;
+
+      const isUnlinkedChild = this.userAccountType === 'self' && userData?.asChild === true;
+      const currentRole = isUnlinkedChild ? 'CHILD' : this.userAccountType?.toUpperCase() as 'SELF' | 'CHILD' | 'PARENT' | undefined;
+      const requestId = ++this.eligibilityRequest;
+      this.roleEligibility = null;
+      this.eligibilityLoading = false;
+      if (currentRole && this.userAge !== null && this.userAge >= 0) {
+        this.eligibilityLoading = true;
+        this.roleEligibilityService.options(this.userAge, currentRole, currentRole === 'CHILD' ? !isUnlinkedChild : undefined)
+          .pipe(take(1)).subscribe({
+            next: response => {
+              if (requestId !== this.eligibilityRequest) return;
+              this.eligibilityLoading = false;
+              this.roleEligibility = response;
+              if (this.selectedRole && !this.canSelectRole(this.selectedRole)) this.selectedRole = null;
+            },
+            error: () => {
+              if (requestId !== this.eligibilityRequest) return;
+              this.eligibilityLoading = false;
+              // The role-eligibility endpoint is not present on all deployments yet.
+              // Retain the existing family flow until it becomes available.
+            }
+          });
+      }
 
       if (
         (this.selectedRole === 'parent' && !this.shouldShowParentRole()) ||
@@ -1305,13 +1360,13 @@ export class RoleSelectComponent implements OnDestroy {
    * existing age-based role eligibility rules.
    */
   shouldShowChildRole(): boolean {
-    if (this.userAccountType === 'child') return false;
-    if (this.userAccountType === 'parent') return true;
-    if (this.userAccountType !== 'self') return true;
+    if (this.roleEligibility) return !this.roleOption('child')?.current;
+    if (this.userAccountType === 'child' || this.userAccountType === 'parent') return false;
+    if (this.userAccountType !== 'self') return false;
     if (this.userAge === null) {
-      return true; // Show if age not available
+      return false;
     }
-    return this.userAge < 18;
+    return this.userAge >= 8 && this.userAge < 18;
   }
 
   /**
@@ -1319,16 +1374,31 @@ export class RoleSelectComponent implements OnDestroy {
    * existing age-based role eligibility rules.
    */
   shouldShowParentRole(): boolean {
-    if (this.userAccountType === 'parent') return false;
-    if (this.userAccountType === 'child') return true;
-    if (this.userAccountType !== 'self') return true;
+    if (this.roleEligibility) return !this.roleOption('parent')?.current;
+    if (this.userAccountType !== 'self') return false;
     if (this.userAge === null) {
-      return true; // Show if age not available
+      return false;
     }
-    return this.userAge >= 25;
+    return this.userAge >= 30;
+  }
+
+  roleOption(role: string): EligibilityOption | undefined {
+    return this.roleEligibility?.options.find(option => option.role === role.toUpperCase());
+  }
+
+  canSelectRole(role: string): boolean {
+    if (this.eligibilityLoading) return false;
+    return this.roleEligibility ? this.roleOption(role)?.eligible === true
+      : role === 'child' ? this.shouldShowChildRole() : this.shouldShowParentRole();
+  }
+
+  roleReason(role: string): string | null {
+    const option = this.roleOption(role);
+    return option && !option.eligible && !option.current ? option.reason : null;
   }
 
   selectRole(role: string) {
+    if (!this.canSelectRole(role)) return;
     this.selectedRole = role;
     this.instructionConsentChecked = false;
     // If user picks child role, they must join a family (cannot create)
@@ -1356,7 +1426,11 @@ export class RoleSelectComponent implements OnDestroy {
    */
   save() {
     if (this.currentStep === 1) {
-      if (!this.selectedRole) return; // guard
+      if (!this.selectedRole || !this.canSelectRole(this.selectedRole)) return;
+      if (this.selectedRole === 'self') {
+        this.confirmAgeSwitch();
+        return;
+      }
       console.log('Selected role:', this.selectedRole);
       this.instructionConsentChecked = false;
       this.nextStep();
@@ -1373,6 +1447,24 @@ export class RoleSelectComponent implements OnDestroy {
       this.finish();
       return;
     }
+  }
+
+  private confirmAgeSwitch(): void {
+    if (!this.roleEligibility?.ageSwitchConfirmationRequired || this.isSubmitting) return;
+    this.isSubmitting = true;
+    this.roleEligibilityService.confirmAgeSwitch().pipe(take(1)).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.authService.refreshUserData().pipe(take(1)).subscribe({
+          next: () => { this.router.navigate(['/home'], { replaceUrl: true }); },
+          error: () => { this.router.navigate(['/home'], { replaceUrl: true }); }
+        });
+      },
+      error: () => {
+        this.isSubmitting = false;
+        void this.showToast('Could not confirm your age. Please try again.', 'danger');
+      }
+    });
   }
 
   nextStep() {

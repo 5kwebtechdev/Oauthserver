@@ -1281,6 +1281,21 @@ h4 {
   white-space: nowrap;
 }
 
+// Planner's longer label cannot fit inside the shared 132px action width.
+// Let this action size to its content and wrap the row only when the screen
+// cannot accommodate both buttons side by side.
+.glance-card--timetable .add-button-container {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.glance-card--timetable .text-view-all {
+  width: max-content;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+
 // ── Upcoming events carousel ────────────────────────────────────────────────
 .glance-upcoming {
   display: flex;

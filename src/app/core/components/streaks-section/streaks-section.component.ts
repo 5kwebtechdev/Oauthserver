@@ -107,18 +107,10 @@ export class StreaksSectionComponent implements OnInit, OnDestroy, ViewWillEnter
     return item.claimed ?? this.currentDays >= item.days;
   }
 
-  get milestoneStart(): number {
-    const next = this.nextMilestone;
-    if (!next) return 0;
-    const previous = this.milestones.filter(item => item.days < next.days);
-    return previous.length ? previous[previous.length - 1].days : 0;
-  }
-
   get milestoneProgress(): number {
     const next = this.nextMilestone;
     if (!next) return 100;
-    const span = Math.max(1, next.days - this.milestoneStart);
-    return Math.min(100, Math.max(0, ((this.currentDays - this.milestoneStart) / span) * 100));
+    return Math.min(100, Math.max(0, (this.currentDays / Math.max(1, next.days)) * 100));
   }
 
   get monthLabel(): string {

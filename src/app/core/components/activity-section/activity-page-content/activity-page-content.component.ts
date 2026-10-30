@@ -575,7 +575,8 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     }
 
     get showsPlannerEvents(): boolean {
-        return this.childCalendarTab === 'all' || this.childCalendarTab === 'planner';
+        // Figma keeps Upcoming Events above the category tabs for every tab.
+        return true;
     }
 
     get hasChildCalendarContent(): boolean {

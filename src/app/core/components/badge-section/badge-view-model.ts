@@ -2,7 +2,7 @@ import { BADGE_CATALOG, BadgeDefinition, Tier, TIERS } from './badge-catalog';
 import { BADGE_ART, BadgeArt } from './badge-art.generated';
 
 export interface BadgeCard {
-  key: string; name: string; description: string; tier: Tier | null; levelLabel: string;
+  key: string; name: string; description: string; cardDescription: string; tier: Tier | null; levelLabel: string;
   progress: number | null; target: number | null; percent: number | null;
   earned: boolean; earnedDate: string | null; art: BadgeArt | null; icon: string | null;
   definition?: BadgeDefinition; tiers: TierState[]; individual: boolean;
@@ -67,7 +67,11 @@ export function mapBadgeResponse(input: unknown): BadgeView {
         earnedDate: state?.['earned'] === true ? date(state['earnedDate']) : explicitlyEarned ? date(b['earnedDate']) : null, art: BADGE_ART[`${definition.id}-${i+1}`] };
     }) : [];
     const card: BadgeCard = {
-      key: categoryKey, name, description: text(b['description']), tier: workingTier,
+      key: categoryKey, name, description: definition?.detailDescription || text(b['description']),
+      // The detail sheet uses the approved Figma copy for known badges. Cards
+      // use the shorter milestone-specific copy with the API's current target.
+      cardDescription: definition && target !== null && target > 0
+        ? definition.describe(target) : text(b['description']), tier: workingTier,
       levelLabel: workingTier || text(b['levelText']), progress, target, percent,
       earned: b['isEarned'] === true, earnedDate: date(b['earnedDate']),
       art: definition && workingTier ? BADGE_ART[`${definition.id}-${TIERS.indexOf(workingTier)+1}`] : null,
@@ -78,7 +82,8 @@ export function mapBadgeResponse(input: unknown): BadgeView {
     if (v2) {
       for (const state of states.filter(t => t.earned === true)) earned.push({ ...card,
         key: `${categoryKey}:${state.name}`, tier: state.name, levelLabel: state.name, earned: true,
-        earnedDate: state.earnedDate, art: state.art, target: state.target });
+        earnedDate: state.earnedDate, art: state.art, target: state.target,
+        cardDescription: definition!.describe(state.target) });
     } else if (card.earned) {
       // Only the single award explicitly supplied by the old API is shown. No inferred history.
       earned.push(card);
@@ -100,7 +105,7 @@ export function mapBadgeResponse(input: unknown): BadgeView {
     if (!id || !name || b['earned'] !== true || individualIds.has(id)) continue;
     individualIds.add(id);
     const type = b['activityType'];
-    view.individual.push({ key: id, name, description: '', tier: null, levelLabel: '',
+    view.individual.push({ key: id, name, description: '', cardDescription: '', tier: null, levelLabel: '',
       progress: null, target: null, percent: null, earned: true, earnedDate: date(b['earnedDate']),
       art: type === 'HABIT' || type === 'TASK' ? BADGE_ART[`individual-${String(type).toLowerCase()}`] : null,
       icon: icon(b['icon']), tiers: [], individual: true });

@@ -340,7 +340,7 @@
               <svg class="activity-reward__icon" viewBox="96 20 96 140" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="assets/icons/child-home-streak-figma.webp" width="288" height="192" /></svg>{{ getStreak() }}
             </span>
             <span class="compact-habit__reward activity-reward" *ngIf="getCoinReward() > 0" [attr.aria-label]="getCoinReward() + ' coins'">
-              <img class="activity-reward__icon" src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">{{ getCoinReward() }}
+              <img class="activity-reward__icon" src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">+{{ getCoinReward() }}
             </span>
           </div>
         </ng-template>
@@ -415,7 +415,7 @@
             </div>
             <div class="single-point-container activity-reward" *ngIf="getCoinReward() > 0">
               <img class="activity-reward__icon" src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
-              <p class="score p-l-0">{{getCoinReward()}}</p>
+              <p class="score p-l-0">+{{getCoinReward()}}</p>
             </div>
           </div>
           <div class="d-flex footer-cta" *ngIf="getStatus() !== 'completed' && getStatus() !== 'skipped' && !isParent">

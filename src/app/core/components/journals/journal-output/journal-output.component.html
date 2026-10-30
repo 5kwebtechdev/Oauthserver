@@ -41,6 +41,11 @@
     <section class="journal-entries">
       <div class="journal-entries__heading">
         <h2>Your Entries</h2>
+        <button *ngIf="isAtLatestMonth && !hasEntryForToday" type="button" class="journal-add"
+          aria-label="Add journal entry" (click)="onAddClick()">
+          <img src="assets/figma/journal/add.svg" alt="" aria-hidden="true" />
+          <span>Add entry</span>
+        </button>
         <div class="journal-month" role="group" aria-label="Journal month">
           <button type="button" aria-label="Previous month" (click)="prevMonth()">
             <img src="assets/figma/journal/chevron-left.svg" alt="" />
@@ -50,11 +55,6 @@
             <img src="assets/figma/journal/chevron-right.svg" alt="" />
           </button>
         </div>
-        <button *ngIf="isAtLatestMonth && !hasEntryForToday" type="button" class="journal-add"
-          aria-label="Add journal entry" (click)="onAddClick()">
-          <img src="assets/figma/journal/add.svg" alt="" aria-hidden="true" />
-          <span>Add entry</span>
-        </button>
       </div>
 
       <div class="journal-state journal-state--loading" *ngIf="loading" aria-live="polite">

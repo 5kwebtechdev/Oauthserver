@@ -6,6 +6,7 @@ import { Router, ActivatedRoute, RouterModule, NavigationStart } from "@angular/
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 import { CoreService } from "../../core/services/core.service";
 import { AuthService } from '../../core/services/auth.service';
+import { OnboardingEligibilityResponse, RoleEligibilityService } from '../../core/services/role-eligibility.service';
 import { UserService } from '../../core/services/user.service';
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { LoadingService } from '../../core/services/loading.service';
@@ -252,7 +253,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public showAgeSuggestionModal = false;
   public ageSuggestionTarget: SignupRole | null = null;
   public ageSuggestionRoles: SignupRole[] = [];
+  public ageEligibilityReason: string | null = null;
   public computedAge: number | null = null;
+  private onboardingEligibility: OnboardingEligibilityResponse | null = null;
   public showAccessRestrictedModal = false;
 
 
@@ -554,6 +557,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private core: CoreService,
     private countriesService: CountriesService,
     private authService: AuthService,
+    private roleEligibility: RoleEligibilityService,
     private userService: UserService,
     private loadingService: LoadingService,
     private credentialSaverService: CredentialSaverService,
@@ -1544,10 +1548,28 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const parsedDob = dobVal ? new Date(dobVal) : null;
     const age = parsedDob ? this.calculateAge(parsedDob) : null;
 
+    // The role is picked before DOB in this wizard. Evaluate the selected role
+    // once DOB is known, before any registration request is sent.
+    this.onboardingEligibility = null;
+    if (age !== null && age >= 0) {
+      try {
+        this.onboardingEligibility = await firstValueFrom(
+          this.roleEligibility.onboarding(age).pipe(timeout(5000))
+        );
+      } catch {
+        // Older backend deployments still return 401 for this public route.
+        // Preserve the existing signup checks until the whitelist is live.
+      }
+    }
+
     // If user is under 8 years old, show the access restricted popup.
-    if (age !== null && age < 8) {
+    if (this.onboardingEligibility?.eligibleToOnboard === false || (this.onboardingEligibility === null && age !== null && age < 8)) {
       this.showAccessRestrictedModal = true;
       return;
+    }
+
+    if (this.roleSelected === 'self' && this.onboardingEligibility?.selfLocked) {
+      this.core.triggerToasrt('You can use Self now. Family actions become available at age 30.');
     }
 
     if (!(await this.validateReferralBeforeContinue())) {
@@ -1582,6 +1604,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const suggestionRoles = this.getAgeSuggestionRoles(role, age);
     if (suggestionRoles.length) {
       this.openAgeSuggestionModal(suggestionRoles);
+      return;
+    }
+    const selectedEligibility = this.onboardingEligibility?.roles.find(option =>
+      role === 'parent' ? option.role === 'CO_PARENT' || option.role === 'FAMILY_CREATOR'
+        : option.role === role.toUpperCase());
+    if (selectedEligibility && !selectedEligibility.eligible) {
+      this.core.triggerToasrt(selectedEligibility.reason || 'This role is unavailable for the selected age.');
       return;
     }
 
@@ -2266,12 +2295,21 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // No date of birth provided (it's optional) — nothing to suggest.
     if (age === null) return [];
 
+    const eligibility = this.onboardingEligibility?.age === age ? this.onboardingEligibility : null;
+    if (eligibility) {
+      const eligible = (target: SignupRole): boolean => eligibility.roles.some(option =>
+        (target === 'parent' ? option.role === 'FAMILY_CREATOR' || option.role === 'CO_PARENT'
+          : option.role === target.toUpperCase()) && option.eligible);
+      if (eligible(role)) return [];
+      return (['self', 'child', 'parent'] as SignupRole[]).filter(target => target !== role && eligible(target));
+    }
+
     if (role === 'child') {
-      if (age >= 25) {
+      if (age >= 30) {
         return ['self', 'parent'];
       }
 
-      if (age >= 18 && age < 25) {
+      if (age >= 18 && age < 30) {
         return ['self'];
       }
     }
@@ -2281,7 +2319,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         return ['child', 'self'];
       }
 
-      if (age >= 18 && age < 25) {
+      if (age >= 18 && age < 30) {
         return ['self'];
       }
     }
@@ -2290,12 +2328,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private openAgeSuggestionModal(roles: SignupRole[]): void {
+    const selected = this.roleSelected;
+    this.ageEligibilityReason = this.onboardingEligibility?.roles.find(option =>
+      selected === 'parent' ? option.role === 'CO_PARENT' || option.role === 'FAMILY_CREATOR'
+        : option.role === selected?.toUpperCase())?.reason || null;
     this.ageSuggestionRoles = roles;
     this.ageSuggestionTarget = roles.length === 1 ? roles[0] : null;
     this.showAgeSuggestionModal = true;
   }
 
   closeAgeSuggestionModal(): void {
+    this.ageEligibilityReason = null;
     this.showAgeSuggestionModal = false;
     this.ageSuggestionTarget = null;
     this.ageSuggestionRoles = [];

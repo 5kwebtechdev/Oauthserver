@@ -105,11 +105,16 @@ describe('Planner events in the calendar', () => {
 });
 
 describe('Planner upcoming event window', () => {
-    it('keeps the Upcoming Events section visible when the window is empty', () => {
+    it('keeps Upcoming Events above the activity tabs for empty and populated tabs', () => {
         const c: any = Object.create(ActivityPageContentComponent.prototype);
-        c.childCalendarTab = 'planner';
         c.childEventItems = [];
-        expect(c.showsPlannerEvents).toBeTrue();
+        for (const tab of ['all', 'habit', 'task', 'planner']) {
+            c.childCalendarTab = tab;
+            expect(c.showsPlannerEvents).toBeTrue();
+            c.childEventItems = [{ id: 1, name: 'Birthday' }];
+            expect(c.showsPlannerEvents).toBeTrue();
+            c.childEventItems = [];
+        }
     });
 });
 

@@ -3,14 +3,11 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { IonicModule, ViewWillEnter } from '@ionic/angular';
-import { SupermeButtonComponent } from '../superme-button/superme-button.component';
 import { FooterComponent } from '../footer/footer.component';
-import { SupermeSpeechBubbleComponent } from '../superme-speech-bubble/superme-speech-bubble.component';
-import { SupermePetComponent } from '../superme-pet/superme-pet.component';
 import { CoinService, CoinHistoryItem } from '../../services/coin.service';
 import { AuthService } from '../../services/auth.service';
 import { RefreshService } from '../../services/refresh.service';
-import { PetMessagesService, PetMood } from '../../services/pet-messages.service';
+import { PetMessagesService } from '../../services/pet-messages.service';
 import { PetAgeService } from '../../services/pet-age.service';
 
 interface CoinItem {
@@ -33,20 +30,21 @@ interface DayGroup {
 @Component({
     selector: 'app-coin-section',
     standalone: true,
-    imports: [CommonModule, IonicModule, RouterModule, SupermeButtonComponent, FooterComponent, SupermeSpeechBubbleComponent, SupermePetComponent],
+    imports: [CommonModule, IonicModule, RouterModule, FooterComponent],
     templateUrl: './coin-section.component.html',
     styleUrls: ['./coin-section.component.scss']
 })
 export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
     coinTotal: number = 0;
-    coinAnimDone: boolean = false;
-    showTargetDigits: boolean = false;
+    coinAnimDone = false;
+    showTargetDigits = false;
+    lifetimeEarnings = 0;
+    lifetimeSpending = 0;
     coinItems: CoinItem[] = [];
     isLoading = false;
     isParent: boolean = false;
-
     readonly digitRange = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-    private animTimers: any[] = [];
+    private animTimers: ReturnType<typeof setTimeout>[] = [];
 
     get coinDigits(): number[] {
         return String(this.coinTotal || 0).split('').map(Number);
@@ -56,14 +54,13 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
         return this.getCoinPetMessage().message;
     }
 
-    get coinPetMood(): PetMood {
-        return this.getCoinPetMessage().mood;
+    get coinCharacter(): 'panda' | 'owl' | 'dragon' | 'llama' {
+        return this.petAgeService.getCurrentPetType() || 'panda';
     }
 
-    /** Panda uses the same Figma artwork shown on Home/EduHub instead of the generic 3D render. */
-    get isCoinPanda(): boolean {
-        return this.petAgeService.getCurrentPetType() === 'panda';
-    }
+    get formattedCoinTotal(): string { return this.coinTotal.toLocaleString('en-IN'); }
+    get formattedEarnings(): string { return this.lifetimeEarnings.toLocaleString('en-IN'); }
+    get formattedSpending(): string { return this.lifetimeSpending.toLocaleString('en-IN'); }
 
     constructor(
         private router: Router,
@@ -98,6 +95,9 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             : this.coinService.loadCoinHistory();
         history.subscribe({
             next: (response) => {
+                const entries: CoinHistoryItem[] = Array.isArray(response?.history) ? response.history : [];
+                this.lifetimeEarnings = entries.reduce((sum, item) => sum + Math.max(0, Number(item.amount) || 0), 0);
+                this.lifetimeSpending = entries.reduce((sum, item) => sum + Math.max(0, -(Number(item.amount) || 0)), 0);
                 if (response?.totalCoins != null) {
                     this.coinTotal = this.normalizeCoinTotal(response.totalCoins);
                 } else if (response?.history) {
@@ -113,6 +113,8 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             },
             error: () => {
                 this.isLoading = false;
+                this.lifetimeEarnings = 0;
+                this.lifetimeSpending = 0;
             }
         });
     }
@@ -136,7 +138,7 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
 
     private clearAnimTimers(): void {
-        this.animTimers.forEach(t => clearTimeout(t));
+        this.animTimers.forEach(timer => clearTimeout(timer));
         this.animTimers = [];
     }
 

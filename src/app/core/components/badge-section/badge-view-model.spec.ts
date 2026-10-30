@@ -15,6 +15,50 @@ describe('Badge presentation adapter', () => {
   it('uses original API values, never resets cumulative totals at a threshold', () => {
     const result = mapBadgeResponse(v2([badge('Coin Chaser', { progress: 1500, target: 2000, nextTier: 'Builder' })]));
     expect(result.progress[0].progress).toBe(1500); expect(result.progress[0].percent).toBe(75);
+    expect(result.progress[0].cardDescription).toBe('Earn 2,000 coins.');
+    expect(result.progress[0].description).toBe('Total coins collected across all activities');
+  });
+  it('uses the current API milestone in short Figma card copy for each tier', () => {
+    const starter = mapBadgeResponse(v2([badge('Quiz Ace', { nextTier: 'Starter', target: 10 })]));
+    const builder = mapBadgeResponse(v2([badge('Quiz Ace', { nextTier: 'Builder', target: 30 })]));
+    expect(starter.progress[0].cardDescription).toBe('Ace 10 quizzes (100%).');
+    expect(builder.progress[0].cardDescription).toBe('Ace 30 quizzes (100%).');
+    expect(builder.progress[0].target).toBe(30);
+  });
+  it('uses each earned tier milestone rather than the next target on earned cards', () => {
+    const result = mapBadgeResponse(v2([badge('Coin Chaser', { nextTier: 'Achiever', target: 6000,
+      tiers: [{ tier: 'Starter', earned: true }, { tier: 'Builder', earned: true }] })]));
+    expect(result.progress[0].cardDescription).toBe('Earn 6,000 coins.');
+    expect(result.top[0].cardDescription).toBe('Earn 2,000 coins.');
+    expect(result.top[1].cardDescription).toBe('Earn 500 coins.');
+  });
+  it('preserves the API description for unknown categories', () => {
+    const result = mapBadgeResponse(v2([badge('Custom Badge', { target: 8 })]));
+    expect(result.progress[0].cardDescription).toBe('API description');
+    expect(result.progress[0].description).toBe('API description');
+  });
+  it('shows the supplied Figma detail copy for all 15 core badges', () => {
+    const expected: Record<string, string> = {
+      'Coin Chaser': 'Total coins collected across all activities',
+      'Quiz Ace': 'Quizzes completed with a perfect 100% score',
+      'Speed Reader': 'Total articles you have read from start to end',
+      'Habit Flow': 'Total habit completions across all your habits',
+      'Task Crusher': 'Total tasks completions across all your tasks',
+      'Daily Grit': 'Days with a habit, task, quiz, article and lesson',
+      'Daily Learner': 'Days with a quiz, article or lesson completed',
+      'Lesson Sharp': 'Total Masterclass lessons completed so far',
+      'Journal Flow': 'Total journal entries you have written so far',
+      'Crown Collector': 'Times you were #1 on the leaderboard',
+      'Squad Builder': 'Friends who joined SuperMeApp with your invite',
+      'Streak Peak': 'Consecutive days in your active app streak',
+      'Pet Squad': 'Total unique pets added to your collection',
+      'Creator Mode': 'Total reels you have posted on the SuperMeApp',
+      'Like Magnet': 'Total likes received across all your reels',
+    };
+    const result = mapBadgeResponse(v2(BADGE_CATALOG.map(definition => badge(definition.name,
+      { category: definition.id, target: definition.milestones[0], nextTier: 'Starter' }))));
+    expect(result.progress.length).toBe(15);
+    for (const card of result.progress) expect(card.description).toBe(expected[card.name]);
   });
   it('sorts Builder 10% ahead of Starter 90%', () => {
     const result = mapBadgeResponse(v2([badge('Quiz Ace', { nextTier: 'Starter', progress: 9 }), badge('Coin Chaser', { nextTier: 'Builder', progress: 1 })]));

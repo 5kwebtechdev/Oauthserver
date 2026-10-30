@@ -42,13 +42,14 @@ import { EduHubCityService } from '../../../services/eduhub-city.service';
 export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter {
   tutors: TutorListItem[] = [];
   isLoading = false;
+  loadError = false;
   searchQuery = '';
   private directoryEntityType = '';
   lastAppliedFilters: any = null;
   showAllFilters = false;
   totalTutorCount = 0;
   private readonly searchPageSize = 100;
-  selectedScope: TutorSearchScope = 'CITY';
+  selectedScope: TutorSearchScope = 'ALL_INDIA';
   showingOnlineFallback = false;
 
   /** Emitted when a tutor profile is requested */
@@ -83,9 +84,8 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
     this.directoryEntityType = String(this.route.snapshot.queryParamMap.get('entityType') || '').trim().toUpperCase();
     this.loadTutors();
     this.cityService.location$.pipe(skip(1), takeUntil(this.destroy$)).subscribe(() => {
-      this.selectedScope = 'CITY';
-      this.showingOnlineFallback = false;
-      this.refreshDirectory();
+      // Changing the saved location only affects an explicitly selected city search.
+      if (this.selectedScope === 'CITY' || this.isCounselorDirectory) this.refreshDirectory();
     });
   }
 
@@ -117,12 +117,25 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   }
 
   private refreshDirectory(): void {
+    this.loadError = false;
     if (this.lastAppliedFilters) {
       this.searchWithBackend(this.lastAppliedFilters as SelectedFilters);
       return;
     }
     this.isLoading = true;
-    if (!this.directoryEntityType && (this.selectedScope !== 'CITY' || this.cityService.isAutomaticLocation)) {
+    if (!this.directoryEntityType && this.selectedScope === 'ALL_INDIA') {
+      this.tutorService.fetchTutorsByEntityType('INDIVIDUAL', undefined, false, true)
+        .pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => { this.isLoading = false; },
+          error: () => {
+            this.tutorService.setCacheAndApply([]);
+            this.loadError = true;
+            this.isLoading = false;
+          }
+        });
+      return;
+    }
+    if (!this.directoryEntityType && (this.selectedScope === 'WORLDWIDE' || this.cityService.isAutomaticLocation)) {
       this.tutorService.getHomeTutorListings(this.selectedScope).pipe(takeUntil(this.destroy$)).subscribe({
         next: result => {
           this.showingOnlineFallback = result.usedOnlineFallback && result.tutors.length > 0;
@@ -209,11 +222,8 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
       this.lastAppliedFilters = null;
       this.totalTutorCount = 0;
       this.tutorService.clearFilters();
-      this.isLoading = true;
-      this.tutorService.fetchTutors().pipe(takeUntil(this.destroy$)).subscribe({
-        next: () => { this.isLoading = false; },
-        error: () => { this.isLoading = false; }
-      });
+      this.clearSearch();
+      this.refreshDirectory();
       return;
     }
 
@@ -226,10 +236,11 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   }
 
   private searchWithBackend(sel: SelectedFilters): void {
+    this.loadError = false;
     const request: TutorSearchRequest = {
       categoryKey: sel.categoryKey,
       filters: sel.filters,
-      ...this.cityService.filter,
+      ...(this.selectedScope === 'CITY' ? this.cityService.filter : {}),
       scope: this.selectedScope,
       autoFallbackToOnline: false,
       page: 0,

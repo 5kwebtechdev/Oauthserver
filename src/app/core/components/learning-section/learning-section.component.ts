@@ -52,7 +52,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
             <div class="reward-card-summary__meta">
               <span class="reward-card-summary__coins">
                 <img src="assets/icons/superme-coin.webp" alt="">
-                {{ getItemCoins(item) }}
+                +{{ getItemCoins(item) }}
                 <span *ngIf="isRewardAssigned(item)" class="reward-card-summary__assigned-coins">
                   +<img src="assets/icons/superme-coin.webp" alt="">{{ getRewardCoins(item) }}
                 </span>
@@ -72,7 +72,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
             <div class="parenting-card-summary__meta">
               <span>
                 <img src="assets/icons/superme-coin.webp" alt="">
-                {{ getItemCoins(item) }}
+                +{{ getItemCoins(item) }}
               </span>
               <span>
                 <img class="learning-meta-icon learning-meta-icon--time" src="assets/figma/child-learning/schedule.svg" alt="">
@@ -94,29 +94,34 @@ import { AuthService } from 'src/app/core/services/auth.service';
 
       <section *ngIf="contentMode === 'parenting' && !isLoading" class="parenting-toolkit"
         aria-labelledby="parenting-toolkit-title">
-        <header class="parenting-toolkit__header">
-          <h3 id="parenting-toolkit-title">
-            <img src="assets/figma/parent-home/parenting-section/toolkit-cap.webp" alt="" aria-hidden="true">
-            Your Parenting Toolkit
-          </h3>
-          <p>Research-Backed <img src="assets/figma/parent-home/parenting-section/dot.svg" alt="" aria-hidden="true">
-            Practical <img src="assets/figma/parent-home/parenting-section/dot.svg" alt="" aria-hidden="true">
-            Ready To Apply</p>
-        </header>
-
-        <button type="button" class="parenting-toolkit__card" (click)="openParentingBlogs()"
-          [attr.aria-label]="'Open ' + parentingBlogCount + ' parenting blogs'">
+        <button type="button" class="parenting-toolkit__card" (click)="openParentingQuizzes()"
+          [attr.aria-label]="'View all ' + parentingQuizCount + ' parenting quizzes'">
           <span class="parenting-toolkit__card-icon">
-            <img src="assets/figma/parent-home/parenting-section/blogs.webp" alt="" aria-hidden="true">
+            <img src="assets/figma/parent-home/parent-learning-quizzes.webp" alt="" aria-hidden="true">
           </span>
           <span class="parenting-toolkit__card-copy">
-            <strong>Blogs</strong>
+            <strong id="parenting-toolkit-title">Quizzes</strong>
             <span>Expand your knowledge</span>
-            <small>{{ parentingBlogCount }} {{ parentingBlogCount === 1 ? 'blog' : 'blogs' }}</small>
+            <small>{{ parentingQuizCount }} {{ parentingQuizCount === 1 ? 'quiz' : 'quizzes' }}</small>
           </span>
           <img class="parenting-toolkit__arrow" src="assets/figma/parent-home/parenting-section/arrow.svg" alt=""
             aria-hidden="true">
         </button>
+        <div class="slides parenting-quiz-slides" *ngIf="parentingQuizItems.length > 0">
+          <div class="learning-slide-shell" *ngFor="let item of parentingQuizItems; trackBy: trackByFn; let i = index">
+            <learning-card [item]="item" [index]="i" [source]="source" [forUserId]="parentUserId"
+              [parentPreviewOnly]="true"
+              (cardClick)="onParentingQuizClick($event.item)"></learning-card>
+            <div class="parenting-card-summary" aria-hidden="true">
+              <h3>{{ item?.title }}</h3>
+              <div class="parenting-card-summary__meta">
+                <span><img src="assets/icons/superme-coin.webp" alt="">+{{ getItemCoins(item) }}</span>
+                <span><img class="learning-meta-icon learning-meta-icon--time" src="assets/figma/child-learning/schedule.svg" alt="">{{ getItemDuration(item) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="parenting-toolkit__empty" *ngIf="parentingQuizItems.length === 0">No quizzes are available right now.</p>
       </section>
 
       <div class="pager" *ngIf="showPager" #pager>
@@ -1002,9 +1007,13 @@ import { AuthService } from 'src/app/core/services/auth.service';
           display: flex;
           width: 100%;
           flex-direction: column;
-          align-items: flex-start;
+          align-items: stretch;
           gap: 8px;
-          margin-top: 24px;
+          margin-top: 12px;
+          padding: 10px 8px 12px;
+          border-radius: 16px;
+          background: linear-gradient(115deg, #af97d8 0%, #d9c9ec 54%, #eee9f8 100%);
+          box-shadow: 0 0 2px 1px rgba(175, 151, 216, 0.45);
         }
 
         .parenting-toolkit__header {
@@ -1055,15 +1064,15 @@ import { AuthService } from 'src/app/core/services/auth.service';
         .parenting-toolkit__card {
           display: flex;
           width: 100%;
-          min-height: 90px;
+          min-height: 64px;
           align-items: center;
           gap: 8px;
-          padding: 12px 8px;
+          padding: 4px 4px;
           overflow: hidden;
           border: 0;
           border-radius: 16px;
-          background: linear-gradient(121.93deg, #af97d8 2.43%, #ebe6f5 97.57%);
-          box-shadow: 0 0 2px 1px rgba(175, 151, 216, 0.5);
+          background: transparent;
+          box-shadow: none;
           color: #282527;
           text-align: left;
           cursor: pointer;
@@ -1076,7 +1085,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
         .parenting-toolkit__card-icon {
           display: flex;
           width: 40px;
-          height: 49px;
+          height: 40px;
           flex: 0 0 40px;
           align-items: center;
           justify-content: center;
@@ -1084,8 +1093,8 @@ import { AuthService } from 'src/app/core/services/auth.service';
 
           img {
             width: 40px;
-            height: 49px;
-            object-fit: cover;
+            height: 40px;
+            object-fit: contain;
             filter: drop-shadow(0 2px 1px rgba(40, 37, 39, 0.3));
           }
         }
@@ -1126,6 +1135,18 @@ import { AuthService } from 'src/app/core/services/auth.service';
           width: 32px;
           height: 32px;
           flex: 0 0 32px;
+        }
+
+        .parenting-quiz-slides {
+          width: 100%;
+          padding-bottom: 2px;
+        }
+
+        .parenting-toolkit__empty {
+          margin: 0 4px;
+          color: #432477;
+          font-family: var(--font-sans, 'Nunito', sans-serif);
+          font-size: 13px;
         }
       }
     }
@@ -1171,6 +1192,12 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
   activeIndex: number = 0;
   isLoading = false;
   parentingBlogCount = 0;
+  parentingQuizCount = 0;
+  parentingQuizItems: any[] = [];
+
+  get parentUserId(): string | number | null {
+    return this.authService.getUserId();
+  }
 
   private scrollHandler?: () => void;
   private initialized = false;
@@ -1338,6 +1365,19 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
     });
   }
 
+  openParentingQuizzes(): void {
+    void this.router.navigate(['/authed/parent-learning'], {
+      queryParams: { category: 'quizzes' },
+      state: { source: this.source || '/authed/parent-account' }
+    });
+  }
+
+  onParentingQuizClick(item: any): void {
+    void this.router.navigate(['/authed/content/description', item.id], {
+      state: { source: this.source || '/authed/parent-account', forUserId: this.parentUserId, ownProfile: true, category: 'quizzes' }
+    });
+  }
+
   getRewardCoins(item: any): number {
     const raw = item?.rawData ?? item;
     const value = Number(
@@ -1436,7 +1476,9 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
 
   private loadLatestFromService() {
     const requestId = ++this.loadRequestId;
+    let quizItemsForRequest: any[] = [];
     this.isLoading = true;
+    if (this.contentMode === 'parenting') this.parentingQuizItems = [];
     // Parenting content belongs to the signed-in parent, even while Parent
     // Home is displaying a selected child's dashboard. Supplying the parent ID
     // explicitly prevents the global profile selector from substituting the
@@ -1449,10 +1491,16 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
       ? forkJoin([
           this.learningService.fetchArticleCards(true, scopedUserId, undefined, true).pipe(
             tap(items => this.parentingBlogCount = items.length),
-            map(items => this.pickLatest(items))
+            map(items => this.pickLatestItems(items, 2))
           ),
-          this.learningService.fetchQuizCards(true, scopedUserId, undefined, true).pipe(map(items => this.pickLatest(items)))
-        ])
+          this.learningService.fetchQuizCards(true, scopedUserId, undefined, true).pipe(
+            tap(items => this.parentingQuizCount = items.length),
+            map(items => this.pickLatestItems(items, 2))
+          )
+        ]).pipe(map(([articles, quizzes]) => {
+          quizItemsForRequest = quizzes;
+          return articles;
+        }))
       : this.childSelfLearningViewAll
         // Child/Self Home's "Start Curious, Play, Conquer!" rail is a quiz
         // discovery surface. Do not mix article or puzzle cards into it.
@@ -1460,29 +1508,48 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
             map(items => this.pickLatestItems(items, 3))
           )
       : forkJoin([
-          this.learningService.fetchQuizCards(true, scopedUserId, scopedAge).pipe(map(items => this.pickLatest(items))),
-          this.learningService.fetchPuzzleCards(true, scopedUserId, scopedAge).pipe(map(items => this.pickLatest(items))),
-          this.learningService.fetchArticleCards(true, scopedUserId, scopedAge).pipe(map(items => this.pickLatest(items)))
-        ]);
+          this.learningService.fetchQuizCards(true, scopedUserId, scopedAge),
+          this.learningService.fetchPuzzleCards(true, scopedUserId, scopedAge),
+          this.learningService.fetchArticleCards(true, scopedUserId, scopedAge)
+        ]).pipe(map(groups => this.pickDistinctLatestItems(groups)));
 
     requests
       .subscribe({
         next: (latestItems: any[]) => {
           if (requestId !== this.loadRequestId) return;
           this.items = latestItems.filter((item: any) => !!item) as any[];
+          if (this.contentMode === 'parenting') this.parentingQuizItems = quizItemsForRequest;
           this.isLoading = false;
         },
         error: (err: any) => {
           if (requestId !== this.loadRequestId) return;
           console.error('Error fetching latest learning items', err);
           this.items = [];
+          this.parentingQuizItems = [];
           this.isLoading = false;
         }
       });
   }
 
-  private pickLatest(cards: any[] = []) {
-    return this.pickLatestItems(cards, 1)[0] ?? null;
+  /** One card per feed, without showing the same challenge twice when scoped APIs overlap. */
+  private pickDistinctLatestItems(groups: any[][]): any[] {
+    const seen = new Set<string>();
+    const selected: any[] = [];
+    for (const cards of groups) {
+      for (const card of this.pickLatestItems(cards, cards.length)) {
+        const raw = card.rawData || card;
+        const id = raw.challengeId ?? raw.articleId ?? raw.id ?? card.id;
+        const kind = card.type === 'article' ? 'article' : 'challenge';
+        const key = id != null
+          ? `${kind}:${id}`
+          : `${kind}:${String(card.title || '').trim().toLowerCase()}:${String(card.image || '').trim()}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        selected.push(card);
+        break;
+      }
+    }
+    return selected;
   }
 
   private pickLatestItems(cards: any[] = [], limit = 1): any[] {

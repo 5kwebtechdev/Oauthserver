@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
@@ -51,6 +51,7 @@ describe('Badges screen', () => {
   it('opens Type 1 details but never opens them for Type 2', () => {
     const data=mapBadgeResponse({schemaVersion:2,badges:[{title:'Quiz Ace',progress:2,target:10,nextTier:'Starter'}],individualBadges:[{badgeId:'a',activityName:'Reading',activityType:'HABIT',earned:true}]});
     component.openDetail(data.progress[0]); expect(component.selected?.name).toBe('Quiz Ace');
+    expect(component.selected?.description).toBe('Quizzes completed with a perfect 100% score');
     component.selected=null; component.openDetail(data.individual[0]); expect(component.selected).toBeNull();
   });
   it('uses a separate URL view for individual badges and ordinary back history', () => {
@@ -64,6 +65,27 @@ describe('Badges screen', () => {
     component.loadBadges(); fixture.detectChanges(); expect(component.shareMessage).toBe('Verified achievement');
     expect(component.sharePopupVisible).toBeFalse(); fixture.nativeElement.querySelector('.share-achievement').click(); expect(component.sharePopupVisible).toBeTrue();
   });
+  it('animates display-only progress from zero to the API values and keeps it after tab switches', fakeAsync(() => {
+    const frames: FrameRequestCallback[] = [];
+    spyOn(window, 'requestAnimationFrame').and.callFake(callback => { frames.push(callback); return frames.length; });
+    api.getBadgeProgress.and.returnValue(of({badges:[
+      {title:'Quiz Ace', progress:0, target:10, levelText:'Starter'},
+      {title:'Journal Flow', progress:21, target:60, levelText:'Starter'},
+      {title:'Habit Flow', progress:100, target:100, levelText:'Starter'}
+    ]}));
+    component.loadBadges(); fixture.detectChanges();
+    expect(component.view.progress.map(b => b.progress)).toEqual([100,21,0]);
+    expect(component.view.progress.map(b => component.displayedProgress(b))).toEqual([0,0,0]);
+    tick(50);
+    expect(frames.length).toBe(1);
+    frames.shift()!(performance.now() + 2000);
+    fixture.detectChanges();
+    expect(component.view.progress.map(b => component.displayedProgress(b))).toEqual([100,21,0]);
+    expect(component.view.progress.map(b => component.displayedPercent(b))).toEqual([100,35,0]);
+    component.selectTab('earned'); component.selectTab('progress'); fixture.detectChanges();
+    expect(component.view.progress.map(b => component.displayedProgress(b))).toEqual([100,21,0]);
+    tick(1100);
+  }));
   for(const width of [360,375,390,414,768]) it(`fits progress and earned cards at ${width}px without page overflow`, async () => {
     // Only test fixtures; no synthetic data is installed in the application.
     component.view=mapBadgeResponse({schemaVersion:2,tierHistoryComplete:true,totalEarnedType1:0,
@@ -87,6 +109,8 @@ describe('Badges screen', () => {
       expect(card.getBoundingClientRect().width).toBeGreaterThan(100);
       expect(card.scrollWidth).toBeLessThanOrEqual(Math.ceil(card.getBoundingClientRect().width));
     }
+    const progressCards = Array.from(page.querySelectorAll('#progress-panel .badge-card')) as HTMLElement[];
+    expect(new Set(progressCards.map(card => Math.round(card.getBoundingClientRect().height))).size).toBe(1);
     component.tab='earned'; fixture.detectChanges();
     expect(page.scrollWidth).toBeLessThanOrEqual(width);
     const name=page.querySelector('.individual-card h3') as HTMLElement;

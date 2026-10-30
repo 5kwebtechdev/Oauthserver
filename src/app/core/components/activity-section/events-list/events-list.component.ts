@@ -18,6 +18,11 @@ interface EventPill {
   count: number;
 }
 
+interface EventGroup {
+  label: string;
+  items: PersonalEventOccurrence[];
+}
+
 @Component({
   standalone: true,
   selector: 'app-personal-events-list',
@@ -115,7 +120,8 @@ export class EventsListComponent implements OnDestroy {
       ...category,
       count: items.filter(item => this.categoryOf(item.event) === category.key).length
     })).filter(pill => pill.count > 0 || pill.key === this.selectedCategory)
-      .sort((a, b) => b.count - a.count);
+      .sort((a, b) => ['exam', 'other', 'birthday', 'holiday', 'anniversary'].indexOf(a.key)
+        - ['exam', 'other', 'birthday', 'holiday', 'anniversary'].indexOf(b.key));
     return [{ key: 'all', label: 'All', icon: null, count: items.length }, ...categories];
   }
 
@@ -126,6 +132,24 @@ export class EventsListComponent implements OnDestroy {
       return (this.selectedCategory === 'all' || category === this.selectedCategory)
         && (!query || item.event.name.toLowerCase().includes(query) || category.includes(query));
     });
+  }
+
+  get groups(): EventGroup[] {
+    const groups: EventGroup[] = [];
+    const weekEnd = new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate() + (7 - this.today.getDay()));
+    for (const item of this.visibleOccurrences) {
+      const label = this.mode === 'upcoming' && item.date < weekEnd
+        ? 'This week'
+        : new Intl.DateTimeFormat('en-IN', { month: 'long', year: 'numeric' }).format(item.date);
+      const last = groups[groups.length - 1];
+      if (last?.label === label) last.items.push(item);
+      else groups.push({ label, items: [item] });
+    }
+    return groups;
+  }
+
+  isToday(item: PersonalEventOccurrence): boolean {
+    return item.date.getTime() === this.today.getTime();
   }
 
   categoryOf(event: EventDto): EventCategory {

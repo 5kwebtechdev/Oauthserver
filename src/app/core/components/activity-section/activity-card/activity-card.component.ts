@@ -136,7 +136,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   openBlankStateSecondary(state: GlanceBlankState): void {
     if (state.secondaryRoute === 'calendar') {
-      void this.router.navigate(['/authed/activity-page'], { queryParams: { tab: 'all' } });
+      void this.router.navigate(['/authed/activity-page'], { queryParams: { tab: this.currentActive } });
     }
     else void this.openHabitPage();
   }
@@ -598,7 +598,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const streak = Math.max(1, this.getStreak());
 
     // Build heading HTML to include coin and streak rows
-    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:var(--text-base);">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;text-align:left;"><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('coin')}<div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('streak')}<div style="font-weight:600;">${streak}</div></div></div>`;
+    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:var(--text-base);">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;text-align:left;"><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('coin')}<div style="font-weight:600;">+${coins}</div></div><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('streak')}<div style="font-weight:600;">${streak}</div></div></div>`;
 
     const primary: SupermePopupCTA = {
       text: 'Confirm',

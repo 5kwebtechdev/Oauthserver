@@ -104,10 +104,16 @@
 
     
     <!-- Tutor list -->
-    <tutor-list *ngIf="!isLoading" [tutors]="visibleTutors" (viewProfile)="onViewProfile($event)"></tutor-list>
+    <tutor-list *ngIf="!isLoading && !loadError" [tutors]="visibleTutors" (viewProfile)="onViewProfile($event)"></tutor-list>
+
+    <div *ngIf="!isLoading && loadError" class="no-results" role="alert">
+      <p class="no-results__primary">Unable to load tutors</p>
+      <p class="no-results__secondary">Please try your search again.</p>
+      <superme-button type="columbian-blue" size="medium" text="Try Again" (click)="onScopeChange()"></superme-button>
+    </div>
     
     <!-- No results image + messages -->
-    <div *ngIf="!isLoading && visibleTutors.length === 0" class="no-results">
+    <div *ngIf="!isLoading && !loadError && visibleTutors.length === 0" class="no-results">
       <img src="assets/Images-Transparent/File-search.webp" alt="No results" class="no-results__image" />
       <p class="no-results__primary">No tutors found</p>
       <p class="no-results__secondary">Try adjusting your search or filters to find the right tutor.</p>

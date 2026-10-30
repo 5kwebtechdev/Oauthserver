@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy, Inject, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent, Platform } from '@ionic/angular';
 import { Subscription } from 'rxjs';
@@ -12,6 +12,7 @@ import { Challenge, ChallengeQuestion, QuestionOption } from 'src/app/core/model
 import { LearningService } from 'src/app/core/services/learning.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
 import { ShareLinkService } from '../../../services/share-link.service';
+import { AuthService } from '../../../services/auth.service';
 
 interface Question {
     id: number;
@@ -48,6 +49,7 @@ interface VisualOption {
 })
 export class QuestionsComponent implements OnInit, OnDestroy {
     readonly isWebBrowser = !Capacitor.isNativePlatform();
+    get isParentQuiz(): boolean { return this.authService?.getUserRelationship() === 'PARENT'; }
 
     // Heading shown in the navigator
     quizTitle = 'Apple Orchard Math Challenge';
@@ -209,7 +211,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         private learningService: LearningService,
         private petAgeService: PetAgeService,
         private platform: Platform,
-        private shareLinks: ShareLinkService
+        private shareLinks: ShareLinkService,
+        @Optional() @Inject(AuthService) private authService: AuthService | null = null
     ) { }
 
     ionViewWillEnter(): void {

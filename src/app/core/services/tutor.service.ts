@@ -146,12 +146,12 @@ export class TutorService {
      * category guesses. For example, EduHub Counselors uses
      * GET /v1/tutors?entityType=COUNSELOR.
      */
-    fetchTutorsByEntityType(entityType: string, city?: string): Observable<Tutor[]> {
+    fetchTutorsByEntityType(entityType: string, city?: string, includeSelectedLocation = true, propagateError = false): Observable<Tutor[]> {
         const normalizedType = String(entityType || '').trim().toUpperCase();
         if (!normalizedType) return this.fetchTutors();
 
         this.tutorsLoading$.next(true);
-        return this.getTutorsByEntityType(normalizedType, city).pipe(
+        return this.getTutorsByEntityType(normalizedType, city, includeSelectedLocation).pipe(
             tap(tutors => {
                 this.unfilteredTutors = [...tutors];
                 this.tutorsCache$.next(tutors);
@@ -162,7 +162,7 @@ export class TutorService {
             catchError(error => {
                 console.error(`[TutorService] Error fetching ${normalizedType} directory:`, error);
                 this.tutorsLoading$.next(false);
-                return of([]);
+                return propagateError ? throwError(() => error) : of([]);
             })
         );
     }
@@ -212,13 +212,13 @@ export class TutorService {
         }));
     }
 
-    getTutorsByEntityType(entityType: string, city?: string): Observable<Tutor[]> {
+    getTutorsByEntityType(entityType: string, city?: string, includeSelectedLocation = true): Observable<Tutor[]> {
         const normalizedType = String(entityType || '').trim().toUpperCase();
         const queryType = normalizedType === 'INDIVIDUAL' ? 'TUTOR' : normalizedType;
         let params = new HttpParams().set('entityType', queryType);
         const selectedCity = String(city ?? '').trim();
         if (selectedCity) params = params.set('city', selectedCity);
-        else for (const [key, value] of Object.entries(this.eduhubLocation.filter)) {
+        else if (includeSelectedLocation) for (const [key, value] of Object.entries(this.eduhubLocation.filter)) {
             if (value) params = params.set(key, value);
         }
         return this.http.get<any>(`${this.apiUrl}/tutors`, {
@@ -367,13 +367,13 @@ export class TutorService {
         const sort = this.currentSort$.value;
 
         // Apply search filter
-        if (filters.search) {
-            const searchLower = filters.search.toLowerCase();
+        if (filters.search?.trim()) {
+            const searchLower = filters.search.trim().toLowerCase();
             tutors = tutors.filter(t =>
-                t.name.toLowerCase().includes(searchLower) ||
-                t.qualification.toLowerCase().includes(searchLower) ||
+                t.name?.toLowerCase().includes(searchLower) ||
+                t.qualification?.toLowerCase().includes(searchLower) ||
                 t.subjects?.some(s => s.toLowerCase().includes(searchLower)) ||
-                t.location?.toLowerCase().includes(searchLower) ||
+                [t.location, t.city, t.state].some(value => value?.toLowerCase().includes(searchLower)) ||
                 t.entityName?.toLowerCase().includes(searchLower)
             );
         }
@@ -484,7 +484,7 @@ export class TutorService {
      * Search tutors by query
      */
     searchTutors(query: string): void {
-        this.setFilters({ ...this.currentFilters$.value, search: query });
+        this.setFilters({ ...this.currentFilters$.value, search: query.trim() });
     }
 
     /**

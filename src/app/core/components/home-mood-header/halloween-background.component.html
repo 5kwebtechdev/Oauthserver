@@ -1,0 +1,139 @@
+<div class="halloween-background">
+  <!--
+    Animated artwork. Every layer is placed in the same coordinate space as the artwork (the "stage"),
+    so the overlays stay locked to the moon, ghosts, pumpkins and lights at any width.
+  -->
+  <div class="stage" aria-hidden="true">
+    <img class="plate" [src]="assets + '/bg/plate.webp'" alt="" />
+
+    <!-- Floating ghosts -->
+    @for (g of ghosts; track g.id) {
+      <img
+        class="layer ghost"
+        [src]="assets + '/bg/' + g.id + '.webp'"
+        alt=""
+        [style.left.%]="g.left"
+        [style.top.%]="g.top"
+        [style.width.%]="g.width"
+        [style.height.%]="g.height"
+        [style.--dur]="g.dur + 's'"
+        [style.--delay]="g.delay + 's'"
+        [style.--dx]="g.dx + 'px'"
+        [style.--dy]="g.dy + 'px'"
+      />
+    }
+
+    <!-- Full moon: gentle glow that brightens and dims -->
+    <span class="moon-halo"></span>
+    <span class="moon-glow"></span>
+
+    <!-- Fairy lights, lanterns, carved pumpkins: light pixels pulse over the painted ones -->
+    @for (b of bulbs; track b.id) {
+      <img
+        class="layer glow bulbs"
+        [src]="assets + '/bg/' + b.id + '.webp'"
+        alt=""
+        [style.left.%]="b.left"
+        [style.top.%]="b.top"
+        [style.width.%]="b.width"
+        [style.height.%]="b.height"
+        [style.--dur]="b.dur + 's'"
+        [style.--delay]="b.delay + 's'"
+      />
+    }
+    @for (l of lanterns; track l.id) {
+      <img
+        class="layer glow lantern"
+        [src]="assets + '/bg/' + l.id + '.webp'"
+        alt=""
+        [style.left.%]="l.left"
+        [style.top.%]="l.top"
+        [style.width.%]="l.width"
+        [style.height.%]="l.height"
+        [style.--dur]="l.dur + 's'"
+        [style.--delay]="l.delay + 's'"
+      />
+    }
+    @for (f of faces; track f.id) {
+      <img
+        class="layer glow face"
+        [src]="assets + '/bg/' + f.id + '.webp'"
+        alt=""
+        [style.left.%]="f.left"
+        [style.top.%]="f.top"
+        [style.width.%]="f.width"
+        [style.height.%]="f.height"
+        [style.--dur]="f.dur + 's'"
+        [style.--delay]="f.delay + 's'"
+      />
+    }
+
+    <!-- Tiny stars -->
+    @for (s of stars; track $index) {
+      <svg
+        class="star"
+        viewBox="-5 -5 10 10"
+        [style.left.%]="s.left"
+        [style.top.%]="s.top"
+        [style.--dur]="s.dur + 's'"
+        [style.--delay]="s.delay + 's'"
+      >
+        <path d="M0-5L1-1L5 0L1 1L0 5L-1 1L-5 0L-1-1Z" />
+      </svg>
+    }
+
+    <!--
+      Bats: the three bats painted into the artwork, now alive. Each is the sprite cut three ways
+      (left wing / torso / right wing) so the wings really flap about the shoulder; the bat circles
+      where it hangs, and now and then one flies off across the sky and later returns.
+    -->
+    @for (b of bats; track b.id) {
+      <div
+        class="bat"
+        [class.has-tour]="!!b.tour"
+        [style.left.%]="b.left"
+        [style.top.%]="b.top"
+        [style.width.%]="b.width"
+        [style.height.%]="b.height"
+        [style.--from]="b.from"
+        [style.--to]="b.to"
+        [style.--py]="b.pivot"
+        [style.--lx]="b.lx + 'px'"
+        [style.--ly]="b.ly + 'px'"
+        [style.--tx]="b.tx + 's'"
+        [style.--ty]="b.ty + 's'"
+        [style.--flap]="b.flap + 's'"
+        [style.--phase]="b.phase + 's'"
+        [style.--exit]="(b.tour?.exit ?? 0) + 'cqw'"
+        [style.--enter]="(b.tour?.enter ?? 0) + 'cqw'"
+        [style.--tour-delay]="(b.tour?.delay ?? 0) + 's'"
+      >
+        <div class="bat-sway">
+          <div class="bat-drift">
+            <div class="bat-stroke">
+              <img class="wing wing-l" [src]="assets + '/bg/' + b.id + '.webp'" alt="" />
+              <img class="wing wing-r" [src]="assets + '/bg/' + b.id + '.webp'" alt="" />
+              <img class="torso" [src]="assets + '/bg/' + b.id + '.webp'" alt="" />
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!--
+      Autumn leaves. They come off the trees, flutter down (swaying and rocking as they fall) and land
+      on the meadow, flatten, rest, then a gust carries them off. `--ground` is where the leaf touches
+      down and `--drift` how far the wind pushes it sideways, both in % of the artwork.
+    -->
+    <svg class="leaf leaf-1" viewBox="0 0 20 20" style="left: 1.6%; --ground: 89cqh; --drift: 9.5cqw; --delay: 0s">
+      <path class="leaf-body leaf-a" d="M10 1L11.8 5.2L15.6 3.6L14.4 8L18.5 8.3L15.4 11.2L17 15L12 13.6L10.6 18L9.4 18L8 13.6L3 15L4.6 11.2L1.5 8.3L5.6 8L4.4 3.6L8.2 5.2Z" />
+      <path class="leaf-vein" d="M10 5V19" />
+    </svg>
+    <svg class="leaf leaf-2" viewBox="0 0 20 20" style="left: 84.5%; --ground: 90.7cqh; --drift: -17cqw; --delay: -9s">
+      <path class="leaf-body leaf-b" d="M10 1L11.8 5.2L15.6 3.6L14.4 8L18.5 8.3L15.4 11.2L17 15L12 13.6L10.6 18L9.4 18L8 13.6L3 15L4.6 11.2L1.5 8.3L5.6 8L4.4 3.6L8.2 5.2Z" />
+      <path class="leaf-vein" d="M10 5V19" />
+    </svg>
+  </div>
+
+
+</div>
