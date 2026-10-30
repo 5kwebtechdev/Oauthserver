@@ -67,6 +67,9 @@ public class DefaultSecurityConfig {
                         .requestMatchers("/error").permitAll()
                         // Selected from the saved OAuth client by LoginPageController.
                         .requestMatchers("/apklogin", "/adminlogin").permitAll()
+                        // Admin panel's own, dedicated logout endpoint - see AdminLogoutController.
+                        // Deliberately separate from /connect/logout (shared with the APK/web app).
+                        .requestMatchers("/adminlogout").permitAll()
                         // Chrome DevTools auto-probes this on any site with DevTools
                         // open; harmless, but left unauthenticated it would otherwise
                         // get cached as the "saved request" and could hijack the
