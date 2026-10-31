@@ -5,6 +5,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.pkce.authserver.security.PkceAwarePublicClientAuthenticationConverter;
 import com.pkce.authserver.security.PkceAwarePublicClientAuthenticationProvider;
 import com.pkce.authserver.security.PkceAwareRefreshTokenGenerator;
+import com.pkce.authserver.security.ClientAwareLoginEntryPoint;
 import com.pkce.authserver.security.CrossClientAccountSwitchFilter;
 import com.pkce.authserver.security.RateLimitFilter;
 import com.pkce.authserver.security.AdminLogoutRevocationFilter;
@@ -47,7 +48,6 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Acce
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -171,10 +171,14 @@ public class AuthorizationServerConfig {
                         .requestMatchers(HttpMethod.GET, "/.well-known/**", "/oauth2/jwks").permitAll()
                         .anyRequest().authenticated())
                 // Browser-navigated authorization requests without a session fall through
-                // to the login page; API-style requests (token/jwks/userinfo) get a 401.
+                // straight to their client's branded login page (ClientAwareLoginEntryPoint
+                // reads the same client_id this request already carries); API-style requests
+                // (token/jwks/userinfo) get a 401. Previously always "/login" first, with
+                // LoginPageController's own client_id check immediately 302ing a second time -
+                // same destination, one fewer visible hop.
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
-                                new LoginUrlAuthenticationEntryPoint("/login"),
+                                new ClientAwareLoginEntryPoint(apkDevClientId, adminClientId, adminDevClientId),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 )
