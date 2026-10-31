@@ -5,9 +5,9 @@ release=${2:?Release identifier required}
 [[ "$release" =~ ^[0-9]+-[0-9]+$ ]] || { echo 'Invalid release identifier'; exit 1; }
 base=/var/www/superme-apk-fe-ci
 site=/etc/nginx/conf.d/superme-apk-fe-ci-4046.conf
-mkdir -p "$base/releases/$release"
+mkdir -p "$base/releases/$release/app"
 test -f "$bundle/www/index.html"
-cp -a "$bundle/www/." "$base/releases/$release/"
+cp -a "$bundle/www/." "$base/releases/$release/app/"
 chmod -R a+rX "$base/releases/$release"
 previous=$(readlink "$base/current" || true)
 backup=$(mktemp)
@@ -39,7 +39,15 @@ check_page() {
     --retry 10 --retry-connrefused --retry-delay 1 --retry-max-time 45 \
     "http://127.0.0.1:4046$1" -o /dev/null
 }
-if ! check_page / || ! check_page /callback; then
+# /callback is expected to 302 (bounces into /app/callback); --fail would treat that as
+# failure, so check its status code explicitly instead of reusing check_page.
+check_redirect() {
+  status=$(curl --silent --output /dev/null --write-out '%{http_code}' --connect-timeout 2 --max-time 5 \
+    --retry 10 --retry-connrefused --retry-delay 1 --retry-max-time 45 \
+    "http://127.0.0.1:4046$1")
+  [ "$status" = "302" ]
+}
+if ! check_page / || ! check_page /app/ || ! check_redirect /callback; then
   echo 'Port 4046 health check failed. Capturing diagnostics before rollback.'
   ss -ltn '( sport = :4046 )' || true
   journalctl -u nginx -n 30 --no-pager || true

@@ -42,7 +42,7 @@ jobs:
           --watch=false --browsers=ChromeHeadless
 
       - name: Build dev web app against Auth2 and dev SuperMeBE
-        run: npx ng build --configuration auth2-dev
+        run: npx ng build --configuration auth2-dev --base-href /app/
 
       - name: Prepare release bundle
         run: |
