@@ -75,6 +75,9 @@ public class DefaultSecurityConfig {
                         // Admin panel's own, dedicated logout endpoint - see AdminLogoutController.
                         // Deliberately separate from /connect/logout (shared with the APK/web app).
                         .requestMatchers("/adminlogout").permitAll()
+                        // Mobile/web app's own, dedicated logout endpoint - see ApkLogoutController.
+                        // Deliberately separate from /connect/logout's strict validation.
+                        .requestMatchers("/apklogout").permitAll()
                         // Chrome DevTools auto-probes this on any site with DevTools
                         // open; harmless, but left unauthenticated it would otherwise
                         // get cached as the "saved request" and could hijack the
