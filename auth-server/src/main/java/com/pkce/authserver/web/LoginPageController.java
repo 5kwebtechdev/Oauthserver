@@ -164,11 +164,27 @@ public class LoginPageController {
                 redirectToLoginPage(request, response, "/apklogin");
                 return;
             }
+            // No recognized saved request at all (a direct /login hit, nothing pending), and
+            // not the 4204 app's own flow ("additional") either - this dev server's plain,
+            // unbranded form has no real use left on it, so send a context-less visitor to the
+            // apk-branded page instead of rendering it here. The 4204 app's own login still
+            // renders normally below, unaffected - only the truly-unrecognized case moves.
+            // Guarded on apk-dev-client actually being configured: a deployment with no apk
+            // client at all (e.g. production, or this class's own narrower tests) has nowhere
+            // for that redirect to go, so it keeps rendering the plain page as before.
+            if (!additional && !apkDevClientId.isBlank()) {
+                redirectToLoginPage(request, response, "/apklogin");
+                return;
+            }
         } else if ("/adminlogin".equals(loginPath) && !isAdmin) {
             redirectToLoginPage(request, response, "/login");
             return;
-        } else if ("/apklogin".equals(loginPath) && !isApkDev) {
-            redirectToLoginPage(request, response, "/login");
+        } else if ("/apklogin".equals(loginPath) && !isApkDev && (isAdmin || additional)) {
+            // Only bounce away from /apklogin when there's a recognized OTHER context (admin or
+            // the 4204 app) to send it to - not simply because apk wasn't detected. /login's own
+            // fallback above now sends every unrecognized/context-less visitor here, and without
+            // this narrowing that pair would bounce back and forth forever for that exact case.
+            redirectToLoginPage(request, response, isAdmin ? "/adminlogin" : "/login");
             return;
         }
 
