@@ -99,11 +99,14 @@ public class ApkLogoutController {
 
     /** Only ever redirects to a URI actually registered as a post-logout redirect for the
      *  mobile/web client - never blindly to whatever the caller passed in, which would be an
-     *  open redirect. Falls back to the login page for anything else, including no match. */
+     *  open redirect. A client can have more than one registered post-logout URI (e.g. a
+     *  localhost dev URL alongside the real one), so this checks membership in the full set,
+     *  not just the first entry. Falls back to the login page for anything else, including
+     *  no match. */
     private URI resolveRedirectUri(String requested) {
         if (requested != null && !requested.isBlank()
-                && (requested.equals(registeredPostLogoutUri(apkDevClientId))
-                    || requested.equals(registeredPostLogoutUri(additionalClientId)))) {
+                && (isRegisteredPostLogoutUri(apkDevClientId, requested)
+                    || isRegisteredPostLogoutUri(additionalClientId, requested))) {
             try {
                 return URI.create(requested);
             } catch (IllegalArgumentException ignored) {
@@ -113,10 +116,9 @@ public class ApkLogoutController {
         return URI.create(loginUrl);
     }
 
-    private String registeredPostLogoutUri(String clientId) {
-        if (clientId == null || clientId.isBlank()) return null;
+    private boolean isRegisteredPostLogoutUri(String clientId, String requested) {
+        if (clientId == null || clientId.isBlank()) return false;
         RegisteredClient client = registeredClientRepository.findByClientId(clientId);
-        if (client == null || client.getPostLogoutRedirectUris().isEmpty()) return null;
-        return client.getPostLogoutRedirectUris().iterator().next();
+        return client != null && client.getPostLogoutRedirectUris().contains(requested);
     }
 }

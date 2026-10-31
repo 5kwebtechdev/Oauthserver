@@ -113,11 +113,14 @@ public class AdminLogoutController {
 
     /** Only ever redirects to a URI actually registered as a post-logout redirect for one of
      *  the admin clients - never blindly to whatever the caller passed in, which would be an
-     *  open redirect. Falls back to the login page for anything else, including no match. */
+     *  open redirect. A client can have more than one registered post-logout URI (e.g. a
+     *  localhost dev URL alongside the real one), so this checks membership in the full set,
+     *  not just the first entry. Falls back to the login page for anything else, including
+     *  no match. */
     private URI resolveRedirectUri(String requested) {
         if (requested != null && !requested.isBlank()
-                && (requested.equals(registeredPostLogoutUri(adminClientId))
-                    || requested.equals(registeredPostLogoutUri(adminDevClientId)))) {
+                && (isRegisteredPostLogoutUri(adminClientId, requested)
+                    || isRegisteredPostLogoutUri(adminDevClientId, requested))) {
             try {
                 return URI.create(requested);
             } catch (IllegalArgumentException ignored) {
@@ -127,10 +130,9 @@ public class AdminLogoutController {
         return URI.create(loginUrl);
     }
 
-    private String registeredPostLogoutUri(String clientId) {
-        if (clientId == null || clientId.isBlank()) return null;
+    private boolean isRegisteredPostLogoutUri(String clientId, String requested) {
+        if (clientId == null || clientId.isBlank()) return false;
         RegisteredClient client = registeredClientRepository.findByClientId(clientId);
-        if (client == null || client.getPostLogoutRedirectUris().isEmpty()) return null;
-        return client.getPostLogoutRedirectUris().iterator().next();
+        return client != null && client.getPostLogoutRedirectUris().contains(requested);
     }
 }

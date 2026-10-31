@@ -86,6 +86,23 @@ class ApkLogoutControllerTest {
     }
 
     @Test
+    void honoursTheRequestedUriEvenWhenTheClientHasMultipleRegisteredOnes() {
+        // Regression test for the real bug this was shipped for: the live apk-dev client is
+        // registered with two post-logout URIs (a localhost dev one and the real one), and
+        // checking only the first entry of the set (iteration order, not guaranteed) silently
+        // sent a real, matching logout request to the login-page fallback instead of honouring
+        // it, depending on which one happened to come first.
+        RegisteredClient apkClient = mock(RegisteredClient.class);
+        when(apkClient.getPostLogoutRedirectUris())
+                .thenReturn(Set.of("http://localhost:4044/", "https://devapk.supermeapp.com/"));
+        when(registeredClientRepository.findByClientId("supermeapp-dev-web")).thenReturn(apkClient);
+
+        var response = controller.logout(null, "https://devapk.supermeapp.com/", new MockHttpServletRequest());
+
+        assertThat(response.getHeaders().getLocation()).hasToString("https://devapk.supermeapp.com/");
+    }
+
+    @Test
     void endsTheSessionOnTheRequestEvenWhenThereIsNoIdTokenHint() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpSession session = (MockHttpSession) request.getSession(true);
