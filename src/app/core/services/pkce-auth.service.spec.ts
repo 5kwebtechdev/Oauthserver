@@ -12,7 +12,7 @@ describe('PKCE session bridge', () => {
   let service: PkceAuthService;
   beforeEach(() => {
     localStorage.clear(); sessionStorage.clear();
-    auth = { setSession: jasmine.createSpy().and.callFake(() => localStorage.clear()), setUserData: jasmine.createSpy() };
+    auth = { setSession: jasmine.createSpy().and.callFake(() => localStorage.clear()), setUserData: jasmine.createSpy(), logout: jasmine.createSpy() };
     oauth = {
       logoutUrl: environment.oauth.issuer + '/connect/logout',
       stopAutomaticRefresh: jasmine.createSpy(), getIdToken: () => 'latest-id-token',
@@ -118,8 +118,50 @@ describe('PKCE session bridge', () => {
     expect(oauth.initCodeFlow).toHaveBeenCalledTimes(1);
   });
   it('coordinates concurrent refresh requests into one token exchange', async () => {
+    oauth.getRefreshToken = () => 'stored-refresh-token';
     await Promise.all([service.refresh(), service.refresh()]);
     expect(oauth.refreshToken).toHaveBeenCalledTimes(1);
+  });
+  it('logs out instead of hanging when the refresh token is missing (another tab already logged out)', async () => {
+    // Regression test for the real bug this was shipped for: without this guard,
+    // oauth.refreshToken() was called anyway, serializing a JS null into the literal
+    // string "null" and sending grant_type=refresh_token&refresh_token=null to the
+    // server - which correctly rejected it (invalid_grant), but nothing reacted to that
+    // failure, leaving the page stuck on "Signing you in..." forever.
+    oauth.getRefreshToken = () => null;
+
+    await expectAsync(service.refresh()).toBeRejected();
+
+    expect(oauth.refreshToken).not.toHaveBeenCalled();
+    expect(auth.logout).toHaveBeenCalledTimes(1);
+  });
+  it('logs out when the refresh call itself fails (expired/revoked token), not just silently', async () => {
+    oauth.getRefreshToken = () => 'stored-refresh-token';
+    oauth.refreshToken.and.returnValue(Promise.reject(new Error('invalid_grant')));
+
+    await expectAsync(service.refresh()).toBeRejected();
+
+    expect(auth.logout).toHaveBeenCalledTimes(1);
+  });
+  it('does not attempt a second logout for a second failure while the first is still in flight', async () => {
+    oauth.getRefreshToken = () => null;
+
+    await Promise.all([service.refresh().catch(() => {}), service.refresh().catch(() => {})]);
+
+    expect(auth.logout).toHaveBeenCalledTimes(1);
+  });
+  it('builds a valid /apklogout URL even with no ID token, so this tab still lands on the auth-server', () => {
+    // Regression test: a missing ID token (no real OIDC session ever established on this
+    // tab, or another tab's logout already cleared it) used to make logoutUrl() return
+    // null, which made AuthService.logout() fall back to a purely local /login redirect
+    // instead of this tab visibly following the rest of the browser to the auth-server.
+    oauth.getIdToken = () => undefined;
+
+    const url = new URL(service.logoutUrl()!);
+
+    expect(url.origin + url.pathname).toBe(environment.oauth.issuer + '/apklogout');
+    expect(url.searchParams.has('id_token_hint')).toBeFalse();
+    expect(url.searchParams.get('client_id')).toBe(environment.oauth.clientId);
   });
   it('does not mistake an Auth2 email or phone subject for a numeric API user ID', () => {
     const jwt = (subject: string, algorithm: string) =>
@@ -163,6 +205,7 @@ describe('PKCE session bridge', () => {
     let finish!: () => void;
     let idToken = 'old-id';
     oauth.getIdToken = () => idToken;
+    oauth.getRefreshToken = () => 'stored-refresh-token';
     oauth.refreshToken.and.callFake(() => new Promise<void>(resolve => {
       finish = () => { idToken = 'rotated-id'; resolve(); };
     }));

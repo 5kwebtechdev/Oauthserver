@@ -188,13 +188,44 @@ export class PkceAuthService {
   get token(): string | null {
     return this.oauth.hasValidAccessToken() ? this.oauth.getAccessToken() : null;
   }
+  /**
+   * A missing refresh token (most commonly: another tab already logged out, clearing the
+   * shared localStorage this tab is still reading from) must be handled BEFORE calling the
+   * OIDC library: oauth.refreshToken() does not guard against this itself - it serializes a
+   * JS null into the literal string "null" and sends grant_type=refresh_token&refresh_token=null
+   * to the auth-server anyway, which correctly rejects it (invalid_grant), but nothing
+   * reacted to that failure - the page was left hanging on "Signing you in..." forever. Both
+   * this case and a genuine refresh failure (expired/revoked token) now force this tab to
+   * end its session immediately instead.
+   */
   refresh(): Promise<void> {
     if (this.loggingOut) return Promise.reject(new Error('Logout is in progress.'));
+    if (!this.oauth.getRefreshToken()) {
+      const error = new Error('No refresh token available.');
+      this.forceLogoutLocally();
+      return Promise.reject(error);
+    }
     if (!this.renewal) {
       this.renewal = this.oauth.refreshToken().then(() => this.syncSession())
+        .catch(err => { this.forceLogoutLocally(); throw err; })
         .finally(() => { this.renewal = undefined; });
     }
     return this.renewal;
+  }
+  /** Sets loggingOut itself (rather than relying on AuthService.logout() -> prepareLogout()
+   *  to get around to it) so a second concurrent failure is a guaranteed no-op immediately,
+   *  not dependent on how quickly the injected AuthService happens to react - several
+   *  requests 401ing around the same time must only trigger one logout. */
+  private forceLogoutLocally(): void {
+    if (this.loggingOut) return;
+    this.loggingOut = true;
+    try {
+      this.injector.get(AuthService).logout();
+    } catch (e) {
+      console.error('[PkceAuthService] Could not run normal logout after a refresh failure - falling back to a local reset', e);
+      try { localStorage.clear(); } catch { /* Best effort. */ }
+      window.location.assign('/login');
+    }
   }
   private syncSession(): void {
     const user = this.oauth.getCustomTokenResponseProperty('user');
@@ -226,16 +257,6 @@ export class PkceAuthService {
   }
   logoutUrl(): string | null {
     if (!this.enabled) return null;
-    const idToken = this.oauth.getIdToken();
-    // No ID token means no real OIDC session was ever established on this
-    // tab (e.g. a Google/Apple signup that authenticated through the legacy
-    // SuperMeBE endpoint and called AuthService.setSession() directly,
-    // without ever exercising the authorization-code flow). Hitting
-    // /apklogout then has nothing to invalidate server-side anyway, and
-    // there is no reason to leave this tab either. Returning null here
-    // makes AuthService.logout() skip the external redirect and fall
-    // back to its local navigation instead.
-    if (!idToken) return null;
     // /apklogout, not the discovered /connect/logout (this.oauth.logoutUrl): that endpoint
     // correctly rejects a stale/superseded id_token_hint (protects against a replayed token
     // being accepted - see the auth-server's PkceAuthorizationFlowTest), but that same
@@ -243,9 +264,19 @@ export class PkceAuthService {
     // routine logout whenever the hint pointed at a session that had already ended (e.g.
     // another tab already logged out). /apklogout is this client's own, deliberately lenient
     // logout endpoint: it always redirects cleanly, so a logout never shows the user anything.
+    //
+    // id_token_hint is attached only when available - unlike the old /connect/logout (which
+    // 400s on a missing/"null" hint), /apklogout tolerates it being absent, and it genuinely
+    // can be: no ID token means either no real OIDC session was ever established on this tab
+    // (e.g. a Google/Apple signup that went through the legacy SuperMeBE endpoint directly),
+    // or another tab's logout already cleared the shared localStorage this one was reading
+    // from. Either way, this tab must still land on the auth-server and look logged out -
+    // returning null here previously fell back to a purely local /login redirect instead,
+    // which is why a tab left behind after another tab logged out never visibly "followed".
+    const idToken = this.oauth.getIdToken();
     const url = new URL(`${environment.oauth.issuer}/apklogout`);
     url.searchParams.set('client_id', environment.oauth.clientId);
-    url.searchParams.set('id_token_hint', idToken);
+    if (idToken) url.searchParams.set('id_token_hint', idToken);
     url.searchParams.set('post_logout_redirect_uri', window.location.origin + '/');
     return url.toString();
   }
