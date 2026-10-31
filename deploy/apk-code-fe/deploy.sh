@@ -7,7 +7,9 @@ base=/var/www/superme-apk-fe-ci
 site=/etc/nginx/conf.d/superme-apk-fe-ci-4046.conf
 mkdir -p "$base/releases/$release/app"
 test -f "$bundle/www/index.html"
+test -f "$bundle/landing.html"
 cp -a "$bundle/www/." "$base/releases/$release/app/"
+cp -a "$bundle/landing.html" "$base/releases/$release/index.html"
 chmod -R a+rX "$base/releases/$release"
 previous=$(readlink "$base/current" || true)
 backup=$(mktemp)

@@ -48,7 +48,7 @@ jobs:
         run: |
           mkdir bundle
           cp -a www bundle/www
-          cp deploy/apk-code-fe/nginx.conf deploy/apk-code-fe/deploy.sh bundle/
+          cp deploy/apk-code-fe/nginx.conf deploy/apk-code-fe/deploy.sh deploy/apk-code-fe/landing.html bundle/
           tar -czf superme-apk-code-fe-dev.tar.gz -C bundle .
 
       - name: Deploy to apk_code_fe dev web port 4046
