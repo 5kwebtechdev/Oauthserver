@@ -225,20 +225,25 @@ export class PkceAuthService {
     return this.logoutUrl();
   }
   logoutUrl(): string | null {
-    if (!this.enabled || !this.oauth.logoutUrl) return null;
+    if (!this.enabled) return null;
     const idToken = this.oauth.getIdToken();
     // No ID token means no real OIDC session was ever established on this
     // tab (e.g. a Google/Apple signup that authenticated through the legacy
     // SuperMeBE endpoint and called AuthService.setSession() directly,
     // without ever exercising the authorization-code flow). Hitting
-    // /connect/logout then has nothing to invalidate server-side, and
-    // Spring's RP-initiated logout endpoint 400s on a literal "null"
-    // id_token_hint (URLSearchParams coerces the JS null to that string) -
-    // surfacing as a Whitelabel Error Page instead of landing on the
-    // dashboard. Returning null here makes AuthService.logout() skip the
-    // external redirect and fall back to its local navigation instead.
+    // /apklogout then has nothing to invalidate server-side anyway, and
+    // there is no reason to leave this tab either. Returning null here
+    // makes AuthService.logout() skip the external redirect and fall
+    // back to its local navigation instead.
     if (!idToken) return null;
-    const url = new URL(this.oauth.logoutUrl);
+    // /apklogout, not the discovered /connect/logout (this.oauth.logoutUrl): that endpoint
+    // correctly rejects a stale/superseded id_token_hint (protects against a replayed token
+    // being accepted - see the auth-server's PkceAuthorizationFlowTest), but that same
+    // strictness showed up here as a raw "request could not be completed" error page on a
+    // routine logout whenever the hint pointed at a session that had already ended (e.g.
+    // another tab already logged out). /apklogout is this client's own, deliberately lenient
+    // logout endpoint: it always redirects cleanly, so a logout never shows the user anything.
+    const url = new URL(`${environment.oauth.issuer}/apklogout`);
     url.searchParams.set('client_id', environment.oauth.clientId);
     url.searchParams.set('id_token_hint', idToken);
     url.searchParams.set('post_logout_redirect_uri', window.location.origin + '/');
