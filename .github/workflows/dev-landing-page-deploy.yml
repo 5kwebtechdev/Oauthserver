@@ -1,4 +1,4 @@
-name: SuperMe Dev Landing Page and APK (4046)
+name: SuperMe Dev Landing Page (4046)
 
 on:
   push:
@@ -26,26 +26,10 @@ jobs:
         with:
           node-version: '20'
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            dev-landing-website/package-lock.json
+          cache-dependency-path: dev-landing-website/package-lock.json
 
-      - run: npm ci
-
-      - name: Check application TypeScript
-        run: npx tsc --noEmit -p tsconfig.app.json
-
-      - name: Test PKCE and social login flows
-        run: >-
-          npx ng test --ts-config tsconfig.auth-spec.json
-          --include='src/app/core/services/pkce-auth.service.spec.ts'
-          --include='src/app/core/interceptors/pkce.interceptor.spec.ts'
-          --include='src/app/core/components/pkce-entry.component.spec.ts'
-          --include='src/app/core/components/social-media/google-signup-flow.spec.ts'
-          --watch=false --browsers=ChromeHeadless
-
-      - name: Build dev APK app against Auth2 and dev SuperMeBE
-        run: npx ng build --configuration auth2-dev --base-href /app/
+      - name: Verify landing-only deployment preserves the active APK app
+        run: bash deploy/apk-code-fe/deploy.test.sh
 
       - name: Install and build isolated Abhishek landing page for dev
         working-directory: dev-landing-website
@@ -55,22 +39,21 @@ jobs:
 
       - name: Prepare dev release bundle
         run: |
-          mkdir -p bundle/www bundle/website
-          cp -a www/. bundle/www/
+          mkdir -p bundle/website
           cp -a dev-landing-website/dist/superme-website/browser/. bundle/website/
           python3 deploy/apk-code-fe/prepare-dev-website.py bundle/website
           cp deploy/apk-code-fe/nginx.conf deploy/apk-code-fe/deploy.sh bundle/
-          tar -czf superme-dev-landing-and-apk.tar.gz -C bundle .
+          tar -czf superme-dev-landing.tar.gz -C bundle .
 
       - name: Publish dev release bundle
         uses: actions/upload-artifact@v4
         with:
-          name: superme-dev-landing-and-apk
-          path: superme-dev-landing-and-apk.tar.gz
+          name: superme-dev-landing
+          path: superme-dev-landing.tar.gz
           if-no-files-found: error
           retention-days: 7
 
-      - name: Deploy dev landing page and APK app to port 4046
+      - name: Deploy dev landing page to port 4046
         if: ${{ vars.DEV_LANDING_SSH_DEPLOY_ENABLED == 'true' }}
         env:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
@@ -91,7 +74,7 @@ jobs:
           trap 'rm -f ~/.ssh/superme_dev_landing_key' EXIT
           ssh_opts=(-i ~/.ssh/superme_dev_landing_key -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=~/.ssh/superme_dev_landing_hosts -o ConnectTimeout=15)
           stage=$(ssh "${ssh_opts[@]}" "$SERVER_USER@$SERVER_HOST" 'mktemp -d /tmp/superme-dev-landing.XXXXXXXX')
-          scp "${ssh_opts[@]}" superme-dev-landing-and-apk.tar.gz "$SERVER_USER@$SERVER_HOST:$stage/bundle.tar.gz"
+          scp "${ssh_opts[@]}" superme-dev-landing.tar.gz "$SERVER_USER@$SERVER_HOST:$stage/bundle.tar.gz"
           ssh "${ssh_opts[@]}" "$SERVER_USER@$SERVER_HOST" "bash -s -- '$stage' '${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}'" <<'REMOTE'
           set -euo pipefail
           stage=$1

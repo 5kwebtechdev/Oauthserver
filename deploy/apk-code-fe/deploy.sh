@@ -3,14 +3,23 @@ set -euo pipefail
 bundle=${1:?Bundle directory required}
 release=${2:?Release identifier required}
 [[ "$release" =~ ^[0-9]+-[0-9]+$ ]] || { echo 'Invalid release identifier'; exit 1; }
-base=/var/www/superme-apk-fe-ci
-site=/etc/nginx/conf.d/superme-apk-fe-ci-4046.conf
-mkdir -p "$base/releases/$release/app"
-test -f "$bundle/www/index.html"
+base=${DEV_APK_RELEASE_BASE:-/var/www/superme-apk-fe-ci}
+site=${DEV_APK_NGINX_SITE:-/etc/nginx/conf.d/superme-apk-fe-ci-4046.conf}
+current=$(readlink -f "$base/current")
+test -f "$current/app/index.html"
 test -f "$bundle/website/index.html"
-cp -a "$bundle/www/." "$base/releases/$release/app/"
+test -f "$bundle/website/robots.txt"
+grep -Eiq "<meta[^>]*name=[\"']robots[\"'][^>]*noindex" "$bundle/website/index.html"
+grep -q '^Disallow: /$' "$bundle/website/robots.txt"
+test ! -e "$bundle/website/sitemap.xml"
+test ! -e "$base/releases/$release"
+mkdir -p "$base/releases/$release"
+# A landing-page release reuses the active APK build byte-for-byte.
+cp -a "$current/app" "$base/releases/$release/app"
 cp -a "$bundle/website/." "$base/releases/$release/"
-chmod -R a+rX "$base/releases/$release"
+# Set public read/execute permissions only on the new website, preserving /app modes.
+find "$base/releases/$release" -mindepth 1 -maxdepth 1 ! -name app \
+  -exec chmod -R a+rX {} +
 previous=$(readlink "$base/current" || true)
 backup=$(mktemp)
 config_dump=$(mktemp)
