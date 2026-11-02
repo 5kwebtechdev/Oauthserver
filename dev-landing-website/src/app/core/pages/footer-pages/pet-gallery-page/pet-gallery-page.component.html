@@ -1,0 +1,55 @@
+<div class="pet-gallery-page">
+  <!-- Navbar -->
+  <app-public-navbar></app-public-navbar>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header Section -->
+    <section class="header-section">
+      <h1 class="page-title">Pet Gallery</h1>
+      <p class="page-subtitle">
+        Evolve your companion through daily progress every consistent streak transforms their form
+      </p>
+    </section>
+
+    <!-- Pets Grid - First Row -->
+    <section class="pets-section">
+      <div class="pets-grid">
+        <div class="pet-card" *ngFor="let pet of pets">
+          <div class="pet-thumbnail">
+            <img [src]="pet.imageUrl" [alt]="pet.name" class="pet-image" />
+          </div>
+          <div class="pet-info">
+            <h3 class="pet-name">{{ pet.name }}</h3>
+            <p class="pet-description">{{ pet.description }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+
+    <!-- Call to Action Section -->
+    <section class="cta-section">
+      <h2 class="cta-title">Start Your Streak, Evolve Your Pet</h2>
+      <div class="download-buttons">
+        <a href="#" class="download-btn google-play">
+          <img [src]="googlePlayImage" alt="Google Play" class="store-icon">
+          <div class="download-text">
+            <span class="download-label">Get it on</span>
+            <span class="download-platform">Google Play</span>
+          </div>
+        </a>
+        <a [href]="appStoreUrl" target="_blank" rel="noopener noreferrer" class="download-btn app-store">
+          <img [src]="appleStoreImage" alt="App Store" class="store-icon">
+          <div class="download-text">
+            <span class="download-label">Get it on</span>
+            <span class="download-platform">App Store</span>
+          </div>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

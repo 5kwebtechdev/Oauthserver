@@ -1,0 +1,77 @@
+.stcs-row {
+	display: flex;
+	align-items: center;
+	gap: 40px;
+	overflow-x: auto;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+	-webkit-overflow-scrolling: touch;
+	white-space: nowrap;
+	justify-content:space-between;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+.stcs-tab {
+	flex: 0 0 auto;
+	padding: 14px 0;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.stcs-label {
+	position: relative;
+	display: inline-block;
+	padding-bottom: 10px;
+	color: #57565c;
+	font-family: Nunito, sans-serif;
+	font-size: 15px;
+	font-weight: 600;
+	white-space: nowrap;
+	transition: color 200ms ease;
+
+	&::after {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 2px;
+		background: #90214d;
+		border-radius: 2px;
+		transform: scaleX(0);
+		transform-origin: center;
+		transition: transform 220ms ease;
+	}
+}
+
+.stcs-tab:hover .stcs-label {
+	color: #90214d;
+
+	&::after {
+		transform: scaleX(1);
+	}
+}
+
+.stcs-tab.active .stcs-label {
+	color: #90214d;
+	font-weight: 700;
+
+	&::after {
+		transform: scaleX(1);
+	}
+}
+
+@media (max-width: 760px) {
+	.stcs-row {
+		gap: 26px;
+	}
+
+	.stcs-label {
+		font-size: 14px;
+	}
+}

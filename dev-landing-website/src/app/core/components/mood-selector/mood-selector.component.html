@@ -1,0 +1,27 @@
+<div class="mood-card" role="group" aria-label="Mood selector">
+  <div class="mood-left">
+    <div class="mood-text">
+      <div class="mood-title" *ngIf="currentVibeTitleSafe" [innerHTML]="currentVibeTitleSafe"></div>
+      <div class="mood-sub">{{activeSubtitle}}</div>
+    </div>
+    <div class="mood-progress" aria-hidden="true"><span class="bar" [style.width.%]="progressPercent"></span></div>
+  </div>
+  <div class="mood-right" style="position:relative;">
+    <div class="mood-emoji" role="button" tabindex="0" (click)="onMoodClick()" (keydown.enter)="onMoodClick()"
+      aria-label="Open mood picker" style="position:relative;">
+        <div *ngIf="blockedTooltipVisible" class="blocked-tooltip" (click)="$event.stopPropagation()">
+          You can only input your mood twice a day
+        </div>
+        <ng-container *ngIf="displayAssetSrc && !imageError; else unicodeEmoji">
+          <img class="active-asset" [src]="displayAssetSrc" alt="active mood" (error)="onImageError()" />
+        </ng-container>
+      <ng-template #unicodeEmoji>{{activeEmoji}}</ng-template>
+    </div>
+    <span class="mood-edit-icon" role="button" tabindex="0" (click)="onEditClick($event)" aria-label="Add journal entry">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#282527"/>
+      </svg>
+    </span>
+  </div>
+
+</div>

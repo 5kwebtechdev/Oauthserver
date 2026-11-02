@@ -1,0 +1,31 @@
+@media screen and (max-width: 767px) {
+    .step-tutor{
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    .step-label{
+        text-wrap:auto;
+    }
+    .step-divider{
+        margin-bottom:32px;
+    }
+    .cursor-pointer{
+    display: flex;
+    text-wrap-mode: nowrap;
+    }
+}
+@media screen and (max-width:320px) {
+    .step-tutor{
+        width: 26px;
+        height: 26px;
+        font-size: 9px;
+    }
+    .step-label{
+        text-wrap:auto;
+        font-size:8px;
+    }
+    .step-divider{
+        margin-bottom:24px;
+    }
+}

@@ -1,0 +1,564 @@
+<app-public-navbar></app-public-navbar>
+
+<!-- Toast notification -->
+<div class="profile-toast" [class.visible]="toastVisible" [class.toast-error]="toastIsError" role="status" aria-live="polite">
+  @if (toastIsError) {
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="11" fill="#E53935"/>
+      <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+  } @else {
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="11" fill="#4CAF50"/>
+      <path d="M6 12l4 4 8-8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  }
+  {{ toastMessage }}
+</div>
+
+<main class="profile-page">
+  <header class="profile-header">
+    <div class="header-text">My profile</div>
+  </header>
+  <!-- Left sidebar and main content to be added here -->
+  <div class="profile-content">
+    <user-profile-sidebar [user]="user" (edit)="openItem('edit')" (password)="openItem('password')"
+      (select)="openItem($event)" (logout)="openItem('logout')"
+      (avatarSelected)="onAvatarSelected($event)"></user-profile-sidebar>
+    <section class="profile-main">
+      <!-- Edit profile panel -->
+      <div class="edit-profile" *ngIf="selectedItem==='edit'">
+        <h2>Edit Profile Info</h2>
+
+        <form #profileForm="ngForm" (ngSubmit)="updateInfo()">
+          <div class="form-row" *ngIf="!isParent()">
+            <label>Avatar Name <span class="help">Your In-app identity name</span></label>
+            <input type="text" name="avatarName" [(ngModel)]="avatarName" #avatarNameInput="ngModel"
+              placeholder="Still Panda" maxlength="20" (ngModelChange)="checkDirty()" />
+            <div class="error-message" *ngIf="avatarNameInput.invalid && avatarNameInput.touched">
+              <span *ngIf="avatarNameInput.errors?.['maxlength']">Avatar name cannot exceed 20 characters</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Full Name <span class="help">Just for setup. Never shown</span></label>
+            <input type="text" name="fullName" [(ngModel)]="fullName" #fullNameInput="ngModel" placeholder="John Doe"
+              maxlength="40" required (ngModelChange)="checkDirty()" />
+            <div class="error-message" *ngIf="fullNameInput.invalid && fullNameInput.touched">
+              <span *ngIf="fullNameInput.errors?.['required']">Full name is required</span>
+              <span *ngIf="fullNameInput.errors?.['maxlength']">Full name cannot exceed 40 characters</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Date of Birth <span class="help">{{ user.age }} years old</span></label>
+            <superme-birthdaypicker name="dob" [(ngModel)]="dob" #dobInput="ngModel" placeholder="Select Date of birth" (dateSelected)="onDobSelected($event); checkDirty()" [colorVariant]="'green'" required></superme-birthdaypicker>
+            <div class="error-message" *ngIf="dobInput.invalid && dobInput.touched">
+              <span *ngIf="dobInput.errors?.['required']">Date of birth is required</span>
+              <span *ngIf="ageError">Your age cannot be more than 24 years old for child role</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Gender <span class="help">Used for small personalization touches</span></label>
+            <div class="gender-buttons">
+              <button type="button" [class.active]="gender==='male'" (click)="gender='male'; checkDirty()">Male</button>
+              <button type="button" [class.active]="gender==='female'" (click)="gender='female'; checkDirty()">Female</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Phone Number <span class="help">Used for account updates</span></label>
+            <div class="phone-row">
+              <select name="phoneCountry" [(ngModel)]="phoneCountry" (ngModelChange)="checkDirty()">
+                <option value="+91">+91</option>
+                <option value="+1">+1</option>
+                <option value="+44">+44</option>
+              </select>
+              <input
+                type="tel"
+                name="phoneNumber"
+                [(ngModel)]="phoneNumber"
+                #phoneNg="ngModel"
+                placeholder="Phone number"
+                required
+                [attr.maxlength]="phoneMaxLength"
+                (keypress)="onKeyPress($event)"
+                (input)="onPhoneInput($event)"
+                (ngModelChange)="checkDirty()" />
+            </div>
+            <div class="error-message" *ngIf="phoneNg.touched && !isPhoneValid(phoneNumber)">
+              <span>{{ getPhoneErrorMessage() }}</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Email <span class="help">Used for login and recovery</span></label>
+            <div class="email-row">
+              <input type="email" name="emailInput" [(ngModel)]="emailInput" #emailNg="ngModel"
+                placeholder="johndoe@gmail.com" required (ngModelChange)="checkDirty()" />
+              <div class="email-verify" *ngIf="emailChanged">
+                <superme-button *ngIf="!emailVerified" type="green" small [disabled]="!isEmailValid(emailInput)" text="Verify" (clickEvent)="verifyEmail()"></superme-button>
+                <span *ngIf="emailVerified" class="email-verified-badge">✓ Verified</span>
+              </div>
+            </div>
+            <div class="error-message" *ngIf="emailNg.invalid && emailNg.touched">
+              <span *ngIf="emailNg.errors?.['required']">Email is required</span>
+              <span *ngIf="emailNg.errors?.['email']">Invalid email</span>
+            </div>
+            <div class="error-message" *ngIf="emailChanged && !emailVerified && isEmailValid(emailInput)">
+              <span>Please verify your new email to enable update</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <superme-button type="green" large [disabled]="!formDirty || isSaving || ageError || !isPhoneValid(phoneNumber) || (emailChanged && !emailVerified)" [text]="isSaving ? 'Saving...' : 'Update info'" (clickEvent)="updateInfo()"></superme-button>
+          </div>
+        </form>
+      </div>
+
+
+      <!-- Password and security panel -->
+      <div class="edit-profile password-panel" *ngIf="selectedItem==='password'">
+        <h2>Password and security</h2>
+
+        <form #passwordForm="ngForm" (ngSubmit)="changePassword()">
+          <div class="form-row">
+            <label>Current Password <span class="help">To verify you</span></label>
+            <input type="password" name="currentPassword" [(ngModel)]="currentPassword" #currentPasswordInput="ngModel"
+              placeholder="Enter Password" required minlength="8" />
+            <div class="error-message" *ngIf="currentPasswordInput.invalid && currentPasswordInput.touched">
+              <span *ngIf="currentPasswordInput.errors?.['required']">Current password is required</span>
+              <span *ngIf="currentPasswordInput.errors?.['minlength']">Password must be at least 8 characters</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>New Password <span class="help">To change your password</span></label>
+            <input type="password" name="newPassword" [(ngModel)]="newPassword" #newPasswordInput="ngModel"
+              placeholder="Enter Password" required minlength="8" (ngModelChange)="checkPasswordMatch()" />
+            <div class="error-message" *ngIf="newPasswordInput.invalid && newPasswordInput.touched">
+              <span *ngIf="newPasswordInput.errors?.['required']">New password is required</span>
+              <span *ngIf="newPasswordInput.errors?.['minlength']">Password must be at least 8 characters</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Retype New Password</label>
+            <input type="password" name="retypePassword" [(ngModel)]="retypePassword" #retypePasswordInput="ngModel"
+              placeholder="Enter Password" required minlength="8" (ngModelChange)="checkPasswordMatch()" />
+            <div class="error-message"
+              *ngIf="(retypePasswordInput.touched && passwordMismatch) || (retypePasswordInput.invalid && retypePasswordInput.touched)">
+              <span *ngIf="retypePasswordInput.errors?.['required']">Please retype the new password</span>
+              <span *ngIf="passwordMismatch">Passwords do not match</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <superme-button type="green" large [disabled]="passwordForm.invalid || passwordMismatch" text="Change Password" (clickEvent)="changePassword()"></superme-button>
+          </div>
+        </form>
+      </div>
+      <!-- Change your Pet -->
+      <div class="edit-profile pet-panel" *ngIf="selectedItem==='pet'">
+        <h2>Change your pet</h2>
+
+        <p class="pet-subtitle">Choose a buddy to cheer you on — you can switch anytime.</p>
+
+        <div class="pet-grid">
+          <div *ngFor="let pet of pets; let i = index"
+            class="pet-card"
+            [class.selected]="selectedPetIndex === i"
+            [class.locked]="pet.isLocked"
+            (click)="selectPet(i)">
+
+            <div class="pet-top">
+              <div class="pet-title">{{ pet.name }}</div>
+              <ul class="pet-bullets">
+                <li *ngFor="let b of pet.bullets">{{ b }}</li>
+              </ul>
+            </div>
+
+            <div *ngIf="pet.isLocked" class="pet-coming-soon-badge">
+              <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 5.5H9.5V4.5C9.5 2.29 7.71 0.5 5.5 0.5C3.29 0.5 1.5 2.29 1.5 4.5V5.5H1C0.45 5.5 0 5.95 0 6.5V11.5C0 12.05 0.45 12.5 1 12.5H10C10.55 12.5 11 12.05 11 11.5V6.5C11 5.95 10.55 5.5 10 5.5ZM5.5 9.5C4.95 9.5 4.5 9.05 4.5 8.5C4.5 7.95 4.95 7.5 5.5 7.5C6.05 7.5 6.5 7.95 6.5 8.5C6.5 9.05 6.05 9.5 5.5 9.5ZM8 5.5H3V4.5C3 3.12 4.12 2 5.5 2C6.88 2 8 3.12 8 4.5V5.5Z" fill="#fff"/>
+              </svg>
+              Coming Soon
+            </div>
+
+            <div class="pet-image">
+              <img [src]="pet.img" [alt]="pet.name" />
+            </div>
+          </div>
+        </div>
+          <superme-button type="green" large text="Update your pet" (clickEvent)="updatePet()"></superme-button>
+        
+      </div>
+      <!-- Manage your Membership -->
+      <div class="edit-profile membership-panel" *ngIf="selectedItem==='membership'">
+        <h2>Manage Your Membership</h2>
+        <div class="membership-free">
+          <img class="membership-free-img" src="assets/icon/Gemini_Generated_Image_8fw98h8fw98h8fw9 1.png" alt="Trophy and coins" />
+          <h3 class="membership-free-title">Everything's free, you're early!</h3>
+          <p class="membership-free-desc">We're building membership plans for the future, but as an early member, you get full access to all premium features right now. No payments, no subscriptions.</p>
+        </div>
+      </div>
+      <!-- Notifications Panel -->
+      <div class="edit-profile notifications-panel" *ngIf="selectedItem==='notifications'">
+        <h2>Notifications</h2>
+
+        <div class="notifications-cards">
+          <div class="notif-card" *ngFor="let n of notificationList">
+            <div class="notif-left">
+              <div class="notif-title">{{ n.title }}</div>
+              <div class="notif-desc">{{ n.desc }}</div>
+            </div>
+            <div class="notif-right">
+              <superme-toggle [(checked)]="notificationsSettings[n.key]"
+                (checkedChange)="onNotificationChange()"></superme-toggle>
+            </div>
+          </div>
+
+          <div class="notif-card quiet-hours">
+            <div class="notif-left">
+              <div class="notif-title">Quiet Hours</div>
+              <div class="notif-desc">No alerts between [{{ quietStart }}] and [{{ quietEnd }}]</div>
+            </div>
+            <div class="notif-right hours-input">
+              <div class="time-pickers">
+                <superme-timepicker name="quietStart" [(ngModel)]="quietStart" placeholder="Start"></superme-timepicker>
+                <span class="dash">—</span>
+                <superme-timepicker name="quietEnd" [(ngModel)]="quietEnd" placeholder="End"></superme-timepicker>
+              </div>
+              <div class="underline"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="save-row">
+          <superme-button type="green" large text="Save Changes" (clickEvent)="saveNotificationSettings()"></superme-button>
+        </div>
+      </div>
+
+      <!-- Refer a friend Panel -->
+      <div class="edit-profile refer-panel" *ngIf="selectedItem==='refer'">
+        <h2>Refer and Earn</h2>
+
+        <div class="refer-center">
+          <div class="refer-subtitle">Refer and Earn</div>
+          <div class="gift-wrap">
+            <!-- optional image: if you add assets/images/gift.png it will be used -->
+            <img *ngIf="giftImg" [src]="giftImg" alt="gift" />
+            <i *ngIf="!giftImg" class="fa fa-gift gift-icon" aria-hidden="true"></i>
+          </div>
+
+          <div class="ref-code-label">Your Referral Code</div>
+
+          <div class="ref-code-box">
+            <div class="code-text">{{ referralCode }}</div>
+            <button class="copy-btn" (click)="copyReferralCode()" title="Copy code" aria-label="Copy referral code">
+              <svg xmlns="http://www.w3.org/2000/svg" width="29" height="32" viewBox="0 0 29 32" fill="none"
+                aria-hidden="true">
+                <path
+                  d="M29 11.104C28.9832 10.957 28.9508 10.8122 28.9033 10.672V10.528C28.8259 10.3635 28.7225 10.2123 28.5972 10.08L18.9306 0.48C18.7974 0.355546 18.6451 0.25293 18.4794 0.176C18.4314 0.169216 18.3825 0.169216 18.3344 0.176C18.1708 0.082786 17.99 0.0229507 17.8028 0H11.2778C9.9959 0 8.76652 0.505713 7.8601 1.40589C6.95367 2.30606 6.44444 3.52696 6.44444 4.8V6.4H4.83333C3.55145 6.4 2.32208 6.90571 1.41565 7.80589C0.509225 8.70606 0 9.92696 0 11.2V27.2C0 28.473 0.509225 29.6939 1.41565 30.5941C2.32208 31.4943 3.55145 32 4.83333 32H17.7222C19.0041 32 20.2335 31.4943 21.1399 30.5941C22.0463 29.6939 22.5556 28.473 22.5556 27.2V25.6H24.1667C25.4485 25.6 26.6779 25.0943 27.5844 24.1941C28.4908 23.2939 29 22.073 29 20.8V11.2C29 11.2 29 11.2 29 11.104ZM19.3333 5.456L23.5061 9.6H20.9444C20.5172 9.6 20.1074 9.43143 19.8052 9.13137C19.5031 8.83131 19.3333 8.42435 19.3333 8V5.456ZM19.3333 27.2C19.3333 27.6243 19.1636 28.0313 18.8615 28.3314C18.5593 28.6314 18.1495 28.8 17.7222 28.8H4.83333C4.40604 28.8 3.99625 28.6314 3.69411 28.3314C3.39196 28.0313 3.22222 27.6243 3.22222 27.2V11.2C3.22222 10.7757 3.39196 10.3687 3.69411 10.0686C3.99625 9.76857 4.40604 9.6 4.83333 9.6H6.44444V20.8C6.44444 22.073 6.95367 23.2939 7.8601 24.1941C8.76652 25.0943 9.9959 25.6 11.2778 25.6H19.3333V27.2ZM25.7778 20.8C25.7778 21.2243 25.608 21.6313 25.3059 21.9314C25.0038 22.2314 24.594 22.4 24.1667 22.4H11.2778C10.8505 22.4 10.4407 22.2314 10.1386 21.9314C9.83641 21.6313 9.66667 21.2243 9.66667 20.8V4.8C9.66667 4.37565 9.83641 3.96869 10.1386 3.66863C10.4407 3.36857 10.8505 3.2 11.2778 3.2H16.1111V8C16.1111 9.27304 16.6203 10.4939 17.5268 11.3941C18.4332 12.2943 19.6626 12.8 20.9444 12.8H25.7778V20.8Z"
+                  fill="#282527" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="how-it-works">
+          <h3>How it works</h3>
+          <ol class="steps">
+            <li>
+              <div class="step-title">Copy Your Code</div>
+              <div class="step-desc">Copy the above given code. It's your golden ticket!</div>
+            </li>
+            <li>
+              <div class="step-title">Share with Friends</div>
+              <div class="step-desc">Send it via WhatsApp. Team up for rewards!</div>
+            </li>
+            <li>
+              <div class="step-title">Both Earn Instantly</div>
+              <div class="step-desc">You + friend get 50 coins when they enter your code.</div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="invite-row">
+          <superme-button type="green" large text="Invite via WhatsApp"
+            (clickEvent)="inviteViaWhatsApp()"></superme-button>
+        </div>
+
+        <div class="faq-section">
+          <!-- replaced manual FAQ markup with reusable standalone component -->
+          <superme-facts heading="FAQ's" [faqs]="faqs"></superme-facts>
+        </div>
+      </div>
+
+      <!-- My Family Panel -->
+      <div class="edit-profile family-panel" *ngIf="selectedItem==='family'">
+        <app-family-connection [family]="family" [familyFaqs]="familyFaqs" (switchToEdit)="selectedItem='edit'"></app-family-connection>
+      </div>
+
+      <!-- Parental Control Panel -->
+      <div class="edit-profile parental-panel" *ngIf="selectedItem==='parental'">
+        <h2>Parental Control</h2>
+        <div class="parental-coming-soon">
+          <img class="parental-coming-soon-img" src="assets/icon/Parental Coming Soon.png" alt="Parental Control" />
+          <h3 class="parental-coming-soon-title">Advanced controls are on the way</h3>
+          <p class="parental-coming-soon-desc">A detailed dashboard for managing limits and permissions is currently being built.</p>
+        </div>
+      </div>
+      <!-- Feedback & Suggestions Panel -->
+      <div class="edit-profile feedback-panel" *ngIf="selectedItem==='feedback'">
+        <h2>Feedback & Suggestions</h2>
+
+        <div class="feedback-block">
+          <label class="feedback-label">1. How happy are you with the app?</label>
+          <div class="rating-row">
+            <button type="button" class="emoji" [class.active]="feedbackRating===1" (click)="feedbackRating=1" aria-label="Very happy">
+              <img class="mood-icon" src="assets/Images-Transparent/Image-Mood-Very happy.png" alt="Very happy" />
+              <span class="emoji-label">Very Happy</span>
+            </button>
+            <button type="button" class="emoji" [class.active]="feedbackRating===2" (click)="feedbackRating=2" aria-label="Happy">
+              <img class="mood-icon" src="assets/Images-Transparent/Image-Mood-Happy.png" alt="Happy" />
+              <span class="emoji-label">Happy</span>
+            </button>
+            <button type="button" class="emoji" [class.active]="feedbackRating===3" (click)="feedbackRating=3" aria-label="Sad">
+              <img class="mood-icon" src="assets/Images-Transparent/Image-Mood-Sad.png" alt="Sad" />
+              <span class="emoji-label">Sad</span>
+            </button>
+            <button type="button" class="emoji" [class.active]="feedbackRating===4" (click)="feedbackRating=4" aria-label="Upset">
+              <img class="mood-icon" src="assets/Images-Transparent/Image-Mood-Upset.png" alt="Upset" />
+              <span class="emoji-label">Upset</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="feedback-block">
+          <label class="feedback-label">2. Tell us more about our app?</label>
+          <textarea class="feedback-text" placeholder="What's working? What's not?" [(ngModel)]="feedbackText1"
+            name="feedbackText1"></textarea>
+        </div>
+
+        <div class="feedback-block">
+          <label class="feedback-label">3. What would you like to see in our app?</label>
+          <textarea class="feedback-text" placeholder="Write down your thoughts" [(ngModel)]="feedbackText2"
+            name="feedbackText2"></textarea>
+        </div>
+
+        <div class="form-row">
+          <superme-button type="green" large [disabled]="submitting" text="Submit" (clickEvent)="submitFeedback()"></superme-button>
+        </div>
+
+        <p class="feedback-note">
+          <span class="info-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 15C10.2833 15 10.5208 14.9042 10.7125 14.7125C10.9042 14.5208 11 14.2833 11 14C11 13.7167 10.9042 13.4792 10.7125 13.2875C10.5208 13.0958 10.2833 13 10 13C9.71667 13 9.47917 13.0958 9.2875 13.2875C9.09583 13.4792 9 13.7167 9 14C9 14.2833 9.09583 14.5208 9.2875 14.7125C9.47917 14.9042 9.71667 15 10 15ZM9 11H11V5H9V11ZM10 20C8.61667 20 7.31667 19.7375 6.1 19.2125C4.88333 18.6875 3.825 17.975 2.925 17.075C2.025 16.175 1.3125 15.1167 0.7875 13.9C0.2625 12.6833 0 11.3833 0 10C0 8.61667 0.2625 7.31667 0.7875 6.1C1.3125 4.88333 2.025 3.825 2.925 2.925C3.825 2.025 4.88333 1.3125 6.1 0.7875C7.31667 0.2625 8.61667 0 10 0C11.3833 0 12.6833 0.2625 13.9 0.7875C15.1167 1.3125 16.175 2.025 17.075 2.925C17.975 3.825 18.6875 4.88333 19.2125 6.1C19.7375 7.31667 20 8.61667 20 10C20 11.3833 19.7375 12.6833 19.2125 13.9C18.6875 15.1167 17.975 16.175 17.075 17.075C16.175 17.975 15.1167 18.6875 13.9 19.2125C12.6833 19.7375 11.3833 20 10 20ZM10 18C12.2333 18 14.125 17.225 15.675 15.675C17.225 14.125 18 12.2333 18 10C18 7.76667 17.225 5.875 15.675 4.325C14.125 2.775 12.2333 2 10 2C7.76667 2 5.875 2.775 4.325 4.325C2.775 5.875 2 7.76667 2 10C2 12.2333 2.775 14.125 4.325 15.675C5.875 17.225 7.76667 18 10 18Z" fill="#282527"/>
+            </svg>
+          </span>
+          These informations will only be used by us to create better experience
+        </p>
+
+        <a class="privacy-link" href="/privacy-policy" target="_blank">PRIVACY POLICY</a>
+
+        <!-- Success popup -->
+        <div class="feedback-success-overlay" *ngIf="feedbackSubmitted" (click)="feedbackSubmitted=false">
+          <div class="feedback-success-card" (click)="$event.stopPropagation()">
+            <button class="feedback-success-close" (click)="feedbackSubmitted=false" aria-label="Close">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <img src="assets/Images-Transparent/Image-Profile-Feedback.png" alt="Thank you" class="feedback-success-img" />
+            <h3 class="feedback-success-title">Thanks for making us better!</h3>
+            <p class="feedback-success-desc">Your thoughts help us to improve your experience</p>
+            <superme-button type="green" large text="Share another idea" (clickEvent)="feedbackSubmitted=false"></superme-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Help & Support Panel -->
+      <div class="edit-profile help-panel" *ngIf="selectedItem==='help'">
+        <h2>Help & Support</h2>
+
+        <div class="faq-categories">
+          <div class="faq-category" *ngFor="let cat of faqCategories; let ci = index">
+            <h3 class="faq-category-title">{{ cat.category }}</h3>
+            <div class="faq-item" *ngFor="let h of cat.items; let i = index">
+              <button class="faq-toggle" (click)="toggleHelpFaq(ci, i)">
+                <span>{{ h.question }}</span>
+                <svg class="faq-chevron" [class.open]="h.open" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="faq-body" *ngIf="h.open">{{ h.answer }}</div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="chatbot-fab" (click)="openItem('helpline')" aria-label="Open helpline">
+          <img class="chatbot-fab-icon" src="assets/Icons-Neutral/Icon-Chatbot.png" alt="" />
+        </button>
+
+      </div>
+
+      <!-- Helpline Panel -->
+      <div class="edit-profile helpline-panel" *ngIf="selectedItem==='helpline'">
+        <sm-coin-helpline (close)="openItem('help')"></sm-coin-helpline>
+      </div>
+
+      <!-- Policies Panel -->
+      <div class="edit-profile policies-panel" *ngIf="selectedItem==='policies'">
+        <div class="policies-tabs">
+          <button type="button" [class.active]="selectedPolicyTab==='privacy'" (click)="selectPolicyTab('privacy')">Privacy Policy</button>
+          <button type="button" [class.active]="selectedPolicyTab==='terms'" (click)="selectPolicyTab('terms')">Terms of Use</button>
+        </div>
+
+        <div class="policy-content" *ngIf="selectedPolicyTab==='privacy'">
+          <p class="policy-desc">Your Privacy, Our Promise. Learn how we collect, use, and protect your personal information to keep you and your family safe.</p>
+          <p class="policy-updated">Last Updated: October 15, 2025</p>
+          <a class="policy-read-link" [routerLink]="['/privacy-policy']">Read the complete Privacy Policy ›</a>
+        </div>
+
+        <div class="policy-content" *ngIf="selectedPolicyTab==='terms'">
+          <p class="policy-desc">Know the rules. These terms outline your rights, responsibilities, and what you can expect when using SuperMe.</p>
+          <p class="policy-updated">Last Updated: October 15, 2025</p>
+          <a class="policy-read-link" [routerLink]="['/terms-of-use']">Read the complete Terms of Use ›</a>
+        </div>
+      </div>
+
+      <!-- Delete My Data Panel -->
+      <div class="edit-profile delete-panel" *ngIf="selectedItem==='delete'">
+        <h2>Delete My Account</h2>
+        <p class="delete-warning">This action is permanent. Think twice!</p>
+
+        <div class="delete-section">
+          <p class="delete-section-title">What happens when I delete my account?</p>
+          <ol class="delete-list">
+            <li>All activities, streaks, pets, and coins erased forever.</li>
+            <li>You are instantly removed from your family.</li>
+            <li>Your profile, saved addresses, and history are wiped.</li>
+            <li>This action is immediate and cannot be undone.</li>
+          </ol>
+        </div>
+
+        <div class="delete-section">
+          <p class="delete-section-title">Account &amp; Privacy</p>
+          <ol class="delete-list">
+            <li>You cannot use this email or phone number to sign up for 14 days.</li>
+            <li>Past support chats are kept for safety reasons.</li>
+          </ol>
+        </div>
+
+        <label class="confirm-row">
+          <input type="checkbox" [(ngModel)]="deleteConfirmChecked" name="deleteConfirm" />
+          <span>I understand this cannot be undone</span>
+        </label>
+
+        <div class="form-row">
+          <superme-button type="bronze" large [disabled]="!deleteConfirmChecked || deleting"
+            [text]="deleting ? 'Deleting...' : 'Delete my account'" (clickEvent)="deleteAccount()"></superme-button>
+        </div>
+
+        <p class="delete-help">Need help? Contact us at <a href="mailto:support@yourapp.com">support &#64;yourapp.com</a></p>
+      </div>
+
+      <!-- Log Out Panel -->
+      <div class="edit-profile logout-panel" *ngIf="selectedItem==='logout'">
+        <h2>Log Out</h2>
+
+        <div class="logout-card">
+          <div class="logout-illustration">
+            <!-- Uses an existing panda image; replace with a dedicated "leaving" asset if available -->
+            <img src="assets/images/logout-panda.png" alt="Leaving" />
+          </div>
+
+          <h3 class="logout-title">Leaving already?</h3>
+          <p class="logout-sub">You can come back anytime to continue your adventure.</p>
+
+          <div class="logout-actions">
+            <button type="button" class="btn-stay" (click)="selectedItem='edit'">Stay Here</button>
+            <button type="button" class="btn-logout" (click)="logout()">Log Out</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </div>
+</main>
+
+<div class="profile-social">
+  <span class="profile-social-label">FOLLOW US ON</span>
+  <div class="profile-social-icons">
+    <!-- Facebook -->
+    <a href="https://www.facebook.com/SuperMeAppOfficial" target="_blank" aria-label="Facebook">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="18" fill="#1877F2"/>
+        <path d="M23.5 18H20v-2c0-.83.67-1.5 1.5-1.5H23V11h-2c-2.76 0-5 2.24-5 5v2h-2.5v3.5H16V29h4v-7.5h2.5L23.5 18z" fill="white"/>
+      </svg>
+    </a>
+    <!-- Instagram -->
+    <a href="https://www.instagram.com/supermeappofficial" target="_blank" aria-label="Instagram">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="18" fill="url(#ig-grad)"/>
+        <rect x="10" y="10" width="16" height="16" rx="5" stroke="white" stroke-width="2" fill="none"/>
+        <circle cx="18" cy="18" r="4" stroke="white" stroke-width="2" fill="none"/>
+        <circle cx="23" cy="13" r="1" fill="white"/>
+        <defs>
+          <radialGradient id="ig-grad" cx="30%" cy="107%" r="130%">
+            <stop offset="0%" stop-color="#ffd676"/>
+            <stop offset="25%" stop-color="#f86f3b"/>
+            <stop offset="50%" stop-color="#d62e82"/>
+            <stop offset="100%" stop-color="#6c3fbc"/>
+          </radialGradient>
+        </defs>
+      </svg>
+    </a>
+    <!-- YouTube -->
+    <a href="https://www.youtube.com/@SuperMeApp" target="_blank" aria-label="YouTube">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="18" fill="#FF0000"/>
+        <path d="M27.5 13.5a2.5 2.5 0 0 0-1.76-1.76C24.0 11.5 18 11.5 18 11.5s-6 0-7.74.24A2.5 2.5 0 0 0 8.5 13.5C8.27 15.24 8.27 18 8.27 18s0 2.76.23 4.5a2.5 2.5 0 0 0 1.76 1.76C12 24.5 18 24.5 18 24.5s6 0 7.74-.24a2.5 2.5 0 0 0 1.76-1.76C27.73 20.76 27.73 18 27.73 18s0-2.76-.23-4.5zM15.73 21v-6l5.5 3-5.5 3z" fill="white"/>
+      </svg>
+    </a>
+    <!-- X / Twitter -->
+    <a href="https://x.com/GetSuperMeApp" target="_blank" aria-label="X">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="18" fill="#000"/>
+        <path d="M20.18 16.77L26.47 9.5h-1.5l-5.47 6.35L15.18 9.5H10l6.6 9.6-6.6 7.4h1.5l5.77-6.7 4.6 6.7H27L20.18 16.77zm-2.04 2.37-.67-.95-5.33-7.62h2.3l4.3 6.15.67.95 5.6 8.02h-2.3l-4.57-6.55z" fill="white"/>
+      </svg>
+    </a>
+  </div>
+</div>
+
+<app-footer></app-footer>
+
+<!-- Verify OTP Modal -->
+<div class="verify-modal-backdrop" *ngIf="showVerifyModal">
+  <div class="verify-modal">
+    <button class="modal-close" aria-label="Close" (click)="closeVerifyModal()">✕</button>
+    <h3 class="modal-title">Verify your {{ verifyMode === 'phone' ? 'number' : 'email' }}</h3>
+    <div class="modal-sub">We've sent an OTP to {{ maskedTarget }}</div>
+
+    <div class="otp-row">
+      <input maxlength="1" type="text" class="otp-box" [(ngModel)]="otp[0]" (input)="onOtpInput($event,0)" />
+      <input maxlength="1" type="text" class="otp-box" [(ngModel)]="otp[1]" (input)="onOtpInput($event,1)" />
+      <input maxlength="1" type="text" class="otp-box" [(ngModel)]="otp[2]" (input)="onOtpInput($event,2)" />
+      <input maxlength="1" type="text" class="otp-box" [(ngModel)]="otp[3]" (input)="onOtpInput($event,3)" />
+    </div>
+
+    <div class="otp-footer">
+      <superme-button type="green" large [disabled]="!isOtpComplete()" text="Confirm" (clickEvent)="confirmOtp()"></superme-button>
+    </div>
+    <div class="otp-resend">
+      <ng-container *ngIf="countdownSeconds > 0">
+        <span class="resend-timer">Resend OTP in {{ minutes }}:{{ secondsPadded }}</span>
+      </ng-container>
+      <ng-container *ngIf="countdownSeconds === 0">
+        <button class="resend-btn" type="button" (click)="resendOtp()">Resend OTP</button>
+      </ng-container>
+    </div>
+  </div>
+</div>

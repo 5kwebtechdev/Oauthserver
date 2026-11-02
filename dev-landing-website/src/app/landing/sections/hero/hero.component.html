@@ -1,0 +1,282 @@
+<section
+  class="relative bg-white rounded-bl-[56px] rounded-br-[56px] overflow-hidden pb-[48px] pt-[56px] min-[900px]:pt-[72px] min-[1200px]:pt-[80px]"
+style="padding-top: 9%; display: block;">
+  <!-- Animated Background -->
+  <div class="absolute inset-0 overflow-hidden rounded-bl-[56px] rounded-br-[56px]">
+    <!-- Desktop SVG (1200px+) animated blobs -->
+    <svg
+      class="absolute block w-full h-full hidden min-[1200px]:block"
+      fill="none"
+      preserveAspectRatio="xMidYMid slice"
+      viewBox="0 0 1440 761"
+    >
+      <defs>
+        <linearGradient gradientUnits="userSpaceOnUse" id="bgGradient" x1="17.085" x2="1394.37" y1="0" y2="809.566">
+          <stop offset="0.005" stop-color="#8B8DCB" />
+          <stop offset="0.3" stop-color="#89B3B6" />
+          <stop offset="0.6" stop-color="#E1527C" />
+          <stop offset="0.9" stop-color="#F6AC72" />
+        </linearGradient>
+        <clipPath id="bgClip"><path [attr.d]="bgClipPath" fill="white" /></clipPath>
+      </defs>
+      <g clip-path="url(#bgClip)">
+        <path [attr.d]="bgClipPath" fill="white" />
+        <path [attr.d]="bgClipPath" fill="url(#bgGradient)" fill-opacity="0.5" />
+        <g style="filter:blur(50px)" class="animate-blob-1"><path clip-rule="evenodd" [attr.d]="blueBlob" fill="#8B8DCB" fill-rule="evenodd" /></g>
+        <g style="filter:blur(50px)" class="animate-blob-2"><path clip-rule="evenodd" [attr.d]="pinkBlob" fill="#E1527C" fill-rule="evenodd" /></g>
+        <g style="filter:blur(50px)" class="animate-blob-3"><path clip-rule="evenodd" [attr.d]="greenBlob" fill="#89B3B6" fill-rule="evenodd" /></g>
+        <g style="filter:blur(50px)" class="animate-blob-4"><path clip-rule="evenodd" [attr.d]="orangeBlob" fill="#F6AC72" fill-rule="evenodd" /></g>
+        <path [attr.d]="bgClipPath" fill="white" fill-opacity="0.7" />
+      </g>
+    </svg>
+
+    <!-- Tablet SVG (768px-1199px) static blobs -->
+    <svg
+      class="absolute block w-full h-full hidden min-[768px]:block min-[1200px]:hidden"
+      fill="none"
+      preserveAspectRatio="xMidYMid slice"
+      viewBox="0 0 1440 761"
+    >
+      <defs>
+        <linearGradient gradientUnits="userSpaceOnUse" id="bgGradient_t" x1="17.085" x2="1394.37" y1="0" y2="809.566">
+          <stop offset="0.005" stop-color="#8B8DCB" />
+          <stop offset="0.3" stop-color="#89B3B6" />
+          <stop offset="0.6" stop-color="#E1527C" />
+          <stop offset="0.9" stop-color="#F6AC72" />
+        </linearGradient>
+        <clipPath id="bgClip_t"><path [attr.d]="bgClipPath" fill="white" /></clipPath>
+      </defs>
+      <g clip-path="url(#bgClip_t)">
+        <path [attr.d]="bgClipPath" fill="white" />
+        <path [attr.d]="bgClipPath" fill="url(#bgGradient_t)" fill-opacity="0.5" />
+        <g style="filter:blur(50px)"><path clip-rule="evenodd" [attr.d]="blueBlob" fill="#8B8DCB" fill-rule="evenodd" /></g>
+        <g style="filter:blur(50px)"><path clip-rule="evenodd" [attr.d]="pinkBlob" fill="#E1527C" fill-rule="evenodd" /></g>
+        <g style="filter:blur(50px)"><path clip-rule="evenodd" [attr.d]="greenBlob" fill="#89B3B6" fill-rule="evenodd" /></g>
+        <g style="filter:blur(50px)"><path clip-rule="evenodd" [attr.d]="orangeBlob" fill="#F6AC72" fill-rule="evenodd" /></g>
+        <path [attr.d]="bgClipPath" fill="white" fill-opacity="0.7" />
+      </g>
+    </svg>
+
+    <!-- Mobile SVG (<768px) static blobs -->
+    <svg
+      class="absolute block w-full h-full min-[768px]:hidden"
+      fill="none"
+      preserveAspectRatio="xMidYMid slice"
+      viewBox="0 0 393 761"
+    >
+      <defs>
+        <linearGradient gradientUnits="userSpaceOnUse" id="hero_m_bgGradient" x1="4.66278" x2="500.076" y1="0" y2="71.574">
+          <stop offset="0.00480769" stop-color="#8B8DCB" />
+          <stop offset="0.3" stop-color="#89B3B6" />
+          <stop offset="0.6" stop-color="#E1527C" />
+          <stop offset="0.9" stop-color="#F6AC72" />
+        </linearGradient>
+        <clipPath id="hero_m_bgClip"><rect fill="white" height="761" width="393" rx="56" /></clipPath>
+      </defs>
+      <g clip-path="url(#hero_m_bgClip)">
+        <rect fill="white" height="761" width="393" />
+        <rect fill="url(#hero_m_bgGradient)" fill-opacity="0.5" height="761" width="393" />
+        <g style="filter:blur(50px)"><path clip-rule="evenodd" [attr.d]="mobileBlueBlob" fill="#8B8DCB" fill-rule="evenodd" /></g>
+        <g style="filter:blur(50px)"><path clip-rule="evenodd" [attr.d]="mobilePinkBlob" fill="#E1527C" fill-rule="evenodd" /></g>
+        <g style="filter:blur(50px)"><path clip-rule="evenodd" [attr.d]="mobileGreenBlob" fill="#89B3B6" fill-rule="evenodd" /></g>
+        <g style="filter:blur(50px)"><path clip-rule="evenodd" [attr.d]="mobileOrangeBlob" fill="#F6AC72" fill-rule="evenodd" /></g>
+        <rect fill="white" fill-opacity="0.7" height="761" width="393" />
+      </g>
+    </svg>
+  </div>
+
+  <!-- Content -->
+  <div class="relative hero-section z-10 w-full max-w-[1360px] mx-auto px-[20px] min-[768px]:px-[32px] min-[1200px]:px-[40px]">
+
+    <!-- Desktop Layout (1200px+) — 3 column -->
+    <div class="hidden min-[1200px]:flex items-center justify-center" style="gap: clamp(24px, 4.4vw, 64px)">
+      <!-- Left Images -->
+      <div class="flex flex-col gap-[16px] shrink-0" style="width: clamp(180px, 18.6vw, 268px)">
+        <div class="bg-white w-full aspect-[268/313] overflow-clip relative rounded-[24px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" class="absolute h-[112.62%] left-[-12.97%] max-w-none top-[-6.14%] w-[132.13%]" [src]="imgHabit" width="768" height="768" />
+            </div>
+          </div>
+        </div>
+        <div class="w-full aspect-[268/232] overflow-clip relative rounded-[24px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" class="absolute h-[126.36%] left-[-4.62%] max-w-none top-[-12.93%] w-[108.82%]" [src]="imgTimeManagement" width="768" height="768" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Text -->
+      <div class="flex flex-col gap-[32px] items-center justify-center min-w-0">
+        <div class="flex flex-col gap-[8px] items-center justify-center">
+          <h1
+            class="font-['Nunito',sans-serif] font-bold text-[#282527] text-center tracking-[-2.5px] whitespace-nowrap"
+            style="font-size: clamp(36px, 3.47vw, 50px)"
+          >
+            <span class="bg-clip-text text-transparent" style="background-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), linear-gradient(90deg, rgb(139,141,203) 0%, rgb(137,179,182) 25%, rgb(225,82,124) 50%, rgb(246,172,114) 100%)">Super App</span>
+            <span> for Super You</span>
+          </h1>
+          <p
+            class="font-['Nunito',sans-serif] font-normal opacity-70 text-[#282527] text-center tracking-[-1px]"
+            style="font-size: clamp(16px, 1.39vw, 20px); max-width: clamp(380px, 36.25vw, 522px)"
+          >
+            Master your time, train your brain, and grow daily. All powered by one Super app built for you. Explore features that build skills, spark creativity, and help you understand yourself better.
+          </p>
+        </div>
+        <div class="flex gap-[32px] items-center">
+          <a [href]="googlePlayUrl" target="_blank" rel="noopener noreferrer" class="store-cta relative rounded-[8px] overflow-hidden shrink-0 cursor-pointer border-none no-underline block" [style.backgroundImage]="gradientButton">
+            <div class="flex gap-[10px] items-center justify-center overflow-clip px-[24px] py-[12px] rounded-[inherit]">
+              <div class="h-[24px] w-[21px] shrink-0">
+                <img alt="" class="max-w-none object-cover pointer-events-none size-full" [src]="imgGooglePlay" width="876" height="980" />
+              </div>
+              <div class="flex flex-col font-['Nunito',sans-serif] font-semibold items-start leading-[0] text-[#fffdff] whitespace-nowrap">
+                <span class="opacity-70 text-[10px] leading-[normal]">Get it on</span>
+                <span class="text-[16px] leading-[normal]">Google Play</span>
+              </div>
+            </div>
+            <div class="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_-2px_2px_0px_#ea7cb5]"></div>
+            <div aria-hidden="true" class="absolute border border-[#4a0d25] border-solid inset-0 pointer-events-none rounded-[8px]"></div>
+          </a>
+          <a [href]="appStoreUrl" target="_blank" rel="noopener noreferrer" class="store-cta relative rounded-[8px] overflow-hidden shrink-0 cursor-pointer border-none no-underline block" [style.backgroundImage]="gradientButton">
+            <div class="flex gap-[10px] items-center justify-center overflow-clip px-[24px] py-[12px] rounded-[inherit]">
+              <div class="h-[27px] relative shrink-0 w-[22px]">
+                <svg class="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 22.185 27">
+                  <g clip-path="url(#clip_apple)"><path [attr.d]="applePath" fill="#F2F2F2" /></g>
+                  <defs><clipPath id="clip_apple"><rect fill="white" height="27" width="22.185" /></clipPath></defs>
+                </svg>
+              </div>
+              <div class="flex flex-col font-['Nunito',sans-serif] font-semibold items-start leading-[0] text-[#fffdff] whitespace-nowrap">
+                <span class="opacity-70 text-[10px] leading-[normal]">Get it on</span>
+                <span class="text-[16px] leading-[normal]">App Store</span>
+              </div>
+            </div>
+            <div class="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_-2px_2px_0px_#ea7cb5]"></div>
+            <div aria-hidden="true" class="absolute border border-[#4a0d25] border-solid inset-0 pointer-events-none rounded-[8px]"></div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Images -->
+      <div class="flex flex-col gap-[16px] shrink-0" style="width: clamp(180px, 18.6vw, 268px)">
+        <div class="w-full aspect-[268/313] overflow-clip relative rounded-[24px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" class="absolute h-[113.67%] left-[-15.59%] max-w-none top-[-6.72%] w-[131.44%]" [src]="imgTasks" width="768" height="768" />
+            </div>
+          </div>
+        </div>
+        <div class="w-full aspect-[268/232] overflow-clip relative rounded-[24px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" class="absolute h-[113.67%] left-[-10%] max-w-none top-[-6.72%] w-[120%]" [src]="imgLearnings" width="768" height="768" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tablet Layout (900px-1199px) -->
+    <div class="hidden min-[900px]:flex min-[1200px]:hidden flex-col gap-[32px] items-center">
+      <div class="grid grid-cols-4 gap-[16px] w-full">
+        <div class="w-full aspect-square overflow-clip relative rounded-[20px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full"><div class="absolute inset-0 overflow-hidden pointer-events-none"><img alt="" class="absolute h-[112.62%] left-[-12.97%] max-w-none top-[-6.14%] w-[132.13%]" [src]="imgHabit" width="768" height="768" /></div></div>
+        </div>
+        <div class="w-full aspect-square overflow-clip relative rounded-[20px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full"><div class="absolute inset-0 overflow-hidden pointer-events-none"><img alt="" class="absolute h-[126.36%] left-[-4.62%] max-w-none top-[-12.93%] w-[108.82%]" [src]="imgTimeManagement" width="768" height="768" /></div></div>
+        </div>
+        <div class="w-full aspect-square overflow-clip relative rounded-[20px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full"><div class="absolute inset-0 overflow-hidden pointer-events-none"><img alt="" class="absolute h-[113.67%] left-[-15.59%] max-w-none top-[-6.72%] w-[131.44%]" [src]="imgTasks" width="768" height="768" /></div></div>
+        </div>
+        <div class="w-full aspect-square overflow-clip relative rounded-[20px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full"><div class="absolute inset-0 overflow-hidden pointer-events-none"><img alt="" class="absolute h-[113.67%] left-[-10%] max-w-none top-[-6.72%] w-[120%]" [src]="imgLearnings" width="768" height="768" /></div></div>
+        </div>
+      </div>
+      <div class="flex flex-col gap-[8px] items-center">
+        <p class="font-['Nunito',sans-serif] font-bold text-[#282527] text-center tracking-[-2px] whitespace-nowrap" style="font-size: clamp(30px, 3.8vw, 38px)">
+          <span class="bg-clip-text text-transparent" style="background-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), linear-gradient(90deg, rgb(139,141,203) 0%, rgb(137,179,182) 25%, rgb(225,82,124) 50%, rgb(246,172,114) 100%)">Super App</span>
+          <span> for Super You</span>
+        </p>
+        <p class="font-['Nunito',sans-serif] font-normal opacity-70 text-[#282527] text-[16px] text-center tracking-[-0.75px] max-w-[480px]">
+          Master your time, train your brain, and grow daily. All powered by one Super app built for you.
+        </p>
+      </div>
+      <div class="flex gap-[24px] items-center justify-center">
+        <a [href]="googlePlayUrl" target="_blank" rel="noopener noreferrer" class="store-cta relative rounded-[8px] overflow-hidden shrink-0 cursor-pointer border-none no-underline block" [style.backgroundImage]="gradientButton">
+          <div class="flex gap-[10px] items-center justify-center overflow-clip px-[24px] py-[12px] rounded-[inherit]">
+            <div class="h-[24px] w-[21px] shrink-0"><img alt="" class="max-w-none object-cover pointer-events-none size-full" [src]="imgGooglePlay" width="876" height="980" /></div>
+            <div class="flex flex-col font-['Nunito',sans-serif] font-semibold items-start leading-[0] text-[#fffdff] whitespace-nowrap">
+              <span class="opacity-70 text-[10px] leading-[normal]">Get it on</span><span class="text-[16px] leading-[normal]">Google Play</span>
+            </div>
+          </div>
+          <div class="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_-2px_2px_0px_#ea7cb5]"></div>
+        </a>
+          <a [href]="appStoreUrl" target="_blank" rel="noopener noreferrer" class="store-cta relative rounded-[8px] overflow-hidden shrink-0 cursor-pointer border-none no-underline block" [style.backgroundImage]="gradientButton">
+          <div class="flex gap-[10px] items-center justify-center overflow-clip px-[24px] py-[12px] rounded-[inherit]">
+            <div class="h-[27px] relative shrink-0 w-[22px]">
+              <svg class="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 22.185 27"><g clip-path="url(#clip_apple_t)"><path [attr.d]="applePath" fill="#F2F2F2" /></g><defs><clipPath id="clip_apple_t"><rect fill="white" height="27" width="22.185" /></clipPath></defs></svg>
+            </div>
+            <div class="flex flex-col font-['Nunito',sans-serif] font-semibold items-start leading-[0] text-[#fffdff] whitespace-nowrap">
+              <span class="opacity-70 text-[10px] leading-[normal]">Get it on</span><span class="text-[16px] leading-[normal]">App Store</span>
+            </div>
+          </div>
+          <div class="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_-2px_2px_0px_#ea7cb5]"></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Mobile Layout (<900px) -->
+    <div class="min-[900px]:hidden flex flex-col gap-[24px] items-center">
+      <!-- 2x2 Image Grid -->
+      <div class="grid grid-cols-2 gap-[12px] w-full">
+        <div class="w-full aspect-square overflow-clip relative rounded-[16px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full"><div class="absolute inset-0 overflow-hidden pointer-events-none"><img alt="" class="absolute h-[112.62%] left-[-12.97%] max-w-none top-[-6.14%] w-[132.13%]" [src]="imgHabit" width="768" height="768" /></div></div>
+        </div>
+        <div class="w-full aspect-square overflow-clip relative rounded-[16px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full"><div class="absolute inset-0 overflow-hidden pointer-events-none"><img alt="" class="absolute h-[126.36%] left-[-4.62%] max-w-none top-[-12.93%] w-[108.82%]" [src]="imgTimeManagement" width="768" height="768" /></div></div>
+        </div>
+        <div class="w-full aspect-square overflow-clip relative rounded-[16px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full"><div class="absolute inset-0 overflow-hidden pointer-events-none"><img alt="" class="absolute h-[113.67%] left-[-15.59%] max-w-none top-[-6.72%] w-[131.44%]" [src]="imgTasks" width="768" height="768" /></div></div>
+        </div>
+        <div class="w-full aspect-square overflow-clip relative rounded-[16px]">
+          <div class="-translate-x-1/2 -translate-y-1/2 absolute h-full left-1/2 top-1/2 w-full"><div class="absolute inset-0 overflow-hidden pointer-events-none"><img alt="" class="absolute h-[113.67%] left-[-10%] max-w-none top-[-6.72%] w-[120%]" [src]="imgLearnings" width="768" height="768" /></div></div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-[8px] items-center px-[4px]">
+        <p class="font-['Nunito',sans-serif] font-bold text-[#282527] text-[28px] text-center tracking-[-1.5px]">
+          <span class="bg-clip-text text-transparent" style="background-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), linear-gradient(90deg, rgb(139,141,203) 0%, rgb(137,179,182) 25%, rgb(225,82,124) 50%, rgb(246,172,114) 100%)">Super App</span>
+          <span> for Super You</span>
+        </p>
+        <p class="font-['Nunito',sans-serif] font-normal opacity-70 text-[#282527] text-[14px] text-center tracking-[-0.5px]">
+          Master your time, train your brain, and grow daily. All powered by one Super app built for you.
+        </p>
+      </div>
+
+      <div class="flex gap-[12px] items-center justify-center">
+        <a [href]="googlePlayUrl" target="_blank" rel="noopener noreferrer" class="store-cta relative rounded-[8px] overflow-hidden shrink-0 cursor-pointer border-none no-underline block" [style.backgroundImage]="gradientButton">
+          <div class="flex gap-[8px] items-center justify-center overflow-clip px-[16px] py-[10px] rounded-[inherit]">
+            <div class="h-[20px] w-[18px] shrink-0"><img alt="" class="max-w-none object-cover pointer-events-none size-full" [src]="imgGooglePlay" width="876" height="980" /></div>
+            <div class="flex flex-col font-['Nunito',sans-serif] font-semibold items-start leading-[0] text-[#fffdff] whitespace-nowrap">
+              <span class="opacity-70 text-[9px] leading-[normal]">Get it on</span><span class="text-[13px] leading-[normal]">Google Play</span>
+            </div>
+          </div>
+          <div class="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_-2px_2px_0px_#ea7cb5]"></div>
+        </a>
+          <a [href]="appStoreUrl" target="_blank" rel="noopener noreferrer" class="store-cta relative rounded-[8px] overflow-hidden shrink-0 cursor-pointer border-none no-underline block" [style.backgroundImage]="gradientButton">
+          <div class="flex gap-[8px] items-center justify-center overflow-clip px-[16px] py-[10px] rounded-[inherit]">
+            <div class="h-[22px] relative shrink-0 w-[18px]">
+              <svg class="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 22.185 27"><g clip-path="url(#clip_apple_m)"><path [attr.d]="applePath" fill="#F2F2F2" /></g><defs><clipPath id="clip_apple_m"><rect fill="white" height="27" width="22.185" /></clipPath></defs></svg>
+            </div>
+            <div class="flex flex-col font-['Nunito',sans-serif] font-semibold items-start leading-[0] text-[#fffdff] whitespace-nowrap">
+              <span class="opacity-70 text-[9px] leading-[normal]">Get it on</span><span class="text-[13px] leading-[normal]">App Store</span>
+            </div>
+          </div>
+          <div class="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_-2px_2px_0px_#ea7cb5]"></div>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>

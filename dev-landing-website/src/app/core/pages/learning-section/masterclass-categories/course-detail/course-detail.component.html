@@ -1,0 +1,78 @@
+<app-public-navbar></app-public-navbar>
+
+<div class="academy-lesson-page">
+  <header class="header">
+    <button type="button" class="back-btn" (click)="goBack()" aria-label="Back">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="15" viewBox="0 0 30 15" fill="none" aria-hidden="true">
+        <path d="M0.292893 6.65715C-0.0976311 7.04768 -0.0976311 7.68084 0.292893 8.07136L6.65685 14.4353C7.04738 14.8259 7.68054 14.8259 8.07107 14.4353C8.46159 14.0448 8.46159 13.4116 8.07107 13.0211L2.41421 7.36426L8.07107 1.7074C8.46159 1.31688 8.46159 0.683714 8.07107 0.29319C7.68054 -0.0973344 7.04738 -0.0973344 6.65685 0.29319L0.292893 6.65715ZM29 8.36426C29.5523 8.36426 30 7.91654 30 7.36426C30 6.81197 29.5523 6.36426 29 6.36426V7.36426V8.36426ZM1 7.36426V8.36426H29V7.36426V6.36426H1V7.36426Z" fill="#282527"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Loading -->
+  <div class="state state--loading" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading course...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="state state--error" *ngIf="!isLoading && errorMessage">
+    <p>{{ errorMessage }}</p>
+    <button type="button" class="retry-btn" (click)="retry()">Retry</button>
+  </div>
+
+  <main class="content" *ngIf="!isLoading && !errorMessage && selectedCourse">
+    <div class="illustration-wrap">
+      <img [src]="selectedCourse.image" [alt]="selectedCourse.title + ' illustration'" />
+    </div>
+
+    <h1 class="title">{{ selectedCourse.title }}</h1>
+    <p class="meta">{{ selectedCourse.lessons }} lessons • {{ selectedCourse.duration }}</p>
+    <div class="course-coins">
+      <img src="assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="course-coin-icon" />
+      <span>{{ selectedCourse.coins }}</span>
+    </div>
+
+    <p class="description">
+      {{ selectedCourse.description }}
+    </p>
+  </main>
+</div>
+
+<!-- Lesson Content: Lesson List UI -->
+<section class="lesson-list-section" *ngIf="!isLoading && !errorMessage && lessons.length > 0">
+  <div class="lesson-list">
+    <div class="lesson-item" [class.expanded]="expandedLessonId === lesson.id" *ngFor="let lesson of lessons; let i = index">
+      <div class="lesson-header">
+        <img class="lesson-icon" [src]="lesson.icon" [alt]="lesson.title" />
+        <div class="lesson-info">
+          <div class="lesson-title-row">
+            <span class="lesson-number">{{ i + 1 }}.</span>
+            <span class="lesson-title">{{ lesson.title }}</span>
+          </div>
+          <div class="lesson-desc">{{ lesson.description }}</div>
+          <div class="lesson-meta">
+            <span>{{ lesson.type }}</span>
+            <span>• {{ lesson.duration }}</span>
+            <img class="coin-icon" src="assets/Icons-Neutral/Icons-Coins.png" alt="coin" />
+            <span>{{ lesson.coins }}</span>
+          </div>
+        </div>
+        <span class="lesson-toggle" (click)="toggleLesson(lesson.id)">
+          <svg width="20" height="20" viewBox="0 0 20 20">
+            <path [attr.d]="expandedLessonId === lesson.id ? 'M7 10l3-3 3 3' : 'M7 8l3 3 3-3'" stroke="#888" stroke-width="2" fill="none"/>
+          </svg>
+        </span>
+      </div>
+      <div class="lesson-actions" *ngIf="expandedLessonId === lesson.id">
+        <button class="start-lesson-btn" (click)="startLesson(lesson)" [disabled]="!lesson.canStart">{{ getLessonButtonText(lesson) }}</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="state state--empty" *ngIf="!isLoading && !errorMessage && selectedCourse && lessons.length === 0">
+  <p>No lessons available yet.</p>
+</div>
+
+<app-footer></app-footer>

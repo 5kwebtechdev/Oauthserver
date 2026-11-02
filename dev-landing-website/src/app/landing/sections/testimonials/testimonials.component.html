@@ -1,0 +1,126 @@
+<section class="w-full relative overflow-hidden">
+  <div aria-hidden="true" class="absolute inset-0 pointer-events-none">
+    <div class="absolute bg-[#fce7eb] inset-0"></div>
+    <img
+      alt=""
+      class="absolute max-w-none object-cover opacity-20 size-full"
+      src="assets/Landing/fa81c6109a8b528155dc74d9f5e6fa6caf9b4ecc.png"
+      width="896"
+      height="1152"
+    />
+  </div>
+
+  <div class="relative z-[1] max-w-[1360px] mx-auto px-[20px] min-[900px]:px-[32px] min-[1024px]:px-[40px] py-[32px] min-[900px]:py-[40px]">
+    <!-- Desktop: 4 cards in a row (900px+) -->
+    <div class="hidden min-[900px]:flex gap-[clamp(16px,2.4vw,32px)] items-stretch">
+      @for (t of testimonials; track $index) {
+        <div class="flex-1 min-w-0 relative flex flex-col" style="padding-bottom:16px">
+          <div
+            class="bg-white flex flex-col gap-[12px] items-start w-full relative z-[2] flex-1"
+            style="padding: clamp(16px,2vw,24px) clamp(12px,1.5vw,16px); border-radius: clamp(32px,3.5vw,48px)"
+          >
+            <div class="flex items-center" style="gap: clamp(10px,1.2vw,16px)">
+              <div
+                class="bg-[#fce7eb] flex items-center justify-center rounded-full shrink-0"
+                style="width: clamp(40px,4vw,56px); height: clamp(40px,4vw,56px)"
+              >
+                <p class="font-['Nunito',sans-serif] font-semibold text-[#282527]" style="font-size: clamp(14px,1.5vw,20px)">{{ t.initial }}</p>
+              </div>
+              <p class="font-['Nunito',sans-serif] font-semibold opacity-70 text-[#282527] tracking-[-1px]" style="font-size: clamp(14px,1.5vw,20px)">{{ t.name }}</p>
+            </div>
+            <p class="font-['Nunito',sans-serif] font-medium text-[#282527] leading-[normal]" style="font-size: clamp(11px,1vw,13px)">{{ t.review }}</p>
+          </div>
+          <!-- Speech bubble tail -->
+          <div aria-hidden="true" class="absolute z-[1] pointer-events-none" style="bottom:0;left:0;width:48px;height:56px">
+            <svg viewBox="0 0 48 56" fill="none" class="block size-full">
+              <path d="M48 0 L48 20 C44 36, 28 48, 0 56 C12 50, 24 40, 30 28 C36 16, 40 4, 48 0 Z" fill="white"/>
+            </svg>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Mobile: Carousel (<900px) -->
+    <div class="min-[900px]:hidden">
+      <div class="flex flex-col gap-[40px]">
+        <!-- Cards -->
+        <div
+          #mobileCarousel
+          (scroll)="onMobileScroll($event)"
+          class="flex gap-[24px] overflow-x-auto touch-auto snap-x snap-mandatory pb-[16px]"
+          style="scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch"
+        >
+          @for (t of testimonials; track $index) {
+            <div class="snap-start shrink-0 relative" style="width:321px;padding-bottom:14px" data-card>
+              <div class="bg-white flex items-center justify-center overflow-clip px-[8px] py-[16px] rounded-[48px] relative z-[2] w-[321px]">
+                <div class="flex flex-col gap-[16px] items-start w-[284px]">
+                  <div class="flex gap-[12px] items-center justify-center shrink-0">
+                    <div class="bg-[#fce7eb] flex flex-col items-center justify-center p-[8px] rounded-[24px] shrink-0 size-[48px]">
+                      <p class="font-['Nunito',sans-serif] font-semibold leading-[normal] text-[#282527] text-[16px] whitespace-nowrap">{{ t.initial }}</p>
+                    </div>
+                    <p class="font-['Nunito',sans-serif] font-semibold leading-[normal] opacity-70 text-[#282527] text-[16px] tracking-[-0.8px] whitespace-nowrap">{{ t.name }}</p>
+                  </div>
+                  <div class="flex flex-col items-start w-full">
+                    <p class="font-['Nunito',sans-serif] font-medium leading-[normal] text-[#282527] text-[13px] w-full">{{ t.review }}</p>
+                  </div>
+                </div>
+              </div>
+              <div aria-hidden="true" class="absolute z-[1] pointer-events-none" style="bottom:0;left:0;width:40px;height:48px">
+                <svg viewBox="0 0 48 56" fill="none" class="block size-full">
+                  <path d="M48 0 L48 20 C44 36, 28 48, 0 56 C12 50, 24 40, 30 28 C36 16, 40 4, 48 0 Z" fill="white"/>
+                </svg>
+              </div>
+            </div>
+          }
+          <div class="shrink-0 w-[16px]" aria-hidden="true"></div>
+        </div>
+        <!-- Dots -->
+        <div class="flex gap-[8px] items-center justify-center">
+          @for (t of testimonials; track $index; let i = $index) {
+            <button
+              class="rounded-full transition-all duration-300 border-none cursor-pointer dots-rounded"
+              [class]="i === activeIndex ? 'w-[10px] h-[10px] bg-[#90214D]' : 'w-[8px] h-[8px] bg-[#D9D9D9]'"
+              (click)="setActive(i)"
+            ></button>
+          }
+        </div>
+
+        <!-- Badges -->
+        <div class="flex flex-col gap-[16px] items-center justify-center w-full px-[16px]">
+          <div class="relative box-shadow-testimonial rounded-[40px] shrink-0">
+            <div class="flex gap-[4px] items-center justify-center overflow-clip px-[8px] py-[4px] rounded-[inherit]">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" class="shrink-0">
+                <path [attr.d]="badgeShieldPath" fill="#282527"></path>
+              </svg>
+              <p class="font-['Nunito',sans-serif] font-medium text-[#282527] text-[13px] leading-[22.4px] whitespace-nowrap">COPPA and DPDPA Compliant</p>
+            </div>
+            <div aria-hidden="true" class="absolute inset-0 pointer-events-none rounded-[40px] border border-solid border-[#90214d] shadow-[0px_0px_2px_1px_rgba(107,101,106,0.1)]"></div>
+          </div>
+
+          <div class="flex gap-[16px] items-start justify-center">
+            <div class="relative box-shadow-testimonial rounded-[40px] shrink-0">
+              <div class="flex gap-[4px] items-center justify-center overflow-clip px-[8px] py-[4px] rounded-[inherit]">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" class="shrink-0">
+                  <path [attr.d]="badgeLockPath" fill="#1C1B1F"></path>
+                </svg>
+                <p class="font-['Nunito',sans-serif] font-medium text-[#282527] text-[13px] leading-[22.4px] whitespace-nowrap">Data Secure</p>
+              </div>
+              <div aria-hidden="true" class="absolute inset-0 pointer-events-none rounded-[40px] border border-solid border-[#90214d] shadow-[0px_0px_2px_1px_rgba(107,101,106,0.1)]"></div>
+            </div>
+
+            <div class="relative box-shadow-testimonial rounded-[40px] shrink-0">
+              <div class="flex gap-[4px] items-center justify-center overflow-clip px-[8px] py-[4px] rounded-[inherit]">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" class="shrink-0">
+                  <path [attr.d]="badgeCheckPath" fill="#1C1B1F"></path>
+                </svg>
+                <p class="font-['Nunito',sans-serif] font-medium text-[#282527] text-[13px] leading-[22.4px] whitespace-nowrap">Parent-Approved</p>
+              </div>
+              <div aria-hidden="true" class="absolute inset-0 pointer-events-none rounded-[40px] border border-solid border-[#90214d] shadow-[0px_0px_2px_1px_rgba(107,101,106,0.1)]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

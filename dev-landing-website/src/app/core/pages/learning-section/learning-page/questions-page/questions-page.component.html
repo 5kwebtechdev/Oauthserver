@@ -1,0 +1,152 @@
+<section class="questions-page">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading questions...</p>
+  </div>
+
+  <!-- Quiz Content -->
+  <ng-container *ngIf="!isLoading && questions.length > 0">
+    <header class="qp-header">
+      <button class="close-btn" (click)="close()" aria-label="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 27 27" fill="none" aria-hidden="true">
+          <path d="M1.5 2.14758L24.8525 25.5" stroke="#282527" stroke-width="3" stroke-linecap="round"/>
+          <path d="M1.5 24.8524L24.8525 1.49996" stroke="#282527" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <h3 class="qp-title">{{ challenge?.name || 'Quiz' }}</h3>
+      <div class="qp-timer" [class.warning]="timeLeft < 60">{{ timerText }}</div>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="progress">
+      <div class="progress-bar" [style.width.%]="progressPercent"></div>
+    </div>
+    <div class="question-count">{{ questionCountText }}</div>
+
+    <!-- Question Image (if exists) -->
+    <div class="qp-hero" *ngIf="hasQuestionImage">
+      <img [src]="currentQuestion?.image" [alt]="currentQuestion?.text || 'Question image'" />
+    </div>
+
+    <!-- Question Text -->
+    <div class="qp-question">
+      <h2>{{ currentQuestion?.text }}</h2>
+      
+      <!-- Hint Display -->
+      <div class="hint-display" *ngIf="showHint">
+        <svg class="hint-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="11" stroke="#4caf50" stroke-width="2"/>
+          <path d="M12 7v5m0 3h.01" stroke="#4caf50" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <p class="hint-text">{{ hintText }}</p>
+      </div>
+    </div>
+
+    <!-- Options - Text Based -->
+    <div class="qp-options" *ngIf="!hasOptionImages">
+      <button
+        class="opt"
+        *ngFor="let option of currentQuestion?.options; let i = index"
+        (click)="selectOption(option, i)"
+        [class.selected]="isSelected(option)"
+        [class.correct]="isOptionCorrect(option)"
+        [class.incorrect]="isIncorrect(option)"
+        [disabled]="showResult"
+      >
+        {{ option }}
+      </button>
+    </div>
+
+    <!-- Options - Visual/Image Based -->
+    <div class="qp-options visual-options" *ngIf="hasOptionImages">
+      <button
+        class="opt visual-opt"
+        *ngFor="let option of currentQuestion?.options; let i = index"
+        (click)="selectOption(option, i)"
+        [class.selected]="isSelected(option)"
+        [class.correct]="isOptionCorrect(option)"
+        [class.incorrect]="isIncorrect(option)"
+        [disabled]="showResult"
+      >
+        <img 
+          *ngIf="currentQuestion?.optionImages?.[i]" 
+          [src]="currentQuestion?.optionImages?.[i]" 
+          [alt]="option"
+          class="option-image"
+        />
+        <span *ngIf="option">{{ option }}</span>
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="qp-footer">
+      <!-- Before Checking -->
+      <ng-container *ngIf="!showResult">
+        <div class="hint-wrapper">
+          <div 
+            class="hint-card" 
+            role="button" 
+            tabindex="0" 
+            aria-label="Use hint" 
+            (click)="revealHint()"
+            [class.disabled]="hintsRemaining <= 0 || showHint"
+          >
+            <span class="hint-label">Hint</span>
+            <div class="hint-coin-wrapper"> 
+              <img src="/assets/Icons-Neutral/gem.png" alt="gem" class="hint-coin-icon" />
+              <span class="hint-cost">{{ hintCost }}</span>
+            </div>
+          </div>
+          <div class="hints-remaining">{{ hintsRemaining }}/2 remaining</div>
+        </div>
+
+        <div class="action-buttons">
+          <superme-button 
+            type="lavendar-transparent" 
+            text="Skip" 
+            (clickEvent)="skip()"
+            *ngIf="!isLast">
+          </superme-button>
+          <superme-button 
+            type="green" 
+            large 
+            text="Check" 
+            (clickEvent)="check()"
+            [disabled]="!selectedOption">
+          </superme-button>
+        </div>
+      </ng-container>
+
+      <!-- After Checking - Result Banner -->
+      <div class="result-banner" *ngIf="showResult" [class.correct]="isCorrect" [class.incorrect]="!isCorrect">
+        <div class="result-icon">
+          <svg *ngIf="isCorrect" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M9 12l2 2 4-4" stroke="#4caf50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="10" stroke="#4caf50" stroke-width="2"/>
+          </svg>
+          <svg *ngIf="!isCorrect" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M15 9l-6 6M9 9l6 6" stroke="#f44336" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="10" stroke="#f44336" stroke-width="2"/>
+          </svg>
+        </div>
+        <p class="result-text">{{ resultMessage }}</p>
+        <div class="result-cta">
+          <superme-button 
+            type="green" 
+            large 
+            [text]="isLast ? 'See Results' : 'Next Question'" 
+            (clickEvent)="next()">
+          </superme-button>
+        </div>
+      </div>
+    </footer>
+  </ng-container>
+
+  <!-- No Questions State -->
+  <div *ngIf="!isLoading && questions.length === 0" class="no-questions">
+    <h2>No Questions Available</h2>
+    <p>This challenge doesn't have any questions yet.</p>
+    <superme-button type="pink" text="Back to Learning" (clickEvent)="close()"></superme-button>
+  </div>
+</section>

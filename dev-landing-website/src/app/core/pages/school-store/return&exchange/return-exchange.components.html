@@ -1,0 +1,401 @@
+
+
+<app-public-navbar></app-public-navbar>
+<!-- Main Container -->
+<main class="return-exchange-container">
+  <!-- Header Section -->
+  <section class="header-section">
+    <div class="header-content">
+      <div class="header-left">
+        <button class="back-btn" (click)="goBack()" type="button" aria-label="Go back">
+          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
+  <path d="M13.2929 27.2929C12.9024 27.6834 12.9024 28.3166 13.2929 28.7071L19.6569 35.0711C20.0474 35.4616 20.6805 35.4616 21.0711 35.0711C21.4616 34.6805 21.4616 34.0474 21.0711 33.6569L15.4142 28L21.0711 22.3431C21.4616 21.9526 21.4616 21.3195 21.0711 20.9289C20.6805 20.5384 20.0474 20.5384 19.6569 20.9289L13.2929 27.2929ZM42 29C42.5523 29 43 28.5523 43 28C43 27.4477 42.5523 27 42 27V28V29ZM14 28V29H42V28V27H14V28Z" fill="#282527"/>
+</svg>
+        </button>
+        <div class="header-text">
+          <h1 class="header-title">
+            <ng-container *ngIf="showUploadProof; else pickupOrSizeOrDefaultHeader">Upload Proof</ng-container>
+            <ng-template #pickupOrSizeOrDefaultHeader>
+              <ng-container *ngIf="showPickupConfirmation; else sizeOrDefaultHeader">Pickup Confirmation</ng-container>
+              <ng-template #sizeOrDefaultHeader>
+                <ng-container *ngIf="showSizeSection; else defaultHeaderTitle">Select New size</ng-container>
+                <ng-template #defaultHeaderTitle>Return/ Exchange Item</ng-template>
+              </ng-template>
+            </ng-template>
+          </h1>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="help-btn" (click)="onHelpClick()" type="button">
+          <a href="javascript:void(0)">Help</a>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <ng-container *ngIf="showUploadProof; else pickupOrReasonOrSizeFlow">
+    <!-- Upload Proof View -->
+    <section class="content-section photo-upload-section">
+      <div class="upload-panel">
+        <div class="upload-area" (click)="triggerFileInput()" role="button" tabindex="0" aria-label="Upload image">
+          <input
+            type="file"
+            #fileInput
+            accept="image/png,image/jpeg,image/jpg"
+            (change)="onFileSelected($event)"
+            hidden />
+
+          <ng-container *ngIf="!selectedPhoto; else uploadedPreview">
+            <div class="upload-placeholder">
+              <div class="camera-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 7L10.2 5.4C10.5 5 11 4.8 11.5 4.8H12.5C13 4.8 13.5 5 13.8 5.4L15 7" stroke="#282527" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M7.5 7H16.5C18.4 7 19.5 8.1 19.5 10V16.5C19.5 18.4 18.4 19.5 16.5 19.5H7.5C5.6 19.5 4.5 18.4 4.5 16.5V10C4.5 8.1 5.6 7 7.5 7Z" stroke="#282527" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 16.2C13.4359 16.2 14.6 15.0359 14.6 13.6C14.6 12.1641 13.4359 11 12 11C10.5641 11 9.4 12.1641 9.4 13.6C9.4 15.0359 10.5641 16.2 12 16.2Z" stroke="#282527" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="upload-caption">Upload Image</p>
+            </div>
+          </ng-container>
+
+          <ng-template #uploadedPreview>
+            <div class="upload-preview">
+              <img [src]="selectedPhoto" alt="Uploaded proof" />
+              <button class="remove-upload" type="button" (click)="clearSelectedPhoto($event)" aria-label="Remove uploaded image">Remove</button>
+            </div>
+          </ng-template>
+        </div>
+
+        <p class="upload-helper">Please upload clear image of the damage/ item</p>
+
+        <p class="upload-error" *ngIf="uploadErrorMessage">{{ uploadErrorMessage }}</p>
+      </div>
+
+      <div class="refund-card">
+        <h2 class="refund-title">Refund to</h2>
+
+        <div class="refund-reason">
+          <span class="refund-radio" aria-hidden="true"></span>
+          <span class="refund-text">
+            <ng-container *ngIf="selectedReason === 'damaged'">Damaged / Defective (Requires Photo)</ng-container>
+            <ng-container *ngIf="selectedReason === 'wrong-item'">Wrong Item Received (Requires Photo)</ng-container>
+          </span>
+        </div>
+
+        <superme-button
+          type="magenta"
+          size="large"
+          [disabled]="disableRequest"
+          (clickEvent)="onRequestRefund()"
+          text="Request Refund">
+        </superme-button>
+      </div>
+    </section>
+  </ng-container>
+
+  <ng-template #pickupOrReasonOrSizeFlow>
+    <ng-container *ngIf="showPickupConfirmation; else reasonOrSizeFlow">
+      <!-- Pickup Confirmation View -->
+      <section class="content-section pickup-confirmation-section">
+        <!-- Order Details Card (Left) -->
+        <div class="order-details-card">
+          <div class="order-item">
+            <div class="order-image">
+              <img [src]="orderImage" [alt]="orderTitle" />
+            </div>
+            <div class="order-info">
+              <h2 class="order-title">{{ orderTitle }}</h2>
+              <div class="order-meta">
+                <span class="meta-item">Size: {{ orderOriginalSize }}</span>
+                <span class="meta-item">Qty: {{ orderQty }}</span>
+              </div>
+              <p class="order-school">St. Xavier's High School</p>
+              <p class="order-price">₹{{ orderPrice }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pickup Confirmation Card (Right) -->
+        <div class="pickup-confirmation-card">
+          <div class="delivery-box" aria-label="Delivery address">
+            <div class="delivery-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z" stroke="#282527" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 12.2a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Z" stroke="#282527" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="delivery-text">
+              <p class="delivery-label">Delivery to:</p>
+              <p class="delivery-address">{{ deliveryAddress }}</p>
+            </div>
+          </div>
+
+          <h2 class="pickup-title">Pickup Slot</h2>
+
+          <label class="pickup-option">
+            <input
+              type="radio"
+              name="pickup-slot"
+              [value]="pickupSlotValue"
+              [(ngModel)]="selectedPickupSlot"
+              class="pickup-radio" />
+            <span class="pickup-radio-custom" [class.checked]="selectedPickupSlot === pickupSlotValue" aria-hidden="true"></span>
+            <span class="pickup-option-text">{{ pickupSlotLabel }}</span>
+          </label>
+
+          <h2 class="pickup-title">Price Difference</h2>
+          <div class="pickup-price-lines">
+            <div class="pickup-price-line">
+              <span class="pickup-price-label">Item cost (Size {{ orderOriginalSize }})</span>
+              <span class="pickup-price-value">₹{{ itemCostOriginal | number: '1.0-2' }}</span>
+            </div>
+            <div class="pickup-price-line">
+              <span class="pickup-price-label">Item cost (Size {{ selectedSize }})</span>
+              <span class="pickup-price-value">₹{{ itemCostSelected | number: '1.0-2' }}</span>
+            </div>
+            <div class="pickup-price-line total">
+              <span class="pickup-price-label">Difference amount (To pay at checkout)</span>
+              <span class="pickup-price-value accent">₹{{ differenceAmount | number: '1.0-2' }}</span>
+            </div>
+          </div>
+
+          <button class="pay-proceed-btn" type="button" [disabled]="!selectedPickupSlot" (click)="onPayAndProceed()">
+            Pay ₹{{ differenceAmount | number: '1.0-2' }} and proceed
+          </button>
+        </div>
+      </section>
+    </ng-container>
+  </ng-template>
+
+  <ng-template #reasonOrSizeFlow>
+  <ng-container *ngIf="!showSizeSection; else sizeSelectionView">
+    <!-- Main Content Section (Reason Selection) -->
+    <section class="content-section">
+      <!-- Order Details Card (Left) -->
+      <div class="order-details-card">
+        <div class="order-item">
+          <div class="order-image">
+            <img [src]="orderImage" [alt]="orderTitle" />
+          </div>
+          <div class="order-info">
+            <h2 class="order-title">{{ orderTitle }}</h2>
+            <div class="order-meta">
+              <span class="meta-item">Size: {{ orderOriginalSize }}</span>
+              <span class="meta-item">Qty: {{ orderQty }}</span>
+            </div>
+            <p class="order-school">St. Xavier's High School</p>
+            <p class="order-price">₹{{ orderPrice }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reason Selection Card (Right) -->
+      <div class="reason-selection-card">
+        <div class="card-header">
+          <h2 class="card-title">Reason</h2>
+        </div>
+
+        <div class="reason-options">
+          <div class="reason-option">
+            <label class="option-label">
+              <input
+                type="radio"
+                name="return-reason"
+                value="too-small-big"
+                [(ngModel)]="selectedReason"
+                class="option-radio"
+              />
+              <span class="radio-custom" [class.checked]="selectedReason === 'too-small-big'"></span>
+              <span class="option-text">Too Small/ Too Big</span>
+            </label>
+          </div>
+
+          <div class="reason-option">
+            <label class="option-label">
+              <input
+                type="radio"
+                name="return-reason"
+                value="damaged"
+                [(ngModel)]="selectedReason"
+                class="option-radio"
+              />
+              <span class="radio-custom" [class.checked]="selectedReason === 'damaged'"></span>
+              <span class="option-text">Damaged / Defective (Requires Photo)</span>
+            </label>
+          </div>
+
+          <div class="reason-option">
+            <label class="option-label">
+              <input
+                type="radio"
+                name="return-reason"
+                value="wrong-item"
+                [(ngModel)]="selectedReason"
+                class="option-radio"
+              />
+              <span class="radio-custom" [class.checked]="selectedReason === 'wrong-item'"></span>
+              <span class="option-text">Wrong Item Received (Requires Photo)</span>
+            </label>
+          </div>
+
+          <div class="reason-option">
+            <label class="option-label">
+              <input
+                type="radio"
+                name="return-reason"
+                value="quality"
+                [(ngModel)]="selectedReason"
+                class="option-radio"
+              />
+              <span class="radio-custom" [class.checked]="selectedReason === 'quality'"></span>
+              <span class="option-text">Material quality not good</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <superme-button
+            type="magenta"
+            size="large"
+            (clickEvent)="onNext()"
+            text="Next">
+          </superme-button>
+        </div>
+      </div>
+    </section>
+  </ng-container>
+
+  </ng-template>
+
+  <ng-template #sizeSelectionView>
+    <!-- Main Content Section (Size Selection) -->
+    <section class="content-section size-content">
+      <div class="size-details-card">
+        <div class="order-item">
+          <div class="order-image">
+            <img [src]="orderImage" [alt]="orderTitle" />
+          </div>
+          <div class="order-info">
+            <h2 class="order-title">{{ orderTitle }}</h2>
+            <div class="order-meta">
+              <span class="meta-item">Size: {{ orderOriginalSize }}</span>
+              <span class="meta-item">Qty: {{ orderQty }}</span>
+            </div>
+            <p class="order-school">St. Xavier's High School</p>
+            <p class="order-price">₹{{ orderPrice }}</p>
+          </div>
+        </div>
+
+        <div class="size-select-head">
+          <p class="size-select-label">Select size in</p>
+          <div class="unit-switch" role="tablist" aria-label="Unit selector">
+            <button
+              type="button"
+              class="unit-btn"
+              [class.active]="unit === 'in'"
+              (click)="selectUnit('in')">
+              in
+            </button>
+            <button
+              type="button"
+              class="unit-btn"
+              [class.active]="unit === 'cm'"
+              (click)="selectUnit('cm')">
+              cm
+            </button>
+          </div>
+        </div>
+
+        <div class="size-table" role="table" aria-label="Size chart">
+          <div class="size-table-head" role="row">
+            <div class="th radio-col" role="columnheader"></div>
+            <div class="th" role="columnheader">Size</div>
+            <div class="th" role="columnheader">Chest</div>
+            <div class="th" role="columnheader">Length</div>
+            <div class="th" role="columnheader">Sleeve Length</div>
+            <div class="th" role="columnheader">Age (Approx)</div>
+          </div>
+
+          <div
+            class="size-table-row"
+            role="row"
+            *ngFor="let row of sizeChart">
+            <label class="size-radio" [class.disabled]="isOutOfStock(row.size)">
+              <input
+                type="radio"
+                name="new-size"
+                [value]="row.size"
+                [checked]="selectedSize === row.size"
+                [disabled]="isOutOfStock(row.size)"
+                (change)="selectSize(row.size)" />
+              <span
+                class="radio-dot"
+                [class.checked]="selectedSize === row.size"
+                [class.disabled]="isOutOfStock(row.size)"></span>
+            </label>
+            <div class="td" role="cell">{{ row.size }}</div>
+            <div class="td" role="cell">{{ formatMeasurement(row.chest) }}</div>
+            <div class="td" role="cell">{{ formatMeasurement(row.length) }}</div>
+            <div class="td" role="cell">{{ formatMeasurement(row.sleeve) }}</div>
+            <div class="td" role="cell">{{ row.age }}</div>
+          </div>
+        </div>
+
+        <p class="stock-message" [class.out]="isOutOfStock(selectedSize)">
+          <ng-container *ngIf="!isOutOfStock(selectedSize); else outOfStockTpl">
+            In Stock. Will be delivered by {{ deliveryDateLabel }}.
+          </ng-container>
+          <ng-template #outOfStockTpl>Out of Stock. Choose another size.</ng-template>
+        </p>
+
+        <h3 class="measure-title">How to measure</h3>
+        <div class="measure-graphic">
+          <img [src]="howToMeasureImage" alt="How to measure shirt size" />
+        </div>
+        <ol class="measure-steps">
+          <li><span class="step-label">Chest:</span> Measure around the fullest part of the chest, keeping the tape horizontal.</li>
+          <li><span class="step-label">Length:</span> Measure from the highest point of the shoulder down to the hem.</li>
+          <li><span class="step-label">Sleeve:</span> Measure from the shoulder seam to the edge of the sleeve.</li>
+        </ol>
+      </div>
+
+      <div class="price-diff-card" aria-label="Price difference">
+        <h2 class="price-title">Price Difference</h2>
+        <div class="price-lines">
+          <div class="price-line">
+            <span class="price-label">Item cost (Size {{ orderOriginalSize }})</span>
+            <span class="price-value">₹{{ itemCostOriginal | number: '1.0-2' }}</span>
+          </div>
+          <div class="price-line">
+            <span class="price-label">Item cost (Size {{ selectedSize }})</span>
+            <span class="price-value">₹{{ itemCostSelected | number: '1.0-2' }}</span>
+          </div>
+          <div class="price-line total">
+            <span class="price-label">Difference amount (To pay at checkout)</span>
+            <span class="price-value">₹{{ differenceAmount | number: '1.0-2' }}</span>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <superme-button
+            type="magenta-transparent"
+            size="medium"
+            (clickEvent)="onReturnSelected()"
+            text="Return">
+          </superme-button>
+          <superme-button
+            type="magenta"
+            size="medium"
+            (clickEvent)="onExchangeSelected()"
+            text="Exchange">
+          </superme-button>
+        </div>
+      </div>
+    </section>
+  </ng-template>
+
+</main>
+
+
+<!-- Footer -->
+<app-footer></app-footer>

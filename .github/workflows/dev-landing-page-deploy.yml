@@ -21,7 +21,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-          submodules: recursive
 
       - uses: actions/setup-node@v4
         with:
@@ -29,7 +28,7 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            landing-page-source/package-lock.json
+            dev-landing-website/package-lock.json
 
       - run: npm ci
 
@@ -49,7 +48,7 @@ jobs:
         run: npx ng build --configuration auth2-dev --base-href /app/
 
       - name: Install and build isolated Abhishek landing page for dev
-        working-directory: landing-page-source
+        working-directory: dev-landing-website
         run: |
           npm ci
           npx ng build --configuration development-apk
@@ -58,7 +57,7 @@ jobs:
         run: |
           mkdir -p bundle/www bundle/website
           cp -a www/. bundle/www/
-          cp -a landing-page-source/dist/superme-website/browser/. bundle/website/
+          cp -a dev-landing-website/dist/superme-website/browser/. bundle/website/
           python3 deploy/apk-code-fe/prepare-dev-website.py bundle/website
           cp deploy/apk-code-fe/nginx.conf deploy/apk-code-fe/deploy.sh bundle/
           tar -czf superme-dev-landing-and-apk.tar.gz -C bundle .

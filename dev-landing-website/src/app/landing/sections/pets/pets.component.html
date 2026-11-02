@@ -1,0 +1,50 @@
+<section class="pets-showcase w-full px-[20px] md:px-[32px] lg:px-[40px]">
+  <div class="max-w-[1360px] mx-auto">
+    <!-- Header -->
+    <div class="pets-showcase__heading flex flex-col gap-[12px] items-center justify-center text-[#282527] text-center mb-[24px] lg:mb-[32px]">
+      <p class="font-['Nunito',sans-serif] font-bold text-[24px] md:text-[28px] lg:text-[32px] tracking-[-1.6px] leading-[normal]">
+        <span class="hidden min-[900px]:inline">Meet Your Companion, Your Growth Partner</span>
+        <span class="min-[900px]:hidden">Meet Your Companion,<br />Your Growth Partner</span>
+      </p>
+      <p class="font-['Nunito',sans-serif] font-normal opacity-70 text-[14px] md:text-[20px] lg:text-[20px] leading-[normal] max-w-[340px] md:max-w-[520px] lg:max-w-[520px]">
+        Digital pets that evolve with your consistency. Personalize and accessorize to match your vibe.
+      </p>
+    </div>
+
+    <!-- Desktop: 4 in a row (900px+) -->
+    <div class="hidden min-[900px]:grid grid-cols-4 gap-[16px] lg:gap-[40px] items-start">
+      @for (pet of pets; track $index; let i = $index) {
+        <div class="pet-card flex flex-col gap-[12px] lg:gap-[16px] items-center w-full" [attr.data-pet]="pet.id" [style.--pet-index]="i">
+          <div class="pet-card__stage bg-[#fce7eb] w-full aspect-square overflow-clip rounded-[24px] min-[900px]:rounded-[40px] lg:rounded-[56px] flex items-center justify-center p-[8px]">
+            <span class="pet-card__sparkle pet-card__sparkle--one" aria-hidden="true"></span>
+            <span class="pet-card__sparkle pet-card__sparkle--two" aria-hidden="true"></span>
+            <div class="relative w-full h-full">
+              <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <img [alt]="pet.name" [class]="pet.imgClass + ' pet-card__image'" [src]="pet.image" [attr.width]="pet.imageWidth" [attr.height]="pet.imageHeight" />
+              </div>
+            </div>
+          </div>
+          <p class="pet-card__name font-['Fredoka',sans-serif] font-medium leading-[normal] text-[#282527] text-[16px] lg:text-[20px] whitespace-nowrap text-center" style="font-variation-settings:'wdth' 100">{{ pet.name }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- Mobile: 2x2 grid (<900px) -->
+    <div class="min-[900px]:hidden grid grid-cols-2 gap-x-[16px] gap-y-[24px]">
+      @for (pet of pets; track $index; let i = $index) {
+        <div class="pet-card flex flex-col gap-[12px] items-center w-full" [attr.data-pet]="pet.id" [style.--pet-index]="i">
+          <div class="pet-card__stage bg-[#fce7eb] w-full aspect-square overflow-clip rounded-[24px] flex items-center justify-center p-[8px]">
+            <span class="pet-card__sparkle pet-card__sparkle--one" aria-hidden="true"></span>
+            <span class="pet-card__sparkle pet-card__sparkle--two" aria-hidden="true"></span>
+            <div class="relative w-full h-full">
+              <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <img [alt]="pet.name" [class]="pet.imgClass + ' pet-card__image'" [src]="pet.image" [attr.width]="pet.imageWidth" [attr.height]="pet.imageHeight" />
+              </div>
+            </div>
+          </div>
+          <p class="pet-card__name font-['Fredoka',sans-serif] font-medium leading-[normal] text-[#282527] text-[14px] whitespace-nowrap text-center" style="font-variation-settings:'wdth' 100">{{ pet.name }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>

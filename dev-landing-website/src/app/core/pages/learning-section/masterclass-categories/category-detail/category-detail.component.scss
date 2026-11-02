@@ -1,0 +1,125 @@
+.academy-course-content {
+  padding: 20px;
+  min-height: calc(100vh - 200px); /* Adjust based on navbar/footer heights */
+}
+
+.course-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 25px;
+  margin-top: 25px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.back-btn svg {
+  width: 28px;
+  height: auto;
+}
+
+.course-title-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.course-title {
+  color: #282527;
+  font-family: Fredoka;
+  font-size: 25px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%; /* 35px */
+  margin: 0;
+}
+
+.course-subtitle {
+  margin: 0;
+  color: #282527;
+  font-family: Nunito;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%; /* 28px */
+  opacity: 0.7;
+}
+
+.course-body {
+  margin-top: 12px;
+}
+
+.academy-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .academy-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .academy-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==== States (loading / error / empty) ==== */
+.state {
+  text-align: center;
+  padding: 48px 16px;
+}
+
+.state--loading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #E1527C;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.state--loading p,
+.state--empty p {
+  color: #6B656A;
+  font-size: 14px;
+}
+
+.state--error p {
+  color: #C0304B;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.retry-btn {
+  padding: 10px 24px;
+  border-radius: 24px;
+  border: none;
+  background: #E1527C;
+  color: #FFFFFF;
+  font-family: Nunito, system-ui, sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover { background: #C0304B; }
+}

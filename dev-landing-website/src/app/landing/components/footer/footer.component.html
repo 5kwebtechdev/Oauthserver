@@ -1,0 +1,42 @@
+<footer class="landing-footer">
+  <section class="footer-cta" aria-labelledby="footer-cta-title">
+    <img [src]="ctaBackgroundSrc" alt="" class="footer-cta__background" width="1440" height="260" />
+    <div class="footer-cta__decorations" aria-hidden="true">
+      <span class="footer-cta__star footer-cta__star--one">✦</span>
+      <span class="footer-cta__star footer-cta__star--two">✦</span>
+      <span class="footer-cta__star footer-cta__star--three">★</span>
+      <span class="footer-cta__bubble footer-cta__bubble--one"></span>
+      <span class="footer-cta__bubble footer-cta__bubble--two"></span>
+    </div>
+
+    <div class="footer-cta__content">
+      <div class="footer-cta__art" aria-hidden="true">
+        <img [src]="petsShadowSrc" alt="" class="footer-cta__shadow" width="426" height="56" />
+        <img [src]="petsSrc" alt="" class="footer-cta__pets" width="1216" height="880" />
+      </div>
+
+      <div class="footer-cta__message">
+        <h2 id="footer-cta-title">
+          Start Building Your <span>Super Self</span> Today
+        </h2>
+
+        <div class="footer-cta__badges" aria-label="SuperMeApp safety commitments">
+          <div class="footer-cta__badge" style="--badge-index: 0">
+            <img [src]="complianceSrc" alt="" width="32" height="36" />
+            <span>COPPA and DPDPA Compliant</span>
+          </div>
+          <div class="footer-cta__badge" style="--badge-index: 1">
+            <img [src]="dataSecureSrc" alt="" width="31" height="36" />
+            <span>Data Secure</span>
+          </div>
+          <div class="footer-cta__badge" style="--badge-index: 2">
+            <img [src]="parentApprovedSrc" alt="" width="32" height="36" />
+            <span>Parent-Approved</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <app-common-footer></app-common-footer>
+</footer>

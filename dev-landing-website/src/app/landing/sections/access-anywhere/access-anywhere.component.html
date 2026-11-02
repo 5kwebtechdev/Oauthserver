@@ -1,0 +1,28 @@
+<section class="access-anywhere" aria-labelledby="access-anywhere-title">
+  <div class="access-anywhere__inner">
+    <header class="access-anywhere__header">
+      <h2 id="access-anywhere-title">Access Anywhere. Anytime.</h2>
+      <p>Your progress stays with you across web, Android, and iOS.</p>
+    </header>
+
+    <div class="access-anywhere__grid">
+      @for (option of options; track option.eyebrow) {
+        <a
+          class="access-card"
+          [routerLink]="option.external ? null : option.href"
+          [attr.href]="option.external ? option.href : null"
+          [attr.target]="option.external ? '_blank' : null"
+          [attr.rel]="option.external ? 'noopener noreferrer' : null"
+        >
+          <span class="access-card__icon"><img [src]="option.icon" alt="" [attr.width]="option.iconWidth" [attr.height]="option.iconHeight" /></span>
+          <span class="access-card__copy">
+            <small>{{ option.eyebrow }}</small>
+            <strong>{{ option.title }}</strong>
+            <span>{{ option.description }}</span>
+          </span>
+          <span class="access-card__arrow" aria-hidden="true">&#8599;</span>
+        </a>
+      }
+    </div>
+  </div>
+</section>

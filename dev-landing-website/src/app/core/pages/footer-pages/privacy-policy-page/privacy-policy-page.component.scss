@@ -1,0 +1,238 @@
+.privacy-policy-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+.privacy-policy-content {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  align-items: flex-start;
+  width: 100%;
+  background: white;
+  padding: clamp(24px, 2.2vw, 32px) 16px;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding-top: calc(clamp(72px, 7vw, 104px) + clamp(24px, 2.2vw, 32px));
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+    width: 100%;
+    color: #282527;
+
+    .title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-start;
+
+      h1 {
+        color: #282527;
+font-family: Nunito;
+font-size: 32px;
+font-style: normal;
+font-weight: 700;
+line-height: normal;
+letter-spacing: -2px;
+        margin: 0;
+      }
+
+      .subtitle {
+        color: #282527;
+text-align: center;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 400;
+line-height: normal;
+        margin: 0;
+      }
+    }
+
+    .effective-date {
+      color: #282527;
+font-family: Nunito;
+font-size: 25px;
+font-style: normal;
+font-weight: 500;
+line-height: normal;
+      opacity: 0.7;
+      margin: 0;
+    }
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    width: 100%;
+    overflow: hidden;
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      width: 100%;
+
+      .section-title {
+        color: #90214D;
+font-family: Nunito;
+font-size: 25px;
+font-style: normal;
+font-weight: 600;
+line-height: normal;
+letter-spacing: -1.25px;
+        margin: 0;
+
+        &.decorated {
+          list-style-type: decimal;
+          margin-left: 37.5px;
+        }
+      }
+
+      .subsection {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 100%;
+
+        .subsection-title {
+          font-family: 'Nunito';
+          font-weight: 600;
+          font-size: 20px;
+          color: #90214d;
+          letter-spacing: -1px;
+          margin: 0;
+        }
+
+        .subsection-subtitle {
+          font-family: 'Nunito';
+          font-weight: 600;
+          font-size: 20px;
+          color: #282527;
+          letter-spacing: -1px;
+          margin: 0;
+        }
+
+        .text {
+          font-family: 'Nunito';
+          font-weight: 600;
+          font-size: 20px;
+          color: #282527;
+          opacity:1;
+          margin: 0;
+          width: 100%;
+        }
+
+        ul {
+          list-style-type: disc;
+          margin-left: 30px;
+          opacity: 0.8;
+          font-family: 'Nunito';
+          font-weight: 600;
+          font-size: 20px;
+          color: #282527;
+
+          li {
+            margin-bottom: 16px;
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+    }
+
+    .table-of-contents {
+      list-style-type: decimal;
+      margin-left: 30px;
+      font-family: 'Nunito';
+      font-weight: 600;
+      font-size: 20px;
+      color: #282527;
+      opacity: 0.7;
+
+      li {
+        margin-bottom: 16px;
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        a {
+          text-decoration: underline;
+          color: inherit;
+          cursor: pointer;
+        }
+      }
+    }
+  }
+}
+
+@media (min-width: 900px) {
+  .privacy-policy-content {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .privacy-policy-content {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .privacy-policy-content {
+    .header {
+      .title-group {
+        h1 {
+          font-size: 20px;
+        }
+
+        .subtitle {
+          font-size: 13px;
+        }
+      }
+
+      .effective-date {
+        font-size: 13px;
+      }
+    }
+
+    .content {
+      .section {
+        .section-title {
+          font-size: 20px;
+        }
+
+        .subsection {
+          .subsection-title {
+            font-size: 17px;
+          }
+
+          .subsection-subtitle {
+            font-size: 15px;
+          }
+
+          .text {
+            font-size: 13px;
+          }
+
+          ul {
+            font-size: 13px;
+          }
+        }
+      }
+
+      .table-of-contents {
+        font-size: 13px;
+      }
+    }
+  }
+}

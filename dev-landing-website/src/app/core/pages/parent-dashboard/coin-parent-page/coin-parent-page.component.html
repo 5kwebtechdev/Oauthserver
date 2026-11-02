@@ -1,0 +1,57 @@
+<app-public-navbar></app-public-navbar>
+<div class="parent-coin-container">
+  <ng-container *ngIf="!showHelpline">
+    <div class="parent-coin-header">
+      <div class="inner">
+        <h2 class="page-title">Ready to Treat Your child?</h2>
+
+        <div class="balance-row">
+          <img class="coin-icon" src="/assets/Icons-Neutral/Icons-Coins-Big.png" alt="coins" />
+          <div class="coin-amount">{{ coinAmount }}</div>
+        </div>
+        <div class="add-btn">
+        <superme-button type="orange" text="Add Coins" large (clickEvent)="navigateToCoinPack()"></superme-button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="parent-coin-content">
+    <!-- Main content is hidden when helpline is active -->
+    <ng-container *ngIf="!showHelpline">
+      <main class="content">
+        <app-ad-slider screen="COLINS_PARENTS"></app-ad-slider>
+
+        <h1 class="page-title">Spent Smart, Spent Fun!</h1>
+
+        <!-- Empty state when there are no coins cards (reusable) -->
+    <superme-empty-state
+      *ngIf="!isLoading && (!coinsList || coinsList.length === 0)"
+      [title]="'No transactions yet!'"
+      [description]="'Your coins are ready to treat your pet with cool outfits and accessories.'"
+      [image]="'/assets/Images-Transparent/Image-Coins-Blank.png'">
+    </superme-empty-state>
+
+        <!-- Cards list when coins exist -->
+        <div *ngIf="coinsList && coinsList.length > 0" class="cards">
+          <sm-coin-card *ngFor="let c of coinsList"
+            [title]="c.label"
+            [date]="(c.date | date:'MMMM d, y') ?? ''"
+            [imageSrc]="c.icon"
+            [changeValue]="c.count">
+          </sm-coin-card>
+        </div>
+
+        <!-- Chatbot / helpline button -->
+        <div class="chatbot" role="button" tabindex="0" (click)="toggleHelpline()" (keydown.enter)="toggleHelpline()" [attr.aria-expanded]="showHelpline" aria-controls="coin-helpline-panel">
+          <img src="/assets/Icons-Neutral/Icon-Chatbot.png" alt="chatbot" />
+        </div>
+      </main>
+    </ng-container>
+
+    <!-- When helpline is active show it in place of other content -->
+    <div *ngIf="showHelpline" class="helpline-panel" id="coin-helpline-panel">
+      <sm-coin-helpline (close)="showHelpline = false"></sm-coin-helpline>
+    </div>
+  </div>
+</div>

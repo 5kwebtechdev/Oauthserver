@@ -1,0 +1,127 @@
+<div class="universe-page">
+  <div class="navbar-container">
+    <app-public-navbar></app-public-navbar>
+  </div>
+
+  <div class="universe-content">
+    <h1 class="page-title">Your Universe</h1>
+
+    <!-- Day strip -->
+    <div class="day-strip">
+      <button class="nav-arrow" (click)="prevWeek()" aria-label="Previous week">
+        <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+          <path d="M9 1L2 8L9 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="day-cells">
+        @for (cell of weekDays; track cell.iso) {
+          <button class="day-cell" [class.active]="isSelected(cell)" (click)="selectDate(cell)">
+            <span class="day-label">{{ cell.label }}</span>
+            <span class="day-num">{{ cell.dayNum }}</span>
+          </button>
+        }
+      </div>
+
+      <button class="nav-arrow" (click)="nextWeek()" aria-label="Next week">
+        <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+          <path d="M1 1L8 8L1 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Habits / Tasks tab switch -->
+    <div class="tab-switch">
+      <button class="tab-btn" [class.active]="activeTab === 'habits'" (click)="switchTab('habits')">Habits</button>
+      <span class="tab-divider"></span>
+      <button class="tab-btn" [class.active]="activeTab === 'tasks'" (click)="switchTab('tasks')">Tasks</button>
+    </div>
+
+    @if (isLoading) {
+      <div class="universe-loading">
+        <svg class="animate-spin" width="36" height="36" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="20" stroke="#e5e7eb" stroke-width="4"/>
+          <path d="M44 24a20 20 0 0 0-20-20" stroke="#90214D" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+    } @else {
+      <div class="universe-columns">
+        <!-- Column 1: Journey -->
+        <div class="universe-col">
+          <h2 class="col-title">{{ activeTab === 'habits' ? 'Your Habit Journey' : 'Your Task Journey' }}</h2>
+          <div class="filter-pills">
+            <button class="pill" [class.active]="journeyFilter === 'pending'" (click)="setJourneyFilter('pending')">Pending</button>
+            <button class="pill" [class.active]="journeyFilter === 'ongoing'" (click)="setJourneyFilter('ongoing')">Ongoing</button>
+            <button class="pill" [class.active]="journeyFilter === 'completed'" (click)="setJourneyFilter('completed')">Completed</button>
+          </div>
+          <div class="cards">
+            @for (item of journeyItems; track item.id) {
+              <activity-card [activity]="item"
+                [startTime]="item.startTimeStamp || 0"
+                [endTime]="item.endTimeStamp || 0"
+                [inProgress]="isActivityInProgress(item)"
+                mode="single"
+                emitClickEvents="true"
+                (cardClick)="openActivity($event)">
+              </activity-card>
+            } @empty {
+              <p class="empty-text">Nothing here yet.</p>
+            }
+          </div>
+        </div>
+
+        <!-- Column 2: Priorities -->
+        <div class="universe-col">
+          <h2 class="col-title">Navigate Your Priorities</h2>
+          <div class="filter-pills">
+            <button class="pill pill-high" [class.active]="priorityFilter === 'high'" (click)="setPriorityFilter('high')">High ({{ countByPriority('high') }})</button>
+            <button class="pill pill-medium" [class.active]="priorityFilter === 'medium'" (click)="setPriorityFilter('medium')">Medium ({{ countByPriority('medium') }})</button>
+            <button class="pill pill-low" [class.active]="priorityFilter === 'low'" (click)="setPriorityFilter('low')">Low ({{ countByPriority('low') }})</button>
+          </div>
+          <div class="cards">
+            @for (item of priorityItems; track item.id) {
+              <activity-card [activity]="item"
+                [startTime]="item.startTimeStamp || 0"
+                [endTime]="item.endTimeStamp || 0"
+                [inProgress]="isActivityInProgress(item)"
+                mode="single"
+                emitClickEvents="true"
+                (cardClick)="openActivity($event)">
+              </activity-card>
+            } @empty {
+              <p class="empty-text">Nothing here yet.</p>
+            }
+          </div>
+        </div>
+
+        <!-- Column 3: Daily Routines -->
+        <div class="universe-col">
+          <h2 class="col-title">Your Daily Routines!</h2>
+          <div class="filter-pills">
+            <button class="pill" [class.active]="routineFilter === 'morning'" (click)="setRoutineFilter('morning')">Morning</button>
+            <button class="pill" [class.active]="routineFilter === 'evening'" (click)="setRoutineFilter('evening')">Evening</button>
+            <button class="pill" [class.active]="routineFilter === 'night'" (click)="setRoutineFilter('night')">Night</button>
+          </div>
+          <div class="cards">
+            @for (item of routineItems; track item.id) {
+              <activity-card [activity]="item"
+                [startTime]="item.startTimeStamp || 0"
+                [endTime]="item.endTimeStamp || 0"
+                [inProgress]="isActivityInProgress(item)"
+                mode="single"
+                emitClickEvents="true"
+                (cardClick)="openActivity($event)">
+              </activity-card>
+            } @empty {
+              <p class="empty-text">Nothing here yet.</p>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <app-ad-slider [screen]="adScreen"></app-ad-slider>
+  </div>
+
+  <app-footer></app-footer>
+</div>

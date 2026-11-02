@@ -1,0 +1,17 @@
+<div class="coin-card" [class.daily-bonus]="isDailyBonus">
+  <div class="left">
+    <img class="avatar" [src]="imageSrc || fallbackIcon" alt="coin type icon" (error)="onImageError($event)" />
+    <div class="meta">
+      <div class="title">{{ title }}</div>
+      <div class="details">
+        <span class="content-type" *ngIf="contentType">{{ contentType }}</span>
+        <span class="date">{{ date }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="right">
+    <img class="change-icon" src="/assets/Icons-Neutral/Icons-Coins.png" alt="coin change icon" />
+    <div class="change-value" [ngClass]="changeClass">{{ changeLabel }}</div>
+  </div>
+</div>

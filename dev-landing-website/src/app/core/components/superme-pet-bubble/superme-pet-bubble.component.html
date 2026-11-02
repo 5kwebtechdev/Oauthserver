@@ -1,0 +1,47 @@
+<div [ngClass]="getPetBubbleClass()">
+  <ng-container *ngIf="bubbleFirst; else petFirst">
+    <!-- Message Bubble Section (bubble first, left) -->
+    <div class="bubble-wrapper">
+      <div [ngClass]="getTailClass()"></div>
+      <div class="bubble-content" (click)="onBubbleClick()">
+        <p class="bubble-message">{{ message }}</p>
+      </div>
+    </div>
+
+    <!-- Pet Image Section (right) -->
+    <div class="pet-section">
+      <superme-pet
+        [pet]="petType"
+        [name]="petName"
+        [age]="petAge"
+        [mood]="petMood"
+        [size]="petImageHeight || petImageSize"
+        [animated]="animated"
+        (petClick)="onPetClick()">
+      </superme-pet>
+    </div>
+  </ng-container>
+
+  <ng-template #petFirst>
+    <!-- Pet Image Section (left) -->
+    <div class="pet-section">
+      <superme-pet
+        [pet]="petType"
+        [name]="petName"
+        [age]="petAge"
+        [mood]="petMood"
+        [size]="petImageHeight || petImageSize"
+        [animated]="animated"
+        (petClick)="onPetClick()">
+      </superme-pet>
+    </div>
+
+    <!-- Message Bubble Section (right) -->
+    <div class="bubble-wrapper">
+      <div [ngClass]="getTailClass()"></div>
+      <div class="bubble-content" (click)="onBubbleClick()">
+        <p class="bubble-message">{{ message }}</p>
+      </div>
+    </div>
+  </ng-template>
+</div>

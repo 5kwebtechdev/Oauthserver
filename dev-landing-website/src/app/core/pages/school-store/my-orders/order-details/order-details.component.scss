@@ -1,0 +1,617 @@
+// Color Variables
+$primary-accent: #90214d;
+$success-green: #4caf50;
+$neutral-black: #282527;
+$neutral-white: #ffffff;
+$neutral-grey: #6b656a;
+$light-grey: #cccbcc;
+$border-color: rgba(107, 101, 106, 0.1);
+$text-opacity-70: rgba(40, 37, 39, 0.7);
+
+// Font Variables
+$font-nunito: 'Nunito', sans-serif;
+$font-fredoka: 'Fredoka', sans-serif;
+
+.order-details-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: $neutral-white;
+}
+
+.order-details-container {
+  flex: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+// Header Section
+.order-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .back-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      svg {
+        width: 56px;
+        height: 56px;
+      }
+    }
+
+    .header-title {
+      h1 {
+        font-family: $font-fredoka;
+        font-size: 25px;
+        font-weight: 500;
+        color: $neutral-black;
+        margin: 0;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  .header-right {
+    .help-link {
+      font-family: $font-nunito;
+      font-size: 20px;
+      font-weight: 600;
+      color: $primary-accent;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+}
+
+// Order Content (Two Column Layout)
+.order-content {
+  display: grid;
+  grid-template-columns: 1fr 440px;
+  gap: 32px;
+  width: 100%;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Order Details Card (Left Column)
+.order-details-card {
+  background: $neutral-white;
+  border-radius: 16px;
+  box-shadow: 0px 0px 2px 2px $border-color;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// Product Section
+.product-section {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+
+  .product-image {
+    width: 148.5px;
+    height: 159px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .product-title {
+      font-family: $font-nunito;
+      font-size: 20px;
+      font-weight: 600;
+      color: $neutral-black;
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    .product-meta {
+      display: flex;
+      gap: 32px;
+      font-family: $font-nunito;
+      font-size: 16px;
+      font-weight: 600;
+      color: $text-opacity-70;
+      line-height: 1.3;
+
+      .product-size,
+      .product-qty {
+        color: $text-opacity-70;
+      }
+    }
+
+    .product-school {
+      font-family: $font-nunito;
+      font-size: 16px;
+      font-weight: 600;
+      color: $text-opacity-70;
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    .product-price {
+      font-family: $font-nunito;
+      font-size: 20px;
+      font-weight: 600;
+      color: $primary-accent;
+      line-height: 1.3;
+      margin: 4px 0 0;
+    }
+  }
+}
+
+// Status Section
+.status-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .status-header {
+    font-family: $font-nunito;
+    font-size: 25px;
+    font-weight: 600;
+    color: $primary-accent;
+    line-height: 1.3;
+    margin: 0;
+    padding: 0 16px;
+  }
+}
+
+// Delivered Status Section
+.delivered-status-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px;
+
+  .status-header {
+    font-family: $font-nunito;
+    font-size: 25px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+
+    &.delivered {
+      color: $success-green;
+    }
+  }
+
+  .return-eligible {
+    font-family: $font-nunito;
+    font-size: 20px;
+    font-weight: 600;
+    color: #90214d;
+    line-height: 1.3;
+    margin: 0;
+  }
+}
+
+// Tracking Timeline
+.tracking-timeline {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 10px;
+
+  .timeline-item {
+    display: flex;
+    gap: 8px;
+    margin-bottom: -2px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .timeline-marker {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 2px;
+      flex-shrink: 0;
+
+      .marker-icon {
+        width: 24px;
+        height: 24px;
+        margin-bottom: -2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        svg {
+          width: 24px;
+          height: 24px;
+        }
+      }
+
+      .marker-line {
+        width: 2px;
+        height: 48px;
+        background: rgba(40, 37, 39, 0.2);
+        border-radius: 16px;
+        margin-bottom: -2px;
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 0%;
+          background: $success-green;
+          border-radius: 16px;
+          transition: height 0.3s ease;
+        }
+      }
+    }
+
+    &.completed .marker-line::before {
+      height: 100%;
+    }
+
+    &.in-progress .marker-line::before {
+      height: 58%; // Approximately 28px out of 48px
+    }
+
+    .timeline-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding-bottom: 2px;
+
+      .status-title {
+        font-family: $font-nunito;
+        font-size: 20px;
+        font-weight: 600;
+        color: $neutral-black;
+        line-height: 1.3;
+        margin: 0;
+      }
+
+      .status-details {
+        font-family: $font-nunito;
+        font-size: 16px;
+        font-weight: 600;
+        color: $text-opacity-70;
+        line-height: 1.3;
+        margin: 0;
+      }
+    }
+  }
+}
+
+// Order Summary Card (Right Column)
+.order-summary-card {
+  background: $neutral-white;
+  border-radius: 24px;
+  box-shadow: 0px 0px 2px 2px $border-color;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: fit-content;
+}
+
+// Delivery Address
+.delivery-address {
+  display: flex;
+  gap: 16px;
+  border: 0.5px solid $primary-accent;
+  border-radius: 16px;
+  padding: 8px 16px;
+
+  .address-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .address-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .address-label {
+      font-family: $font-nunito;
+      font-size: 20px;
+      font-weight: 600;
+      color: $neutral-black;
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    .address-text {
+      font-family: $font-nunito;
+      font-size: 20px;
+      font-weight: 600;
+      color: $neutral-black;
+      line-height: 1.3;
+      margin: 0;
+    }
+  }
+}
+
+// Order Info Section
+.order-info {
+  background: $neutral-white;
+  border-radius: 16px;
+  box-shadow: 0px 0px 2px 2px $border-color;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .order-info-item {
+    font-family: $font-nunito;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+
+    .info-label {
+      color: $text-opacity-70;
+    }
+
+    .info-value {
+      color: $neutral-black;
+    }
+  }
+}
+
+// Payment Accordion
+.payment-accordion {
+  background: $neutral-white;
+  border-radius: 16px;
+  box-shadow: 0px 0px 2px 2px $border-color;
+  overflow: hidden;
+
+  .accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .accordion-title {
+      font-family: $font-nunito;
+      font-size: 25px;
+      font-weight: 600;
+      color: $neutral-black;
+      line-height: 1.3;
+    }
+
+    svg {
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+  }
+
+  .accordion-content {
+    padding: 0 16px 16px;
+    font-family: $font-nunito;
+    font-size: 16px;
+    font-weight: 600;
+    color: $text-opacity-70;
+    line-height: 1.4;
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+// Item Summary
+.item-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .summary-title {
+    font-family: $font-nunito;
+    font-size: 20px;
+    font-weight: 600;
+    color: $neutral-black;
+    line-height: 1.3;
+    margin: 0;
+  }
+
+  .summary-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: $font-nunito;
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.3;
+
+      .summary-label {
+        color: $text-opacity-70;
+      }
+
+      .summary-value {
+        color: $neutral-black;
+
+        &.free {
+          color: $success-green;
+        }
+      }
+
+      &.total {
+        .summary-label {
+          color: $text-opacity-70;
+          text-transform: uppercase;
+        }
+
+        .summary-value {
+          color: $neutral-black;
+          font-weight: 700;
+        }
+      }
+    }
+  }
+}
+
+// Action Buttons
+.action-buttons {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+
+  superme-button {
+    flex: 1;
+  }
+
+  .cancel-btn,
+  .share-btn,
+  .download-btn,
+  .return-btn {
+    width: 100%;
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .order-details-container {
+    padding: 24px 16px;
+  }
+
+  .order-details-header {
+    .header-left {
+      .header-title h1 {
+        font-size: 20px;
+      }
+    }
+
+    .header-right {
+      .help-link {
+        font-size: 16px;
+      }
+    }
+  }
+
+  .product-section {
+    flex-direction: column;
+
+    .product-image {
+      width: 100%;
+      height: auto;
+      max-height: 200px;
+    }
+  }
+
+  .order-summary-card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .order-details-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    .header-right {
+      align-self: flex-end;
+    }
+  }
+
+  .tracking-timeline {
+    padding: 8px 8px 10px;
+  }
+
+  .status-section .status-header {
+    font-size: 20px;
+  }
+
+  .timeline-content {
+    .status-title {
+      font-size: 16px;
+    }
+
+    .status-details {
+      font-size: 14px;
+    }
+  }
+}

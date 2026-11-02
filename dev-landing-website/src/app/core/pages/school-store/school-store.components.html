@@ -1,0 +1,84 @@
+<div class="school-store-page">
+    <app-public-navbar></app-public-navbar>
+
+    <main class="store-main">
+        <!-- Header -->
+        <div class="store-header">
+            <h1 class="store-title">Student Store</h1>
+            <div class="store-actions">
+                <button class="store-action-btn" (click)="onNavigatorAction({ action: { type: 'cart' } })" aria-label="Cart">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B656A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10C16 11.0609 15.5786 12.0783 14.8284 12.8284C14.0783 13.5786 13.0609 14 12 14C10.9391 14 9.92172 13.5786 9.17157 12.8284C8.42143 12.0783 8 11.0609 8 10"/>
+                    </svg>
+                    <span>Cart</span>
+                </button>
+                <button class="store-action-btn" (click)="onNavigatorAction({ action: { type: 'package' } })" aria-label="My Orders">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B656A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8C20.9996 7.6493 20.9071 7.30483 20.7315 7.00017C20.556 6.69552 20.3037 6.44117 20 6.26L13 2.26C12.696 2.07877 12.3511 1.98328 12 1.98328C11.6489 1.98328 11.304 2.07877 11 2.26L4 6.26C3.69626 6.44117 3.44398 6.69552 3.26846 7.00017C3.09294 7.30483 3.00036 7.6493 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9998C3.44398 17.3045 3.69626 17.5588 4 17.74L11 21.74C11.304 21.9212 11.6489 22.0167 12 22.0167C12.3511 22.0167 12.696 21.9212 13 21.74L20 17.74C20.3037 17.5588 20.556 17.3045 20.7315 16.9998C20.9071 16.6952 20.9996 16.3507 21 16Z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    <span>My Orders</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="store-content">
+            <!-- Banner Carousel -->
+            <div class="banner-carousel">
+                <div class="carousel-track" [style.transform]="'translateX(-' + (currentSlide * 100) + '%)'">
+                    <div class="carousel-slide" *ngFor="let banner of banners" [style.background]="banner.bg">
+                        <div class="slide-content">
+                            <div class="slide-text">
+                                <h2 class="slide-title">{{ banner.title }}</h2>
+                                <p class="slide-subtitle">{{ banner.subtitle }}</p>
+                                <button class="slide-cta" (click)="onBannerCta(banner.action)">{{ banner.cta }}</button>
+                            </div>
+                            <div class="slide-images">
+                                <img *ngFor="let img of banner.images; let i = index"
+                                     [src]="img" alt=""
+                                     class="slide-product"
+                                     [class.slide-product-back]="i === 1" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-hit-left" (click)="prevSlide()" *ngIf="banners.length > 1"></div>
+                <div class="carousel-hit-right" (click)="nextSlide()" *ngIf="banners.length > 1"></div>
+                <div class="carousel-dots" *ngIf="banners.length > 1">
+                    <button *ngFor="let b of banners; let i = index" class="dot" [class.active]="currentSlide === i" (click)="goToSlide(i)"></button>
+                </div>
+            </div>
+
+            <app-ad-slider screen="STUDENT_STORE"></app-ad-slider>
+
+            <!-- Category Grid -->
+            <div class="cat-grid">
+                <div class="cat-card" *ngFor="let category of storeCategories" (click)="openInstituteDetailFillForCategory(category)">
+                    <div class="cat-img"><img [src]="category.imageUrl" [alt]="category.name" /></div>
+                    <span class="cat-name">{{ category.name }}</span>
+                </div>
+            </div>
+
+            <!-- Trust Strip -->
+            <div class="trust-strip">
+                <div class="trust-item">
+                    <img src="/assets/School-assets/School Partner.png" alt="" />
+                    <span>Official School Partner</span>
+                </div>
+                <div class="trust-item">
+                    <img src="/assets/School-assets/Easy Exchange.png" alt="" />
+                    <span>Easy Exchange</span>
+                </div>
+                <div class="trust-item">
+                    <img src="/assets/School-assets/Secure Payment.png" alt="" />
+                    <span>Secure Payment</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <app-footer></app-footer>
+</div>

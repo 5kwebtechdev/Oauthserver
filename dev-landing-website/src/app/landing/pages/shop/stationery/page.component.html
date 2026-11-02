@@ -1,0 +1,56 @@
+<app-public-navbar></app-public-navbar>
+<main class="storefront">
+  <section class="hero-card">
+    <div class="hero-copy">
+      <span class="eyebrow">✨ SuperMe Kids Store</span>
+      <h1>Stationery</h1>
+      <p>Pick colourful stationery, books and creative essentials for every little learner.</p>
+      <a routerLink="/find-a-stationery-shop" style="display:inline-block;color:#90214d;font-weight:700;text-decoration:underline;text-underline-offset:3px;margin-bottom:18px">Find nearby stationery shops</a>
+      <div class="hero-pills"><span>🛡️ Parent approved</span><span>🎒 School ready</span><span>🚚 Easy delivery</span></div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <span class="art-blob blob-one">✏️</span><span class="art-blob blob-two">📒</span><span class="art-blob blob-three">🎨</span><div class="mascot">🐼</div>
+    </div>
+  </section>
+
+  <section class="category-section" aria-labelledby="shop-category-title">
+    <div class="section-heading">
+      <div><span class="section-kicker">Choose your adventure</span><h2 id="shop-category-title">What are you looking for?</h2></div>
+      <span class="selection-summary">{{ selectedCategoryName }}</span>
+    </div>
+    <div class="category-grid" *ngIf="categories.length">
+      <button type="button" class="category-card" *ngFor="let category of categories" [class.active]="getCategoryId(category) === selectedCategoryId" (click)="selectCategory(category)">
+        <span class="category-icon">{{ getCategoryEmoji(getName(category)) }}</span><span>{{ getName(category) }}</span><small>{{ getCategoryId(category) === selectedCategoryId ? 'Exploring now' : 'Let’s explore' }}</small>
+      </button>
+    </div>
+    <div class="filter-block" *ngIf="levelOneSubCategories.length">
+      <span class="filter-label">Pick a collection</span>
+      <div class="chip-row"><button type="button" class="chip" *ngFor="let item of levelOneSubCategories" [class.active]="getName(item) === selectedSubCategory" (click)="selectSubCategory(item)">{{ getName(item) }}</button></div>
+    </div>
+    <div class="filter-block soft" *ngIf="levelTwoSubCategories.length">
+      <span class="filter-label">Make it more specific</span>
+      <div class="chip-row"><button type="button" class="chip secondary" *ngFor="let item of levelTwoSubCategories" [class.active]="getName(item) === selectedSubCategory1" (click)="selectSubCategory1(item)">{{ getName(item) }}</button></div>
+    </div>
+    <div class="filter-block soft lavender" *ngIf="levelThreeSubCategories.length">
+      <span class="filter-label">One last choice</span>
+      <div class="chip-row"><button type="button" class="chip tertiary" *ngFor="let item of levelThreeSubCategories" [class.active]="getName(item) === selectedSubCategory2" (click)="selectSubCategory2(item)">{{ getName(item) }}</button></div>
+    </div>
+  </section>
+
+  <section class="results-section" aria-live="polite">
+    <div class="results-heading">
+      <div><span class="section-kicker">Picked for curious minds</span><h2>{{ selectedSubCategory || selectedCategoryName }}</h2></div>
+      <span class="result-count" *ngIf="products.length">{{ products.length }} fun finds</span>
+    </div>
+    <div class="loading-state" *ngIf="loading"><span class="loader-pencil">✏️</span><h3>Gathering colourful goodies…</h3><p>Our panda is filling the shelf for you.</p></div>
+    <div class="friendly-state error" *ngIf="error && !loading"><span>🛠️</span><div><h3>Oops, the shelf needs a tiny fix</h3><p>{{ error }} Please try another collection.</p></div></div>
+    <div class="products-grid" *ngIf="!loading && products.length">
+      <article class="product-card" *ngFor="let product of products" (click)="openProduct(product)" tabindex="0" (keydown.enter)="openProduct(product)">
+        <div class="product-image-wrap"><img [src]="getProductImage(product)" [alt]="getProductName(product)" loading="lazy" /><span class="product-badge">{{ selectedCategoryName }}</span></div>
+        <div class="product-info"><h3>{{ getProductName(product) }}</h3><div class="price-row"><strong>{{ getProductPrice(product) }}</strong><del *ngIf="getProductMrp(product) && getProductMrp(product) !== getProductPrice(product)">{{ getProductMrp(product) }}</del></div><button type="button" class="view-button">See this item <span>→</span></button></div>
+      </article>
+    </div>
+    <div class="friendly-state" *ngIf="!loading && !error && !products.length"><span>🌈</span><div><h3>More colourful goodies are coming!</h3><p>Try another collection above while we fill this shelf with something amazing.</p></div></div>
+  </section>
+</main>
+<app-common-footer></app-common-footer>

@@ -1,0 +1,116 @@
+<div class="coin-pack-page">
+  <div class="coin-pack-content">
+    <div class="coin-pack-container">
+      <!-- Header with back button and title -->
+      <div class="header">
+        <button class="back-button" (click)="goBack()" aria-label="Go back">
+          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
+            <path d="M13.2929 27.2929C12.9024 27.6834 12.9024 28.3166 13.2929 28.7071L19.6569 35.0711C20.0474 35.4616 20.6805 35.4616 21.0711 35.0711C21.4616 34.6805 21.4616 34.0474 21.0711 33.6569L15.4142 28L21.0711 22.3431C21.4616 21.9526 21.4616 21.3195 21.0711 20.9289C20.6805 20.5384 20.0474 20.5384 19.6569 20.9289L13.2929 27.2929ZM42 29C42.5523 29 43 28.5523 43 28C43 27.4477 42.5523 27 42 27V28V29ZM14 28V29H42V28V27H14V28Z" fill="#282527"/>
+          </svg>
+        </button>
+        <h1 class="page-title">{{ showSummary ? 'Confirm your purchase' : 'Choose Coins Pack' }}</h1>
+      </div>
+
+      <!-- Pack Selection Content -->
+      <ng-container *ngIf="!showSummary">
+        <!-- Current balance section -->
+        <div class="coins-balance">
+          <p class="balance-label">Your current coins balance</p>
+          <div class="balance-display">
+            <img src="/assets/Icons-Neutral/Icons-Coins-Big.png" alt="coin" class="coin-icon" />
+            <span class="balance-amount">{{ currentBalance | number }}</span>
+          </div>
+        </div>
+
+        <!-- Coin packs -->
+        <div class="packs-container">
+          <div 
+            *ngFor="let pack of coinPacks" 
+            class="pack-card"
+            [class.selected]="pack.selected"
+            (click)="selectPack(pack)"
+          >
+            <div class="pack-content">
+              <div class="pack-header">
+                <div class="coin-stack">
+                  <img src="/assets/Icons-Neutral/Icons-Coins-Big.png" alt="coins" class="pack-coin-icon" />
+                </div>
+                <div class="selection-indicator">
+                  <svg *ngIf="pack.selected" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="16" fill="#4CAF50"/>
+                    <path d="M9 16L14 21L23 11" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <svg *ngIf="!pack.selected" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="15" stroke="#6B656A" stroke-width="2" fill="white"/>
+                  </svg>
+                </div>
+              </div>
+              <p class="pack-name">{{ pack.name }}</p>
+              <p class="pack-price">₹ {{ pack.price }}</p>
+              <p class="pack-coins">{{ pack.coins }} coins</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Select button -->
+        <button class="select-button" (click)="onSelect()" [disabled]="!selectedPack">
+          Select
+        </button>
+
+        <!-- Ways to use coins -->
+        <div class="info-card">
+          <h2 class="info-title">Ways to use my coins</h2>
+          <ol class="info-list">
+            <li>Assign your child for habits and tasks</li>
+            <li>Purchase items from our app</li>
+          </ol>
+        </div>
+      </ng-container>
+
+      <!-- Summary Content -->
+      <ng-container *ngIf="showSummary && selectedPack">
+        <!-- Summary section -->
+        <div class="summary-section">
+          <p class="summary-label">Summary</p>
+          <div class="summary-card">
+            <div class="summary-row">
+              <p class="summary-pack-name">{{ selectedPack.name }} Pack</p>
+              <div class="summary-coins">
+                <img src="/assets/Icons-Neutral/Icons-Coins-Big.png" alt="coin" class="summary-coin-icon" />
+                <span class="summary-coin-amount">{{ selectedPack.coins }}</span>
+              </div>
+            </div>
+            <div class="summary-row total-row">
+              <p class="summary-total-label">Total</p>
+              <p class="summary-total-price">₹ {{ selectedPack.price }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Important Information -->
+        <div class="important-info-card">
+          <div class="info-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="#282527" stroke-width="2"/>
+              <path d="M12 8V12" stroke="#282527" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="12" cy="16" r="1" fill="#282527"/>
+            </svg>
+            <p class="info-header-text">Important Information:</p>
+          </div>
+          <ol class="important-info-list">
+            <li>Coins will be instantly added to your account after payment</li>
+            <li>Non-Refundable</li>
+          </ol>
+        </div>
+
+        <!-- Proceed with payment button -->
+        <button class="payment-button" (click)="proceedWithPayment()">
+          Proceed with payment
+        </button>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

@@ -1,0 +1,54 @@
+<app-public-navbar></app-public-navbar>
+
+<main class="trophy-page container">
+    <!-- Trophy page header-->
+    <header class="trophy-header">
+      <div class="header-left">
+        <h1 class="header-title">{{ headerTitle }}</h1>
+        <p class="header-sub">{{ headerSubtitle }}</p>
+      </div>
+
+      <div class="header-right" role="region" aria-label="Trophies">
+        <img class="header-trophy-img" [src]="trophyImage" alt="trophy" />
+        <div class="header-count">{{ trophiesCount }}</div>
+      </div>
+    </header>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading trophies...</p>
+  </div>
+
+  <!-- Error / Empty State (reusable) -->
+  <superme-empty-state
+    *ngIf="!isLoading && errorMessage"
+    [title]="'No Trophies Yet!'"
+    [description]="'Your journey is just beginning. Earn some cool trophies and show them off here!'"
+    [image]="'/assets/Images-Transparent/Image-Trophies-Blank.png'"
+    [actionButtonText]="'Earn Trophies'"
+    (primaryActionClick)="earnTrophies()"
+  ></superme-empty-state>
+
+  <ng-container *ngIf="!isLoading && !errorMessage && totalTransactions > 0">
+    <section *ngFor="let month of months" class="month-block">
+    <h2 class="month">{{ month.title }}</h2>
+    <hr class="divider" />
+
+    <section class="transactions" role="list">
+      <trophy-transaction-card
+        *ngFor="let t of month.transactions"
+        [title]="t.title"
+        [difficulty]="t.difficulty"
+        [earnedOn]="t.earnedOn"
+        [avatar]="t.avatar"
+        [points]="t.points"
+        [contentType]="t.contentType"
+        [thumbnailUrl]="t.thumbnailUrl"
+      ></trophy-transaction-card>
+    </section>
+  </section>
+  </ng-container>
+</main>
+
+<app-footer></app-footer>

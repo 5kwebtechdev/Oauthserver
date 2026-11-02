@@ -1,0 +1,320 @@
+<!-- List Mode -->
+<div *ngIf="mode === 'list'" class="d-flex flex-column gap-4">
+  <div class="day-at-glance-container">
+    <superme-card-header title="Your Day at a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
+      <img src="/assets/Icons-Neutral/Icon-Time Management.png" alt="View All" class="day-at-glance__view-all"
+        (click)="openTimeline()" style="cursor:pointer;" *ngIf="!isEmpty" />
+    </superme-card-header>
+
+    <!-- Tab Navigation: show if there are items in any tab and not all completed -->
+    <div class="container w-full" *ngIf="(totalTasksLoaded > 0 || totalHabitsLoaded > 0) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
+      <div class="row toggler"
+        [ngClass]="{ 'habits-active': currentActive === 'habits', 'tasks-active': currentActive === 'tasks' }">
+        <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
+        <div class="col-4" (click)="switchTab('habits')" [ngClass]="currentActive === 'habits' ? 'active' : ''">Habits</div>
+        <div class="col-4" (click)="switchTab('tasks')" [ngClass]="currentActive === 'tasks' ? 'active' : ''">Tasks</div>
+      </div>
+    </div>
+
+    <!-- Empty States -->
+    <!-- Task-specific: all tasks completed -->
+    <superme-empty-state *ngIf="currentActive === 'tasks' && taskCompletionRate === 100 && totalHabitsLoaded > 0"
+      title="All tasks done!"
+      description="Your tasks can be reviewed in the main habits screen. You can even mark them done from there.">
+    </superme-empty-state>
+
+    <!-- Task-specific: no tasks at all -->
+    <superme-empty-state *ngIf="currentActive === 'tasks' && totalTasksLoaded === 0 && habitCompletionRate < 100"
+      title="No tasks lined up for today"
+      description="No tasks are scheduled for today. Add one to start building your streak and earn coins.">
+    </superme-empty-state>
+
+    <!-- Task-specific: tasks existed but all cards hidden -->
+    <superme-empty-state *ngIf="currentActive === 'tasks' && !hasTasks && totalTasksLoaded > 0 && taskCompletionRate < 100"
+      title="Check pending items"
+      description="Some activities missed their schedule. You can find them in the Pending where you can mark them done.">
+    </superme-empty-state>
+
+    <!-- Habit-specific: all habits completed -->
+    <superme-empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalTasksLoaded > 0"
+      title="All habits done!"
+      description="Your habits can be reviewed in the main habits screen. You can even mark them done from there.">
+    </superme-empty-state>
+
+    <!-- Habit-specific: no habits at all -->
+    <superme-empty-state *ngIf="currentActive === 'habits' && totalHabitsLoaded === 0 && taskCompletionRate < 100"
+      title="No habit lined up for today"
+      description="No habits are scheduled for today. Add one to start building your streak and earn coins.">
+    </superme-empty-state>
+
+    <!-- Habit-specific: habits existed but all cards hidden -->
+    <superme-empty-state *ngIf="currentActive === 'habits' && !hasActivities && totalHabitsLoaded > 0 && habitCompletionRate < 100"
+      title="Check pending items"
+      description="Some activities missed their schedule. You can find them in the Pending where you can mark them done.">
+    </superme-empty-state>
+
+    <!-- Pending state for All tab -->
+    <superme-empty-state *ngIf="currentActive === 'all' && isEmpty && (totalHabitsLoaded > 0 || totalTasksLoaded > 0) && !(taskCompletionRate === 100 && habitCompletionRate === 100) && !(totalTasksLoaded === 0 && habitCompletionRate === 100) && !(totalHabitsLoaded === 0 && taskCompletionRate === 100) && !(totalHabitsLoaded === 0 && totalTasksLoaded === 0)"
+      title="Check pending items"
+      description="Some activities missed their schedule. You can find them in the Pending where you can mark them done.">
+    </superme-empty-state>
+
+    <!-- Generic blank empty state -->
+    <superme-empty-state *ngIf="isEmpty && totalHabitsLoaded === 0 && totalTasksLoaded === 0"
+      [image]="'/assets/Images-Transparent/Image-Home-Blank.png'"
+      title="Your day's a blank slate!"
+      description="Add habits and tasks to earn coins and level up your day. Don't miss out!">
+    </superme-empty-state>
+
+    <!-- Completed State: both done -->
+    <superme-empty-state *ngIf="taskCompletionRate === 100 && habitCompletionRate === 100 && totalHabitsLoaded > 0 && totalTasksLoaded > 0"
+      [image]="'/assets/Images-Transparent/Image-Home-Completed.png'"
+      title="Great progress today!"
+      description="Your tasks and habits can be reviewed in the main tasks and habits screen. You can even mark them done from there.">
+    </superme-empty-state>
+
+    <!-- Completed State: only habits exist with 100% completion -->
+    <superme-empty-state *ngIf="totalTasksLoaded === 0 && habitCompletionRate === 100 && totalHabitsLoaded > 0"
+      [image]="'/assets/Images-Transparent/Image-Home-Completed.png'"
+      title="Great progress today!"
+      description="Your tasks and habits can be reviewed in the main tasks and habits screen. You can even mark them done from there.">
+    </superme-empty-state>
+
+    <!-- Completed State: only tasks exist with 100% completion -->
+    <superme-empty-state *ngIf="totalHabitsLoaded === 0 && taskCompletionRate === 100 && totalTasksLoaded > 0"
+      [image]="'/assets/Images-Transparent/Image-Home-Completed.png'"
+      title="Great progress today!"
+      description="Your tasks and habits can be reviewed in the main tasks and habits screen. You can even mark them done from there.">
+    </superme-empty-state>
+  </div>
+
+  <!-- Habit Items (when habits tab is active) -->
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
+    *ngIf="currentActive === 'habits' && hasActivities">
+    <activity-card *ngFor="let activityItem of activities.slice(0, maxItemsToShow)" [activity]="activityItem"
+      [startTime]="activityItem.startTimeStamp" [endTime]="activityItem.endTimeStamp"
+      [inProgress]="isActivityInProgress(activityItem)" [isCurrentDateView]="isCurrentDateView" mode="single"></activity-card>
+  </div>
+
+  <!-- Task Items (when tasks tab is active) -->
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
+    *ngIf="currentActive === 'tasks' && hasTasks">
+    <activity-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [activity]="taskItem"
+      [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
+      [isCurrentDateView]="isCurrentDateView" mode="single"></activity-card>
+  </div>
+
+  <!-- Combined Items (when all tab is active - sorted by closest start time) -->
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
+    *ngIf="currentActive === 'all' && (hasActivities || hasTasks)">
+    <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [activity]="item"
+      [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
+      [inProgress]="item.type === 'tasks' ? false : isActivityInProgress(item)" [isCurrentDateView]="isCurrentDateView" mode="single"></activity-card>
+  </div>
+
+  <!-- CTA Buttons -->
+  <div class="add-button-container empty-add-btn" *ngIf="isEmpty && totalHabitsLoaded === 0 && totalTasksLoaded === 0">
+    <superme-button type="magenta" large style="display:block; width:100%" text="Add New" (clickEvent)="openActivityInput()"></superme-button>
+  </div>
+  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty || (totalHabitsLoaded > 0 || totalTasksLoaded > 0)">
+    <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">View All</button>
+    <superme-view-all [text]="'Add New +'" (clicked)="openActivityInput()" [hideIcon]="true"></superme-view-all>
+  </div>
+</div>
+
+<!-- Recent Mode -->
+<div *ngIf="mode === 'recent'" class="d-flex flex-column gap-4">
+  <div class="day-at-glance-container">
+    <superme-card-header title="Your Day at a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
+      <img src="/assets/Icons-Neutral/Icon-Time Management.png" alt="View All" class="day-at-glance__view-all"
+        (click)="openTimeline()" style="cursor:pointer;" *ngIf="!isEmpty" />
+    </superme-card-header>
+
+    <!-- Tab Navigation -->
+    <div class="container w-full" *ngIf="(totalTasksLoaded > 0 || totalHabitsLoaded > 0) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
+      <div class="row toggler"
+        [ngClass]="{ 'habits-active': currentActive === 'habits', 'tasks-active': currentActive === 'tasks' }">
+        <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
+        <div class="col-4" (click)="switchTab('habits')" [ngClass]="currentActive === 'habits' ? 'active' : ''">Habits</div>
+        <div class="col-4" (click)="switchTab('tasks')" [ngClass]="currentActive === 'tasks' ? 'active' : ''">Tasks</div>
+      </div>
+    </div>
+
+    <!-- Empty States (same granular logic as list mode) -->
+    <superme-empty-state *ngIf="currentActive === 'tasks' && taskCompletionRate === 100 && totalHabitsLoaded > 0"
+      title="All tasks done!" description="Your tasks can be reviewed in the main habits screen. You can even mark them done from there.">
+    </superme-empty-state>
+    <superme-empty-state *ngIf="currentActive === 'tasks' && totalTasksLoaded === 0 && habitCompletionRate < 100"
+      title="No tasks lined up for today" description="No tasks are scheduled for today. Add one to start building your streak and earn coins.">
+    </superme-empty-state>
+    <superme-empty-state *ngIf="currentActive === 'tasks' && !hasTasks && totalTasksLoaded > 0 && taskCompletionRate < 100"
+      title="Check pending items" description="Some activities missed their schedule. You can find them in the Pending where you can mark them done.">
+    </superme-empty-state>
+    <superme-empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalTasksLoaded > 0"
+      title="All habits done!" description="Your habits can be reviewed in the main habits screen. You can even mark them done from there.">
+    </superme-empty-state>
+    <superme-empty-state *ngIf="currentActive === 'habits' && totalHabitsLoaded === 0 && taskCompletionRate < 100"
+      title="No habit lined up for today" description="No habits are scheduled for today. Add one to start building your streak and earn coins.">
+    </superme-empty-state>
+    <superme-empty-state *ngIf="currentActive === 'habits' && !hasActivities && totalHabitsLoaded > 0 && habitCompletionRate < 100"
+      title="Check pending items" description="Some activities missed their schedule. You can find them in the Pending where you can mark them done.">
+    </superme-empty-state>
+    <superme-empty-state *ngIf="currentActive === 'all' && isEmpty && (totalHabitsLoaded > 0 || totalTasksLoaded > 0) && !(taskCompletionRate === 100 && habitCompletionRate === 100) && !(totalTasksLoaded === 0 && habitCompletionRate === 100) && !(totalHabitsLoaded === 0 && taskCompletionRate === 100) && !(totalHabitsLoaded === 0 && totalTasksLoaded === 0)"
+      title="Check pending items" description="Some activities missed their schedule. You can find them in the Pending where you can mark them done.">
+    </superme-empty-state>
+    <superme-empty-state *ngIf="isEmpty && totalHabitsLoaded === 0 && totalTasksLoaded === 0"
+      [image]="'/assets/Images-Transparent/Image-Home-Blank.png'"
+      title="Your day's a blank slate!" description="Add habits and tasks to earn coins and level up your day. Don't miss out!">
+    </superme-empty-state>
+    <superme-empty-state *ngIf="(taskCompletionRate === 100 && habitCompletionRate === 100 && totalHabitsLoaded > 0 && totalTasksLoaded > 0) || (totalTasksLoaded === 0 && habitCompletionRate === 100 && totalHabitsLoaded > 0) || (totalHabitsLoaded === 0 && taskCompletionRate === 100 && totalTasksLoaded > 0)"
+      [image]="'/assets/Images-Transparent/Image-Home-Completed.png'"
+      title="Great progress today!" description="Your tasks and habits can be reviewed in the main tasks and habits screen. You can even mark them done from there.">
+    </superme-empty-state>
+  </div>
+
+  <!-- Recent Habit Items -->
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
+    *ngIf="currentActive === 'habits' && hasActivities">
+    <activity-card *ngFor="let activityItem of filteredRecentActivities" [activity]="activityItem"
+      [startTime]="activityItem.startTimeStamp" [endTime]="activityItem.endTimeStamp"
+      [inProgress]="isActivityInProgress(activityItem)" [isCurrentDateView]="isCurrentDateView" mode="single"></activity-card>
+  </div>
+
+  <!-- Recent Task Items -->
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
+    *ngIf="currentActive === 'tasks' && hasTasks">
+    <activity-card *ngFor="let taskItem of filteredRecentTasks" [activity]="taskItem"
+      [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
+      [isCurrentDateView]="isCurrentDateView" mode="single"></activity-card>
+  </div>
+
+  <!-- Recent Combined Items -->
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
+    *ngIf="currentActive === 'all' && (hasActivities || hasTasks)">
+    <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [activity]="item"
+      [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
+      [inProgress]="item.type === 'tasks' ? false : isActivityInProgress(item)" [isCurrentDateView]="isCurrentDateView" mode="single"></activity-card>
+  </div>
+
+  <!-- CTA Buttons -->
+  <div class="add-button-container empty-add-btn d-flex gap-2" *ngIf="isEmpty && totalHabitsLoaded === 0 && totalTasksLoaded === 0">
+    <superme-button type="magenta-transparent" medium style="display:block; width:100%" text="View all" (clickEvent)="openTimeline()"></superme-button>
+    <superme-button type="magenta" medium style="display:block; width:100%" text="Add New" (clickEvent)="openActivityInput()"></superme-button>
+  </div>
+  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty || (totalHabitsLoaded > 0 || totalTasksLoaded > 0)">
+    <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">View All</button>
+    <superme-view-all [text]="'Add New +'" (clicked)="openActivityInput()" [hideIcon]="true"></superme-view-all>
+  </div>
+</div>
+
+<!-- Single Card Mode -->
+<div *ngIf="mode === 'single'" class="container w-full h-full p-0">
+  <div class="activity-wrapper"
+    [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate, 'missedTime': missedTime, 'task': activity?.type === 'tasks'}"
+    (mouseenter)="expanded = true" (mouseleave)="expanded = false" (focus)="expanded = true" (blur)="expanded = false"
+    tabindex="0">
+    <div class="activity-header-container clickable" (click)="onCardClick()" (keydown.enter)="openDetail()"
+      (keydown.space)="openDetail(); $event.preventDefault()" role="button" [attr.aria-pressed]="expanded">
+      <div class="container w-full p-0">
+        <div class="d-flex justify-content-between">
+          <h3 class="activity-title" [style.color]="getTitleColor(activity)">{{activity?.title || 'activity'}}</h3>
+          <div class="d-flex gap-1 align-items-center flex-wrap">
+            <ng-container *ngIf="hasTags(); else routineBadge">
+              <div class="badge" *ngFor="let tag of getActivityTags()">{{ tag }}</div>
+            </ng-container>
+            <ng-template #routineBadge>
+              <img *ngIf="hasRoutine()" class="routine-icon" [src]="getRoutineIcon()" alt="" height="24" width="24">
+              <div class="badge">{{ getTagOrRoutine() }}</div>
+            </ng-template>
+          </div>
+        </div>
+        <div class="activity-timing-container d-flex align-items-center">
+          <h4 [ngClass]="(activity?.type === 'tasks' ? 'task-timing' : 'activity-timing') + ' ' + (activity?.status?.toLowerCase() || 'pending')"
+              [style.color]="getTimeColor(activity)">
+            {{ formatTimeString(activity?.startTime) || getFormattedTime(startTime) }} - {{ formatTimeString(activity?.endTime) || getFormattedTime(endTime) }}
+            <!-- Inline SVG timer icon with dynamic fill color based on type -->
+            <span *ngIf="(activity?.status?.toLowerCase() === 'ongoing' || showLocalTimer) && !isParent" class="timer-icon-svg" (click)="openTimer(); $event.stopPropagation()" style="cursor:pointer;display:inline-flex;align-items:center;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.879 103.461" width="20" height="20" [attr.fill]="(activity?.type === 'tasks') ? '#F6AC72' : '#8B8DCB'">
+                <g>
+                  <path d="M85.275,18.308c9.75,1.166,18.492,5.614,25.09,12.21c7.732,7.732,12.514,18.415,12.514,30.212 c0,11.799-4.781,22.482-12.514,30.215s-18.416,12.516-30.215,12.516s-22.48-4.783-30.213-12.516S37.422,72.529,37.422,60.73 c0-11.798,4.783-22.48,12.515-30.212c7.083-7.083,16.643-11.691,27.266-12.415v-7.167c0-0.109,0.006-0.216,0.014-0.323h-8.004 c-1.313,0-2.385-1.074-2.385-2.386V2.386C66.828,1.074,67.9,0,69.213,0h24.053c1.313,0,2.387,1.074,2.387,2.386v5.841 c0,1.313-1.074,2.386-2.387,2.386h-8.004c0.01,0.106,0.014,0.214,0.014,0.323V18.308L85.275,18.308z M83.582,54.348 c2.271,1.223,3.814,3.623,3.814,6.383c0,4.002-3.244,7.248-7.246,7.248s-7.246-3.246-7.246-7.248c0-2.76,1.545-5.16,3.816-6.383 V37.744c0-1.895,1.535-3.431,3.43-3.431s3.432,1.536,3.432,3.431V54.348L83.582,54.348z M10.527,84.598 c-1.895,0-3.431-1.537-3.431-3.432s1.536-3.43,3.431-3.43h19.378c1.895,0,3.43,1.535,3.43,3.43s-1.536,3.432-3.43,3.432H10.527 L10.527,84.598z M3.43,64.424c-1.895,0-3.43-1.535-3.43-3.43s1.536-3.432,3.43-3.432h22.447c1.894,0,3.43,1.537,3.43,3.432 s-1.536,3.43-3.43,3.43H3.43L3.43,64.424z M10.354,44.774c-1.895,0-3.43-1.536-3.43-3.43s1.536-3.431,3.43-3.431h19.229 c1.895,0,3.431,1.536,3.431,3.431s-1.536,3.43-3.431,3.43H10.354L10.354,44.774z M118.527,31.215 c1.658-3.958,1.461-8.104-0.912-10.882c-2.848-3.333-7.996-3.715-12.777-1.37C109.902,22.436,114.5,26.476,118.527,31.215 L118.527,31.215z M41.775,31.215c-1.659-3.958-1.462-8.104,0.911-10.882c2.848-3.333,7.996-3.715,12.777-1.37 C50.4,22.436,45.801,26.476,41.775,31.215L41.775,31.215z M105.514,35.369c-6.49-6.491-15.457-10.505-25.363-10.505 c-9.904,0-18.872,4.015-25.362,10.505c-6.491,6.49-10.505,15.458-10.505,25.362c0,9.906,4.015,18.873,10.505,25.363 S70.246,96.6,80.15,96.6c9.906,0,18.873-4.016,25.363-10.506S116.02,70.637,116.02,60.73 C116.02,50.826,112.004,41.859,105.514,35.369L105.514,35.369z"/>
+                </g>
+              </svg>
+              <div *ngIf="showStartBubble" class="bubble" [ngClass]="activity?.type === 'tasks' ? 'task-bubble' : ''" [ngStyle]="activity?.type === 'tasks' ? {'background-color':'#F6AC72', 'border-color':'#F6AC72'} : null">Start focus timer</div>
+            </span>
+          </h4>
+        </div>
+      </div>
+    </div>
+    <!-- Expandable content wrapper with animation -->
+    <div class="activity-expandable-content" [ngClass]="{'expanded': expanded}">
+      <div class="activity-footer-progress-box" *ngIf="getStatus() === 'ongoing'">
+        <div class="activity-footer-progress" #percentageWrapper [style.width.%]="percentageCompleted"></div>
+      </div>
+      <div class="activity-footer-container">
+        <div class="container w-full justify-content-between d-flex p-0 align-items-center">
+          <div class="d-flex reward-section" *ngIf="activity?.type !== 'timetable'">
+            <div class="reward-item">
+              <img src="assets/Icons-Neutral/Icon-Streak.png" alt="Streak" class="reward-icon">
+              <span class="reward-value">{{getStreak()}}</span>
+            </div>
+            <div class="reward-item">
+              <img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins" class="reward-icon">
+              <span class="reward-value">{{getCoinReward()}}</span>
+            </div>
+          </div>
+
+          <div class="d-flex footer-cta" *ngIf="getStatus() !== 'completed' && !isParent && activity?.type !== 'timetable'">
+            <!-- Let's Go Button: only when not ongoing and viewing current date -->
+            <ng-container *ngIf="getStatus() !== 'ongoing' && isCurrentDateView">
+              <div class="activity-btn">
+                <superme-button
+                  [type]="activity?.type === 'tasks' ? 'orange' : 'lavendar'"
+                  small
+                  text="Let's Go"
+                  (clickEvent)="openStartPopup()"
+                  [disabled]="!isLetsGoEnabled()">
+                </superme-button>
+              </div>
+            </ng-container>
+
+            <!-- Abort Button: only when ongoing -->
+            <ng-container *ngIf="getStatus() === 'ongoing'">
+              <div class="activity-btn" *ngIf="!isParent && isCurrentDateView">
+                <superme-button
+                  [type]="activity?.type === 'tasks' ? 'orange-transparent' : 'lavendar-transparent'"
+                  small
+                  text="Abort"
+                  (clickEvent)="openAbortPopup()">
+                </superme-button>
+              </div>
+            </ng-container>
+
+            <!-- Done Button: visible/disabled per rules, hidden when not viewing current date -->
+            <div class="activity-btn" *ngIf="isDoneVisible() && !isParent && isCurrentDateView">
+              <superme-button
+                type="green"
+                small
+                text="Done?"
+                (clickEvent)="openCompletePopup()"
+                [disabled]="!isDoneEnabled()">
+              </superme-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Popups -->
+<app-superme-popup [config]="startPopupConfig" [isVisible]="showStartPopup"
+  (primaryAction)="handleStartConfirm()" (secondaryAction)="handleStartDiscard()"
+  (closeAction)="closeStartPopup()" (backdropClick)="closeStartPopup()"></app-superme-popup>
+
+<app-superme-popup [config]="completePopupConfig" [isVisible]="showCompletePopup"
+  (primaryAction)="handleCompleteConfirm()" (secondaryAction)="handleCompleteDiscard()"
+  (closeAction)="closeCompletePopup()" (backdropClick)="closeCompletePopup()"></app-superme-popup>
+
+<app-superme-popup [config]="abortPopupConfig" [isVisible]="showAbortPopup"
+  (primaryAction)="handleAbortKeepGoing()" (secondaryAction)="handleAbortConfirm()"
+  (closeAction)="closeAbortPopup()" (backdropClick)="closeAbortPopup()"></app-superme-popup>

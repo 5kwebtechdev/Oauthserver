@@ -1,0 +1,196 @@
+      $app-footer-bg: #fce7eb; // soft pink
+$app-accent: #9b2140; // deep rose for CTA and accents
+$app-text: #282527;
+$app-heading: #282527;
+
+.app-footer {
+  background: $app-footer-bg;
+  width: 100%;
+  color: $app-text;
+  padding: 30px 42px 32px 42px;
+}
+
+.footer-inner {
+  display: flex;
+  gap: 16px; // reduced gap to avoid pushing content off-screen
+  align-items: flex-start;
+  justify-content: flex-start;
+  position: relative;
+  flex-wrap: wrap; // allow columns to wrap on narrower viewports
+}
+
+.footer-left {
+  /* allow the left column to shrink on smaller viewports while keeping a max width */
+  flex: 0 1 476px;
+  max-width: 476px;
+  width: 100%;
+
+  .brand {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .subscribe {
+    margin-top: 112px;
+    margin-left: 68px;
+
+    app-email-subscribe {
+      display: block;
+      width: 408px;
+      margin-bottom: 42px;
+    }
+
+    .follow-title {
+      margin-top: 0;
+      font-family: 'Nunito';
+      font-size: 20px;
+      line-height: 28px;
+      letter-spacing: 2px;
+      font-weight: 600;
+      color: $app-text;
+      opacity: 0.7;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      width: 192px;
+    }
+
+    .socials {
+      margin-top: 0;
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      width: 192px;
+    }
+  }
+}
+
+.footer-links {
+  display: flex;
+  gap: 104px;
+  align-content: center;
+  margin-left: auto;
+
+  .link-group {
+    width: 136px;
+    min-width: 120px;
+
+    .group-heading {
+      font-family: 'Nunito';
+      font-size: 20px;
+      line-height: 28px;
+      width: 168px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: $app-text;
+      opacity: 0.7;
+      margin: 0 0 4px;
+      padding: 0;
+      border: none;
+
+      &::after {
+        content: '';
+        display: block;
+        width: 91px;
+        height: 2px;
+        background: $app-text;
+        opacity: 0.7;
+        margin-top: 4px;
+      }
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0 0 0;
+      width: 101px;
+
+      li {
+        margin: 0 0 18px 0;
+        line-height: 22.4px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        a {
+          font-family: 'Nunito';
+          font-size: 16px;
+          font-weight: 600;
+          line-height: 22.4px;
+          color: $app-text;
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  }
+}
+
+.footer-bottom {
+  margin-top: 29px;
+  text-align: center;
+  padding-top: 0;
+
+  p {
+    font-family: 'Nunito';
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+    color: $app-text;
+    opacity: 0.7;
+    margin: 0;
+    /* let the bottom text size itself and stay centered */
+    width: auto;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 1200px) {
+  .app-footer {
+    .footer-inner {
+      gap: 100px;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .app-footer {
+    padding: 32px 24px;
+
+    .footer-inner {
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .footer-left {
+      flex: 1 1 auto;
+      width: 100%;
+
+      .subscribe {
+        margin-left: 0;
+      }
+    }
+
+    .footer-links {
+      width: 100%;
+      justify-content: space-between;
+      gap: 40px;
+    }
+  }
+}
+
+// small screen tweaks
+@media (max-width: 480px) {
+  .app-footer {
+    .footer-links {
+      flex-direction: column;
+      gap: 32px;
+    }
+  }
+}

@@ -1,0 +1,436 @@
+.family-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 20px;
+  background: #FDEAD7;
+  margin: 0 auto;
+  width: 100%;
+  align-items: center;
+  font-family: var(--font-sans);
+}
+
+.navigator-container {
+  width: 100%;
+}
+
+.family-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  .back-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #772817;
+    cursor: pointer;
+    padding: 8px;
+
+    &:hover {
+      opacity: 0.85;
+    }
+  }
+
+  .header-text {
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: #772817;
+    }
+
+    .subtext {
+      font-size: 14px;
+      color: #772817;
+      margin-top: 6px;
+    }
+  }
+}
+
+.step-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #772817;
+  margin-bottom: 20px;
+  width: 100%;
+
+  span {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: #772817;
+    margin-top: 4px;
+  }
+
+  .step-completion-slider {
+    height: 4px;
+    background: rgba(238, 102, 33, 0.2);
+    border-radius: 2px;
+    margin-top: 8px;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: #772817;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    &.one::before { width: 25%; }
+    &.two::before { width: 50%; }
+    &.three::before { width: 75%; }
+    &.four::before { width: 100%; }
+  }
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #772817;
+  margin: 0 0 24px 0;
+}
+
+// Instructions List
+.instructions-list {
+  margin-bottom: 30px;
+
+  .instruction-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .instruction-number {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF6B00, #FF8533);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .instruction-text {
+      flex: 1;
+      margin: 0;
+      line-height: 1.5;
+      color: #772817;
+      font-size: 1rem;
+      padding-top: 8px;
+    }
+  }
+}
+
+// FAQ Section
+.facts{
+  margin-top: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+// Form Styles
+.family-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input-group {
+  margin-bottom: 8px;
+
+  input {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    font-family: 'Nunito';
+    color: #772817;
+    font-weight: 500;
+    background: #FAD2AE;
+    border: 2px solid #FAD2AE;
+    transition: 0.2s;
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: #772817;
+      opacity: 0.6;
+    }
+
+    &:focus {
+      outline: none;
+      border: 2px solid #ff823b;
+    }
+
+    &.error {
+      border-color: #BB2124;
+    }
+  }
+
+  .note-text {
+    font-size: 12px;
+    color: #999;
+    margin: 8px 0 0 0;
+  }
+
+  .error {
+    color: #f44336;
+    font-size: 12px;
+    margin-top: 6px;
+  }
+}
+
+.primary-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(90deg, #EE6621, #FF8533);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    opacity: 0.9;
+  }
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 14px;
+  text-align: center;
+  margin: 10px 0;
+}
+
+// Mode Selection (Parent view)
+.mode-selection {
+  margin: 24px 0;
+
+  .toggle-buttons {
+    display: flex;
+    background: #FAD2AE;
+    border-radius: 40px;
+    padding: 4px;
+
+    button {
+      flex: 1;
+      padding: 14px 16px;
+      border: none;
+      background: transparent;
+      border-radius: 36px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #772817;
+      text-align: center;
+      font-family: Nunito;
+      font-size: 1.5625rem;
+      font-weight: 600;
+
+      &.active {
+        background: linear-gradient(90deg, #FF6B00, #FF8533);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(255, 107, 0, 0.3);
+      }
+
+      &:not(.active):hover {
+        background: rgba(255, 107, 0, 0.1);
+      }
+    }
+  }
+}
+
+// Family Section
+.family-section {
+  margin: 20px 0;
+
+  .section-label {
+    font-size: 13px;
+    color: #FF6B00;
+    margin: 0 0 12px 0;
+    text-align: right;
+  }
+}
+
+/* Ensure parent create/join sections use the same width and stretch */
+.family-join-create {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  /* Constrain to a readable max width so both modes match visually */
+  max-width: 520px;
+}
+
+.family-section,
+.family-form {
+  width: 100%;
+}
+
+.family-form {
+  align-self: stretch;
+}
+
+// Success Section
+.success-section {
+  margin: 20px 0;
+
+  .success-content {
+    text-align: center;
+  }
+
+  .success-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #4CAF50;
+    margin: 0 0 24px 0;
+  }
+
+  .family-code-display {
+    margin-bottom: 24px;
+
+    .code-label {
+      font-size: 14px;
+      color: #666;
+      margin: 0 0 8px 0;
+    }
+
+    .code-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+
+      .code-text {
+        font-size: 28px;
+        font-weight: 700;
+        color: #333;
+        letter-spacing: 2px;
+      }
+
+      .copy-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        color: #FF6B00;
+        font-size: 18px;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+          opacity: 0.7;
+        }
+      }
+    }
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    margin: 24px 0;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e0e0e0;
+    }
+
+    span {
+      padding: 0 16px;
+      color: #999;
+      font-size: 14px;
+    }
+  }
+
+  .qr-section {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .qr-label {
+      font-size: 14px;
+      color: #666;
+      margin: 0 0 16px 0;
+    }
+
+    .qr-container {
+  
+
+      qrcode {
+        display: block;
+
+        canvas {
+          max-width: 100%;
+          height: auto;
+        }
+      }
+    }
+
+    .share-btn {
+      display: flex;
+      padding: 1rem;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      border-radius: 2rem;
+      background: #FAD2AE;
+      box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+      border: none;
+      color: #772817;
+font-family: Nunito;
+font-size: 1.25rem;
+font-weight: 500;
+   
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 480px) {
+  .family-container {
+    padding: 16px;
+  }
+
+  .instructions-list .instruction-item {
+    gap: 12px;
+
+    .instruction-number {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+    }
+
+    .instruction-text {
+      font-size: 14px;
+      padding-top: 4px;
+    }
+  }
+
+  .success-section .success-content {
+    .code-text {
+      font-size: 24px;
+    }
+  }
+}

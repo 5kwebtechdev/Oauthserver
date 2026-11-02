@@ -1,0 +1,367 @@
+.company-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.company-page {
+  flex: 1;
+  width: 100%;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  height: 804px;
+  background: #fce7eb;
+  overflow: hidden;
+  margin-top: 0;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/assets/Landing/Images-Thumbnails/Image-About-Background.jpg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3;
+  }
+
+  .hero-content {
+    position: absolute;
+    top: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    max-width: 681px;
+    z-index: 2;
+
+    h1 {
+      font-family: 'Nunito';
+      font-weight: 600;
+      font-size: 40px;
+      line-height: 56px;
+      letter-spacing: -2px;
+      color: #90214d;
+      margin: 0 0 24px;
+    }
+
+    .hero-description {
+      font-family: 'Nunito';
+      font-weight: 400;
+      font-size: 25px;
+      line-height: 35px;
+      color: #282527;
+      opacity: 0.7;
+      max-width: 872px;
+      margin: 0 auto;
+    }
+  }
+
+  .hero-image {
+    position: absolute;
+    top: 260px;
+    left: 50%;
+    transform: translateX(calc(-50% + 47px));
+    width: 1338px;
+    flex-shrink: 0;
+aspect-ratio: 3/2;
+
+    img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+    }
+  }
+}
+
+/* About Section */
+.about-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 208px;
+  padding: 96px 48px;
+  max-width: 1512px;
+  margin: 0 auto;
+
+  .about-text {
+    flex: 0 0 764px;
+
+    .section-title {
+      margin-bottom: 44px;
+
+      h2 {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 40px;
+        line-height: 56px;
+        letter-spacing: -2px;
+        color: #282527;
+        margin: 0 0 8px;
+      }
+
+      .title-underline {
+        width: 258px;
+        height: 4px;
+        background: linear-gradient(90deg, #90214d 0%, #ea7cb5 100%);
+        border-radius: 2px;
+      }
+    }
+
+    .about-description {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 500;
+      font-size: 25px;
+      line-height: 35px;
+      color: #282527;
+      opacity: 0.7;
+      margin: 0;
+    }
+  }
+
+  .about-image {
+    flex: 0 0 330px;
+    height: 368px;
+    border-radius: 56px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+/* Blogs Section */
+.blogs-section {
+  padding: 64px 48px;
+  margin: 0 auto;
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 64px;
+
+    h2 {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 40px;
+      line-height: 56px;
+      letter-spacing: -2px;
+      color: #282527;
+      margin: 0 0 12px;
+    }
+
+    .section-subtitle {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 400;
+      font-size: 25px;
+      line-height: 35px;
+      color: #282527;
+      opacity: 0.7;
+      max-width: 658px;
+      margin: 0 auto;
+    }
+  }
+
+  .blogs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-bottom: 64px;
+  }
+
+  .blog-card {
+    background: #ffffff;
+    border-radius: 56px;
+    overflow: hidden;
+    box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0px 4px 12px 4px rgba(107, 101, 106, 0.15);
+    }
+
+    .blog-image {
+      width: 100%;
+      height: 264px;
+      border-radius: 56px;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .blog-content {
+      padding: 24px;
+
+      .blog-label {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #fcf3f6;
+        border: 0.771px solid #e1527c;
+        border-radius: 56px;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 16px;
+        color: #942038;
+        margin-bottom: 16px;
+      }
+
+      .blog-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 28px;
+        letter-spacing: -1px;
+        color: #282527;
+        margin: 0 0 8px;
+      }
+
+      .blog-description {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22.4px;
+        color: #282527;
+        opacity: 0.7;
+        margin: 0 0 32px;
+      }
+
+      .blog-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .read-time {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+
+          svg {
+            width: 24px;
+            height: 24px;
+          }
+
+          span {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 500;
+            font-size: 16px;
+            color: #282527;
+            opacity: 0.7;
+          }
+        }
+
+        .read-more {
+          font-family: 'Nunito', sans-serif;
+          font-weight: 500;
+          font-size: 20px;
+          color: #90214d;
+        }
+      }
+    }
+  }
+
+  .explore-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 16px 88px;
+    height: 56px;
+    background: linear-gradient(180deg, #c42e65 0%, #90214d 100%);
+    border: 1px solid #4a0d25;
+    border-radius: 8px;
+    box-shadow: inset 0px -2px 2px 0px #ea7cb5;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 22.4px;
+    color: #fffeff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(180deg, #d63570 0%, #a02556 100%);
+      transform: translateY(-2px);
+      box-shadow: inset 0px -2px 2px 0px #ea7cb5, 0px 4px 8px rgba(144, 33, 77, 0.2);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+  .about-section {
+    gap: 100px;
+    padding: 64px 32px;
+  }
+
+  .hero-section .hero-image {
+    width: 1100px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .blogs-section .blogs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .about-section {
+    flex-direction: column;
+    gap: 64px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    height: auto;
+    padding-bottom: 400px;
+
+    .hero-content h1 {
+      font-size: 32px;
+      line-height: 44px;
+    }
+
+    .hero-content .hero-description {
+      font-size: 18px;
+      line-height: 26px;
+    }
+
+    .hero-image {
+      width: 100%;
+      left: 0;
+      transform: none;
+    }
+  }
+
+  .blogs-section .blogs-grid,
+  .media-section .media-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .media-section .media-lists .media-publications {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .section-header h2 {
+    font-size: 32px !important;
+    line-height: 44px !important;
+  }
+
+  .section-header .section-subtitle {
+    font-size: 18px !important;
+    line-height: 26px !important;
+  }
+}

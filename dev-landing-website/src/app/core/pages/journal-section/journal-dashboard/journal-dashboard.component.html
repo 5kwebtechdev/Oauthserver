@@ -1,0 +1,15 @@
+<section class="journal-section">
+  <app-superme-home-header title="Your Journal, Your Journey" [subtitleHtml]="journalSubtitleHtml"
+    linkText="View all" linkHref="/home/journal-output">
+  </app-superme-home-header>
+
+  <div class="slider-wrapper">
+    <superme-button class="slider-btn slider-btn--prev" type="prev" (clickEvent)="journalPrev()" [disabled]="journalStart === 0"></superme-button>
+    <div class="journal-grid">
+      @for (j of journal | slice:journalStart:journalStart + visibleCount; track j) {
+        <journal-card [journal]="j"></journal-card>
+      }
+    </div>
+    <superme-button class="slider-btn slider-btn--next" type="next" (clickEvent)="journalNext()" [disabled]="isJournalNextDisabled"></superme-button>
+  </div>
+</section>

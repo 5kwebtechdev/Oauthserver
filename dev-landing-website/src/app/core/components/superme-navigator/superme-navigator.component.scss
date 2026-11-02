@@ -1,0 +1,215 @@
+
+
+.navigator-root {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.navigator-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0px 5px 0px 0px;
+  position: relative; /* enable absolute centering of the heading */
+}
+
+.left-group {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.right-group {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.back-button {
+ width: 5.25rem;
+height: 5.25rem;
+aspect-ratio: 1/1;
+  background: none;
+}
+
+.back-button .back-svg,
+.back-button img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+/* Use color on the button so SVGs using currentColor inherit it */
+.back-button {
+  color: #282527;
+  border: none;
+}
+
+.navigator-heading {
+  color: #282527;
+  font-family: Fredoka;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  text-align: center;
+  margin: 0;
+}
+
+/* Warm variant overrides */
+.navigator-root.warm {
+  .back-button {
+    color: #772817;
+    border: none;
+  }
+
+  .navigator-heading {
+    color: #772817;
+    font-size: 2rem;
+  }
+
+  .navigator-subtext-text {
+    color: #772817;
+    font-family: Nunito, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 1;
+    line-height: 1;
+  }
+
+  /* hide the small chevron after subtext for the warm variant */
+  .navigator-subtext-icon {
+    display: none;
+  }
+}
+
+/* smaller cancel icon size per design */
+.back-button.cancel img {
+  width: 11.314px;
+  height: 11.627px;
+}
+
+/* right-side action button (optional) */
+.right-button {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.right-button img {
+  width: 40px;
+  height: 40px;
+  aspect-ratio: 1/1;
+}
+
+/* custom layout for 'edit' action: centered eclipse with icon */
+.right-edit-layout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.right-edit-layout .eclipse {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+  border-radius: 48px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(98deg, rgba(226, 226, 226, 0.60) 8.57%, rgba(241, 241, 241, 0.30) 90.15%);
+  backdrop-filter: blur(8px);
+}
+
+.right-edit-layout .eclipse img {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+}
+
+/* icon-with-count specific layout */
+.icon-with-count {
+  position: relative;
+}
+
+.icon-with-count .eclipse {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+  border-radius: 48px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(98deg, rgba(226, 226, 226, 0.60) 8.57%, rgba(241, 241, 241, 0.30) 90.15%);
+  backdrop-filter: blur(8px);
+  filter: drop-shadow(0 0 6px rgba(107, 101, 106, 0.15));
+}
+
+.icon-with-count .eclipse img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+
+.right-actions {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding-left: 0;
+}
+
+.right-button-2 img {
+  width: 32px;
+  height: 32px;
+}
+
+/* Subtext row shown under the main heading (e.g., address or location) */
+.navigator-heading-wrap {
+  display: flex;
+  flex-direction: column;
+  position: absolute; /* center this block horizontally within .navigator-inner */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 100%;
+  max-width: calc(100% - 160px); /* keep space for left and right buttons */
+  pointer-events: none; /* heading text itself shouldn't block button clicks */
+}
+
+.navigator-subtext-row {
+  margin-top: 0px;
+}
+
+.navigator-subtext {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+.navigator-subtext-text {
+  color: #282527;
+  font-family: Nunito, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  opacity: 0.7;
+  line-height: 1;
+}
+
+.navigator-subtext-icon svg {
+  display: inline-block;
+}

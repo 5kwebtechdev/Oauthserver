@@ -1,0 +1,53 @@
+<div class="how-works-page-wrapper">
+  <!-- Navbar -->
+  <app-public-navbar></app-public-navbar>
+
+  <!-- How It Works Page Content -->
+  <div class="how-works-page">
+    <!-- Header Section -->
+    <div class="how-works-header">
+      <div class="header-content">
+        <h1>How it works?</h1>
+        <p class="header-description">
+          Earn coins, evolve your pet, and unlock secret rewards  all by acing real-life quests like homework and chores
+        </p>
+      </div>
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="cards-container">
+      <div class="cards-grid">
+        <div class="how-works-card" *ngFor="let card of cards; let i = index">
+          <div class="card-content">
+            <!-- Icon and Title -->
+            <div class="card-header">
+              <div class="icon-wrapper">
+                <img [src]="card.icon" [alt]="card.title">
+              </div>
+              <h2>{{ card.title }}</h2>
+            </div>
+
+            <!-- Points List -->
+            <div class="card-points">
+              <div class="point-item" *ngFor="let point of card.points; let pointIndex = index">
+                <div class="point-number">
+                  <span>{{ pointIndex + 1 }}</span>
+                </div>
+                <p>{{ point }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Still Questions Section -->
+    <div class="questions-section">
+      <h2>Got Questions? We've Got Answers</h2>
+      <button class="faq-button" (click)="navigateToFaq()">Read our FAQ'S</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

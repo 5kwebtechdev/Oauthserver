@@ -1,0 +1,158 @@
+.terms-use {
+    background-color: white;
+    padding: 0;
+    font-family: 'Nunito', sans-serif;
+    color: #282527;
+    padding-top: clamp(72px, 7vw, 104px);
+
+    .container {
+        max-width: 1360px;
+        margin: 0 auto;
+        padding: clamp(24px, 2.2vw, 32px) 16px;
+    }
+
+    .header {
+        margin-bottom: 48px;
+        text-align: left;
+
+        h1 {
+            font-size: clamp(24px, 2.2vw, 32px);
+            font-weight: 700;
+            letter-spacing: -2px;
+            margin: 0;
+        }
+
+        .last-updated {
+            font-size: clamp(16px, 1.7vw, 25px);
+            font-weight: 500;
+            opacity: 0.7;
+            margin: 0;
+        }
+    }
+
+    .intro-section {
+        margin-bottom: 2.5rem;
+
+        p {
+            font-size: clamp(14px, 1.4vw, 20px);
+            font-weight: 600;
+            line-height: 1.5;
+            opacity: 0.8;
+        }
+    }
+
+    .toc-section {
+        margin-bottom: 2.5rem;
+
+        h2 {
+            color: #90214d;
+            font-size: clamp(18px, 1.7vw, 25px);
+            font-weight: 600;
+            margin-bottom: 32px;
+            letter-spacing: -1.25px;
+        }
+
+        ol {
+            list-style: decimal;
+            padding-left: 37.5px;
+
+            li {
+                font-size: clamp(14px, 1.4vw, 20px);
+                font-weight: 600;
+                opacity: 0.7;
+                margin-bottom: 16px;
+
+                a {
+                    color: inherit;
+                    text-decoration: underline;
+                    text-underline-position: from-font;
+                }
+            }
+        }
+    }
+
+    .content-section {
+        margin-bottom: 48px;
+
+        h2 {
+            color: #90214d;
+            font-size: clamp(18px, 1.7vw, 25px);
+            font-weight: 600;
+            margin-bottom: 32px;
+            letter-spacing: -1.25px;
+        }
+
+        h3 {
+            color: #282527;
+            font-size: clamp(16px, 1.4vw, 20px);
+            font-weight: 600;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
+        }
+
+        p {
+            font-size: clamp(14px, 1.4vw, 20px);
+            font-weight: 600;
+            line-height: 1.5;
+            opacity: 0.8;
+            margin-bottom: 16px;
+        }
+
+        ul {
+            margin-bottom: 24px;
+            padding-left: 30px;
+            list-style-type: disc;
+
+            li {
+                font-size: clamp(14px, 1.4vw, 20px);
+                font-weight: 600;
+                opacity: 0.8;
+                margin-bottom: 16px;
+                line-height: 1.5;
+            }
+        }
+
+        .subtitle {
+            font-size: clamp(14px, 1.4vw, 20px);
+            font-weight: 600;
+            margin: 24px 0 16px;
+        }
+
+        a {
+            color: #90214d;
+            text-decoration: underline;
+        }
+    }
+
+    .final-note {
+        h2 {
+            color: #90214d;
+            font-size: clamp(18px, 1.7vw, 25px);
+            font-weight: 600;
+            margin-bottom: 32px;
+            letter-spacing: -1.25px;
+        }
+
+        p {
+            font-size: clamp(14px, 1.4vw, 20px);
+            font-weight: 600;
+            opacity: 0.8;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+    }
+}
+
+@media (min-width: 900px) {
+    .terms-use .container {
+        padding-left: 32px;
+        padding-right: 32px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .terms-use .container {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+}

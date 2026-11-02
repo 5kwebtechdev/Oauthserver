@@ -1,0 +1,232 @@
+<main class="tutor-home-root">
+<app-public-navbar></app-public-navbar>
+
+
+  <section class="hero">
+    <div class="hero-inner">
+      <button class="back" (click)="goBack()"><svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
+  <path d="M13.2929 27.2929C12.9024 27.6834 12.9024 28.3166 13.2929 28.7071L19.6569 35.0711C20.0474 35.4616 20.6805 35.4616 21.0711 35.0711C21.4616 34.6805 21.4616 34.0474 21.0711 33.6569L15.4142 28L21.0711 22.3431C21.4616 21.9526 21.4616 21.3195 21.0711 20.9289C20.6805 20.5384 20.0474 20.5384 19.6569 20.9289L13.2929 27.2929ZM42 29C42.5523 29 43 28.5523 43 28C43 27.4477 42.5523 27 42 27V28V29ZM14 28V29H42V28V27H14V28Z" fill="#FDFDFD"/>
+</svg></button>
+      <h1>Your Guides to Greatness!</h1>
+      <superme-button
+        class="refer"
+        type="columbian-blue"
+        text="Refer a Tutor"
+        (clickEvent)="openReferModal()"
+        [large]="false">
+      </superme-button>
+    </div>
+
+    <div class="search-row">
+      <div class="search-box">
+        <span class="icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M16.6 18L10.3 11.7C9.8 12.1 9.225 12.4167 8.575 12.65C7.925 12.8833 7.23333 13 6.5 13C4.68333 13 3.14583 12.3708 1.8875 11.1125C0.629167 9.85417 0 8.31667 0 6.5C0 4.68333 0.629167 3.14583 1.8875 1.8875C3.14583 0.629167 4.68333 0 6.5 0C8.31667 0 9.85417 0.629167 11.1125 1.8875C12.3708 3.14583 13 4.68333 13 6.5C13 7.23333 12.8833 7.925 12.65 8.575C12.4167 9.225 12.1 9.8 11.7 10.3L18 16.6L16.6 18ZM6.5 11C7.75 11 8.8125 10.5625 9.6875 9.6875C10.5625 8.8125 11 7.75 11 6.5C11 5.25 10.5625 4.1875 9.6875 3.3125C8.8125 2.4375 7.75 2 6.5 2C5.25 2 4.1875 2.4375 3.3125 3.3125C2.4375 4.1875 2 5.25 2 6.5C2 7.75 2.4375 8.8125 3.3125 9.6875C4.1875 10.5625 5.25 11 6.5 11Z" fill="#6B656A"/>
+          </svg>
+        </span>
+        <input 
+          placeholder="Looking for a math hero?" 
+          [(ngModel)]="searchQuery"
+          (input)="onSearch()"
+          (keyup.enter)="onSearch()" />
+        <button 
+          class="clear-btn" 
+          *ngIf="searchQuery"
+          (click)="clearSearch()"
+          aria-label="Clear search">
+          ✕
+        </button>
+      </div>
+    </div>
+    <div class="bubble-pet">
+    <superme-pet-bubble
+      class="intro-chat"
+      [message]="'Sniffed out the best tutors just for you, ready to fetch your favorite?'"
+      [petType]="'panda'"
+      [petMood]="'tired'"
+      [petAge]="1"
+      [petImageHeight]="107"
+      [bubbleFirst]="true"
+      aria-label="Tutor finder mascot">
+    </superme-pet-bubble>
+    </div>
+  </section>
+
+  <app-ad-slider screen="TUTOR_HOME"></app-ad-slider>
+
+  <!-- Refer a Tutor Modal -->
+  <div class="refer-modal-backdrop" *ngIf="showReferModal" (click)="closeReferModal()"></div>
+  <div class="refer-modal" *ngIf="showReferModal" (click)="$event.stopPropagation()">
+    <button class="refer-modal-close" (click)="closeReferModal()">✕</button>
+    <h2>Refer a Tutor</h2>
+    <p class="refer-modal-desc">Know a tutor who should be here? <br/>Share our form so they can join</p>
+
+    <div class="refer-actions">
+      <button class="refer-action copy" (click)="copyLink()">
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="17" height="20" viewBox="0 0 17 20" fill="none" aria-hidden="true" focusable="false">
+          <path d="M11.47 16.6489C10.508 18.0908 9.18329 18.9801 7.49595 19.3169C5.80862 19.6538 4.24402 19.3412 2.80214 18.3792C1.36027 17.4172 0.470921 16.0925 0.13409 14.4052C-0.20274 12.7178 0.109846 11.1532 1.07185 9.71136L6.20562 2.01676C6.89937 0.976947 7.85299 0.335921 9.06649 0.0936794C10.28 -0.148562 11.4066 0.0771935 12.4464 0.770946C13.4863 1.4647 14.1273 2.41832 14.3695 3.63182C14.6118 4.84531 14.386 5.97196 13.6923 7.01178L8.83599 14.2905C8.41049 14.9282 7.82791 15.3209 7.08826 15.4686C6.34861 15.6162 5.6599 15.4773 5.02215 15.0518C4.3844 14.6263 3.9917 14.0437 3.84405 13.3041C3.6964 12.5644 3.83532 11.8757 4.26082 11.2379L9.39459 3.54334L11.0583 4.65334L5.92452 12.3479C5.80427 12.5282 5.76375 12.7165 5.80297 12.913C5.8422 13.1095 5.95192 13.2678 6.13216 13.3881C6.31239 13.5083 6.50074 13.5489 6.69721 13.5096C6.89368 13.4704 7.05204 13.3607 7.17229 13.1805L12.0286 5.90177C12.4032 5.31023 12.5271 4.68161 12.4002 4.01593C12.2733 3.35024 11.9187 2.82315 11.3364 2.43464C10.7541 2.04614 10.1278 1.9188 9.45753 2.05261C8.78722 2.18642 8.25782 2.54447 7.86931 3.12676L2.73555 10.8214C2.06493 11.7965 1.84729 12.8584 2.08262 14.0072C2.31795 15.156 2.92779 16.0587 3.91215 16.7155C4.88264 17.363 5.93649 17.5702 7.07371 17.3372C8.21093 17.1042 9.12178 16.5047 9.80627 15.5389L15.2175 7.42835L16.8812 8.53836L11.47 16.6489Z" fill="#282527"/>
+        </svg>
+        <span class="share-text">Copy Link</span>
+      </button>
+
+      <button class="refer-action whatsapp" (click)="shareWhatsApp()">
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <path d="M16.6 13.9996C16.4 13.8996 15.1 13.2996 14.9 13.1996C14.7 13.0996 14.5 13.0996 14.3 13.2996C14.1 13.4996 13.7 14.0996 13.5 14.2996C13.4 14.4996 13.2 14.4996 13 14.3996C12.3 14.0996 11.6 13.6996 11 13.1996C10.5 12.6996 10 12.0996 9.6 11.4996C9.5 11.2996 9.6 11.0996 9.7 10.9996C9.8 10.8996 9.9 10.6996 10.1 10.5996C10.2 10.4996 10.3 10.2996 10.3 10.1996C10.4 10.0996 10.4 9.89961 10.3 9.79961C10.2 9.69961 9.7 8.49961 9.5 7.99961C9.4 7.29961 9.2 7.29961 9 7.29961H8.5C8.3 7.29961 8 7.49961 7.9 7.59961C7.3 8.19961 7 8.89961 7 9.69961C7.1 10.5996 7.4 11.4996 8 12.2996C9.1 13.8996 10.5 15.1996 12.2 15.9996C12.7 16.1996 13.1 16.3996 13.6 16.4996C14.1 16.6996 14.6 16.6996 15.2 16.5996C15.9 16.4996 16.5 15.9996 16.9 15.3996C17.1 14.9996 17.1 14.5996 17 14.1996L16.6 13.9996ZM19.1 4.89961C15.2 0.999609 8.9 0.999609 5 4.89961C1.8 8.09961 1.2 12.9996 3.4 16.8996L2 21.9996L7.3 20.5996C8.8 21.3996 10.4 21.7996 12 21.7996C17.5 21.7996 21.9 17.3996 21.9 11.8996C22 9.29961 20.9 6.79961 19.1 4.89961ZM16.4 18.8996C15.1 19.6996 13.6 20.1996 12 20.1996C10.5 20.1996 9.1 19.7996 7.8 19.0996L7.5 18.8996L4.4 19.6996L5.2 16.6996L5 16.3996C2.6 12.3996 3.8 7.39961 7.7 4.89961C11.6 2.39961 16.6 3.69961 19 7.49961C21.4 11.3996 20.3 16.4996 16.4 18.8996Z" fill="black"/>
+        </svg>
+        <span class="share-text">Share through Whatsapp</span>
+      </button>
+    </div>
+  </div>
+
+  <section class="content">
+    <!--Content Header-->
+    <div class="content-header">
+      <div class="content-header-inner">
+        <div class="content-title">
+          <span *ngIf="!searchQuery">Top picks, trusted by many</span>
+          <span *ngIf="searchQuery">Search results for "{{ searchQuery }}"</span>
+          <span class="tutor-count-inline" *ngIf="!isLoading && filteredTutors.length > 0">({{ filteredTutors.length }} tutors)</span>
+        </div>
+        <div class="content-actions">
+          <div class="sort-wrap">
+            <button class="sort-btn" (click)="toggleSort($event)">{{ currentSortLabel }} ▾</button>
+            <div class="sort-dropdown" *ngIf="showSort">
+              <label class="sort-item" *ngFor="let opt of sortOptions">
+                <input 
+                  type="radio" 
+                  [name]="'sort-' + opt.key" 
+                  [checked]="currentSort === opt.key" 
+                  (change)="selectSort(opt.key)">
+                {{ opt.label }}
+              </label>
+            </div>
+          </div>
+          <superme-button type="columbian-blue" size="medium" text="All Filters" (clickEvent)="openFilters()"></superme-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters panel (drawer) -->
+    <div class="filters-backdrop" *ngIf="showFilters" (click)="closeFilters()"></div>
+    <aside class="filters-panel" *ngIf="showFilters" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="filters-header">
+        <button class="close-btn" (click)="closeFilters()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6L18 18" stroke="#282527" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <h3>All Filters</h3>
+      </div>
+
+      <!-- Horizontal Category Tabs with Navigation -->
+      <div class="category-tabs-wrapper">
+        <button class="nav-btn nav-btn-left" aria-label="Scroll left" (click)="scrollCategoryTabs('left')">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        
+        <div class="category-tabs" #categoryTabsContainer>
+          <button 
+            *ngFor="let cat of categories"
+            class="category-tab" 
+            [class.active]="activeCategory === cat.key"
+            (click)="selectCategory(cat.key)">
+            <img [src]="cat.icon" [alt]="cat.label" class="category-icon">
+            <span>{{ cat.label }}</span>
+          </button>
+        </div>
+        
+        <button class="nav-btn nav-btn-right" aria-label="Scroll right" (click)="scrollCategoryTabs('right')">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="filters-body">
+        <!-- Left Sidebar with Filter Types (dynamic) -->
+        <div class="filters-sidebar">
+          <button 
+            *ngFor="let group of sidebarGroups"
+            class="filter-type-btn" 
+            [class.active]="activeSidebarGroup === group.label"
+            (click)="selectSidebar(group.label)">
+            {{ group.label }}
+            <span class="filter-count" *ngIf="getSelectedCount(group.fieldKey) > 0">({{ getSelectedCount(group.fieldKey) }})</span>
+          </button>
+        </div>
+
+        <!-- Main Content Area - Dynamic Sub-filters -->
+        <div class="filters-content">
+          <div class="filter-items-list">
+            <div class="filter-item" *ngFor="let item of currentSubFilters">
+              <span class="filter-item-name">{{ item.label }}</span>
+              <input 
+                type="checkbox" 
+                class="filter-checkbox"
+                [checked]="isSubFilterSelected(item)" 
+                (change)="onToggleSubFilter(item, $any($event.target).checked)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions with superme-button -->
+      <div class="filters-footer">
+        <superme-button 
+          type="columbian-blue-transparent" 
+          text="Clear all" 
+          (clickEvent)="clearFilters()"
+          [large]="true">
+        </superme-button>
+        <superme-button 
+          type="columbian-blue" 
+          [text]="resultCount === null ? 'Show results' : 'Show ' + resultCount + (resultCount === 1 ? ' result' : ' results')"
+          (clickEvent)="applyFilters()"
+          [large]="true">
+        </superme-button>
+      </div>
+    </aside>
+
+    <div class="tutors-list">
+      <div *ngIf="isLoading" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Loading tutors...</p>
+      </div>
+      
+      <!-- No results when searching -->
+      <div *ngIf="!isLoading && filteredTutors.length === 0 && searchQuery" class="no-results">
+        <p>No tutors found for "{{ searchQuery }}"</p>
+        <button class="clear-search-btn" (click)="clearSearch()">Clear Search</button>
+      </div>
+
+      <!-- No tutors available (not searching) -->
+      <div *ngIf="!isLoading && filteredTutors.length === 0 && !searchQuery" class="no-results">
+        <p>No tutors available at the moment.</p>
+      </div>
+
+      <app-tutor-card
+        *ngFor="let tutor of paginatedTutors"
+        [tutor]="tutor"
+        (viewProfileClick)="onViewProfile(tutor)">
+      </app-tutor-card>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-wrap" *ngIf="!isLoading && filteredTutors.length > 0">
+      <p class="pagination-info">Showing {{ paginatedTutors.length }} of {{ filteredTutors.length }} tutors</p>
+      <superme-button
+        *ngIf="hasMoreTutors"
+        type="columbian-blue-transparent"
+        text="Load More"
+        (clickEvent)="loadMore()"
+        [large]="true">
+      </superme-button>
+    </div>
+  </section>
+
+  <app-footer></app-footer>
+</main>

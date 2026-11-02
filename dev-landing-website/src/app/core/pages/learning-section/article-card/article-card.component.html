@@ -1,0 +1,34 @@
+<div class="card-root" role="button" tabindex="0" (click)="onCardClick()" (keyup.enter)="onCardClick()">
+  <!-- Card Media / Thumbnail -->
+  <div class="media">
+    <img [src]="imageUrl" 
+         [alt]="item.title" 
+         loading="lazy"
+         (error)="onImgError($event)" 
+         class="card-image" />
+  </div>
+
+  <!-- Card Body -->
+  <div class="card-body">
+    <!-- Header with title and coins -->
+    <div class="card-header">
+      <h3 class="card-title">{{ item.title }}</h3>
+      <span class="coins">
+        <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="coin-icon" />
+        <span class="coin-value">{{ item.coins || 0 }}</span>
+      </span>
+    </div>
+
+    <!-- Footer with description and CTA -->
+    <div class="card-footer">
+      <p class="card-description">{{ item.description }}</p>
+      
+      <superme-button 
+        type="pink" 
+        [text]="readTimeText" 
+        class="card-cta"
+        (click)="onCardClick(); $event.stopPropagation()">
+      </superme-button>
+    </div>
+  </div>
+</div>

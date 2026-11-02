@@ -1,0 +1,69 @@
+<main class="rp-shell" *ngIf="submissionResult; else noData">
+
+  <!-- Close -->
+  <button class="rp-close" (click)="onBack()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#282527" stroke-width="2.5">
+      <path d="M18 6L6 18M6 6l12 12"/>
+    </svg>
+  </button>
+
+  <!-- Pet image -->
+  <div class="rp-pet">
+    <img [src]="petImage" alt="Panda" class="rp-pet-img" />
+  </div>
+
+  <!-- Celebration text -->
+  <h2 class="rp-celebration">{{ celebrationText }}</h2>
+
+  <!-- Score pill -->
+  <div class="rp-score-wrap">
+    <!-- Sparkle dots (only for high score) -->
+    <ng-container *ngIf="isHighScore">
+      <span *ngFor="let n of sparkleCount; let i = index"
+        [class]="'rp-dot rp-dot--' + i"></span>
+    </ng-container>
+
+    <div class="rp-score-circle" [style.border-color]="scoreColor">
+      <span class="rp-score-text" [style.color]="scoreColor">
+        {{ correctAnswers }}/{{ totalQuestions }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Rewards -->
+  <div class="rp-rewards">
+    <div class="rp-reward">
+      <span class="rp-plus">+</span>
+      <img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins" class="rp-reward-icon" />
+      <span class="rp-reward-count">{{ coinsEarned }}</span>
+    </div>
+    <div class="rp-reward">
+      <span class="rp-plus">+</span>
+      <img src="assets/Icons-Neutral/Icon-Trophy.png" alt="Trophy" class="rp-reward-icon" />
+      <span class="rp-reward-count">{{ trophiesEarned }}</span>
+    </div>
+  </div>
+
+  <!-- Badge progress cards (same component as badge page, quiz/puzzle only) -->
+  <div class="rp-badges" *ngIf="!badgesLoading && badges.length > 0">
+    <div class="rp-badge-item" *ngFor="let badge of badges">
+      <app-badges-card
+        [title]="badge.name"
+        [current]="badge.currentProgress"
+        [total]="badge.targetProgress"
+        [imageUrl]="badge.iconUrl"
+        [description]="badge.description"
+        [levelText]="badge.levelText || ''"
+        [achievementText]="badge.achievementText || ''"
+        [progressColor]="badge.progressColor || '#4CAF50'">
+      </app-badges-card>
+    </div>
+  </div>
+
+</main>
+
+<ng-template #noData>
+  <main class="rp-shell rp-shell--nodata">
+    <h2>No results available</h2>
+  </main>
+</ng-template>

@@ -1,0 +1,129 @@
+
+<app-public-navbar></app-public-navbar>
+<main class="my-orders-container">
+  <!-- Header Navigation -->
+   <div class="myorders">
+  <superme-navigator
+    heading="My Orders"
+    backIcon="arrowSvg"
+    (back)="goBack()">
+  </superme-navigator>
+  </div>
+
+  <!-- Main Content -->
+  <div class="orders-content">
+    <!-- Search and Filter Section -->
+    <div class="search-filter-section">
+      <div class="search-and-filter">
+        <div class="search-field">
+          <span class="search-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path
+                d="M11.0667 12L6.86667 7.8C6.53333 8.06667 6.15 8.27778 5.71667 8.43333C5.28333 8.58889 4.82222 8.66667 4.33333 8.66667C3.12222 8.66667 2.09722 8.24722 1.25833 7.40833C0.419445 6.56944 0 5.54444 0 4.33333C0 3.12222 0.419445 2.09722 1.25833 1.25833C2.09722 0.419445 3.12222 0 4.33333 0C5.54444 0 6.56944 0.419445 7.40833 1.25833C8.24722 2.09722 8.66667 3.12222 8.66667 4.33333C8.66667 4.82222 8.58889 5.28333 8.43333 5.71667C8.27778 6.15 8.06667 6.53333 7.8 6.86667L12 11.0667L11.0667 12ZM4.33333 7.33333C5.16667 7.33333 5.875 7.04167 6.45833 6.45833C7.04167 5.875 7.33333 5.16667 7.33333 4.33333C7.33333 3.5 7.04167 2.79167 6.45833 2.20833C5.875 1.625 5.16667 1.33333 4.33333 1.33333C3.5 1.33333 2.79167 1.625 2.20833 2.20833C1.625 2.79167 1.33333 3.5 1.33333 4.33333C1.33333 5.16667 1.625 5.875 2.20833 6.45833C2.79167 7.04167 3.5 7.33333 4.33333 7.33333Z"
+                fill="#6B656A" />
+            </svg>
+          </span>
+          <input
+            type="text"
+            placeholder="Search your orders"
+            (input)="onSearchChange($event.target.value)"
+            aria-label="Search orders" />
+        </div>
+
+        <button
+          class="filter-button"
+          (click)="toggleFilters()"
+          aria-label="Toggle filters"
+          aria-expanded="showFilters">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+            <path d="M4.66667 8V6.66667H7.33333V8H4.66667ZM2 4.66667V3.33333H10V4.66667H2ZM0 1.33333V0H12V1.33333H0Z" fill="white"/>
+          </svg>
+          <span>Filters</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Label -->
+    <div class="filter-label">
+      <p>Last three months</p>
+    </div>
+
+    <!-- Orders List -->
+    <div class="orders-list">
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="(filteredOrders$ | async)?.length === 0">
+        <p>No orders found. Try adjusting your search or filters.</p>
+      </div>
+
+      <!-- Order Cards -->
+      <article
+        class="order-card"
+        *ngFor="let order of (filteredOrders$ | async)"
+        [attr.data-order-id]="order.id">
+
+        <!-- Order Status Header -->
+        <header class="order-status-header" [style.--status-color]="getStatusInfo(order.status).color">
+          <h3 class="status-text" [style.color]="getStatusInfo(order.status).color">
+            <span *ngIf="order.status === 'arriving'">Arriving {{ order.statusDate }}</span>
+            <span *ngIf="order.status === 'delivered'">Delivered on {{ order.statusDate }}</span>
+            <span *ngIf="order.status === 'delayed'">Delayed - {{ order.statusDate }}</span>
+            <span *ngIf="order.status === 'cancelled'">Cancelled - {{ order.statusDate }}</span>
+            <span *ngIf="order.status === 'return'">Return / Exchange</span>
+          </h3>
+        </header>
+
+        <!-- Order Details -->
+        <div class="order-details">
+          <!-- Product Image -->
+          <div class="product-image">
+            <img [src]="order.imageUrl" [alt]="order.title" />
+          </div>
+
+          <!-- Product Info -->
+          <div class="product-info">
+            <div class="product-details">
+              <h2 class="product-title">{{ order.title }}</h2>
+
+              <p class="product-meta" *ngIf="order.size">
+                <strong>Size:</strong> {{ order.size }}
+              </p>
+              <p class="product-meta" *ngIf="order.edition">
+                <strong>Edition:</strong> {{ order.edition }}
+              </p>
+              <p class="product-meta school-name">
+                {{ order.schoolName }}
+              </p>
+
+              <!-- Additional Info (for return/refund status) -->
+              <p
+                class="additional-info"
+                *ngIf="order.additionalInfo"
+                [style.color]="order.additionalInfo.status === 'return-done' ? '#4caf50' : '#ff9800'">
+                {{ order.additionalInfo.message }}
+              </p>
+            </div>
+            <div class="order-actions">
+            <!-- Action Button -->
+            <superme-button
+              type="magenta"
+              text="View Details"
+              (clickEvent)="onViewDetails(order.id)"
+              aria-label="View details for {{ order.title }}">
+            </superme-button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</main>
+
+<!-- Filter Modal -->
+<filter-modal
+  [isOpen]="showFilterModal"
+  [filters]="(filters$ | async) ?? { statuses: [], timeRange: 'last-3-months' }"
+  [previewCount]="filterPreviewCount"
+  (preview)="onFilterPreview($event)"
+  (close)="onFilterModalClose()"
+  (apply)="onFilterModalApply($event)">
+</filter-modal>

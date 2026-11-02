@@ -1,0 +1,361 @@
+@import "tailwindcss";
+
+body {
+    display: block;
+    margin: 0;
+}
+
+/* Remove Bootstrap default paragraph bottom spacing globally */
+p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* Default site fonts: prefer Fredoka, fallback to Nunito, then system sans */
+body, html {
+    font-family: 'Fredoka', 'Nunito';
+}
+
+/* Prevent horizontal page scroll caused by overflowing elements */
+html, body {
+    overflow-x: hidden;
+}
+
+/* Global container setup */
+.container {
+   width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+
+.column {
+    display: flex;
+    padding: 16px 24px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.column>[class*="col-"] {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+.footer-link-active {
+  color: rgb(144, 33, 77) !important;
+}
+
+.footer-link-default {
+  color: #282527;
+}
+
+/* Core fixes for input icons and password toggle
+     - Color the embedded SVG when the password field has content or when the toggle is active
+     - Preserve right-side input border-radius when icons/buttons are present
+*/
+
+/* Only color the toggle when it has the explicit `.active` class (click state) */
+.toggle-eye.active svg path {
+    fill: #772817 !important;
+    stroke: #772817 !important;
+}
+
+/* Ensure inputs keep their right-side rounded corners when an icon/button is placed inside the input wrapper */
+.input-group input,
+.input-with-icon input,
+.password-input-container input,
+.password-input-wrapper input,
+.input-container input {
+    border-top-right-radius: 12px !important;
+    border-bottom-right-radius: 12px !important;
+}
+
+/* Keep the icon itself visually neutral (no border radius change on focus) */
+.toggle-eye,
+.input-with-icon .icon,
+.qr-icon,
+.qr-scanner-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+/* ─── Landing page blob animations ─── */
+@keyframes blob1 {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(30px, -20px) scale(1.05); }
+  66%  { transform: translate(-20px, 15px) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes blob2 {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-25px, 20px) scale(1.04); }
+  66%  { transform: translate(20px, -15px) scale(0.97); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes blob3 {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(20px, 25px) scale(0.96); }
+  66%  { transform: translate(-15px, -20px) scale(1.03); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes blob4 {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-30px, -15px) scale(1.06); }
+  66%  { transform: translate(25px, 20px) scale(0.94); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+.animate-blob-1 { animation: blob1 8s ease-in-out infinite; }
+.animate-blob-2 { animation: blob2 10s ease-in-out infinite; }
+.animate-blob-3 { animation: blob3 9s ease-in-out infinite; }
+.animate-blob-4 { animation: blob4 11s ease-in-out infinite; }
+
+/* ─── Landing: override Bootstrap's anchor underlines ─── */
+/* Landing navbar: submenu links — Bootstrap’s default `a` color would otherwise win */
+app-landing-navbar a.landing-nav-sublink {
+  color: #857e83;
+}
+app-landing-navbar a.landing-nav-sublink:hover {
+  color: #90214d;
+}
+
+/* Landing footers: keep links from falling back to Bootstrap blue */
+app-common-footer a,
+app-landing-footer a {
+  color: #282527;
+}
+app-common-footer a:visited,
+app-landing-footer a:visited {
+  color: #282527;
+}
+.input-place-white::placeholder {
+  color: #282527B2;
+}
+.placeholder-field{
+  color: #282527B2;
+
+}
+
+/* Rich article/content previews should let text block colors cascade into headings and sub text. */
+.body-content :is(h1, h2, h3, h4, h5, h6),
+.article-body :is(h1, h2, h3, h4, h5, h6),
+.article-preview :is(h1, h2, h3, h4, h5, h6),
+.content-preview :is(h1, h2, h3, h4, h5, h6) {
+  color: inherit !important;
+}
+
+.body-content :is(p, span, div, li, strong, em, small):not([style*="color" i]),
+.article-body :is(p, span, div, li, strong, em, small):not([style*="color" i]),
+.article-preview :is(p, span, div, li, strong, em, small):not([style*="color" i]),
+.content-preview :is(p, span, div, li, strong, em, small):not([style*="color" i]) {
+  color: inherit !important;
+}
+
+app-landing-navbar a,
+app-common-footer a,
+app-landing-footer a,
+app-landing-page a,
+app-feature-wrapper a,
+app-feature-page a,
+app-hero-section a,
+app-pillars-section a,
+app-one-app-section a,
+app-growth-section a,
+app-pets-section a,
+app-testimonials-section a,
+app-contact-us-page a,
+app-submit-ad-page a,
+app-habit-page a,
+app-task-page a,
+app-journal-page a,
+app-calendar-page a,
+app-notes-page a,
+app-quiz-page a,
+app-puzzle-page a,
+app-article-page a,
+app-academy-page a,
+app-books-page a,
+app-uniforms-page a,
+app-accessories-page a,
+app-find-tutor-page a {
+  text-decoration: none;
+}
+app-landing-navbar a:hover,
+app-common-footer a:hover,
+app-landing-footer a:hover,
+app-landing-page a:hover,
+app-feature-wrapper a:hover,
+app-feature-page a:hover,
+app-contact-us-page a:hover,
+app-submit-ad-page a:hover {
+  text-decoration: none;
+}
+
+/* Landing navbar login CTA border states (explicit to avoid utility conflicts) */
+app-landing-navbar .landing-login-cta .landing-login-cta-border {
+  border-width: 1px;
+  border-style: solid;
+  border-color: #90214d;
+}
+app-landing-navbar .landing-login-cta:hover .landing-login-cta-border {
+  border-color: #4a0d25;
+  box-shadow: 0px 0px 1px 0px rgba(144, 33, 77, 0.2);
+}
+
+/* Landing buttons: force proper rounded corner rendering across browsers */
+app-landing-navbar button[class*="rounded-"],
+app-landing-navbar a[class*="rounded-"],
+app-common-footer button[class*="rounded-"],
+app-common-footer a[class*="rounded-"],
+app-landing-footer button[class*="rounded-"],
+app-landing-footer a[class*="rounded-"],
+app-landing-page button[class*="rounded-"],
+app-landing-page a[class*="rounded-"],
+app-feature-wrapper button[class*="rounded-"],
+app-feature-wrapper a[class*="rounded-"],
+app-feature-page button[class*="rounded-"],
+app-feature-page a[class*="rounded-"],
+app-contact-us-page button[class*="rounded-"],
+app-contact-us-page a[class*="rounded-"],
+app-submit-ad-page button[class*="rounded-"],
+app-submit-ad-page a[class*="rounded-"] {
+  overflow: hidden;
+}
+.dots-rounded{
+  border-radius:20px;
+}
+.arrow-div{
+  border-radius: 30px;
+}
+.box-shadow-testimonial{
+      border: 1px solid #90214D;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding-top: 60px;
+  }
+  .growth-card-new{
+    background: #E1527C;
+    padding: 13px;
+  }
+   .growth-card-new img{
+    border-radius:12px;
+  }
+  .growth-card-content{
+    background:#E1527C!important;
+    padding-left:0px!important;
+    padding-bottom:0px!important;
+  }
+  .font-we-700-mo{
+    font-weight: 700;
+  }
+}
+
+/* ── Mood popup (appended to body to escape stacking contexts) ── */
+.mood-body-backdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.35);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: moodFadeIn 0.2s ease;
+}
+.mood-body-popup {
+  background: #fff;
+  border-radius: 16px;
+  padding: 34px 24px 24px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  animation: moodSlideIn 0.2s ease;
+  max-width: 340px;
+  width: 90vw;
+  position: relative;
+}
+.mood-body-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #282527;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  font-size: 24px;
+  line-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mood-body-close-btn:hover,
+.mood-body-close-btn:focus-visible {
+  background: rgba(144, 33, 77, 0.08);
+  outline: none;
+}
+.mood-body-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.mood-body-emoji {
+  background: none;
+  border: 3px solid transparent;
+  border-radius: 12px;
+  padding: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s;
+}
+.mood-body-emoji img {
+  width: 72px; height: 72px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+.mood-body-emoji.selected {
+  border-color: #E91E8C;
+}
+.mood-body-check {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 16px; height: 16px;
+  background: #E91E8C;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mood-body-set-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #E91E8C, #F06292);
+  color: #fff;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.mood-body-set-btn:disabled {
+  cursor: not-allowed;
+}
+@keyframes moodFadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes moodSlideIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}

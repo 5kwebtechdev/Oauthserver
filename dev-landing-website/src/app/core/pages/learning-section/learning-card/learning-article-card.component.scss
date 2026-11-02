@@ -1,0 +1,238 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.discover-card {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.thumbnail {
+  position: relative;
+  width: 100%;
+  height: 216px;
+  overflow: hidden;
+  background: #d0d0d0;
+  border-radius: 12px 12px 0 0;
+
+  .thumbnail-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.difficulty-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  overflow: hidden;
+
+  .difficulty-label {
+    position: absolute;
+    font-family: Nunito;
+    font-size: 13px;
+    font-weight: 600;
+    color: #282527;
+    text-align: center;
+    line-height: 1.4;
+  }
+}
+
+.card-content {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.card-title {
+  margin: 0;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 600;
+  color: #282527;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.card-type {
+  background: #fcf3f6;
+  border: 1px solid #e1527c;
+  color: #942038;
+  padding: 5px 16px;
+  border-radius: 16px;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.card-desc {
+  margin: 0;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b656a;
+  line-height: 1.4;
+  width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.rewards {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.reward-item {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.coin-icon {
+  width: 24px;
+  height: 27px;
+  object-fit: contain;
+}
+
+.trophy-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.coin-count,
+.trophy-count {
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 600;
+  color: #282527;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.time-item {
+  gap: 4px;
+}
+
+.time-count {
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b656a;
+  line-height: 1.4;
+}
+
+.read-btn {
+  flex-shrink: 0;
+  ::ng-deep {
+    .superme-button {
+      padding: 12px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 4px;
+      border: 1px solid #cf3359;
+      box-shadow: 0px 0px 1px 0.5px rgba(225, 82, 124, 0.2);
+      width: 103px;
+      height: 42px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .thumbnail {
+    height: 180px;
+  }
+
+  .card-title {
+    font-size: 15px;
+  }
+
+  .card-desc {
+    font-size: 12px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .discover-card {
+    border-radius: 10px;
+  }
+
+  .thumbnail {
+    height: 150px;
+    border-radius: 10px 10px 0 0;
+  }
+
+  .card-content {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .card-title {
+    font-size: 14px;
+  }
+
+  .card-desc {
+    font-size: 11px;
+  }
+
+  .card-type {
+    font-size: 12px;
+    padding: 4px 12px;
+  }
+}

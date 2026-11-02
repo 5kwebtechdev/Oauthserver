@@ -1,0 +1,149 @@
+.coin-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 72px;
+  padding: 10px 16px;
+  box-sizing: border-box;
+  background: #fff;
+  border-bottom: 1px solid rgba(40, 37, 39, 0.08);
+}
+
+.coin-card:hover {
+  background: linear-gradient(90deg, #FFF7D8 0%, #FFFBEE 100%);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0; /* allow children to truncate */
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex: 0 0 44px;
+  background: #F8F4EC;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.title {
+  color: #282527;
+  font-family: Nunito;
+  font-size: clamp(14px, 1.15vw, 17px);
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.details {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.content-type,
+.date {
+  color: #6B656A;
+  font-family: Nunito;
+  font-size: clamp(11px, 0.95vw, 13px);
+  font-weight: 700;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.content-type {
+  color: #C58B14;
+  flex: 0 0 auto;
+}
+
+.content-type::after {
+  content: "•";
+  color: #D9C28A;
+  margin-left: 6px;
+}
+
+.date {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: 0 0 auto;
+}
+
+.change-icon {
+  width: 18px;
+  height: 20px;
+  aspect-ratio: 7/8;
+}
+
+.change-value {
+  color: #BB2124;
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 140%;
+}
+
+.change-value.positive { color: #18A34A; }
+.change-value.negative { color: #c42b2b; }
+
+/* Small screens: stack the right content below and allow title to wrap */
+@media (max-width: 520px) {
+  .coin-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .left {
+    gap: 12px;
+  }
+
+  .title { white-space: normal; }
+
+  .details {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .content-type::after {
+    content: "";
+    margin-left: 0;
+  }
+
+  .right {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    gap: 8px;
+  }
+}
+
+/* Medium screens: reduce gap */
+@media (max-width: 900px) {
+  .coin-card { --gap: 12px; }
+}

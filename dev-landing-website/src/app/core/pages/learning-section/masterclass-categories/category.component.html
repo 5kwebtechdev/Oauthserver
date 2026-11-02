@@ -1,0 +1,40 @@
+<div class="category-grid-section">
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="state state--loading">
+    <div class="spinner"></div>
+    <p>Loading categories...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="!isLoading && errorMessage" class="state state--error">
+    <p>{{ errorMessage }}</p>
+    <button type="button" class="retry-btn" (click)="loadCategories()">Retry</button>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && !errorMessage && categories.length === 0" class="state state--empty">
+    <p>No categories found</p>
+  </div>
+
+  <!-- Category grid -->
+  <div *ngIf="!isLoading && !errorMessage && categories.length > 0" class="category-grid">
+    <button
+      type="button"
+      class="category-card"
+      *ngFor="let category of categories"
+      (click)="onCategoryClick(category)">
+      <div class="category-card__body">
+        <h3 class="category-card__title">{{ category.categoryName }}</h3>
+        <p class="category-card__count">{{ masterclassLabel(category) }}</p>
+      </div>
+      <div class="category-card__image-wrapper">
+        <img
+          class="category-card__image"
+          [src]="category.thumbnailUrl || placeholderThumbnail"
+          (error)="onImageError($event)"
+          [alt]="category.categoryName"
+          loading="lazy" />
+      </div>
+    </button>
+  </div>
+</div>

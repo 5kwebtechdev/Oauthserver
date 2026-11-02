@@ -1,0 +1,75 @@
+.child-safety-card {
+  background-color: white;
+  border-radius: 24px;
+  box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 24px 32px;
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .card-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      display: block;
+    }
+
+    .title-text {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 20px;
+      color: #282527;
+      letter-spacing: -0.5px;
+      margin: 0;
+    }
+  }
+
+  .content-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: calc(32px + 12px);
+
+    .subtitle-text {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 18px;
+      color: #282527;
+      letter-spacing: -0.5px;
+      margin: 0;
+    }
+
+    .description-text {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 1.65;
+      color: #282527;
+      opacity: 0.75;
+      white-space: pre-wrap;
+      margin: 0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    border-radius: 16px;
+    padding: 18px 20px;
+
+    .card-header .title-text {
+      font-size: 17px;
+    }
+
+    .content-section {
+      padding-left: 0;
+
+      .subtitle-text { font-size: 15px; }
+      .description-text { font-size: 14px; }
+    }
+  }
+}

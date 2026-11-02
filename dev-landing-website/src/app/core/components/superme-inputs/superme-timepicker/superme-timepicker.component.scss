@@ -1,0 +1,154 @@
+
+/* Overlay & popup: default timepicker popup styling.
+   NOTE: moved here from page-scoped overrides so the timepicker controls its
+   own popup appearance. This will make the popup use the card-style size and
+   placement by default (previously scoped inside `habit-input`).
+*/
+.overlay {
+  /* positioned as a card popup by default */
+  position: absolute;
+  inset: auto;
+  left: 111px;
+  width: 361px;
+  height: 527px;
+  background: transparent;
+  z-index: 10000;
+  display: block;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.popup {
+  /* popup interior (card) */
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 361px;
+  height: 527px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #FFF;
+  box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.15);
+
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+
+    .time-select {
+      width: 70%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+      .time-button {
+        background: white;
+        color: #90214D;
+        padding: 8px 12px;
+        cursor: pointer;
+        border: 1px solid gray;
+        border-radius: 7px;
+        width: 80%;
+        height: 100%;
+        font-size: 44px;
+
+        /* center the numeric digits horizontally */
+        text-align: center;
+        padding-left: 6px;
+        padding-right: 6px;
+        box-sizing: border-box;
+
+        &.active {
+          background: #90214D;
+          color: white;
+          border: none;
+          outline: none;
+        }
+      }
+    }
+
+    .ampm-box {
+      width: 30%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .container {
+        border: 1px solid #cecece;
+        border-radius: 5px;
+        overflow: hidden;
+        width: 100%;
+
+      }
+
+      .ampm-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        border-radius: 0;
+        font-size: 16px;
+        padding: 15px 5px;
+
+        &.selected {
+          background-color: #90214D;
+          color: white;
+        }
+      }
+
+      hr {
+        width: 80%;
+        margin: 0;
+      }
+    }
+  }
+
+  .clock-face {
+    display: inline-flex;
+    padding: 11.979px 35.936px;
+    align-items: flex-start;
+    gap: 9.982px;
+
+    .clock-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .clock-number {
+      cursor: pointer;
+      user-select: none;
+    }
+  }
+
+  .popup-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+
+    .cancel,
+    .ok {
+      padding: 8px 14px;
+      margin-left: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 20px;
+      background: transparent;
+      border: none;
+    }
+  }
+}
+
+.superme-timepicker-wrapper {
+  .time-display-input {
+    color: #6B656A;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 140%;
+    background: transparent;
+    border: none;
+    padding: 8px 0;
+    text-align: center;
+    width: 80px;
+  }
+}

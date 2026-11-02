@@ -1,0 +1,51 @@
+<app-public-navbar></app-public-navbar>
+
+<main class="academy-course-content">
+  <header class="course-header">
+    <button type="button" class="back-btn" (click)="goBack()" aria-label="Go back">
+      <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+        <path d="M13.2929 27.2929C12.9024 27.6834 12.9024 28.3166 13.2929 28.7071L19.6569 35.0711C20.0474 35.4616 20.6805 35.4616 21.0711 35.0711C21.4616 34.6805 21.4616 34.0474 21.0711 33.6569L15.4142 28L21.0711 22.3431C21.4616 21.9526 21.4616 21.3195 21.0711 20.9289C20.6805 20.5384 20.0474 20.5384 19.6569 20.9289L13.2929 27.2929ZM42 29C42.5523 29 43 28.5523 43 28C43 27.4477 42.5523 27 42 27V28V29ZM14 28V29H42V28V27H14V28Z" fill="#282527"/>
+      </svg>
+    </button>
+    <div class="course-title-wrap" *ngIf="category">
+      <h1 class="course-title">{{ category.categoryName }}</h1>
+      <p class="course-subtitle" *ngIf="category.description">{{ category.description }}</p>
+    </div>
+  </header>
+
+  <section class="course-body">
+    <!-- Loading -->
+    <div class="state state--loading" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Loading courses...</p>
+    </div>
+
+    <!-- Error -->
+    <div class="state state--error" *ngIf="!isLoading && errorMessage">
+      <p>{{ errorMessage }}</p>
+      <button type="button" class="retry-btn" (click)="loadCourses()">Retry</button>
+    </div>
+
+    <!-- Empty -->
+    <div class="state state--empty" *ngIf="!isLoading && !errorMessage && courses.length === 0">
+      <p>No courses available.</p>
+    </div>
+
+    <!-- Courses -->
+    <div class="academy-cards-grid" *ngIf="!isLoading && !errorMessage && courses.length > 0">
+      <app-academy-card
+        *ngFor="let course of courses; trackBy: trackByCourseId"
+        [image]="course.thumbnailUrl"
+        [title]="course.courseName"
+        [lessons]="course.noOfLessons"
+        [duration]="course.duration + ' min'"
+        [coins]="course.totalCoins"
+        [level]="formatDifficulty(course.difficulty)"
+        [description]="course.description || ''"
+        (start)="onCourseClick(course)"
+      ></app-academy-card>
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>

@@ -1,0 +1,65 @@
+<app-public-navbar></app-public-navbar>
+<!--child safety page header-->
+  <section class="child-safety-page">
+    <!-- Header Section -->
+    <section class="safety-header">
+      <div class="header-content">
+        <h1 class="main-title">
+          Child Safety, Our Top Priority
+        </h1>
+        <p class="header-description">
+          See how SuperMe keeps every child secure, supported, and empowered online.
+        </p>
+        
+        <!-- Safety Badges -->
+        <div class="safety-badges">
+          <div 
+            class="badge" 
+            *ngFor="let badge of safetyBadges">
+            <div class="badge-icon">
+              <!-- Shield icon for COPPA Compliant -->
+              <svg *ngIf="badge.icon === 'shield'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 2L5 5V11C5 15.75 8.14 20.2 12 21.45C15.86 20.2 19 15.75 19 11V5L12 2Z" stroke="#282527" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+              <!-- Lock icon for Data Secure -->
+              <svg *ngIf="badge.icon === 'lock'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="5" y="10" width="14" height="10" rx="2" stroke="#282527" stroke-width="1.8"/>
+                <path d="M8 10V7.5C8 5.57 9.57 4 11.5 4H12.5C14.43 4 16 5.57 16 7.5V10" stroke="#282527" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="12" cy="15" r="1.3" fill="#282527"/>
+              </svg>
+              <!-- Check icon for Parent-Approved -->
+              <svg *ngIf="badge.icon === 'check'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12.5L10 17.5L19 8.5" stroke="#282527" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="badge-label">{{ badge.label }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Child Safety Cards Section -->
+    <section class="cards-section">
+      <div class="cards-grid">
+        <app-child-safety-card
+          *ngFor="let c of safetyCards"
+          [title]="c.title"
+          [subtitle]="c.subtitle"
+          [description]="c.description"
+          [iconPath]="c.iconPath">
+        </app-child-safety-card>
+      </div>
+    </section>
+
+<!--contact safety section-->
+<div class="contact-safety-section">
+  <h2>Questions About Your Child's Safety?</h2>
+  <p>We take child safety seriously. If you have concerns or questions about<br> how we protect your child's data and privacy, our team is here to help.</p>
+  <p>Email: <a href="mailto:supermeappofficial@gmail.com">supermeappofficial@gmail.com</a></p>
+</div>
+
+  </section>
+
+
+  <!-- Footer -->
+  <app-common-footer></app-common-footer>

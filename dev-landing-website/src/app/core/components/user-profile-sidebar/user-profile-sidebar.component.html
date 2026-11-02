@@ -1,0 +1,139 @@
+<div class="profile">
+
+    <section class="user-profile-main">
+        <div class="user-profile">
+            <div class="avatar-wrapper">
+                <div class="avatar-bg" aria-hidden="true"></div>
+                
+                <!-- Parent user: show styled initial avatar -->
+                <ng-container *ngIf="isParent(); else childAvatar">
+                    <div class="avatar parent-avatar">
+                        <div class="initial-avatar-circle" 
+                             [ngStyle]="parentImageService.getAvatarStyle(getInitial(user?.name), isFemale(user), 96)">
+                            {{ getInitial(user?.name) }}
+                        </div>
+                    </div>
+                </ng-container>
+                
+                <!-- Child/Self user: show image avatar -->
+                <ng-template #childAvatar>
+                    <div class="avatar">
+                        <img [src]="user?.avatarUrl || '/assets/Icons-Neutral/Child Avatar.png'"
+                            alt="{{ user?.name || 'User' }} avatar" />
+                    </div>
+                </ng-template>
+
+                <button class="edit-badge" type="button" aria-label="Edit avatar" (click)="toggleAvatarPicker($event)" *ngIf="!isParent()">
+                    <!-- simple pencil icon -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="#2F2F34"/>
+                        <path d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#2F2F34"/>
+                    </svg>
+                </button>
+
+                    <div class="user-info">
+                        <div class="user-name">{{ user?.name || 'You' }}</div>
+                        <div class="user-age" *ngIf="user?.age">{{ user.age }} yrs</div>
+                    </div>
+
+                    <!-- Avatar picker panel (popup positioned close to avatar) -->
+                    <div class="avatar-picker" *ngIf="showAvatarPicker" (click)="$event.stopPropagation()">
+                        <div class="avatar-picker-card">
+                            <div class="picker-title">Choose an avatar</div>
+                            <div class="picker-grid">
+                                <button class="avatar-option" *ngFor="let a of avatars" type="button" (click)="selectAvatar(a)" [attr.aria-pressed]="user?.avatarUrl === a">
+                                    <img [src]="a" alt="avatar option" />
+                                </button>
+                            </div>
+                            <!-- actions removed: picker closes on outside click or selection -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    <!-- Children list for parent profile -->
+    @if (isParent() && apiChildren.length) {
+      <section class="sidebar-children">
+        @for (child of apiChildren; track child.assignedTo) {
+          <div class="sidebar-child-item">
+            <img class="sidebar-child-avatar"
+                 [src]="getChildAvatarUrl(child)"
+                 [alt]="child.userName" />
+            <span class="sidebar-child-name">{{ child.userName }}</span>
+            @if (getChildAge(child); as age) {
+              <span class="sidebar-child-age">{{ age }} years old</span>
+            }
+            <span class="sidebar-child-badge">Child</span>
+          </div>
+        }
+      </section>
+    }
+
+    <section class="profile-content">
+        <profile-content-card iconName="profile" title="Edit Profile Info"
+            subtitle="Avatar name, age, email, number ...." (select)="onEdit()"
+            [active]="selectedKey === 'edit'"></profile-content-card>
+
+        <profile-content-card iconName="key" title="Password and security" subtitle="Change your password"
+            (select)="onPassword()" [active]="selectedKey === 'password'"></profile-content-card>
+
+        @if (!isParent()) {
+          <profile-content-card iconName="owl" title="Change your pet" subtitle="Switch your buddy anytime you like!"
+              (select)="onChangePet()" [active]="selectedKey === 'pet'"></profile-content-card>
+        }
+
+        <profile-content-card iconName="creditCard" title="Manage Your Membership"
+            subtitle="See your perks, upgrade, or cancel anytime" (select)="onMembership()"
+            [active]="selectedKey === 'membership'"></profile-content-card>
+
+        <profile-content-card iconName="notification" title="Notifications" subtitle="Manage your notifications"
+            (select)="onNotifications()" [active]="selectedKey === 'notifications'"></profile-content-card>
+
+        @if (!isParent()) {
+          <profile-content-card iconName="gift" title="Refer a friend"
+              subtitle="Refer this to friends for exciting rewards" (select)="onRefer()"
+              [active]="selectedKey === 'refer'"></profile-content-card>
+        }
+
+        <profile-content-card iconName="link" title="My Family" subtitle="View your family details"
+            (select)="onMyFamily()" [active]="selectedKey === 'family'"></profile-content-card>
+
+        @if (!isParent()) {
+          <profile-content-card iconName="lock" title="Parental Control" subtitle="View app restrictions and permissions"
+              (select)="onParentalControl()" [active]="selectedKey === 'parental'"></profile-content-card>
+        }
+
+        <profile-content-card iconName="feedback" title="Feedback & Suggestions"
+            subtitle="Share your thoughts to help us improve!" (select)="onFeedback()"
+            [active]="selectedKey === 'feedback'"></profile-content-card>
+
+        <profile-content-card iconName="support" title="Help & Support" subtitle="FAQ's and chat support"
+            (select)="onHelpSupport()" [active]="selectedKey === 'help'"></profile-content-card>
+
+        <profile-content-card iconName="policies" title="Our policies" subtitle="Learn how we follow the guidelines"
+            (select)="onOurPolicies()" [active]="selectedKey === 'policies'"></profile-content-card>
+
+        <profile-content-card iconName="danger" title="Delete My Data"
+            subtitle="Erase all your info safely and permanently" (select)="onDeleteMyData()"
+            [active]="selectedKey === 'delete'"></profile-content-card>
+
+        <div class="logout-section" (click)="onLogout()" aria-label="Logout">
+            <!-- Inline logout SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                aria-hidden="true">
+                <path
+                    d="M2.66667 24C1.93333 24 1.30556 23.7389 0.783333 23.2167C0.261111 22.6944 0 22.0667 0 21.3333V2.66667C0 1.93333 0.261111 1.30556 0.783333 0.783333C1.30556 0.261111 1.93333 0 2.66667 0H12V2.66667H2.66667V21.3333H12V24H2.66667ZM17.3333 18.6667L15.5 16.7333L18.9 13.3333H8V10.6667H18.9L15.5 7.26667L17.3333 5.33333L24 12L17.3333 18.6667Z"
+                    fill="#BB2124" />
+            </svg>
+            <div class="log-out-outline-text">
+                <span>Logout</span>
+                <p>See you next time!</p>
+            </div>
+        </div>
+
+
+    </section>
+
+
+</div>

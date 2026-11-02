@@ -1,0 +1,84 @@
+
+    <app-public-navbar></app-public-navbar>
+    <main class="address-input-container">
+        <superme-navigator [heading]="pageTitle" backIcon="arrowSvg" (back)="goBack()">
+        </superme-navigator>
+
+        <div class="address-input-content">
+        <div class="map-picker">
+            <div class="map-canvas" #mapContainer></div>
+            <div class="center-pin" [class.dropped]="mapLoading">
+                <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 0C7.16 0 0 7.16 0 16C0 27 16 40 16 40C16 40 32 27 32 16C32 7.16 24.84 0 16 0Z" fill="#90214D"/>
+                    <circle cx="16" cy="16" r="6" fill="white"/>
+                </svg>
+                <span class="pin-shadow"></span>
+            </div>
+            <button type="button" class="use-location-btn" (click)="useCurrentLocation()" [disabled]="locating">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="currentColor"/>
+                </svg>
+                <span>{{ locating ? 'Locating…' : 'Use Current Location' }}</span>
+            </button>
+            <div class="map-status" *ngIf="mapLoading">Fetching address…</div>
+        </div>
+            <form class="address-input-wrap" [formGroup]="addressForm" (ngSubmit)="saveAddress()">
+            <div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="input-fields" style="width: 30%;">
+                <h2>Pincode</h2>
+                <input class="address-input" formControlName="pincode" type="text" placeholder="600071" inputmode="numeric" pattern="[0-9]*" maxlength="6" [class.invalid]="pincodeControl.invalid && (pincodeControl.touched || pincodeControl.dirty)" (input)="onPincodeInput($event)">
+            </div>
+            <div class="input-fields" style="width: 70%;">
+                <h2>City & State</h2>
+                <input class="address-input" formControlName="cityState" type="text" placeholder="Chennai, Tamil Nadu">
+            </div>
+            </div>
+            <div class="error" *ngIf="pincodeError">{{ pincodeError }}</div>
+            </div>
+            <div class="input-fields">
+                <h2>Flat, House No, Building, Company, Apartment *</h2>
+                <input class="address-input" formControlName="flat" type="text" placeholder="502, Galaxy Apartments" [class.invalid]="flatControl.invalid && (flatControl.touched || flatControl.dirty)">
+                <div class="error" *ngIf="flatError">{{ flatError }}</div>
+            </div>
+            <div class="input-fields">
+                <h2>Area, Street, Sector, Village *</h2>
+                <input class="address-input" formControlName="area" type="text" placeholder="Association Road" [class.invalid]="areaControl.invalid && (areaControl.touched || areaControl.dirty)">
+                <div class="error" *ngIf="areaError">{{ areaError }}</div>
+            </div>
+
+            <div class="input-fields">
+                <h2>Landmark (Optional)</h2>
+                <input class="address-input" formControlName="landmark" type="text" placeholder="Eg. Near Hospital">
+            </div>
+
+            <div class="input-fields">
+                <h2>Full Name</h2>
+                <input class="address-input" formControlName="fullName" type="text" placeholder="Enter Name" [class.invalid]="fullNameControl.invalid && (fullNameControl.touched || fullNameControl.dirty)">
+                <div class="error" *ngIf="fullNameError">{{ fullNameError }}</div>
+            </div>
+
+            <div class="input-fields">
+                <h2>Phone Number</h2>
+                <div class="phone-input">
+                    <span class="phone-prefix">+91</span>
+                    <input class="address-input phone-number" formControlName="phone" type="tel" placeholder="Enter Number" inputmode="numeric" pattern="[0-9]*" maxlength="10" [class.invalid]="phoneControl.invalid && (phoneControl.touched || phoneControl.dirty)" (input)="onPhoneInput($event)">
+                </div>
+                <div class="error" *ngIf="phoneError">{{ phoneError }}</div>
+            </div>
+
+            <div class="input-fields d-flex align-items-center gap-2">
+                <h2 class="set-default">
+                    <input type="checkbox" formControlName="isDefault" /> Set address as default
+                </h2>
+            </div>
+
+            <div class="error" *ngIf="saveError">{{ saveError }}</div>
+
+            <div class="input-fields">
+                <superme-button type="magenta" class="page-cta" [text]="saving ? 'Saving…' : (editAddressId ? 'Save Changes' : 'Add Address')" large [disabled]="addressForm.invalid || saving" (clickEvent)="saveAddress()"></superme-button>
+            </div>
+        </form>
+        </div>
+    </main>
+    <app-footer></app-footer>

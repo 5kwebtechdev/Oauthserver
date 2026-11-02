@@ -1,0 +1,23 @@
+<article class="trophy-transaction" role="listitem">
+  <div class="left">
+    <div class="avatar-wrap">
+      <img *ngIf="thumbnailUrl" class="avatar-img" [src]="thumbnailUrl" alt="" />
+      <div *ngIf="!thumbnailUrl" class="avatar-letter" [style.background]="avatarColor">{{ avatarLetter }}</div>
+    </div>
+
+    <div class="meta">
+      <div class="title-row">
+        <div class="title">{{ title }}</div>
+        <div class="difficulty" *ngIf="difficulty">•{{ difficulty }}</div>
+      </div>
+      <div class="subtitle" *ngIf="earnedOn">Earned on {{ earnedOn }}</div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="trophy-amount">
+      <img class="trophy-icon" src="/assets/Icons-Neutral/Icon-Trophy.png" alt="trophy" />
+      <span class="points">{{ points ?? 0 }}</span>
+    </div>
+  </div>
+</article>

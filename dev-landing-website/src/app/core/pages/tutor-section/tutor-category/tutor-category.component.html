@@ -1,0 +1,104 @@
+<div class="tutor-category-page">
+  <!-- Navbar Component -->
+  <app-public-navbar></app-public-navbar>
+
+  <!-- Page Content -->
+  <div class="page-content">
+    <!-- Back Button and Title -->
+    <div class="page-header">
+      <div class="back-section">
+        <button class="back-button" (click)="goBack()" aria-label="Go back">
+          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
+            <path d="M13.2929 27.2929C12.9024 27.6834 12.9024 28.3166 13.2929 28.7071L19.6569 35.0711C20.0474 35.4616 20.6805 35.4616 21.0711 35.0711C21.4616 34.6805 21.4616 34.0474 21.0711 33.6569L15.4142 28L21.0711 22.3431C21.4616 21.9526 21.4616 21.3195 21.0711 20.9289C20.6805 20.5384 20.0474 20.5384 19.6569 20.9289L13.2929 27.2929ZM42 29C42.5523 29 43 28.5523 43 28C43 27.4477 42.5523 27 42 27V28V29ZM14 28V29H42V28V27H14V28Z" fill="#282527"/>
+          </svg>
+        </button>
+        <div class="page-title">
+          <h1>Education & Essentials</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Banner Carousel Section -->
+    <div class="banner-section">
+      <div class="banner-carousel" [ngClass]="'theme-' + banners[currentBannerIndex].accent">
+        <div class="banner-container">
+          <div class="banner-copy">
+            <span class="banner-eyebrow">{{ banners[currentBannerIndex].eyebrow }}</span>
+            <h2>{{ banners[currentBannerIndex].title }}</h2>
+            <p>{{ banners[currentBannerIndex].description }}</p>
+
+            <div class="banner-actions">
+              <button
+                class="banner-cta"
+                type="button"
+                [disabled]="!banners[currentBannerIndex].ctaRoute"
+                (click)="onBannerCta(banners[currentBannerIndex])"
+              >
+                {{ banners[currentBannerIndex].ctaLabel }}
+                <svg *ngIf="banners[currentBannerIndex].ctaRoute" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="banner-stats">
+              <div class="banner-stat" *ngFor="let stat of banners[currentBannerIndex].stats">
+                <strong>{{ stat.value }}</strong>
+                <span>{{ stat.label }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="banner-visual">
+            <img
+              [src]="banners[currentBannerIndex].image"
+              [alt]="banners[currentBannerIndex].alt"
+              class="banner-image"
+            />
+          </div>
+        </div>
+
+        <!-- Carousel Dots -->
+        <div class="carousel-dots">
+          <button 
+            *ngFor="let banner of banners; let i = index"
+            class="dot"
+            [class.active]="i === currentBannerIndex"
+            (click)="goToBanner(i)"
+            [attr.aria-label]="'Go to ' + banner.title"
+          >
+            <span>{{ i + 1 }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <app-ad-slider screen="EDUHUB"></app-ad-slider>
+
+    <!-- Categories Grid -->
+    <div class="categories-section">
+      <div class="categories-grid">
+        <div 
+          *ngFor="let category of categories"
+          class="category-card"
+          [class.coming-soon]="category.isComingSoon"
+          [class.clickable]="!category.isComingSoon"
+          (click)="onCategoryClick(category)"
+        >
+          <div class="card-header">
+            <h3 class="card-title">{{ category.title }}</h3>
+            <div *ngIf="category.isComingSoon" class="coming-soon-badge">
+              COMING SOON
+            </div>
+          </div>
+          <div class="card-image">
+            <img [src]="category.image" [alt]="category.title" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Component -->
+  <app-footer></app-footer>
+</div>

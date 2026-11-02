@@ -1,0 +1,50 @@
+<app-public-navbar></app-public-navbar>
+
+<main class="journal-home-container">
+  <header class="journal-header">
+    <div class="journal-header-left">
+      <h2 class="journal-title">Your Journal, Your Journey</h2>
+      <p class="journal-subtitle">Track moods · Save · Feel Better</p>
+    </div>
+
+    <div class="journal-header-right" *ngIf="!loading && filteredJournal.length > 0 && isCurrentMonthView">
+      <div [title]="hasEntryToday ? 'You have already added a journal entry for today' : ''">
+        <superme-button type="magenta" medium="" text="+ Add Entry" (clickEvent)="addEntry()" [disabled]="hasEntryToday" aria-label="Add journal entry"></superme-button>
+      </div>
+    </div>
+  </header>
+  <div class="journal-nav">
+    <button class="nav-arrow-btn prev" (click)="prevMonth()" aria-label="Previous month">
+      <!-- left chevron SVG matching Figma -->
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 6L10 14L18 22" stroke="#6B656A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+  <span class="month-year">{{ monthYearLabel }}</span>
+
+    <button class="nav-arrow-btn next" (click)="nextMonth()" aria-label="Next month">
+      <!-- right chevron SVG matching Figma -->
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 6L18 14L10 22" stroke="#6B656A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  
+
+  <div class="journal-grid">
+    <journal-card *ngFor="let j of filteredJournal" [journal]="j"></journal-card>
+  </div>
+  <!-- Blank State for Journal Entries (reusable component) -->
+  <superme-empty-state
+    *ngIf="filteredJournal.length === 0"
+    [title]="emptyStateTitle"
+    [description]="emptyStateDescription"
+    [image]="'assets/Images-Transparent/Image-Journal-Blank.png'"
+    [actionButtonText]="emptyStateActionText"
+    (primaryActionClick)="onEmptyAction()">
+  </superme-empty-state>
+</main>
+
+<app-footer></app-footer>

@@ -1,0 +1,421 @@
+<header
+  class="logged-out-header"
+  [class.logged-out-header--scrolled]="scrolled || menuOpen"
+>
+  <nav
+    class="logged-out-navbar"
+    aria-label="Main navigation"
+  >
+    <a
+      routerLink="/"
+      class="brand"
+      aria-label="SuperMeApp home"
+    >
+      <span
+        class="brand__logo-wrap"
+        aria-hidden="true"
+      >
+        <span
+          class="brand__sparkle brand__sparkle--one"
+        ></span>
+
+        <span
+          class="brand__sparkle brand__sparkle--two"
+        ></span>
+
+        <img
+          [src]="logoSrc"
+          alt=""
+          width="512"
+          height="512"
+          class="brand__logo"
+        />
+      </span>
+
+      <span class="brand__name">
+        SuperMeApp
+      </span>
+    </a>
+
+    <!-- ===================================================== -->
+    <!-- DESKTOP MAIN NAVIGATION -->
+    <!-- ===================================================== -->
+
+    <div class="desktop-navigation">
+      @for (
+        navItem of navItems;
+        track navItem.label;
+        let i = $index
+      ) {
+        <div class="navigation-group">
+          <button
+            type="button"
+            class="navigation-trigger"
+            [class.navigation-trigger--active]="isActive(navItem.label) || openDropdownIndex === i"
+            [attr.aria-expanded]="openDropdownIndex === i"
+            [attr.aria-controls]="'desktop-dropdown-' + i"
+            aria-haspopup="true"
+            (click)="toggleDropdown(i)"
+          >
+            <span>
+              {{ navItem.label }}
+            </span>
+
+            <img
+              [src]="chevronSrc"
+              alt=""
+              width="24"
+              height="24"
+              class="navigation-trigger__chevron"
+              [class.navigation-trigger__chevron--open]="openDropdownIndex === i"
+            />
+          </button>
+
+          @if (
+            openDropdownIndex === i
+          ) {
+            <div class="navigation-dropdown" [id]="'desktop-dropdown-' + i">
+              @for (
+                item of navItem.items;
+                track item.label
+              ) {
+                <a
+                  [routerLink]="item.href"
+                  class="navigation-dropdown__link"
+                  (click)="closeDesktopDropdowns()"
+                >
+                  {{ item.label }}
+                </a>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- DESKTOP ACTIONS -->
+    <!-- ===================================================== -->
+
+    <div class="desktop-actions">
+
+      <!-- GET LISTED -->
+      <div class="navigation-group">
+        <button
+          type="button"
+          class="navigation-trigger navigation-trigger--listed"
+          [class.navigation-trigger--active]="getListedActive || getListedOpen"
+          [attr.aria-expanded]="getListedOpen"
+          aria-controls="desktop-get-listed-dropdown"
+          aria-haspopup="true"
+          (click)="toggleGetListed()"
+        >
+          <span>
+            Get Listed
+          </span>
+
+          <img
+            [src]="chevronSrc"
+            alt=""
+            width="24"
+            height="24"
+            class="navigation-trigger__chevron"
+            [class.navigation-trigger__chevron--open]="getListedOpen"
+          />
+        </button>
+
+        @if (getListedOpen) {
+          <div
+            class="navigation-dropdown navigation-dropdown--right navigation-dropdown--listed"
+            id="desktop-get-listed-dropdown"
+          >
+            <div class="listed-dropdown__header">
+              <strong>
+                Get Listed on SuperMe
+              </strong>
+
+              <span>
+                Choose what you'd like to add
+              </span>
+            </div>
+
+            <div class="listed-dropdown__links">
+              @for (
+                item of getListedItems;
+                track item.label
+              ) {
+                <a
+                  [routerLink]="item.href"
+                  class="navigation-dropdown__link"
+                  (click)="closeDesktopDropdowns()"
+                >
+                  {{ item.label }}
+                </a>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- LOGIN -->
+      <a
+        [href]="mobileAppLoginUrl"
+        class="header-button header-button--login"
+        (click)="openLogin($event)"
+      >
+        Log In
+      </a>
+
+      <!-- SIGNUP -->
+      <button
+        type="button"
+        class="header-button header-button--signup"
+        (click)="openStoreDialog()"
+      >
+        Try it for free
+      </button>
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- MOBILE MENU BUTTON -->
+    <!-- ===================================================== -->
+
+    <button
+      type="button"
+      class="menu-toggle"
+      [class.menu-toggle--open]="menuOpen"
+      [attr.aria-expanded]="menuOpen"
+      [attr.aria-label]="menuOpen ? 'Close menu' : 'Open menu'"
+      (click)="toggleMenu()"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+</header>
+
+<!-- ========================================================= -->
+<!-- MOBILE NAVIGATION -->
+<!-- ========================================================= -->
+
+<div
+  class="mobile-navigation"
+  [class.mobile-navigation--open]="menuOpen"
+  aria-label="Mobile navigation"
+>
+  <div class="mobile-navigation__scroll">
+
+    <!-- MAIN ITEMS -->
+    @for (
+      navItem of navItems;
+      track navItem.label;
+      let i = $index
+    ) {
+      <div class="mobile-navigation__group">
+        <div
+          class="mobile-navigation__trigger"
+          [class.mobile-navigation__trigger--active]="isActive(navItem.label)"
+        >
+          <a
+            [routerLink]="navItem.href"
+            (click)="closeMenu()"
+          >
+            {{ navItem.label }}
+          </a>
+
+          <button
+            type="button"
+            class="mobile-navigation__expand"
+            [attr.aria-label]="'Show ' + navItem.label + ' links'"
+            [attr.aria-expanded]="openMobileIndex === i"
+            (click)="toggleMobileItem(i)"
+          >
+            <img
+              [src]="chevronSrc"
+              alt=""
+              width="24"
+              height="24"
+              class="navigation-trigger__chevron"
+              [class.navigation-trigger__chevron--open]="openMobileIndex === i"
+            />
+          </button>
+        </div>
+
+        <div
+          class="mobile-navigation__submenu"
+          [style.max-height]="getMobileItemMaxHeight(navItem.items, openMobileIndex === i)"
+          [class.mobile-navigation__submenu--open]="openMobileIndex === i"
+        >
+          @for (
+            item of navItem.items;
+            track item.label
+          ) {
+            <a
+              [routerLink]="item.href"
+              (click)="closeMenu()"
+            >
+              {{ item.label }}
+            </a>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- GET LISTED -->
+    <div
+      class="mobile-navigation__group mobile-navigation__group--listed"
+    >
+      <div
+        class="mobile-navigation__trigger"
+        [class.mobile-navigation__trigger--active]="getListedActive"
+      >
+        <a
+          routerLink="/become-a-tutor"
+          (click)="closeMenu()"
+        >
+          Get Listed
+        </a>
+
+        <button
+          type="button"
+          class="mobile-navigation__expand"
+          aria-label="Show Get Listed links"
+          [attr.aria-expanded]="openMobileIndex === navItems.length"
+          (click)="toggleMobileItem(navItems.length)"
+        >
+          <img
+            [src]="chevronSrc"
+            alt=""
+            width="24"
+            height="24"
+            class="navigation-trigger__chevron"
+            [class.navigation-trigger__chevron--open]="openMobileIndex === navItems.length"
+          />
+        </button>
+      </div>
+
+      <div
+        class="mobile-navigation__submenu mobile-navigation__submenu--listed"
+        [style.max-height]="getMobileItemMaxHeight(getListedItems, openMobileIndex === navItems.length)"
+        [class.mobile-navigation__submenu--open]="openMobileIndex === navItems.length"
+      >
+        @for (
+          item of getListedItems;
+          track item.label
+        ) {
+          <a
+            [routerLink]="item.href"
+            (click)="closeMenu()"
+          >
+            {{ item.label }}
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE LOGIN / SIGNUP -->
+  <div class="mobile-navigation__actions">
+    <a
+      [href]="mobileAppLoginUrl"
+      class="header-button header-button--login"
+      (click)="openLogin($event)"
+    >
+      Log In
+    </a>
+
+    <button
+      type="button"
+      class="header-button header-button--signup"
+      (click)="openStoreDialog()"
+    >
+      Try it for free
+    </button>
+  </div>
+</div>
+
+@if (storeDialog.isOpen()) {
+  <div class="store-dialog" role="presentation" (click)="closeStoreDialog()">
+    <section
+      class="store-dialog__card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="store-dialog-title"
+      (click)="$event.stopPropagation()"
+    >
+      <button type="button" class="store-dialog__close" aria-label="Close download options" (click)="closeStoreDialog()">×</button>
+      <h2 id="store-dialog-title">Get the SuperMe App</h2>
+      <p>Choose where to download SuperMeApp.</p>
+      <div class="store-dialog__options">
+        <a [href]="googlePlayUrl" target="_blank" rel="noopener noreferrer" (click)="closeStoreDialog()">
+          <img [src]="googlePlayIcon" alt="" width="28" height="28" />
+          <span>Google Play</span>
+        </a>
+        <a [href]="appStoreUrl" target="_blank" rel="noopener noreferrer" (click)="closeStoreDialog()">
+          <img [src]="appStoreIcon" alt="" width="28" height="28" />
+          <span>App Store</span>
+        </a>
+      </div>
+    </section>
+  </div>
+}
+
+<!-- ========================================================= -->
+<!-- ACCOUNT PROMPT -->
+<!-- ========================================================= -->
+
+@if (showAccountPrompt) {
+  <div
+    class="account-gate"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="account-gate-title"
+    (click)="closeAccountPrompt()"
+  >
+    <div
+      class="account-gate__card"
+      (click)="$event.stopPropagation()"
+    >
+      <button
+        type="button"
+        class="account-gate__close"
+        aria-label="Close account prompt"
+        (click)="closeAccountPrompt()"
+      >
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+
+      <img
+        [src]="logoSrc"
+        alt="SuperMeApp"
+        width="512"
+        height="512"
+      />
+
+      <h2 id="account-gate-title">
+        Keep growing with SuperMeApp
+      </h2>
+
+      <p>
+        Log in or create your free account to continue exploring.
+      </p>
+
+      <a
+        [href]="mobileAppSignupUrl"
+        class="account-gate__primary"
+      >
+        Create an account
+      </a>
+
+      <a
+        [href]="mobileAppLoginUrl"
+        class="account-gate__secondary"
+        (click)="openLogin($event)"
+      >
+        Log in
+      </a>
+    </div>
+  </div>
+}

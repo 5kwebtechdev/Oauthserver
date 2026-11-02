@@ -1,0 +1,47 @@
+<div class="all-reels-container">
+  <!-- Header -->
+  <header class="all-reels-header">
+    <button class="back-btn" aria-label="Back" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true" focusable="false">
+        <path d="M13.2929 27.2929C12.9024 27.6834 12.9024 28.3166 13.2929 28.7071L19.6569 35.0711C20.0474 35.4616 20.6805 35.4616 21.0711 35.0711C21.4616 34.6805 21.4616 34.0474 21.0711 33.6569L15.4142 28L21.0711 22.3431C21.4616 21.9526 21.4616 21.3195 21.0711 20.9289C20.6805 20.5384 20.0474 20.5384 19.6569 20.9289L13.2929 27.2929ZM42 29C42.5523 29 43 28.5523 43 28C43 27.4477 42.5523 27 42 27V28V29ZM14 28V29H42V28V27H14V28Z" fill="#282527"/>
+      </svg>
+    </button>
+    <h1 class="all-reels-title">Bookmarked Reels</h1>
+  </header>
+
+  <!-- Bookmarked Reels Grid -->
+  <div class="categories-grid">
+    <!-- Science Wonders -->
+    <div class="category-card">
+      <div class="thumb-grid" aria-hidden="true">
+        <div class="thumb" *ngFor="let item of getPreviewImagesByTitle('Science Wonders'); let i = index">
+          <img [src]="item.image" [alt]="'Science Wonders thumbnail ' + i" />
+        </div>
+      </div>
+      <div class="category-title">Science Wonders</div>
+    </div>
+
+    <!-- Creative Arts -->
+    <div class="category-card">
+      <div class="thumb-grid" aria-hidden="true">
+        <div class="thumb" *ngFor="let item of getPreviewImagesByTitle('Creative Arts'); let i = index">
+          <img [src]="item.image" [alt]="'Creative Arts thumbnail ' + i" />
+        </div>
+      </div>
+      <div class="category-title">Creative Arts</div>
+    </div>
+
+    <!-- Comedy & Fun -->
+    <div class="category-card">
+      <div class="thumb-grid" aria-hidden="true">
+        <div class="thumb" *ngFor="let item of getPreviewImagesByTitle('Comedy & Fun'); let i = index">
+          <img [src]="item.image" [alt]="'Comedy & Fun thumbnail ' + i" />
+        </div>
+      </div>
+      <div class="category-title">Comedy & Fun</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

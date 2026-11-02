@@ -1,0 +1,15 @@
+<!-- Tutors / Guides section -->
+<section class="tutors-section">
+  <app-superme-home-header title="Your Guides to Greatness!" subtitle="Pick tutor · Learn · Level up"
+    linkText="View all" linkHref="/home/tutors">
+  </app-superme-home-header>
+  <div class="slider-wrapper">
+    <superme-button class="slider-btn slider-btn--prev" type="prev" (clickEvent)="prev()" [disabled]="currentStart === 0"></superme-button>
+    <div class="tutors-row">
+      @for (tutor of tutors | slice:currentStart:currentStart + visibleCount; track tutor) {
+        <app-tutor-card [tutor]="tutor" (viewProfileClick)="onViewProfile($event)"></app-tutor-card>
+      }
+    </div>
+    <superme-button class="slider-btn slider-btn--next" type="next" (clickEvent)="next()" [disabled]="isNextDisabled"></superme-button>
+  </div>
+</section>

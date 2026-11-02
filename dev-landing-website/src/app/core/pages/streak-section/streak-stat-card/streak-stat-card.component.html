@@ -1,0 +1,10 @@
+<div class="streak-stat-card" [class.large]="showLarge">
+  <div class="stat-title">{{ title }}</div>
+
+  <div class="stat-icon-wrap">
+    <img *ngIf="isImage" [src]="icon" [alt]="title + ' icon'" />
+    <div *ngIf="!isImage" class="stat-emoji">{{ icon }}</div>
+  </div>
+
+  <div class="stat-value">{{ value }}</div>
+</div>

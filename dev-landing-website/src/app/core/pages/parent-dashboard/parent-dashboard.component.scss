@@ -1,0 +1,594 @@
+.parent-dashboard-container {
+  width: 100%;
+}
+
+/* Edge-to-edge week bar */
+.parent-week-bar {
+  width: 100%;
+  padding: 0;
+
+  ::ng-deep superme-week {
+    display: block;
+    width: 100%;
+  }
+
+  ::ng-deep .week-nav-wrapper {
+    border-radius: 16px;
+    padding: 8px 12px;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  ::ng-deep .week-container {
+    gap: 0;
+  }
+
+  ::ng-deep .day-card {
+    height: 72px;
+    border-radius: 12px;
+    gap: 2px;
+    padding: 4px 0;
+
+    .day {
+      font-size: 14px;
+      font-weight: 600;
+      color: #282527;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .date {
+      font-size: 18px;
+      font-weight: 700;
+      color: #282527;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    &.selected {
+      background-color: #90214D;
+      .day, .date { color: #fff; }
+    }
+
+    &.today:not(.selected) {
+      border: none;
+      .day, .date { color: #90214D; font-weight: 700; }
+    }
+  }
+}
+
+// Top Header Section
+.top-header-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: url('/assets/Images-Thumbnails/Background-Home.png') center/cover no-repeat;
+  padding: 18px 36px;
+  
+}
+
+// Metrics Card
+.metrics-card {
+  background: white;
+  border-radius: 32px;
+  padding: 24px 12px;
+  box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+  flex-shrink: 0;
+}
+
+.metrics-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 167px;
+}
+
+// Mood Section
+
+
+.mood-content {
+  display: flex;
+  align-items: flex-start;
+}
+
+.mood-text-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mood-message {
+  font-family: 'Fredoka';
+  width: 360px;
+  font-size: 20px;
+  font-weight: 400;
+  color: #282527;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.mood-highlight {
+  background: linear-gradient(180deg, #90214D 0%, #EC819D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.mood-subtitle {
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #282527;
+  opacity: 0.7;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.mood-emoji-container {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mood-emoji-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-top: -22px;
+}
+
+.mood-emoji-fallback {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.edit-icon {
+  display: none;
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  z-index: 1;
+  cursor: pointer;
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+// Responsive Design
+@media (max-width: 768px) {
+  .parent-dashboard-container {
+    padding: 0 16px;
+  }
+
+  .top-header-section {
+    flex-direction: column;
+    padding-top: 16px;
+  }
+
+  .metrics-container {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .metric-item {
+    width: 140px;
+  }
+
+  .mood-section {
+    max-width: 100%;
+  }
+
+  .mood-content {
+    gap: 16px;
+  }
+}
+
+/* Child Progress Section */
+.child-progress-section {
+  margin-top: 12px;
+    padding: 16px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+h2 {
+  font-family: 'Fredoka';
+  font-size: 20px;
+  margin: 0;
+}
+
+.header-actions{
+  color: #90214D;
+  font-family: Nunito;
+  font-size: 25px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 35px */
+  /* remove underline/border lines from header actions */
+  text-decoration: none;
+  cursor: default;
+}
+
+/* Make the Add Child button borderless and inherit header styles */
+.header-actions .add-child {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-decoration: none; /* ensure no underline */
+}
+
+.header-actions .add-child:focus {
+  outline: none;
+}
+
+
+.week-nav-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.week-day-calendar{
+    border-radius: 32px;
+background: #FFF;
+padding: 16px;
+box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+/* Habit / Task Tabs */
+.habit-task-tabs-with-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 56px;
+  margin: 16px 0;
+}
+
+.habit-task-tabs-with-line .tab {
+  position: relative;
+  padding: 8px 6px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #282527;
+  cursor: pointer;
+  user-select: none;
+}
+
+.habit-task-tabs-with-line .tab::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 0;
+  transition: height 160ms ease, background 160ms ease;
+}
+
+.habit-task-tabs-with-line .tab.active::after {
+  height: 4px;
+  background: linear-gradient(90deg, #90214D 0%, #EC819D 100%);
+  border-radius: 2px;
+}
+
+.habit-task-tabs-with-line .divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(0,0,0,0.08);
+}
+
+/* Habits Tab Content */
+.habits-content {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 16px;
+  /* make columns fluid to the available screen width and avoid horizontal scroll */
+  flex-wrap: nowrap;
+}
+
+.habits-column {
+  /* allow columns to grow/shrink with the screen width; prevent overflow by allowing shrink below content widths */
+  flex: 1 1 0;
+  min-width: 0; /* important for flex children to shrink properly */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.column-header {
+  padding: 0 16px;
+}
+
+.column-title {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+  margin: 0;
+}
+
+/* Filter Pills */
+.filter-pills {
+  display: flex;
+  gap: 16px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-pill {
+  border: 1px solid #90214D;
+  background: transparent;
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.4;
+  padding: 10px 16px;
+  height: 42px;
+  border-radius: 26px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &.active {
+    background: #90214D;
+    color: #FDFDFD;
+  }
+
+  &:hover:not(.active) {
+    background: rgba(144, 33, 77, 0.05);
+  }
+}
+
+/* Priority filter colors */
+.filter-pill.priority-high.active {
+  background: #BB2124;
+  border-color: #BB2124;
+}
+
+.filter-pill.priority-medium {
+  border-color: #F0AD4E;
+  
+  &.active {
+    background: #F0AD4E;
+    border-color: #F0AD4E;
+  }
+}
+
+.filter-pill.priority-low {
+  border-color: #4CAF50;
+  
+  &.active {
+    background: #4CAF50;
+    border-color: #4CAF50;
+  }
+}
+
+/* Routine filter stays with default magenta */
+.filter-pill.routine-pill.active {
+  background: #90214D;
+  border-color: #90214D;
+}
+
+/* Habits List */
+.habits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 0 12px;
+}
+
+/* ===== Activity card — copied from child /home design ===== */
+
+.activity-wrapper {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px 12px 24px;
+  gap: 2px;
+  border-radius: 16px;
+  border-left: 4px solid #8B8DCB;
+  background: #FFF;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+  transition: transform 0.18s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  &.task {
+    border-left-color: #F6AC72;
+  }
+}
+
+.card-header-inner {
+  width: 100%;
+}
+
+.card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.activity-title {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 140%;
+  color: #524F84;
+  margin: 0;
+
+  &.task-title { color: #E04D16; }
+}
+
+.activity-timing {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 140%;
+  color: #6360A2;
+  margin: 0;
+}
+
+.task-timing {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 140%;
+  color: #BB2124;
+  margin: 0;
+}
+
+.card-badge {
+  display: flex;
+  align-items: center;
+  padding: 5px 16px;
+  height: 24px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  color: #45456A;
+  border-radius: 16px;
+  border: 1px solid #524F84;
+  background: #E8ECF7;
+  white-space: nowrap;
+
+  &.task-badge {
+    border-color: #EE6621;
+    background: #FDEAD7;
+    color: #772817;
+  }
+}
+
+.routine-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* Expandable section — hidden by default, slides in on hover/click */
+.activity-expandable-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+
+  &.expanded {
+    max-height: 500px;
+    opacity: 1;
+    transition: max-height 0.5s ease-in, opacity 0.3s ease-in;
+  }
+}
+
+.activity-footer-container {
+  display: flex;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.reward-section {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex: 1;
+}
+
+.reward-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reward-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.reward-value {
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #282527;
+  line-height: 140%;
+  margin: 0;
+}
+
+.footer-cta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.activity-btn {
+  display: inline-flex;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 1400px) {
+  .habits-content {
+    /* on narrower screens keep columns fluid and allow wrapping to stack if needed */
+    flex-wrap: wrap;
+  }
+
+  .habits-column {
+    flex-shrink: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .habits-content {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .habits-column {
+    flex: 1;
+    min-width: 100%;
+  }
+}

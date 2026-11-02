@@ -1,0 +1,45 @@
+<div class="faq-page-wrapper">
+  <app-public-navbar></app-public-navbar>
+
+  <div class="faq-page">
+    <div class="faq-container">
+      <header class="faq-header">
+        <h1>Frequently Asked Questions</h1>
+        <p>Get quick answers to the most common questions about SuperMe App</p>
+      </header>
+
+      <nav class="faq-toc" aria-label="FAQ table of contents">
+        <button
+          type="button"
+          class="toc-link"
+          *ngFor="let section of faqSections"
+          (click)="scrollToSection(section.id)"
+        >
+          {{ section.title }}
+        </button>
+      </nav>
+
+      <section
+        *ngFor="let section of faqSections"
+        class="faq-section"
+        [attr.id]="section.id"
+      >
+        <h2>{{ section.title }}</h2>
+        <div class="faq-accordion-wrap">
+          <superme-facts [faqs]="section.items" [heading]="''"></superme-facts>
+        </div>
+      </section>
+
+      <div class="help-section">
+        <h2>Still Need Help?</h2>
+        <p>Reach out to our team</p>
+        <p>
+          <span>Email: </span>
+          <a routerLink="/contact-us">supermeappofficial@gmail.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <app-common-footer></app-common-footer>
+</div>

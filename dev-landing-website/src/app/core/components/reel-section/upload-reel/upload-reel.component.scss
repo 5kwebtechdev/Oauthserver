@@ -1,0 +1,291 @@
+.guidelines-container{
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  align-items:center;
+  padding:32px 16px 48px;
+  background: #fff;
+}
+
+.upload-header{
+  width:100%;
+  max-width:880px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:18px;
+}
+.back-btn{
+  background:transparent;
+  border:none;
+  font-size:20px;
+  cursor:pointer;
+}
+.title{
+    flex-grow:1;
+  text-align: center;
+}
+.title h1{
+  margin:0;
+  color: #282527;
+font-family: Fredoka;
+font-size: 25px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 35px */
+  text-align:center;
+}
+.subtitle{
+  margin:4px 0 0;
+  color: #282527;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 28px */
+  text-align:center;
+}
+
+.card{
+  width:100%;
+  max-width:780px;
+  background:#f3f3f3;
+  border-radius:18px;
+  padding:36px 40px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  align-items:center;
+}
+
+.guidelines-top{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.info-icon{font-size:18px;color:#8a8a8a}
+.guidelines-heading{margin:0;color:#666}
+
+.guidelines-list, .not-list{
+  width:100%;
+  max-width:680px;
+  margin:0;
+  padding-left:20px;
+  color:#222;
+  font-size:16px;
+}
+.guidelines-list li, .not-list li{margin:14px 0}
+
+.separator{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:6px;
+}
+.not-allowed-badge{color:#f15f5a;font-weight:700}
+.not-allowed-text{color:#d1524d}
+
+.upload-area{margin-top:10px;display:flex;justify-content:center;width:100%}
+.upload-btn{
+  background:#ff8f89;
+  border:none;
+  width: 100%;
+  color:#fff;
+  padding:14px 22px;;
+  align-items: center;
+  justify-content: center;
+  border-radius:8px;
+  font-weight:600;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.06);
+}
+.upload-btn .camera{font-size:18px;
+align-items: center;}
+
+.page-footer{width:100%;margin-top:22px}
+
+@media (max-width:600px){
+  .card{padding:20px}
+  .title h1{font-size:18px}
+  .guidelines-list, .not-list{font-size:15px}
+}
+
+/* Upload modal styles (matches Figma layout) */
+.upload-modal{
+ display: flex;
+width: 1297.5px;
+transform: rotate(-0.027deg);
+flex-direction: column;
+justify-content: center;
+align-items: center;
+gap: 64px;
+}
+
+
+
+.upload-reel-header{
+  display: flex-start;
+align-items: center;
+display: flex;
+gap: 500px;
+flex: 1 0 0;
+}
+
+/* Close button inside upload modal: no borders or outlines */
+.upload-reel-header .close-btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 6px; /* keep a comfortable hit target */
+  cursor: pointer;
+}
+
+.upload-reel-header .close-btn:focus {
+  outline: none;
+}
+
+
+
+.modal-title{
+  margin:0;
+  color: #282527;
+font-family: Fredoka;
+font-size: 25px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 35px */
+}
+
+.preview-area{
+  width:260px;
+  height:360px;
+  border-radius:18px;
+  overflow:hidden;
+  background: linear-gradient(180deg, #111 0%, #1a1a1a 100%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.preview-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.preview-placeholder{
+  color:#8a8a8a;
+  font-size:14px;
+}
+
+.form-row{
+  display: flex;
+padding-bottom: 8px;
+flex-direction: column;
+align-items: flex-start;
+gap: 16px;
+align-self: stretch;
+}
+.form-row label{color: #282527;
+text-align: center;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 28px */
+opacity: 0.7;
+}
+.form-row input[type="text"], .form-row select{
+  border:none;
+  border-bottom:1px solid rgba(0,0,0,0.12);
+  padding:8px 4px;
+  color: #282527;
+  text-align: left;
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 22.4px */
+}
+.form-row input::placeholder{color:#9a9a9a}
+
+.ai-toggle{display: flex;
+justify-content: space-between;
+align-items: flex-start;
+align-self: stretch;}
+
+.ai-text { display: flex;
+flex-direction: column;
+align-items: flex-start;
+gap: 8px;
+flex: 1 0 0; }
+.ai-title {color:#282527; font-family: Nunito; font-weight:700; font-size:20px; margin:0; }
+.ai-sub { width: 282px; color:#666; font-family: Nunito; font-size:16px; line-height:1.3; }
+
+/* Larger pill-style toggle to match design */
+.switch{position:relative;display:inline-block;width:56px;height:32px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#E9E9EA;border-radius:999px;transition:.18s;border: none}
+.slider:before{position:absolute;content:"";height:26px;width:26px;left:3px;top:3px;background:#FFFFFF;border-radius:50%;transition:.18s;box-shadow:0 2px 4px rgba(0,0,0,0.12)}
+/* active knob color and movement */
+.switch input:checked + .slider{background:#F0EAF0;}
+.switch input:checked + .slider:before{transform:translateX(24px);background:#90214D}
+.switch input:focus + .slider{box-shadow:0 0 0 4px rgba(144,33,77,0.08)}
+
+.actions{width:100%;display:flex;justify-content:center;padding-top:6px}
+.share-btn{
+  background:#ff8f89;
+  color:#fff;
+  border:none;
+  padding:12px 34px;
+  border-radius:8px;
+  font-weight:700;
+  cursor:pointer;
+}
+.details-form {
+  display: flex;
+flex-direction: column;
+align-items: flex-start;
+gap: 48px;
+margin-top: 20px;
+align-self: stretch;
+}
+
+@media (max-width:480px){
+  .upload-modal{padding:18px}
+  .preview-area{width:200px;height:300px}
+}
+
+/* Make Superme button inside actions fill the available width */
+.actions > superme-button {
+  display: block;
+  width: 100%;
+}
+
+/* Styled select to match design: remove native arrow, add custom chevron and placeholder color */
+.form-row select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  /* chevron svg as data URL (gray) */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23666' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px 8px;
+  padding-right: 36px; /* room for chevron */
+  height: 40px;
+  display: inline-block;
+}
+
+/* show placeholder style when no selection (select is required and placeholder option has empty value) */
+.form-row select:invalid {
+  color: #9a9a9a; /* muted placeholder color */
+}
+
+.form-row select option { color: #282527; }

@@ -1,0 +1,165 @@
+<div class="flex flex-col w-full min-h-screen bg-white">
+  <app-public-navbar></app-public-navbar>
+
+  <main class="flex-1 flex flex-col pb-[100px]" style="padding-top: clamp(0px, 8vw, 0px)">
+    @if (isLoading()) {
+      <div class="flex items-center justify-center py-[120px]">
+        <svg class="animate-spin" width="40" height="40" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="20" stroke="#e5e7eb" stroke-width="4"/>
+          <path d="M44 24a20 20 0 0 0-20-20" stroke="#505D83" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+    } @else if (error()) {
+      <p class="text-center font-['Nunito',sans-serif] text-[#6b656a] py-[120px]">Failed to load tutor profile.</p>
+    } @else {
+    <div class="max-w-[640px] mx-auto w-full px-[20px] min-[900px]:px-[24px] py-[16px] min-[900px]:py-[24px]">
+      <a
+        routerLink="/find-a-tutor"
+        class="inline-flex items-center justify-center w-[40px] h-[40px] rounded-full no-underline hover:bg-[#f5f6f8] transition-colors mb-[8px]"
+        aria-label="Back to find a tutor"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M19 12H6m0 0l5-5m-5 5l5 5"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </a>
+
+      <div class="flex flex-col items-center text-center">
+        <div class="w-[120px] h-[120px] min-[900px]:w-[140px] min-[900px]:h-[140px] rounded-full overflow-hidden bg-[#e5edf4] shrink-0 ring-1 ring-[#e3e8f0]">
+          <img [src]="profile().avatar" [alt]="profile().name + ' profile photo'" class="w-full h-full object-cover object-center" />
+        </div>
+        <h1 class="mt-[14px] font-['Nunito',sans-serif] font-bold text-[#1a1a1a]" style="font-size: 1.25rem; line-height: 1.3">
+          {{ profile().name }}
+        </h1>
+        <p class="mt-[6px] font-['Nunito',sans-serif] font-normal text-[#8a8a95] max-w-[320px]" style="font-size: 0.8rem; line-height: 1.45">
+          {{ profile().headline }}
+        </p>
+
+        <div class="mt-[22px] flex items-stretch justify-center gap-0 w-full max-w-[420px]">
+          <div class="flex-1 flex flex-row items-center justify-center gap-[6px] px-[6px] min-w-0">
+            <svg class="text-[#7284B9] shrink-0" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor" />
+            </svg>
+            <span class="font-['Nunito',sans-serif] font-medium text-[#6b6b76] text-center whitespace-nowrap" style="font-size: 0.8rem; line-height: 1.4">{{ profile().experience }}</span>
+          </div>
+          <div class="w-px self-stretch min-h-[52px] bg-[#e0e0e6] shrink-0 my-[2px]" aria-hidden="true"></div>
+          <div class="flex-1 flex flex-row items-center justify-center gap-[6px] px-[6px] min-w-0">
+            <svg class="text-[#e1527c] shrink-0" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" fill="currentColor" />
+            </svg>
+            <span class="font-['Nunito',sans-serif] font-medium text-[#6b6b76] text-center whitespace-nowrap" style="font-size: 0.8rem; line-height: 1.4">{{ profile().likes }}</span>
+          </div>
+          <div class="w-px self-stretch min-h-[52px] bg-[#e0e0e6] shrink-0 my-[2px]" aria-hidden="true"></div>
+          <div class="flex-1 flex flex-row items-center justify-center gap-[6px] px-[6px] min-w-0">
+            <svg class="text-[#505D83] shrink-0" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L23 9 12 3zm-1 5.09L6.26 9 12 11.82 17.74 9 12 8.09zM11 13.16l-6 3.27V18l6 3.27V13.16zm2 0v8.11l6-3.27v-1.57l-6-3.27z" />
+            </svg>
+            <span class="font-['Nunito',sans-serif] font-medium text-[#6b6b76] text-center whitespace-nowrap" style="font-size: 0.8rem; line-height: 1.4">{{ profile().students }}</span>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="mt-[28px] mb-[14px] text-center font-['Nunito',sans-serif] font-bold text-[#282527]" style="font-size: 0.95rem; line-height: 1.35 ; margin-top: 4%;">
+        What I teach
+      </h2>
+
+      <div class="grid grid-cols-[auto_1fr] gap-x-[14px] gap-y-[14px] max-w-[520px] mx-auto w-full text-left">
+        <span class="font-['Nunito',sans-serif] font-medium text-[#8a8a95] pt-[1px]" style="font-size: 0.8rem; line-height: 1.45">Subjects</span>
+        <span class="font-['Nunito',sans-serif] font-semibold text-[#282527]" style="font-size: 0.8rem; line-height: 1.45">{{ profile().subjects }}</span>
+        <span class="font-['Nunito',sans-serif] font-medium text-[#8a8a95] pt-[1px]" style="font-size: 0.8rem; line-height: 1.45">Class</span>
+        <span class="font-['Nunito',sans-serif] font-semibold text-[#282527]" style="font-size: 0.8rem; line-height: 1.45">{{ profile().classLevels }}</span>
+        <span class="font-['Nunito',sans-serif] font-medium text-[#8a8a95] pt-[1px]" style="font-size: 0.8rem; line-height: 1.45">Board</span>
+        <span class="font-['Nunito',sans-serif] font-semibold text-[#282527]" style="font-size: 0.8rem; line-height: 1.45">{{ profile().boards }}</span>
+      </div>
+
+      <div
+        class="mt-[26px] rounded-[15px] border border-[#e2e8f0] px-[22px] py-[22px] min-[900px]:px-[26px] min-[900px]:py-[26px]"
+        style="background-color: #f0f4f8; box-shadow: 0px 0px 8px 2px #6b656a26"
+      >
+        <div class="flex flex-col gap-[24px]">
+          <div class="flex gap-[14px] items-start">
+            <span class="shrink-0 mt-[1px] w-[32px] h-[32px] flex items-center justify-center">
+              <img src="assets/Landing/Tutor-Mode.png" alt="" class="w-full h-full object-contain" width="36" height="48" />
+            </span>
+            <div class="min-w-0 flex-1 grid grid-cols-[128px_1fr] items-center gap-x-[26px] gap-y-[4px]">
+              <span class="font-['Nunito',sans-serif] font-medium text-[#8a8a95] whitespace-nowrap" style="font-size: 0.8rem; line-height: 1.4">Mode</span>
+              <p class="font-['Nunito',sans-serif] font-semibold text-[#1a1a1a] m-0" style="font-size: 0.8rem; line-height: 1.45">{{ profile().mode }}</p>
+            </div>
+          </div>
+          <div class="flex gap-[14px] items-start">
+            <span class="shrink-0 mt-[1px] w-[32px] h-[32px] flex items-center justify-center">
+              <img src="assets/Landing/Tutor-LanguageSpoken.png" alt="" class="w-full h-full object-contain" width="36" height="48" />
+            </span>
+            <div class="min-w-0 flex-1 grid grid-cols-[128px_1fr] items-center gap-x-[26px] gap-y-[4px]">
+              <span class="font-['Nunito',sans-serif] font-medium text-[#8a8a95] whitespace-nowrap" style="font-size: 0.8rem; line-height: 1.4">Languages Spoken</span>
+              <p class="font-['Nunito',sans-serif] font-semibold text-[#1a1a1a] m-0" style="font-size: 0.8rem; line-height: 1.45">{{ profile().languages }}</p>
+            </div>
+          </div>
+          <div class="flex gap-[14px] items-start">
+            <span class="shrink-0 mt-[1px] w-[32px] h-[32px] flex items-center justify-center">
+              <img src="assets/Landing/Tutor-Qualification.png" alt="" class="w-full h-full object-contain" width="36" height="48" />
+            </span>
+            <div class="min-w-0 flex-1 grid grid-cols-[128px_1fr] items-center gap-x-[26px] gap-y-[4px]">
+              <span class="font-['Nunito',sans-serif] font-medium text-[#8a8a95] whitespace-nowrap" style="font-size: 0.8rem; line-height: 1.4">Qualification</span>
+              <p class="font-['Nunito',sans-serif] font-semibold text-[#1a1a1a] m-0" style="font-size: 0.8rem; line-height: 1.45">{{ profile().qualification }}</p>
+            </div>
+          </div>
+          <div class="flex gap-[14px] items-start">
+            <span class="shrink-0 mt-[1px] w-[32px] h-[32px] flex items-center justify-center">
+              <img src="assets/Landing/Tutor-TimeDay.png" alt="" class="w-full h-full object-contain" width="36" height="48" />
+            </span>
+            <div class="min-w-0 flex-1 grid grid-cols-[128px_1fr] items-center gap-x-[26px] gap-y-[4px]">
+              <span class="font-['Nunito',sans-serif] font-medium text-[#8a8a95] whitespace-nowrap" style="font-size: 0.8rem; line-height: 1.4">Days &amp; Time</span>
+              <p class="font-['Nunito',sans-serif] font-semibold text-[#1a1a1a] m-0" style="font-size: 0.8rem; line-height: 1.45">{{ profile().schedule }}</p>
+            </div>
+          </div>
+          <div class="flex gap-[14px] items-start">
+            <span class="shrink-0 mt-[1px] w-[32px] h-[32px] flex items-center justify-center">
+              <img src="assets/Landing/Tutor-Location.png" alt="" class="w-full h-full object-contain" width="36" height="48" />
+            </span>
+            <div class="min-w-0 flex-1 grid grid-cols-[128px_1fr] items-start gap-x-[26px] gap-y-[4px]">
+              <span class="font-['Nunito',sans-serif] font-medium text-[#8a8a95] whitespace-nowrap" style="font-size: 0.8rem; line-height: 1.4">Location</span>
+              <p class="font-['Nunito',sans-serif] font-semibold text-[#1a1a1a] m-0" style="font-size: 0.8rem; line-height: 1.45">{{ profile().location }}</p>
+              <a
+                class="col-start-2 font-['Nunito',sans-serif] font-semibold text-[#2563eb] underline mt-[2px] self-start"
+                style="font-size: 0.8rem; line-height: 1.4"
+                [href]="mapHref()"
+                target="_blank"
+                rel="noopener noreferrer"
+              >See on map</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    } <!-- end @else -->
+  </main>
+
+  <div
+    class="bottom-0 left-0 right-0 z-[90] border-t border-[#ebedf0] bg-white px-[16px] py-[12px] min-[900px]:py-[14px] flex items-center justify-between gap-[12px] max-w-[100vw]"
+    style="box-shadow: 0 -2px 12px rgba(0,0,0,0.06)"
+  >
+    <div class="max-w-[640px] mx-auto w-full flex items-center justify-between gap-[12px] px-[20px]">
+      <div class="font-['Nunito',sans-serif] font-semibold text-[#282527]" style="font-size: 0.8rem; line-height: 1.4">
+        ₹{{ profile().rate }} / Hour
+      </div>
+      <button
+        type="button"
+        class="flex items-center justify-center font-['Nunito',sans-serif] font-semibold text-white cursor-pointer"
+        style="width: 342px; height: 42px; gap: 8px; border-radius: 4px; border: 1px solid #45506A; padding: 8px 12px; background: #505D83; font-size: 1rem;"
+        (click)="contactNow()"
+      >
+        Contact Now
+      </button>
+    </div>
+  </div>
+
+
+    <app-common-footer></app-common-footer>
+ 
+</div>

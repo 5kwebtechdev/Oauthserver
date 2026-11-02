@@ -1,0 +1,53 @@
+<div class="stf-row">
+  <button type="button" class="stf-trigger" [class.active]="selectedBrands.length" (click)="openDialog('brand')">
+    Brand
+    <span class="stf-count" *ngIf="selectedBrands.length">{{ selectedBrands.length }}</span>
+    <svg class="stf-chev" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <button type="button" class="stf-trigger" [class.active]="selectedPageCounts.length" (click)="openDialog('pageCount')">
+    Page Count
+    <span class="stf-count" *ngIf="selectedPageCounts.length">{{ selectedPageCounts.length }}</span>
+    <svg class="stf-chev" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+</div>
+
+<div class="stf-dialog-backdrop" *ngIf="dialogOpen" (click)="closeDialog()">
+  <div class="stf-dialog" (click)="$event.stopPropagation()">
+    <div class="stf-dialog-head">
+      <h3>Filters</h3>
+      <button type="button" class="stf-dialog-close" aria-label="Close filters" (click)="closeDialog()">✕</button>
+    </div>
+
+    <div class="stf-dialog-body">
+      <div class="stf-tabs">
+        <button type="button" [class.active]="activeTab === 'brand'" (click)="activeTab = 'brand'">
+          Brand
+        </button>
+        <button type="button" [class.active]="activeTab === 'pageCount'" (click)="activeTab = 'pageCount'">
+          Page Count
+        </button>
+      </div>
+
+      <div class="stf-dialog-options">
+        <ng-container *ngIf="activeTab === 'brand'">
+          <label class="stf-dialog-option" *ngFor="let brand of brands">
+            <span>{{ brand }}</span>
+            <input type="checkbox" [checked]="isChecked(draftBrands, brand)" (change)="toggleDraft('brand', brand)">
+          </label>
+        </ng-container>
+        <ng-container *ngIf="activeTab === 'pageCount'">
+          <label class="stf-dialog-option" *ngFor="let count of pageCounts">
+            <span>{{ count }}</span>
+            <input type="checkbox" [checked]="isChecked(draftPageCounts, count)" (change)="toggleDraft('pageCount', count)">
+          </label>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="stf-dialog-footer">
+      <button type="button" class="stf-clear" (click)="clearAll()">Clear all</button>
+      <button type="button" class="stf-apply" (click)="apply()">Show {{ resultCount }} products</button>
+    </div>
+  </div>
+</div>

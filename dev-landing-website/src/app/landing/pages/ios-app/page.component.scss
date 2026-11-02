@@ -1,0 +1,322 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.ios-app-page {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #ffffff;
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+}
+
+.ios-app-main {
+  width: 100%;
+  padding-top: 104px;
+}
+
+.ios-app-hero {
+  display: grid;
+  width: min(100%, 1440px);
+  min-height: 556px;
+  margin-inline: auto;
+  padding-inline: 80px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 476px);
+  align-items: center;
+  gap: 104px;
+}
+
+.ios-app-hero__copy {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.ios-app-hero h1 {
+  display: flex;
+  margin: 0;
+  flex-direction: column;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.23;
+  letter-spacing: -1.2px;
+}
+
+.ios-app-hero__super {
+  position: relative;
+  display: inline-block;
+  margin-right: 4px;
+  background: linear-gradient(90deg, #8b8dcb 0%, #89b3b6 34%, #f6ac72 67%, #e1527c 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.ios-app-hero__super img {
+  position: absolute;
+  right: 0;
+  bottom: -7px;
+  display: block;
+  width: 166px;
+  height: 8px;
+  object-fit: fill;
+}
+
+.ios-app-hero__description {
+  width: min(100%, 500px);
+  margin: 0;
+  color: #6b656a;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.ios-app-notify {
+  display: flex;
+  width: min(100%, 396px);
+  min-width: 0;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ios-app-notify__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ios-app-notify__heading h2,
+.ios-app-notify__heading p,
+.ios-app-notify__status p {
+  margin: 0;
+}
+
+.ios-app-notify__heading h2 {
+  color: #432477;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.ios-app-notify__heading p {
+  color: #6b656a;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.ios-app-notify__form {
+  display: flex;
+  width: 100%;
+  min-height: 52px;
+  overflow: hidden;
+  align-items: stretch;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 0 2px 0.5px rgba(67, 36, 119, 0.5);
+}
+
+.ios-app-notify__form input {
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 0;
+  outline: 0;
+  padding: 14px 16px;
+  background: transparent;
+  color: #282527;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ios-app-notify__form input::placeholder {
+  color: #9a9599;
+  opacity: 1;
+}
+
+.ios-app-notify__form input:focus-visible {
+  box-shadow: inset 0 0 0 2px rgba(67, 36, 119, 0.35);
+}
+
+.ios-app-notify__form button {
+  display: inline-flex;
+  min-width: 136px;
+  min-height: 52px;
+  flex: 0 0 auto;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 0 20px 20px 0;
+  padding: 12px 16px;
+  background: #432477;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.ios-app-notify__form button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.ios-app-notify__form button:focus-visible {
+  outline: 3px solid rgba(67, 36, 119, 0.3);
+  outline-offset: -3px;
+}
+
+.ios-app-notify__form button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.ios-app-notify__form button img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.ios-app-notify__status {
+  min-height: 20px;
+  margin-top: -10px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ios-app-notify__error {
+  color: #b91c1c;
+}
+
+.ios-app-notify__success {
+  color: #28773b;
+}
+
+.ios-app-hero__visual {
+  display: flex;
+  min-width: 0;
+  min-height: 556px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.ios-app-hero__visual img {
+  display: block;
+  width: min(100%, 476px);
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 1320px) {
+  .ios-app-hero {
+    padding-inline: 48px;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+    gap: 56px;
+  }
+
+  .ios-app-hero h1 {
+    font-size: 42px;
+  }
+}
+
+@media (max-width: 860px) {
+  .ios-app-hero {
+    min-height: auto;
+    padding: 56px 32px 32px;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .ios-app-hero__copy {
+    width: min(100%, 640px);
+    margin-inline: auto;
+  }
+
+  .ios-app-hero__visual {
+    min-height: auto;
+    justify-content: center;
+  }
+
+  .ios-app-hero__visual img {
+    width: min(100%, 440px);
+  }
+}
+
+@media (max-width: 640px) {
+  .ios-app-main {
+    padding-top: 80px;
+  }
+
+  .ios-app-hero {
+    padding: 40px 20px 24px;
+    gap: 24px;
+  }
+
+  .ios-app-hero__copy {
+    gap: 24px;
+  }
+
+  .ios-app-hero h1 {
+    font-size: clamp(32px, 9.5vw, 40px);
+    line-height: 1.2;
+    letter-spacing: -0.7px;
+  }
+
+  .ios-app-hero__super img {
+    width: 100%;
+  }
+
+  .ios-app-hero__description {
+    font-size: 16px;
+  }
+
+  .ios-app-notify__form button {
+    min-width: 124px;
+    padding-inline: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .ios-app-notify__form {
+    overflow: visible;
+    flex-direction: column;
+    gap: 10px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .ios-app-notify__form input,
+  .ios-app-notify__form button {
+    width: 100%;
+    min-height: 52px;
+    border-radius: 20px;
+  }
+
+  .ios-app-notify__form input {
+    box-shadow: 0 0 2px 0.5px rgba(67, 36, 119, 0.5);
+  }
+}

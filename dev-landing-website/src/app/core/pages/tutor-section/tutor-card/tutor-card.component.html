@@ -1,0 +1,74 @@
+<article
+  class="tutor-card"
+  role="button"
+  tabindex="0"
+  (click)="onCardClick()"
+  (keyup)="onCardKeyPress($event)"
+  [attr.aria-label]="'Tutor profile: ' + tutor.name"
+>
+  <!-- Thumbnail Section -->
+  <div class="tutor-thumbnail">
+    <img
+      [src]="avatarUrl"
+      [alt]="tutor.name || 'Tutor avatar'"
+      class="tutor-avatar"
+      loading="lazy"
+    />
+  </div>
+
+  <!-- Content Section -->
+  <div class="tutor-content">
+    <!-- Header: Name and Rating -->
+    <div class="tutor-header">
+      <div class="tutor-name-section">
+        <h3 class="tutor-name">{{ tutor.name }}</h3>
+      </div>
+
+      <div class="tutor-rating">
+        <img
+          [src]="likeIcon"
+          alt="Rating"
+          class="rating-icon"
+          loading="lazy"
+        />
+        <span class="rating-text">{{ ratingCount }} | {{ tutor.experience }}</span>
+      </div>
+    </div>
+
+    <!-- Subjects and Classes Section -->
+    <div class="tutor-details">
+      <div class="subjects-classes">
+        <p class="subjects">{{ roleDisplay }}</p>
+        <p class="classes">{{ levelsDisplay }}</p>
+      </div>
+
+      <!-- Available Hours Section -->
+      <div class="available-hours">
+        <img
+          [src]="timeIcon"
+          alt="Available hours"
+          class="time-icon"
+          loading="lazy"
+        />
+        <span class="hours-text">{{ timingDisplay }}</span>
+      </div>
+    </div>
+
+    <!-- Footer: Fees and Action Button -->
+    <div class="tutor-footer">
+      <div class="fees-section">
+        <span class="currency">₹</span>
+        <span class="amount">{{ rateDisplay }}</span>
+        <span class="unit">{{ tutor.priceUnit || '/ Hour' }}</span>
+      </div>
+
+      <superme-button
+        type="columbian-blue"
+        size="medium"
+        text="View Profile"
+        (clickEvent)="onViewProfileClick(); $event.stopPropagation()"
+        [attr.aria-label]="'View tutor profile'"
+      ></superme-button>
+    </div>
+  </div>
+</article>

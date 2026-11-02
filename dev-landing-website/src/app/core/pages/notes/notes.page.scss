@@ -1,0 +1,170 @@
+:root {
+  --card-bg: #ffffff;
+  --card-border: rgba(0,0,0,0.06);
+  --muted: #6b6b6b;
+}
+
+.notes-page-container{
+  width: 100%;
+padding: 0 22px;
+}
+
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.notes-button {
+    display: flexbox;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+}
+
+.filters{
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.search-sort {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  min-width: 200px;
+  font-size: 14px;
+}
+
+.search-input::placeholder {
+  color: #999;
+}
+
+.notes-title {
+   color: #282527;
+font-family: Fredoka;
+font-size: 25px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 35px */
+margin-top: 1rem;
+
+}
+
+  .add-notes {
+    display: flex;
+    width: 165px;
+    margin-top: 16px;
+    flex-direction: column; /* stack vertically: Add button on top, sort below */
+    gap: 8px;
+    align-items: flex-end; /* right align the controls */
+  }
+
+.sort-dropdown-wrapper {
+  position: relative;
+  margin-top: 2rem;
+}
+
+.sort-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.5rem 1rem;
+  border-radius: 33px;
+  border: none;
+  background: #FFF;
+  box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.15);
+  font-family: Nunito;
+  font-weight: 600;
+  color: #282527;
+  cursor: pointer;
+}
+
+.sort-trigger .chevron {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.sort-trigger .chevron.open {
+  transform: rotate(180deg);
+}
+
+.sort-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 180px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(107, 101, 106, 0.18);
+  border: 1px solid #ebedf0;
+  padding: 8px 0;
+  z-index: 50;
+}
+
+.sort-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  font-family: Nunito;
+  font-size: 14px;
+  color: #282527;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sort-option:hover {
+  background: #f5f6f8;
+}
+
+.sort-option .check {
+  color: #90214d;
+  font-weight: 700;
+}
+
+.notes-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 56px;
+  margin-top: 24px;
+}
+
+/* Empty state styles */
+.empty-state {
+  grid-column: 1 / -1; /* span the full width of the grid */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 12px 56px 12px;
+}
+
+
+/* Slightly larger layout on wide screens to approximate Figma */
+@media (min-width: 1200px) {
+  .notes-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+
+

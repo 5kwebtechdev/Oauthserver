@@ -1,0 +1,36 @@
+<div class="empty-state" [ngClass]="'empty-state--' + variant">
+  <!-- Items Container with Image and Text -->
+  <div class="empty-state__items">
+    <!-- Image Section -->
+    <div class="empty-state__image-container" *ngIf="image">
+      <img [src]="image" alt="" class="empty-state__image" />
+    </div>
+
+    <!-- Text Content -->
+    <div class="empty-state__text-content">
+      <h2 class="empty-state__title">{{ title }}</h2>
+      <p class="empty-state__description">{{ description }}</p>
+    </div>
+  </div>
+
+  <!-- Actions Container -->
+  <div class="empty-state__actions" [ngClass]="{ 'has-secondary': showSecondaryButton }">
+    <superme-button
+      *ngIf="showPrimaryButton"
+      [type]="'magenta'"
+      size="large"
+      [text]="actionButtonText"
+      (clickEvent)="onPrimaryAction()"
+      aria-label="Primary action">
+    </superme-button>
+
+    <superme-button
+      *ngIf="showSecondaryButton"
+      [type]="'magenta'"
+      size="large"
+      [text]="secondaryButtonText"
+      (clickEvent)="onSecondaryAction()"
+      aria-label="Secondary action">
+    </superme-button>
+  </div>
+</div>

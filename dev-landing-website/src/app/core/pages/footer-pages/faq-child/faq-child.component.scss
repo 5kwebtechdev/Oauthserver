@@ -1,0 +1,274 @@
+// CSS Variables
+:host {
+  --color-primary: #90214D;
+  --color-secondary: #282527;
+  --color-shadow: rgba(107, 101, 106, 0.1);
+  --color-bg-page: #F5F5F5;
+  --font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+}
+
+.faq-page-wrapper {
+  font-family: var(--font-family);
+}
+
+.faq-page {
+  background: var(--color-bg-page);
+  min-height: 100vh;
+  width: 100%;
+  padding-bottom: 0;
+}
+
+// Header Section
+.faq-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 120px 48px 48px;
+
+  .header-content {
+    max-width: 640px;
+    text-align: center;
+
+    h1 {
+      color: var(--color-secondary);
+      font-size: 40px;
+      font-weight: 600;
+      line-height: 56px;
+      letter-spacing: -2px;
+      margin: 0 0 16px 0;
+    }
+
+    .header-description {
+      color: var(--color-secondary);
+      font-size: 25px;
+      font-weight: 400;
+      line-height: 35px;
+      opacity: 0.7;
+      margin: 0;
+    }
+  }
+}
+
+// FAQ Container
+.faq-container {
+  width: 100%;
+  padding: 0 48px 80px;
+}
+
+// FAQ Grid
+.faq-grid {
+  max-width: 1512px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 680px);
+  gap: 48px;
+  justify-content: center;
+}
+
+// FAQ Category Card
+.faq-category-card {
+  background: #FFFFFF;
+  border-radius: 56px;
+  width: 680px;
+  min-height: 376px;
+  padding: 24px 40px 40px 40px;
+  overflow: hidden;
+
+  .category-title {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 40px;
+
+    .icon-wrapper {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+
+      .material-icons {
+        font-size: 32px;
+        color: var(--color-secondary);
+      }
+    }
+
+    h2 {
+      color: var(--color-secondary);
+      font-size: 25px;
+      font-weight: 600;
+      line-height: 35px;
+      letter-spacing: -1.25px;
+      text-align: center;
+      margin: 0;
+    }
+  }
+
+  // Override superme-facts styles to match Figma
+  ::ng-deep superme-facts {
+    width: 100%;
+
+    .facts {
+      align-items: flex-start;
+    }
+
+    .fact-item-list {
+      gap: 24px;
+      max-width: 527px;
+    }
+
+    .fact-item {
+      border-radius: 16px;
+      box-shadow: 0 0 2px 2px var(--color-shadow);
+    }
+
+    .fact-item summary.fact-main {
+      padding: 16px 10px;
+      min-height: 72px;
+      height: 72px;
+    }
+
+    .fact-item .fact-text {
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    .fact-item .chev {
+      transform: rotate(270deg);
+    }
+
+    .fact-item[open] .chev {
+      transform: rotate(90deg);
+    }
+
+    .fact-item .fact-icon {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}
+
+// Help Section
+.help-section {
+  width: 100%;
+  display: flex;
+flex-direction: column;
+align-items: center;
+gap: 8px;
+align-self: stretch;
+}
+
+// Responsive Design
+@media (max-width: 1440px) {
+  .faq-grid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 1400px;
+  }
+
+  .faq-category-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 1024px) {
+  .faq-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .faq-container {
+    padding: 0 24px 60px;
+  }
+
+  .faq-header {
+    padding: 100px 24px 32px;
+
+    .header-content h1 {
+      font-size: 32px;
+      line-height: 44px;
+    }
+
+    .header-content .header-description {
+      font-size: 20px;
+      line-height: 28px;
+    }
+  }
+
+  .help-section {
+    padding: 60px 24px 100px;
+
+    h2 {
+      font-size: 32px;
+      line-height: 44px;
+    }
+
+    .contact-button {
+      padding: 16px 48px;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .faq-category-card {
+    padding: 24px 20px;
+    min-height: auto;
+
+    .category-title {
+      margin-bottom: 24px;
+
+      h2 {
+        font-size: 20px;
+        line-height: 28px;
+      }
+    }
+
+    ::ng-deep superme-facts {
+      .fact-item-list {
+        gap: 16px;
+        max-width: 100%;
+      }
+
+      .fact-item summary.fact-main {
+        padding: 12px 10px;
+        height: auto;
+        min-height: 72px;
+      }
+
+      .fact-item .fact-text {
+        font-size: 16px;
+      }
+    }
+  }
+
+  .faq-header {
+    padding: 80px 20px 24px;
+
+    .header-content h1 {
+      font-size: 28px;
+      line-height: 36px;
+    }
+
+    .header-content .header-description {
+      font-size: 18px;
+      line-height: 24px;
+    }
+  }
+
+  .help-section {
+    padding: 40px 20px 80px;
+
+    h2 {
+      font-size: 28px;
+      line-height: 36px;
+    }
+
+    .contact-button {
+      padding: 14px 32px;
+      font-size: 14px;
+      width: 100%;
+      max-width: 280px;
+    }
+  }
+}

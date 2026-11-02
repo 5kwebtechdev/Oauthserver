@@ -1,0 +1,26 @@
+<div class="categories-card-container" data-name="Categories-Card" data-node-id="14485:70554">
+  <div class="categories-card-header" data-node-id="14485:70546">
+    <h4 class="categories-card-title" data-node-id="14485:70547">
+      {{ title }}
+    </h4>
+    <div
+      *ngIf="comingSoon"
+      class="coming-soon-badge"
+      data-node-id="14485:70548"
+    >
+      <p class="coming-soon-text" data-node-id="14485:70549">
+        COMING SOON
+      </p>
+    </div>
+  </div>
+
+  <div class="categories-card-image-container" data-node-id="14485:70550">
+    <div class="categories-card-image" data-node-id="14485:70566">
+      <img
+        [src]="imageUrl"
+        [alt]="property1"
+        class="card-image"
+      />
+    </div>
+  </div>
+</div>

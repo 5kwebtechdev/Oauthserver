@@ -1,0 +1,317 @@
+// ============================================================
+// VARIABLES & REUSABLE STYLES
+// ============================================================
+
+@use "sass:color";
+
+// Ensure the component host fills its container
+:host {
+  display: block;
+  width: 100%;
+}
+
+// Colors
+$primary-text: #772817;
+$primary-accent: #EE6621;
+$light-bg: #FDEAD7;
+$white: #FFFFFF;
+
+// Typography
+$font-family: Nunito;
+$font-weight-semibold: 600;
+
+// Spacing
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 0.75rem;
+$spacing-lg: 1rem;
+
+// Sizing
+$item-height: 50px;
+$visible-items: 5;
+$picker-height: $item-height * $visible-items;
+
+// Border Radius
+$border-radius-sm: 0.25rem;
+$border-radius-md: 0.5rem;
+$border-radius-lg: 1rem;
+
+// ============================================================
+// WRAPPER STYLES
+// ============================================================
+
+.birthday-picker-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+// ============================================================
+// INPUT DISPLAY
+// ============================================================
+
+.birthday-input {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1.25rem;
+  font-family: 'Nunito';
+  color: #772817;
+  font-weight: 500;
+  background: #FAD2AE;
+  border: 2px solid #FAD2AE;
+  transition: 0.2s;
+  box-sizing: border-box;
+  cursor: pointer;
+  text-align: left;
+
+  &:focus, &:hover {
+    outline: none;
+    border: 2px solid #ff823b;
+  }
+
+  .placeholder-text {
+    color: #772817;
+    opacity: 0.6;
+    font-family: 'Nunito';
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  .selected-date {
+    color: #772817;
+    font-family: 'Nunito';
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+}
+
+// ============================================================
+// PICKER POPUP (APPEARS BELOW INPUT)
+// ============================================================
+
+.picker-popup {
+  position: absolute;
+  top: calc(92%);
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 1000;
+  padding: 5px;
+  animation: slideDown 0.2s ease;
+  border-radius: 0 0 1.5rem 1.5rem;
+  background: #FDEAD7;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ============================================================
+// COMPACT VIEW
+// ============================================================
+
+.compact-view {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  align-items: center;
+
+  .compact-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    gap: 2vw;
+
+
+
+    .compact-value {
+      color: $primary-text;
+      font-family: $font-family;
+      font-size: 1.5625rem;
+      font-weight: $font-weight-semibold;
+      
+    }
+
+    .dropdown-icon {
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+  }
+}
+
+.date-selection-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 0 40px;
+}
+// ============================================================
+// EXPANDED VIEW
+// ============================================================
+
+.expanded-view {
+  display: flex;
+  flex-direction: column;
+  gap:5px;
+}
+
+// ============================================================
+// PICKER CONTAINER & COLUMNS
+// ============================================================
+
+.picker-container {
+display: flex;
+    gap: 0.75rem;
+    justify-content: center;   
+    width: 100%;
+    height: 200px;
+}
+
+.scroll-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+  height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  border-radius: 8px;
+  background: #EE6621;
+  padding-top: 75px;
+  padding-bottom: 75px;
+   
+
+  // Scrollbar styling
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($primary-accent, 0.3);
+    border-radius: 2px;
+
+    &:hover {
+      background: rgba($primary-accent, 0.5);
+    }
+  }
+}
+
+// ============================================================
+// SCROLL ITEMS
+// ============================================================
+
+.scroll-item {
+  height: $item-height;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  color: #FDEAD7;
+  font-family: $font-family;
+  font-size: 1.5625rem;
+  font-weight: $font-weight-semibold;
+  border-radius: $border-radius-sm;
+  transition: all 0.2s ease;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &.selected {
+    background: $primary-accent;
+    color: $light-bg;
+    opacity: 1;
+    box-shadow: 0 2px 8px rgba(238, 102, 33, 0.25);
+  }
+}
+
+
+
+.done-button {
+  color: #EE6621;
+text-align: center;
+font-family: Nunito;
+font-size: 1.5rem;
+font-weight: 600;
+border:none;
+background: transparent;
+}
+
+
+
+@media (max-width: 480px) {
+  .picker-container {
+    height: calc($item-height * 4);
+  }
+
+  .scroll-item {
+    min-width: 80px;
+    font-size: 1.25rem;
+  }
+
+  .done-button {
+    padding: $spacing-sm $spacing-md;
+    font-size: 1.25rem;
+  }
+}
+
+.variant-green {
+  .birthday-input {
+    background: white; // light green background
+    border: 2px solid #E6F6EA;
+    color: black;
+    .selected-date {
+      color: #000000;
+    }
+    .placeholder-text {
+      color: rgba(0,0,0,0.6);
+    }
+  }
+
+  .picker-popup {
+    background: #F7FFF9;
+    box-shadow: 0 6px 18px rgba(22, 101, 52, 0.12);
+  }
+
+  .scroll-column {
+    background: #f0faf4;
+  }
+
+  .scroll-item {
+    color: #196f3d;
+  }
+
+  .scroll-item.selected {
+    background: #2ea86a;
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(46, 168, 106, 0.25);
+  }
+
+  .compact-value {
+    color: #166534;
+  }
+
+  .done-button {
+    color: #2ea86a;
+    font-weight: 700;
+  }
+}

@@ -1,0 +1,100 @@
+<div class="timeline-container">
+<div class="card timeline-score-card">
+  <div class="column">
+    <div class="col-3 p-0">
+      <superme-completion
+        [completionPercentage]="completionStats.habitCompletionRate"
+        [borderColor]="'#4CAF50'"
+        [innerText]="completionStats.completedHabits + '/' + completionStats.totalHabits"
+        [belowText]="'Total habits completed'">
+      </superme-completion>
+    </div>
+    <div class="col-3 p-0">
+      <superme-completion
+        [completionPercentage]="completionStats.taskCompletionRate"
+        [borderColor]="'#F0AD4E'"
+        [innerText]="completionStats.completedTasks + '/' + completionStats.totalTasks"
+        [belowText]="'Total tasks completed'">
+      </superme-completion>
+    </div>
+    <div class="col-3 p-0">
+      <superme-completion 
+        [completionPercentage]="completionStats.habitCompletionRate" 
+        [borderColor]="'#BB2124'" 
+        [innerText]="completionStats.habitCompletionRate + '%'"
+        [belowText]="'Habit completion rate'">
+      </superme-completion>
+    </div>
+    <div class="col-3 p-0">
+      <superme-completion 
+        [completionPercentage]="completionStats.taskCompletionRate" 
+        [borderColor]="'#F0AD4E'" 
+        [innerText]="completionStats.taskCompletionRate + '%'"
+        [belowText]="'Task completion rate'">
+      </superme-completion>
+    </div>
+  </div>
+</div>
+<div class="week-timeline-section">
+  <div class="week-nav-main">
+    <superme-week (dateSelected)="onDateSelected($event)" [dayStats]="weekDayStats" [showDayStats]="false"></superme-week>
+  </div>
+  <div class="timeline-habit-select">
+    <superme-selectors
+      [options]="[
+        {key: 'all', value: 'All', type: 'magenta'},
+        {key: 'habit', value: 'Habits', type: 'lavender'},
+        {key: 'task', value: 'Tasks', type: 'orange'},
+        {key: 'timetable', value: 'Time Table', type: 'aqua'},
+      ]"
+      componentType="button"
+      size="small"
+      [singleSelection]="true"
+      [defaultSelected]="['all']"
+      (selectedKeysChange)="keysUpdated($event)">
+    </superme-selectors>
+    <div class="container w-full p-0 timeline-scroll-area">
+      <!-- Timeline visualization -->
+      <div class="timetable-container" [class.empty-state]="!filteredEvents || filteredEvents.length === 0">
+        <div class="time-labels">
+          <ng-container *ngFor="let time of timeSlots; let i = index">
+            <div *ngIf="!isCompressedSlot(i)" class="time-slot" [style.height.px]="hourHeight">
+              <p>{{ time }}</p>
+            </div>
+            <div *ngIf="isCompressedSlot(i)" class="compressed-gap" [style.height.px]="getCompressedHeight(i)"></div>
+          </ng-container>
+        </div>
+
+        <div class="event-area" style="overflow-x: auto">
+          <div class="time-grid">
+            <ng-container *ngFor="let time of timeSlots; let i = index">
+              <div *ngIf="!isCompressedSlot(i)" class="grid-line" [style.height.px]="hourHeight"></div>
+              <div *ngIf="isCompressedSlot(i) && getCompressedHeight(i) > 0" class="grid-line compressed" [style.height.px]="getCompressedHeight(i)"></div>
+            </ng-container>
+
+            <ng-container *ngFor="let event of filteredEvents">
+              <div class="event-box {{event.type}}"
+                [style.top.px]="event._top"
+                [style.height.px]="event._height"
+                [style.left]="'calc(' + ((event._column || 0) / (event._columnCount || 1) * 100) + '% + 2px)'"
+                [style.width]="'calc(' + (100 / (event._columnCount || 1)) + '% - 6px)'"
+                (click)="onEventClick(event)">
+                <span class="event-title">{{ event.title }}</span>
+                <span class="event-time">{{ event.startTime }} - {{ event.endTime }}</span>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+  </div>
+  <div class="add-button-row">
+    <superme-button type="magenta" text="Add new +" (click)="onAddClick()"></superme-button>
+  </div>
+</div>
+</div>
+
+<div *ngIf="showActivityInput" class="modal-backdrop" (click)="closeActivityInput()">
+  <div class="modal-center" (click)="$event.stopPropagation()">
+    <activity-input (closed)="closeActivityInput()"></activity-input>
+  </div>
+</div>

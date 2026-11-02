@@ -1,0 +1,143 @@
+.reel-card {
+  background: #fff;
+  border-radius: 16px;
+  width: 305px;
+  height: 393px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #4a0d25;
+    outline-offset: 2px;
+  }
+}
+
+.reel-media {
+  position: relative;
+  height: 393px;
+  width: 305px;
+  border-radius: 12px;
+background: linear-gradient(180deg, rgba(129, 129, 129, 0.20) 69.08%, #1B1B1B 100%);
+  background-size: cover;
+  background-position: center;
+}
+
+.reel-media .bookmark {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: none;
+}
+
+.reel-info {
+  /* place the info bar inside the media, pinned to the bottom */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  z-index: 3;
+  color: #fff;
+  /* stronger dark gradient for consistent legibility on any image */
+  
+}
+
+.reel-media .play-btn {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #ff8b8b;
+  color: #222;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 22px;
+  box-shadow: 0 8px 24px rgba(179,23,70,0.18);
+}
+ 
+
+.reel-left .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+.reel-body { 
+  flex: 1;
+  min-width: 0; /* allow truncation */
+}
+.reel-body .author {
+  color: #ffffffcc;
+  font-family: Nunito, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.reel-body .reel-title {
+  color: #ffffff;
+  font-family: Fredoka, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.reel-body .hashtags {
+  color: #ffffffcc;
+  font-size: 12px;
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reel-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  margin-left: 8px;
+}
+.reel-stats .stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.35);
+  padding: 6px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #fff;
+}
+.reel-stats .stat .icon { font-size: 12px; }
+.reel-stats .stat .value { font-weight: 700; }

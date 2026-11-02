@@ -1,0 +1,430 @@
+.coin-pack-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fff;
+}
+
+.coin-pack-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px 64px;
+}
+
+.coin-pack-container {
+  max-width: 881.5px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+// Header section
+.header {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.back-button {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.page-title {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-variation-settings: 'wdth' 100;
+  font-size: 25px;
+  line-height: 1.4;
+  color: #282527;
+  margin: 0;
+}
+
+// Coins balance section
+.coins-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px;
+}
+
+.balance-label {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-variation-settings: 'wdth' 100;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.balance-display {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.coin-icon {
+  width: 49px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.balance-amount {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.4;
+  color: #282527;
+}
+
+// Packs container
+.packs-container {
+  display: flex;
+  gap: 40px;
+  align-items: stretch;
+}
+
+.pack-card {
+  flex: 1;
+  background: white;
+  border: 4px solid transparent;
+  border-radius: 24px;
+  padding: 16px 32px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+
+  &.selected {
+    border-color: #4CAF50;
+  }
+
+  &:hover:not(.selected) {
+    box-shadow: 0px 0px 4px 4px rgba(107, 101, 106, 0.15);
+  }
+}
+
+.pack-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pack-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 5px;
+}
+
+.coin-stack {
+  width: 68px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pack-coin-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.selection-indicator {
+  width: 32px;
+  height: 32px;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.pack-name {
+  font-family: 'Nunito';
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 1.4;
+  color: #282527;
+  text-align: right;
+  margin: 0 0 8px 0;
+}
+
+.pack-price {
+  font-family: 'Nunito';
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 1.4;
+  color: #282527;
+  text-align: right;
+  margin: 0;
+}
+
+.pack-coins {
+  font-family: 'Nunito';
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+  opacity: 0.7;
+  text-align: right;
+  margin: 0;
+}
+
+// Select button
+.select-button {
+  width: 100%;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, #4CAF50 0%, #358438 100%);
+  border: 1px solid #358438;
+  border-radius: 8px;
+  box-shadow: inset 0px -4px 2px 0px #6BBD6E;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.4;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Info card
+.info-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 32px 29px;
+  box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+}
+
+.info-title {
+  font-family: 'Nunito';
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 1.4;
+  color: #282527;
+  margin: 0 0 13px 0;
+}
+
+.info-list {
+  margin: 0;
+  padding-left: 30px;
+  list-style-position: outside;
+
+  li {
+    font-family: 'Nunito';
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.4;
+    color: #282527;
+    opacity: 0.7;
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Summary section styles
+.summary-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px;
+}
+
+.summary-label {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-variation-settings: 'wdth' 100;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 32px 24px;
+  box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-pack-name {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+  text-align: right;
+  margin: 0;
+}
+
+.summary-coins {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.summary-coin-icon {
+  width: 28px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.summary-coin-amount {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+}
+
+.total-row {
+  border-top: 1px solid rgba(107, 101, 106, 0.1);
+  padding-top: 24px;
+}
+
+.summary-total-label {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+  opacity: 0.7;
+  text-align: right;
+  margin: 0;
+}
+
+.summary-total-price {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 25px;
+  line-height: 1.4;
+  color: #282527;
+  margin: 0;
+}
+
+// Important Information card
+.important-info-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 32px 29px;
+  box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.info-header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.info-header-text {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+  margin: 0;
+}
+
+.important-info-list {
+  margin: 0;
+  padding-left: 30px;
+  list-style-position: outside;
+
+  li {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.4;
+    color: #282527;
+    opacity: 0.7;
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Payment button
+.payment-button {
+  width: 100%;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, #4CAF50 0%, #358438 100%);
+  border: 1px solid #358438;
+  border-radius: 8px;
+  box-shadow: inset 0px -4px 2px 0px #6BBD6E;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.4;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .coin-pack-content {
+    padding: 24px 16px 48px;
+  }
+
+  .packs-container {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .balance-amount {
+    font-size: 32px;
+  }
+
+  .pack-price {
+    font-size: 32px;
+  }
+}

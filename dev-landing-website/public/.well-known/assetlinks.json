@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.superme.app",
+    "sha256_cert_fingerprints": [
+      "EB:E1:9F:77:F5:EE:1D:03:4B:50:D8:48:BD:22:A6:C1:DA:60:C7:40:19:5A:15:F3:F4:58:8B:11:C3:66:48:D7"
+    ]
+  }
+}]

@@ -1,0 +1,92 @@
+<div class="pdp-page">
+  <app-public-navbar></app-public-navbar>
+
+  <div class="pdp-body">
+    <nav class="pdp-breadcrumb">
+      <button (click)="goBack()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="#90214d"/>
+        </svg>
+        <span>Back</span>
+      </button>
+      <span class="crumb-sep">/</span>
+      <a routerLink="/shop/stationery">Stationery</a>
+      <span class="crumb-sep">/</span>
+      <span class="crumb-current">{{ displayName }}</span>
+    </nav>
+
+    <ng-container *ngIf="loading">
+      <div class="pdp-state">
+        <div class="pdp-spinner"></div>
+        <p>Loading product details…</p>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!loading && error">
+      <div class="pdp-state">
+        <p>We couldn't load this product right now.</p>
+        <button class="pdp-retry" (click)="goBack()">Go back</button>
+      </div>
+    </ng-container>
+
+    <section class="pdp-content" *ngIf="!loading && !error && product">
+      <div class="pdp-gallery">
+        <div class="pdp-thumbs" *ngIf="images.length > 1">
+          <button
+            *ngFor="let img of images; let i = index"
+            class="pdp-thumb"
+            [class.active]="i === selectedImage"
+            (click)="selectImage(i)"
+          >
+            <img [src]="img" [alt]="displayName + ' view ' + (i + 1)" />
+          </button>
+        </div>
+        <div class="pdp-main-image">
+          <img [src]="images[selectedImage]" [alt]="displayName" />
+        </div>
+      </div>
+
+      <div class="pdp-summary">
+        <p class="pdp-eyebrow">Stationery</p>
+        <h1 class="pdp-title">{{ displayName }}</h1>
+
+        <div class="pdp-price-row">
+          <span class="pdp-price" *ngIf="displayPrice">₹{{ displayPrice }}</span>
+          <span class="pdp-mrp" *ngIf="displayMrp">₹{{ displayMrp }}</span>
+          <span class="pdp-discount" *ngIf="discountPercent">{{ discountPercent }}% OFF</span>
+          <span class="pdp-price" *ngIf="!displayPrice">Price on request</span>
+        </div>
+
+        <p class="pdp-description">{{ displayDescription }}</p>
+
+        <div class="pdp-quantity-row">
+          <span class="pdp-qty-label">Quantity</span>
+          <div class="pdp-quantity">
+            <button (click)="decreaseQuantity()" [disabled]="quantity <= 1" aria-label="Decrease quantity">−</button>
+            <span>{{ quantity }}</span>
+            <button (click)="increaseQuantity()" aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+
+        <button class="pdp-add-to-cart" (click)="addToCart()">Add to Bag</button>
+
+        <div class="pdp-perks">
+          <div class="pdp-perk">
+            <span class="pdp-perk-icon">🚚</span>
+            <span>Fast delivery</span>
+          </div>
+          <div class="pdp-perk">
+            <span class="pdp-perk-icon">↩️</span>
+            <span>Easy 7 day returns</span>
+          </div>
+          <div class="pdp-perk">
+            <span class="pdp-perk-icon">🔒</span>
+            <span>Secure payment</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <app-common-footer></app-common-footer>
+</div>

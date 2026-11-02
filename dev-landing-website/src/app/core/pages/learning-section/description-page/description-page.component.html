@@ -1,0 +1,74 @@
+<app-public-navbar></app-public-navbar>
+
+<main class="description-page">
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading challenge...</p>
+  </div>
+
+  <!-- Not Found -->
+  <div *ngIf="!isLoading && !challenge" class="not-found">
+    <h2>Challenge not found</h2>
+    <superme-button type="pink" text="Back to Learning" (clickEvent)="goBack()"></superme-button>
+  </div>
+
+  <!-- Challenge Details -->
+  <div *ngIf="!isLoading && challenge" class="content">
+    <button class="back-btn" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
+
+    <div class="hero-image">
+      <img [src]="challenge.innerImageUrl || challenge.thumbnailImageUrl" [alt]="challenge.name" />
+    </div>
+
+    <h1>{{ challenge.name }}</h1>
+
+    <div class="meta-cards">
+      <div class="meta">
+        <div class="meta-value">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+  <path d="M13.25 3C12.9 3 12.6042 2.87917 12.3625 2.6375C12.1208 2.39583 12 2.1 12 1.75C12 1.4 12.1208 1.10417 12.3625 0.8625C12.6042 0.620833 12.9 0.5 13.25 0.5C13.6 0.5 13.8958 0.620833 14.1375 0.8625C14.3792 1.10417 14.5 1.4 14.5 1.75C14.5 2.1 14.3792 2.39583 14.1375 2.6375C13.8958 2.87917 13.6 3 13.25 3ZM13.25 19.5C12.9 19.5 12.6042 19.3792 12.3625 19.1375C12.1208 18.8958 12 18.6 12 18.25C12 17.9 12.1208 17.6042 12.3625 17.3625C12.6042 17.1208 12.9 17 13.25 17C13.6 17 13.8958 17.1208 14.1375 17.3625C14.3792 17.6042 14.5 17.9 14.5 18.25C14.5 18.6 14.3792 18.8958 14.1375 19.1375C13.8958 19.3792 13.6 19.5 13.25 19.5ZM17.25 6.5C16.9 6.5 16.6042 6.37917 16.3625 6.1375C16.1208 5.89583 16 5.6 16 5.25C16 4.9 16.1208 4.60417 16.3625 4.3625C16.6042 4.12083 16.9 4 17.25 4C17.6 4 17.8958 4.12083 18.1375 4.3625C18.3792 4.60417 18.5 4.9 18.5 5.25C18.5 5.6 18.3792 5.89583 18.1375 6.1375C17.8958 6.37917 17.6 6.5 17.25 6.5ZM17.25 16C16.9 16 16.6042 15.8792 16.3625 15.6375C16.1208 15.3958 16 15.1 16 14.75C16 14.4 16.1208 14.1042 16.3625 13.8625C16.6042 13.6208 16.9 13.5 17.25 13.5C17.6 13.5 17.8958 13.6208 18.1375 13.8625C18.3792 14.1042 18.5 14.4 18.5 14.75C18.5 15.1 18.3792 15.3958 18.1375 15.6375C17.8958 15.8792 17.6 16 17.25 16ZM18.75 11.25C18.4 11.25 18.1042 11.1292 17.8625 10.8875C17.6208 10.6458 17.5 10.35 17.5 10C17.5 9.65 17.6208 9.35417 17.8625 9.1125C18.1042 8.87083 18.4 8.75 18.75 8.75C19.1 8.75 19.3958 8.87083 19.6375 9.1125C19.8792 9.35417 20 9.65 20 10C20 10.35 19.8792 10.6458 19.6375 10.8875C19.3958 11.1292 19.1 11.25 18.75 11.25ZM10 20C8.61667 20 7.31667 19.7375 6.1 19.2125C4.88333 18.6875 3.825 17.975 2.925 17.075C2.025 16.175 1.3125 15.1167 0.7875 13.9C0.2625 12.6833 0 11.3833 0 10C0 8.61667 0.2625 7.31667 0.7875 6.1C1.3125 4.88333 2.025 3.825 2.925 2.925C3.825 2.025 4.88333 1.3125 6.1 0.7875C7.31667 0.2625 8.61667 0 10 0V2C7.76667 2 5.875 2.775 4.325 4.325C2.775 5.875 2 7.76667 2 10C2 12.2333 2.775 14.125 4.325 15.675C5.875 17.225 7.76667 18 10 18V20ZM10 12C9.45 12 8.97917 11.8042 8.5875 11.4125C8.19583 11.0208 8 10.55 8 10C8 9.91667 8.00417 9.82917 8.0125 9.7375C8.02083 9.64583 8.04167 9.55833 8.075 9.475L6 7.4L7.4 6L9.475 8.075C9.54167 8.05833 9.71667 8.03333 10 8C10.55 8 11.0208 8.19583 11.4125 8.5875C11.8042 8.97917 12 9.45 12 10C12 10.55 11.8042 11.0208 11.4125 11.4125C11.0208 11.8042 10.55 12 10 12Z" fill="#282527"/>
+</svg>
+          {{ challenge.timeDuration || '5 Minutes' }}
+        </div>
+        <div class="meta-label">Duration</div>
+      </div>
+      <div class="meta">
+        <div class="meta-value">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="20" viewBox="0 0 15 20" fill="none">
+  <path d="M7.5 20C6.95 20 6.47917 19.8042 6.0875 19.4125C5.69583 19.0208 5.5 18.55 5.5 18H9.5C9.5 18.55 9.30417 19.0208 8.9125 19.4125C8.52083 19.8042 8.05 20 7.5 20ZM3.5 17V15H11.5V17H3.5ZM3.75 14C2.6 13.3167 1.6875 12.4 1.0125 11.25C0.3375 10.1 0 8.85 0 7.5C0 5.41667 0.729167 3.64583 2.1875 2.1875C3.64583 0.729167 5.41667 0 7.5 0C9.58333 0 11.3542 0.729167 12.8125 2.1875C14.2708 3.64583 15 5.41667 15 7.5C15 8.85 14.6625 10.1 13.9875 11.25C13.3125 12.4 12.4 13.3167 11.25 14H3.75ZM4.35 12H10.65C11.4 11.4667 11.9792 10.8083 12.3875 10.025C12.7958 9.24167 13 8.4 13 7.5C13 5.96667 12.4667 4.66667 11.4 3.6C10.3333 2.53333 9.03333 2 7.5 2C5.96667 2 4.66667 2.53333 3.6 3.6C2.53333 4.66667 2 5.96667 2 7.5C2 8.4 2.20417 9.24167 2.6125 10.025C3.02083 10.8083 3.6 11.4667 4.35 12Z" fill="#282527"/>
+</svg>
+          {{ challenge.totalQuestions || 5 }}
+        </div>
+        <div class="meta-label">Questions</div>
+      </div>
+      <div class="meta">
+        <div class="meta-value">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" viewBox="0 0 14 12" fill="none">
+            <path d="M1.33333 10.6667H4V5.33333H1.33333V10.6667ZM5.33333 10.6667H8V1.33333H5.33333V10.6667ZM9.33333 10.6667H12V6.66667H9.33333V10.6667ZM0 12V4H4V0H9.33333V5.33333H13.3333V12H0Z" fill="#282527"/>
+          </svg>
+          {{ challenge.difficultyDisplay || challenge.difficulty }}
+        </div>
+        <div class="meta-label">Difficulty</div>
+      </div>
+      <div class="meta">
+        <div class="meta-value">
+          <img src="assets/Icons-Neutral/Icons-Coins.png" alt="coin" />
+          {{ challenge.coinsForCorrectAnswer || challenge.coins || 5 }}
+        </div>
+        <div class="meta-label">Per Correct Answer</div>
+      </div>
+    </div>
+<div class="description">
+    <p class="descriptions">{{ challenge.descriptionExpanded || challenge.description }}</p>
+    </div>
+
+    <superme-button type="pink" text="Start your journey" (clickEvent)="startJourney()" class="start-btn"></superme-button>
+  </div>
+</main>
+
+<app-footer></app-footer>

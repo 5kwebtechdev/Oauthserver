@@ -1,0 +1,428 @@
+
+<div class="product-detail-page">
+  <app-public-navbar></app-public-navbar>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <a class="back-button" (click)="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
+  <path d="M13.2929 27.2929C12.9024 27.6834 12.9024 28.3166 13.2929 28.7071L19.6569 35.0711C20.0474 35.4616 20.6805 35.4616 21.0711 35.0711C21.4616 34.6805 21.4616 34.0474 21.0711 33.6569L15.4142 28L21.0711 22.3431C21.4616 21.9526 21.4616 21.3195 21.0711 20.9289C20.6805 20.5384 20.0474 20.5384 19.6569 20.9289L13.2929 27.2929ZM42 29C42.5523 29 43 28.5523 43 28C43 27.4477 42.5523 27 42 27V28V29ZM14 28V29H42V28V27H14V28Z" fill="#282527"/>
+</svg>
+      </a>
+      <div class="header-title-wrapper">
+        <div class="header-components">
+          <div class="title">
+            <p class="title-text">{{ heading }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="cart-wrapper" (click)="onNavigatorAction({ action: { type: 'cart' } })">
+        <div class="cart-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="28" viewBox="0 0 24 28" fill="none">
+  <path d="M2.55212 28C1.84812 28 1.24671 27.7464 0.747882 27.2393C0.249294 26.732 0 26.1203 0 25.4043V9.05728C0 8.34125 0.249294 7.72956 0.747882 7.22221C1.24671 6.71509 1.84812 6.46154 2.55212 6.46154H5.64706C5.64706 4.66858 6.26518 3.14342 7.50141 1.88605C8.73765 0.628683 10.2372 0 12 0C13.7628 0 15.2624 0.628683 16.4986 1.88605C17.7348 3.14342 18.3529 4.66858 18.3529 6.46154H21.4479C22.1519 6.46154 22.7533 6.71509 23.2521 7.22221C23.7507 7.72956 24 8.34125 24 9.05728V25.4043C24 26.1203 23.7507 26.732 23.2521 27.2393C22.7533 27.7464 22.1519 28 21.4479 28H2.55212ZM2.55212 25.8462H21.4479C21.5566 25.8462 21.6561 25.8001 21.7465 25.708C21.8371 25.6161 21.8824 25.5148 21.8824 25.4043V9.05728C21.8824 8.94672 21.8371 8.84549 21.7465 8.75359C21.6561 8.66145 21.5566 8.61539 21.4479 8.61539H2.55212C2.44341 8.61539 2.34388 8.66145 2.25353 8.75359C2.16294 8.84549 2.11765 8.94672 2.11765 9.05728V25.4043C2.11765 25.5148 2.16294 25.6161 2.25353 25.708C2.34388 25.8001 2.44341 25.8462 2.55212 25.8462ZM12 16.5128C13.7628 16.5128 15.2624 15.8841 16.4986 14.6268C17.7348 13.3694 18.3529 11.8442 18.3529 10.0513H16.2353C16.2353 11.2479 15.8235 12.265 15 13.1026C14.1765 13.9402 13.1765 14.359 12 14.359C10.8235 14.359 9.82353 13.9402 9 13.1026C8.17647 12.265 7.76471 11.2479 7.76471 10.0513H5.64706C5.64706 11.8442 6.26518 13.3694 7.50141 14.6268C8.73765 15.8841 10.2372 16.5128 12 16.5128ZM7.76471 6.46154H16.2353C16.2353 5.26496 15.8235 4.24786 15 3.41026C14.1765 2.57265 13.1765 2.15385 12 2.15385C10.8235 2.15385 9.82353 2.57265 9 3.41026C8.17647 4.24786 7.76471 5.26496 7.76471 6.46154Z" fill="#282527"/>
+</svg>
+        </div>
+        <p class="cart-label">Cart</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pdp-loading" *ngIf="loading">
+    <p>Loading product details…</p>
+  </div>
+
+  <div class="pdp-error" *ngIf="loadError">
+    <p>{{ loadError }}</p>
+    <button type="button" (click)="goBack()">Go Back</button>
+  </div>
+
+  <ng-container *ngIf="!loading && !loadError">
+  <ng-container *ngIf="isStationeryProduct; else schoolProductDetail">
+    <main class="stationery-detail">
+      <nav class="pdp-breadcrumb">
+        <button (click)="goBack()">Home</button>
+        <span>Writing Essentials</span>
+        <span>{{ displayProductTitle }}</span>
+      </nav>
+
+      <section class="pdp-top">
+        <div class="pdp-gallery">
+          <div class="pdp-thumbs">
+            <button
+              *ngFor="let img of pdpImages; let i = index"
+              [class.active]="i === pdpSelectedImage"
+              (click)="goTo(i)"
+            >
+              <img [src]="img" alt="Product thumbnail">
+            </button>
+          </div>
+          <div class="pdp-main-image">
+            <img *ngIf="pdpImages.length; else pdpNoImage" [src]="pdpImages[pdpSelectedImage]" [alt]="displayProductTitle">
+            <ng-template #pdpNoImage>
+              <span class="pdp-no-image">No image available</span>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="pdp-details-column">
+          <span class="pdp-brand-chip">
+            {{ stationeryBrandName }}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18L15 12L9 6" />
+            </svg>
+          </span>
+          <h1 class="pdp-title">{{ displayProductTitle }}</h1>
+          <p class="pdp-packof">Pack of 1</p>
+
+          <div class="pdp-icon-row">
+            <div>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#90214d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 7v5l3 3"/>
+              </svg>
+              <span>3 days delivery</span>
+            </div>
+            <div>
+              <img [src]="imgEasyExchange" alt="">
+              <span>Exchange available</span>
+            </div>
+            <div>
+              <img [src]="imgSecurePayment" alt="">
+              <span>Secure Payment</span>
+            </div>
+          </div>
+
+          <article class="pdp-card pdp-specs" *ngIf="productHighlights.length">
+            <h2>Highlights</h2>
+            <dl>
+              <ng-container *ngFor="let item of productHighlights">
+                <dt>{{ item.label }}</dt>
+                <dd>{{ item.value }}</dd>
+              </ng-container>
+            </dl>
+          </article>
+
+          <article class="pdp-card pdp-specs pdp-seller-card" *ngIf="productSellerInfo.length">
+            <div class="sd-accordion" (click)="toggleSellerInfo()">
+              <h2>Seller Information</h2>
+              <span class="sd-accordion-arrow" [class.expanded]="sellerInfoExpanded">›</span>
+            </div>
+            <dl *ngIf="sellerInfoExpanded">
+              <ng-container *ngFor="let item of productSellerInfo">
+                <dt>{{ item.label }}</dt>
+                <dd>{{ item.value }}</dd>
+              </ng-container>
+            </dl>
+          </article>
+        </div>
+
+        <div class="pdp-buybox">
+          <div class="pdp-buybox-price-row">
+            <div class="pdp-price-line">
+              <strong>{{ displayPrice }}</strong>
+              <span>{{ displayMrp }}</span>
+            </div>
+            <div class="sd-quantity">
+              <button [disabled]="quantity <= 1" (click)="decreaseQuantity()">−</button>
+              <span>{{ quantity }}</span>
+              <button (click)="increaseQuantity()">+</button>
+            </div>
+          </div>
+          <p class="pdp-tax-note">Inclusive of all taxes</p>
+
+          <div class="sd-delivery">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="24" viewBox="0 0 22 27" fill="none">
+              <path d="M10.6667 13.3333C11.4 13.3333 12.0278 13.0722 12.55 12.55C13.0722 12.0278 13.3333 11.4 13.3333 10.6667C13.3333 9.93333 13.0722 9.30556 12.55 8.78333C12.0278 8.26111 11.4 8 10.6667 8C9.93333 8 9.30556 8.26111 8.78333 8.78333C8.26111 9.30556 8 9.93333 8 10.6667C8 11.4 8.26111 12.0278 8.78333 12.55C9.30556 13.0722 9.93333 13.3333 10.6667 13.3333ZM10.6667 23.1333C13.3778 20.6444 15.3889 18.3833 16.7 16.35C18.0111 14.3167 18.6667 12.5111 18.6667 10.9333C18.6667 8.51111 17.8944 6.52778 16.35 4.98333C14.8056 3.43889 12.9111 2.66667 10.6667 2.66667C8.42222 2.66667 6.52778 3.43889 4.98333 4.98333C3.43889 6.52778 2.66667 8.51111 2.66667 10.9333C2.66667 12.5111 3.32222 14.3167 4.63333 16.35C5.94444 18.3833 7.95556 20.6444 10.6667 23.1333ZM10.6667 26.6667C7.08889 23.6222 4.41667 20.7944 2.65 18.1833C0.883333 15.5722 0 13.1556 0 10.9333C0 7.6 1.07222 4.94444 3.21667 2.96667C5.36111 0.988889 7.84444 0 10.6667 0C13.4889 0 15.9722 0.988889 18.1167 2.96667C20.2611 4.94444 21.3333 7.6 21.3333 10.9333C21.3333 13.1556 20.45 15.5722 18.6833 18.1833C16.9167 20.7944 14.2444 23.6222 10.6667 26.6667Z" fill="#90214d"/>
+            </svg>
+            <div class="sd-delivery-content">
+              <p class="sd-deliver-title">Deliver to:</p>
+              <div class="sd-deliver-row">
+                <span>{{ selectedAddress }}</span>
+                <a #changeBtn (click)="openAddressPopup()">Change</a>
+              </div>
+              <p class="sd-deliver-date">Get it by Mon, 2nd Jan</p>
+            </div>
+          </div>
+
+          <button class="sd-add-to-cart" (click)="addToCart()" [class.sd-add-to-cart--added]="addedToCart" [disabled]="addedToCart">
+            {{ addedToCart ? 'Added to Cart' : 'Add To Bag' }}
+          </button>
+        </div>
+      </section>
+
+      <section class="pdp-product-row">
+        <h2>Similar Products</h2>
+        <div class="pdp-strip">
+          <article class="pdp-mini-product" *ngFor="let item of similarProducts" (click)="product = item; heading = item.title">
+            <div><img [src]="item.img" [alt]="item.title"></div>
+            <p><strong>{{ item.price }}</strong><span>{{ item.mrp }}</span></p>
+            <small>{{ item.tag }}</small>
+            <h3>{{ item.title }}</h3>
+            <em>4.6 (2k)</em>
+          </article>
+        </div>
+      </section>
+
+      <section class="pdp-product-row">
+        <h2>You Might Also Like</h2>
+        <div class="pdp-strip">
+          <article class="pdp-mini-product" *ngFor="let item of alsoLikeProducts" (click)="product = item; heading = item.title">
+            <div><img [src]="item.img" [alt]="item.title"></div>
+            <p><strong>{{ item.price }}</strong><span>{{ item.mrp }}</span></p>
+            <small>{{ item.tag }}</small>
+            <h3>{{ item.title }}</h3>
+            <em>4.5 (1k)</em>
+          </article>
+        </div>
+      </section>
+
+      <section class="pdp-copy">
+        <h2>Buy {{ displayProductTitle }} - Vivid Colors for Writing &amp; Doodling</h2>
+        <p>
+          Bring creativity to life with a vibrant pen set designed for students, doodlers, artists,
+          and everyday notes. The smooth gel flow makes writing clean, colorful, and comfortable.
+        </p>
+        <h3>Key Features &amp; Benefits - Buy Colorful Pens Online</h3>
+        <ul>
+          <li>Vivid ink colours for notes, projects, diagrams, and creative work.</li>
+          <li>Smooth gel application with a comfortable grip for long writing sessions.</li>
+          <li>Durable plastic body and compact pack design for school bags and desks.</li>
+          <li>Useful for writing, doodling, sketching, highlighting, and craft projects.</li>
+        </ul>
+        <h3>How To Use Classmate Pens Color Burst</h3>
+        <ul>
+          <li>Write at a natural angle with light pressure for clean strokes.</li>
+          <li>Store horizontally with the cap closed after use.</li>
+          <li>Use different shades to organize notes and creative details.</li>
+        </ul>
+      </section>
+
+      <section class="pdp-faq">
+        <h2>Frequently Asked Questions</h2>
+        <article *ngFor="let item of stationeryFaqs">
+          <h3>{{ item.q }}</h3>
+          <p>{{ item.a }}</p>
+        </article>
+      </section>
+
+      <section class="pdp-trending">
+        <article *ngFor="let group of trendingGroups">
+          <h3>{{ group.title }}</h3>
+          <p>{{ group.text }}</p>
+        </article>
+      </section>
+    </main>
+  </ng-container>
+
+  <ng-template #schoolProductDetail>
+  <main class="sd-detail">
+    <nav class="sd-breadcrumb">
+      <button (click)="goBack()">Home</button>
+      <span>{{ product?.categoryName || (isBook ? 'Textbooks' : 'Uniforms') }}</span>
+      <span>{{ product?.name || heading }}</span>
+    </nav>
+
+    <section class="sd-top">
+      <div class="sd-gallery">
+        <div class="sd-thumbs">
+          <button
+            *ngFor="let img of images; let i = index"
+            class="sd-thumb"
+            [class.active]="i === currentIndex"
+            (click)="goTo(i)">
+            <img [src]="img" alt="Product thumbnail" />
+          </button>
+        </div>
+        <div class="sd-main-image">
+          <img *ngIf="images.length; else sdNoImage" [src]="images[currentIndex]" alt="Product image" />
+          <ng-template #sdNoImage>
+            <span class="pdp-no-image">No image available</span>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="sd-summary-column">
+        <article class="sd-card sd-summary">
+          <p class="sd-eyebrow">{{ product?.tag || (isBook ? 'Textbook' : 'Official School Wear') }}</p>
+          <h1 class="sd-title">{{ product?.name || 'Classic White Half- Sleeve Shirt' }}</h1>
+          <span class="sd-mandatory" *ngIf="product?.mandatory">Mandatory</span>
+
+          <div class="sd-price-row">
+            <strong class="sd-price">{{ displayPrice }}</strong>
+            <span class="sd-mrp">{{ displayMrp }}</span>
+            <em class="sd-discount" *ngIf="displayDiscount">{{ displayDiscount }}</em>
+          </div>
+
+          <!-- Size Selection (when API returns sizes) -->
+          <div class="sd-size-block" *ngIf="sizes.length">
+            <div class="sd-size-head">
+              <span class="sd-size-label">Size: {{ selectedSize }}</span>
+              <span class="sd-size-rec" *ngIf="product?.ageGroup">Recommended for {{ product?.ageGroup }}</span>
+            </div>
+            <div class="sd-size-grid">
+              <button
+                *ngFor="let size of sizes"
+                class="sd-size-btn"
+                [class.selected]="size.sizeLabel === selectedSize"
+                [class.out-of-stock]="!size.available"
+                (click)="selectSize(size.sizeLabel)">
+                {{ size.sizeLabel }}
+              </button>
+            </div>
+            <p class="sd-size-guide" *ngIf="product?.sizeChartTemplate">
+              <span>Not sure?</span>
+              <a (click)="openSizeGuide()">Check size guide</a>
+            </p>
+          </div>
+
+          <!-- Book Details (Only for books) -->
+          <div class="sd-book-details" *ngIf="isBook">
+            <div *ngIf="product?.brandName">
+              <span>Brand</span>
+              <strong>{{ product?.brandName }}</strong>
+            </div>
+            <div *ngIf="product?.pageCount">
+              <span>Pages</span>
+              <strong>{{ product?.pageCount }}</strong>
+            </div>
+            <div *ngIf="product?.rulingType">
+              <span>Ruling</span>
+              <strong>{{ product?.rulingType }}</strong>
+            </div>
+            <div *ngIf="product?.coverType">
+              <span>Binding</span>
+              <strong>{{ product?.coverType }}</strong>
+            </div>
+          </div>
+
+          <div class="sd-quantity-row">
+            <span>Quantity</span>
+            <div class="sd-quantity">
+              <button [disabled]="quantity <= 1" (click)="decreaseQuantity()">−</button>
+              <span>{{ quantity }}</span>
+              <button (click)="increaseQuantity()">+</button>
+            </div>
+          </div>
+
+          <div class="sd-delivery">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="24" viewBox="0 0 22 27" fill="none">
+  <path d="M10.6667 13.3333C11.4 13.3333 12.0278 13.0722 12.55 12.55C13.0722 12.0278 13.3333 11.4 13.3333 10.6667C13.3333 9.93333 13.0722 9.30556 12.55 8.78333C12.0278 8.26111 11.4 8 10.6667 8C9.93333 8 9.30556 8.26111 8.78333 8.78333C8.26111 9.30556 8 9.93333 8 10.6667C8 11.4 8.26111 12.0278 8.78333 12.55C9.30556 13.0722 9.93333 13.3333 10.6667 13.3333ZM10.6667 23.1333C13.3778 20.6444 15.3889 18.3833 16.7 16.35C18.0111 14.3167 18.6667 12.5111 18.6667 10.9333C18.6667 8.51111 17.8944 6.52778 16.35 4.98333C14.8056 3.43889 12.9111 2.66667 10.6667 2.66667C8.42222 2.66667 6.52778 3.43889 4.98333 4.98333C3.43889 6.52778 2.66667 8.51111 2.66667 10.9333C2.66667 12.5111 3.32222 14.3167 4.63333 16.35C5.94444 18.3833 7.95556 20.6444 10.6667 23.1333ZM10.6667 26.6667C7.08889 23.6222 4.41667 20.7944 2.65 18.1833C0.883333 15.5722 0 13.1556 0 10.9333C0 7.6 1.07222 4.94444 3.21667 2.96667C5.36111 0.988889 7.84444 0 10.6667 0C13.4889 0 15.9722 0.988889 18.1167 2.96667C20.2611 4.94444 21.3333 7.6 21.3333 10.9333C21.3333 13.1556 20.45 15.5722 18.6833 18.1833C16.9167 20.7944 14.2444 23.6222 10.6667 26.6667Z" fill="#90214d"/>
+</svg>
+            <div class="sd-delivery-content">
+              <p class="sd-deliver-title">Deliver to:</p>
+              <div class="sd-deliver-row">
+                <span>{{ selectedAddress }}</span>
+                <a #changeBtn (click)="openAddressPopup()">Change</a>
+              </div>
+              <p class="sd-deliver-date">Get it by Mon, 2nd Jan</p>
+            </div>
+          </div>
+
+          <button class="sd-add-to-cart" (click)="addToCart()" [class.sd-add-to-cart--added]="addedToCart" [disabled]="addedToCart">
+            {{ addedToCart ? 'Added to Cart' : 'Add To Bag' }}
+          </button>
+
+          <div class="sd-perks">
+            <div class="sd-perk">
+              <img [src]="imgSchoolPartner" alt="School Partner" />
+              <span>Official School Partner</span>
+            </div>
+            <div class="sd-perk">
+              <img [src]="imgEasyExchange" alt="Easy Exchange" />
+              <span>Easy 7 day Return & Exchange</span>
+            </div>
+            <div class="sd-perk">
+              <img [src]="imgSecurePayment" alt="Secure Payment" />
+              <span>Secure Payment</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="sd-card" *ngIf="productDetails.length">
+          <div class="sd-accordion" (click)="toggleDetails()">
+            <span>Product Details</span>
+            <span class="sd-accordion-arrow" [class.expanded]="detailsExpanded">›</span>
+          </div>
+          <dl class="sd-details-list" *ngIf="detailsExpanded">
+            <ng-container *ngFor="let item of productDetails">
+              <dt>{{ item.label }}</dt>
+              <dd>{{ item.value }}</dd>
+            </ng-container>
+          </dl>
+        </article>
+      </div>
+    </section>
+  </main>
+  </ng-template>
+  </ng-container>
+</div>
+<div
+  *ngIf="showAddressPopup"
+  class="address-popup open"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Address options"
+  (click)="closeAddressPopup()">
+  <div #addressInner class="address-popup-inner" tabindex="-1" (click)="$event.stopPropagation()">
+    <div class="change-address">
+      <span class="popup-title">Change Address</span>
+      <button class="popup-close" aria-label="Close" (click)="closeAddressPopup()">✕</button>
+    </div>
+
+    <!-- Loading state -->
+    <div class="addr-loading-row" *ngIf="loadingAddresses">
+      <span>Loading addresses…</span>
+    </div>
+
+    <!-- Empty state -->
+    <div class="addr-empty-row" *ngIf="!loadingAddresses && addresses.length === 0">
+      <p>No addresses found.</p>
+    </div>
+
+    <!-- Address list -->
+    <div *ngFor="let a of addresses"
+         class="address-item"
+         [class.selected]="a.isDefault">
+      <button class="addr-select-row"
+              (click)="selectAddress(a)"
+              [attr.aria-pressed]="a.isDefault">
+        <span class="addr-radio">
+          <svg *ngIf="a.isDefault" width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="8" stroke="#90214D" stroke-width="1.5"/>
+            <circle cx="9" cy="9" r="5" fill="#90214D"/>
+          </svg>
+          <svg *ngIf="!a.isDefault" width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="8" stroke="#6B656A" stroke-width="1.5"/>
+          </svg>
+        </span>
+        <div class="addr-info">
+          <p class="addr-name">{{ a.receiverName }}</p>
+          <p class="addr-line">{{ formatAddr(a) }}</p>
+        </div>
+      </button>
+      <div class="addr-actions">
+        <button class="addr-edit-btn" (click)="openAddressInputEdit(a)">Edit</button>
+        <button class="addr-delete-btn"
+                [disabled]="deletingAddressId === a.id"
+                (click)="removeAddress(a)"
+                aria-label="Delete address">
+          <svg *ngIf="deletingAddressId !== a.id" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#90214d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/>
+            <path d="M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          <svg *ngIf="deletingAddressId === a.id" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#90214d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 0.8s linear infinite; transform-origin: center;">
+            <circle cx="12" cy="12" r="10" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <button class="add-address" (click)="openAddressInput()">+ Add Address</button>
+  </div>
+</div>
+<app-footer></app-footer>

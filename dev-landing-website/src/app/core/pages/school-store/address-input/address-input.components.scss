@@ -1,0 +1,295 @@
+.address-input-content{
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+.address-input-wrap{
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.map-picker {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    margin-bottom: 20px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #eef1f5;
+
+    .map-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+    }
+
+    .center-pin {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -100%);
+        z-index: 500;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: transform 0.15s ease;
+
+        &.dropped {
+            transform: translate(-50%, -108%);
+        }
+
+        svg {
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
+        }
+
+        .pin-shadow {
+            width: 10px;
+            height: 4px;
+            margin-top: 2px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 50%;
+        }
+    }
+
+    .use-location-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: #fbdbe9;
+        border: 0;
+        border-radius: 32px;
+        color: #90214d;
+        font-family: 'Nunito', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+
+        &:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        &:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    }
+
+    .map-status {
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 500;
+        padding: 6px 14px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        color: #282527;
+        font-family: 'Nunito', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    .search-container {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        right: 16px;
+        z-index: 1000;
+        
+        .location-search {
+            --background: white;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 0;
+        }
+        
+        .search-results {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1001;
+            
+            .search-result-item {
+                display: flex;
+                align-items: center;
+                padding: 12px 16px;
+                border-bottom: 1px solid #eee;
+                cursor: pointer;
+                
+                &:last-child {
+                    border-bottom: none;
+                }
+                
+                &:hover {
+                    background-color: #f5f5f5;
+                }
+                
+                .result-icon {
+                    color: #90214D;
+                    margin-right: 12px;
+                    font-size: 18px;
+                }
+                
+                .result-text {
+                    flex: 1;
+                    
+                    .result-name {
+                        font-weight: 600;
+                        color: #282527;
+                        margin-bottom: 4px;
+                    }
+                    
+                    .result-address {
+                        font-size: 12px;
+                        color: #666;
+                    }
+                }
+            }
+        }
+    }
+    
+    google-map {
+        border-radius: 12px;
+        overflow: hidden;
+        margin: 0 16px;
+    }
+    
+    .location-fab {
+        position: absolute !important;
+        bottom: 20px !important;
+        
+        .use-location-btn {
+            --background: #90214D;
+            --color: white;
+            --border-radius: 32px;
+            height: 48px;
+            
+            span {
+                margin-left: 8px;
+                font-size: 14px;
+                font-weight: 500;
+            }
+        }
+    }
+}
+h2{
+    color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-weight: 600;
+margin: 0;
+}
+
+.address-input{
+    display: flex;
+padding: 16px;
+align-items: center;
+gap: 8px;
+align-self: stretch;
+border-radius: 12px;
+border: 1px solid rgba(40, 37, 39, 0.50);
+width: 100%;
+color: #282527;
+font-family: Nunito;
+font-size: 13px;
+font-weight: 600;
+outline: #28252780;
+
+    &::placeholder {
+        color: #9aa2ad;
+        font-weight: 500;
+        opacity: 1;
+    }
+}
+
+/* Phone input with prefix inside the field */
+.phone-input{
+    position: relative;
+    width: 100%;
+}
+
+.phone-prefix{
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    height: calc(100% - 0px);
+    color: #282527;
+    font-weight: 600;
+    font-family: Nunito;
+
+    font-size: 14px;
+    padding: 0 8px 0 8px;
+    background: transparent;
+    pointer-events: none;
+        border-right: 1px solid #282527; 
+        opacity: 0.7;
+}
+
+.address-input.phone-number{
+    padding-left: 64px;
+}
+
+.set-default{
+  font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    input{
+        width: 16px;
+height: 16px;
+aspect-ratio: 1/1;
+border-radius: 4px;
+border: 1px solid #282527;
+    }
+}
+
+/* Checkbox checked color */
+.set-default input[type="checkbox"]{
+    accent-color: #90214D;
+}
+
+.set-default input[type="checkbox"]:checked{
+    border-color: #90214D;
+}
+
+.address-input.invalid{
+    border-color: #BB2124;
+    box-shadow: 0 0 0 4px rgba(187,33,36,0.06);
+}
+
+.error{
+    color: #BB2124;
+    font-family: Nunito;
+    font-size: 13px;
+    margin-top: 8px;
+    display: block;
+}
+
+/* Disabled state for the page CTA */
+.page-cta.disabled{
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}

@@ -1,0 +1,185 @@
+<ng-container *ngIf="reel() as activeReel">
+  <div class="reel-expand-shell" [class.is-my-reel]="showOptions()">
+    <section class="viewer-panel">
+      <div class="video-frame" (click)="togglePlay(player)">
+        <video
+          #player
+          class="reel-video"
+          playsinline
+          [muted]="isVideoMuted()"
+          [attr.poster]="activeReel.posterUrl"
+          (play)="handlePlaybackStateChange(true)"
+          (pause)="handlePlaybackStateChange(false)"
+        >
+          <source [attr.src]="activeReel.videoUrl" type="video/mp4" />
+        </video>
+
+        <div class="video-gradient"></div>
+
+        <div class="viewer-topbar">
+          <button type="button" class="icon-button" aria-label="Back to reels" (click)="goBack(); $event.stopPropagation()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M8.414 12L13.707 6.707L12.293 5.293L5.586 12L12.293 18.707L13.707 17.293L8.414 12Z" fill="currentColor"/>
+              <path d="M18 11H7V13H18V11Z" fill="currentColor"/>
+            </svg>
+          </button>
+
+          <div class="duration-chip" aria-label="Reel duration">
+            {{ activeReel.duration }}
+          </div>
+        </div>
+
+        <div class="viewer-bottom">
+          <div class="viewer-meta">
+            <h1 class="reel-title">{{ activeReel.title }}</h1>
+            <p class="reel-subtitle">{{ activeReel.subtitle }}</p>
+            <ul class="tag-list" aria-label="Reel tags">
+              <li *ngFor="let tag of activeReel.tags">#{{ tag }}</li>
+            </ul>
+          </div>
+
+          <div class="viewer-controls" aria-label="Playback controls">
+            <button
+              type="button"
+              class="control-button"
+              (click)="togglePlay(player); $event.stopPropagation()"
+            >
+              <ng-container *ngIf="!isPlaying(); else pauseIcon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="24" viewBox="0 0 22 24" fill="none" aria-hidden="true">
+                  <path d="M3 2L19 12L3 22V2Z" fill="currentColor"/>
+                </svg>
+              </ng-container>
+              <ng-template #pauseIcon>
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="24" viewBox="0 0 22 24" fill="none" aria-hidden="true">
+                  <rect x="3" y="2" width="6" height="20" rx="2" fill="currentColor"/>
+                  <rect x="13" y="2" width="6" height="20" rx="2" fill="currentColor"/>
+                </svg>
+              </ng-template>
+              <span class="sr-only">
+                {{ isPlaying() ? 'Pause reel' : 'Play reel' }}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              class="control-button"
+              (click)="toggleMute(player); $event.stopPropagation()"
+            >
+              <ng-container *ngIf="isVideoMuted(); else unmuteIcon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 9V15H8L13 20V4L8 9H4Z" fill="currentColor"/>
+                  <path d="M17.657 6.343L16.243 4.929L12 9.172L7.757 4.929L6.343 6.343L10.586 10.586L6.343 14.829L7.757 16.243L12 12L16.243 16.243L17.657 14.829L13.414 10.586L17.657 6.343Z" fill="currentColor"/>
+                </svg>
+              </ng-container>
+              <ng-template #unmuteIcon>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 9V15H8L13 20V4L8 9H4Z" fill="currentColor"/>
+                  <path d="M15.5 8.5C16.88 9.88 17.5 11.88 17.5 13.5C17.5 15.12 16.88 17.12 15.5 18.5L14.08 17.08C14.92 16.24 15.5 14.94 15.5 13.5C15.5 12.06 14.92 10.76 14.08 9.92L15.5 8.5Z" fill="currentColor"/>
+                  <path d="M18.5 5.5C20.76 7.76 21.5 10.88 21.5 13.5C21.5 16.12 20.76 19.24 18.5 21.5L17.08 20.08C18.74 18.42 19.5 16.06 19.5 13.5C19.5 10.94 18.74 8.58 17.08 6.92L18.5 5.5Z" fill="currentColor"/>
+                </svg>
+              </ng-template>
+              <span class="sr-only">
+                {{ isVideoMuted() ? 'Unmute reel' : 'Mute reel' }}
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="details-panel">
+      <div class="details-scroll">
+        <header class="details-header">
+          <div class="creator-block">
+            <img
+              class="creator-avatar"
+              [src]="activeReel.author.avatarUrl"
+              [alt]="activeReel.author.name"
+              width="64"
+              height="64"
+            />
+            <div class="creator-meta">
+              <div class="creator-name">{{ activeReel.author.name }}</div>
+              <div class="creator-role">{{ activeReel.author.role }}</div>
+              <div class="published-meta">Published {{ publishedAgo() }}</div>
+            </div>
+          </div>
+
+          <div class="header-actions">
+            <button *ngIf="showOptions()" type="button" class="options-button" aria-label="Open reel options">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </button>
+          </div>
+        </header>
+
+        <div class="stats-row" aria-label="Reel performance">
+          <div class="stat-card">
+            <span class="stat-value">{{ formattedStat(activeReel.stats.views) }}</span>
+            <span class="stat-label">Views</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value">{{ formattedStat(activeReel.stats.likes) }}</span>
+            <span class="stat-label">Likes</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value">{{ formattedStat(activeReel.stats.comments) }}</span>
+            <span class="stat-label">Comments</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value">{{ formattedStat(activeReel.stats.saves) }}</span>
+            <span class="stat-label">Saves</span>
+          </div>
+        </div>
+
+        <article class="reel-description" aria-label="Reel description">
+          {{ activeReel.description }}
+        </article>
+
+        <section class="comments" *ngIf="activeReel.comments.length > 0" aria-label="Recent comments">
+          <h2 class="section-title">Comments</h2>
+          <div class="comment" *ngFor="let comment of activeReel.comments">
+            <img
+              class="comment-avatar"
+              [src]="comment.authorAvatar"
+              [alt]="comment.authorName"
+              width="48"
+              height="48"
+            />
+            <div class="comment-body">
+              <div class="comment-header">
+                <span class="comment-author">{{ comment.authorName }}</span>
+                <span class="comment-timestamp">{{ comment.postedAgo }}</span>
+                <span *ngIf="comment.isCreator" class="comment-badge">Creator</span>
+              </div>
+              <p class="comment-text">{{ comment.message }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="recommendations" *ngIf="activeReel.recommendations.length > 0" aria-label="Recommended reels">
+          <h2 class="section-title">More like this</h2>
+          <div class="recommendation-grid">
+            <button
+              type="button"
+              class="recommendation-card"
+              *ngFor="let recommendation of activeReel.recommendations"
+              (click)="openReel(recommendation.id)"
+            >
+              <div class="recommendation-thumb" [style.backgroundImage]="'url(' + recommendation.thumbnailUrl + ')'">
+                <span class="thumb-duration">{{ recommendation.duration }}</span>
+                <span *ngIf="isOwnedByMe(recommendation.ownerId)" class="thumb-badge">My Reel</span>
+              </div>
+              <div class="recommendation-info">
+                <h3>{{ recommendation.title }}</h3>
+              </div>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <app-footer class="footer"></app-footer>
+    </section>
+  </div>
+</ng-container>

@@ -1,0 +1,547 @@
+.badges-page-container {
+  min-height: 100vh;
+}
+
+.badges-content {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  max-width: 1200px;
+  margin: 0 auto; /* center page content */
+}
+
+/* Header styles for badges page */
+.badges-header {
+  border-radius: 12px;
+  background: transparent;
+  margin: 0;
+}
+
+.badges-header-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.badges-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.badges-title {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-size: 25px;
+  line-height: 1.4;
+  color: #282527;
+  margin: 0;
+  font-variation-settings: "wdth" 100;
+}
+
+.badges-tagline {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-start;
+  opacity: 0.7;
+}
+
+.tagline-text {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+}
+
+.tagline-dot {
+  width: 4px;
+  height: 4px;
+  display: block;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .badges-title {
+    font-size: 20px;
+  }
+  .tagline-text {
+    font-size: 16px;
+  }
+}
+
+/* Share card styles */
+.badge-share {
+  display: block;
+  padding: 0;
+  margin: 0;
+}
+
+.badge-share-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #fce7eb;
+  padding: 16px 24px;
+  border-radius: 32px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.badge-share-left {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.badge-share-body {
+  flex: 1 1 auto;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.badge-share-title {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+  margin: 0;
+}
+
+.badge-share-text {
+  font-family: 'Nunito';
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #282527;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.badge-share-action {
+  flex: 0 0 auto;
+}
+
+.share-btn {
+  background: #90214d;
+  color: #fff;
+  border: 1px solid #4a0d25;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.4;
+  box-shadow: inset 0px -2px 2px 0px #ea7cb5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.share-btn:hover {
+  opacity: 0.9;
+}
+
+.share-btn:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 768px) {
+  .badge-share-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .badge-share-body {
+    text-align: center;
+  }
+
+  .badge-share-action {
+    display: flex;
+    justify-content: center;
+  }
+
+  .share-btn {
+    width: 100%;
+  }
+}
+
+/* Badges grid styles */
+.badges-grid {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.badges-grid-inner {
+  display: grid;
+  /* responsive grid: fit as many columns as will fit, min 220px per card */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(16px, 2.5vw, 32px);
+  width: 100%;
+}
+
+.badge-grid-item {
+  width: 100%;
+  display: flex;
+  justify-content: stretch;
+  align-items: stretch;
+}
+
+@media (max-width: 1200px) {
+  .badges-content { padding: 28px; }
+}
+
+@media (max-width: 768px) {
+  .badges-content { padding: 20px; gap: 28px; }
+  .badges-grid-inner { gap: 24px; }
+}
+
+@media (max-width: 480px) {
+  .badges-content {
+    padding: 12px;
+    gap: 20px;
+  }
+
+  .badges-title {
+    font-size: 18px;
+  }
+
+  .tagline-text {
+    font-size: 14px;
+  }
+
+  .badges-grid-inner {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .badge-share-inner {
+    padding: 12px;
+  }
+
+  .badge-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .badge-share-title {
+    font-size: 16px;
+  }
+
+  .badge-share-text {
+    font-size: 14px;
+  }
+
+  .share-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Accessibility / Contrast improvements */
+.badge-share-text { opacity: 0.85; }
+.tagline-text { opacity: 0.85; }
+
+/* Ensure badges card inside grid stretches to full cell */
+.badge-grid-item > app-badges-card, .badge-grid-item > app-badges-card * {
+  width: 100%;
+  height: 100%;
+}
+
+/* Share modal styles */
+.share-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(36,24,29,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 24px;
+}
+
+.share-modal {
+  width: 520px;
+  max-width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(36,24,29,0.15);
+  overflow: hidden;
+}
+
+.share-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0e6e8;
+}
+.share-text{
+  color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 22.4px */
+}
+
+.share-modal-header h2 {
+  margin: 0;
+  font-family: 'Nunito';
+  font-size: 20px;
+  color: #24181d;
+}
+
+.share-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.share-modal-body {
+  padding: 20px 24px 28px;
+}
+
+.share-modal-subtext {
+  margin: 0 0 18px 0;
+  color: #6f6f6f;
+}
+
+.share-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.share-option {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #f0e6e8;
+  padding: 14px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.share-option .share-icon {
+  font-size: 20px;
+  display: inline-flex;
+  width: 28px;
+  justify-content: center;
+}
+
+.share-option.whatsapp {
+  background: #fff;
+}
+
+@media (min-width: 480px) {
+  .share-options {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .share-modal {
+    padding: 0;
+    margin: 0 6px;
+  }
+  .share-option {
+    padding: 12px 14px;
+  }
+}
+
+/* Loading state */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 16px;
+
+  p {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f0f0f0;
+    border-top-color: #90214d;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Congratulations popup */
+.congrats-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1300;
+  padding: 24px;
+}
+
+.congrats-popup {
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(180deg, #fce7eb 0%, #fff 100%);
+  border-radius: 24px;
+  padding: 32px;
+  text-align: center;
+  position: relative;
+}
+
+.congrats-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.congrats-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.congrats-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.confetti {
+  width: 80px;
+  height: auto;
+}
+
+.ring {
+  width: 120px;
+  height: 120px;
+  border: 4px solid #90214d;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-wrap {
+  width: 80px;
+  height: 80px;
+}
+
+.badge-icon-popup {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.congrats-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  h1 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 24px;
+    font-weight: 500;
+    color: #282527;
+    margin: 0;
+  }
+
+  h2 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #90214d;
+    margin: 0;
+  }
+
+  p {
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    color: #6b656a;
+    margin: 0;
+  }
+
+  .level-info {
+    font-size: 12px;
+    color: #999;
+  }
+}
+
+.congrats-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.btn-view-all {
+  background: transparent;
+  border: 2px solid #90214d;
+  color: #90214d;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(144, 33, 77, 0.1);
+  }
+}
+
+.btn-awesome {
+  background: #90214d;
+  border: none;
+  color: #fff;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

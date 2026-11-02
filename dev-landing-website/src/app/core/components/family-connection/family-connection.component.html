@@ -1,0 +1,388 @@
+<div class="family-panel-header">
+  <h2 *ngIf="!showRoleInstructions && !showRoleSelection && !showRoleConfirmed && !showJoinFamily && !showCreateFamily">My Family</h2>
+  <div *ngIf="showRoleInstructions" class="instructions-header">
+
+    <button type="button" (click)="backToSelf()" aria-label="Back to self mode">
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="15" fill="none">
+        <path
+          d="M0.292893 6.65617C-0.0976311 7.0467 -0.0976311 7.67986 0.292893 8.07039L6.65685 14.4343C7.04738 14.8249 7.68054 14.8249 8.07107 14.4343C8.46159 14.0438 8.46159 13.4107 8.07107 13.0201L2.41421 7.36328L8.07107 1.70643C8.46159 1.3159 8.46159 0.682738 8.07107 0.292213C7.68054 -0.0983109 7.04738 -0.0983109 6.65685 0.292213L0.292893 6.65617ZM29 8.36328C29.5523 8.36328 30 7.91557 30 7.36328C30 6.811 29.5523 6.36328 29 6.36328V7.36328V8.36328ZM1 7.36328V8.36328H29V7.36328V6.36328H1V7.36328Z"
+          fill="#282527" />
+      </svg>
+    </button>
+    <div class="instructions-title">Instructions</div>
+  </div>
+</div>
+
+  <!-- Show a special 'Self mode' view when family connection has been removed -->
+<div *ngIf="!family.active" class="family-self-mode">
+  <!-- show overview unless instructions, role-selection or confirmation are active -->
+  <ng-container *ngIf="!showRoleInstructions && !showRoleSelection && !showRoleConfirmed && !showJoinFamily && !showCreateFamily">
+    <div class="self-illustration">
+      <img src="assets/images/panda-family.png" alt="panda" />
+    </div>
+    <div class="self-message">
+      <div class="self-title">You're now in Self mode !</div>
+      <div class="self-sub">The family connection has been removed by the creator.<br />Your account is still
+        safe and all data is saved.</div>
+    </div>
+
+    <div class="self-action">
+      <superme-button type="green" [large]="true" text="Continue with a new role?" (clickEvent)="continueWithNewRole()"></superme-button>
+    </div>
+
+    <div class="family-faqs">
+      <!-- replaced manual FAQ markup with reusable standalone component -->
+      <superme-facts heading="FAQ's" [faqs]="familyFaqs"></superme-facts>
+    </div>
+  </ng-container>
+
+  <!-- role-switch instructions view (shown after Continue clicked) -->
+  <ng-container *ngIf="showRoleInstructions && !showRoleConfirmed">
+    <div class="role-instructions">
+
+      <!-- Child role section -->
+      <h2 class="instructions-heading">When You Switch to Child Role</h2>
+
+      <div class="instructions-columns">
+        <div class="instructions-column">
+          <ul class="instructions-list">
+            <li>
+              <span class="bullet"></span>
+              You will link your account to your family and get benefits like learning together and earning rewards.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              Your Parents can view your progress (habits, tasks etc) and give you rewards.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              If later you are removed from the family or the family gets deleted, your account returns to normal
+              with all your data safe and no family connection.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              <strong>Note:</strong> Any data related to family will not be there.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              You can always use the app on your own that's your regular account experience.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Parent role section -->
+      <h2 class="instructions-heading">When You Switch to Parent Role</h2>
+
+      <div class="instructions-columns">
+        <div class="instructions-column">
+          <ul class="instructions-list">
+            <li>
+              <span class="bullet"></span>
+              You can connect with your child's progress and celebrate achievements together.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              You must create or join a family (step-by-step instructions will guide you through this).
+            </li>
+            <li>
+              <span class="bullet"></span>
+              If you are removed from the family or if you delete your family, your account returns to self role and all parent features and data will be permanently lost.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              Keep your current account and create a separate parent account with different login details - this way you never lose any data and can switch between accounts.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- confirmation checkbox and action -->
+      <label class="instruction-confirm">
+        <input type="checkbox" [(ngModel)]="acceptedRoleInstructions" name="acceptedRoleInstructions" />
+        I have read and understood that switching roles affects account linkage and data as described above.
+      </label>
+
+      <div class="instruction-actions">
+        <superme-button type="green" [large]="true" [disabled]="!acceptedRoleInstructions" text="Next" (clickEvent)="nextAfterInstructions()"></superme-button>
+      </div>
+
+    </div>
+  </ng-container>
+  
+  <!-- role selection cards (opened after Next in instructions) -->
+  <ng-container *ngIf="showRoleSelection && !showRoleConfirmed">
+    <div class="role-selection">
+      <div class="selection-header">
+        <button type="button" (click)="backToInstructions()" aria-label="Back to instructions">
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="15" viewBox="0 0 30 15" fill="none">
+  <path d="M0.292893 6.65617C-0.0976311 7.0467 -0.0976311 7.67986 0.292893 8.07039L6.65685 14.4343C7.04738 14.8249 7.68054 14.8249 8.07107 14.4343C8.46159 14.0438 8.46159 13.4107 8.07107 13.0201L2.41421 7.36328L8.07107 1.70643C8.46159 1.3159 8.46159 0.682738 8.07107 0.292213C7.68054 -0.0983109 7.04738 -0.0983109 6.65685 0.292213L0.292893 6.65617ZM29 8.36328C29.5523 8.36328 30 7.91557 30 7.36328C30 6.811 29.5523 6.36328 29 6.36328V7.36328V8.36328ZM1 7.36328V8.36328H29V7.36328V6.36328H1V7.36328Z" fill="#282527"/>
+</svg>
+        </button>
+        <div class="selection-title">Select the role</div>
+      </div>
+
+      <div class="selection-cards">
+        <div class="role-card child" [class.selected]="selectedRole==='child'" (click)="selectRole('child')">
+          <div class="card-text">
+            <h3>Child</h3>
+            <p>Learn and grow.<br/>Link with your parent.<br/>Earn rewards together.</p>
+          </div>
+          <div class="card-image">
+            <!-- placeholder illustration from assets; replace with final art when available -->
+            <img src="assets/images/panda.png" alt="child" />
+          </div>
+        </div>
+
+        <div class="role-card parent" [class.selected]="selectedRole==='parent'" (click)="selectRole('parent')">
+          <div class="card-image">
+            <!-- placeholder illustration from assets; replace with final art when available -->
+            <img src="assets/images/Panda-wearing-cape-coins-history.png" alt="parents" />
+          </div>
+          <div class="card-text">
+            <h3>Parents</h3>
+            <p>Grow Together.<br/>Link with child.<br/>Track progress.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="selection-action">
+        <superme-button type="green" [large]="true" [disabled]="!selectedRole" text="Save &amp; Continue" (clickEvent)="saveAndContinue()"></superme-button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- confirmation / next-step instructions after Save & Continue -->
+  <ng-container *ngIf="showRoleConfirmed">
+    <div class="role-confirmation">
+      <div class="confirmation-header">
+        <button type="button" (click)="cancelRoleConfirmation()" aria-label="Back to selection">
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="15" viewBox="0 0 30 15" fill="none">
+            <path d="M0.292893 6.65617C-0.0976311 7.0467 -0.0976311 7.67986 0.292893 8.07039L6.65685 14.4343C7.04738 14.8249 7.68054 14.8249 8.07107 14.4343C8.46159 14.0438 8.46159 13.4107 8.07107 13.0201L2.41421 7.36328L8.07107 1.70643C8.46159 1.3159 8.46159 0.682738 8.07107 0.292213C7.68054 -0.0983109 7.04738 -0.0983109 6.65685 0.292213L0.292893 6.65617ZM29 8.36328C29.5523 8.36328 30 7.91557 30 7.36328C30 6.811 29.5523 6.36328 29 6.36328V7.36328V8.36328ZM1 7.36328V8.36328H29V7.36328V6.36328H1V7.36328Z" fill="#282527"/>
+          </svg>
+        </button>
+        <div class="confirmation-title">Next steps</div>
+      </div>
+
+      <div class="confirmation-body">
+        <!-- Child instructions view (matches provided PNG) -->
+        <div *ngIf="selectedRole==='child'">
+          <h3>Instructions</h3>
+
+          <ul class="instructions-list">
+            <li>
+              <span class="bullet"></span>
+              Ask your parent to create their account on their device.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              After signup, your parent creates a family in the app.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              Your parent will see a family code and a QR code.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              Enter the family code or upload the QR code in the next page to join their family.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              Once linked, you are good to proceed !
+            </li>
+          </ul>
+
+          <div class="instruction-actions">
+            <superme-button type="green" [large]="true" text="Next" (clickEvent)="confirmRoleAndProceed()"></superme-button>
+          </div>
+
+          <div class="family-faqs" style="margin-top:18px">
+            <superme-facts heading="FAQ's" [faqs]="familyFaqs"></superme-facts>
+          </div>
+        </div>
+
+        <!-- Parent instructions view (same design, different content) -->
+        <div *ngIf="selectedRole==='parent'">
+          <h3>Instructions</h3>
+
+          <ul class="instructions-list">
+            <li>
+              <span class="bullet"></span>
+              Create or join a family from your account (follow step-by-step guide).
+            </li>
+            <li>
+              <span class="bullet"></span>
+              Invite your child by sharing the family code or showing the QR code.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              Manage child links and view progress from your parent dashboard.
+            </li>
+            <li>
+              <span class="bullet"></span>
+              Keep a separate parent account if you want to preserve personal child data separately.
+            </li>
+          </ul>
+
+          <div class="instruction-actions">
+            <superme-button type="green" [large]="true" text="Next" (clickEvent)="confirmRoleAndProceed()"></superme-button>
+          </div>
+
+          <div class="family-faqs" style="margin-top:18px">
+            <superme-facts heading="FAQ's" [faqs]="familyFaqs"></superme-facts>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Join family screen (child flow) -->
+  <ng-container *ngIf="showJoinFamily">
+    <div class="join-family">
+      <div class="join-header">
+        <button type="button" (click)="backToConfirmation()" aria-label="Back to instructions">
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="15" viewBox="0 0 30 15" fill="none">
+            <path d="M0.292893 6.65617C-0.0976311 7.0467 -0.0976311 7.67986 0.292893 8.07039L6.65685 14.4343C7.04738 14.8249 7.68054 14.8249 8.07107 14.4343C8.46159 14.0438 8.46159 13.4107 8.07107 13.0201L2.41421 7.36328L8.07107 1.70643C8.46159 1.3159 8.46159 0.682738 8.07107 0.292213C7.68054 -0.0983109 7.04738 -0.0983109 6.65685 0.292213L0.292893 6.65617ZM29 8.36328C29.5523 8.36328 30 7.91557 30 7.36328C30 6.811 29.5523 6.36328 29 6.36328V7.36328V8.36328ZM1 7.36328V8.36328H29V7.36328V6.36328H1V7.36328Z" fill="#282527"/>
+          </svg>
+        </button>
+        <div class="selection-title">Join your family</div>
+      </div>
+
+      <div class="join-body">
+        <input class="join-input" placeholder="Enter code" [(ngModel)]="familyCode" />
+        <div class="note">Note: Double-check the code before entering</div>
+
+        <div class="join-actions">
+          <superme-button type="green" [large]="true" [disabled]="!familyCode" text="Join family" (clickEvent)="joinFamily()"></superme-button>
+        </div>
+
+        <div class="or-sep"><span>OR</span></div>
+
+        <div class="upload-qr">
+          <input type="file" accept="image/*" #qrfile style="display:none" (change)="onQrFileSelected($event)" />
+          <button class="btn-upload" (click)="triggerUpload(qrfile)">
+            <span class="icon">📷</span>
+            Upload QR code
+          </button>
+        </div>
+
+        <div class="join-faqs" style="margin-top:18px">
+          <superme-facts heading="FAQ's" [faqs]="familyFaqs"></superme-facts>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Create / Join family screen for Parent flow -->
+  <ng-container *ngIf="showCreateFamily">
+    <div class="create-family">
+      <div class="create-header">
+        <button type="button" (click)="backToConfirmation()" aria-label="Back to instructions">
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="15" viewBox="0 0 30 15" fill="none">
+            <path d="M0.292893 6.65617C-0.0976311 7.0467 -0.0976311 7.67986 0.292893 8.07039L6.65685 14.4343C7.04738 14.8249 7.68054 14.8249 8.07107 14.4343C8.46159 14.0438 8.46159 13.4107 8.07107 13.0201L2.41421 7.36328L8.07107 1.70643C8.46159 1.3159 8.46159 0.682738 8.07107 0.292213C7.68054 -0.0983109 7.04738 -0.0983109 6.65685 0.292213L0.292893 6.65617ZM29 8.36328C29.5523 8.36328 30 7.91557 30 7.36328C30 6.811 29.5523 6.36328 29 6.36328V7.36328V8.36328ZM1 7.36328V8.36328H29V7.36328V6.36328H1V7.36328Z" fill="#282527"/>
+          </svg>
+        </button>
+        <h3>Create Your Family</h3>
+        </div>
+        <div class="create-toggle">
+          <button class="toggle-btn" [class.active]="createMode==='create'" (click)="createMode='create'">Create Family</button>
+          <button class="toggle-btn" [class.active]="createMode==='join'" (click)="createMode='join'">Join Family</button>
+        </div>
+      
+
+      <div class="create-body">
+        <div *ngIf="createMode==='create'" class="create-pane">
+          <label class="muted small">For naming your family</label>
+          <input class="create-input" placeholder="Set family name" [(ngModel)]="createFamilyName" />
+          <div class="create-actions">
+            <superme-button type="green" [large]="true" [disabled]="!createFamilyName || createFamilyName.trim().length===0" text="Create Family" (clickEvent)="createFamily()"></superme-button>
+          </div>
+        </div>
+
+        <div *ngIf="createMode==='join'" class="join-pane">
+          <label class="muted small">Have a family code or QR?</label>
+          <input class="create-input" placeholder="Enter family code" [(ngModel)]="familyCode" />
+          <div class="create-actions">
+            <button class="btn-save" (click)="joinFamily()" [disabled]="!familyCode">Join Family</button>
+          </div>
+          <div class="or-sep"><span>OR</span></div>
+
+        <div class="upload-qr">
+          <input type="file" accept="image/*" #qrfile style="display:none" (change)="onQrFileSelected($event)" />
+          <button class="btn-upload" (click)="triggerUpload(qrfile)">
+            <span class="icon">📷</span>
+            Upload QR code
+          </button>
+        </div>
+        </div>
+
+        <div class="create-faqs" style="margin-top:18px">
+          <superme-facts heading="FAQ's" [faqs]="familyFaqs"></superme-facts>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- Normal family view when family is active -->
+<div *ngIf="family.active" class="family-card">
+  <div class="family-header">
+    <div class="family-meta">Family name: <strong>{{ family.name }}</strong>
+      <span class="status" [class.active]="family.active">{{ family.active ? ' • Active' : '' }}</span>
+    </div>
+    <div class="family-created">Created on: {{ family.createdOn }}</div>
+  </div>
+
+  <div class="family-owner">
+    <div class="owner-avatar">
+      <!-- Use ParentImageService for styled initial avatar -->
+      <div class="initial-avatar-circle" 
+           [ngStyle]="parentImageService.getAvatarStyle(getInitial(family.owner?.name), isFemale(creator), 64)">
+        {{ getInitial(family.owner?.name) }}
+      </div>
+    </div>
+    <div class="owner-name">{{ family.owner.name }}</div>
+    <div class="owner-age">{{ family.owner.age }} years old</div>
+    <div class="owner-role">{{ family.owner.roleLabel }}</div>
+  </div>
+
+  <div class="family-members">
+    <div *ngFor="let m of family.members; let i = index" class="member"
+      [class.selected]="selectedFamilyMemberIndex===i" (click)="selectFamilyMember(i)">
+      <div class="member-avatar">
+        @if (isParentMember(i)) {
+          <div class="initial-avatar-circle"
+               [ngStyle]="parentImageService.getAvatarStyle(getInitial(m.name), isFemale(apiMembers[i]), 48)">
+            {{ getInitial(m.name) }}
+          </div>
+        } @else {
+          @if (getMemberAvatar(apiMembers[i]); as resolvedAvatar) {
+            @if (resolvedAvatar.url) {
+              <img [src]="resolvedAvatar.url" [alt]="resolvedAvatar.alt || m.name" class="member-avatar-img" />
+            } @else {
+              <div class="initial-avatar-circle"
+                   [ngStyle]="parentImageService.getAvatarStyle(getInitial(m.name), isFemale(apiMembers[i]), 48)">
+                {{ getInitial(m.name) }}
+              </div>
+            }
+          } @else {
+            <div class="initial-avatar-circle"
+                 [ngStyle]="parentImageService.getAvatarStyle(getInitial(m.name), isFemale(apiMembers[i]), 48)">
+              {{ getInitial(m.name) }}
+            </div>
+          }
+        }
+      </div>
+      <div class="member-name">{{ m.name }}</div>
+      <div class="member-age">{{ m.age }} years old</div>
+      <div class="member-role">{{ m.role }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Shared FAQ block for active family view (uses reusable component) -->
+<div *ngIf="family.active" class="family-faqs">
+  <superme-facts heading="FAQ's" [faqs]="familyFaqs"></superme-facts>
+</div>
+

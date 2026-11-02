@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+
+Disallow: /app/
+Disallow: /login
+Disallow: /signup
+Disallow: /logout
+Disallow: /account/
+Disallow: /profile/
+Disallow: /settings/
+Disallow: /api/
+Disallow: /search
+Disallow: /*?*
+Disallow: /*?page=
+Disallow: /*?search
+
+Allow: /habit-tracker
+Allow: /task-manager
+Allow: /daily-journal
+Allow: /routine-planner
+Allow: /productivity-calendar
+Allow: /note-taking-app
+Allow: /quiz
+Allow: /puzzle
+Allow: /article
+Allow: /reels
+Allow: /academy
+Allow: /find-a-tutor
+Allow: /become-a-tutor
+Allow: /shop/
+
+Sitemap: https://supermeapp.com/sitemap.xml

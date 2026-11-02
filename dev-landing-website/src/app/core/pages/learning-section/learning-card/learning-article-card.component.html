@@ -1,0 +1,33 @@
+<article class="discover-card" role="button" tabindex="0" (click)="openDescription()" (keyup.enter)="openDescription()">
+  <div class="thumbnail">
+    <img [src]="imageUrl" (error)="onImgError($event)" [alt]="article.title || 'article thumbnail'" class="thumbnail-img" />
+  </div>
+
+  <div class="card-content">
+    <div class="card-info">
+      <div class="title-row">
+        <h3 class="card-title">{{ article.title }}</h3>
+        <div class="card-type" *ngIf="tagLabel">{{ tagLabel }}</div>
+      </div>
+      <p class="card-desc">{{ article.description }}</p>
+    </div>
+
+    <div class="card-actions">
+      <div class="rewards">
+        <div class="reward-item">
+          <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coin" class="coin-icon" />
+          <span class="coin-count">{{ article.coins }}</span>
+        </div>
+        <div class="reward-item time-item" *ngIf="article.timeDuration">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b656a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span class="time-count">{{ article.timeDuration }} mins</span>
+        </div>
+      </div>
+      <div class="cta-button">
+        <superme-button type="pink" [text]="buttonText" class="read-btn" (click)="openDescription(); $event.stopPropagation()"></superme-button>
+      </div>
+    </div>
+  </div>
+</article>

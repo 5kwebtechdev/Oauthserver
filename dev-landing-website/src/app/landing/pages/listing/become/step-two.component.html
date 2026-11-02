@@ -1,0 +1,282 @@
+<div class="listing-fields">
+
+  <!-- SHOPS -->
+  <ng-container *ngIf="isShop">
+    <div class="field">
+      <label>Address</label>
+      <input type="text" [(ngModel)]="form.address" placeholder="House / shop no, street, landmark" name="address" />
+    </div>
+
+    <div class="three-col">
+      <div class="field">
+        <label>City</label>
+        <input type="text" [(ngModel)]="form.city" placeholder="City" name="city" />
+      </div>
+      <div class="field">
+        <label>State</label>
+        <input type="text" [(ngModel)]="form.state" placeholder="State" name="state" />
+      </div>
+      <div class="field">
+        <label>Country</label>
+        <input type="text" [(ngModel)]="form.country" placeholder="Country" name="country" />
+      </div>
+    </div>
+
+    <div *ngIf="config.type === 'sports'" class="field">
+      <label>Sale / Offer Amount</label>
+      <div class="money">
+        <span>₹</span>
+        <input type="number" min="0" [(ngModel)]="form.saleAmount" placeholder="Enter sale or offer amount" name="saleAmount" />
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- PG / HOSTEL -->
+  <ng-container *ngIf="isPgHostel">
+    <div class="two-col">
+      <div class="field">
+        <label>Type *</label>
+        <div class="choice-row">
+          <button
+            *ngFor="let type of pgTypeOptions"
+            type="button"
+            class="choice"
+            [class.choice--active]="form.accommodationType === type"
+            (click)="form.accommodationType = type"
+          >
+            {{ type }}
+          </button>
+        </div>
+        <p *ngIf="submitted && !form.accommodationType" class="error">
+          Please select PG or Hostel
+        </p>
+      </div>
+
+      <div class="field">
+        <label>Suitable For *</label>
+        <div class="choice-row">
+          <button
+            *ngFor="let option of pgSuitableForOptions"
+            type="button"
+            class="choice"
+            [class.choice--active]="form.suitableFor === option"
+            (click)="form.suitableFor = option"
+          >
+            {{ option }}
+          </button>
+        </div>
+        <p *ngIf="submitted && !form.suitableFor" class="error">
+          Please select who the accommodation is suitable for
+        </p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Address</label>
+      <input
+        type="text"
+        [(ngModel)]="form.address"
+        placeholder="Building, street, area or landmark"
+        name="pgAddress"
+      />
+    </div>
+
+    <div class="three-col">
+      <div class="field">
+        <label>Country</label>
+        <input type="text" [(ngModel)]="form.country" placeholder="Country" name="pgCountry" />
+      </div>
+      <div class="field">
+        <label>State</label>
+        <input type="text" [(ngModel)]="form.state" placeholder="State" name="pgState" />
+      </div>
+      <div class="field">
+        <label>City *</label>
+        <input type="text" [(ngModel)]="form.city" placeholder="City" name="pgCity" />
+        <p *ngIf="submitted && !form.city.trim()" class="error">City is required</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Description</label>
+      <textarea
+        rows="4"
+        [(ngModel)]="form.bio"
+        placeholder="Describe the PG / Hostel, rooms, location and house rules"
+        name="pgDescription"
+      ></textarea>
+    </div>
+
+    <div class="field">
+      <label>Room Occupancy</label>
+      <div class="choice-row">
+        <button
+          *ngFor="let room of pgRoomOptions"
+          type="button"
+          class="choice"
+          [class.choice--active]="form.roomOccupancy.includes(room)"
+          (click)="toggleRoom(room)"
+        >
+          {{ room }}
+        </button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Amenities</label>
+      <div class="choice-row">
+        <button
+          *ngFor="let amenity of pgAmenityOptions"
+          type="button"
+          class="choice"
+          [class.choice--active]="form.amenities.includes(amenity)"
+          (click)="toggleAmenity(amenity)"
+        >
+          {{ amenity }}
+        </button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Food Available?</label>
+      <div class="choice-row">
+        <button
+          type="button"
+          class="choice"
+          [class.choice--active]="form.foodAvailable === true"
+          (click)="form.foodAvailable = true"
+        >
+          Yes
+        </button>
+        <button
+          type="button"
+          class="choice"
+          [class.choice--active]="form.foodAvailable === false"
+          (click)="form.foodAvailable = false"
+        >
+          No
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- COUNSELLOR -->
+  <ng-container *ngIf="isCounselor">
+    <div class="two-col">
+      <div class="field">
+        <label>Qualifications</label>
+        <input type="text" [(ngModel)]="form.qualifications" placeholder="e.g. MA Psychology" name="qualifications" />
+      </div>
+      <div class="field">
+        <label>Experience</label>
+        <input type="text" [(ngModel)]="form.experience" placeholder="e.g. 5 Years" name="experience" />
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="field">
+        <label>Fee Per Session</label>
+        <div class="money">
+          <span>₹</span>
+          <input type="number" min="0" [(ngModel)]="form.fee" placeholder="Enter fee" name="fee" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Languages</label>
+        <input type="text" [(ngModel)]="form.languages" placeholder="English, Hindi, Marathi" name="languages" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Specialization</label>
+      <input type="text" [(ngModel)]="form.specialization" placeholder="Career, Academic, Child, Mental Wellness..." name="specialization" />
+    </div>
+
+    <div class="field">
+      <label>Mode *</label>
+      <div class="choice-row">
+        <button *ngFor="let mode of modes" type="button" class="choice"
+          [class.choice--active]="form.mode.includes(mode)" (click)="toggleMode(mode)">
+          {{ mode }}
+        </button>
+      </div>
+      <p *ngIf="submitted && form.mode.length === 0" class="error">Please select at least one mode</p>
+    </div>
+
+    <div class="field">
+      <label>Bio</label>
+      <textarea rows="4" [(ngModel)]="form.bio" placeholder="Tell families about your approach and experience" name="bio"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Exact Location</label>
+      <input type="text" [(ngModel)]="form.exactLocation" placeholder="Area, landmark or locality" name="exactLocation" />
+    </div>
+
+    <div class="three-col">
+      <div class="field"><label>City</label><input type="text" [(ngModel)]="form.city" placeholder="City" name="counselorCity" /></div>
+      <div class="field"><label>State</label><input type="text" [(ngModel)]="form.state" placeholder="State" name="counselorState" /></div>
+      <div class="field"><label>Country</label><input type="text" [(ngModel)]="form.country" placeholder="Country" name="counselorCountry" /></div>
+    </div>
+  </ng-container>
+
+  <!-- EVENT / WORKSHOP -->
+  <ng-container *ngIf="isEvent">
+    <div class="two-col">
+      <div class="field">
+        <label>Start Date & Time *</label>
+        <input type="datetime-local" [(ngModel)]="form.startDt" name="startDt" />
+      </div>
+      <div class="field">
+        <label>End Date & Time *</label>
+        <input type="datetime-local" [(ngModel)]="form.endDt" name="endDt" />
+      </div>
+    </div>
+
+    <p *ngIf="submitted && (!form.startDt || !form.endDt)" class="error">Start and end date/time are required</p>
+
+    <div class="free-toggle">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="form.isFree" name="isFree" />
+        <span>This {{ config.type }} is free</span>
+      </label>
+    </div>
+
+    <div *ngIf="!form.isFree" class="field">
+      <label>Fee</label>
+      <div class="money"><span>₹</span><input type="number" min="0" [(ngModel)]="form.fee" placeholder="Enter fee" name="eventFee" /></div>
+    </div>
+
+    <div class="field">
+      <label>Registration Link</label>
+      <input type="url" [(ngModel)]="form.regLink" placeholder="https://..." name="regLink" />
+    </div>
+
+    <div class="section-title">Venue Details</div>
+
+    <div *ngFor="let venue of form.venues; let i = index; trackBy: trackVenue" class="venue-card">
+      <div class="venue-card__head">
+        <strong>Venue {{ i + 1 }}</strong>
+        <button *ngIf="form.venues.length > 1" type="button" class="remove-link" (click)="removeVenue(venue.id)">Remove</button>
+      </div>
+
+      <div class="field"><label>Venue Name</label><input type="text" [(ngModel)]="venue.venueName" [name]="'venueName' + i" placeholder="Venue name" /></div>
+      <div class="field"><label>Address</label><input type="text" [(ngModel)]="venue.address" [name]="'venueAddress' + i" placeholder="Address" /></div>
+
+      <div class="three-col">
+        <div class="field"><label>City</label><input type="text" [(ngModel)]="venue.city" [name]="'venueCity' + i" placeholder="City" /></div>
+        <div class="field"><label>State</label><input type="text" [(ngModel)]="venue.state" [name]="'venueState' + i" placeholder="State" /></div>
+        <div class="field"><label>Country</label><input type="text" [(ngModel)]="venue.country" [name]="'venueCountry' + i" placeholder="Country" /></div>
+      </div>
+    </div>
+
+    <div class="actions actions--right">
+      <button type="button" class="secondary compact" (click)="addVenue()">+ Add Another Venue</button>
+    </div>
+  </ng-container>
+
+  <div class="actions">
+    <button type="button" class="secondary" (click)="back.emit()">Back</button>
+    <button type="button" class="primary" [disabled]="!isValid" (click)="handleNext()">Next</button>
+  </div>
+</div>

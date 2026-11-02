@@ -1,0 +1,369 @@
+.add-new-link {
+  color: #90214D;
+  font-family: Nunito;
+  font-size: 25px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  /* 35px */
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: none;
+  text-decoration-thickness: auto;
+  text-underline-offset: auto;
+  text-underline-position: from-font;
+  cursor: pointer;
+}
+
+.glance-view-all {
+  color: #90214D;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.glance-columns {
+  display: grid;
+  margin-top: 24px;
+  /* Make three equal columns so each .col takes the same space */
+  grid-template-columns: repeat(3, 1fr);
+  /* Use the same vertical rhythm as the column header spacing (0.75rem)
+     so the visible gaps align with the header spacing between title and content */
+  gap: 0.75rem;
+  align-items: stretch; /* ensure columns stretch to same height */
+  grid-auto-rows: 1fr; /* make each row equal height so columns align vertically */
+}
+
+.col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: auto;
+  margin-bottom: 0.75rem;
+  /* align header content with card inner padding so "H3" and "View all" sit
+     flush with the cards below */
+  padding: 0 0.75rem;
+}
+
+.col-header h3 {
+  color: #898CCA;
+  text-align: left;
+  font-family: Nunito;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%;
+  /* 28px */
+}
+
+/* Specific Tasks header color override */
+.col-tasks .col-header h3.tasks-title {
+  color: #F6AC72;
+}
+
+/* Note: task-specific habit title styling is handled inside the habit-card component
+  via the .task host class. This keeps styles encapsulated and avoids ::ng-deep. */
+
+
+.col h3 {
+  margin: 0;
+  color: #664e84;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  aspect-ratio: 1/1;
+  fill: #282527;
+}
+
+.habit-wrapper {
+  display: flex;
+  /* allow the card to fill its column so column widths remain equal visually */
+  width: 100%;
+  height: auto;
+  /* use symmetric horizontal padding so cards align with the column headers */
+  padding: 8px 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  /* default (habit) left border */
+  border-left: 4px solid #8B8DCB;
+  background: #FDFDFD;
+  border-radius: 16px;
+  background: #FFF;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+  /* Remove per-card bottom margin so the `.cards` container controls vertical spacing
+     This helps keep cards uniform height within a column. */
+  margin-bottom: 0;
+  /* Keep cards visually uniform — set a sensible min-height so list items
+     render consistently and header spacing aligns to the card content */
+  min-height: 64px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Make each column a vertical flex container so header stays at top and .cards stretches */
+.col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* allow children to shrink inside grid cells */
+  /* Add horizontal padding that matches the .col-header/.cards padding so
+     column content lines up consistently */
+  padding: 0 0.75rem;
+}
+
+.cards {
+  /* Let cards area take remaining column height so columns match visually */
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* same rhythm as grid gap / header spacing */
+  padding: 0 0.75rem;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Task variant: use orange left border */
+.habit-wrapper.task-card {
+  border-left: 4px solid #F6AC72;
+}
+
+
+.timetable-heading {
+  color: #89B3B6 !important;
+  margin: 0;
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 140%;
+  display: inline-block;
+}
+
+.card-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.card-title {
+  font-family: 'Nunito', sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  color: #524F84;
+  margin-bottom: 0px !important;
+}
+
+/* Task title color override */
+.habit-wrapper.task-card .card-title {
+  color: #E04D16;
+}
+
+/* Timetable card title and time color */
+.habit-wrapper.timetable-card .card-title,
+.habit-wrapper.timetable-card .card-time {
+  color: #89B3B6;
+}
+
+.card-time {
+  font-family: 'Nunito', sans-serif;
+  font-weight: bold;
+  font-size: 13px;
+  line-height: 140%;
+  color: #BB2124;
+  margin-top: 4px;
+}
+
+.card-pill {
+  display: flex;
+  align-items: center;
+  padding: 5px 16px;
+  height: 24px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: bold;
+  font-size: 10px;
+  color: #45456A;
+  border-radius: 16px;
+  border: 1px solid #524F84;
+  background: #E8ECF7;
+  white-space: nowrap;
+}
+
+/* Task-specific badge styling (routine badge) */
+.habit-wrapper.task-card .card-pill {
+  border-radius: 16px;
+  border: 1px solid #EE6621;
+  background: #FDEAD7;
+  color: #772817;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+  width: 100%;
+}
+
+.icons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.icons .icon {
+  font-size: 1rem;
+}
+
+.icons .coin {
+  margin-left: 0.5rem;
+}
+
+.count {
+  color: #333;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: #8B8DCB;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-done {
+  background: #4CAF50;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.single-action {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+// Expandable content styles (copied from habit-card.component.scss)
+.habit-expandable-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+  opacity: 0;
+  width: 100%;
+
+  &.expanded {
+    max-height: 500px;
+    /* Set this to a value that would accommodate your content */
+    opacity: 1;
+    transition: max-height 0.5s ease-in, opacity 0.3s ease-in;
+  }
+}
+
+/* Hover-to-expand: mirror the expanded behaviour when hovered (desktop/large-pointer) */
+.habit-wrapper:hover .habit-expandable-content {
+  max-height: 500px;
+  opacity: 1;
+  transition: max-height 0.5s ease-in, opacity 0.3s ease-in;
+}
+
+.habit-wrapper:hover .card-footer {
+  /* ensure footer becomes visible like expanded */
+  opacity: 1;
+}
+
+/* Slight lift on hover to indicate interactivity */
+.habit-wrapper:hover {
+  transform: translateY(-4px);
+  transition: transform 0.18s ease;
+}
+
+/* For task cards ensure the same behaviour */
+.habit-wrapper.task-card:hover .habit-expandable-content {
+  max-height: 300px;
+  /* shorter footprint for tasks */
+  opacity: 1;
+}
+
+/* Respect small-screen devices: on narrow screens keep click-driven behavior only
+   (hover is ignored on most touch devices). If you want hover on touch, we'll need
+   an explicit JS/tap-to-toggle solution which I can add if requested. */
+@media (max-width: 900px) {
+  .habit-wrapper:hover {
+    transform: none;
+  }
+
+  .habit-wrapper:hover .habit-expandable-content {
+    max-height: 0;
+    /* disable hover expansion on small screens */
+    opacity: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .glance-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .day-glance {
+    margin: 1rem;
+    padding: 1rem;
+  }
+}
+
+/* Modal/backdrop for habit input */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-center {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  width: min(718px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-close {
+  /* background: #fff; */
+  /* border-radius: 12px; */
+  /* padding: 1rem; */
+  /* width: 720px; */
+  max-height: 90vh;
+  overflow: auto;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}

@@ -1,0 +1,392 @@
+.school-store-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fafafa;
+}
+
+.store-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 16px 24px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// Header
+.store-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.store-title {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-size: 22px;
+  color: #282527;
+  margin: 0;
+}
+
+.store-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.store-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid #e8e4e7;
+  border-radius: 10px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  span {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: #6B656A;
+  }
+
+  &:hover {
+    background: #f5f0f3;
+    border-color: #d0cace;
+  }
+}
+
+// Content
+.store-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+// Carousel
+.banner-carousel {
+  position: relative;
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  aspect-ratio: 16 / 6;
+  background: #eee;
+  margin: 0 auto;
+}
+
+.carousel-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carousel-slide {
+  min-width: 100%;
+  height: 100%;
+}
+
+.slide-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 32px 56px;
+  box-sizing: border-box;
+}
+
+.slide-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.slide-title {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: clamp(24px, 3vw, 38px);
+  color: #fff;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.slide-subtitle {
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(13px, 1.4vw, 16px);
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.slide-cta {
+  margin-top: 8px;
+  align-self: flex-start;
+  background: #fff;
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 24px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: scale(1.04);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.slide-images {
+  position: relative;
+  width: 40%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.slide-product {
+  max-height: 90%;
+  max-width: 55%;
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.3));
+  transform: rotate(-6deg);
+}
+
+.slide-product-back {
+  z-index: 1;
+  transform: rotate(8deg) translateX(-15%);
+  max-height: 80%;
+  opacity: 0.9;
+}
+
+.carousel-hit-left,
+.carousel-hit-right {
+  position: absolute;
+  top: 0;
+  width: 20%;
+  height: 100%;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.carousel-hit-left { left: 0; }
+.carousel-hit-right { right: 0; }
+
+.carousel-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.25s;
+
+  &.active {
+    background: #fff;
+    width: 20px;
+    border-radius: 4px;
+  }
+}
+
+// Category Grid
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.cat-card {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  border: 1px solid #f0ecee;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.cat-img {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    max-width: 90px;
+    max-height: 100px;
+    object-fit: contain;
+  }
+}
+
+.cat-name {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #282527;
+  text-align: center;
+}
+
+.soon-tag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(90deg, #F9D2DC, #fff);
+  border: 1px solid #90214D;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  color: #90214D;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.cat-coming-soon {
+  opacity: 0.75;
+}
+
+// Trust Strip
+.trust-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 16px 0;
+  border-top: 1px solid #f0ecee;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  img {
+    width: 32px;
+    height: 28px;
+    object-fit: contain;
+  }
+
+  span {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+  }
+}
+
+// Responsive
+@media (max-width: 1024px) {
+  .cat-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .store-main {
+    padding: 12px 16px 32px;
+    gap: 20px;
+  }
+
+  .cat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .banner-carousel {
+    aspect-ratio: 16 / 8;
+    border-radius: 14px;
+  }
+
+  .slide-content {
+    padding: 20px 28px;
+  }
+
+  .slide-images {
+    width: 35%;
+  }
+
+  .trust-strip {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .store-title {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .store-main {
+    padding: 10px 12px 24px;
+    gap: 16px;
+  }
+
+  .store-content {
+    gap: 20px;
+  }
+
+  .cat-img {
+    height: 80px;
+
+    img {
+      max-width: 70px;
+      max-height: 80px;
+    }
+  }
+
+  .cat-name {
+    font-size: 13px;
+  }
+
+  .cat-card {
+    padding: 12px 8px;
+    border-radius: 12px;
+  }
+
+  .slide-content {
+    padding: 16px 18px;
+  }
+
+  .slide-cta {
+    font-size: 12px;
+    padding: 6px 16px;
+  }
+
+  .slide-images {
+    width: 30%;
+  }
+}

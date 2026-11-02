@@ -1,0 +1,12 @@
+<nav class="stcs-row" role="tablist" aria-label="Stationery categories">
+  <button
+    type="button"
+    class="stcs-tab"
+    *ngFor="let item of items"
+    role="tab"
+    [class.active]="activeId === item.id"
+    [attr.aria-selected]="activeId === item.id"
+    (click)="onSelect(item)">
+    <span class="stcs-label">{{ item.label }}</span>
+  </button>
+</nav>

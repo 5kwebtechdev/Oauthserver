@@ -1,0 +1,163 @@
+<section class="pillar-showcase w-full px-[20px] min-[768px]:px-[32px] min-[1280px]:px-[40px] pb-[32px]">
+  <div class="max-w-[1360px] mx-auto">
+    <!-- Header -->
+    <div class="pillar-showcase__heading flex flex-col gap-[12px] items-center justify-center text-[#282527] text-center mb-[32px]">
+      <p class="font-['Nunito',sans-serif] font-bold text-[24px] min-[768px]:text-[28px] min-[1280px]:text-[32px] tracking-[-1.6px] leading-[normal]">
+        Confident, Curious and Empowered
+      </p>
+      <p class="font-['Nunito',sans-serif] font-normal opacity-70 text-[14px] min-[768px]:text-[18px] min-[1280px]:text-[20px] leading-[normal] max-w-[340px] min-[768px]:max-w-[480px] min-[1280px]:max-w-[520px]">
+        Build habits that last, skills that matter and responsibility that grows as your digital pet evolves.
+      </p>
+    </div>
+
+    <!-- Desktop Cards (1280px+) - Full size, 4 in a row -->
+    <div class="hidden min-[1280px]:grid grid-cols-4 gap-[32px] items-start justify-center">
+      @for (card of cards; track $index; let i = $index) {
+        <a [routerLink]="card.href" class="pillar-card flex flex-col items-center justify-center gap-[24px] no-underline text-inherit" [style.--pillar-index]="i">
+          <div class="pillar-card__visual flex items-center justify-center overflow-clip relative rounded-[56px] w-full h-[368px]">
+            <div [class]="card.imgContainerClass">
+              <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <img alt="" [class]="card.imgClass" [src]="card.image" [attr.width]="card.imageWidth" [attr.height]="card.imageHeight" loading="lazy" decoding="async" />
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-[4px] items-center w-full">
+            <div class="flex flex-col gap-[4px] items-center h-[43px] w-[252px]">
+              <p class="pillar-card__title font-['Nunito',sans-serif] font-bold text-[20px] leading-[normal] text-[#282527] tracking-[-1px] whitespace-nowrap">{{ card.title }}</p>
+              <!-- Gradient Line -->
+              <div class="pillar-card__line h-0 relative shrink-0 w-[146px]">
+                <div class="absolute inset-[-1px_-0.68%]">
+                  <svg class="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 148 2">
+                    <path d="M1 1H147" [attr.stroke]="'url(#pillar_grad_' + i + ')'" stroke-linecap="round" stroke-width="2" />
+                    <defs>
+                      <linearGradient gradientUnits="userSpaceOnUse" [attr.id]="'pillar_grad_' + i" x1="1" x2="147" y1="1.5" y2="1.5">
+                        <stop stop-color="#8B8DCB" /><stop offset="0.25" stop-color="#89B3B6" /><stop offset="0.5" stop-color="#E1527C" /><stop offset="1" stop-color="#F6AC72" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <p class="font-['Nunito',sans-serif] font-medium text-[13px] leading-[normal] opacity-70 text-[#282527] text-center w-[252px]">{{ card.description }}</p>
+          </div>
+        </a>
+      }
+    </div>
+
+    <!-- Large Tablet (900px-1279px) compact, 4 in a row -->
+    <div class="hidden min-[900px]:grid min-[1280px]:hidden grid-cols-4 gap-[16px] items-start justify-center">
+      @for (card of cards; track $index; let i = $index) {
+        <a [routerLink]="card.href" class="pillar-card flex flex-col items-center justify-center gap-[16px] no-underline text-inherit" [style.--pillar-index]="i">
+          <div class="pillar-card__visual flex items-center justify-center overflow-clip relative rounded-[40px] w-full h-[260px]">
+            <div [class]="card.imgContainerClass" style="transform: scale(0.71); transform-origin: center center">
+              <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <img alt="" [class]="card.imgClass" [src]="card.image" [attr.width]="card.imageWidth" [attr.height]="card.imageHeight" loading="lazy" decoding="async" />
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-[4px] items-center w-full">
+            <div class="flex flex-col gap-[4px] items-center h-[36px] w-[200px]">
+              <p class="pillar-card__title font-['Nunito',sans-serif] font-bold text-[16px] leading-[normal] text-[#282527] tracking-[-1px] whitespace-nowrap">{{ card.title }}</p>
+              <div class="pillar-card__line h-0 relative shrink-0 w-[146px]">
+                <div class="absolute inset-[-1px_-0.68%]">
+                  <svg class="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 148 2">
+                    <path d="M1 1H147" [attr.stroke]="'url(#pillar_grad_c' + i + ')'" stroke-linecap="round" stroke-width="2" />
+                    <defs>
+                      <linearGradient gradientUnits="userSpaceOnUse" [attr.id]="'pillar_grad_c' + i" x1="1" x2="147" y1="1.5" y2="1.5">
+                        <stop stop-color="#8B8DCB" /><stop offset="0.25" stop-color="#89B3B6" /><stop offset="0.5" stop-color="#E1527C" /><stop offset="1" stop-color="#F6AC72" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <p class="font-['Nunito',sans-serif] font-medium text-[11px] leading-[normal] opacity-70 text-[#282527] text-center w-[200px]">{{ card.description }}</p>
+          </div>
+        </a>
+      }
+    </div>
+
+    <!-- Mobile Carousel (<900px) -->
+    <div class="min-[900px]:hidden">
+      <div class="flex flex-col gap-[24px] items-center w-full">
+        <!-- Scrollable cards with arrows -->
+        <div class="relative w-full">
+          <!-- Left Arrow -->
+          @if (activeIndex > 0) {
+            <button
+              (click)="goPrev()"
+              class="absolute arrow-div left-[4px] top-1/2 -translate-y-1/2 z-10 bg-white shadow-[0px_2px_12px_rgba(0,0,0,0.12)] border border-black/5 rounded-full size-[36px] flex items-center justify-center cursor-pointer"
+              aria-label="Previous card"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#282527" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
+          }
+          <!-- Right Arrow -->
+          @if (activeIndex < cards.length - 1) {
+            <button
+              (click)="goNext()"
+              class="absolute arrow-div right-[4px] top-1/2 -translate-y-1/2 z-10 bg-white shadow-[0px_2px_12px_rgba(0,0,0,0.12)] border border-black/5 rounded-full size-[36px] flex items-center justify-center cursor-pointer"
+              aria-label="Next card"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="#282527" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
+          }
+
+          <div
+            #scrollContainer
+            class="flex overflow-x-auto snap-x snap-mandatory w-full"
+            style="scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch"
+            (scroll)="onScroll($event)"
+          >
+            @for (card of cards; track $index; let i = $index) {
+              <div class="snap-center flex-shrink-0 w-full flex justify-center px-[20px]">
+                <div class="w-full max-w-[316px]">
+                  <a [routerLink]="card.href" class="pillar-card flex flex-col items-center justify-center gap-[24px] no-underline text-inherit" [style.--pillar-index]="i">
+                    <div class="pillar-card__visual flex items-center justify-center overflow-clip relative rounded-[56px] w-full h-[368px]">
+                      <div [class]="card.imgContainerClass">
+                        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                          <img alt="" [class]="card.imgClass" [src]="card.image" [attr.width]="card.imageWidth" [attr.height]="card.imageHeight" loading="lazy" decoding="async" />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex flex-col gap-[4px] items-center w-full">
+                      <div class="flex flex-col gap-[4px] items-center h-[43px] w-[252px]">
+                        <p class="pillar-card__title font-['Nunito',sans-serif] font-bold text-[20px] leading-[normal] text-[#282527] tracking-[-1px] whitespace-nowrap">{{ card.title }}</p>
+                        <div class="pillar-card__line h-0 relative shrink-0 w-[146px]">
+                          <div class="absolute inset-[-1px_-0.68%]">
+                            <svg class="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 148 2">
+                              <path d="M1 1H147" [attr.stroke]="'url(#pillar_grad_m' + i + ')'" stroke-linecap="round" stroke-width="2" />
+                              <defs>
+                                <linearGradient gradientUnits="userSpaceOnUse" [attr.id]="'pillar_grad_m' + i" x1="1" x2="147" y1="1.5" y2="1.5">
+                                  <stop stop-color="#8B8DCB" /><stop offset="0.25" stop-color="#89B3B6" /><stop offset="0.5" stop-color="#E1527C" /><stop offset="1" stop-color="#F6AC72" />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      <p class="font-['Nunito',sans-serif] font-medium text-[13px] leading-[normal] opacity-70 text-[#282527] text-center w-[252px]">{{ card.description }}</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Dots -->
+        <div class="flex gap-[8px] items-center justify-center">
+          @for (card of cards; track $index; let i = $index) {
+            <button
+              class="rounded-full dots-rounded transition-all duration-300 border-none cursor-pointer"
+              [class]="i === activeIndex ? 'w-[10px] h-[10px] bg-[#90214D]' : 'w-[8px] h-[8px] bg-[#D9D9D9]'"
+              (click)="scrollToIndex(i)"
+              [attr.aria-label]="'Go to card ' + (i + 1)"
+            ></button>
+          }
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

@@ -1,0 +1,166 @@
+<app-public-navbar></app-public-navbar>
+
+<!--Journal Header Title-->
+<superme-card-header title="Your Journal, Your Journey" subtitleLeft="Track moods · Save · Feel Better"></superme-card-header>
+
+<!--Journal Input Container-->
+<section class="journal-input-container py-5 py-xl-6">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-12 col-xl-10 col-xxl-9">
+				<div class="journal-card card border-0">
+					<!-- Close Button -->
+					<div class="card-header border-0 bg-transparent d-flex justify-content-end">
+						<button type="button" class="close-btn" (click)="closeInput()" aria-label="Close">
+							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							</svg>
+						</button>
+					</div>
+
+					<div class="card-body">
+						<div class="journal-wrapper row g-5 flex-md-nowrap">
+							<!-- Timeline -->
+							<div class="col-12 col-md-auto d-flex justify-content-center justify-content-md-start">
+								<aside class="timeline">
+									<div class="timeline-line"></div>
+									<ul class="timeline-dots">
+										<li
+											*ngFor="let segment of timelineSegments; let last = last"
+											[style.--segment-height.px]="segment"
+											[class.last]="last"></li>
+									</ul>
+								</aside>
+							</div>
+
+							<!-- Journal Form -->
+							<div class="journal-content col">
+								<form class="journal-form" (ngSubmit)="submitJournal()">
+									<!-- Dynamic Categories -->
+									<div class="category-section" *ngFor="let category of journalCategories" #timelineSection>
+										<h3 class="category-title">{{ category.name }}</h3>
+										<div class="options-grid row row-cols-2 row-cols-sm-3 row-cols-lg-4 g-4">
+											<div class="col" *ngFor="let option of category.options">
+												<div
+													class="option-card h-100"
+													[class.selected]="option.selected"
+													(click)="toggleOption(category.key, option.id)"
+													role="button"
+													tabindex="0"
+													[attr.aria-pressed]="option.selected">
+													<div class="option-image">
+														<img [src]="option.image" [alt]="option.label" />
+													</div>
+													<span class="option-label">{{ option.label }}</span>
+													<div class="selected-badge" *ngIf="option.selected">
+														<svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+															<path d="M1 5L5 9L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+														</svg>
+													</div>
+												</div>
+											</div>
+										</div>
+										<!-- Emotion error for emotions category -->
+										<div class="emotion-error" *ngIf="category.key === 'emotions' && emotionError">{{ emotionError }}</div>
+									</div>
+
+									<!-- Note Section -->
+									<div class="category-section note-section" #timelineSection>
+										<h3 class="category-title">A quick note</h3>
+										<div class="note-wrapper">
+											<textarea
+												[(ngModel)]="noteText"
+												name="note"
+												class="note-textarea form-control"
+												placeholder="Your note goes here...."
+												rows="6"
+												(input)="onSectionContentChange()"></textarea>
+										</div>
+									</div>
+
+									<!-- Attachment Section -->
+									<div class="category-section attachment-section" #timelineSection>
+										<h3 class="category-title">Pin a Moment</h3>
+
+										<!-- Image Upload Section (max 3 slots) -->
+										<div class="image-upload-section d-flex align-items-center gap-2">
+											<!-- Hidden file input -->
+											<input #fileInput id="journalFileInput" type="file" (change)="onFileSelected($event)" accept="image/*" style="display:none" />
+											<!-- Uploaded image slots -->
+											<div *ngFor="let img of uploadedImages; let i = index" class="image-slot">
+												<div class="image-preview-container">
+													<img [src]="img.previewUrl" alt="Uploaded image" class="image-preview" />
+													<button class="remove-image-btn" (click)="removeImageSlot(i)" type="button" aria-label="Remove image">
+														<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4" fill="none">
+															<path d="M2 2.42586L0.509506 3.91635C0.453739 3.97212 0.382763 4 0.296578 4C0.210393 4 0.139417 3.97212 0.0836502 3.91635C0.0278834 3.86058 0 3.78961 0 3.70342C0 3.61724 0.0278834 3.54626 0.0836502 3.49049L1.57414 2L0.0836502 0.509506C0.0278834 0.453739 0 0.382763 0 0.296578C0 0.210393 0.0278834 0.139417 0.0836502 0.0836502C0.139417 0.0278834 0.210393 0 0.296578 0C0.382763 0 0.453739 0.0278834 0.509506 0.0836502L2 1.57414L3.49049 0.0836502C3.54626 0.0278834 3.61724 0 3.70342 0C3.78961 0 3.86058 0.0278834 3.91635 0.0836502C3.97212 0.139417 4 0.210393 4 0.296578C4 0.382763 3.97212 0.453739 3.91635 0.509506L2.42586 2L3.91635 3.49049C3.97212 3.54626 4 3.61724 4 3.70342C4 3.78961 3.97212 3.86058 3.91635 3.91635C3.86058 3.97212 3.78961 4 3.70342 4C3.61724 4 3.54626 3.97212 3.49049 3.91635L2 2.42586Z" fill="#282527"/>
+														</svg>
+													</button>
+													<!-- Upload progress -->
+													<div *ngIf="img.uploading" class="upload-progress-overlay">
+														<div class="progress-bar">
+															<div class="progress-fill" [style.width.%]="img.progress"></div>
+														</div>
+													</div>
+												</div>
+											</div>
+
+											<!-- Empty upload slots (shown when at least 1 image is uploaded) -->
+											<div *ngIf="uploadedImages.length > 0; else emptyPinSection" class="d-flex gap-2">
+												<button *ngFor="let slot of getEmptySlotArray()" class="upload-slot-btn" (click)="triggerFileInput(uploadedImages.length + slot)" type="button" aria-label="Add more images">
+													<img src="assets/Icons-Neutral/icons8-plus-150.png" alt="Add" width="16" height="16" />
+												</button>
+											</div>
+										</div>
+
+										<!-- Progress message -->
+										<div *ngIf="isAnyImageUploading()" class="upload-status">
+											Uploading images...
+										</div>
+
+										<!-- Upload Progress (visible during uploads) -->
+										<div class="upload-progress" *ngIf="isAnyImageUploading()">
+											<div class="progress-bar">
+												<div class="progress-fill" [style.width.%]="getAverageProgress()"></div>
+											</div>
+											<span class="progress-text">{{ getAverageProgress() }}%</span>
+										</div>
+
+										<!-- Image upload error (invalid format / size) -->
+										<div class="image-error" *ngIf="imageUploadError">{{ imageUploadError }}</div>
+
+										<!-- Pin Moment Button (only show when no images uploaded) -->
+										<ng-template #emptyPinSection>
+											<label class="pin-moment" for="journalFileInput" role="button" tabindex="0" aria-label="Choose item to pin" (keydown.enter)="triggerFileInput(0)">
+												<div class="pin-inner">
+												<svg xmlns="http://www.w3.org/2000/svg" width="13" height="20" viewBox="0 0 13 20" fill="none">
+									             <path d="M12.5 13.75C12.5 15.4833 11.8917 16.9583 10.675 18.175C9.45833 19.3917 7.98333 20 6.25 20C4.51667 20 3.04167 19.3917 1.825 18.175C0.608333 16.9583 0 15.4833 0 13.75V4.5C0 3.25 0.4375 2.1875 1.3125 1.3125C2.1875 0.4375 3.25 0 4.5 0C5.75 0 6.8125 0.4375 7.6875 1.3125C8.5625 2.1875 9 3.25 9 4.5V13.25C9 14.0167 8.73333 14.6667 8.2 15.2C7.66667 15.7333 7.01667 16 6.25 16C5.48333 16 4.83333 15.7333 4.3 15.2C3.76667 14.6667 3.5 14.0167 3.5 13.25V4H5.5V13.25C5.5 13.4667 5.57083 13.6458 5.7125 13.7875C5.85417 13.9292 6.03333 14 6.25 14C6.46667 14 6.64583 13.9292 6.7875 13.7875C6.92917 13.6458 7 13.4667 7 13.25V4.5C6.98333 3.8 6.7375 3.20833 6.2625 2.725C5.7875 2.24167 5.2 2 4.5 2C3.8 2 3.20833 2.24167 2.725 2.725C2.24167 3.20833 2 3.8 2 4.5V13.75C1.98333 14.9333 2.39167 15.9375 3.225 16.7625C4.05833 17.5875 5.06667 18 6.25 18C7.41667 18 8.40833 17.5875 9.225 16.7625C10.0417 15.9375 10.4667 14.9333 10.5 13.75V4H12.5V13.75Z" fill="#6B656A"/>
+												</svg>
+													<span class="pin-text">Choose item here</span>
+												</div>
+											</label>
+										</ng-template>
+									</div>
+
+									<!-- Submit Button -->
+									<div class="form-actions" #timelineSection>
+										<!-- General error message -->
+										<div class="general-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+										<superme-button
+											type="magenta"
+											size="full"
+											[disabled]="!isEmotionSelected || isUploading || isSubmitting"
+											text="Post"
+											(clickEvent)="submitJournal()">
+										</superme-button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<app-footer></app-footer>

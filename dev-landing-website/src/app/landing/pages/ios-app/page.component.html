@@ -1,0 +1,71 @@
+<div class="ios-app-page">
+  <app-public-navbar></app-public-navbar>
+
+  <main class="ios-app-main">
+    <section class="ios-app-hero" aria-labelledby="ios-app-title">
+      <div class="ios-app-hero__copy">
+        <h1 id="ios-app-title">
+          <span>Good things takes time,</span>
+          <span>
+            <span class="ios-app-hero__super">
+              Super
+              <img [src]="assetRoot + '/super-underline.svg'" alt="" aria-hidden="true" width="167" height="15" />
+            </span>
+            things take a little longer!
+          </span>
+        </h1>
+
+        <p class="ios-app-hero__description">
+          The SuperMeApp isn’t on the App Store yet, but our team is working hard to bring the best version of
+          SuperMeApp to the app store.
+        </p>
+
+        <div class="ios-app-notify">
+          <div class="ios-app-notify__heading">
+            <h2>Stay in the loop!</h2>
+            <p>Be the first one to know when we launch on the App Store</p>
+          </div>
+
+          <form class="ios-app-notify__form" (ngSubmit)="notifyMe()" novalidate>
+            <label class="sr-only" for="ios-notify-email">Email address</label>
+            <input
+              id="ios-notify-email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="Enter your email address"
+              [formControl]="emailControl"
+              [attr.aria-invalid]="emailControl.invalid && emailControl.touched"
+              aria-describedby="ios-notify-status"
+            />
+            <button type="submit" [disabled]="isSubmitting">
+              <span>{{ isSubmitting ? 'Please wait' : 'Notify Me' }}</span>
+              <img [src]="assetRoot + '/rocket-launch.svg'" alt="" aria-hidden="true" width="24" height="24" />
+            </button>
+          </form>
+
+          <div id="ios-notify-status" class="ios-app-notify__status" aria-live="polite">
+            @if (emailControl.invalid && emailControl.touched) {
+              <p class="ios-app-notify__error">Please enter a valid email address.</p>
+            } @else if (notificationError) {
+              <p class="ios-app-notify__error">{{ notificationError }}</p>
+            } @else if (notificationMessage) {
+              <p class="ios-app-notify__success">{{ notificationMessage }}</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="ios-app-hero__visual">
+        <img
+          [src]="assetRoot + '/ios-coming-soon.png'"
+          alt="SuperMeApp iOS version coming soon"
+          width="1254"
+          height="1254"
+        />
+      </div>
+    </section>
+  </main>
+
+  <app-common-footer></app-common-footer>
+</div>

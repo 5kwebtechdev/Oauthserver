@@ -1,0 +1,107 @@
+<div class="guidelines-container" *ngIf="!showUploadContainer">
+  <header class="upload-header">
+    <button class="back-btn" aria-label="Back" (click)="goBack()"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="15" viewBox="0 0 30 15" fill="none">
+  <path d="M0.292893 6.65715C-0.0976311 7.04768 -0.0976311 7.68084 0.292893 8.07136L6.65685 14.4353C7.04738 14.8259 7.68054 14.8259 8.07107 14.4353C8.46159 14.0448 8.46159 13.4116 8.07107 13.0211L2.41421 7.36426L8.07107 1.7074C8.46159 1.31688 8.46159 0.683714 8.07107 0.29319C7.68054 -0.0973344 7.04738 -0.0973344 6.65685 0.29319L0.292893 6.65715ZM29 8.36426C29.5523 8.36426 30 7.91654 30 7.36426C30 6.81197 29.5523 6.36426 29 6.36426V7.36426V8.36426ZM1 7.36426V8.36426H29V7.36426V6.36426H1V7.36426Z" fill="#282527"/>
+</svg></button>
+    <div class="title">
+      <h1>Share Your Moment</h1>
+      <p class="subtitle">Create and share amazing reels in few minutes</p>
+    </div>
+  </header>
+
+  <main class="card">
+    <div class="guidelines-top">
+      <div class="info-icon">ℹ️</div>
+      <h3 class="guidelines-heading">Uploading Guidelines</h3>
+    </div>
+
+    <ol class="guidelines-list">
+      <li>The reel should not be less than 5 seconds</li>
+      <li>File format would be MP4, MOV files up to 100 MB</li>
+      <li>Follow our guidelines and keep content appropriate</li>
+    </ol>
+
+    <div class="separator">
+      <div class="not-allowed-badge">✕</div>
+      <div class="not-allowed-text">What's Not allowed</div>
+    </div>
+
+    <ol class="not-list">
+      <li>Inappropriate language or behavior</li>
+      <li>Personal information sharing</li>
+      <li>Bullying or mean comments</li>
+      <li>Dangerous activities or challenges</li>
+    </ol>
+
+    <div class="upload-area">
+      <button class="upload-btn" (click)="openUploadContainer()">
+        <span class="camera">📷</span>
+        <span class="label">Upload Reel</span>
+      </button>
+    </div>
+  </main>
+</div>
+
+<!-- Upload Reel Container -->
+  <div class="upload-modal" *ngIf="showUploadContainer">
+    <div class="upload-reel-header">
+    <button class="close-btn" aria-label="Close" (click)="closeUploadContainer()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 27 27" fill="none">
+  <path d="M1.5 2.14752L24.8525 25.5" stroke="#282527" stroke-width="3" stroke-linecap="round"/>
+  <path d="M1.5 24.8524L24.8525 1.49999" stroke="#282527" stroke-width="3" stroke-linecap="round"/>
+</svg>
+    </button>
+    <h2 class="modal-title">New Reel</h2>
+    </div>
+    <!-- File input lives inside modal now -->
+    <input #modalFileInput type="file" accept="video/mp4,video/quicktime" (change)="onSelectFile(modalFileInput)" hidden />
+<div class="upload-details-form">
+    <div class="preview-area">
+      <ng-container *ngIf="selectedPreviewUrl; else noPreview">
+        <img [src]="selectedPreviewUrl" alt="Reel preview" class="preview-img" />
+      </ng-container>
+      <ng-template #noPreview>
+        <div class="preview-placeholder">No preview yet</div>
+      </ng-template>
+    </div>
+
+    
+<div class="details-form">
+    <div class="form-row">
+      <label>Enter a title</label>
+      <input type="text" maxlength="40" [(ngModel)]="title" placeholder="Enter a title" />
+    </div>
+
+    <div class="form-row">
+      <label>Add hashtags</label>
+      <input type="text" [(ngModel)]="hashtags" placeholder="#tag1 #tag2" />
+    </div>
+
+    <div class="form-row">
+      <label>Enter Category</label>
+      <!-- use a placeholder option and required so we can style the "empty" state -->
+      <select required [(ngModel)]="categoryId" aria-label="Select category">
+        <option value="" disabled selected>Select category</option>
+        <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+      </select>
+    </div>
+
+    <div class="form-row ai-toggle">
+      <div class="ai-text">
+        <label class="ai-title">Add AI label</label>
+        <p class="ai-sub">We require you to label certain realistic content that's made with AI</p>
+      </div>
+      <label class="switch">
+        <input type="checkbox" [(ngModel)]="aiLabel" />
+        <span class="slider"></span>
+      </label>
+    </div>
+</div>
+    <div class="actions">
+      <superme-button type="green" large [disabled]="isUploading" [text]="isUploading ? 'Uploading...' : 'Share'" (clickEvent)="shareReel()"></superme-button>
+    </div>
+  </div>
+
+</div>
+  <app-footer></app-footer>
+

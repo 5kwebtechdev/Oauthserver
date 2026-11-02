@@ -1,0 +1,19 @@
+<div class="superme-home-header">
+  <div class="shh-left">
+    <h2 class="shh-title">{{ title }}</h2>
+    <p class="shh-subtitle" [innerHTML]="subtitleHtml || subtitle"></p>
+  </div>
+
+  <div class="shh-right">
+    <ng-container *ngIf="useRouterLink; else plainHref">
+      <a class="shh-link" [routerLink]="linkHref" [state]="linkState" [attr.aria-label]="linkText" (click)="handleClick($event)">
+        <span>{{ linkText }}</span>
+      </a>
+    </ng-container>
+    <ng-template #plainHref>
+      <a class="shh-link" [href]="linkHref" [attr.aria-label]="linkText" (click)="handleClick($event)">
+        <span>{{ linkText }}</span>
+      </a>
+    </ng-template>
+  </div>
+</div>

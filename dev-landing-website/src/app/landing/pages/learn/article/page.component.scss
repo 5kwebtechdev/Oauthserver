@@ -1,0 +1,20 @@
+.blogs-page { min-height: 100vh; display: flex; flex-direction: column; background: #fff; }
+.blogs-content { width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding: clamp(96px, 10vw, 150px) 0 72px; flex: 1; font-family: 'Nunito', sans-serif; }
+.blogs-intro { max-width: 800px; margin: 0 auto 42px; text-align: center; }
+.blogs-intro h1 { font-family: 'Fredoka', sans-serif; font-size: clamp(34px, 5vw, 54px); font-weight: 600; color: #412479; margin: 0 0 12px; }
+.blogs-intro p { font-size: clamp(16px, 2vw, 20px); color: #615d64; line-height: 1.55; margin: 0; }
+.blogs-status { padding: 60px 12px; text-align: center; color: #615d64; }
+.article-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.article-card { min-width: 0; border: 1px solid #eee9f3; border-radius: 20px; overflow: hidden; background: #fff; box-shadow: 0 8px 26px rgba(57, 35, 85, .07); }
+.article-card a { display: block; height: 100%; text-decoration: none; color: inherit; }
+.article-card a:focus-visible { outline: 3px solid #673ab7; outline-offset: -3px; }
+.article-card img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: #f6f2f9; }
+.article-card-body { padding: 20px; }
+.article-category { display: inline-block; color: #8d2353; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.article-card h2 { font-family: 'Fredoka', sans-serif; font-weight: 500; font-size: 22px; line-height: 1.3; margin: 0 0 10px; color: #292329; }
+.article-card p { margin: 0 0 16px; color: #67616b; font-size: 15px; line-height: 1.5; }
+.article-byline { display: flex; flex-wrap: wrap; gap: 6px 12px; color: #77717a; font-size: 13px; }
+.article-pagination { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 36px; color: #493078; }
+.article-pagination a { color: #493078; border: 1px solid #a899c8; border-radius: 999px; padding: 9px 20px; text-decoration: none; }
+@media (max-width: 900px) { .article-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
+@media (max-width: 600px) { .article-grid { grid-template-columns: 1fr; } .blogs-content { width: min(100% - 24px, 440px); padding-top: 92px; } .blogs-intro { margin-bottom: 28px; } .article-card-body { padding: 16px; } }

@@ -1,0 +1,31 @@
+<article 
+  class="notes-card" 
+  role="button" 
+  tabindex="0" 
+  (click)="onCardClick()" 
+  (keydown)="onKeyPress($event)"
+  [attr.aria-label]="'Note: ' + note.title">
+  
+  <!-- Excerpt Section -->
+  <div class="notes-card__excerpt">
+    <p class="excerpt-text">{{ truncatedExcerpt }}</p>
+  </div>
+
+  <!-- Footer Section with Metadata and Tag -->
+  <div class="notes-card__footer">
+    <div class="notes-card__content">
+      
+      <!-- Metadata: Title and Date -->
+      <div class="notes-card__meta">
+        <div class="meta-title">{{ truncatedTitle }}</div>
+        <div class="meta-date">{{ note.date }}</div>
+      </div>
+
+      <!-- Tag Badge -->
+      <div class="notes-card__tag">
+        <span class="tag-label">{{ note.tag }}</span>
+      </div>
+      
+    </div>
+  </div>
+</article>

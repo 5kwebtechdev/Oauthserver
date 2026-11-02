@@ -1,0 +1,91 @@
+<app-public-navbar *ngIf="!isAuthenticated"></app-public-navbar>
+<main class="article-page" [class.article-page--public]="!isAuthenticated">
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading article...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-state" *ngIf="error && !loading">
+    <h1>{{ error }}</h1>
+    <a routerLink="/blogs">Back to Blogs</a>
+  </div>
+
+  <!-- Article -->
+  <ng-container *ngIf="article && !loading">
+    <!-- Hero Header -->
+    <div class="article-hero">
+      <button class="back-btn" (click)="onBack()" aria-label="Back to Blogs">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+
+      <h1 class="article-title">{{ article.title }}</h1>
+
+      <div class="article-desc-card" *ngIf="article.description">
+        <p>{{ article.description }}</p>
+      </div>
+    </div>
+
+    <!-- Content Body -->
+    <article class="article-body">
+      <div class="article-byline" *ngIf="authorName || formattedDate">
+        <p *ngIf="authorName"><strong>Published By:</strong> {{ authorName }}</p>
+        <p *ngIf="formattedDate"><strong>Published On:</strong> <time [attr.datetime]="article.publishedAt || article.publishedDate">{{ formattedDate }}</time></p>
+      </div>
+      <img *ngIf="featuredImage" class="article-featured-image" [src]="featuredImage" [alt]="article.title" (error)="hideBrokenImage($event)" fetchpriority="high">
+      <div class="body-content" [innerHTML]="sanitizedContent"></div>
+      <div class="article-tags" *ngIf="article.tags?.length" aria-label="Article tags">
+        <strong>Tags:</strong><span *ngFor="let tag of article.tags">{{ tag }}</span>
+      </div>
+      <button type="button" class="article-share" *ngIf="article.slug" (click)="shareArticle()">Share article</button>
+      <p role="status" *ngIf="shareStatus">{{ shareStatus }}</p>
+      <section class="related-articles" *ngIf="relatedArticles.length" aria-labelledby="related-articles-title">
+        <h2 id="related-articles-title">Related Posts</h2>
+        <div class="related-grid">
+          <a *ngFor="let related of relatedArticles" [routerLink]="articleUrl(related.slug)" [state]="{ blogSource: router.url }">
+            <img *ngIf="related.imageUrl" [src]="related.imageUrl" [alt]="related.title" loading="lazy" (error)="hideBrokenImage($event)">
+            <h3>{{ related.title }}</h3>
+            <p *ngIf="related.excerpt">{{ related.excerpt }}</p>
+            <time *ngIf="related.publishedDate" [attr.datetime]="related.publishedDate">{{ related.publishedDate | date:'d MMMM yyyy':'UTC' }}</time>
+          </a>
+        </div>
+      </section>
+    </article>
+
+    <!-- Mark as Read Footer -->
+    <footer class="article-footer" *ngIf="isAuthenticated && !isMarked">
+      <button class="mark-as-read-btn" (click)="openMarkPopup()">
+        Mark as read
+      </button>
+    </footer>
+  </ng-container>
+</main>
+<app-common-footer *ngIf="!isAuthenticated"></app-common-footer>
+
+<!-- Mark as Read Popup -->
+<div class="mar-overlay" *ngIf="showMarkPopup" (click)="closeMarkPopup()">
+  <div class="mar-dialog" (click)="$event.stopPropagation()">
+    <button class="mar-close" (click)="closeMarkPopup()" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#282527" stroke-width="2.5">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+
+    <div class="mar-img-wrap">
+      <img src="assets/Images-Transparent/congrats.png" alt="Great job" class="mar-img" />
+    </div>
+
+    <h2 class="mar-title">Great job reading!</h2>
+    <p class="mar-desc">You'll earn {{ article?.coins || 10 }} coins when you mark this article as read. Are you sure you want to complete it?</p>
+
+    <div class="mar-actions">
+      <button class="mar-cancel" (click)="closeMarkPopup()">Cancel</button>
+      <button class="mar-confirm" (click)="confirmMarkAsRead()" [disabled]="isMarking">
+        {{ isMarking ? 'Saving...' : 'Mark as Read' }}
+      </button>
+    </div>
+  </div>
+</div>

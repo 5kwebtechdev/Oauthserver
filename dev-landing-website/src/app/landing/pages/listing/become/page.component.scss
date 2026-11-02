@@ -1,0 +1,640 @@
+:host {
+  display: block;
+}
+
+.listing-page {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 8% 18%, rgba(148, 132, 226, 0.16), transparent 28%),
+    radial-gradient(circle at 92% 15%, rgba(246, 151, 183, 0.18), transparent 30%),
+    linear-gradient(145deg, #fffafe 0%, #fff 42%, #f5fbfc 100%);
+}
+
+.listing-page::before,
+.listing-page::after {
+  position: absolute;
+  z-index: 0;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+  filter: blur(2px);
+  opacity: 0.45;
+  animation: listing-orbit 9s ease-in-out infinite alternate;
+}
+
+.listing-page::before {
+  top: 150px;
+  left: -150px;
+  background: radial-gradient(circle, rgba(253, 183, 70, 0.25), transparent 68%);
+}
+
+.listing-page::after {
+  top: 360px;
+  right: -145px;
+  background: radial-gradient(circle, rgba(205, 53, 120, 0.2), transparent 68%);
+  animation-delay: -3s;
+}
+
+.listing-main {
+  position: relative;
+  z-index: 1;
+  padding-top: clamp(108px, 8.5vw, 142px);
+  padding-bottom: clamp(52px, 7vw, 96px);
+}
+
+.listing-hero {
+  width: min(100%, 980px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  animation: listing-rise 650ms ease-out both;
+}
+
+.listing-hero__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #90214d;
+  font-size: clamp(12px, 1vw, 14px);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.listing-hero__eyebrow span {
+  width: clamp(22px, 3vw, 42px);
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8e7fe1, #f1a04a, #cd3578);
+}
+
+.listing-hero__title {
+  margin: 0;
+  color: #282527;
+  font-size: clamp(34px, 4.6vw, 64px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.listing-hero__title span {
+  color: transparent;
+  background: linear-gradient(95deg, #7568cf 0%, #d43d7b 52%, #f08e43 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.listing-hero__copy {
+  width: min(100%, 820px);
+  margin: 0;
+  color: #282527;
+  font-size: clamp(15px, 1.5vw, 20px);
+  font-weight: 400;
+  line-height: 1.7;
+  opacity: 0.74;
+  text-wrap: balance;
+}
+
+.listing-hero__benefits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.listing-hero__benefits span {
+  padding: 9px 14px;
+  border: 1px solid rgba(144, 33, 77, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 22px rgba(70, 33, 62, 0.06);
+  color: #4e2740;
+  font-size: 13px;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+.listing-form-card {
+  width: 100%;
+  max-width: 1080px;
+  padding: clamp(24px, 4vw, 54px);
+  border: 1px solid rgba(126, 90, 137, 0.13);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 28px 70px rgba(82, 47, 77, 0.12);
+  backdrop-filter: blur(16px);
+  animation: listing-rise 700ms 100ms ease-out both;
+}
+
+.listing-steps {
+  max-width: 900px;
+  margin: 0 auto 42px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.listing-step {
+  position: relative;
+  min-width: 112px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.listing-step--future {
+  opacity: 0.48;
+}
+
+.listing-step__number {
+  position: relative;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(144, 33, 77, 0.22), inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+}
+
+.listing-step__label {
+  color: #282527;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  white-space: pre-line;
+}
+
+.listing-step__line {
+  flex: 1;
+  height: 1px;
+  margin-top: 20px;
+  background: linear-gradient(90deg, rgba(142, 127, 225, 0.5), rgba(240, 142, 67, 0.5), rgba(205, 53, 120, 0.5));
+}
+
+.listing-form-content {
+  width: 100%;
+  max-width: 940px;
+  margin: 0 auto;
+}
+
+/* Shared step component styles via ::ng-deep because the steps are standalone children */
+:host ::ng-deep .listing-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+:host ::ng-deep .field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+:host ::ng-deep .field label,
+:host ::ng-deep .section-title {
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+:host ::ng-deep .hint {
+  margin: -2px 0 4px;
+  color: #6b656a;
+  font-size: 13px;
+}
+
+:host ::ng-deep input,
+:host ::ng-deep textarea {
+  width: 100%;
+  padding: 0 16px;
+  border: 1px solid rgba(40, 37, 39, 0.2);
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+:host ::ng-deep input {
+  height: 48px;
+}
+
+:host ::ng-deep textarea {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  resize: vertical;
+}
+
+:host ::ng-deep input:focus,
+:host ::ng-deep textarea:focus {
+  border-color: #90214d;
+  box-shadow: 0 0 0 3px rgba(144, 33, 77, 0.08);
+}
+
+:host ::ng-deep .two-col,
+:host ::ng-deep .three-col {
+  display: grid;
+  gap: 20px;
+}
+
+:host ::ng-deep .two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:host ::ng-deep .three-col {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+:host ::ng-deep .money {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid rgba(40, 37, 39, 0.2);
+  border-radius: 6px;
+  background: white;
+}
+
+:host ::ng-deep .money span {
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eaeaea;
+  color: #282527;
+  font-weight: 800;
+}
+
+:host ::ng-deep .money input {
+  border: 0;
+  border-radius: 0;
+}
+
+:host ::ng-deep .actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+:host ::ng-deep .actions--right {
+  justify-content: flex-end;
+}
+
+:host ::ng-deep button.primary,
+:host ::ng-deep button.secondary {
+  min-height: 48px;
+  flex: 1;
+  padding: 11px 18px;
+  border-radius: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity 160ms ease, transform 160ms ease, background 160ms ease;
+}
+
+:host ::ng-deep button.primary {
+  border: 1px solid #4a0d25;
+  background: linear-gradient(-72.81deg, #90214d 0%, #cd3578 99.93%);
+  box-shadow: inset 0 -2px 2px #ea7cb5;
+  color: white;
+}
+
+:host ::ng-deep button.secondary {
+  border: 1px solid #90214d;
+  background: white;
+  color: #90214d;
+}
+
+:host ::ng-deep button.compact {
+  flex: 0 0 auto;
+}
+
+:host ::ng-deep button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+:host ::ng-deep .choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+:host ::ng-deep .choice {
+  padding: 10px 18px;
+  border: 1px solid rgba(144, 33, 77, 0.25);
+  border-radius: 999px;
+  background: white;
+  color: #5c3448;
+  font-weight: 700;
+}
+
+:host ::ng-deep .choice--active {
+  border-color: #90214d;
+  background: #fce7eb;
+  color: #90214d;
+}
+
+:host ::ng-deep .error {
+  margin: 0;
+  color: #ce0800;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+:host ::ng-deep .venue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(144, 33, 77, 0.12);
+  border-radius: 16px;
+  background: #fffafd;
+}
+
+:host ::ng-deep .venue-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #4e2740;
+}
+
+:host ::ng-deep .remove-link {
+  border: 0;
+  background: transparent;
+  color: #ce0800;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+:host ::ng-deep .checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #282527;
+  font-weight: 700;
+}
+
+:host ::ng-deep .checkbox-label input {
+  width: 18px;
+  height: 18px;
+}
+
+:host ::ng-deep .drop-zone {
+  min-height: 160px;
+  border: 1px dashed rgba(40, 37, 39, 0.28);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+:host ::ng-deep .drop-zone--active {
+  border-color: #90214d;
+  background: #fce7eb;
+}
+
+:host ::ng-deep .drop-zone__icon {
+  font-size: 30px;
+  color: #90214d;
+}
+
+:host ::ng-deep .drop-zone span {
+  color: #6b656a;
+  font-size: 12px;
+}
+
+:host ::ng-deep .image-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+:host ::ng-deep .image-tile {
+  position: relative;
+  min-height: 132px;
+  overflow: hidden;
+  border: 1px solid rgba(40, 37, 39, 0.14);
+  border-radius: 8px;
+  background: #f7f7f7;
+}
+
+:host ::ng-deep .image-tile img {
+  width: 100%;
+  height: 132px;
+  object-fit: cover;
+}
+
+:host ::ng-deep .image-tile--add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+  color: #90214d;
+  font-size: 34px;
+  cursor: pointer;
+}
+
+:host ::ng-deep .image-tile__remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 27px;
+  height: 27px;
+  border: 0;
+  border-radius: 50%;
+  background: white;
+  color: #282527;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,.14);
+}
+
+:host ::ng-deep .review-note {
+  padding: 18px;
+  border: 1px solid rgba(117, 104, 207, 0.18);
+  border-radius: 12px;
+  background: rgba(117, 104, 207, 0.06);
+  color: #433a63;
+}
+
+:host ::ng-deep .review-note p {
+  margin: 6px 0 0;
+  line-height: 1.6;
+}
+
+:host ::ng-deep .success {
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  text-align: center;
+}
+
+:host ::ng-deep .success__emoji {
+  font-size: 68px;
+}
+
+:host ::ng-deep .success__content {
+  width: min(100%, 520px);
+}
+
+:host ::ng-deep .success__content h2 {
+  margin: 0 0 12px;
+  color: #282527;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+:host ::ng-deep .success__content p {
+  margin: 0 0 26px;
+  color: rgba(40, 37, 39, 0.72);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+:host ::ng-deep .success__button {
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .listing-main {
+    padding-top: 88px;
+  }
+
+  .listing-hero__title {
+    font-size: clamp(31px, 10vw, 44px);
+  }
+
+  .listing-hero__copy {
+    line-height: 1.55;
+  }
+
+  .listing-form-card {
+    padding: 22px 16px 28px;
+    border-radius: 22px;
+  }
+
+  .listing-step {
+    min-width: 78px;
+  }
+
+  .listing-step__number {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .listing-step__line {
+    margin-top: 16px;
+  }
+
+  .listing-step__label {
+    font-size: 10px;
+  }
+
+  .listing-hero__benefits span {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  :host ::ng-deep .two-col,
+  :host ::ng-deep .three-col {
+    grid-template-columns: 1fr;
+  }
+
+  :host ::ng-deep .image-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@keyframes listing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes listing-orbit {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(35px, 20px, 0) scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listing-hero,
+  .listing-form-card,
+  .listing-page::before,
+  .listing-page::after {
+    animation: none;
+  }
+}
+
+/* Country selector uses the existing phone-field border, colors and font. */
+:host ::ng-deep .phone-control {
+  display: flex;
+  min-width: 0;
+  border: 1px solid rgba(40, 37, 39, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  background: white;
+}
+:host ::ng-deep .phone-control:focus-within {
+  border-color: #90214d;
+  box-shadow: 0 0 0 3px rgba(144, 33, 77, 0.08);
+}
+:host ::ng-deep .phone-control select {
+  width: 40%;
+  max-width: 170px;
+  min-width: 0;
+  padding: 0 8px;
+  border: 0;
+  background: #eaeaea;
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+:host ::ng-deep .phone-control input {
+  flex: 1;
+  min-width: 0;
+  width: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}

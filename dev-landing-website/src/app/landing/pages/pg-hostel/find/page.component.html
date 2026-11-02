@@ -1,0 +1,521 @@
+<app-landing-navbar></app-landing-navbar>
+
+<main class="directory-page">
+
+  <section class="hero">
+
+    <span class="eyebrow">
+      SuperMe EduHub
+    </span>
+
+    <h1>
+      Find a PG or Hostel
+    </h1>
+
+    <p>
+      Explore approved PG and hostel listings
+      by city, stay type, suitability and food availability.
+    </p>
+
+  </section>
+
+
+  <!-- ============================================ -->
+  <!-- FILTERS -->
+  <!-- ============================================ -->
+
+  <section class="filters">
+
+    <div class="search-row">
+
+      <input
+        type="text"
+        [(ngModel)]="search"
+        (keyup.enter)="applyFilters()"
+        placeholder="Search name, address, city, phone or email"
+      />
+
+      <button
+        class="primary"
+        type="button"
+        (click)="applyFilters()"
+      >
+        Search
+      </button>
+
+    </div>
+
+
+    <div class="filter-grid">
+
+      <!-- Manual State -->
+      <input
+        type="text"
+        [(ngModel)]="state"
+        placeholder="State"
+      />
+
+
+      <!-- Manual City -->
+      <input
+        type="text"
+        [(ngModel)]="city"
+        placeholder="City"
+      />
+
+
+      <!-- PG / HOSTEL -->
+      <select
+        [(ngModel)]="accommodationType"
+      >
+
+        <option value="">
+          PG + Hostel
+        </option>
+
+        <option
+          *ngFor="let value of typeOptions"
+          [value]="value"
+        >
+          {{ value }}
+        </option>
+
+      </select>
+
+
+      <!-- SUITABLE FOR -->
+      <select
+        [(ngModel)]="suitableFor"
+      >
+
+        <option value="">
+          Suitable for all
+        </option>
+
+        <option
+          *ngFor="let value of suitableForOptions"
+          [value]="value"
+        >
+          {{ value }}
+        </option>
+
+      </select>
+
+
+      <!-- FOOD -->
+      <select
+        [(ngModel)]="food"
+      >
+
+        <option value="">
+          Food: Any
+        </option>
+
+        <option value="Yes">
+          Food available
+        </option>
+
+        <option value="No">
+          No food
+        </option>
+
+      </select>
+
+
+      <button
+        class="reset"
+        type="button"
+        (click)="reset()"
+      >
+        Reset
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- ============================================ -->
+  <!-- RESULTS HEADER -->
+  <!-- ============================================ -->
+
+  <section class="results-header">
+
+    <div>
+      <b>{{ totalElements }}</b>
+      approved listings
+    </div>
+
+    <a
+      routerLink="/list-your-pg-hostel"
+    >
+      List your PG / Hostel
+    </a>
+
+  </section>
+
+
+  <!-- ============================================ -->
+  <!-- STATES -->
+  <!-- ============================================ -->
+
+  <div
+    class="state-message"
+    *ngIf="loading"
+  >
+    Loading listings…
+  </div>
+
+
+  <div
+    class="state-message error"
+    *ngIf="!loading && error && listings.length > 0"
+  >
+    {{ error }}
+  </div>
+
+
+  <div
+    class="state-message"
+    *ngIf="
+      !loading &&
+      listings.length === 0
+  "
+  >
+    No records found.
+  </div>
+
+
+  <!-- ============================================ -->
+  <!-- LISTINGS -->
+  <!-- ============================================ -->
+
+  <section
+    class="cards"
+    *ngIf="
+      !loading &&
+      listings.length
+    "
+  >
+
+    <article
+      class="listing-card"
+      *ngFor="let item of listings"
+    >
+
+      <div
+        class="image-wrap"
+        [class.placeholder]="!image(item)"
+      >
+
+        <img
+          *ngIf="image(item)"
+          [src]="image(item)"
+          [alt]="item.name"
+          (error)="onImageError(item)"
+        />
+
+        <app-eduhub-initials *ngIf="!image(item)" category="hostel"
+          [name]="item.name" [scale]="2.5" />
+
+        <em
+          *ngIf="item.promoted"
+        >
+          Promoted
+        </em>
+
+      </div>
+
+
+      <div class="body">
+
+        <div class="title-row">
+
+          <div>
+
+            <h2>
+              {{ item.name }}
+            </h2>
+
+            <p>
+              {{ item.accommodationType }}
+              ·
+              {{ item.suitableFor }}
+            </p>
+
+          </div>
+
+
+          <span
+            class="verified"
+            *ngIf="item.verified"
+          >
+            ✓ Verified
+          </span>
+
+        </div>
+
+
+        <div class="location">
+
+          {{ item.city }}
+
+          <ng-container
+            *ngIf="item.state"
+          >
+            , {{ item.state }}
+          </ng-container>
+
+        </div>
+
+
+        <div
+          class="tags"
+          *ngIf="item.roomOccupancy.length"
+        >
+
+          <span
+            *ngFor="
+              let room of
+              item.roomOccupancy
+            "
+          >
+            {{ room }}
+          </span>
+
+          <span
+            *ngIf="
+              item.foodAvailable === true
+            "
+          >
+            Food available
+          </span>
+
+        </div>
+
+
+        <p
+          class="desc"
+          *ngIf="item.description"
+        >
+          {{ item.description }}
+        </p>
+
+
+        <button
+          class="details"
+          type="button"
+          (click)="openDetails(item)"
+        >
+          View details
+        </button>
+
+      </div>
+
+    </article>
+
+  </section>
+
+
+  <!-- ============================================ -->
+  <!-- PAGINATION -->
+  <!-- ============================================ -->
+
+  <div
+    class="pagination"
+    *ngIf="totalPages > 1"
+  >
+
+    <button
+      type="button"
+      (click)="previous()"
+      [disabled]="page === 0"
+    >
+      Previous
+    </button>
+
+
+    <span>
+      Page {{ page + 1 }}
+      of {{ totalPages }}
+    </span>
+
+
+    <button
+      type="button"
+      (click)="next()"
+      [disabled]="
+        page + 1 >= totalPages
+      "
+    >
+      Next
+    </button>
+
+  </div>
+
+</main>
+
+
+<!-- ============================================ -->
+<!-- DETAILS MODAL -->
+<!-- ============================================ -->
+
+<div
+  class="modal-backdrop"
+  *ngIf="selected"
+  (click)="closeDetails()"
+>
+
+  <section
+    class="modal"
+    (click)="$event.stopPropagation()"
+  >
+
+    <button
+      class="close"
+      type="button"
+      (click)="closeDetails()"
+    >
+      ×
+    </button>
+
+
+    <img
+      *ngIf="image(selected)"
+      class="modal-image"
+      [src]="image(selected)"
+      [alt]="selected.name"
+      (error)="onImageError(selected)"
+    />
+
+
+    <h2>
+      {{ selected.name }}
+    </h2>
+
+
+    <p class="sub">
+
+      {{ selected.accommodationType }}
+      ·
+      {{ selected.suitableFor }}
+      ·
+      {{ selected.city }}
+
+    </p>
+
+
+    <p
+      *ngIf="selected.description"
+    >
+      {{ selected.description }}
+    </p>
+
+
+    <dl>
+
+      <ng-container
+        *ngIf="selected.address"
+      >
+        <dt>Address</dt>
+        <dd>
+          {{ selected.address }}
+        </dd>
+      </ng-container>
+
+
+      <ng-container
+        *ngIf="selected.phone"
+      >
+        <dt>Phone</dt>
+        <dd>
+          <a
+            [href]="
+              'tel:' + selected.phone
+            "
+          >
+            {{ selected.phone }}
+          </a>
+        </dd>
+      </ng-container>
+
+
+      <ng-container
+        *ngIf="selected.email"
+      >
+        <dt>Email</dt>
+        <dd>
+          <a
+            [href]="
+              'mailto:' + selected.email
+            "
+          >
+            {{ selected.email }}
+          </a>
+        </dd>
+      </ng-container>
+
+
+      <ng-container
+        *ngIf="
+          selected.roomOccupancy.length
+        "
+      >
+
+        <dt>
+          Room occupancy
+        </dt>
+
+        <dd>
+          {{
+            selected.roomOccupancy.join(', ')
+          }}
+        </dd>
+
+      </ng-container>
+
+
+      <ng-container>
+
+        <dt>
+          Food available
+        </dt>
+
+        <dd>
+
+          {{
+            selected.foodAvailable === true
+              ? 'Yes'
+              : selected.foodAvailable === false
+                ? 'No'
+                : 'Not specified'
+          }}
+
+        </dd>
+
+      </ng-container>
+
+
+      <ng-container
+        *ngIf="
+          selected.amenities.length
+        "
+      >
+
+        <dt>
+          Amenities
+        </dt>
+
+        <dd>
+          {{
+            selected.amenities.join(', ')
+          }}
+        </dd>
+
+      </ng-container>
+
+    </dl>
+
+  </section>
+
+</div>

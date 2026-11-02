@@ -1,0 +1,219 @@
+/* Styles for Academy full lesson page hero to match attached design */
+.page {
+  display: block;
+  min-height: 100vh;
+  background: #fff;
+}
+
+/* Top header / hero area */
+.page-header{
+  background: #fdf3cc; /* soft pale yellow like the design */
+  padding: 48px 16px 36px;
+  position: relative;
+  text-align: center;
+}
+
+.back-btn{
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  background: transparent;
+  border: 0;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.back-btn svg{ display:block; }
+
+.hero{
+  max-width: 860px;
+  margin: 0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+
+.hero-image{
+  width:170px;
+  height:170px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.hero-image img{
+  max-width:100%;
+  max-height:100%;
+  display:block;
+}
+
+.hero-title{
+  font-size:36px;
+  margin:0;
+  color:#1f2937;
+  font-weight:700;
+}
+
+.hero-meta{
+  color:#6b7280;
+  font-size:15px;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex-wrap:wrap;
+}
+.coin{ margin:0 6px; }
+
+.hero-coin-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.hero-sub{
+  color:#6b7280;
+  font-size:20px;
+  margin-top:8px;
+}
+
+
+
+/* Footer buttons area spacing */
+.footer-actions { padding: 28px 18px; display:flex; gap:12px; justify-content:center; }
+
+/* Responsive tweaks */
+@media (min-width: 900px) {
+  .lesson-title { font-size: 40px; }
+  .hero-image svg { width: 220px; height:220px; }
+  .lead { font-size: 22px; }
+}
+
+/* main wrapper fixed width as requested */
+.page{
+  width: var(--page-w);
+  background: #fff;
+  border-radius:10px;
+  overflow:visible;
+  box-shadow: 0 8px 30px rgba(9,10,12,0.08);
+  position:relative;
+  padding-bottom:36px;
+}
+
+
+
+/* main content area */
+.content{
+  padding:28px 80px;
+  max-width:1200px;
+  margin:0 auto;
+  display:block;
+}
+
+/* In this lesson box */
+.learning-box{
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius:8px;
+  padding:18px 20px;
+  box-shadow: 0 8px 20px rgba(13,18,26,0.03);
+  margin-top: -28px; /* to slightly overlap hero like in PNG */
+  width:100%;
+}
+.learning-box h3{
+  margin:0 0 10px 0;
+  font-size:16px;
+}
+.checklist{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.check-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:14px;
+  color:#333;
+}
+.check{
+  width:18px;
+  height:18px;
+  flex:0 0 18px;
+}
+
+/* sections */
+.section{
+  margin-top:22px;
+}
+.section h4, .section h3{
+  margin:6px 0 10px 0;
+  color:#1f2937;
+  font-size:15px;
+}
+.text{
+  color:#4b5563;
+  line-height:1.6;
+  margin:0 0 8px 0;
+  font-size:14px;
+}
+
+/* note / small card */
+.note{
+  background:#fffafa;
+  border-left:4px solid #ffd166;
+  padding:10px 12px;
+  border-radius:6px;
+  margin-top:10px;
+  font-size:13px;
+  color:#444;
+}
+
+/* bullets */
+.bullets{
+  margin:10px 0 0 20px;
+  color:#374151;
+  font-size:14px;
+  line-height:1.7;
+}
+
+/* footer actions */
+.footer-actions{
+  display:flex;
+  gap:14px;
+  justify-content:center;
+  margin-top:26px;
+}
+.btn{
+  font-weight:600;
+  padding:12px 22px;
+  border-radius:22px;
+  border:0;
+  cursor:pointer;
+  font-size:14px;
+}
+.btn-done{
+  background:#e6fff1;
+  color:var(--accent);
+  border:1px solid rgba(47,133,90,0.12);
+}
+.btn-next{
+  background:#ff5c7c;
+  color:#fff;
+  box-shadow: 0 6px 18px rgba(255,92,124,0.18);
+}
+
+.btn[disabled]{
+  opacity:0.5;
+  cursor:not-allowed;
+  box-shadow:none;
+}
+
+/* small responsive nicety for narrower screens (optional) */
+@media (max-width: 1200px){
+  .page{ width:100%; margin:0 16px;}
+  .hero-inner{ max-width:100%; }
+  .content{ padding:24px; }
+}

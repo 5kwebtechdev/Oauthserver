@@ -1,0 +1,104 @@
+<div class="help-centre-page-wrapper">
+  <!-- Navbar -->
+  <app-public-navbar></app-public-navbar>
+
+  <!-- Help Centre Content -->
+  <div class="help-centre-content">
+    <!-- Header Section -->
+    <div class="help-header">
+      <h1>Help Centre</h1>
+      <p class="help-subtitle">Your questions and doubts solved in seconds</p>
+      
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <svg class="search-icon" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16.6667 29.3333C23.6621 29.3333 29.3333 23.6621 29.3333 16.6667C29.3333 9.67126 23.6621 4 16.6667 4C9.67126 4 4 9.67126 4 16.6667C4 23.6621 9.67126 29.3333 16.6667 29.3333Z" stroke="#282527" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M36 36L25.65 25.65" stroke="#282527" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <input type="text" placeholder="How can we help you?" />
+      </div>
+    </div>
+
+    <!-- Help Topics Grid -->
+    <div class="help-topics-grid">
+      <div class="help-topic-card" *ngFor="let topic of helpTopics">
+        <div class="topic-header">
+          <div class="icon-wrapper">
+            <svg *ngIf="getTopicIcon(topic.title) === 'lock'" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 20C17.1046 20 18 19.1046 18 18C18 16.8954 17.1046 16 16 16C14.8954 16 14 16.8954 14 18C14 19.1046 14.8954 20 16 20Z" fill="#282527"/>
+              <path d="M25 12H24V9C24 4.58172 20.4183 1 16 1C11.5817 1 8 4.58172 8 9V12H7C5.34315 12 4 13.3431 4 15V28C4 29.6569 5.34315 31 7 31H25C26.6569 31 28 29.6569 28 28V15C28 13.3431 26.6569 12 25 12ZM10 9C10 5.68629 12.6863 3 16 3C19.3137 3 22 5.68629 22 9V12H10V9Z" fill="#282527"/>
+            </svg>
+            <svg *ngIf="getTopicIcon(topic.title) === 'shield'" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 2L4 7V15C4 22.18 8.84 28.88 16 30C23.16 28.88 28 22.18 28 15V7L16 2ZM14 23L8 17L9.41 15.59L14 20.17L22.59 11.58L24 13L14 23Z" fill="#282527"/>
+            </svg>
+          </div>
+          <h3>{{ topic.title }}</h3>
+        </div>
+        <ul class="topic-items">
+          <li *ngFor="let item of topic.items">
+            <a href="javascript:void(0)">{{ item }}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Contact Options Section -->
+    <div class="contact-section">
+      <h2 class="section-title">Contact Options</h2>
+      
+      <div class="contact-options-grid">
+        <div class="contact-card" *ngFor="let option of contactOptions">
+          <div class="contact-header">
+            <div class="contact-icon-wrapper">
+              <svg *ngIf="option.icon === 'chat'" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M28 4H4C2.9 4 2 4.9 2 6V26C2 27.1 2.9 28 4 28H28C29.1 28 30 27.1 30 26V6C30 4.9 29.1 4 28 4ZM28 8L16 16L4 8V6L16 14L28 6V8Z" fill="#282527"/>
+              </svg>
+              <svg *ngIf="option.icon === 'mail'" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M28 4H4C2.9 4 2 4.9 2 6V26C2 27.1 2.9 28 4 28H28C29.1 28 30 27.1 30 26V6C30 4.9 29.1 4 28 4ZM28 8L16 16L4 8V6L16 14L28 6V8Z" fill="#282527"/>
+              </svg>
+              <svg *ngIf="option.icon === 'call'" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6.62 10.79C8.06 13.62 10.05 16.17 12.59 18.42C14.84 20.96 17.39 22.95 20.22 24.39L22.41 22.2C22.68 21.93 23.08 21.84 23.43 21.98C24.55 22.37 25.76 22.58 27 22.58C27.55 22.58 28 23.03 28 23.58V27C28 27.55 27.55 28 27 28C13.19 28 2 16.81 2 3C2 2.45 2.45 2 3 2H6.43C6.98 2 7.43 2.45 7.43 3C7.43 4.25 7.64 5.45 8.03 6.57C8.17 6.92 8.08 7.31 7.81 7.59L6.62 10.79Z" fill="#282527"/>
+              </svg>
+            </div>
+            <h3>{{ option.title }}</h3>
+          </div>
+          <p class="contact-subtitle">{{ option.subtitle }}</p>
+          
+          <button 
+            *ngIf="option.actionType === 'button'" 
+            class="contact-action-button"
+            (click)="onChatNow()">
+            {{ option.actionText }}
+          </button>
+          
+          <a 
+            *ngIf="option.actionType === 'link' && option.icon === 'mail'" 
+            href="javascript:void(0)"
+            class="contact-link"
+            (click)="onContactEmail()">
+            {{ option.actionText }}
+          </a>
+          
+          <a 
+            *ngIf="option.actionType === 'link' && option.icon === 'call'" 
+            href="javascript:void(0)"
+            class="contact-link"
+            (click)="onContactPhone()">
+            {{ option.actionText }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Call to Action -->
+    <div class="faq-cta">
+      <h2>Got Questions? We've Got Answers</h2>
+      <button class="faq-button" (click)="navigateToFAQ()">
+        Read our FAQ'S
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

@@ -1,0 +1,74 @@
+<div class="insights-page">
+  <app-public-navbar></app-public-navbar>
+
+  <main class="insights-main">
+    <section class="insights-hero" aria-labelledby="insights-title">
+      <div class="insights-hero__copy">
+        <div class="insights-hero__heading">
+          <h1 id="insights-title">
+            Insights that inspire<br />
+            <span>growth</span> everyday
+          </h1>
+              <img [src]="assetRoot + '/growth-underline.svg'" alt="" aria-hidden="true" width="163" height="15" />
+        </div>
+
+        <p class="insights-hero__description">
+          Insight turns everyday activities into meaningful progress <br />
+          For kids to reflect, For parents to guide, For growth that lasts.
+        </p>
+
+        <div class="insights-benefits">
+          <div class="insights-benefit">
+            <span class="insights-benefit__icon">
+              <img [src]="assetRoot + '/track-insights.svg'" alt="" width="32" height="32" />
+            </span>
+            <p>Track habits, tasks, mood, learning, and more <br />all in one place.</p>
+          </div>
+          <div class="insights-benefit">
+            <span class="insights-benefit__icon">
+              <img [src]="assetRoot + '/smart-insights.svg'" alt="" width="32" height="32" />
+            </span>
+            <p>Smart Insights helps the child/self build better habits <br />and lets parents make informed decisions.</p>
+          </div>
+        </div>
+
+        <div class="insights-actions">
+          <a [href]="loginUrl" class="insights-action insights-action--login">Log in to unlock insights</a>
+          <button type="button" (click)="openStoreDialog()" class="insights-action insights-action--signup">
+            <span>Try it for free</span>
+            <img [src]="assetRoot + '/cta-arrow.svg'" alt="" aria-hidden="true" width="18" height="15" />
+          </button>
+        </div>
+      </div>
+
+      <div class="insights-hero__visual">
+        <img [src]="assetRoot + '/insights-hero.png'" alt="SuperMeApp insights dashboard and benefits" width="1254" height="1254" />
+      </div>
+    </section>
+
+    <section class="insights-audiences" aria-label="Insights by role">
+      <article
+        *ngFor="let card of insightCards"
+        class="insight-card"
+        [class.insight-card--parent]="card.variant === 'parent'"
+      >
+        <div class="insight-card__visual">
+          <img [src]="card.image" [alt]="card.imageAlt" [attr.width]="card.imageWidth" [attr.height]="card.imageHeight" />
+        </div>
+        <div class="insight-card__content">
+          <h2>{{ card.title }}</h2>
+          <p class="insight-card__description">{{ card.description }}</p>
+          <ul>
+            <li *ngFor="let item of card.items">
+              <img [src]="assetRoot + '/check.svg'" alt="" aria-hidden="true" width="24" height="24" />
+              <span>{{ item }}</span>
+            </li>
+          </ul>
+          <span class="insight-card__badge">{{ card.badge }}</span>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <app-common-footer></app-common-footer>
+</div>

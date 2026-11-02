@@ -1,0 +1,241 @@
+
+.page-body {
+  width: 100%;
+}
+
+.habit-title {
+  padding: 1.5rem;
+}
+
+.habit-title h1 {
+  color: #282527;
+font-family: Fredoka;
+font-size: 25px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 35px */
+}
+
+
+.week-nav-row {
+  display: flex;
+  padding: 8px;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 8px;
+}
+
+.week-nav-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+}
+
+.week-nav-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 12px;
+}
+
+.tab-divider {
+  display: inline-flex;
+  width: 52px;
+  height: 1;
+  transform: rotate(90deg);
+  transform-origin: center;
+  margin: 0 8px;
+  stroke-width: 1px;
+  stroke: #6B656A;
+}
+
+.tab {
+  display: flex;
+  padding: 8px 80px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  color: #282527;
+  font-family: 'Nunito';
+  font-size: 25px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%;
+  align-self: stretch;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+/* Active styles per tab */
+.tab.tab-habits.active {
+  border-bottom: 2px solid #898CCA;
+  color: #898CCA;
+}
+
+.tab.tab-tasks.active {
+  border-bottom: 2px solid #F6AC72;
+  color: #F6AC72;
+}
+
+.filters {
+  margin-bottom: 12px;
+}
+
+.habit-filters-container.d-flex.gap-10 {
+  display: flex;
+  gap: 40px;
+}
+
+.habit-filters-container .badge.disabled,
+.habit-filters-container .badge.pending.disabled,
+.habit-filters-container superme-badge.disabled,
+.habit-filters-container superme-badge.pending.disabled,
+.priority-selectors .badge.disabled,
+.priority-selectors .badge.pending.disabled,
+.routine-selectors .badge.disabled,
+.routine-selectors .badge.pending.disabled,
+.filter-badge .badge.disabled,
+.filter-badge .badge.pending.disabled {
+  display: flex !important;
+  padding: 10px 16px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  box-sizing: border-box !important;
+}
+
+/* Center and space the badge rows in the habit filters */
+.habit-journey-week.d-flex,
+.priority-selectors.d-flex,
+.routine-selectors.d-flex {
+  align-items: center;
+  gap: 16px;
+}
+
+.habit-journey h2,
+.priority-header h3,
+.routine-header h3 {
+  color: #282527;
+  text-align: right;
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%;
+  /* ~28px */
+  margin: 0;
+  display: flex;
+  width: 361px;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.list-area {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 60px;
+}
+
+.list-area>.habit-filters-container {
+  max-width: 1448px;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+.list-item {
+  width: 100%;
+}
+
+.empty {
+  text-align: center;
+  color: #888;
+  padding: 28px 8px;
+}
+
+.single-mode {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.single-inner {
+  width: 92%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.single-inner .close {
+  display: block;
+  margin-left: auto;
+  margin-bottom: 8px;
+}
+
+/* small screens tweak */
+@media (max-width: 420px) {
+  .page-body {
+    padding: 10px;
+  }
+}
+
+/* List row: filters + columns layout (Figma-backed) */
+.list-row {
+  display: flex;
+  width: 1448px;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.filters-column {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+
+
+.filter-badge {
+  cursor: pointer;
+}
+
+.filter-badge.active {
+  /* rely on SupermeBadge styles; add a subtle highlight fallback */
+  outline: none;
+}
+
+/* small screens: make the list-row scrollable horizontally */
+@media (max-width: 1000px) {
+  .list-row {
+    width: 100%;
+    overflow-x: auto;
+  }
+}

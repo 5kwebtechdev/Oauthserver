@@ -1,0 +1,124 @@
+<div class="flex flex-col w-full min-h-screen bg-white">
+  <app-public-navbar></app-public-navbar>
+  <div class="flex-1" style="padding-top: clamp(72px, 7vw, 104px)">
+
+    <!-- Success State -->
+    @if (submitted) {
+      <div class="flex flex-col items-center justify-center gap-[24px] py-[64px] px-[20px] text-center">
+        <img [src]="successImg" alt="Message sent successfully" class="w-[200px] h-[200px] object-contain" width="1184" height="864" />
+        <div class="text-center">
+          <p class="font-['Nunito',sans-serif] font-bold text-[24px] text-[#282527] tracking-[-1px]">Message received!</p>
+          <p class="font-['Nunito',sans-serif] font-normal opacity-70 text-[16px] text-[#282527] mt-[8px] max-w-[560px]">
+            Thanks {{ submittedName }}, we've got your message and will reply to {{ submittedEmail }} within 1-2 business days.
+          </p>
+        </div>
+        <button
+          type="button"
+          (click)="goBack()"
+          class="relative rounded-[8px] overflow-hidden border-none cursor-pointer px-[32px] py-[14px]"
+          [style.backgroundImage]="gradientButton"
+          style="    border-radius: 10px;  width: 270px;"
+        >
+          <span class="font-['Nunito',sans-serif] font-bold text-[#fffeff] text-[14px] leading-[22px] whitespace-nowrap">Go Back</span>
+          <div aria-hidden="true" class="absolute border border-[#4a0d25] border-solid inset-0 pointer-events-none rounded-[8px] shadow-[0px_0px_1px_0px_rgba(144,33,77,0.2)]"></div>
+          <div class="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_-2px_2px_0px_#ea7cb5]"></div>
+        </button>
+      </div>
+    }
+
+    <!-- Form -->
+    @if (!submitted) {
+      <div class="max-w-[1360px] mx-auto px-[16px] min-[900px]:px-[32px] min-[1024px]:px-[40px] py-[32px]">
+        <div class="max-w-[792px] mx-auto flex flex-col gap-[32px]">
+          <!-- Header -->
+          <div class="flex flex-col gap-[8px] text-center items-center">
+            <h1 class="font-['Nunito',sans-serif] font-bold text-[#282527] tracking-[-2px] leading-[normal]" style="font-size: clamp(24px, 2.2vw, 32px)">
+              We'd love to hear from you.
+            </h1>
+            <p class="font-['Nunito',sans-serif] font-normal opacity-70 text-[#282527] leading-[normal] max-w-[594px]" style="font-size: clamp(14px, 1.4vw, 20px)">
+              Questions, ideas, or feedback about SuperMe? Our team reads every message personally.
+            </p>
+          </div>
+
+          <!-- Form fields -->
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-[20px]">
+            <!-- Name -->
+            <div class="flex flex-col gap-[6px]">
+              <label class="font-['Nunito',sans-serif] font-semibold text-[14px] text-[#282527]">Your Name <span class="text-[#CE0800]">*</span></label>
+              <input
+                formControlName="name"
+                type="text"
+                placeholder="eg. Ramesh Kumar"
+                class="w-full rounded-[12px] border border-[rgba(40,37,39,0.2)] px-[16px] py-[12px] font-['Nunito',sans-serif] text-[14px] text-[#282527] outline-none focus:border-[#90214D] transition-colors input-place-white"
+                [class.border-red-500]="nameError"
+              />
+              @if (nameError) {
+                <p class="font-['Nunito',sans-serif] text-[12px] text-red-500">{{ nameError }}</p>
+              }
+            </div>
+
+            <!-- Email -->
+            <div class="flex flex-col gap-[6px]">
+              <label class="font-['Nunito',sans-serif] font-semibold text-[14px] text-[#282527]">Email <span class="text-[#CE0800]">*</span></label>
+              <input
+                formControlName="email"
+                type="email"
+                placeholder="eg. ramesh@yourcompany.com"
+                class="w-full rounded-[12px] border border-[rgba(40,37,39,0.2)] px-[16px] py-[12px] font-['Nunito',sans-serif] text-[14px] text-[#282527] outline-none focus:border-[#90214D] transition-colors input-place-white"
+                [class.border-red-500]="emailError"
+              />
+              @if (emailError) {
+                <p class="font-['Nunito',sans-serif] text-[12px] text-red-500">{{ emailError }}</p>
+              }
+            </div>
+
+            <!-- Message -->
+            <div class="flex flex-col gap-[6px]">
+              <div class="flex items-center justify-between">
+                <label class="font-['Nunito',sans-serif] font-semibold text-[14px] text-[#282527]">Tell Us About Your Message <span class="text-[#CE0800]">*</span></label>
+                <span class="font-['Nunito',sans-serif] text-[12px] opacity-50 text-[#282527]">{{ messageLength }}/300</span>
+              </div>
+              <textarea
+                formControlName="message"
+                placeholder="Tell us, what's on your mind..."
+                rows="4"
+                class="w-full rounded-[12px] border border-[rgba(40,37,39,0.2)] px-[16px] py-[12px] font-['Nunito',sans-serif] text-[14px] text-[#282527] outline-none focus:border-[#90214D] transition-colors resize-none input-place-white"
+                [class.border-red-500]="messageError"
+              ></textarea>
+              <p class="font-['Nunito',sans-serif] text-[12px] opacity-60 text-[#282527]">
+                Keep it between 50-300 words. The more context you give, the faster we can review it.
+              </p>
+              @if (messageError) {
+                <p class="font-['Nunito',sans-serif] text-[12px] text-red-500">{{ messageError }}</p>
+              }
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              [disabled]="!isFormValid || sending"
+              class="relative rounded-[8px] overflow-hidden border-none w-full h-[48px]"
+              [style.backgroundImage]="gradientButton"
+              [style.opacity]="isFormValid && !sending ? 1 : 0.5"
+              [style.cursor]="isFormValid && !sending ? 'pointer' : 'not-allowed'"
+              style="box-shadow: 0px 0px 1px 0.5px #90214D33;box-shadow: 0px -2px 2px 0px #EA7CB5 inset; border-radius: 9px;"
+            >
+              <div aria-hidden="true" class="absolute border border-[#4a0d25] border-solid inset-0 pointer-events-none rounded-[8px]"></div>
+              <div class="flex items-center justify-center h-full">
+                <span class="font-['Nunito',sans-serif] font-bold text-[#fffeff] text-[13px] leading-[22px] whitespace-nowrap">{{ sending ? 'Sending…' : 'Send Message' }}</span>
+              </div>
+              <div class="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_-2px_2px_0px_#ea7cb5]"></div>
+            </button>
+            @if (sendError) {
+              <p role="alert" class="font-['Nunito',sans-serif] font-semibold text-[13px] leading-[22px] text-[#ce0800]">
+                {{ sendError }}
+              </p>
+            }
+          </form>
+        </div>
+      </div>
+    }
+
+  </div>
+  <app-common-footer></app-common-footer>
+</div>

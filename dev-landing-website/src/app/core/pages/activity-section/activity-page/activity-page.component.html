@@ -1,0 +1,236 @@
+<app-public-navbar></app-public-navbar>
+<div class="page-body">
+  <div class="habit-title">
+    <h1>Your Universe</h1>
+  </div>
+  <!-- Week selector -->
+  <div class="week-wrap">
+    <div class="week-nav-row">
+      
+
+      <div class="week-nav-center" style="flex:1;">
+        <!-- superme-week is exported from SupermeInputsModule -->
+        <superme-week class="large" [referenceDate]="selectedDate"
+          (dateSelected)="onDateSelected($event)"></superme-week>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs: All / Habits / Tasks -->
+  <div class="tabs">
+    <button class="tab tab-habits" [class.active]="currentMainTab === 'habits'"
+      (click)="selectMainTab('habits')">Habits</button>
+    <svg class="tab-divider" width="52" height="1" viewBox="0 0 52 1" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="0" y1="0.5" x2="52" y2="0.5" stroke="#6B656A" stroke-width="1" />
+    </svg>
+    <button class="tab tab-tasks" [class.active]="currentMainTab === 'tasks'"
+      (click)="selectMainTab('tasks')">Tasks</button>
+  </div>
+
+  <div class="filters">
+    <superme-selectors [options]="[]" size="small"></superme-selectors>
+  </div>
+
+  <!-- List area -->
+  <div class="list-area">
+    <div class="habit-filters-container d-flex gap-10" *ngIf="currentMainTab === 'habits'">
+      <ng-template #emptyStateTpl>
+        <div class="empty-state">No habits found.</div>
+      </ng-template>
+      <!-- Group: Journey, Priority, Routine selectors -->
+      <div class="habit-journey-container d-flex flex-column align-items-start gap-2 flex-shrink-0">
+        <div class="habit-journey d-flex flex-column align-items-start gap-3">
+          <h2>Your Habit Journey</h2>
+          <div class="habit-journey-week d-flex">
+            <superme-badge text="Pending" type="pending" [disabled]="journeySubFilter !== 'pending'"
+              [active]="journeySubFilter === 'pending'"
+              (click)="selectJourneySubFilter('pending')">Pending</superme-badge>
+            <superme-badge text="Ongoing" type="inactive" [disabled]="journeySubFilter !== 'ongoing'"
+              [active]="journeySubFilter === 'ongoing'"
+              (click)="selectJourneySubFilter('ongoing')">Ongoing</superme-badge>
+            <superme-badge text="Completed" type="inactive" [disabled]="journeySubFilter !== 'completed'"
+              [active]="journeySubFilter === 'completed'"
+              (click)="selectJourneySubFilter('completed')">Completed</superme-badge>
+          </div>
+        </div>
+        <div class="habit-list-content d-flex flex-column align-items-start gap-3 pt-4 pb-3 align-self-stretch">
+          <div *ngIf="filteredActivities && filteredActivities.length > 0; else noHabitsTemplate"
+            class="habit-list-content d-flex flex-column align-items-start align-self-stretch">
+            <div *ngFor="let habit of filteredActivities">
+              <activity-card [activity]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+              </activity-card>
+            </div>
+          </div>
+          <ng-template #noHabitsTemplate>
+            <div class="no-habits-message">
+              <p>No habits found for this day and filter.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="priority-container d-flex flex-column align-items-start gap-2 flex-shrink-0">
+        <div class="priority-header d-flex flex-column align-items-start gap-3">
+          <h3>Navigate Your Priorities</h3>
+          <div class="priority-selectors d-flex">
+            <superme-badge text="High" type="red" [disabled]="prioritySubFilter !== 'high'"
+              [active]="prioritySubFilter === 'high'" (click)="selectPrioritySubFilter('high')">High</superme-badge>
+            <superme-badge text="Medium" type="yellow" [disabled]="prioritySubFilter !== 'medium'"
+              [active]="prioritySubFilter === 'medium'"
+              (click)="selectPrioritySubFilter('medium')">Medium</superme-badge>
+            <superme-badge text="Low" type="green" [disabled]="prioritySubFilter !== 'low'"
+              (click)="selectPrioritySubFilter('low')">Low</superme-badge>
+          </div>
+        </div>
+        <div class="habit-list-container d-flex flex-column align-items-start gap-3 pt-4 pb-3 align-self-stretch"
+          *ngIf="currentMainTab === 'habits'">
+          <div *ngIf="filteredActivities && filteredActivities.length > 0; else noPriorityHabitsTemplate">
+            <div *ngFor="let habit of filteredActivities">
+              <activity-card [activity]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+              </activity-card>
+            </div>
+          </div>
+          <ng-template #noPriorityHabitsTemplate>
+            <div class="no-habits-message">
+              <p>No habits with this priority found.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="routine-container d-flex flex-column align-items-start gap-2 flex-shrink-0">
+        <div class="routine-header d-flex flex-column align-items-start gap-3">
+          <h3>Your Daily Routines</h3>
+          <div class="routine-selectors d-flex">
+            <superme-badge text="Morning" type="morning" [disabled]="routineSubFilter !== 'morning'"
+              [active]="routineSubFilter === 'morning'"
+              (click)="selectRoutineSubFilter('morning')">Morning</superme-badge>
+            <superme-badge text="Evening" type="evening" [disabled]="routineSubFilter !== 'evening'"
+              [active]="routineSubFilter === 'evening'"
+              (click)="selectRoutineSubFilter('evening')">Evening</superme-badge>
+            <superme-badge text="Night" type="night" [disabled]="routineSubFilter !== 'night'"
+              [active]="routineSubFilter === 'night'" (click)="selectRoutineSubFilter('night')">Night</superme-badge>
+          </div>
+        </div>
+        <div class="habit-list-container d-flex flex-column align-items-start gap-3 pt-4 pb-3 align-self-stretch"
+          *ngIf="currentMainTab === 'habits'">
+          <div *ngIf="filteredActivities && filteredActivities.length > 0; else noRoutineHabitsTemplate">
+            <div *ngFor="let habit of filteredActivities">
+              <activity-card [activity]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+              </activity-card>
+            </div>
+          </div>
+          <ng-template #noRoutineHabitsTemplate>
+            <div class="no-habits-message">
+              <p>No habits with this routine found.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+    <!-- Tasks: mirror the Habits layout but render tasks (task cards may use a different visual variant) -->
+    <div class="task-filters-container d-flex gap-10" *ngIf="currentMainTab === 'tasks'">
+      <ng-template #emptyTaskTpl>
+        <div class="empty-state">No tasks found.</div>
+      </ng-template>
+
+      <div class="habit-journey-container d-flex flex-column align-items-start gap-2 flex-shrink-0">
+        <div class="habit-journey d-flex flex-column align-items-start gap-3">
+          <h2>Your Task Journey</h2>
+          <div class="habit-journey-week d-flex">
+            <superme-badge text="Pending" type="pending" [disabled]="journeySubFilter !== 'pending'"
+              [active]="journeySubFilter === 'pending'"
+              (click)="selectJourneySubFilter('pending')">Pending</superme-badge>
+            <superme-badge text="Ongoing" type="inactive" [disabled]="journeySubFilter !== 'ongoing'"
+              [active]="journeySubFilter === 'ongoing'"
+              (click)="selectJourneySubFilter('ongoing')">Ongoing</superme-badge>
+            <superme-badge text="Completed" type="inactive" [disabled]="journeySubFilter !== 'completed'"
+              [active]="journeySubFilter === 'completed'"
+              (click)="selectJourneySubFilter('completed')">Completed</superme-badge>
+          </div>
+        </div>
+        <div class="habit-list-content d-flex flex-column align-items-start gap-3 pt-4 pb-3 align-self-stretch">
+          <div *ngIf="filteredTasks && filteredTasks.length > 0; else emptyTaskTpl"
+            class="habit-list-content d-flex flex-column align-items-start align-self-stretch">
+            <div *ngFor="let task of filteredTasks">
+              <!-- reuse habit-card for tasks; card component switches styles when the data has type === 'tasks' -->
+              <activity-card [activity]="task" [startTime]="task.startTimeStamp || 0" [endTime]="task.endTimeStamp || 0"
+                [inProgress]="false">
+              </activity-card>
+            </div>
+          </div>
+          <ng-template #noTasksTemplate>
+            <div class="no-habits-message">
+              <p>No tasks found for this day and filter.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="priority-container d-flex flex-column align-items-start gap-2 flex-shrink-0">
+        <div class="priority-header d-flex flex-column align-items-start gap-3">
+          <h3>Navigate Your Priorities</h3>
+          <div class="priority-selectors d-flex">
+            <superme-badge text="High" type="red" [disabled]="prioritySubFilter !== 'high'"
+              [active]="prioritySubFilter === 'high'" (click)="selectPrioritySubFilter('high')">High</superme-badge>
+            <superme-badge text="Medium" type="yellow" [disabled]="prioritySubFilter !== 'medium'"
+              [active]="prioritySubFilter === 'medium'"
+              (click)="selectPrioritySubFilter('medium')">Medium</superme-badge>
+            <superme-badge text="Low" type="green" [disabled]="prioritySubFilter !== 'low'"
+              (click)="selectPrioritySubFilter('low')">Low</superme-badge>
+          </div>
+        </div>
+        <div class="habit-list-container d-flex flex-column align-items-start gap-3 pt-4 pb-3 align-self-stretch"
+          *ngIf="currentMainTab === 'tasks'">
+          <div *ngIf="filteredTasks && filteredTasks.length > 0; else noTasksTemplate">
+            <div *ngFor="let task of filteredTasks">
+              <activity-card [activity]="task" [startTime]="task.startTimeStamp || 0" [endTime]="task.endTimeStamp || 0"
+                [inProgress]="false">
+              </activity-card>
+            </div>
+          </div>
+          <ng-template #noPriorityTasksTemplate>
+            <div class="no-habits-message">
+              <p>No tasks with this priority found.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="routine-container d-flex flex-column align-items-start gap-2 flex-shrink-0">
+        <div class="routine-header d-flex flex-column align-items-start gap-3">
+          <h3>Your Daily Routines</h3>
+          <div class="routine-selectors d-flex">
+            <superme-badge text="Morning" type="morning" [disabled]="routineSubFilter !== 'morning'"
+              [active]="routineSubFilter === 'morning'"
+              (click)="selectRoutineSubFilter('morning')">Morning</superme-badge>
+            <superme-badge text="Evening" type="evening" [disabled]="routineSubFilter !== 'evening'"
+              [active]="routineSubFilter === 'evening'"
+              (click)="selectRoutineSubFilter('evening')">Evening</superme-badge>
+            <superme-badge text="Night" type="night" [disabled]="routineSubFilter !== 'night'"
+              [active]="routineSubFilter === 'night'" (click)="selectRoutineSubFilter('night')">Night</superme-badge>
+          </div>
+        </div>
+        <div class="habit-list-container d-flex flex-column align-items-start gap-3 pt-4 pb-3 align-self-stretch"
+          *ngIf="currentMainTab === 'tasks'">
+          <div *ngIf="filteredTasks && filteredTasks.length > 0; else noRoutineHabitsTemplate">
+            <div *ngFor="let task of filteredTasks">
+              <activity-card [activity]="task" [startTime]="task.startTimeStamp || 0" [endTime]="task.endTimeStamp || 0"
+                [inProgress]="false">
+              </activity-card>
+            </div>
+          </div>
+          <ng-template #noRoutineHabitsTemplate>
+            <div class="no-habits-message">
+              <p>No tasks with this routine found.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<app-footer></app-footer>

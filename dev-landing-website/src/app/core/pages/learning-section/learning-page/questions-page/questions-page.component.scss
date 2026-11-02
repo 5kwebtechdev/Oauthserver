@@ -1,0 +1,134 @@
+.questions-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 16px;
+}
+
+.navigator-timer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    color: #282527;
+}
+
+.quiz-tag-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.questions-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 0;
+}
+
+.quiz-puz-page {
+    padding: 16px;
+}
+
+.questions-count {
+    position: relative;
+    padding-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.questions-count span {
+    color: #282527;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.questions-count::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 6px;
+    background: #4CAF50;
+    opacity: 0.2;
+    border-radius: 6px;
+}
+
+.progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 6px;
+    background: #4CAF50;
+    border-radius: 6px;
+    transition: width 260ms ease-in-out;
+}
+
+.content-img {
+    width: 100%;
+    height: 144px;
+    flex-shrink: 0;
+    margin-bottom: 16px;
+}
+
+.content-img img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.content-quest {
+    color: #282527;
+    font-family: Nunito, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 16px;
+}
+
+.answers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.option-button {
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        border-color: #4CAF50;
+        background-color: rgba(76, 175, 80, 0.05);
+    }
+
+    &.selected {
+        border-color: #4CAF50;
+        background-color: rgba(76, 175, 80, 0.1);
+    }
+
+    &.correct {
+        border-color: #4CAF50;
+        background-color: rgba(76, 175, 80, 0.2);
+    }
+
+    &.incorrect {
+        border-color: #f44336;
+        background-color: rgba(244, 67, 54, 0.1);
+    }
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}

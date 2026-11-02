@@ -1,0 +1,389 @@
+
+<app-public-navbar></app-public-navbar>
+
+<main *ngIf="!showParentCoins" class="parent-dashboard-container">
+  <!-- Top Header Section with Metrics and Mood -->
+  <div class="top-header-section">
+    <!-- Metrics Card -->
+    <div class="metrics-card">
+      <div class="metrics-container">
+        <div class="metric-item">
+          <superme-completion 
+            [completionPercentage]="metrics.completionRate" 
+            [borderColor]="'#4CAF50'" 
+            [innerText]="metrics.completionRate + '%'"
+            [belowText]="'Completion Rate'">
+          </superme-completion>
+        </div>
+        <div class="metric-item">
+          <superme-completion 
+            [completionPercentage]="metrics.consistencyRate" 
+            [borderColor]="'#F0AD4E'" 
+            [innerText]="metrics.consistencyRate + '%'"
+            [belowText]="'Consistency Rate'">
+          </superme-completion>
+        </div>
+        <div class="metric-item">
+          <superme-completion 
+            [completionPercentage]="metrics.improvementRate" 
+            [borderColor]="'#BB2124'" 
+            [innerText]="metrics.improvementRate + '%'"
+            [belowText]="'Improvement Rate'">
+          </superme-completion>
+        </div>
+        <div class="metric-item">
+          <superme-completion 
+            [completionPercentage]="metrics.appScore" 
+            [borderColor]="'#F0AD4E'" 
+            [innerText]="metrics.appScore.toString()"
+            [belowText]="'App\'s Score'">
+          </superme-completion>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mood Message Section -->
+    <div class="mood-section">
+      <div class="mood-content">
+        <div class="mood-text-container">
+          <p class="mood-message">
+            Your child is glowing with <span class="mood-highlight">{{ currentMood }}</span>!
+          </p>
+          <p class="mood-subtitle">{{ currentDescription }}</p>
+        </div>
+        <div class="mood-emoji-container">
+          <img *ngIf="moodEmojiSrc" [src]="moodEmojiSrc" alt="{{ currentMood }}" class="mood-emoji-img">
+          <span *ngIf="!moodEmojiSrc" class="mood-emoji-fallback">😊</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-ad-slider *ngIf="childAge" screen="HOME_PARENTS" [age]="childAge"></app-ad-slider>
+
+  <!-- Child Progress Section -->
+  <section class="child-progress-section">
+    <div class="section-header">
+      <h2>Your Child’s daily Overview</h2>
+      <div class="header-actions">
+        <button class="add-child">Add New +</button>
+      </div>
+    </div>
+<!--Week superme-week component-->
+  
+    <div class="parent-week-bar">
+      <superme-week (dateSelected)="onDateSelected($event)"></superme-week>
+    </div>
+  </section>
+   <div class="habit-task-tabs-with-line">
+      <div class="tab" [class.active]="activeTab === 'habits'" (click)="setTab('habits')">
+        Habits
+      </div>
+
+      <div class="divider" aria-hidden="true"></div>
+
+      <div class="tab" [class.active]="activeTab === 'tasks'" (click)="setTab('tasks')">
+        Tasks
+      </div>
+
+    </div>
+    <!-- When Habit Tab is Active -->
+    <ng-container *ngIf="activeTab === 'habits'">
+      <div class="habits-content">
+        <!-- Column 1: See What's Done & What's Waiting! -->
+        <div class="habits-column">
+          <div class="column-header">
+            <h3 class="column-title">See What's Done & What's Waiting!</h3>
+          </div>
+          
+          <div class="filter-pills">
+            <button 
+              class="filter-pill"
+              [class.active]="habitsStatusFilter === 'pending'"
+              (click)="setHabitsStatusFilter('pending')">
+              Pending
+            </button>
+            <button 
+              class="filter-pill"
+              [class.active]="habitsStatusFilter === 'ongoing'"
+              (click)="setHabitsStatusFilter('ongoing')">
+              Ongoing
+            </button>
+            <button 
+              class="filter-pill"
+              [class.active]="habitsStatusFilter === 'completed'"
+              (click)="setHabitsStatusFilter('completed')">
+              Completed
+            </button>
+          </div>
+
+          <div class="habits-list">
+            <ng-container *ngFor="let habit of filteredHabits">
+              <ng-container *ngTemplateOutlet="habitCard; context: { $implicit: habit }"></ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Column 2: Based on Priorities -->
+        <div class="habits-column">
+          <div class="column-header">
+            <h3 class="column-title">Based on Priorities</h3>
+          </div>
+
+          <div class="filter-pills">
+            <button
+              class="filter-pill priority-high"
+              [class.active]="habitsPriorityFilter === 'high'"
+              (click)="setHabitsPriorityFilter('high')">
+              High ({{priorityCounts.high}})
+            </button>
+            <button
+              class="filter-pill priority-medium"
+              [class.active]="habitsPriorityFilter === 'medium'"
+              (click)="setHabitsPriorityFilter('medium')">
+              Medium ({{priorityCounts.medium}})
+            </button>
+            <button
+              class="filter-pill priority-low"
+              [class.active]="habitsPriorityFilter === 'low'"
+              (click)="setHabitsPriorityFilter('low')">
+              Low ({{priorityCounts.low}})
+            </button>
+          </div>
+
+          <div class="habits-list">
+            <ng-container *ngFor="let habit of filteredHabitsByPriority">
+              <ng-container *ngTemplateOutlet="habitCard; context: { $implicit: habit }"></ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Column 3: Based on Routines -->
+        <div class="habits-column">
+          <div class="column-header">
+            <h3 class="column-title">Based on Routines</h3>
+          </div>
+
+          <div class="filter-pills">
+            <button
+              class="filter-pill routine-pill"
+              [class.active]="habitsRoutineFilter === 'morning'"
+              (click)="setHabitsRoutineFilter('morning')">
+              Morning
+            </button>
+            <button
+              class="filter-pill routine-pill"
+              [class.active]="habitsRoutineFilter === 'evening'"
+              (click)="setHabitsRoutineFilter('evening')">
+              Evening
+            </button>
+            <button
+              class="filter-pill routine-pill"
+              [class.active]="habitsRoutineFilter === 'night'"
+              (click)="setHabitsRoutineFilter('night')">
+              Night
+            </button>
+          </div>
+
+          <div class="habits-list">
+            <ng-container *ngFor="let habit of filteredHabitsByRoutine">
+              <ng-container *ngTemplateOutlet="habitCard; context: { $implicit: habit }"></ng-container>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- When Tasks Tab is Active -->
+    <ng-container *ngIf="activeTab === 'tasks'">
+      <div class="habits-content">
+        <!-- Column 1: See What's Done & What's Waiting! -->
+        <div class="habits-column">
+          <div class="column-header">
+            <h3 class="column-title">See What's Done & What's Waiting!</h3>
+          </div>
+          
+          <div class="filter-pills">
+            <button 
+              class="filter-pill"
+              [class.active]="tasksStatusFilter === 'pending'"
+              (click)="setTasksStatusFilter('pending')">
+              Pending
+            </button>
+            <button 
+              class="filter-pill"
+              [class.active]="tasksStatusFilter === 'ongoing'"
+              (click)="setTasksStatusFilter('ongoing')">
+              Ongoing
+            </button>
+            <button 
+              class="filter-pill"
+              [class.active]="tasksStatusFilter === 'completed'"
+              (click)="setTasksStatusFilter('completed')">
+              Completed
+            </button>
+          </div>
+
+          <div class="habits-list">
+            <ng-container *ngFor="let task of filteredTasks">
+              <ng-container *ngTemplateOutlet="taskCard; context: { $implicit: task }"></ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Column 2: Based on Priorities -->
+        <div class="habits-column">
+          <div class="column-header">
+            <h3 class="column-title">Based on Priorities</h3>
+          </div>
+
+          <div class="filter-pills">
+            <button
+              class="filter-pill priority-high"
+              [class.active]="tasksPriorityFilter === 'high'"
+              (click)="setTasksPriorityFilter('high')">
+              High ({{taskPriorityCounts.high}})
+            </button>
+            <button
+              class="filter-pill priority-medium"
+              [class.active]="tasksPriorityFilter === 'medium'"
+              (click)="setTasksPriorityFilter('medium')">
+              Medium ({{taskPriorityCounts.medium}})
+            </button>
+            <button
+              class="filter-pill priority-low"
+              [class.active]="tasksPriorityFilter === 'low'"
+              (click)="setTasksPriorityFilter('low')">
+              Low ({{taskPriorityCounts.low}})
+            </button>
+          </div>
+
+          <div class="habits-list">
+            <ng-container *ngFor="let task of filteredTasksByPriority">
+              <ng-container *ngTemplateOutlet="taskCard; context: { $implicit: task }"></ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Column 3: Based on Routines -->
+        <div class="habits-column">
+          <div class="column-header">
+            <h3 class="column-title">Based on Routines</h3>
+          </div>
+
+          <div class="filter-pills">
+            <button
+              class="filter-pill routine-pill"
+              [class.active]="tasksRoutineFilter === 'morning'"
+              (click)="setTasksRoutineFilter('morning')">
+              Morning
+            </button>
+            <button
+              class="filter-pill routine-pill"
+              [class.active]="tasksRoutineFilter === 'evening'"
+              (click)="setTasksRoutineFilter('evening')">
+              Evening
+            </button>
+            <button
+              class="filter-pill routine-pill"
+              [class.active]="tasksRoutineFilter === 'night'"
+              (click)="setTasksRoutineFilter('night')">
+              Night
+            </button>
+          </div>
+
+          <div class="habits-list">
+            <ng-container *ngFor="let task of filteredTasksByRoutine">
+              <ng-container *ngTemplateOutlet="taskCard; context: { $implicit: task }"></ng-container>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+</main>
+<!-- ===== Shared card templates ===== -->
+<ng-template #habitCard let-habit>
+  <div class="activity-wrapper"
+       [class.expanded]="habit.showHover || habit.showActions"
+       tabindex="0"
+       role="button"
+       [attr.aria-pressed]="habit.showActions"
+       (mouseenter)="habit.showHover = true"
+       (mouseleave)="habit.showHover = false"
+       (click)="toggleHabitActions(habit)"
+       (keydown.enter)="toggleHabitActions(habit); $event.preventDefault()"
+       (keydown.space)="toggleHabitActions(habit); $event.preventDefault()">
+    <div class="card-header-inner">
+      <div class="card-title-row">
+        <h3 class="activity-title">{{habit.title}}</h3>
+        <div class="card-meta">
+          <img *ngIf="habit.routine === 'morning'" class="routine-icon" src="/assets/Icons-Neutral/Icon-Routine-Morning.png" alt="Morning">
+          <img *ngIf="habit.routine === 'evening'" class="routine-icon" src="/assets/Icons-Neutral/Icon-Routine-Evening.png" alt="Evening">
+          <img *ngIf="habit.routine === 'night'" class="routine-icon" src="/assets/Icons-Neutral/Icon-Routine-Night.png" alt="Night">
+          <div class="card-badge">{{habit.tag || 'Routine'}}</div>
+        </div>
+      </div>
+      <h4 class="activity-timing">{{habit.startTime}} - {{habit.endTime}}</h4>
+    </div>
+    <div class="activity-expandable-content" [class.expanded]="habit.showHover || habit.showActions">
+      <div class="activity-footer-container">
+        <div class="reward-section">
+          <div class="reward-item">
+            <img src="assets/Icons-Neutral/Icon-Streak.png" alt="Streak" class="reward-icon">
+            <span class="reward-value">{{habit.streaks}}</span>
+          </div>
+          <div class="reward-item">
+            <img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins" class="reward-icon">
+            <span class="reward-value">{{habit.coins}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #taskCard let-task>
+  <div class="activity-wrapper task"
+       [class.expanded]="task.showHover || task.showActions"
+       tabindex="0"
+       role="button"
+       [attr.aria-pressed]="task.showActions"
+       (mouseenter)="task.showHover = true"
+       (mouseleave)="task.showHover = false"
+       (click)="toggleTaskActions(task)"
+       (keydown.enter)="toggleTaskActions(task); $event.preventDefault()"
+       (keydown.space)="toggleTaskActions(task); $event.preventDefault()">
+    <div class="card-header-inner">
+      <div class="card-title-row">
+        <h3 class="activity-title task-title">{{task.title}}</h3>
+        <div class="card-meta">
+          <img *ngIf="task.routine === 'morning'" class="routine-icon" src="/assets/Icons-Neutral/Icon-Routine-Morning.png" alt="Morning">
+          <img *ngIf="task.routine === 'evening'" class="routine-icon" src="/assets/Icons-Neutral/Icon-Routine-Evening.png" alt="Evening">
+          <img *ngIf="task.routine === 'night'" class="routine-icon" src="/assets/Icons-Neutral/Icon-Routine-Night.png" alt="Night">
+          <div class="card-badge task-badge">{{task.tag || 'Task'}}</div>
+        </div>
+      </div>
+      <h4 class="task-timing">{{task.startTime}} - {{task.endTime}}</h4>
+    </div>
+    <div class="activity-expandable-content" [class.expanded]="task.showHover || task.showActions">
+      <div class="activity-footer-container">
+        <div class="reward-section">
+          <div class="reward-item">
+            <img src="assets/Icons-Neutral/Icon-Streak.png" alt="Streak" class="reward-icon">
+            <span class="reward-value">{{task.streaks}}</span>
+          </div>
+          <div class="reward-item">
+            <img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins" class="reward-icon">
+            <span class="reward-value">{{task.coins}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- coin-parent-page render here when user clicks on parent navbar coins -->
+<ng-container *ngIf="showParentCoins">
+  <app-coin-parent-page></app-coin-parent-page>
+</ng-container>
+<app-footer></app-footer>

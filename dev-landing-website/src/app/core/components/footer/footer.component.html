@@ -1,0 +1,33 @@
+<footer class="app-footer" role="contentinfo">
+  <div class="footer-inner">
+    <div class="footer-left">
+      <div class="brand">
+        <app-logo [appName]="companyName" [taglineHtml]="logoTaglineHtml"></app-logo>
+      </div>
+
+      <div class="subscribe">
+        <div class="follow-title">STAY UPDATED</div>
+        <app-email-subscribe
+          inputId="footer-email"
+          placeholder="Your email"
+          (subscribe)="onSubscribe($event)"
+        ></app-email-subscribe>
+
+        <div class="follow-title">FOLLOW US ON</div>
+      </div>
+    </div>
+
+    <div class="footer-links">
+      <div *ngFor="let group of footerLinks" class="link-group">
+        <h2 class="group-heading" [class.company]="group.heading === 'COMPANY'">{{ group.heading }}</h2>
+        <ul>
+          <li *ngFor="let item of group.items"><a [routerLink]="item.href">{{ item.text }}</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>Copyright © {{ copyrightYear }} {{ companyName }}. All rights reserved</p>
+  </div>
+</footer>

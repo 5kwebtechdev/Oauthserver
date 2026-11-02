@@ -1,0 +1,89 @@
+<div class="page">
+
+<!-- top header / small back arrow (left) and centered hero per design -->
+  <header class="page-header">
+    <button class="back-btn" aria-label="Go back" (click)="goBack()">
+      <!-- simple left arrow icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="15" viewBox="0 0 30 15" fill="none">
+  <path d="M0.292893 6.65715C-0.0976311 7.04768 -0.0976311 7.68084 0.292893 8.07136L6.65685 14.4353C7.04738 14.8259 7.68054 14.8259 8.07107 14.4353C8.46159 14.0448 8.46159 13.4116 8.07107 13.0211L2.41421 7.36426L8.07107 1.7074C8.46159 1.31688 8.46159 0.683714 8.07107 0.29319C7.68054 -0.0973344 7.04738 -0.0973344 6.65685 0.29319L0.292893 6.65715ZM29 8.36426C29.5523 8.36426 30 7.91654 30 7.36426C30 6.81197 29.5523 6.36426 29 6.36426V7.36426V8.36426ZM1 7.36426V8.36426H29V7.36426V6.36426H1V7.36426Z" fill="#282527"/>
+</svg>
+    </button>
+
+    <div class="hero">
+      <div class="hero-image" role="img" aria-label="Lesson illustration">
+        <img [src]="getLessonImage()" alt="lesson image" />
+      </div>
+
+      <h1 class="hero-title">{{ lessonOrder + '. ' + (lesson?.title || '') }}</h1>
+
+      <div class="hero-meta">
+        {{ lesson?.videoUrl ? 'Video' : 'Text-based' }} · {{ lesson?.duration }} min ·
+        <img src="assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="hero-coin-icon" />
+        <span>10</span>
+      </div>
+
+      <p class="hero-sub">{{ lesson?.description }}</p>
+    </div>
+  </header>
+
+    <!-- main content area -->
+    <main class="content">
+      <!-- small white card containing "In this lesson you will learn" -->
+      <div class="learning-box">
+        <h3>In this lesson you will learn</h3>
+        <div class="checklist">
+          <div class="check-item">
+            <svg class="check" viewBox="0 0 16 16"><path d="M2.5 8.2L6 11.4 13.6 3.3" stroke="#2f855a" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Define a budget in one sentence.</span>
+          </div>
+          <div class="check-item">
+            <svg class="check" viewBox="0 0 16 16"><path d="M2.5 8.2L6 11.4 13.6 3.3" stroke="#2f855a" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Explain why budgets matter & how to make one.</span>
+          </div>
+          <div class="check-item">
+            <svg class="check" viewBox="0 0 16 16"><path d="M2.5 8.2L6 11.4 13.6 3.3" stroke="#2f855a" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Create a simple budget using the 50/30/20 rule.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- introduction section -->
+      <section class="section">
+        <h3>Introduction</h3>
+        <p class="text">
+          That's a budget: a plan for your money. Just so you're clear — budgeting isn't about deprivation or strict rules; it's about creating a plan that reflects your priorities. Good budgets help you reach goals and reduce stress.
+        </p>
+      </section>
+
+      <!-- Subsection: More Than Just Numbers -->
+      <section class="section">
+        <h4>More Than Just Numbers</h4>
+        <p class="text">
+          A budget is a plan for your money that balances what you earn with what you spend. It's not about deprivation — it's about making intentional choices so you can afford what matters.
+        </p>
+
+        <div class="note">
+          <strong>Fun Fact:</strong> The word "budget" comes from the old French word for pouch.
+        </div>
+      </section>
+
+      <!-- Key components -->
+      <section class="section">
+        <h4>Key Components</h4>
+        <ul class="bullets">
+          <li>Income: Money coming in (salary, side hustles).</li>
+          <li>Expenses: Money going out (rent, food, bills).</li>
+          <li>Savings: What you set aside for goals and emergencies.</li>
+        </ul>
+      </section>
+    </main>
+
+    <!-- footer buttons similar to your PNG -->
+    <footer class="footer-actions">
+      <button class="btn btn-done" (click)="done()" [disabled]="isCompleting">{{ isCompleting ? 'Saving...' : 'Done' }}</button>
+      <button class="btn btn-next" (click)="goToNextLesson()" [disabled]="!hasNextLesson || isCompleting">
+        {{ hasNextLesson ? ('Go to Lesson ' + (lessonOrder + 1)) : 'Finish' }}
+      </button>
+    </footer>
+
+  </div>

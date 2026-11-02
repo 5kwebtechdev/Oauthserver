@@ -1,0 +1,169 @@
+<nav class="logged-in-navbar logged-in-navbar--parent" aria-label="Parent navigation">
+  <div class="logged-in-navbar__container">
+    <div class="logged-in-navbar__left">
+      <button
+        class="logged-in-navbar__brand"
+        type="button"
+        (click)="goHome()"
+        aria-label="Go to parent home"
+      >
+        <img [src]="logoSrc" alt="SuperMeApp" />
+      </button>
+
+      <div class="logged-in-navbar__desktop-menu">
+        @for (item of navItems; track item.label) {
+          <div
+            class="logged-in-navbar__menu-item nav-item-dropdown"
+            (mouseenter)="openMenu = item.label"
+            (mouseleave)="openMenu = null"
+          >
+            <button
+              type="button"
+              class="logged-in-navbar__menu-trigger"
+              [class.active]="isNavItemActive(item.label)"
+              [attr.aria-expanded]="openMenu === item.label"
+              (click)="toggleDropdown(item.label, $event)"
+            >
+              <span>{{ item.label }}</span>
+              <img
+                [src]="chevronSrc"
+                alt=""
+                aria-hidden="true"
+                [class.open]="openMenu === item.label"
+              />
+            </button>
+
+            @if (openMenu === item.label) {
+              <div
+                class="logged-in-navbar__dropdown"
+                role="menu"
+                (click)="$event.stopPropagation()"
+              >
+                @for (child of item.children; track child.label) {
+                  <button
+                    type="button"
+                    class="logged-in-navbar__dropdown-item"
+                    role="menuitem"
+                    (click)="navigateChild(child)"
+                  >
+                    {{ child.label }}
+                  </button>
+                }
+
+                @if (item.label === 'Parenting' && apiChildren.length > 0) {
+                  <div class="logged-in-navbar__parent-children">
+                    <strong>Viewing child</strong>
+                    @for (child of apiChildren; track child.assignedTo) {
+                      <button
+                        type="button"
+                        class="logged-in-navbar__child-option"
+                        [class.active]="selectedApiChild?.assignedTo === child.assignedTo"
+                        (click)="selectApiChild(child)"
+                      >
+                        <img [src]="getChildAvatarUrl(child)" [alt]="child.userName" />
+                        <span>{{ child.userName }}</span>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="logged-in-navbar__actions">
+      <button
+        type="button"
+        class="logged-in-navbar__icon-button"
+        aria-label="Open notifications"
+        (click)="goToNotifications()"
+      >
+        <img [src]="notificationSrc" alt="" />
+      </button>
+
+      <button
+        type="button"
+        class="logged-in-navbar__coin-button"
+        aria-label="View coins"
+        (click)="goToCoins()"
+      >
+        <img [src]="coinSrc" alt="" />
+        <span>{{ totalCoins | number }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="logged-in-navbar__profile"
+        aria-label="Open profile"
+        (click)="goToProfile()"
+      >
+        <span class="logged-in-navbar__avatar">
+          @if (parentAvatarSrc; as avatarSrc) {
+            <img [src]="avatarSrc" [alt]="displayName" />
+          } @else {
+            {{ displayName.charAt(0).toUpperCase() }}
+          }
+        </span>
+        <span class="logged-in-navbar__user-name">{{ displayName }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="logged-in-navbar__mobile-toggle"
+        [class.active]="showMobileMenu"
+        [attr.aria-expanded]="showMobileMenu"
+        aria-label="Toggle navigation menu"
+        (click)="toggleMobileMenu()"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+
+  <div
+    class="logged-in-navbar__mobile-overlay"
+    [class.active]="showMobileMenu"
+    (click)="closeAllMenus()"
+  >
+    <div class="logged-in-navbar__mobile-panel" (click)="$event.stopPropagation()">
+      @for (item of navItems; track item.label) {
+        <section class="logged-in-navbar__mobile-group">
+          <button type="button" (click)="toggleDropdown(item.label, $event)">
+            <span>{{ item.label }}</span>
+            <img [src]="chevronSrc" alt="" [class.open]="openMenu === item.label" />
+          </button>
+          @if (openMenu === item.label) {
+            <div class="logged-in-navbar__mobile-children">
+              @for (child of item.children; track child.label) {
+                <button type="button" (click)="navigateChild(child, true)">
+                  {{ child.label }}
+                </button>
+              }
+
+              @if (item.label === 'Parenting' && apiChildren.length > 0) {
+                <div class="logged-in-navbar__parent-children">
+                  <strong>Viewing child</strong>
+                  @for (child of apiChildren; track child.assignedTo) {
+                    <button
+                      type="button"
+                      class="logged-in-navbar__child-option"
+                      [class.active]="selectedApiChild?.assignedTo === child.assignedTo"
+                      (click)="selectApiChild(child); closeAllMenus()"
+                    >
+                      <img [src]="getChildAvatarUrl(child)" [alt]="child.userName" />
+                      <span>{{ child.userName }}</span>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </section>
+      }
+    </div>
+  </div>
+</nav>

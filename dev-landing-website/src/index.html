@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <script>
+    (function() {
+      var code = new URLSearchParams(window.location.search).get('code') || '';
+      if (!code) return;
+
+      var ua = navigator.userAgent;
+      if (!/Android|iPhone|iPad|iPod/i.test(ua)) return;
+
+      if (/Android/i.test(ua)) {
+        var playUrl = 'https://play.google.com/store/apps/details?id=com.superme.app';
+        if (code) {
+          playUrl += '&referrer=referralCode%3D' + encodeURIComponent(code);
+        }
+        window.location.replace(playUrl);
+      } else if (/iPhone|iPad|iPod/i.test(ua)) {
+        window.location.replace('https://apps.apple.com/us/app/supermeapp/id6781971277');
+      }
+    })();
+  </script>
+  <meta charset="utf-8">
+  <title>SuperMeApp – Habit Tracker &amp; Routine Planner</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SuperMeApp - a science-backed habit tracker, daily planner, task manager, journal, and learning platform designed to help children, teens, parents, and adults build better habits and achieve their goals.">
+  <meta name="application-name" content="SuperMeApp">
+  <meta name="theme-color" content="#ffffff">
+
+  <style>
+    body.superme-loading {
+      overflow: hidden;
+    }
+
+    .superme-startup {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483647;
+      display: grid;
+      overflow: hidden;
+      place-items: center;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(139, 141, 203, .2), transparent 28%),
+        radial-gradient(circle at 82% 76%, rgba(246, 172, 114, .22), transparent 30%),
+        radial-gradient(circle at 72% 18%, rgba(225, 82, 124, .15), transparent 24%),
+        linear-gradient(145deg, #fff 10%, #fff7fa 52%, #f5f3ff 100%);
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      opacity: 1;
+      transition: opacity 380ms ease, visibility 380ms ease;
+    }
+
+    .superme-startup.is-hiding {
+      visibility: hidden;
+      opacity: 0;
+    }
+
+    .superme-startup__content {
+      position: relative;
+      display: flex;
+      width: min(86vw, 420px);
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .superme-startup__orbit {
+      position: relative;
+      display: grid;
+      width: 230px;
+      height: 152px;
+      place-items: center;
+    }
+
+    .superme-startup__orbit::before,
+    .superme-startup__orbit::after {
+      position: absolute;
+      border: 2px dashed rgba(144, 33, 77, .13);
+      border-radius: 50%;
+      content: '';
+      animation: superme-orbit 8s linear infinite;
+    }
+
+    .superme-startup__orbit::before {
+      inset: 7px 8px;
+    }
+
+    .superme-startup__orbit::after {
+      inset: 23px 27px;
+      border-color: rgba(139, 141, 203, .13);
+      animation-direction: reverse;
+      animation-duration: 6s;
+    }
+
+    .superme-startup__logo {
+      position: relative;
+      z-index: 2;
+      width: 188px;
+      height: auto;
+      filter: drop-shadow(0 12px 12px rgba(91, 43, 73, .16));
+      animation: superme-logo-bounce 1.8s ease-in-out infinite;
+    }
+
+    .superme-startup__sparkle {
+      position: absolute;
+      z-index: 3;
+      color: #e1527c;
+      font-size: 24px;
+      line-height: 1;
+      animation: superme-sparkle 1.7s ease-in-out infinite;
+    }
+
+    .superme-startup__sparkle--one {
+      top: 10px;
+      right: 17px;
+    }
+
+    .superme-startup__sparkle--two {
+      bottom: 14px;
+      left: 24px;
+      color: #f6ac72;
+      font-size: 18px;
+      animation-delay: .55s;
+    }
+
+    .superme-startup__sparkle--three {
+      top: 28px;
+      left: 7px;
+      color: #8b8dcb;
+      font-size: 14px;
+      animation-delay: 1.05s;
+    }
+
+    .superme-startup__title {
+      margin: 13px 0 4px;
+      color: #282527;
+      font-family: 'Fredoka', 'Nunito', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -.4px;
+    }
+
+    .superme-startup__message {
+      margin: 0;
+      color: #6b656a;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .superme-startup__dots {
+      display: flex;
+      margin-top: 18px;
+      gap: 8px;
+    }
+
+    .superme-startup__dots span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #8b8dcb;
+      animation: superme-dot 1.15s ease-in-out infinite;
+    }
+
+    .superme-startup__dots span:nth-child(2) {
+      background: #e1527c;
+      animation-delay: .14s;
+    }
+
+    .superme-startup__dots span:nth-child(3) {
+      background: #f6ac72;
+      animation-delay: .28s;
+    }
+
+    @keyframes superme-logo-bounce {
+      0%, 100% { transform: translateY(0) rotate(0); }
+      45% { transform: translateY(-9px) rotate(-1deg); }
+      55% { transform: translateY(-9px) rotate(1deg); }
+    }
+
+    @keyframes superme-orbit {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes superme-sparkle {
+      0%, 100% { opacity: .2; transform: scale(.55) rotate(0); }
+      50% { opacity: 1; transform: scale(1.15) rotate(22deg); }
+    }
+
+    @keyframes superme-dot {
+      0%, 60%, 100% { transform: translateY(0) scale(.85); opacity: .45; }
+      30% { transform: translateY(-7px) scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 480px) {
+      .superme-startup__orbit {
+        width: 196px;
+        height: 132px;
+      }
+
+      .superme-startup__logo {
+        width: 158px;
+      }
+
+      .superme-startup__title {
+        font-size: 21px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .superme-startup__orbit::before,
+      .superme-startup__orbit::after,
+      .superme-startup__logo,
+      .superme-startup__sparkle,
+      .superme-startup__dots span {
+        animation: none;
+      }
+    }
+  </style>
+
+  <!-- Static social metadata is intentionally kept in index.html because social crawlers do not run the Angular app. -->
+  <link rel="canonical" href="https://supermeapp.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SuperMeApp">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="SuperMeApp – Habit Tracker &amp; Routine Planner">
+  <meta property="og:description" content="SuperMeApp - a science-backed habit tracker, daily planner, task manager, journal, and learning platform designed to help children, teens, parents, and adults build better habits and achieve their goals.">
+  <meta property="og:url" content="https://supermeapp.com/">
+  <meta property="og:image" content="https://supermeapp.com/social/supermeapp-og-1200.jpg">
+  <meta property="og:image:secure_url" content="https://supermeapp.com/social/supermeapp-og-1200.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="SuperMeApp">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SuperMeApp – Habit Tracker &amp; Routine Planner">
+  <meta name="twitter:description" content="SuperMeApp - a science-backed habit tracker, daily planner, task manager, journal, and learning platform designed to help children, teens, parents, and adults build better habits and achieve their goals.">
+  <meta name="twitter:image" content="https://supermeapp.com/social/supermeapp-og-1200.jpg">
+  <meta name="twitter:image:alt" content="SuperMeApp">
+
+  <!-- Search engines prefer square favicon sizes that are multiples of 48px. -->
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png?v=20260828-2">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png?v=20260828-2">
+  <link rel="icon" type="image/png" sizes="144x144" href="/favicon-144x144.png?v=20260828-2">
+  <link rel="icon" type="image/png" sizes="192x192" href="/superme-logo-192.png?v=20260828-2">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=20260828-2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260828-2">
+  <link rel="manifest" href="/manifest.webmanifest?v=20260828-2">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicon-144x144.png?v=20260828-2">
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://supermeapp.com/#organization",
+          "name": "SuperMeApp",
+          "url": "https://supermeapp.com/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://supermeapp.com/superme-logo-512.png?v=20260828-2",
+            "width": 512,
+            "height": 512
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://supermeapp.com/#website",
+          "url": "https://supermeapp.com/",
+          "name": "SuperMeApp",
+          "publisher": { "@id": "https://supermeapp.com/#organization" }
+        }
+      ]
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:wght@200..1000&display=swap"
+    rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+    crossorigin="anonymous"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YZQGZLQ65M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-YZQGZLQ65M');
+  </script>
+</head>
+
+<body>
+  <app-root></app-root>
+</body>
+
+</html>

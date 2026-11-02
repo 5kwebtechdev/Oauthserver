@@ -1,0 +1,179 @@
+.child-safety-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  padding-top: clamp(72px, 7vw, 104px);
+
+  .safety-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    text-align: center;
+    color: #282527;
+    padding: 24px 16px;
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+      max-width: 454px;
+      margin: 0 auto;
+
+      .main-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 700;
+        font-size: 32px;
+        letter-spacing: -2px;
+        line-height: normal;
+        margin: 0;
+      }
+
+      .header-description {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 400;
+        font-size: 20px;
+        line-height: normal;
+        opacity: 0.7;
+        margin: 0;
+      }
+
+      @media (max-width: 768px) {
+        .main-title {
+          font-size: 20px;
+        }
+
+        .header-description {
+          font-size: 13px;
+        }
+
+        .safety-badges {
+          display: block!important;
+        }
+
+        .safety-badges .badge {
+          margin-bottom: 16px!important;
+        }
+      }
+
+      .safety-badges {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+
+        .badge {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          padding: 8px 12px;
+          background-color: transparent;
+          border-radius: 24px;
+          border: 1px solid #90214d;
+          box-shadow: 0px 0px 2px 1px rgba(107, 101, 106, 0.1);
+
+          .badge-icon {
+            width: 32px;
+            height: 32px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            svg {
+              width: 24px;
+              height: 24px;
+            }
+          }
+
+          .badge-label {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 500;
+            font-size: 13px;
+            line-height: 22.4px;
+            color: #282527;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+  }
+
+  .cards-section {
+    width: 100%;
+    .cards-grid {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px 32px;
+      align-items: start;
+
+      app-child-safety-card {
+        display: block;
+      }
+    }
+
+    // stack to single column on smaller screens
+    @media (max-width: 768px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+  }
+
+  .contact-safety-section {
+    color: #1e1818;
+    padding: 50px 20px;
+    text-align: center;
+
+    
+
+    h2 {
+      color: #282527;
+      text-align: center;
+      font-family: Nunito;
+      font-size: 25px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: normal;
+      letter-spacing: -1.25px;
+      margin-bottom: 20px;
+    }
+    p {
+      color: #282527;
+      text-align: center;
+      font-family: Nunito;
+      font-size: 20px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: normal;
+      opacity:1;
+      margin-bottom: 10px;
+
+      a {
+        color: #90214D; /* Adjust color as needed */
+        text-decoration: underline;
+
+        &:hover {
+          color: #CD3578; /* Adjust hover color as needed */
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      h2 {
+        font-size: 20px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+    }
+  }
+}

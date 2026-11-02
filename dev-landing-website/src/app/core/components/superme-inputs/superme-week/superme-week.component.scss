@@ -1,0 +1,134 @@
+.week-nav-wrapper {
+  display: flex;
+  width: 100%;
+    padding: 1rem 2rem;
+    gap: 8px;
+    border-radius: 10vw;
+    background: #FFF;
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+}
+
+.week-nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Use project's `superme-button` styles for prev/next; keep hover effect via deep selector */
+.week-nav-row ::ng-deep superme-button .button.prev,
+.week-nav-row ::ng-deep superme-button .button.next {
+  background: linear-gradient(271deg, #90214D 0.07%, #CD3578 99.93%);
+  border: 1px solid #4A0D25;
+  color: #ffffff;
+  box-shadow: 0 -2px 2px 0 #EA7CB5 inset, 0 0 1px 0.5px rgba(144, 33, 77, 0.20);
+  border-radius: 8px;
+}
+
+.week-nav-row ::ng-deep superme-button .button.prev:hover,
+.week-nav-row ::ng-deep superme-button .button.next:hover {
+  filter: brightness(1.1);
+}
+
+.week-nav-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  min-width: 0;
+}
+
+.week-dates {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.week-container {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  box-sizing: border-box;
+  align-items: center;
+  width: 100%;
+  gap: 6px;
+}
+
+.day-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 96px;
+  border-radius: 8px;
+  text-align: center;
+  color: #333;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+
+  .day {
+    font-size: 14px;
+    font-weight: 400;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .date {
+    font-size: 16px;
+    font-weight: 400;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  &.today {
+    border: 1px solid #90214D;
+  }
+
+  &.selected {
+    background-color: #90214D;
+    color: #fff;
+
+    .habit-stat { background: rgba(255,255,255,0.25); color: #fff; }
+    .task-stat  { background: rgba(255,255,255,0.25); color: #fff; }
+  }
+}
+
+.day-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+.day-stat {
+  font-family: Nunito;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.habit-stat {
+  background: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+}
+
+.task-stat {
+  background: rgba(240, 173, 78, 0.18);
+  color: #b36b00;
+}
+
+/* When parent/host wants larger typography (e.g., Habit page) add class "large" on the host */
+:host(.large) .day-card .day {
+  font-size: 25px;
+  font-weight: 700;
+}
+
+:host(.large) .day-card .date {
+  font-size: 25px;
+  font-weight: 700;
+}

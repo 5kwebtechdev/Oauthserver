@@ -1,0 +1,37 @@
+<div class="blogs-page">
+  <app-public-navbar></app-public-navbar>
+  <main class="blogs-content">
+    <header class="blogs-intro">
+      <h1>Blogs</h1>
+      <p>Big ideas. Short reads. Explore parenting blogs with practical tips and fresh perspectives to support your family, one small step at a time.</p>
+    </header>
+
+    <p class="blogs-status" *ngIf="loading">Loading articles…</p>
+    <p class="blogs-status" *ngIf="failed && !loading">Articles are temporarily unavailable. Please try again later.</p>
+    <p class="blogs-status" *ngIf="!failed && !loading && !result?.articles?.length">No articles are available yet.</p>
+
+    <section class="article-grid" aria-label="Articles" *ngIf="!loading && result?.articles?.length">
+      <article class="article-card" *ngFor="let article of result?.articles">
+        <a [routerLink]="articleUrl(article)" [state]="{ blogSource: pageUrl(page) }" [attr.aria-label]="article.title">
+          <img [src]="article.imageUrl || fallbackImage" [alt]="article.title" (error)="onImageError($event)" loading="lazy">
+          <div class="article-card-body">
+            <span class="article-category" *ngIf="article.category">{{ article.category }}</span>
+            <h2>{{ article.title }}</h2>
+            <p *ngIf="article.excerpt">{{ article.excerpt }}</p>
+            <div class="article-byline">
+              <span *ngIf="article.author">{{ article.author }}</span>
+              <time *ngIf="article.publishedDate" [attr.datetime]="article.publishedDate">{{ article.publishedDate | date:'mediumDate' }}</time>
+            </div>
+          </div>
+        </a>
+      </article>
+    </section>
+
+    <nav class="article-pagination" aria-label="Article pages" *ngIf="!failed && !loading && result && result.totalPages > 1">
+      <a *ngIf="page > 0" [href]="pageUrl(page - 1)" rel="prev">Previous</a>
+      <span>Page {{ page + 1 }} of {{ result.totalPages }}</span>
+      <a *ngIf="result.hasNext" [href]="pageUrl(page + 1)" rel="next">Next</a>
+    </nav>
+  </main>
+  <app-common-footer></app-common-footer>
+</div>

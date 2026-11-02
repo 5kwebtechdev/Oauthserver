@@ -1,0 +1,77 @@
+<div class="company-page-wrapper">
+  <!-- Navbar -->
+  <app-public-navbar></app-public-navbar>
+
+  <!-- Company Page Content -->
+  <div class="company-page">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="hero-content">
+        <h1>Where Screens Become Springboards for Real-World Skills</h1>
+        <p class="hero-description">
+          We help children transform passive scrolling into lifelong habits. Kids completes habits, manage time, earn rewards, and nurture digital pet, through a structured, parent-approved system
+        </p>
+      </div>
+      <div class="hero-image">
+        <img src="assets/Landing/Images-Transparent/Image-About-Hero.png" alt="Children standing together" />
+      </div>
+    </div>
+
+    <!-- What is Mindful Buddy Section -->
+    <div class="about-section">
+      <div class="about-text">
+        <div class="section-title">
+          <h2>What is Mindful Buddy?</h2>
+          <div class="title-underline"></div>
+        </div>
+        <p class="about-description">
+          An engaging platform where kids aged 11-18 build habits (study/fitness/chores), ace quizzes/puzzles, manage time, earns coins, and nurture evolving digital pets, all while parents set screen time limits and approve goals. We turn daily tasks into skill-building adventures, blending responsibility with rewards in one secure ecosystem.
+        </p>
+      </div>
+      <div class="about-image">
+        <img src="assets/Landing/Images-Thumbnails/Image-About-What.jpg" alt="Mindful Buddy illustration" />
+      </div>
+    </div>
+
+    <!-- Blogs Section -->
+    <div class="blogs-section">
+      <div class="section-header">
+        <h2>
+           Insights & Resources
+        </h2>
+        <p class="section-subtitle">
+          Explore our expert articles, tips, and guides on personal growth, habits, learning, and more.
+        </p>
+      </div>
+
+      <div class="blogs-grid">
+        <div class="blog-card" *ngFor="let post of blogPosts" (click)="onReadBlog(post)">
+          <div class="blog-image">
+            <img [src]="post.image" [alt]="post.title" />
+          </div>
+          <div class="blog-content">
+            <div class="blog-label">{{ post.label }}</div>
+            <h3 class="blog-title">{{ post.title }}</h3>
+            <p class="blog-description">{{ post.description }}</p>
+            <div class="blog-footer">
+              <div class="read-time">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm1-8h4v2h-6V7h2v5z" fill="#282527" opacity="0.7"/>
+                </svg>
+                <span>{{ post.readTime }}</span>
+              </div>
+              <span class="read-more">Read more</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="explore-button" (click)="onExploreBlogs()">
+        Explore all blogs
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

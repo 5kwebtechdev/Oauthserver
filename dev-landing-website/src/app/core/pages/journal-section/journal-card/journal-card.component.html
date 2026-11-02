@@ -1,0 +1,30 @@
+<article class="journal-card">
+  <div class="journal-top">
+    <div class="journal-date">{{ formatHeaderDate() }}</div>
+    <div class="journal-time">{{ formatTime() }}</div>
+  </div>
+
+  <div class="journal-body">
+    <div class="journal-main">
+      <div class="journal-mood">
+        <div class="emoji">
+          <img [src]="getEmoji()" [alt]="journal.mood || 'emotion'" (error)="onImgError($event)" />
+        </div>
+        <h3 class="mood-title">{{ journal.mood }}</h3>
+      </div>
+
+      <div class="journal-tags">
+        <ng-container *ngFor="let t of getFilteredTags(); let i = index">
+          <span class="tag">{{ t }}</span>
+          <span *ngIf="i < getFilteredTags().length - 1" class="tag-dot"></span>
+        </ng-container>
+      </div>
+
+      <p class="note">{{ journal.note }}</p>
+
+      <div class="thumbs">
+        <img *ngFor="let img of imageUrls" [src]="img" alt="thumb" (error)="onImgError($event)" />
+      </div>
+    </div>
+  </div>
+</article>

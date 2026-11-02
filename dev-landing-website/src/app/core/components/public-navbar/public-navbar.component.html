@@ -1,0 +1,20 @@
+<nav class="public-navbar">
+  <div class="navbar-container">
+    <!-- Logo -->
+    <div class="logo-section">
+      <app-logo appName="Mindful Buddy" tagline=""></app-logo>
+    </div>
+
+    <!-- Navigation Items -->
+    <div class="nav-section">
+      <div class="nav-items">
+        <a routerLink="/" class="nav-item">Home</a>
+        <a routerLink="/auth/parent-account" class="nav-item">Parents</a>
+      </div>
+
+      <button class="login-button" (click)="goToLogin()">
+        Log In/ Sign up
+      </button>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,21 @@
+<section class="ad-slider" *ngIf="ads.length">
+  <superme-button
+    class="slider-btn slider-btn--prev"
+    type="prev"
+    (clickEvent)="prev()"
+    [disabled]="!hasPrev">
+  </superme-button>
+
+  <div class="ad-slides">
+    <button class="ad-slide" type="button" *ngFor="let ad of visibleAds" (click)="onAdClick(ad)">
+      <img [src]="ad.image" [alt]="ad.title" />
+    </button>
+  </div>
+
+  <superme-button
+    class="slider-btn slider-btn--next"
+    type="next"
+    (clickEvent)="next()"
+    [disabled]="!hasNext">
+  </superme-button>
+</section>

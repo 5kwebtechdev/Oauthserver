@@ -1,0 +1,90 @@
+<app-public-navbar></app-public-navbar>
+
+<!-- Notes Input Component -->
+@if (showAddModal) {
+  <notes-input
+    [modalTitle]="modalTitle"
+    [modalContent]="modalContent"
+    [modalTag]="modalTag"
+    [availableTags]="availableTags"
+    [showTagInput]="showTagInput"
+    [newTagName]="newTagName"
+    [isEditing]="isEditing"
+    [isViewing]="isViewing"
+    [selectedNote]="selectedNote"
+    (modalTitleChange)="modalTitle = $event"
+    (modalContentChange)="modalContent = $event"
+    (modalTagChange)="modalTag = $event"
+    (showTagInputChange)="showTagInput = $event"
+    (newTagNameChange)="newTagName = $event"
+    (closeModalEvent)="closeModal()"
+    (saveNoteEvent)="saveModalNote()"
+    (deleteNoteEvent)="deleteNote()"
+    (shareNoteEvent)="shareNote()"
+    (editFromViewEvent)="editFromView()"
+    (selectTagEvent)="selectTag($event)"
+    (openTagInputEvent)="openTagInput()"
+    (addNewTagEvent)="addNewTag()"
+    (deleteTagEvent)="deleteTag($event)"
+    (editTagEvent)="editTag($event)">
+  </notes-input>
+}
+
+<!-- Notes Page Container -->
+@if (!showAddModal) {
+<main class="notes-page-container">
+  <div class="page-head">
+    <div class="notes-title">Quick Notes. Big Ideas</div>
+    <div class="notes-button" *ngIf="notes.length > 0">
+      <div class="add-notes">
+          <superme-button type="magenta" text="+ Add Notes" (clickEvent)="addNote()"></superme-button>
+        </div>
+    </div>
+  </div>
+  <div class="filters" *ngIf="notes.length > 0">
+    <div class="sort-dropdown-wrapper">
+      <button type="button" class="sort-trigger" (click)="toggleSortDropdown()">
+        {{ selectedSortLabel }}
+        <span class="chevron" [class.open]="sortDropdownOpen">▾</span>
+      </button>
+
+      @if (sortDropdownOpen) {
+        <div class="sort-menu">
+          @for (option of sortOptions; track option.value) {
+            <button type="button" class="sort-option" (click)="setSort(option.value)">
+              {{ option.label }}
+              @if (sortBy === option.value) {
+                <span class="check">✓</span>
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <section class="notes-grid">
+    <!-- Notes list using the new notes-card component -->
+    <notes-card 
+      *ngFor="let note of filteredNotes" 
+      [note]="note" 
+      (cardClick)="viewNote($event)">
+    </notes-card>
+
+    <!-- Empty state: shown when there are no notes (reusable) -->
+    @if (notes.length === 0) {
+      <div class="empty-state">
+    <superme-empty-state
+      [title]="'No Notes Yet?'"
+      [description]="'Write what\'s on your mind. Notes help you save ideas, feelings, and cool moments.'"
+      [image]="'/assets/Images-Transparent/Image-Notes-Blank.png'"
+      [actionButtonText]="'Write your first note'"
+      (primaryActionClick)="addNote()"
+    ></superme-empty-state>
+    </div>
+    }
+  </section>
+</main>
+}
+
+<app-footer></app-footer>

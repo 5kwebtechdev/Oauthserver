@@ -1,0 +1,223 @@
+.pet-gallery-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  padding: 48px;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+// Header Section
+.header-section {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.page-title {
+  font-family: 'Nunito';
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 56px;
+  letter-spacing: -2px;
+  color: #282527;
+  margin: 0 0 16px 0;
+}
+
+.page-subtitle {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 35px;
+  color: #282527;
+  opacity: 0.7;
+  margin: 0;
+  max-width: 726px;
+  margin: 0 auto;
+}
+
+// Pets Section
+.pets-section {
+  margin-bottom: 48px;
+}
+
+.pets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 293px);
+  gap: 32px;
+  justify-content: center;
+}
+
+.pet-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pet-thumbnail {
+  background: linear-gradient(135deg, rgba(182, 63, 186, 0.15) 0%, rgba(225, 29, 98, 0.1) 100%);
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pet-image {
+  width: 180px;
+  height: 314px;
+  object-fit: cover;
+  border-radius: 24px;
+}
+
+.pet-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pet-placeholder-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+  padding: 20px;
+  opacity: 0.6;
+}
+
+.pet-info {
+  text-align: center;
+  padding: 0 16px;
+}
+
+.pet-name {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 35px;
+  color: #282527;
+  margin: 0 0 4px 0;
+}
+
+.pet-description {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 23px;
+  color: #282527;
+  opacity: 0.7;
+  margin: 0;
+}
+
+// CTA Section
+.cta-section {
+  text-align: center;
+  margin: 88px 0 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.cta-title {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 44.8px;
+  letter-spacing: -1.6px;
+  color: #282527;
+  margin: 0;
+}
+
+.download-buttons {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: center;
+}
+
+.download-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border: 1px solid #4a0d25;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #B63FBA 0%, #E11D62 100%);
+  color: #ffffff;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #ea7cb5;
+    box-shadow: inset 0px -2px 2px 0px #ea7cb5;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(182, 63, 186, 0.4);
+  }
+
+  &.google-play {
+    background: linear-gradient(135deg, #B63FBA 0%, #E11D62 100%);
+  }
+
+  &.app-store {
+    background: linear-gradient(135deg, #B63FBA 0%, #E11D62 100%);
+  }
+}
+
+.store-icon {
+  width: 23px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.download-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  line-height: 1;
+}
+
+.download-label {
+  font-family: 'Nunito';
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 18.2px;
+  letter-spacing: -0.65px;
+  opacity: 0.7;
+}
+
+.download-platform {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+
+@media screen and (max-width: 1200px) {
+  .pets-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+}

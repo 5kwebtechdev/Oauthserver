@@ -1,0 +1,165 @@
+<footer
+  class="common-footer"
+  [class.common-footer--logged-in]="isLoggedInVariant"
+  [class.common-footer--logged-in-parent]="isParentVariant"
+>
+  <div class="common-footer__inner">
+    <div class="footer-directory">
+      <div class="footer-brand">
+        <a routerLink="/" class="footer-brand__logo-link" aria-label="SuperMeApp home">
+          <img [src]="logoSrc" alt="" width="512" height="512" />
+          <span>SuperMeApp</span>
+        </a>
+
+        <p class="footer-brand__tagline">
+          Building habits. Managing time<br />
+          Learning for life. Rewards that motivate
+        </p>
+
+        <div class="footer-brand__socials">
+          @for (social of socialLinks; track social.label) {
+            <a
+              [href]="social.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              [attr.aria-label]="social.label"
+            >
+              <img [src]="social.icon" alt="" [attr.width]="social.iconWidth" [attr.height]="social.iconHeight" />
+            </a>
+          }
+        </div>
+
+        <a routerLink="/contact-us" class="footer-newsletter">
+          <span>
+            <strong>Stay Updated</strong>
+            <small>Product news, growth tips and launch updates</small>
+          </span>
+          <span class="footer-newsletter__arrow" aria-hidden="true">&#8599;</span>
+        </a>
+
+        <div class="footer-downloads">
+          <div class="footer-downloads__buttons">
+            <a
+              [href]="googlePlayUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="download-button"
+            >
+              <img [src]="googlePlaySrc" alt="" class="download-button__google" width="876" height="980" />
+              <span><small>Get it on</small><strong>Google Play</strong></span>
+            </a>
+
+            <a
+              [href]="appleStoreUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="download-button"
+              aria-label="Download on the App Store"
+            >
+              <img [src]="appleStoreSrc" alt="" width="26" height="32" />
+              <span><small>Get it on</small><strong>App Store</strong></span>
+            </a>
+
+            <a [href]="desktopAppUrl" class="download-button">
+              <img [src]="desktopStoreSrc" alt="" width="28" height="25" />
+              <span><small>Get it on</small><strong>Desktop</strong></span>
+            </a>
+          </div>
+
+          <div class="footer-downloads__qr">
+            <img [src]="qrSrc" alt="QR code to download SuperMeApp" width="41" height="41" />
+            <span>Scan to download<br />SuperMeApp</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-section-stack">
+        <ng-container
+          *ngTemplateOutlet="footerSection; context: { $implicit: aboutSection }"
+        ></ng-container>
+        <ng-container
+          *ngTemplateOutlet="footerSection; context: { $implicit: supportSection }"
+        ></ng-container>
+      </div>
+
+      @for (section of footerSections; track section.title) {
+        <ng-container
+          *ngTemplateOutlet="footerSection; context: { $implicit: section }"
+        ></ng-container>
+      }
+    </div>
+
+    <section class="trust-strip" aria-label="SuperMeApp trust and safety">
+      <div class="trust-strip__intro">
+        <img [src]="trustedShieldSrc" alt="" loading="lazy" width="256" height="256" />
+        <div>
+          <h2>{{ trustTitle }}</h2>
+          <p>{{ trustSubtitle }}</p>
+        </div>
+      </div>
+
+      <div class="trust-strip__features">
+        @for (feature of trustFeatures; track feature.title; let last = $last) {
+          <div class="trust-feature">
+            <img [src]="feature.icon" alt="" width="48" height="48" />
+            <div>
+              <strong>{{ feature.title }}</strong>
+              @if (feature.subtitle) {
+                <span>{{ feature.subtitle }}</span>
+              }
+            </div>
+          </div>
+          @if (!last) {
+            <img [src]="featureDividerSrc" alt="" class="trust-feature__divider" width="72" height="1" />
+          }
+        }
+      </div>
+    </section>
+
+    <div class="footer-legal">
+      <nav aria-label="Legal links">
+        @for (item of legalLinks; track item.label; let last = $last) {
+          <a [routerLink]="item.href" [fragment]="item.fragment" [class.footer-link--active]="isActiveLink(item.href)">{{
+            item.label
+          }}</a>
+          @if (!last) {
+            <span aria-hidden="true">|</span>
+          }
+        }
+      </nav>
+      <p>Copyright © 2026 SuperMe App. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<button
+  type="button"
+  class="scroll-to-top"
+  [class.scroll-to-top--visible]="showScrollToTop"
+  [attr.aria-hidden]="!showScrollToTop"
+  [attr.tabindex]="showScrollToTop ? 0 : -1"
+  aria-label="Scroll to top"
+  (click)="scrollToTop()"
+>
+  <span aria-hidden="true"></span>
+</button>
+
+<ng-template #footerSection let-section>
+  <section class="footer-section">
+    <h2>{{ section.title }}</h2>
+    <nav [attr.aria-label]="section.title">
+      @for (item of section.items; track item.label) {
+        <a
+          [routerLink]="item.href.startsWith('http') ? null : item.href"
+          [attr.href]="item.href.startsWith('http') ? item.href : null"
+          [attr.target]="item.href.startsWith('http') ? '_blank' : null"
+          [attr.rel]="item.href.startsWith('http') ? 'noopener noreferrer' : null"
+          [state]="item.state || {}"
+          [class.footer-link--active]="!item.href.startsWith('http') && isActiveLink(item.href)"
+        >{{
+          item.label
+        }}</a>
+      }
+    </nav>
+  </section>
+</ng-template>

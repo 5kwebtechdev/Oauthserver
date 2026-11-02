@@ -1,0 +1,584 @@
+
+
+// Color Palette
+$neutral-grey: #282527;
+$neutral-grey-70: rgba(40, 37, 39, 0.7);
+$primary-blue: #505d83;
+$background-light: #f3f6fa;
+$white: #ffffff;
+$border-light: rgba(107, 101, 106, 0.1);
+$shadow-light: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+$shadow-medium: 0 6px 20px rgba(0, 0, 0, 0.08);
+
+// Typography
+$font-family: 'Nunito', sans-serif;
+$font-fredoka: 'Fredoka', sans-serif;
+
+// ========================================
+// Page Container
+// ========================================
+.tutor-profile-page {
+  background: $white;
+  min-height: 100vh;
+  padding-bottom: 96px; // Space for fixed footer
+  
+  * {
+    box-sizing: border-box;
+  }
+}
+
+// ========================================
+// Header Navigation
+// ========================================
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  max-width: 881.5px;
+  margin: 0 auto;
+  
+  .back-btn,
+  .heart-btn {
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+    
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  
+  .heart-btn.liked path {
+    fill: #e1527c;
+  }
+}
+
+// ========================================
+// Main Content
+// ========================================
+.profile-content {
+  max-width: 881.5px;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+// ========================================
+// Hero Section
+// ========================================
+.profile-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: center;
+  
+  .avatar-wrapper {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .avatar {
+    width: 168px;
+    height: 168px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    box-shadow: $shadow-light;
+    border: 8px solid $white;
+  }
+  
+  .tutor-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .tutor-name {
+    margin: 0;
+    font-family: $font-family;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: $neutral-grey;
+  }
+  
+  .tutor-achievement {
+    margin: 0;
+    font-family: $font-family;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: $neutral-grey-70;
+  }
+  
+  .stats-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .stat-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 8px 8px 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.02);
+    }
+    
+    img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+    
+    .stat-text {
+      font-family: $font-family;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: $neutral-grey-70;
+    }
+  }
+  
+  .stat-divider {
+    width: 1px;
+    height: 24px;
+    background: $neutral-grey-70;
+  }
+}
+
+// ========================================
+// What I Teach Section
+// ========================================
+.what-teach-section {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 544px;
+  margin: 0 auto;
+  width: 100%;
+  
+  .section-title {
+    margin: 0;
+    font-family: $font-family;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: $neutral-grey;
+    text-align: center;
+  }
+  
+  .teach-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-left: 64px;
+  }
+  
+  .teach-row {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+  }
+  
+  .teach-label {
+    font-family: $font-family;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: $neutral-grey-70;
+    min-width: 177px;
+    flex-shrink: 0;
+  }
+  
+  .teach-value {
+    margin: 0;
+    font-family: $font-family;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: $neutral-grey;
+    flex: 1;
+  }
+}
+
+// ========================================
+// Teacher Details Card
+// ========================================
+.details-card {
+  background: $background-light;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 544px;
+  margin: 0 auto;
+  width: 100%;
+  
+  .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    
+    &.detail-row-location {
+      align-items: flex-start;
+    }
+  }
+  
+  .detail-icon-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 209px;
+    flex-shrink: 0;
+    
+    img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      transform: scaleY(-1);
+    }
+  }
+  
+  .detail-label {
+    font-family: $font-family;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: $neutral-grey-70;
+  }
+  
+  .detail-value {
+    margin: 0;
+    font-family: $font-family;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: $neutral-grey;
+    flex: 1;
+  }
+  
+  .location-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  
+  .map-link {
+    font-family: $font-family;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: $primary-blue;
+    text-decoration: underline;
+    cursor: pointer;
+    text-align: left;
+    
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+// ========================================
+// FAQ Section
+// ========================================
+.faq-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 881.5px;
+  margin: 0 auto;
+  width: 100%;
+  
+  .faq-title {
+    font-family: $font-fredoka;
+    font-size: 25px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: $neutral-grey;
+    text-align: center;
+    margin: 0;
+  }
+  
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .faq-item {
+    background: $white;
+    border-radius: 4px;
+    box-shadow: $shadow-light;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      box-shadow: 0 0 4px 2px rgba(107, 101, 106, 0.15);
+    }
+  }
+  
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 10px;
+    gap: 16px;
+    
+    span {
+      font-family: $font-family;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: $neutral-grey;
+      flex: 1;
+      text-align: left;
+      max-width: 284px;
+    }
+  }
+  
+  .faq-chevron {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    transform: rotate(270deg);
+    transition: transform 0.3s ease;
+  }
+  
+  .faq-item.expanded .faq-chevron {
+    transform: rotate(90deg);
+  }
+  
+  .faq-answer {
+    padding: 0 10px 16px;
+    animation: slideDown 0.3s ease;
+    
+    p {
+      margin: 0;
+      font-family: $font-family;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: $neutral-grey-70;
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 200px;
+  }
+}
+
+// ========================================
+// Booking Section
+// ========================================
+.booking-section {
+  background: $white;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 48px;
+  max-width: 544px;
+  margin: 0 auto;
+  width: 100%;
+  
+  .price-info {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    width: 180px;
+  }
+  
+  .price-amount {
+    font-family: $font-family;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: $neutral-grey;
+  }
+  
+  .price-period {
+    font-family: $font-family;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: $neutral-grey-70;
+  }
+
+}
+
+.contact-now {
+  width: 100%;
+}
+  
+.contact-popup {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35);
+  z-index: 1200;
+
+  .contact-popup-inner {
+    width: min(560px, 92%);
+    background: $white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: $shadow-medium;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .contact-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h3 {
+      margin: 0;
+      font-family: $font-family;
+      font-size: 22px;
+      font-weight: 700;
+      color: $neutral-grey;
+    }
+
+    .popup-close {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  }
+
+  .contact-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .contact-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid $border-light;
+
+      &.selected {
+        border-color: $primary-blue;
+        background: rgba(80, 93, 131, 0.06);
+      }
+
+      input[type="radio"] {
+        width: 20px;
+        height: 20px;
+      }
+
+      span {
+        font-family: $font-family;
+        font-size: 18px;
+        font-weight: 600;
+        color: $neutral-grey;
+      }
+    }
+  }
+}
+@media (max-width: 768px) {
+  .what-teach-section .teach-grid {
+    padding-left: 16px;
+  }
+  
+  .what-teach-section .teach-label {
+    min-width: 120px;
+  }
+  
+  .details-card .detail-icon-label {
+    min-width: 160px;
+  }
+  
+  .faq-section .faq-question span {
+    max-width: none;
+  }
+  
+  .booking-footer {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-hero .tutor-name {
+    font-size: 28px;
+  }
+  
+  .stats-badges {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .what-teach-section .teach-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .what-teach-section .teach-label {
+    min-width: auto;
+  }
+  
+  .details-card .detail-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .details-card .detail-icon-label {
+    min-width: auto;
+  }
+  
+  .booking-footer {
+    flex-direction: column;
+    gap: 12px;
+    
+    .price-info {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

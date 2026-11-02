@@ -1,0 +1,51 @@
+.app-logo {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.app-logo__icon {
+    width: 64px;
+    height: auto;
+    flex-shrink: 0;
+    aspect-ratio: 1 / 1;
+    /* Ensure visibility on very small viewports */
+    min-width: 36px;
+    min-height: 36px;
+}
+
+.app-logo__text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.app-logo__title {
+    color: #282527;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 25px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.app-logo__subtitle {
+    margin: 0;
+    font-family: 'Nunito', sans-serif;
+    font-size: .9vw;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 140%;
+    background: linear-gradient(90deg, #8B8DCB 0.48%, #89B3B6 30%, #E1527C 60%, #F6AC72 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+@media (max-width: 420px) {
+    .app-logo {
+        gap: 4px;
+    }
+}

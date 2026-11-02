@@ -1,4 +1,0 @@
-[submodule "landing-page-source"]
-	path = landing-page-source
-	url = https://github.com/SuperMeApp/SuperMeWebsiteFE.git
-	branch = dev_landing_page

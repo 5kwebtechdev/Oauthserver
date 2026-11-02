@@ -1,0 +1,129 @@
+<div class="calendar-main-container">
+  <!-- calendar-component -->
+  <div class="calendar-title">One Day at a Time!</div>
+  <div class="calendar-main">
+    <div class="calendar-details">
+      <div class="calendar-content">
+      <superme-calendar [useArrowNavigation]="true" [dateActivities]="dateActivities" [useCalendarMainStyle]="true"
+        [startDate]="selectedDate" [moodTransitions]="moodTransitions"
+        (dateSelected)="onDateSelected($event)" (moodToggled)="onMoodToggled($event)"
+        (monthChanged)="onMonthChanged($event)">
+      </superme-calendar>
+      </div>
+
+      <div class="calendar-component" *ngIf="!moodOn">
+        <div class="calendar-component__timetable">
+          <div class="item">
+            <div class="item__dot">
+              <svg xmlns="http://www.w3.org/2000/svg" width="9" height="8" viewBox="0 0 9 8" fill="none">
+                <circle cx="4.5" cy="4" r="4" fill="#89B3B6" />
+              </svg>
+            </div>
+            <div class="item__text">Timetable</div>
+          </div>
+        </div>
+
+        <div class="calendar-component__tasks">
+          <div class="item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 8 8" fill="none">
+              <circle cx="4" cy="4" r="4" fill="#F6AC72" />
+            </svg>
+            <div class="item__text">Tasks</div>
+          </div>
+        </div>
+
+        <div class="calendar-component__habits">
+          <div class="item">
+            <div class="item__dot">
+              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 8 8" fill="none">
+                <circle cx="4" cy="4" r="4" fill="#8B8DCB" />
+              </svg>
+            </div>
+            <div class="item__text">Habits</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <div class="habit-month-container">
+
+      <!-- MOOD ON: show mood detail in right panel -->
+      <ng-container *ngIf="moodOn">
+        <div class="mood-right-panel" *ngIf="selectedMood; else noMoodSelected">
+          <div class="emoji-status">
+            <img *ngIf="selectedMood.fromMood" class="mood-emoji-icon" [src]="getMoodEmojiPath(selectedMood.fromMood)" [alt]="selectedMood.fromMood" />
+            <img *ngIf="selectedMood.toMood" class="mood-emoji-icon" [src]="getMoodEmojiPath(selectedMood.toMood)" [alt]="selectedMood.toMood" />
+          </div>
+          <div class="status-header">
+            <h2>{{ selectedMood.title }}</h2>
+          </div>
+          <div class="mood-staus-message">
+            <div class="mood-meesage">
+              <div class="mood-message-item" *ngIf="selectedMood.firstLine">
+                <div class="mood-left">
+                  <span class="dot"></span>
+                  <span class="connector" *ngIf="selectedMood.secondLine"></span>
+                </div>
+                <div class="mood-content">{{ selectedMood.firstLine }}</div>
+              </div>
+              <div class="mood-message-item" *ngIf="selectedMood.secondLine">
+                <div class="mood-left">
+                  <span class="dot"></span>
+                </div>
+                <div class="mood-content">{{ selectedMood.secondLine }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noMoodSelected>
+          <div class="mood-empty-state">
+            <p>Select a date to see the mood for that day.</p>
+          </div>
+        </ng-template>
+      </ng-container>
+
+      <!-- MOOD OFF: show activities -->
+      <ng-container *ngIf="!moodOn">
+        <div *ngIf="!allActivitiesForDate?.length" class="empty-calendar">
+          <div class="empty-calendar-message">
+            <div class="empty-calendar-image">
+              <img src="assets/app-assets/empty-calendar.png" alt="Empty calendar" width="208" height="121"
+                style="width:208px;height:121px;aspect-ratio:208/121;object-fit:contain;" />
+            </div>
+            <div class="empty-calendar-text">
+              <h2>Your Calendar's Looking Clear Today!</h2>
+              <p>No tasks or habits set for today yet. Get started by adding some tasks or habits to make the most
+                of your day!</p>
+            </div>
+          </div>
+          <superme-button type="magenta" text="+ Add new" large style="display:block; width:100%"
+            (click)="openHabitInput()"></superme-button>
+        </div>
+
+        <div *ngIf="allActivitiesForDate?.length" class="selected-date-cards">
+          <ng-container *ngFor="let item of allActivitiesForDate">
+            <div *ngIf="item.type === 'timetable'" class="habit-wrapper timetable-card">
+              <div class="card-main">
+                <div class="flex-column d-flex gap-1">
+                  <div class="card-title">{{ item.title }}</div>
+                  <div class="card-time">{{ getFormattedTime(item.startTimeStamp) }}</div>
+                </div>
+                <div class="card-pill pill-muted">{{ item.tag || 'Event' }}</div>
+              </div>
+            </div>
+            <activity-card *ngIf="item.type === 'habits'"
+              [activity]="item" [startTime]="item.startTimeStamp" [endTime]="item.endTimeStamp"
+              [inProgress]="isItemInProgress(item)" mode="single">
+            </activity-card>
+            <activity-card *ngIf="item.type === 'tasks'"
+              [activity]="item" [variant]="'task'" [startTime]="item.startTimeStamp" [endTime]="item.endTimeStamp"
+              [inProgress]="isItemInProgress(item)" mode="single">
+            </activity-card>
+          </ng-container>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+</div>

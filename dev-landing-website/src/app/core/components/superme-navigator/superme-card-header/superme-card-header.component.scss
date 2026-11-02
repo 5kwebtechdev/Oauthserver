@@ -1,0 +1,107 @@
+
+.superme-card-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  width: 100%;
+  margin: 20px auto 0 auto;
+}
+
+.superme-card-header__left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  flex: 1 0 0;
+  text-align: center;
+}
+
+.superme-card-header__title {
+  color: #282527;
+  font-family: Fredoka;
+  font-size: 25px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  margin: 0;
+  /* 35px */
+}
+
+.superme-card-header__tagline {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Alignment modifiers */
+.superme-card-header.align-left {
+  justify-content: flex;
+  justify-content: space-between;
+}
+
+.superme-card-header.align-left .superme-card-header__left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.superme-card-header.align-left .superme-card-header__tagline {
+  justify-content: flex-start;
+}
+
+.superme-card-header.align-right {
+  justify-content: flex-end;
+}
+
+.superme-card-header.align-right .superme-card-header__left {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.superme-card-header.align-right .superme-card-header__tagline {
+  justify-content: flex-end;
+}
+
+.superme-card-header__tagline .tag {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  opacity: 0.7;
+  /* 28px */
+}
+
+// .superme-card-header__tagline .dot {
+//   width: 4px;
+//   height: 4px;
+//   aspect-ratio: 1/1;
+//   fill: #282527;
+// }
+
+.superme-card-header__actions {
+  display: flex;
+  gap: 8px;
+  /* space between projected actions */
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.superme-card-header__right {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding-right: 8px;
+  flex: 0 0 auto;
+  margin-top: -20px;
+
+}
+
+.superme-card-header__actions>* {
+  //   margin-left: 4px;
+  flex: 0 0 auto;
+}

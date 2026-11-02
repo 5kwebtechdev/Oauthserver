@@ -1,0 +1,60 @@
+<app-public-navbar></app-public-navbar>
+
+<main class="academy-home-content">
+  <section class="academy-hero">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <h1 class="hero-title">Welcome to Your Life Skills Quest!</h1>
+          <p class="hero-sub">Real lessons · Life ready · Future strong</p>
+      </div>
+
+      <div class="hero-right">
+        <superme-pet-bubble
+          class="hero-pet-bubble"
+          [message]="'These lessons are like superpowers for your real world !'"
+          [petType]="'panda'"
+          [petMood]="'happy'"
+          [petImageHeight]="96"
+          [bubbleFirst]="true"
+          aria-label="Panda speech"
+          aria-hidden="false">
+        </superme-pet-bubble>
+      </div>
+    </div>
+  </section>
+    <app-ad-slider screen="EDUHUB"></app-ad-slider>
+    <!--Title Section-->
+    <section class="academy-title-section">
+      <div class="title-inner">
+        <h2 class="section-title">Where do you want to grow today?</h2>
+      </div>
+    </section>
+    <!-- Content section-->
+    <section class="academy-content-section">
+      <div class="content-inner">
+        <div class="academy-cards">
+          <div class="cards-grid">
+            <div class="card card-yellow" (click)="openCategory('MANAGING_MONEY')">
+              <img src="/assets/Images-Transparent/Image-Academy-Cat1.png" alt="Managing Money" />
+              <div class="card-title">Managing Money</div>
+            </div>
+            <div class="card card-lilac" (click)="openCategory('COMMUNICATION')">
+              <img src="/assets/Images-Transparent/Image-Academy-Cat2.png" alt="Communication" />
+              <div class="card-title">Communication</div>
+            </div>
+            <div class="card card-rose" (click)="openCategory('MEDITATION')">
+              <img src="/assets/Images-Transparent/Image-Academy-Cat3.png" alt="Meditation" />
+              <div class="card-title">Meditation</div>
+            </div>
+            <div class="card card-green" (click)="openCategory('CULTURAL_VALUES')">
+              <img src="/assets/Images-Transparent/Image-Academy-Cat4.png" alt="Cultural Values" />
+              <div class="card-title">Cultural Values</div>
+            </div>
+          </div>
+          <div class="cards-caption">Tap a card to learn real-life stuff!</div>
+        </div>
+      </div>
+    </section>
+</main>
+
+<app-footer></app-footer>

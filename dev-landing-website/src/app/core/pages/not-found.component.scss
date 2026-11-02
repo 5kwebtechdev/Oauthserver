@@ -1,0 +1,77 @@
+:host { display: block; }
+
+.not-found-page {
+  min-height: 100vh;
+  background: #fff;
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+}
+
+.not-found-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 160px 24px 56px;
+  text-align: center;
+}
+
+.not-found-illustration {
+  position: relative;
+  width: 440px;
+  height: 280px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.not-found-illustration img {
+  position: absolute;
+  left: -13.75%;
+  top: -14.37%;
+  width: 122.1%;
+  height: 128%;
+  max-width: none;
+  object-fit: contain;
+}
+
+.not-found-copy { margin-top: 24px; }
+.not-found-copy h1 {
+  margin: 0;
+  color: #432477;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.not-found-copy p {
+  margin: 8px 0 0;
+  color: #6b656a;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.home-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 12px;
+  border: 1px solid #432477;
+  border-radius: 16px;
+  color: #432477;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+.home-link img { width: 16px; height: 16px; }
+.home-link:hover, .home-link:focus-visible { background: #f4effa; }
+
+@media (max-width: 600px) {
+  .not-found-main { padding: 116px 20px 48px; }
+  .not-found-illustration { width: min(100%, 360px); height: auto; aspect-ratio: 11 / 7; }
+  .not-found-copy h1 { font-size: clamp(29px, 8vw, 38px); }
+  .not-found-copy p { font-size: 16px; }
+  .desktop-break { display: none; }
+}

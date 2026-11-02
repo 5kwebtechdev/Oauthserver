@@ -1,0 +1,66 @@
+<div class="w-full min-h-screen bg-white">
+  <!-- Fixed Navbar -->
+  <app-public-navbar></app-public-navbar>
+
+  <aside *ngIf="showPandaWelcome" class="panda-welcome"
+    [class.panda-welcome--leaving]="pandaWelcomeLeaving"
+    role="status" aria-live="polite" aria-label="Welcome to SuperMeApp">
+    <div class="panda-welcome__sparkles" aria-hidden="true"><span>✦</span><span>★</span><span>✦</span></div>
+    <div class="panda-welcome__bubble">
+      <strong>Hi, SuperStar!</strong>
+      <span>Welcome to your SuperMe adventure!</span>
+    </div>
+    <div class="panda-welcome__mascot" aria-hidden="true">
+      <span class="panda-welcome__halo"></span>
+      <img src="assets/Images-Pet/Panda-Age1-Happy.png" alt="" />
+    </div>
+    <button type="button" class="panda-welcome__close" (click)="dismissPandaWelcome()" aria-label="Close panda welcome">×</button>
+  </aside>
+
+  <!-- Referral Toast -->
+  <div *ngIf="showReferralToast"
+    class="fixed bottom-[24px] left-1/2 -translate-x-1/2 z-[9999] px-[24px] py-[14px] rounded-[12px] text-center font-['Nunito',sans-serif] font-bold text-white shadow-lg"
+    style="background: linear-gradient(90deg, #E1527C 0%, #F6AC72 100%); animation: toastSlideUp 0.4s ease-out, toastFadeOut 0.5s ease-in 5.5s forwards;">
+    <span class="text-[14px] min-[768px]:text-[16px] whitespace-nowrap">
+      🎉 You've been invited! Download the app and get <span class="underline">100 bonus coins</span> automatically on signup!
+    </span>
+  </div>
+
+  <!-- Hero Section -->
+  <app-hero-section></app-hero-section>
+
+  <!-- Pillars Section -->
+  <div class="pt-[32px] min-[900px]:pt-[48px]">
+    <app-pillars-section></app-pillars-section>
+  </div>
+
+  <!-- One App Section -->
+  <div class="pt-[32px] min-[1024px]:pt-[48px]">
+    <app-one-app-section></app-one-app-section>
+  </div>
+
+  <!-- Growth Section -->
+  <div class="pt-[32px] min-[1024px]:pt-[48px]">
+    <app-growth-section></app-growth-section>
+  </div>
+
+  <!-- Cross-platform access -->
+  <div class="pt-[32px] min-[1024px]:pt-[48px]">
+    <app-access-anywhere-section></app-access-anywhere-section>
+  </div>
+
+  <!-- Pets Section -->
+  <div class="pt-[32px] min-[1024px]:pt-[48px]">
+    <app-pets-section></app-pets-section>
+  </div>
+
+  <!-- Testimonials Section -->
+  <div class="pt-[32px] min-[1024px]:pt-[48px]">
+    <app-testimonials-section></app-testimonials-section>
+  </div>
+
+  <!-- Footer (with CTA section) -->
+  <div class="pt-[24px] min-[900px]:pt-[48px]">
+    <app-landing-footer></app-landing-footer>
+  </div>
+</div>

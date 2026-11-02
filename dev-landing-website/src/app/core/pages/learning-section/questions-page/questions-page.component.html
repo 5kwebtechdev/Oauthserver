@@ -1,0 +1,161 @@
+<div class="qp-shell">
+  <!-- Loading -->
+  <div class="qp-loading" *ngIf="!challenge || questions.length === 0">
+    <div class="spinner"></div>
+    <p>Loading quiz...</p>
+  </div>
+
+  <!-- Quiz card -->
+  <div class="qp-card" *ngIf="challenge && questions.length > 0">
+
+    <!-- Header -->
+    <div class="qp-header">
+      <button class="qp-close" (click)="onCancel()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#282527" stroke-width="2.5">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+      <h1 class="qp-title">{{ challenge.name }}</h1>
+      <div class="qp-timer">
+        <svg width="16" height="18" viewBox="0 0 18 21" fill="none">
+          <path d="M6 2V0H12V2H6ZM8 13H10V7H8V13ZM9 21C7.76667 21 6.60417 20.7625 5.5125 20.2875C4.42083 19.8125 3.46667 19.1667 2.65 18.35C1.83333 17.5333 1.1875 16.5792 0.7125 15.4875C0.2375 14.3958 0 13.2333 0 12C0 10.7667 0.2375 9.60417 0.7125 8.5125C1.1875 7.42083 1.83333 6.46667 2.65 5.65C3.46667 4.83333 4.42083 4.1875 5.5125 3.7125C6.60417 3.2375 7.76667 3 9 3C10.0333 3 11.025 3.16667 11.975 3.5C12.925 3.83333 13.8167 4.31667 14.65 4.95L16.05 3.55L17.45 4.95L16.05 6.35C16.6833 7.18333 17.1667 8.075 17.5 9.025C17.8333 9.975 18 10.9667 18 12C18 13.2333 17.7625 14.3958 17.2875 15.4875C16.8125 16.5792 16.1667 17.5333 15.35 18.35C14.5333 19.1667 13.5792 19.8125 12.4875 20.2875C11.3958 20.7625 10.2333 21 9 21Z" fill="#282527"/>
+        </svg>
+        <span>{{ timerDisplay }}</span>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="qp-progress">
+      <span class="qp-progress-label">Question {{ (currentIndex + 1).toString().padStart(2,'0') }} of {{ totalQuestions.toString().padStart(2,'0') }}</span>
+      <div class="qp-progress-bar">
+        <div class="qp-progress-fill" [style.width.%]="progressPercent"></div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="qp-body" *ngIf="currentQuestion">
+
+      <!-- Image -->
+      <div class="qp-image" *ngIf="currentQuestion.image">
+        <img [src]="currentQuestion.image" [alt]="currentQuestion.text" />
+      </div>
+
+      <!-- Question text -->
+      <p class="qp-question-text">{{ currentQuestion.text }}</p>
+
+      <!-- Hint text (when shown) -->
+      <div class="qp-hint-display" *ngIf="showHint && currentHintText">
+        <svg width="14" height="18" viewBox="0 0 14 19" fill="none">
+          <path d="M6.75 18.4423C6.34867 18.4423 5.99383 18.3365 5.6855 18.125C5.37717 17.9133 5.1615 17.6358 5.0385 17.2923H4.75C4.341 17.2923 3.98875 17.1445 3.69325 16.849C3.39775 16.5535 3.25 16.2013 3.25 15.7923V12.5115C2.241 11.9 1.44708 11.0802 0.86825 10.052C0.289417 9.02367 0 7.923 0 6.75C0 4.868 0.6545 3.2725 1.9635 1.9635C3.2725 0.6545 4.868 0 6.75 0C8.632 0 10.2275 0.6545 11.5365 1.9635C12.8455 3.2725 13.5 4.868 13.5 6.75C13.5 7.9435 13.2106 9.04925 12.6318 10.0673C12.0529 11.0853 11.259 11.9 10.25 12.5115V15.7923C10.25 16.2013 10.1023 16.5535 9.80675 16.849C9.51125 17.1445 9.159 17.2923 8.75 17.2923H8.4615C8.3385 17.6358 8.12283 17.9133 7.8145 18.125C7.50617 18.3365 7.15133 18.4423 6.75 18.4423Z" fill="#4CAF50"/>
+        </svg>
+        <span>{{ currentHintText }}</span>
+      </div>
+
+      <!-- Options label -->
+      <p class="qp-options-label">Tap the correct answer</p>
+
+      <!-- MCQ options grid -->
+      <div class="qp-options-grid" *ngIf="currentQuestion.type === 'mcq'">
+        <button
+          *ngFor="let opt of currentQuestion.options"
+          class="qp-option"
+          [class.qp-option--selected]="selectedOption === opt && !answerChecked"
+          [class.qp-option--correct]="answerChecked && opt === currentQuestion.correctAnswer"
+          [class.qp-option--incorrect]="answerChecked && selectedOption === opt && opt !== currentQuestion.correctAnswer"
+          [disabled]="answerChecked"
+          (click)="selectAnswer(opt)">
+          {{ opt }}
+        </button>
+      </div>
+
+      <!-- True/False options -->
+      <div class="qp-options-grid" *ngIf="currentQuestion.type === 'true-false'">
+        <button class="qp-option"
+          [class.qp-option--selected]="selectedOption === 'True' && !answerChecked"
+          [class.qp-option--correct]="answerChecked && 'True' === currentQuestion.correctAnswer"
+          [class.qp-option--incorrect]="answerChecked && selectedOption === 'True' && 'True' !== currentQuestion.correctAnswer"
+          [disabled]="answerChecked" (click)="selectAnswer('True')">True</button>
+        <button class="qp-option"
+          [class.qp-option--selected]="selectedOption === 'False' && !answerChecked"
+          [class.qp-option--correct]="answerChecked && 'False' === currentQuestion.correctAnswer"
+          [class.qp-option--incorrect]="answerChecked && selectedOption === 'False' && 'False' !== currentQuestion.correctAnswer"
+          [disabled]="answerChecked" (click)="selectAnswer('False')">False</button>
+      </div>
+
+      <!-- Visual options -->
+      <div class="qp-options-grid" *ngIf="currentQuestion.type === 'visual'">
+        <div *ngFor="let opt of currentQuestion.options; let i = index"
+          class="qp-option qp-option--visual"
+          [class.qp-option--selected]="selectedOption === opt && !answerChecked"
+          [class.qp-option--correct]="answerChecked && opt === currentQuestion.correctAnswer"
+          [class.qp-option--incorrect]="answerChecked && selectedOption === opt && opt !== currentQuestion.correctAnswer"
+          (click)="!answerChecked && selectAnswer(opt)">
+          <div class="qp-visual-img" [style.background-image]="'url(' + currentQuestion.optionImages![i] + ')'"></div>
+          <span>{{ opt }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="qp-divider"></div>
+
+    <!-- Bottom bar: Hint + Check/Next -->
+    <div class="qp-bottom"
+      [class.qp-bottom--result]="answerChecked"
+      [class.correct-result]="answerChecked && isCorrect"
+      [class.wrong-result]="answerChecked && !isCorrect">
+
+      <!-- Result feedback (visible after check) -->
+      <div class="qp-feedback" *ngIf="answerChecked">
+        <p class="qp-feedback-text">{{ isCorrect ? (currentQuestion!.positiveFeedback || 'Correct! Great job!') : (currentQuestion!.negativeFeedback || 'Not quite — try the next one!') }}</p>
+        <button class="qp-next-btn" [class.qp-next-btn--wrong]="!isCorrect" (click)="onNext()">
+          {{ isLast ? 'See Result' : (isCorrect ? 'Next Question' : 'Got it, next question') }}
+        </button>
+      </div>
+
+      <!-- Hint + Check (visible before check) -->
+      <ng-container *ngIf="!answerChecked">
+        <div class="qp-hint-bar">
+          <button class="qp-hint-btn"
+            [disabled]="isHintLoading || hintsUsed >= maxHints"
+            (click)="toggleHint()">
+            {{ isHintLoading ? '...' : 'Hint' }}
+            <img src="assets/Icons-Neutral/Icons-Coins.png" alt="coin" class="qp-coin" />
+            <span>{{ coinsPerHint }}</span>
+          </button>
+          <span class="qp-hint-remaining">{{ maxHints - hintsUsed }}/{{ maxHints }} remaining</span>
+        </div>
+        <button class="qp-check-btn" [disabled]="!selectedOption" (click)="onCheck()">
+          Check
+        </button>
+      </ng-container>
+
+    </div>
+  </div>
+
+  <!-- Leave popup -->
+  <div class="qp-overlay" *ngIf="showLeavePopup">
+    <div class="qp-popup">
+      <img src="assets/Images-Transparent/Image-Leaving-Learning.png" alt="Leaving" />
+      <h3>You're Making Great Progress!</h3>
+      <p>If you leave now, you'll need to restart from the beginning.</p>
+      <div class="qp-popup-actions">
+        <superme-button type="green" text="Keep going" (clickEvent)="cancelLeave()"></superme-button>
+        <superme-button type="lavendar-transparent" text="Exit" (clickEvent)="confirmLeave()"></superme-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Time up popup -->
+  <div class="qp-overlay" *ngIf="showTimeUpPopup">
+    <div class="qp-popup">
+      <img src="assets/Images-Transparent/Image-Content-TimeExhaust.png" alt="Time's Up" />
+      <h3>Time's Up!</h3>
+      <p>The timer ran out, but don't worry! You can try again.</p>
+      <div class="qp-popup-actions">
+        <superme-button type="green" text="Try Again" (clickEvent)="restartQuiz()"></superme-button>
+        <superme-button type="lavendar-transparent" text="Quit" (clickEvent)="confirmLeave()"></superme-button>
+      </div>
+    </div>
+  </div>
+</div>

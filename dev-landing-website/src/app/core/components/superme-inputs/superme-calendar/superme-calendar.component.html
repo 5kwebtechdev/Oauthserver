@@ -1,0 +1,75 @@
+<div class="superme-calendar" [class.calendar-main-style]="useCalendarMainStyle">
+
+  <!-- HEADER -->
+  <div class="calendar-header">
+
+    @if (useArrowNavigation) {
+      <div class="month-navigation">
+        <button class="nav-arrow" aria-label="Previous month" (click)="previousMonth()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M11.9392 17.0607C11.3535 16.4749 11.3535 15.5251 11.9392 14.9393L21.4852 5.3934C22.071 4.80761 23.0207 4.80761 23.6065 5.3934C24.1923 5.97919 24.1923 6.92893 23.6065 7.51472L15.1212 16L23.6065 24.4853C24.1923 25.0711 24.1923 26.0208 23.6065 26.6066C23.0207 27.1924 22.071 27.1924 21.4852 26.6066L11.9392 17.0607ZM13 16V17.5H12.9999V16V14.5H13V16Z" fill="#282527"/>
+          </svg>
+        </button>
+        <span class="month-text">{{ currentMonth | date: 'MMMM yyyy' }}</span>
+        <button class="nav-arrow" aria-label="Next month" (click)="nextMonth()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="23" viewBox="0 0 13 23" fill="none">
+            <path d="M12.1067 12.1066C12.6924 11.5208 12.6924 10.571 12.1067 9.98524L2.56072 0.439297C1.97493 -0.14649 1.02518 -0.14649 0.439397 0.439297C-0.14639 1.02508 -0.14639 1.97483 0.439397 2.56062L8.92468 11.0459L0.439397 19.5312C-0.14639 20.117 -0.14639 21.0667 0.439397 21.6525C1.02518 22.2383 1.97493 22.2383 2.56072 21.6525L12.1067 12.1066ZM11.0459 11.0459V12.5459H11.046V11.0459V9.5459H11.0459V11.0459Z" fill="#282527"/>
+          </svg>
+        </button>
+      </div>
+    }
+
+    @if (showMoodToggle) {
+      <div class="toggle-mood-buttons">
+        <label class="mood-label">MOOD</label>
+        <button class="mood-toggle" (click)="onMoodChange(!moodOn)">
+          <span [class.on]="moodOn"></span>
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- GRID -->
+  <div class="calendar-grid" [class.mood-on]="moodOn && useCalendarMainStyle">
+
+    @for (d of ['Sun','Mon','Tue','Wed','Thur','Fri','Sat']; track d) {
+      <div class="day">{{ d }}</div>
+    }
+
+    @for (date of getVisibleMonthDays(); track trackByDate($index, date)) {
+      <button
+        class="calendar-cell"
+        [class.currentMonth]="isDateinCurrentMonth(date)"
+        [class.selected]="allowDateSelection && isSameDay(date, startDate)"
+        [class.today]="isToday(date)"
+        (click)="handleDateClick(date)"
+      >
+
+        <!-- DATE -->
+        <span class="date-number">{{ date.getDate() }}</span>
+
+        <!-- ACTIVITY DOTS -->
+        @if (!moodOn && showMoodToggle && hasActivities(date)) {
+          <div class="activity-dots">
+            @if (getActivitiesForDate(date).habit) {
+              <span class="dot habit"></span>
+            }
+            @if (getActivitiesForDate(date).task) {
+              <span class="dot task"></span>
+            }
+            @if (getActivitiesForDate(date).timetable) {
+              <span class="dot timetable"></span>
+            }
+          </div>
+        }
+
+        <!-- MOOD EMOJI -->
+        @if (moodOn && showMoodToggle && hasMoodData(date)) {
+          <img class="mood-emoji" [src]="getMoodEmoji(date)" alt="mood" />
+        }
+
+      </button>
+    }
+
+  </div>
+</div>

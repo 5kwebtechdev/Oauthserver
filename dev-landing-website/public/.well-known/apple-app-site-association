@@ -1,0 +1,9 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [{
+      "appID": "9QZU552289.com.supermeapp.app",
+      "paths": ["/referral", "/articles/*"]
+    }]
+  }
+}

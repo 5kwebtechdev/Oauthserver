@@ -1,0 +1,144 @@
+<section class="w-full">
+  <div class="max-w-[1360px] mx-auto px-[16px] min-[900px]:px-[32px] min-[1024px]:px-[40px]">
+    <div class="flex flex-col gap-[24px] min-[900px]:gap-[48px] items-center w-full">
+
+      <!-- Header: Title + Description + CTAs -->
+      <div class="flex flex-col gap-[16px] min-[900px]:gap-[24px] items-center w-full">
+        <div class="flex flex-col gap-[8px] items-center w-full">
+
+          <!-- Optional badge -->
+          @if (badge) {
+            <div
+              class="relative rounded-[40px] shrink-0"
+              style="padding: 1px"
+              [style.background]="badgeGradient"
+            >
+              <div
+                class="flex items-center justify-center overflow-clip rounded-[40px] bg-white"
+                style="padding: clamp(4px, 0.6vw, 8px) clamp(8px, 0.8vw, 12px)"
+              >
+                <span
+                  class="font-['Nunito',sans-serif] font-medium text-[#282527] whitespace-nowrap leading-[22px]"
+                  style="font-size: clamp(12px, 1.1vw, 16px)"
+                >{{ badge }}</span>
+              </div>
+            </div>
+          }
+
+          <h1
+            class=" font-we-700-mo font-['Nunito',sans-serif] font-bold text-[#282527] text-center tracking-[-1px] leading-[normal]"
+            style="font-size: clamp(20px, 2.2vw, 32px)"
+          >{{ title }}</h1>
+
+          <p
+            class="font-['Nunito',sans-serif] font-normal opacity-70 text-[#282527] text-center leading-[normal] w-full min-[900px]:w-auto"
+            style="font-size: clamp(13px, 1.4vw, 20px); max-width: clamp(320px, 41vw, 594px)"
+          >{{ description }}</p>
+          <a *ngIf="relatedHref && relatedLabel" [routerLink]="relatedHref"
+            class="font-['Nunito',sans-serif] font-semibold text-[#90214d] text-[14px] underline underline-offset-2 text-center"
+          >{{ relatedLabel }}</a>
+        </div>
+
+        <!-- Desktop CTAs (900px+) -->
+        <div class="hidden min-[900px]:flex flex-col gap-[8px] items-center w-full">
+          @if (preCTAText) {
+            <p
+              class="font-['Nunito',sans-serif] font-semibold text-[#282527] text-center leading-[normal]"
+              style="font-size: clamp(13px, 1.1vw, 16px)"
+            >{{ preCTAText }}</p>
+          }
+          <div class="flex gap-[16px] items-center max-w-[248px] w-full">
+            <!-- Log In -->
+            <a
+              [href]="loginUrl"
+              class="group flex-1 relative rounded-[8px] overflow-hidden block no-underline cursor-pointer bg-white transition-all duration-200 hover:bg-gradient-to-r hover:from-[rgb(205,53,120)] hover:to-[rgb(144,33,77)]"
+            >
+              <div aria-hidden="true" class="absolute border border-solid inset-0 pointer-events-none rounded-[8px] group-hover:border-[#4a0d25] transition-all duration-200" style="border-color:#90214d; box-shadow:0px 0px 1px 0px rgba(144,33,77,0.2)"></div>
+              <div class="flex items-center justify-center px-[24px] py-[12px]">
+                <span class="font-['Nunito',sans-serif] font-bold text-[#90214d] group-hover:text-[#fffeff] text-[13px] leading-[22px] whitespace-nowrap transition-colors duration-200">Log In</span>
+              </div>
+              <div class="absolute inset-0 pointer-events-none rounded-[inherit] opacity-0 group-hover:opacity-100 shadow-[inset_0px_-2px_2px_0px_#ea7cb5] transition-opacity duration-200"></div>
+            </a>
+            <!-- Try it for free -->
+            <button
+              type="button"
+              (click)="openStoreDialog()"
+              class="flex-1 relative rounded-[8px] overflow-hidden block no-underline border-0 cursor-pointer"
+              [style.backgroundImage]="gradientButton"
+            >
+              <div aria-hidden="true" class="absolute border border-[#4a0d25] border-solid inset-0 pointer-events-none rounded-[8px] shadow-[0px_0px_1px_0px_rgba(144,33,77,0.2)]"></div>
+              <div class="flex items-center justify-center px-[24px] py-[12px]">
+                <span class="font-['Nunito',sans-serif] font-bold text-[#fffeff] text-[13px] leading-[22px] whitespace-nowrap">Try it for free</span>
+              </div>
+              <div class="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_-2px_2px_0px_#ea7cb5]"></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile CTAs (<900px) -->
+        <div class="min-[900px]:hidden flex flex-col gap-[8px] items-center w-full">
+          @if (preCTAText) {
+            <p
+              class="font-['Nunito',sans-serif] font-semibold text-[#282527] text-center leading-[normal]"
+              style="font-size: clamp(13px, 1.1vw, 16px)"
+            >{{ getMobileCTAText() }}</p>
+          }
+          <div class="flex gap-[8px] items-center w-full max-w-[281px]">
+            <!-- Google Play mobile -->
+            <a [href]="googlePlayUrl" target="_blank" rel="noopener noreferrer" class="flex-1 relative rounded-[8px] overflow-hidden block no-underline" [style.backgroundImage]="gradientButton">
+              <div aria-hidden="true" class="absolute border border-[#4a0d25] border-solid inset-0 pointer-events-none rounded-[8px] shadow-[0px_0px_1px_0px_rgba(144,33,77,0.2)]"></div>
+              <div class="flex gap-[8px] items-center justify-center px-[16px] py-[8px]">
+                <div class="h-[24px] relative shrink-0 w-[21px]">
+                  <img alt="" class="absolute inset-0 max-w-none object-cover pointer-events-none size-full" [src]="googlePlaySrc" width="876" height="980" />
+                </div>
+                <div class="flex flex-col items-start shrink-0 whitespace-nowrap">
+                  <p class="font-['Nunito',sans-serif] font-medium text-[10px] text-[#fffdff] opacity-70 leading-[normal]">Get it on</p>
+                  <p class="font-['Nunito',sans-serif] font-semibold text-[13px] text-[#fffeff] leading-[normal]">Google Play</p>
+                </div>
+              </div>
+              <div class="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_-2px_2px_0px_#ea7cb5]"></div>
+            </a>
+            <!-- App Store mobile -->
+            <a href="https://apps.apple.com/us/app/supermeapp/id6781971277" target="_blank" rel="noopener noreferrer" class="flex-1 relative rounded-[8px] overflow-hidden block no-underline" [style.backgroundImage]="gradientButton">
+              <div aria-hidden="true" class="absolute border border-[#4a0d25] border-solid inset-0 pointer-events-none rounded-[8px] shadow-[0px_0px_1px_0px_rgba(144,33,77,0.2)]"></div>
+              <div class="flex gap-[8px] items-center justify-center px-[16px] py-[8px]">
+                <svg width="19" height="24" viewBox="0 0 19 24" fill="none" class="shrink-0" style="width:16px;height:20px">
+                  <g clip-path="url(#fpAppleClip)"><path [attr.d]="applePath" fill="#F2F2F2" /></g>
+                  <defs><clipPath id="fpAppleClip"><rect fill="white" width="19" height="24" /></clipPath></defs>
+                </svg>
+                <div class="flex flex-col items-start shrink-0 whitespace-nowrap">
+                  <p class="font-['Nunito',sans-serif] font-medium text-[10px] text-[#fffdff] opacity-70 leading-[normal]">Get it on</p>
+                  <p class="font-['Nunito',sans-serif] font-semibold text-[13px] text-[#fffeff] leading-[normal]">App Store</p>
+                </div>
+              </div>
+              <div class="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_-2px_2px_0px_#ea7cb5]"></div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual -->
+      <div class="w-full flex justify-center">
+        <div
+          class="w-full overflow-clip flex items-center justify-center"
+          [style.backgroundColor]="accentColor"
+          style="border-radius: clamp(32px, 3.9vw, 56px); padding: clamp(12px, 1.7vw, 24px); max-width: 800px"
+        >
+          <div
+            class="w-full relative overflow-hidden"
+            style="border-radius: clamp(16px, 2.2vw, 32px)"
+            [style.aspectRatio]="visualAspectRatio"
+          >
+            <img
+              [alt]="title + ' feature screenshot'"
+              class="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              [src]="visualSrc"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

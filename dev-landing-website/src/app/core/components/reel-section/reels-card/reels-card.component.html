@@ -1,0 +1,26 @@
+<article class="reel-card" (click)="onCardClick($event)" role="button" tabindex="0" (keydown.enter)="onCardClick($event)" (keydown.space)="onCardClick($event)">
+    <div class="reel-media" [style.background-image]="'url(' + (reel.image || '/assets/images/Images-Thumbnails/reel1.jpg') + ')'">
+    <button class="bookmark" (click)="onBookmarkClick($event)" aria-label="Bookmark">
+      <svg class="bookmark-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="21" viewBox="0 0 16 21" fill="none" aria-hidden="true" focusable="false">
+        <path d="M0 20.6667V2.154C0 1.54022 0.205253 1.02778 0.61576 0.616667C1.02627 0.205556 1.53796 0 2.15083 0H13.8256C14.4385 0 14.9502 0.205556 15.3607 0.616667C15.7712 1.02778 15.9765 1.54022 15.9765 2.154V20.6667L7.98824 17.2307L0 20.6667ZM1.33137 18.6L7.98824 15.7333L14.6451 18.6V2.154C14.6451 1.94867 14.5598 1.76056 14.3891 1.58967C14.2185 1.41878 14.0307 1.33333 13.8256 1.33333H2.15083C1.9458 1.33333 1.75797 1.41878 1.58733 1.58967C1.41669 1.76056 1.33137 1.94867 1.33137 2.154V18.6Z" fill="#1C1B1F"/>
+      </svg>
+    </button>
+    <div class="play-btn">▶</div>
+  
+
+  <div class="reel-info">
+    <div class="reel-left">
+      <img class="avatar" [src]="reel.avatar || '/assets/images/tutor1.png'" alt="author" />
+    </div>
+    <div class="reel-body">
+      <div class="author">{{ reel.author }}</div>
+      <div class="reel-title">{{ reel.title }}</div>
+      <div class="hashtags">{{ hashtagsDisplay }}</div>
+    </div>
+    <div class="reel-stats">
+      <div class="stat time"><span class="icon">⏱</span><span class="value">{{ reel.duration }}</span></div>
+      <div class="stat likes"><span class="icon">👍</span><span class="value">{{ reel.likes }}</span></div>
+    </div>
+  </div>
+  </div>
+</article>

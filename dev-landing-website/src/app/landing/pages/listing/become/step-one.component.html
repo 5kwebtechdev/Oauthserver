@@ -1,0 +1,126 @@
+<div class="listing-fields">
+  <div class="field">
+    <label>{{ primaryLabel }} *</label>
+    <input
+      type="text"
+      [(ngModel)]="primaryValue"
+      [placeholder]="isEvent ? 'Enter title' : isPgHostel ? 'Enter PG / Hostel name' : 'Enter name'"
+      name="primaryValue"
+    />
+    <p *ngIf="submitted && !primaryValue.trim()" class="error">
+      {{ primaryLabel }} is required
+    </p>
+  </div>
+
+  <div class="two-col">
+    <div class="field">
+      <label>Phone<span *ngIf="!isPgHostel"> *</span></label>
+      <div class="phone-control">
+        <select aria-label="Phone country and calling code" name="phoneCountry"
+          [(ngModel)]="form.phoneCountry" (ngModelChange)="phoneTouched = !!form.phone">
+          <option *ngFor="let country of countries" [value]="country.code">
+            {{ country.name }} (+{{ country.callingCode }})
+          </option>
+        </select>
+        <input type="tel" inputmode="numeric" maxlength="17" [ngModel]="form.phone"
+          (ngModelChange)="onPhoneInput($event)" (blur)="phoneTouched = true"
+          placeholder="Enter phone number" name="phone" [attr.aria-invalid]="!!phoneError" />
+      </div>
+      <p *ngIf="(submitted || phoneTouched) && phoneError" class="error">
+        {{ phoneError }}
+      </p>
+    </div>
+
+    <div class="field">
+      <label>Email *</label>
+      <input
+        type="email"
+        [(ngModel)]="form.email"
+        placeholder="Enter email"
+        name="email" maxlength="254"
+      />
+      <p *ngIf="submitted && emailError" class="error">{{ emailError }}</p>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="field">
+      <label>Phone 2 (optional)</label>
+      <div class="phone-control">
+        <select aria-label="Phone 2 country and calling code" name="phone2Country" [(ngModel)]="form.phone2Country">
+          <option *ngFor="let country of countries" [value]="country.code">{{ country.name }} (+{{ country.callingCode }})</option>
+        </select>
+        <input type="tel" inputmode="numeric" maxlength="17" name="phone2" [ngModel]="form.phone2"
+          (ngModelChange)="onAdditionalPhoneInput(2, $event)" placeholder="Enter additional phone number" />
+      </div>
+      <p *ngIf="form.phone2 && additionalPhoneError(2)" class="error">{{ additionalPhoneError(2) }}</p>
+    </div>
+    <div class="field">
+      <label>Phone 3 (optional)</label>
+      <div class="phone-control">
+        <select aria-label="Phone 3 country and calling code" name="phone3Country" [(ngModel)]="form.phone3Country">
+          <option *ngFor="let country of countries" [value]="country.code">{{ country.name }} (+{{ country.callingCode }})</option>
+        </select>
+        <input type="tel" inputmode="numeric" maxlength="17" name="phone3" [ngModel]="form.phone3"
+          (ngModelChange)="onAdditionalPhoneInput(3, $event)" placeholder="Enter additional phone number" />
+      </div>
+      <p *ngIf="form.phone3 && additionalPhoneError(3)" class="error">{{ additionalPhoneError(3) }}</p>
+    </div>
+  </div>
+
+  <div *ngIf="isShop" class="field">
+    <label>Contact Person</label>
+    <input
+      type="text"
+      [(ngModel)]="form.contactPerson"
+      placeholder="Enter contact person name"
+      name="contactPerson"
+    />
+  </div>
+
+  <div *ngIf="config.type === 'event'" class="field">
+    <label>Organizer</label>
+    <input
+      type="text"
+      [(ngModel)]="form.organizer"
+      placeholder="Organizer name"
+      name="organizer"
+    />
+  </div>
+
+  <div *ngIf="config.type === 'workshop'" class="field">
+    <label>Instructor</label>
+    <input
+      type="text"
+      [(ngModel)]="form.instructor"
+      placeholder="Instructor name"
+      name="instructor"
+    />
+  </div>
+
+  <div *ngIf="isEvent" class="field">
+    <label>Description</label>
+    <textarea
+      rows="5"
+      [(ngModel)]="form.description"
+      placeholder="Tell people what this listing is about"
+      name="description"
+    ></textarea>
+  </div>
+
+  <div *ngIf="isPgHostel" class="review-note">
+    <strong>Step 1 of 3</strong>
+    <p>Next you can add type, suitable-for, location, room occupancy, amenities and food availability.</p>
+  </div>
+
+  <div class="actions actions--right">
+    <button
+      type="button"
+      class="primary"
+      [disabled]="!isValid"
+      (click)="handleNext()"
+    >
+      Next
+    </button>
+  </div>
+</div>

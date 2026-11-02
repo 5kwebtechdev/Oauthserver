@@ -1,0 +1,221 @@
+.academy-lesson-page {
+  display: flex;
+  flex-direction: column;
+  background: #fbf0c7; /* light yellow similar to screenshot */
+
+  .header {
+    padding: 24px 32px;
+    .back-btn {
+      background: transparent;
+      border: none;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      svg { display: block; }
+    }
+  }
+
+  .content {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px 32px;
+
+    .illustration-wrap {
+      width: 460px;
+      max-width: 80%;
+      margin-bottom: 28px;
+
+      img { width: 100%; height: auto; display: block; }
+    }
+
+    .title {
+      font-family: 'Poppins', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      font-size: 34px;
+      margin: 8px 0 6px;
+      color: #1f1b1b;
+      font-weight: 700;
+    }
+
+    .meta {
+      color: #6b6666;
+      margin-bottom: 8px;
+    }
+
+    .course-coins {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 20px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #282527;
+
+      .course-coin-icon {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+      }
+    }
+
+    .description {
+      max-width: 720px;
+      color: #7a756f;
+      line-height: 1.7;
+      font-size: 18px;
+    }
+  }
+}
+
+// Lesson List Section Styles
+.lesson-list-section {
+  width: 100%;
+  max-width: 700px;
+  background-color: white;
+  margin: 0 auto 40px auto;
+  padding: 0 16px;
+}
+
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.lesson-item {
+  padding: 0 0 0 0;
+  position: relative;
+  border-radius: 2px;
+border-bottom: 2px solid rgba(40, 37, 39, 0.40);
+}
+
+
+
+.lesson-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+  padding: 28px 32px 18px 32px;
+  position: relative;
+}
+
+.lesson-icon {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.lesson-info {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lesson-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.lesson-number {
+  color: #282527;
+font-family: Nunito;
+font-size: 25px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 35px */
+}
+.lesson-title {
+  color: #282527;
+font-family: Nunito;
+font-size: 25px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 35px */
+}
+.lesson-desc {
+  color: #282527;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 28px */
+opacity: 0.7;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+.lesson-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: rgba(40, 37, 39, 0.70);
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 22.4px */
+  margin-top: 2px;
+}
+.coin-icon {
+  width: 24px;
+  height: 24px;
+  margin: 0 2px 0 2px;
+  vertical-align: middle;
+}
+.lesson-toggle {
+  margin-left: 18px;
+  margin-top: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #888;
+  user-select: none;
+}
+
+.lesson-actions {
+  display: flex;
+  justify-content: flex-start;
+  padding: 0 32px 24px 110px;
+}
+.start-lesson-btn {
+  border-radius: 8px;
+border: 1px solid #4A0D25;
+background: linear-gradient(271deg, #90214D 0.07%, #CD3578 99.93%);
+box-shadow: 0 0 1px 0.5px rgba(144, 33, 77, 0.20), 0 -2px 2px 0 #EA7CB5 inset;
+  padding: 12px 48px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  outline: none;
+  color: #FFF;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 700;
+line-height: 140%; /* 28px */
+}
+.start-lesson-btn:hover {
+  background: linear-gradient(90deg, #e15b8c 0%, #d13b7c 100%);
+  box-shadow: 0 4px 16px 0 rgba(225,91,140,0.18);
+}
+
+@media (max-width: 800px) {
+  .lesson-list-section {
+    max-width: 100%;
+    padding: 0 4px;
+  }
+  .lesson-header, .lesson-actions {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .lesson-actions {
+    padding-left: 80px;
+  }
+}

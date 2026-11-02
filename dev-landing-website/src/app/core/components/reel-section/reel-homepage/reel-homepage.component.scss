@@ -1,0 +1,148 @@
+.reel-homepage-container {
+	width: 100%;
+	max-width: 1512px;
+}
+
+.reel-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 20px;
+	background: transparent;
+	gap: 12px;
+}
+
+.reel-header-left {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.back-btn {
+	background: transparent;
+	border: none;
+	font-size: 20px;
+	line-height: 1;
+	color: #222;
+	cursor: pointer;
+	padding: 6px 8px;
+}
+
+.reel-header-titles { display:flex; flex-direction:column; }
+.reel-title { margin:0; color: #282527;
+font-family: Fredoka;
+font-size: 25px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 35px */ }
+.reel-sub { margin:0; color: #282527;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 28px */
+opacity: 0.7; }
+
+.header-actions { display:flex; gap:12px; align-items:center; }
+.btn-outline {
+    color: #282527;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 700;
+line-height: 140%; /* 28px */
+     background: transparent; border: 2px solid rgba(0,0,0,0.08); padding:8px 12px; border-radius:10px; }
+.btn-primary { 
+    color: #FFF;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 700;
+line-height: 140%; /* 28px */
+background: #b31746; color:#fff; padding:8px 14px; border-radius:10px; border:none; }
+
+
+
+/* My Reels empty state */
+.my-reels {padding: 16px;}
+.my-reels-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+.my-reels-title { margin:0;
+    color: #282527;
+font-family: Nunito;
+font-size: 25px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 35px */ }
+.my-reels-view { color: #90214D;
+font-family: Nunito;
+font-size: 25px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 35px */
+text-decoration-line: underline;
+text-decoration-style: solid;
+text-decoration-skip-ink: none;
+text-decoration-thickness: auto;
+text-underline-offset: auto;
+text-underline-position: from-font; }
+
+.my-reels-empty { display:flex; align-items:center; justify-content:center; gap:28px; padding:36px 0; background:transparent; }
+.empty-panda { width:142px; height:200px; }
+.empty-text .empty-heading { color: #282527;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 28px */
+width: 384px;
+opacity: 0.7; }
+
+/* Reels section */
+.reels-section { padding: 16px; }
+.reels-section-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.section-title { margin:0; color: #282527;
+font-family: Nunito;
+font-size: 25px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 35px */ }
+.trending-pill { background:#DCDBDC; padding:12px 24px; border-radius:32px; box-shadow:0 4px 12px rgba(0,0,0,0.06); display:flex; align-items:center; gap:8px; color: #282527;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 28px */ }
+.pill-icon { font-size:14px; }
+
+.cards-row { display:grid; grid-template-columns: repeat(4, 1fr); gap:20px; }
+
+.play-all-bar { margin-top:22px; display:flex; justify-content:center; }
+
+/* Ensure Superme button expands full-width when placed in the play-all bar */
+.play-all-bar { margin-top:22px; display:flex; justify-content:center; }
+.play-all-bar > superme-button {
+	display: block; /* make host a block-level element */
+	width: 100%;
+}
+
+.play-all-btn { color:#fff; padding:18px 36px; font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 700;
+line-height: 140%; /* 28px */ width:100%;
+border-radius: 8px;
+border: 1px solid #F64D3D;
+background: #FE8D82;
+box-shadow: 0 -2px 2px 1px #FFCDC8 inset, 0 0 1px 0.5px rgba(254, 141, 130, 0.20); }
+
+@media (max-width: 1100px) {
+	.cards-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 800px) {
+	.cards-row { grid-template-columns: repeat(2, 1fr); }
+	.play-all-btn { padding:14px 20px; }
+}
+@media (max-width: 480px) {
+	.cards-row { grid-template-columns: 1fr; }
+}
+

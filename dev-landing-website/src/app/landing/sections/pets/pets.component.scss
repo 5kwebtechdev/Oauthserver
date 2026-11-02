@@ -1,0 +1,198 @@
+:host {
+  display: block;
+}
+
+.pets-showcase {
+  overflow: hidden;
+}
+
+.pets-showcase__heading {
+  animation: pets-heading-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.pet-card {
+  --pet-index: 0;
+  animation: pet-card-in 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--pet-index) * 120ms + 120ms);
+}
+
+.pet-card__stage {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 86%, rgba(255, 255, 255, 0.72), transparent 34%),
+    #fce7eb;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 420ms ease;
+}
+
+.pet-card__stage::after {
+  position: absolute;
+  z-index: -1;
+  right: 15%;
+  bottom: 7%;
+  left: 15%;
+  height: 18%;
+  border-radius: 50%;
+  background: rgba(144, 33, 77, 0.16);
+  content: '';
+  filter: blur(18px);
+  opacity: 0.45;
+  transform: scaleX(0.8);
+  transition: opacity 360ms ease, transform 420ms ease;
+}
+
+.pet-card__image {
+  transform-origin: 50% 82%;
+  will-change: transform;
+  filter: saturate(1.02);
+  transition: filter 360ms ease;
+}
+
+/* Each companion gets its own personality instead of identical motion. */
+.pet-card[data-pet='panda'] .pet-card__image {
+  animation: bao-wave 4.2s ease-in-out infinite;
+}
+
+.pet-card[data-pet='llama'] .pet-card__image {
+  animation: koda-groove 4.8s ease-in-out infinite;
+}
+
+.pet-card[data-pet='owl'] .pet-card__image {
+  animation: luna-wise 5.1s ease-in-out infinite;
+}
+
+.pet-card[data-pet='dragon'] .pet-card__image {
+  animation: zuki-celebrate 3.9s ease-in-out infinite;
+}
+
+.pet-card__sparkle {
+  position: absolute;
+  z-index: 2;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transform: rotate(45deg) scale(0.2);
+}
+
+.pet-card__sparkle::before,
+.pet-card__sparkle::after {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f6ac72, #e1527c);
+  content: '';
+}
+
+.pet-card__sparkle::before {
+  width: 3px;
+  height: 100%;
+}
+
+.pet-card__sparkle::after {
+  width: 100%;
+  height: 3px;
+}
+
+.pet-card__sparkle--one {
+  top: 16%;
+  right: 13%;
+  animation: pet-sparkle 2.8s ease-in-out infinite;
+  animation-delay: calc(var(--pet-index) * 310ms);
+}
+
+.pet-card__sparkle--two {
+  top: 30%;
+  left: 10%;
+  width: 8px;
+  height: 8px;
+  animation: pet-sparkle 3.2s ease-in-out infinite;
+  animation-delay: calc(var(--pet-index) * 270ms + 900ms);
+}
+
+.pet-card__name {
+  transition: color 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pet-card:hover .pet-card__stage {
+    transform: translateY(-8px) scale(1.025);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.72),
+      0 20px 34px rgba(105, 55, 84, 0.16);
+  }
+
+  .pet-card:hover .pet-card__stage::after {
+    opacity: 0.85;
+    transform: scaleX(1.08);
+  }
+
+  .pet-card:hover .pet-card__image {
+    filter: saturate(1.12) brightness(1.025);
+    animation-duration: 2.2s;
+  }
+
+  .pet-card:hover .pet-card__name {
+    color: #90214d;
+    transform: translateY(-2px) scale(1.03);
+  }
+}
+
+@keyframes pets-heading-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pet-card-in {
+  from { opacity: 0; transform: translateY(28px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes bao-wave {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  25% { transform: translateY(-5px) rotate(-1.2deg); }
+  50% { transform: translateY(-1px) rotate(0.8deg); }
+  75% { transform: translateY(-4px) rotate(-0.5deg); }
+}
+
+@keyframes koda-groove {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0); }
+  33% { transform: translateX(-3px) translateY(-5px) rotate(-1deg); }
+  66% { transform: translateX(3px) translateY(-3px) rotate(1deg); }
+}
+
+@keyframes luna-wise {
+  0%, 100% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(-5px) scale(1.012); }
+  55% { transform: translateY(-5px) scale(1.012) rotate(0.5deg); }
+}
+
+@keyframes zuki-celebrate {
+  0%, 100% { transform: translateY(0) rotate(0) scale(1); }
+  42% { transform: translateY(-8px) rotate(-1deg) scale(1.012); }
+  58% { transform: translateY(-8px) rotate(1deg) scale(1.012); }
+}
+
+@keyframes pet-sparkle {
+  0%, 62%, 100% { opacity: 0; transform: rotate(45deg) scale(0.2); }
+  72% { opacity: 0.95; transform: rotate(45deg) scale(1); }
+  86% { opacity: 0.35; transform: rotate(90deg) scale(0.65); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pets-showcase__heading,
+  .pet-card,
+  .pet-card__image,
+  .pet-card__sparkle {
+    animation: none;
+  }
+
+  .pet-card__stage,
+  .pet-card__stage::after,
+  .pet-card__image,
+  .pet-card__name {
+    transition: none;
+  }
+}

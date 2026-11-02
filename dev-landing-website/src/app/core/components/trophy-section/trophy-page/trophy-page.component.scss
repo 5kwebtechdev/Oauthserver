@@ -1,0 +1,126 @@
+.trophy-page.container {
+  padding: 2rem 1.25rem;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.month {
+  color: #282527;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 700;
+line-height: 140%; /* 28px */
+  margin: 0 0 0.75rem 0;
+}
+
+.transactions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.month-block {
+  margin-bottom: 2rem;
+}
+
+.trophy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title {
+  color: #282527;
+font-family: Fredoka;
+font-size: 25px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 35px */
+  margin: 0;
+}
+
+.header-sub {
+  margin-top: 0;
+  color: #282527;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 28px */
+opacity: 0.7;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-trophy-img {
+  width: 40px;
+height: 40px;
+aspect-ratio: 1/1;
+  object-fit: contain;
+}
+
+.header-count {
+  color: #282527;
+font-family: Nunito;
+font-size: 25px;
+font-style: normal;
+font-weight: 700;
+line-height: 140%; /* 35px */
+}
+
+@media (max-width: 640px) {
+  .trophy-header { flex-direction: column; align-items: flex-start; }
+  .header-right { margin-top: 0.5rem; }
+}
+
+
+/* Loading state */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 16px;
+
+  p {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f0f0f0;
+    border-top-color: #f03b7f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Make trophy cards align like the design: left avatar and right trophy */
+trophy-transaction-card {
+  display: block;
+}
+
+/* Add spacing before footer */
+app-footer {
+  margin-top: 2rem;
+}

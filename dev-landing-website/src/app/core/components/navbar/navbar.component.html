@@ -1,0 +1,214 @@
+<nav class="logged-in-navbar" aria-label="Primary navigation">
+  <div class="logged-in-navbar__container">
+    <button
+      class="logged-in-navbar__brand"
+      type="button"
+      (click)="goHome()"
+      aria-label="Go to home"
+    >
+      <img [src]="logoSrc" alt="SuperMeApp" />
+    </button>
+
+    <div class="logged-in-navbar__desktop-menu">
+      @for (item of navItems; track item.label) {
+        <div
+          class="logged-in-navbar__menu-item nav-item-dropdown"
+          (mouseenter)="openDropdown(item.label)"
+          (mouseleave)="closeDropdown()"
+        >
+          @if (item.children) {
+            <button
+              type="button"
+              class="logged-in-navbar__menu-trigger"
+              [class.active]="isNavItemActive(item.label)"
+              [attr.aria-expanded]="openDropdownLabel === item.label"
+              (click)="toggleDropdown(item.label, $event)"
+            >
+              <span>{{ item.label }}</span>
+              <img
+                [src]="chevronSrc"
+                alt=""
+                aria-hidden="true"
+                [class.open]="openDropdownLabel === item.label"
+              />
+            </button>
+          } @else {
+            <a
+              class="logged-in-navbar__menu-trigger"
+              [routerLink]="item.route"
+              routerLinkActive="active"
+            >
+              <span>{{ item.label }}</span>
+            </a>
+          }
+
+          @if (openDropdownLabel === item.label && item.children) {
+            <div class="logged-in-navbar__dropdown" role="menu">
+              @for (child of item.children; track child.label) {
+                <button
+                  type="button"
+                  class="logged-in-navbar__dropdown-item"
+                  role="menuitem"
+                  (click)="
+                    child.route
+                      ? navigateChild(child, closeAllMenus.bind(this))
+                      : handleChildClick(child, item.label)
+                  "
+                >
+                  {{ child.label }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="logged-in-navbar__actions">
+      <button
+        type="button"
+        class="logged-in-navbar__icon-button"
+        aria-label="Open notifications"
+        (click)="goToNotifications()"
+      >
+        <img [src]="notificationSrc" alt="" />
+      </button>
+
+      <button
+        type="button"
+        class="logged-in-navbar__quick-action"
+        aria-label="View streak"
+        title="Streak"
+        (click)="goToStreaks()"
+      >
+        <img [src]="streakSrc" alt="" />
+        <span>{{ userDays | number }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="logged-in-navbar__coin-button"
+        aria-label="View coins"
+        (click)="goToCoins()"
+      >
+        <img [src]="coinSrc" alt="" />
+        <span>{{ userCoins | number }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="logged-in-navbar__quick-action"
+        aria-label="View badges"
+        title="Badges"
+        (click)="goToBadges()"
+      >
+        <img [src]="badgeSrc" alt="" />
+        <span>{{ userBadges | number }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="logged-in-navbar__quick-action logged-in-navbar__quick-action--icon-only"
+        aria-label="View leaderboard"
+        title="Leaderboard"
+        (click)="goToLeaderboard()"
+      >
+        <img [src]="leaderboardSrc" alt="" />
+      </button>
+
+      <button
+        type="button"
+        class="logged-in-navbar__quick-action logged-in-navbar__quick-action--icon-only"
+        aria-label="Open calendar"
+        title="Calendar"
+        (click)="goToCalendar()"
+      >
+        <img [src]="calendarSrc" alt="" />
+      </button>
+
+      <button
+        type="button"
+        class="logged-in-navbar__profile"
+        aria-label="Open profile"
+        (click)="goToProfile()"
+      >
+        <span class="logged-in-navbar__avatar">
+          <img [src]="avatarSrc" [alt]="userName" />
+        </span>
+        <span class="logged-in-navbar__user-name">{{ userName }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="logged-in-navbar__mobile-toggle"
+        [class.active]="showMobileMenu"
+        [attr.aria-expanded]="showMobileMenu"
+        aria-label="Toggle navigation menu"
+        (click)="toggleMobileMenu()"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+
+  <div
+    class="logged-in-navbar__mobile-overlay"
+    [class.active]="showMobileMenu"
+    (click)="closeMobileMenu()"
+  >
+    <div class="logged-in-navbar__mobile-panel" (click)="$event.stopPropagation()">
+      <div class="logged-in-navbar__mobile-quick-actions" aria-label="Progress shortcuts">
+        <button type="button" (click)="goToStreaks(); closeMobileMenu()">
+          <img [src]="streakSrc" alt="" /><span>Streak</span>
+        </button>
+        <button type="button" (click)="goToCoins(); closeMobileMenu()">
+          <img [src]="coinSrc" alt="" /><span>Coins</span>
+        </button>
+        <button type="button" (click)="goToBadges(); closeMobileMenu()">
+          <img [src]="badgeSrc" alt="" /><span>Badges</span>
+        </button>
+        <button type="button" (click)="goToLeaderboard(); closeMobileMenu()">
+          <img [src]="leaderboardSrc" alt="" /><span>Leaderboard</span>
+        </button>
+        <button type="button" (click)="goToCalendar(); closeMobileMenu()">
+          <img [src]="calendarSrc" alt="" /><span>Calendar</span>
+        </button>
+        <button type="button" (click)="goToProfile(); closeMobileMenu()">
+          <img [src]="avatarSrc" alt="" class="logged-in-navbar__mobile-avatar" /><span>Profile</span>
+        </button>
+      </div>
+
+      @for (item of navItems; track item.label) {
+        <section class="logged-in-navbar__mobile-group">
+          @if (item.children) {
+            <button type="button" (click)="toggleDropdown(item.label, $event)">
+              <span>{{ item.label }}</span>
+              <img [src]="chevronSrc" alt="" [class.open]="openDropdownLabel === item.label" />
+            </button>
+          } @else {
+            <a [routerLink]="item.route" (click)="closeMobileMenu()">{{ item.label }}</a>
+          }
+          @if (openDropdownLabel === item.label && item.children) {
+            <div class="logged-in-navbar__mobile-children">
+              @for (child of item.children; track child.label) {
+                <button
+                  type="button"
+                  (click)="
+                    child.route
+                      ? navigateChild(child, closeMobileMenu.bind(this))
+                      : handleChildClick(child, item.label);
+                    closeMobileMenu()
+                  "
+                >
+                  {{ child.label }}
+                </button>
+              }
+            </div>
+          }
+        </section>
+      }
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,201 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Row 1: Teaching Mode + Fees -->
+  <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+    <div class="flex-1 w-full flex flex-col gap-2 sm:gap-3">
+      <span class="text-[16px] font-semibold text-[#282527] tracking-[0.8px] leading-[22.4px]" style="font-family:'Nunito',sans-serif">
+        Teaching Mode *
+      </span>
+      <app-multi-select
+        [options]="teachingModes"
+        [selected]="form.teachingMode"
+        placeholder="Select Mode"
+        [hasError]="submitted && form.teachingMode.length === 0"
+        (selectedChange)="form.teachingMode = $event"
+      ></app-multi-select>
+      <p *ngIf="submitted && form.teachingMode.length === 0" class="text-[13px] font-semibold text-[#ce0800]" style="font-family:'Nunito',sans-serif">
+        Please select a teaching mode
+      </p>
+    </div>
+
+    <div class="flex-1 w-full flex flex-col gap-2 sm:gap-3">
+      <span class="text-[16px] font-semibold text-[#282527] tracking-[0.8px] leading-[22.4px]" style="font-family:'Nunito',sans-serif">
+        Fees
+      </span>
+      <div class="flex gap-2">
+        <div class="flex h-12 flex-1 rounded-[6px] border border-[rgba(40,37,39,0.2)] focus-within:border-[#90214d] overflow-hidden transition-colors">
+          <div class="flex items-center justify-center px-3 bg-[#eaeaea] shrink-0">
+            <span class="text-[16px] font-semibold text-[#282527]" style="font-family:'Nunito',sans-serif">₹</span>
+          </div>
+          <input
+            type="number"
+            min="0"
+            [(ngModel)]="form.fees"
+            placeholder="Enter fees"
+            class="flex-1 px-3 text-[16px] font-semibold text-[#282527] placeholder:text-[rgba(40,37,39,0.5)] placeholder:font-semibold outline-none bg-white"
+            style="font-family:'Nunito',sans-serif"
+            name="fees"
+          />
+        </div>
+        <div class="w-36">
+          <app-custom-select
+            [options]="feeTypes"
+            [value]="form.feeType"
+            placeholder="Per Hour"
+            (valueChange)="form.feeType = $event"
+          ></app-custom-select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Address -->
+  <div class="flex flex-col gap-3">
+    <div class="flex flex-col">
+      <span class="text-[16px] font-semibold text-[#282527] tracking-[0.8px] leading-[22.4px]" style="font-family:'Nunito',sans-serif">
+        Address
+      </span>
+      <span class="text-[13px] text-[#6b656a] leading-normal" style="font-family:'Nunito',sans-serif;font-weight:400">
+        Please fill this field correctly for people to locate you easily
+      </span>
+    </div>
+    <input
+      type="text"
+      [(ngModel)]="form.address"
+      placeholder="House No, Street, Landmark, City, State, Pincode"
+      class="h-12 w-full px-4 rounded-[6px] border border-[rgba(40,37,39,0.2)] focus:border-[#90214d] text-[16px] font-semibold text-[#282527] placeholder:text-[rgba(40,37,39,0.5)] placeholder:font-semibold outline-none bg-white transition-colors"
+      style="font-family:'Nunito',sans-serif"
+      name="address"
+    />
+  </div>
+
+  <!-- Languages You Speak -->
+  <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+    <div class="flex-1 w-full flex flex-col gap-2 sm:gap-3">
+      <span class="text-[16px] font-semibold text-[#282527] tracking-[0.8px] leading-[22.4px]" style="font-family:'Nunito',sans-serif">
+        Languages You Speak
+      </span>
+      <app-multi-select
+        [options]="languagesSpokenOptions"
+        [selected]="form.languagesSpoken"
+        placeholder="Select Languages you can communicate in"
+        (selectedChange)="form.languagesSpoken = $event"
+      ></app-multi-select>
+    </div>
+  </div>
+
+  <!-- Experience + Qualification -->
+  <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+    <div class="flex-1 w-full flex flex-col gap-2 sm:gap-3">
+      <span class="text-[16px] font-semibold text-[#282527] tracking-[0.8px] leading-[22.4px]" style="font-family:'Nunito',sans-serif">
+        Experience
+      </span>
+      <app-custom-select
+        [options]="experienceOptions"
+        [value]="form.experience"
+        placeholder="Enter your total teaching experience"
+        (valueChange)="form.experience = $event"
+      ></app-custom-select>
+    </div>
+
+    <div *ngIf="!isAcademy" class="flex-1 w-full flex flex-col gap-1.5 sm:gap-2">
+      <div class="flex flex-col gap-2 sm:gap-3">
+        <span class="text-[16px] font-semibold text-[#282527] tracking-[0.8px] leading-[22.4px]" style="font-family:'Nunito',sans-serif">
+          Qualification
+        </span>
+        <input
+          type="text"
+          [(ngModel)]="form.qualification"
+          placeholder="eg. B.Tech"
+          class="h-11 sm:h-12 w-full px-4 rounded-[6px] border border-[rgba(40,37,39,0.2)] focus:border-[#90214d] text-[14px] sm:text-[16px] font-semibold text-[#282527] placeholder:text-[rgba(40,37,39,0.5)] placeholder:font-semibold outline-none bg-white transition-colors"
+          style="font-family:'Nunito',sans-serif"
+          name="qualification"
+        />
+      </div>
+      <p class="text-[12px] sm:text-[13px] text-[#6b656a]" style="font-family:'Nunito',sans-serif;font-weight:500">
+        Mention your highest qualification or any relevant certifications
+      </p>
+    </div>
+  </div>
+
+  <!-- Time Slots -->
+  <div class="flex flex-col gap-4">
+    <app-time-slot-row
+      *ngFor="let slot of form.slots; let idx = index"
+      [slot]="slot"
+      [isFirst]="idx === 0"
+      [canRemove]="form.slots.length > 1"
+      [error]="slotErrors[idx]"
+      (change)="updateSlot($event)"
+      (remove)="removeSlot(slot.id)"
+    ></app-time-slot-row>
+
+    <div class="flex justify-end">
+      <button
+        type="button"
+        (click)="addSlot()"
+        [disabled]="!firstSlotReady"
+        [title]="!firstSlotReady ? 'Fill start time, end time and days for the current slot first' : ''"
+        class="flex items-center gap-2 px-4 h-12 rounded-[6px] text-[13px] font-semibold text-white transition-opacity"
+        [ngClass]="firstSlotReady ? 'opacity-100 hover:opacity-90 cursor-pointer' : 'opacity-50 cursor-not-allowed'"
+        style="font-family:'Nunito',sans-serif;background:#90214d"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        Add More Slots
+      </button>
+    </div>
+  </div>
+
+  <!-- Whom do you teach? -->
+  <div class="flex flex-col gap-3">
+    <span class="text-[16px] font-semibold text-[#282527] tracking-[0.8px] leading-[22.4px]" style="font-family:'Nunito',sans-serif">
+      Whom do you teach? *
+    </span>
+    <app-multi-select
+      [options]="categoryLabels"
+      [selected]="selectedCategoryLabels"
+      placeholder="Select a category"
+      [hasError]="submitted && form.categories.length === 0"
+      (selectedChange)="handleCategoryChange($event)"
+    ></app-multi-select>
+    <p *ngIf="submitted && form.categories.length === 0" class="text-[13px] font-semibold text-[#ce0800]" style="font-family:'Nunito',sans-serif">
+      Please select at least one category
+    </p>
+  </div>
+
+  <!-- Category Accordions -->
+  <div *ngIf="form.categories.length > 0" class="flex flex-col gap-4">
+    <app-category-accordion
+      *ngFor="let id of form.categories; let idx = index"
+      [categoryId]="id"
+      [data]="form.categoryData[id]"
+      [initialOpen]="idx === 0"
+      (dataChange)="updateCategoryData(id, $event)"
+    ></app-category-accordion>
+  </div>
+
+  <!-- CTAs -->
+  <div class="flex gap-4 mt-2">
+    <button
+      type="button"
+      (click)="handleBack()"
+      class="flex-1 py-3 rounded-[8px] text-[13px] font-bold text-[#90214d] border border-[#90214d] hover:bg-[#fce7eb] transition-colors"
+      style="font-family:'Nunito',sans-serif"
+    >
+      Back
+    </button>
+    <button
+      type="button"
+      (click)="handleNext()"
+      [disabled]="!isValid"
+      class="flex-1 py-3 rounded-[8px] text-[13px] font-bold text-[#fffeff] transition-opacity"
+      [ngClass]="isValid ? 'opacity-100 hover:opacity-90' : 'opacity-50 cursor-not-allowed'"
+      style="font-family:'Nunito',sans-serif;background:linear-gradient(-72.81deg, #90214d 0%, #cd3578 99.93%);border:1px solid #4a0d25;"
+      [style.box-shadow]="isValid ? '0px 0px 0.5px rgba(144,33,77,0.2), inset 0px -2px 2px 0px #ea7cb5' : 'none'"
+    >
+      Next
+    </button>
+  </div>
+</div>

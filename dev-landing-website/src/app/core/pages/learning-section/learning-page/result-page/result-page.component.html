@@ -1,0 +1,99 @@
+<section class="result-page">
+  <header class="rp-header">
+    <button class="close-btn" (click)="close()" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 27 27" fill="none" aria-hidden="true">
+        <path d="M1.5 2.14758L24.8525 25.5" stroke="#282527" stroke-width="3" stroke-linecap="round"/>
+        <path d="M1.5 24.8524L24.8525 1.49996" stroke="#282527" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="rp-content">
+    <!-- Hero Section -->
+    <div class="rp-hero">
+      <img 
+        [src]="mascotImage"
+        [alt]="titleMessage + ' mascot'"
+        class="mascot-image"
+        (error)="$any($event.target).src='/assets/Images-Transparent/Image-Content-ThumbnailRandom.jpg'"
+      />
+    </div>
+
+    <!-- Score Section -->
+    <div class="rp-score-section">
+      <h1 class="rp-title">{{ titleMessage }}</h1>
+      
+      <div class="score-display" [class]="scoreColorClass">
+        <div class="confetti-left"></div>
+        <div class="score-badge">
+          <span class="score-text">{{ score }}/{{ totalQuestions }}</span>
+          <span class="score-percent">{{ scorePercentage }}%</span>
+        </div>
+        <div class="confetti-right"></div>
+      </div>
+
+      <!-- Feedback Text -->
+      <p class="feedback-text" *ngIf="feedbackText">{{ feedbackText }}</p>
+    </div>
+
+    <!-- Rewards Section -->
+    <div class="rp-rewards">
+      <div class="reward-item">
+        <span class="reward-plus">+</span>
+        <div class="reward-value">
+          <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="reward-icon" />
+          <span class="reward-count">{{ coinsEarned }}</span>
+        </div>
+      </div>
+
+      <div class="reward-item" *ngIf="trophiesEarned > 0">
+        <span class="reward-plus">+</span>
+        <div class="reward-value">
+          <img src="/assets/Icons-Neutral/Icon-Trophy.png" alt="trophies" class="reward-icon" />
+          <span class="reward-count">{{ trophiesEarned }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pet Mood Message -->
+    <div class="pet-mood" *ngIf="petMood.message">
+      <p>{{ petMood.message }}</p>
+    </div>
+
+    <!-- Badges Section (if earned) -->
+    <div class="rp-badges" *ngIf="badges.length > 0">
+      <h3 class="badges-title">🎖️ Badges Earned!</h3>
+      <div class="badge-card" *ngFor="let badge of badges">
+        <div class="badge-content">
+          <div class="badge-header">
+            <p class="badge-progress-text" *ngIf="badge.progress">{{ badge.progress }}/{{ badge.total }}</p>
+            <div class="badge-visual">
+              <img [src]="badge.icon || badge.iconUrl" [alt]="badge.name" class="badge-icon" />
+            </div>
+          </div>
+          
+          <div class="badge-info">
+            <p class="badge-level" *ngIf="badge.level">Level {{ badge.level }}</p>
+            <p class="badge-name">{{ badge.name }}</p>
+          </div>
+          
+          <p class="badge-description" *ngIf="badge.description">{{ badge.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="rp-actions">
+      <superme-button 
+        type="pink" 
+        text="Try Again" 
+        (clickEvent)="tryAgain()">
+      </superme-button>
+      <superme-button 
+        type="lavendar-transparent" 
+        text="Back to Learning" 
+        (clickEvent)="close()">
+      </superme-button>
+    </div>
+  </div>
+</section>

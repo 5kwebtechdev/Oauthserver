@@ -1,0 +1,133 @@
+<div class="badges-page-container">
+  <!-- Navbar Component -->
+  <app-public-navbar></app-public-navbar>
+
+  <!-- Main Content -->
+  <main class="badges-content">
+    <!-- Badges Title Header-->
+    <header class="badges-header" role="banner" aria-label="Badges header">
+      <div class="badges-header-inner">
+        <div class="badges-title-group">
+          <h1 class="badges-title">Your Badge Quest</h1>
+          <div class="badges-tagline">
+              <span class="tagline-text">Earn badges</span>
+              <svg class="tagline-dot" width="4" height="4" viewBox="0 0 4 4" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <circle cx="2" cy="2" r="2" fill="#282527" />
+              </svg>
+              <span class="tagline-text">Level up</span>
+              <svg class="tagline-dot" width="4" height="4" viewBox="0 0 4 4" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <circle cx="2" cy="2" r="2" fill="#282527" />
+              </svg>
+              <span class="tagline-text">Show the world</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading badges...</p>
+    </div>
+
+    <!-- Badges share now with details (shown only when recent achievement exists) -->
+    <section class="badge-share" aria-live="polite" *ngIf="!isLoading && recentAchievement">
+      <div class="badge-share-inner">
+        <div class="badge-share-left" aria-hidden="true">
+          <img class="badge-icon" [src]="recentAchievement.iconUrl" width="64" height="64" [alt]="recentAchievement.badgeName + ' badge icon'">
+        </div>
+
+        <div class="badge-share-body">
+          <h3 class="badge-share-title">Shine Bright!</h3>
+          <p class="badge-share-text">{{ recentAchievement.message }}</p>
+        </div>
+
+        <div class="badge-share-action">
+          <button class="share-btn" type="button" aria-label="Share badge now" (click)="openShareModal()">Share now</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Badges Grid Section-->
+    <section class="badges-grid" aria-label="Badges grid" *ngIf="!isLoading">
+      <div class="badges-grid-inner">
+        <div class="badge-grid-item" *ngFor="let badge of badges">
+          <app-badges-card
+            [title]="badge.name"
+            [current]="badge.currentProgress"
+            [total]="badge.targetProgress"
+            [imageUrl]="badge.iconUrl"
+            [description]="badge.description"
+            [levelText]="badge.levelText || ''"
+            [achievementText]="badge.achievementText || ''"
+            [progressColor]="badge.progressColor || '#4CAF50'">
+          </app-badges-card>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer Component -->
+  <app-footer></app-footer>
+
+  <!-- Share Modal -->
+  <div class="share-modal-overlay" *ngIf="showShareModal" role="dialog" aria-modal="true" aria-label="Share badge dialog">
+    <div class="share-modal" tabindex="-1">
+      <header class="share-modal-header">
+        <h2>Share Now</h2>
+        <button class="share-modal-close" type="button" aria-label="Close" (click)="closeShareModal()">✕</button>
+      </header>
+
+      <div class="share-modal-body">
+        <p class="share-modal-subtext">Share your achievement with friends. Choose how you'd like to share.</p>
+
+        <div class="share-options">
+          <button class="share-option" type="button" (click)="copyMessage()" aria-label="Copy message">
+            <svg class="share-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="20" viewBox="0 0 17 20" fill="none" aria-hidden="true" focusable="false">
+              <path d="M11.47 16.6489C10.508 18.0908 9.18329 18.9801 7.49595 19.3169C5.80862 19.6538 4.24402 19.3412 2.80214 18.3792C1.36027 17.4172 0.470921 16.0925 0.13409 14.4052C-0.20274 12.7178 0.109846 11.1532 1.07185 9.71136L6.20562 2.01676C6.89937 0.976947 7.85299 0.335921 9.06649 0.0936794C10.28 -0.148562 11.4066 0.0771935 12.4464 0.770946C13.4863 1.4647 14.1273 2.41832 14.3695 3.63182C14.6118 4.84531 14.386 5.97196 13.6923 7.01178L8.83599 14.2905C8.41049 14.9282 7.82791 15.3209 7.08826 15.4686C6.34861 15.6162 5.6599 15.4773 5.02215 15.0518C4.3844 14.6263 3.9917 14.0437 3.84405 13.3041C3.6964 12.5644 3.83532 11.8757 4.26082 11.2379L9.39459 3.54334L11.0583 4.65334L5.92452 12.3479C5.80427 12.5282 5.76375 12.7165 5.80297 12.913C5.8422 13.1095 5.95192 13.2678 6.13216 13.3881C6.31239 13.5083 6.50074 13.5489 6.69721 13.5096C6.89368 13.4704 7.05204 13.3607 7.17229 13.1805L12.0286 5.90177C12.4032 5.31023 12.5271 4.68161 12.4002 4.01593C12.2733 3.35024 11.9187 2.82315 11.3364 2.43464C10.7541 2.04614 10.1278 1.9188 9.45753 2.05261C8.78722 2.18642 8.25782 2.54447 7.86931 3.12676L2.73555 10.8214C2.06493 11.7965 1.84729 12.8584 2.08262 14.0072C2.31795 15.156 2.92779 16.0587 3.91215 16.7155C4.88264 17.363 5.93649 17.5702 7.07371 17.3372C8.21093 17.1042 9.12178 16.5047 9.80627 15.5389L15.2175 7.42835L16.8812 8.53836L11.47 16.6489Z" fill="#282527"/>
+            </svg>
+            <span class="share-text">Copy Message</span>
+          </button>
+
+          <button class="share-option whatsapp" type="button" (click)="shareWhatsApp()" aria-label="Share through Whatsapp">
+            <svg class="share-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="21" viewBox="0 0 20 21" fill="none" aria-hidden="true" focusable="false">
+              <path d="M14.6 12.025C14.4 11.925 13.1 11.325 12.9 11.225C12.7 11.125 12.5 11.125 12.3 11.325C12.1 11.525 11.7 12.125 11.5 12.325C11.4 12.525 11.2 12.525 11 12.425C10.3 12.125 9.6 11.725 9 11.225C8.5 10.725 8 10.125 7.6 9.525C7.5 9.325 7.6 9.125 7.7 9.025C7.8 8.925 7.9 8.725 8.1 8.625C8.2 8.525 8.3 8.325 8.3 8.225C8.4 8.125 8.4 7.925 8.3 7.825C8.2 7.725 7.7 6.525 7.5 6.025C7.4 5.325 7.2 5.325 7 5.325H6.5C6.3 5.325 6 5.525 5.9 5.625C5.3 6.225 5 6.925 5 7.725C5.1 8.625 5.4 9.525 6 10.325C7.1 11.925 8.5 13.225 10.2 14.025C10.7 14.225 11.1 14.425 11.6 14.525C12.1 14.725 12.6 14.725 13.2 14.625C13.9 14.525 14.5 14.025 14.9 13.425C15.1 13.025 15.1 12.625 15 12.225L14.6 12.025ZM17.1 2.925C13.2 -0.975 6.9 -0.975 3 2.925C-0.2 6.125 -0.8 11.025 1.4 14.925L0 20.025L5.3 18.625C6.8 19.425 8.4 19.825 10 19.825C15.5 19.825 19.9 15.425 19.9 9.925C20 7.325 18.9 4.825 17.1 2.925ZM14.4 16.925C13.1 17.725 11.6 18.225 10 18.225C8.5 18.225 7.1 17.825 5.8 17.125L5.5 16.925L2.4 17.725L3.2 14.725L3 14.425C0.6 10.425 1.8 5.425 5.7 2.925C9.6 0.425 14.6 1.725 17 5.525C19.4 9.425 18.3 14.525 14.4 16.925Z" fill="black"/>
+            </svg>
+            <span class="share-text">Share through Whatsapp</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Congratulations Popup -->
+  <div *ngIf="congratsVisible" class="congrats-popup-overlay">
+    <div class="congrats-popup">
+      <button class="congrats-close" aria-label="Close" (click)="closeCongrats()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M1.89652 16.9355C1.70126 17.1308 1.38468 17.1308 1.18942 16.9355L0.146522 15.8926C-0.0487404 15.6974 -0.04874 15.3808 0.146522 15.1855L6.43942 8.89262C6.63468 8.69735 6.63468 8.38077 6.43942 8.18551L0.146522 1.89262C-0.0487406 1.69735 -0.04874 1.38077 0.146522 1.18551L1.18942 0.142616C1.38468 -0.0526466 1.70126 -0.0526462 1.89652 0.142616L8.18942 6.43551C8.38468 6.63077 8.70126 6.63077 8.89652 6.43551L15.1894 0.142615C15.3847 -0.0526468 15.7013 -0.0526462 15.8965 0.142616L16.9394 1.18551C17.1347 1.38077 17.1347 1.69735 16.9394 1.89262L10.6465 8.18551C10.4513 8.38077 10.4513 8.69735 10.6465 8.89262L16.9394 15.1855C17.1347 15.3808 17.1347 15.6974 16.9394 15.8926L15.8965 16.9355C15.7013 17.1308 15.3847 17.1308 15.1894 16.9355L8.89652 10.6426C8.70126 10.4474 8.38468 10.4474 8.18941 10.6426L1.89652 16.9355Z" fill="#282527"/>
+        </svg>
+      </button>
+      <div class="congrats-content">
+        <div class="congrats-img">
+          <img class="confetti" src="assets/Images-Transparent/congrats.png" alt="confetti" />
+          <div class="ring">
+            <div class="badge-wrap">
+              <img class="badge-icon-popup" [src]="selectedBadge?.iconUrl || 'assets/Images-Transparent/congrats.png'" alt="badge" />
+            </div>
+          </div>
+        </div>
+        <div class="congrats-text">
+          <h1>{{ selectedBadge?.celebrationTitle || 'Badge Unlocked!' }}</h1>
+          <h2>{{ selectedBadge?.name || 'Badge' }}</h2>
+          <p>{{ selectedBadge?.celebrationMessage || 'Congratulations!' }}</p>
+          <p class="level-info" *ngIf="selectedBadge?.levelText">{{ selectedBadge?.levelText }}</p>
+        </div>
+        <div class="congrats-actions">
+          <button class="btn-view-all" (click)="onViewAllBadges()">View all Badges</button>
+          <button class="btn-awesome" (click)="closeCongrats()">Awesome</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

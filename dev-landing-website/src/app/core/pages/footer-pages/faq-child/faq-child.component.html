@@ -1,0 +1,42 @@
+<div class="faq-page-wrapper">
+  <!-- Navbar -->
+  <app-public-navbar></app-public-navbar>
+
+  <!-- FAQ Page Content -->
+  <div class="faq-page">
+    <!-- Header Section -->
+    <div class="faq-header">
+      <div class="header-content">
+        <h1>Frequently Asked Questions</h1>
+        <p class="header-description">Get quick answers to the most common questions about SuperMe App</p>
+      </div>
+    </div>
+
+    <!-- FAQ Categories Grid -->
+    <div class="faq-container">
+      <div class="faq-grid">
+        <div 
+          class="faq-category-card" 
+          *ngFor="let category of faqCategories">
+          <div class="category-title">
+            <h2>{{ category.title }}</h2>
+          </div>
+          <superme-facts 
+            [faqs]="category.items" 
+            [heading]="''">
+          </superme-facts>
+        </div>
+      </div>
+    </div>
+
+    <!-- Still Need Help Section -->
+    <div class="help-section">
+      <h2>Still Need Help?</h2>
+      <p>Reach out to our team</p>
+      <p>Email: supermeappofficial@gmail.com</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

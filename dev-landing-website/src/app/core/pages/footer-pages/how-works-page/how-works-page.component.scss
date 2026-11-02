@@ -1,0 +1,258 @@
+.how-works-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.how-works-page {
+  flex: 1;
+  padding: 0;
+}
+
+// Header Section
+.how-works-header {
+  text-align: center;
+  padding: 56px 48px 48px;
+  
+  .header-content {
+    max-width: 726px;
+    margin: 0 auto;
+    
+    h1 {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 40px;
+      line-height: 56px;
+      letter-spacing: -2px;
+      color: #282527;
+      margin: 0 0 16px;
+    }
+    
+    .header-description {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 400;
+      font-size: 25px;
+      line-height: 35px;
+      color: #282527;
+      opacity: 0.7;
+      margin: 0;
+    }
+  }
+}
+
+// Cards Container
+.cards-container {
+  padding: 0 48px 32px;
+  
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 48px;
+    max-width: 1416px;
+    margin: 0 auto;
+    
+    @media (max-width: 1200px) {
+      grid-template-columns: 1fr;
+      max-width: 680px;
+    }
+  }
+}
+
+// Individual Card
+.how-works-card {
+  background: #ffffff;
+  border-radius: 56px;
+  padding: 24px 40px;
+  box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+  min-height: 371px;
+  
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+    
+    .icon-wrapper {
+      width: 88px;
+      height: 88px;
+      overflow: hidden;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      img {
+        width: 88px;
+        height: 88px;
+        object-fit: cover;
+      }
+    }
+    
+    h2 {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 25px;
+      line-height: 35px;
+      letter-spacing: -1.25px;
+      color: #282527;
+      margin: 0;
+      text-align: center;
+      width: 292px;
+    }
+  }
+  
+  .card-points {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    
+    .point-item {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      
+      .point-number {
+        width: 40px;
+        height: 40px;
+        background: #fce7eb;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        
+        span {
+          font-family: 'Nunito', sans-serif;
+          font-weight: 600;
+          font-size: 20px;
+          line-height: 1.3;
+          color: #282527;
+        }
+      }
+      
+      p {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 20px;
+        line-height: 35px;
+        color: #282527;
+        opacity: 0.7;
+        margin: 0;
+        flex: 1;
+      }
+    }
+  }
+}
+
+// Questions Section
+.questions-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding: 48px 48px 80px;
+  text-align: center;
+  
+  h2 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    line-height: 56px;
+    letter-spacing: -2px;
+    color: #282527;
+    margin: 0;
+    max-width: 1022px;
+  }
+  
+  .faq-button {
+    background: linear-gradient(180deg, #D33C79 0%, #B12A5E 100%);
+    border: 1px solid #4a0d25;
+    border-radius: 8px;
+    padding: 16px 88px;
+    height: 56px;
+    box-shadow: inset 0px -2px 2px 0px #ea7cb5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 22.4px;
+    color: #fffeff;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: inset 0px -2px 2px 0px #ea7cb5, 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .how-works-header {
+    padding: 40px 24px 32px;
+    
+    .header-content {
+      h1 {
+        font-size: 32px;
+        line-height: 44px;
+      }
+      
+      .header-description {
+        font-size: 20px;
+        line-height: 28px;
+      }
+    }
+  }
+  
+  .cards-container {
+    padding: 0 24px 24px;
+  }
+  
+  .how-works-card {
+    padding: 20px 24px;
+    min-height: auto;
+    
+    .card-header {
+      h2 {
+        font-size: 22px;
+        line-height: 30px;
+        width: 100%;
+      }
+    }
+    
+    .card-points {
+      .point-item {
+        p {
+          font-size: 18px;
+          line-height: 28px;
+        }
+      }
+    }
+  }
+  
+  .questions-section {
+    padding: 40px 24px 60px;
+    
+    h2 {
+      font-size: 28px;
+      line-height: 40px;
+    }
+    
+    .faq-button {
+      padding: 12px 48px;
+      font-size: 14px;
+    }
+  }
+}

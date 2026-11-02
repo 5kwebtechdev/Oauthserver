@@ -1,0 +1,68 @@
+.coin-helpline-page {
+  padding: 24px;
+  color: #2e2e2e;
+  font-family: Nunito, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.back-link {
+  color: #2e2e2e;
+  font-size: 20px;
+  text-decoration: none;
+  background: transparent; /* remove default button/bg */
+  border: none; /* remove border line */
+  padding: 0; /* remove extra padding so SVG sits flush */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* keep an accessible focus style */
+.back-link:focus {
+  outline: 2px solid rgba(139,36,64,0.16);
+  outline-offset: 2px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.help-card {
+  display:flex;
+  justify-content:center;
+  margin: 8px 0 48px 0;
+}
+
+.help-inner {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  padding: 28px 36px;
+  max-width: 760px;
+  width: 100%;
+  text-align: center;
+}
+
+.help-inner h2 {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+}
+
+.subtitle { color: #7c7c7c; margin-bottom: 18px; }
+
+.email-link {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  color: #222;
+  text-decoration: none;
+  font-weight: 600;
+}

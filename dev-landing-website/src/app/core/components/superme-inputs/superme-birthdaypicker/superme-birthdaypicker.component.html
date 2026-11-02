@@ -1,0 +1,89 @@
+<div class="birthday-picker-wrapper" [class.variant-green]="colorVariant === 'green'" #pickerWrapper>
+  <!-- Input Display -->
+  <div class="birthday-input" (click)="togglePicker()" [class.active]="isOpen">
+    <span class="placeholder-text" *ngIf="!hasValue">{{ placeholder }}</span>
+    <span class="selected-date" *ngIf="hasValue">
+      {{ selectedDay }} {{ monthsList[selectedMonth - 1] }} {{ selectedYear }}
+    </span>
+  </div>
+
+  <!-- Picker Popup -->
+  @if (isOpen) {
+    <div class="picker-popup">
+      <!-- Compact View (keep visible when expanded) -->
+      @if (isOpen) {
+        <div class="compact-view">
+          <div class="date-selection-container ">
+          <div class="compact-selector" (click)="expandSection('day')">
+            <span class="compact-value">{{ selectedDay }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="9" viewBox="0 0 15 9" fill="none">
+              <path d="M1.63003 0.5H12.7863C13.7894 0.5 14.291 1.71406 13.5832 2.42188L8.00503 8C7.56441 8.44063 6.85191 8.44063 6.41597 8L0.833157 2.42188C0.125344 1.71406 0.626907 0.5 1.63003 0.5Z" fill="#772817" stroke="#772817"/>
+            </svg>
+          </div>
+          
+          <div class="compact-selector" (click)="expandSection('month')">
+            <span class="compact-value">{{ monthsList[selectedMonth - 1] }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="9" viewBox="0 0 15 9" fill="none">
+              <path d="M1.63003 0.5H12.7863C13.7894 0.5 14.291 1.71406 13.5832 2.42188L8.00503 8C7.56441 8.44063 6.85191 8.44063 6.41597 8L0.833157 2.42188C0.125344 1.71406 0.626907 0.5 1.63003 0.5Z" fill="#772817" stroke="#772817"/>
+            </svg>
+          </div>
+          
+          <div class="compact-selector" (click)="expandSection('year')">
+            <span class="compact-value">{{ selectedYear }}</span>
+           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="9" viewBox="0 0 15 9" fill="none">
+  <path d="M1.63003 0.5H12.7863C13.7894 0.5 14.291 1.71406 13.5832 2.42188L8.00503 8C7.56441 8.44063 6.85191 8.44063 6.41597 8L0.833157 2.42188C0.125344 1.71406 0.626907 0.5 1.63003 0.5Z" fill="#772817" stroke="#772817"/>
+</svg>
+          </div>
+          </div>
+        </div>
+      }
+
+      <!-- Expanded View -->
+      @if (isExpanded) {
+        <div class="expanded-view">
+          <div class="picker-container">
+            <!-- Day Column -->
+            <div #dayScroller class="scroll-column" (scroll)="onDayScroll($event)">
+              @for (day of daysList; let i = $index; track i) {
+                <div
+                  class="scroll-item"
+                  [class.selected]="isItemSelected(daysList, i, 'day')"
+                  (click)="selectItem('day', i)">
+                  {{ day }}
+                </div>
+              }
+            </div>
+
+            <!-- Month Column -->
+            <div #monthScroller class="scroll-column" (scroll)="onMonthScroll($event)">
+              @for (month of monthsList; let i = $index; track i) {
+                <div
+                  class="scroll-item"
+                  [class.selected]="isItemSelected(monthsList, i, 'month')"
+                  (click)="selectItem('month', i)">
+                  {{ month }}
+                </div>
+              }
+            </div>
+
+            <!-- Year Column -->
+            <div #yearScroller class="scroll-column" (scroll)="onYearScroll($event)">
+              @for (year of yearsList; let i = $index; track i) {
+                <div
+                  class="scroll-item"
+                  [class.selected]="isItemSelected(yearsList, i, 'year')"
+                  (click)="selectItem('year', i)">
+                  {{ year }}
+                </div>
+              }
+            </div>
+          </div>
+
+          <button class="done-button" (click)="done()">Done</button>
+
+        </div>
+      }
+    </div>
+  }
+</div>
+

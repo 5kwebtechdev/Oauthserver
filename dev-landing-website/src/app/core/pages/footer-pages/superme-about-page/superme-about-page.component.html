@@ -1,0 +1,110 @@
+<div class="company-page">
+  <app-landing-navbar></app-landing-navbar>
+
+  <main class="company-main">
+    <section class="company-hero" aria-labelledby="company-title">
+      <img
+        class="company-hero__image"
+        [src]="assetRoot + '/about-hero.png'"
+        alt="SuperMeApp learners growing together"
+      />
+      <div class="company-hero__content">
+        <h1 id="company-title">
+          Learn. Reflect. Grow.<br />
+          <span>Every Day</span>
+        </h1>
+        <p>
+          SuperMe is the all-in-one self-improvement platform built for people who want more — more clarity,
+          more skills, more momentum. We've replaced five scattered apps with one seamless experience designed
+          around one goal: <em>helping you become better, every single day.</em>
+        </p>
+      </div>
+    </section>
+
+    <section class="company-problem" aria-labelledby="problem-title">
+      <div class="section-copy">
+        <h2 id="problem-title" class="lined-title">The Problem</h2>
+        <p>
+          Self-improvement is fragmented. Your tasks on one app, reminders on another, your journal is in a
+          notebook, your tutor is on WhatsApp, learning and your motivation? Gone by Tuesday. People don't lack
+          the desire to grow — they lack a system that makes it easy.
+        </p>
+      </div>
+      <img
+        class="company-problem__image"
+        [src]="assetRoot + '/about-problem.png'"
+        alt="SuperMeApp bringing fragmented self-improvement tools together"
+      />
+    </section>
+
+    <section class="company-built" aria-labelledby="built-title">
+      <h2 id="built-title">What We've Built</h2>
+      <div class="company-built__grid">
+        <article class="built-card" *ngFor="let feature of features">
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="company-mission" aria-label="Our mission and vision">
+      <article>
+        <h2 class="lined-title">Our Mission</h2>
+        <p>To make self-improvement simple, accessible, and part of everyday life.</p>
+      </article>
+      <article>
+        <h2 class="lined-title">Our Vision</h2>
+        <p>
+          A world where becoming better every day feels <em>natural, achievable, and rewarding</em> — for
+          everyone, everywhere.
+        </p>
+      </article>
+      <p class="company-mission__tagline">
+        SuperMe isn't just an app. It's <strong>your daily edge!</strong>
+      </p>
+    </section>
+
+    <section class="company-comparison" aria-labelledby="comparison-title">
+      <h2 id="comparison-title">Why SuperMe Wins</h2>
+      <div class="comparison-table" role="table" aria-label="SuperMeApp comparison">
+        <div class="comparison-table__column comparison-table__column--others" role="rowgroup">
+          <div class="comparison-table__header" role="columnheader">Others</div>
+          <div class="comparison-table__cell" role="cell" *ngFor="let row of comparisons">
+            {{ row.others }}
+          </div>
+        </div>
+        <div class="comparison-table__column comparison-table__column--superme" role="rowgroup">
+          <div class="comparison-table__header comparison-table__brand" role="columnheader">
+            <img [src]="assetRoot + '/about-table-logo.png'" alt="" />
+            <span>SuperMe App</span>
+          </div>
+          <div class="comparison-table__cell" role="cell" *ngFor="let row of comparisons">
+            {{ row.superme }}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section *ngIf="teamMembers.length" id="meet-the-team" class="company-team" aria-labelledby="team-title">
+      <div class="company-team__intro">
+        <h2 id="team-title" class="lined-title">People behind SuperMeApp</h2>
+        <p>
+          We're bringing together technology, education, design and creativity to make personal growth more
+          engaging and accessible.
+        </p>
+      </div>
+
+      <div class="company-team__grid">
+        <article class="team-card" *ngFor="let member of teamMembers">
+          <img class="team-card__photo" [src]="member.photo" alt="SuperMeApp team portrait" loading="lazy" />
+          <div class="team-card__content">
+            <p class="team-card__designation">{{ member.designation }}</p>
+            <h3>{{ member.name }}</h3>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <app-common-footer></app-common-footer>
+</div>

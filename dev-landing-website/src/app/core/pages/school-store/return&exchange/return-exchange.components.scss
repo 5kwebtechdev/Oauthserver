@@ -1,0 +1,1122 @@
+// Design Tokens
+$app-accent: #90214d;
+$app-text: #282527;
+$app-text-secondary: rgba(#282527, 0.7);
+$app-bg-light: #ffffff;
+$app-bg-footer: #fce7eb;
+$app-border: rgba(#282527, 0.1);
+$app-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+
+// Font Families
+$font-primary: 'Fredoka', sans-serif;
+$font-secondary: 'Nunito', sans-serif;
+
+// Breakpoints
+$breakpoint-mobile: 768px;
+$breakpoint-tablet: 1024px;
+
+// Reset and Global Styles
+:host {
+  display: block;
+  width: 100%;
+}
+
+return-exchange {
+  display: block;
+  width: 100%;
+}
+
+// Main Container
+.return-exchange-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: center;
+  padding-top: 16px;
+  margin-bottom: 1rem;
+  width: 100%;
+  background-color: $app-bg-light;
+
+  @media (max-width: $breakpoint-mobile) {
+    gap: 24px;
+    padding-top: 12px;
+  }
+}
+
+// Header Section
+.header-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 24px;
+  gap: 32px;
+
+  @media (max-width: $breakpoint-mobile) {
+    padding: 0 16px;
+    gap: 16px;
+  }
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1318px;
+
+  @media (max-width: $breakpoint-mobile) {
+    max-width: 100%;
+  }
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  @media (max-width: $breakpoint-mobile) {
+    gap: 12px;
+  }
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+
+  &:hover {
+    background-color: rgba($app-accent, 0.06);
+  }
+
+  &:active {
+    background-color: rgba($app-accent, 0.12);
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.back-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.header-title {
+  font-family: $font-primary;
+  font-size: 25px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: $app-text;
+  margin: 0;
+  letter-spacing: -0.02em;
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 20px;
+  }
+}
+
+.help-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: $font-secondary;
+  font-size: 20px;
+  font-weight: 600;
+  color: $app-accent;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: opacity 0.3s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: inherit;
+    cursor: pointer;
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 16px;
+  }
+}
+
+// Content Section
+.content-section {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1318px;
+  padding: 0 24px;
+
+  @media (max-width: $breakpoint-tablet) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    padding: 0 16px;
+  }
+}
+
+// Order Details Card
+.order-details-card {
+  flex: 1;
+  max-width: 846px;
+  background-color: $app-bg-light;
+  border-radius: 16px;
+  box-shadow: $app-shadow;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow: hidden;
+
+  @media (max-width: $breakpoint-tablet) {
+    max-width: 100%;
+  }
+}
+
+.order-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+
+  @media (max-width: $breakpoint-mobile) {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.order-image {
+  flex-shrink: 0;
+  width: 148.5px;
+  height: 159px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: rgba($app-text, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+}
+
+.order-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+
+  @media (max-width: $breakpoint-mobile) {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.order-title {
+  font-family: $font-secondary;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: $app-text;
+  margin: 0 0 8px 0;
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 18px;
+  }
+}
+
+// Pickup Confirmation View
+.pickup-confirmation-section {
+  align-items: flex-start;
+}
+
+.pickup-confirmation-card {
+  width: 440px;
+  max-width: 440px;
+  background-color: $app-bg-light;
+  border-radius: 16px;
+  box-shadow: $app-shadow;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  @media (max-width: $breakpoint-tablet) {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+.delivery-box {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1.5px solid rgba($app-accent, 0.55);
+  background: $app-bg-light;
+}
+
+.delivery-icon {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.delivery-text {
+  flex: 1;
+}
+
+.delivery-label {
+  margin: 0;
+  font-family: $font-secondary;
+  font-weight: 600;
+  font-size: 14px;
+  color: $app-text-secondary;
+}
+
+.delivery-address {
+  margin: 4px 0 0 0;
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.25;
+  color: $app-text;
+}
+
+.pickup-title {
+  margin: 0;
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.25;
+  color: $app-text;
+}
+
+.pickup-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pickup-radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pickup-radio-custom {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba($app-accent, 0.8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: $app-accent;
+    transform: scale(0);
+    transition: transform 0.12s ease;
+  }
+
+  &.checked::after {
+    transform: scale(1);
+  }
+}
+
+.pickup-option-text {
+  font-family: $font-secondary;
+  font-weight: 800;
+  font-size: 20px;
+  color: $app-text;
+}
+
+.pickup-price-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pickup-price-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pickup-price-label {
+  font-family: $font-secondary;
+  font-weight: 600;
+  font-size: 16px;
+  color: $app-text-secondary;
+}
+
+.pickup-price-value {
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 18px;
+  color: $app-text;
+
+  &.accent {
+    color: $app-accent;
+  }
+}
+
+.pickup-price-line.total {
+  margin-top: 4px;
+}
+
+.pay-proceed-btn {
+  margin-top: 10px;
+  width: 100%;
+  height: 64px;
+  border-radius: 12px;
+  border: 1.5px solid rgba($app-text, 0.2);
+  background: $app-accent;
+  color: #fff;
+  font-family: $font-secondary;
+  font-weight: 800;
+  font-size: 22px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.05s ease;
+
+  &:hover {
+    opacity: 0.95;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Size Selection View
+.size-content {
+  align-items: flex-start;
+}
+
+.size-details-card {
+  flex: 1;
+  max-width: 846px;
+  background-color: $app-bg-light;
+  border-radius: 16px;
+  box-shadow: $app-shadow;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
+
+  @media (max-width: $breakpoint-tablet) {
+    max-width: 100%;
+  }
+}
+
+.size-select-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.size-select-label {
+  margin: 0;
+  font-family: $font-secondary;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.3;
+  color: $app-text;
+}
+
+.unit-switch {
+  display: inline-flex;
+  background: rgba($app-accent, 0.12);
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.unit-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.1;
+  color: $app-accent;
+  cursor: pointer;
+
+  &.active {
+    background: $app-accent;
+    color: $app-bg-light;
+  }
+}
+
+.size-table {
+  width: 100%;
+  border-top: 1px solid rgba($app-text, 0.4);
+  border-bottom: 1px solid rgba($app-text, 0.2);
+}
+
+.size-table-head,
+.size-table-row {
+  display: grid;
+  grid-template-columns: 28px 56px 1fr 1fr 1.3fr 1.3fr;
+  align-items: center;
+  column-gap: 10px;
+  padding: 10px 0;
+
+  @media (max-width: 980px) {
+    grid-template-columns: 28px 48px 1fr 1fr 1fr 1fr;
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 28px 44px 1fr 1fr;
+    row-gap: 6px;
+  }
+}
+
+.size-table-head {
+  padding-top: 14px;
+  padding-bottom: 12px;
+}
+
+.th {
+  font-family: $font-secondary;
+  font-weight: 600;
+  font-size: 14px;
+  color: rgba($app-text, 0.7);
+
+  @media (max-width: 640px) {
+    &:nth-child(n + 5) {
+      display: none;
+    }
+  }
+}
+
+.td {
+  font-family: $font-secondary;
+  font-weight: 600;
+  font-size: 14px;
+  color: $app-text;
+
+  @media (max-width: 640px) {
+    &:nth-child(n + 5) {
+      display: none;
+    }
+  }
+}
+
+.size-table-row {
+  border-top: 1px solid rgba($app-text, 0.12);
+  padding: 12px 0;
+}
+
+.size-radio {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 24px;
+  width: 24px;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.radio-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba($app-text, 0.5);
+  display: inline-block;
+  position: relative;
+  transition: all 0.15s ease;
+
+  &.checked {
+    border-color: $app-accent;
+  }
+
+  &.checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $app-accent;
+  }
+
+  &.disabled {
+    border-color: rgba($app-text, 0.25);
+  }
+}
+
+.stock-message {
+  margin: 0;
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.3;
+  color: #1f8a3b;
+
+  &.out {
+    color: rgba($app-text, 0.7);
+  }
+}
+
+.measure-title {
+  margin: 16px 0 8px;
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.3;
+  color: $app-text;
+}
+
+.measure-graphic {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 12px;
+
+  img {
+    max-width: 520px;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+}
+
+.measure-steps {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: $font-secondary;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.35;
+  color: rgba($app-text, 0.75);
+
+  .step-label {
+    font-weight: 800;
+    color: $app-text;
+  }
+}
+
+// Price Difference Card
+.price-diff-card {
+  flex: 1;
+  max-width: 440px;
+  background: $app-bg-light;
+  border-radius: 16px;
+  box-shadow: $app-shadow;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  @media (max-width: $breakpoint-tablet) {
+    max-width: 100%;
+  }
+}
+
+.price-title {
+  margin: 0;
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: $app-text;
+}
+
+.price-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.price-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-family: $font-secondary;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.3;
+  color: rgba($app-text, 0.75);
+
+  &.total {
+    color: rgba($app-text, 0.85);
+  }
+}
+
+.price-label {
+  flex: 1;
+}
+
+.price-value {
+  color: $app-text;
+  font-weight: 700;
+}
+
+.price-line.total .price-value {
+  color: $app-accent;
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+// Upload Proof View
+.photo-upload-section {
+  align-items: flex-start;
+}
+
+.upload-panel {
+  flex: 1;
+  max-width: 846px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  @media (max-width: $breakpoint-tablet) {
+    max-width: 100%;
+  }
+}
+
+.upload-area {
+  width: 100%;
+  min-height: 220px;
+  border-radius: 20px;
+  border: 2px dashed rgba($app-accent, 0.35);
+  background: rgba($app-accent, 0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  padding: 18px;
+
+  &:hover {
+    background: rgba($app-accent, 0.04);
+    border-color: rgba($app-accent, 0.5);
+  }
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.camera-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+}
+
+.upload-caption {
+  margin: 0;
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.3;
+  color: rgba($app-text, 0.75);
+}
+
+.upload-preview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  img {
+    max-height: 360px;
+    width: 100%;
+    object-fit: contain;
+    border-radius: 14px;
+    background: $app-bg-light;
+  }
+}
+
+.remove-upload {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: rgba($app-text, 0.85);
+  color: $app-bg-light;
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.upload-helper {
+  margin: 0;
+  font-family: $font-secondary;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.3;
+  color: rgba($app-text, 0.75);
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 16px;
+  }
+}
+
+.upload-error {
+  margin: 0;
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.3;
+  color: $app-accent;
+}
+
+.refund-card {
+  flex: 1;
+  max-width: 440px;
+  background: $app-bg-light;
+  border-radius: 24px;
+  box-shadow: $app-shadow;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @media (max-width: $breakpoint-tablet) {
+    max-width: 100%;
+  }
+}
+
+.refund-title {
+  margin: 0;
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.2;
+  color: $app-text;
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 24px;
+  }
+}
+
+.refund-reason {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: $font-secondary;
+  font-weight: 700;
+  font-size: 25px;
+  line-height: 1.3;
+  color: $app-text;
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 16px;
+  }
+}
+
+.refund-radio {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid $app-accent;
+  position: relative;
+  flex-shrink: 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: $app-accent;
+  }
+}
+
+.order-meta {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 8px;
+
+  @media (max-width: $breakpoint-mobile) {
+    justify-content: center;
+    gap: 24px;
+  }
+}
+
+.meta-item {
+  font-family: $font-secondary;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: $app-text-secondary;
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 14px;
+  }
+}
+
+.order-school {
+  font-family: $font-secondary;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: $app-text-secondary;
+  margin: 0 0 8px 0;
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 14px;
+  }
+}
+
+.order-price {
+  font-family: $font-secondary;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: $app-accent;
+  margin: 0;
+  margin-top: 8px;
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 18px;
+  }
+}
+
+// Reason Selection Card
+.reason-selection-card {
+  flex: 1;
+  max-width: 440px;
+  background-color: $app-bg-light;
+  border-radius: 24px;
+  box-shadow: $app-shadow;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow: hidden;
+
+  @media (max-width: $breakpoint-tablet) {
+    max-width: 100%;
+  }
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.card-title {
+  font-family: $font-secondary;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: $app-text;
+  margin: 0;
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 18px;
+  }
+}
+
+.reason-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+.reason-option {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.option-label {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 0;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgba($app-accent, 0.03);
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    padding: 12px 0;
+    gap: 10px;
+  }
+}
+
+.option-radio {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+.radio-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba($app-text, 0.7);
+  flex-shrink: 0;
+  background-color: transparent;
+  transition: all 0.2s ease;
+
+  @media (max-width: $breakpoint-mobile) {
+    width: 20px;
+    height: 20px;
+  }
+
+  &.checked {
+    border-color: $app-accent;
+    background-color: $app-accent;
+    box-shadow: inset 0 0 0 4px $app-bg-light;
+
+    &::after {
+      content: '';
+    }
+  }
+
+  &::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: $app-bg-light;
+  }
+}
+
+.option-text {
+  font-family: $font-secondary;
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: $app-text;
+  flex: 1;
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 16px;
+  }
+}
+
+.card-footer {
+  padding: 0;
+  width: 100%;
+  margin-top: 8px;
+}
+
+// Utility Classes
+.hidden {
+  display: none;
+}
+
+// Responsive Adjustments
+@media (max-width: 600px) {
+  .header-section {
+    padding: 0 12px;
+  }
+
+  .content-section {
+    padding: 0 12px;
+  }
+
+  .reason-options {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+}

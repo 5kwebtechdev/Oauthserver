@@ -1,0 +1,88 @@
+<div class="filter-modal-overlay" *ngIf="isOpen" (click)="onClose()"></div>
+
+<div class="filter-modal-container" *ngIf="isOpen">
+  <!-- Modal Header -->
+  <div class="modal-header">
+    <h2 class="modal-title">All Filters</h2>
+    <button
+      class="close-button"
+      (click)="onClose()"
+      aria-label="Close filters modal"
+      type="button">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true">
+        <path
+          d="M18 6L6 18M6 6L18 18"
+          stroke="#282527"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Modal Body -->
+  <div class="modal-body">
+    <!-- Status Filter Section -->
+    <section class="filter-section">
+      <h3 class="section-title">Status</h3>
+
+      <div class="filter-options">
+        <label
+          class="filter-option-item"
+          *ngFor="let status of statusOptions">
+          <input
+            type="checkbox"
+            class="checkbox-input"
+            [checked]="isStatusSelected(status.value)"
+            (change)="toggleStatus(status.value)"
+            aria-label="Filter by {{ status.label }}" />
+          <span class="checkbox-custom"></span>
+          <span class="option-label">{{ status.label }}</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="section-divider"></div>
+
+    <!-- Time Filter Section -->
+    <section class="filter-section">
+      <h3 class="section-title">Time</h3>
+
+      <div class="filter-options">
+        <label
+          class="filter-radio-item"
+          *ngFor="let timeRange of timeRangeOptions">
+          <input
+            type="radio"
+            class="radio-input"
+            [value]="timeRange.value"
+            [checked]="selectedTimeRange === timeRange.value"
+            (change)="selectTimeRange(timeRange.value)"
+            [attr.aria-label]="'Filter by ' + timeRange.label" />
+          <span class="radio-custom" [class.radio-selected]="selectedTimeRange === timeRange.value"></span>
+          <span class="option-label">{{ timeRange.label }}</span>
+        </label>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal Footer -->
+  <div class="modal-footer">
+    <div class="btn">
+    <superme-button
+      type="magenta"
+      size="large"
+      [text]="applyButtonText"
+      (clickEvent)="onApply()"
+      aria-label="Apply filters">
+    </superme-button>
+    </div>
+  </div>
+</div>

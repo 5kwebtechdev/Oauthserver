@@ -1,0 +1,202 @@
+<div class="tutor-profile-page">
+  <!-- Header Navigation -->
+  <div class="profile-header">
+    <button class="back-btn" (click)="close()" aria-label="Go back">
+      <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
+        <path d="M13.2929 27.2929C12.9024 27.6834 12.9024 28.3166 13.2929 28.7071L19.6569 35.0711C20.0474 35.4616 20.6805 35.4616 21.0711 35.0711C21.4616 34.6805 21.4616 34.0474 21.0711 33.6569L15.4142 28L21.0711 22.3431C21.4616 21.9526 21.4616 21.3195 21.0711 20.9289C20.6805 20.5384 20.0474 20.5384 19.6569 20.9289L13.2929 27.2929ZM42 29C42.5523 29 43 28.5523 43 28C43 27.4477 42.5523 27 42 27V28V29ZM14 28V29H42V28V27H14V28Z" fill="#282527"/>
+      </svg>
+    </button>
+    <button class="heart-btn" (click)="onFavorite()" [class.liked]="isLiked" aria-label="Favorite tutor">
+      <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60" fill="none">
+        <g filter="url(#filter0_d_4507_48920)">
+          <circle cx="30" cy="30" r="24" fill="white"/>
+          <mask id="mask0_4507_48920" maskUnits="userSpaceOnUse" x="18" y="18" width="24" height="24">
+            <rect x="18" y="18" width="24" height="24" fill="#282527"/>
+          </mask>
+          <g mask="url(#mask0_4507_48920)">
+            <path d="M30 38.9984L28.55 37.6984C26.8667 36.1818 25.475 34.8734 24.375 33.7734C23.275 32.6734 22.4 31.6859 21.75 30.8109C21.1 29.9359 20.6458 29.1318 20.3875 28.3984C20.1292 27.6651 20 26.9151 20 26.1484C20 24.5818 20.525 23.2734 21.575 22.2234C22.625 21.1734 23.9333 20.6484 25.5 20.6484C26.3667 20.6484 27.1917 20.8318 27.975 21.1984C28.7583 21.5651 29.4333 22.0818 30 22.7484C30.5667 22.0818 31.2417 21.5651 32.025 21.1984C32.8083 20.8318 33.6333 20.6484 34.5 20.6484C36.0667 20.6484 37.375 21.1734 38.425 22.2234C39.475 23.2734 40 24.5818 40 26.1484C40 26.9151 39.8708 27.6651 39.6125 28.3984C39.3542 29.1318 38.9 29.9359 38.25 30.8109C37.6 31.6859 36.725 32.6734 35.625 33.7734C34.525 34.8734 33.1333 36.1818 31.45 37.6984L30 38.9984Z" fill="#282527"/>
+          </g>
+        </g>
+        <defs>
+          <filter id="filter0_d_4507_48920" x="0" y="0" width="60" height="60" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+            <feOffset/>
+            <feGaussianBlur stdDeviation="3"/>
+            <feComposite in2="hardAlpha" operator="out"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 0.419608 0 0 0 0 0.396078 0 0 0 0 0.415686 0 0 0 0.15 0"/>
+            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_4507_48920"/>
+            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_4507_48920" result="shape"/>
+          </filter>
+        </defs>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <main class="profile-content">
+    <!-- Hero Section -->
+    <section class="profile-hero">
+      <div class="avatar-wrapper">
+        <div class="avatar" 
+          [style.background-image]="'url(' + (tutor?.profilePicUrl || 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png') + ')'">
+        </div>
+      </div>
+      
+      <div class="tutor-info">
+        <h1 class="tutor-name">{{ tutor?.name || 'Unknown Tutor' }}</h1>
+        <p class="tutor-achievement">{{ tutor?.qualification || 'Subject Expert' }}</p>
+      </div>
+
+      <div class="stats-badges">
+        <div class="stat-badge">
+          <img src="/assets/Icons-Neutral/Experience.png" alt="" aria-hidden="true" />
+          <span class="stat-text">{{ getExperienceYears() }} years Exp</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-badge" (click)="onFavorite()">
+          <img src="/assets/Icons-Neutral/Icon-Tutor-Like.png" alt="" aria-hidden="true" />
+          <span class="stat-text">{{ getLikesCount() }} likes</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-badge">
+          <img src="/assets/Icons-Neutral/Students.png" alt="" aria-hidden="true" />
+          <span class="stat-text">{{ tutor?.totalStudents || 0 }} students</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- What I Teach Section -->
+    <section class="what-teach-section">
+      <h2 class="section-title">What I teach</h2>
+      
+      <div class="teach-grid">
+        <div class="teach-row">
+          <span class="teach-label">Subjects</span>
+          <p class="teach-value">{{ getSubjectsString() }}</p>
+        </div>
+        
+        <div class="teach-row">
+          <span class="teach-label">Class</span>
+          <p class="teach-value">{{ getLevelsString() }}</p>
+        </div>
+        
+        <div class="teach-row">
+          <span class="teach-label">Board</span>
+          <p class="teach-value">{{ getBoardString() }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Teacher Details Card -->
+    <section class="details-card">
+      <div class="detail-row">
+        <div class="detail-icon-label">
+          <img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true" />
+          <span class="detail-label">Mode</span>
+        </div>
+        <p class="detail-value">{{ getContactModesString() }}</p>
+      </div>
+      
+      <div class="detail-row">
+        <div class="detail-icon-label">
+          <img src="assets/Icons-Neutral/Tutor-LanguageSpoken.png" alt="" aria-hidden="true" />
+          <span class="detail-label">Languages Spoken</span>
+        </div>
+        <p class="detail-value">{{ getLanguagesString() }}</p>
+      </div>
+      
+      <div class="detail-row">
+        <div class="detail-icon-label">
+          <img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="" aria-hidden="true" />
+          <span class="detail-label">Qualification</span>
+        </div>
+        <p class="detail-value">{{ tutor?.qualification || 'Not specified' }}</p>
+      </div>
+      
+      <div class="detail-row">
+        <div class="detail-icon-label">
+          <img src="assets/Icons-Neutral/Tutor-TimeDay.png" alt="" aria-hidden="true" />
+          <span class="detail-label">Days & Time</span>
+        </div>
+        <p class="detail-value">{{ getAvailabilityString() }}</p>
+      </div>
+      
+      <div class="detail-row detail-row-location">
+        <div class="detail-icon-label">
+          <img src="assets/Icons-Neutral/Tutor-Location.png" alt="" aria-hidden="true" />
+          <span class="detail-label">Location</span>
+        </div>
+        <div class="location-content">
+          <p class="detail-value">{{ tutor?.location || 'Location not specified' }}</p>
+          <a *ngIf="tutor?.location" class="map-link" (click)="viewOnMap()">See on map</a>
+        </div>
+      </div>
+      
+    </section>
+
+    <!-- Booking Section -->
+    <section class="booking-section">
+      <div class="price-info">
+        <span class="price-amount">₹{{ getHourlyRate() }}</span>
+        <span class="price-period">{{ getFeeTypeString() }}</span>
+      </div>
+      <div class="contact-now">
+      <superme-button type="lavendar" text="Contact Now" large (clickEvent)="bookCall()" [disabled]="isBooking"></superme-button>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+      <h2 class="section-title faq-title">FAQ's</h2>
+      
+      <div class="faq-list">
+        <div class="faq-item" *ngFor="let faq of tutorFaqs; let i = index" 
+          [class.expanded]="expandedFaqIndex === i"
+          (click)="toggleFaq(i)">
+          <div class="faq-question">
+            <span>{{ faq.question }}</span>
+            <svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18L9 12L15 6" stroke="#282527" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="faq-answer" *ngIf="expandedFaqIndex === i">
+            <p>{{ faq.answer }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <!-- Contact popup -->
+  <div *ngIf="showContactPopup" class="contact-popup" role="dialog" aria-modal="true" aria-label="Contact options" (click)="closeContactPopup()">
+    <div class="contact-popup-inner" (click)="$event.stopPropagation()" tabindex="-1">
+      <div class="contact-header">
+        <h3>Get in touch with Tutor</h3>
+        <button class="popup-close" aria-label="Close" (click)="closeContactPopup()">✕</button>
+      </div>
+
+      <div class="contact-options">
+        <label class="contact-option" [class.selected]="contactMode === 'call'" (click)="selectContactMode('call')">
+          <input type="radio" name="contactMode" [checked]="contactMode === 'call'" />
+          <span>Call</span>
+        </label>
+
+        <label class="contact-option" [class.selected]="contactMode === 'email'" (click)="selectContactMode('email')">
+          <input type="radio" name="contactMode" [checked]="contactMode === 'email'" />
+          <span>Email</span>
+        </label>
+      </div>
+
+      <div class="contact-actions">
+        <superme-button
+          type="lavendar"
+          [text]="contactMode === 'email' ? 'Send Email' : 'Copy phone number'"
+          large
+          (clickEvent)="handlePrimaryContactAction()"
+        ></superme-button>
+      </div>
+    </div>
+  </div>
+  
+</div>
+<app-footer></app-footer>

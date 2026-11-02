@@ -1,0 +1,227 @@
+<!-- ── Success screen ── -->
+<div *ngIf="success" class="flex flex-col items-center justify-center gap-6 py-8 w-full">
+  <div class="relative shrink-0" style="width:232px;height:164px">
+    <div class="absolute inset-0 w-full h-full flex items-center justify-center text-[64px]">🎉</div>
+  </div>
+
+  <div class="flex flex-col gap-6 items-center w-full max-w-[424px] px-2 sm:px-0">
+    <div class="flex flex-col gap-4 items-center text-center">
+      <p class="text-[20px] sm:text-[25px] text-[#282527] text-center" style="font-family:'Fredoka',sans-serif;font-weight:500">
+        You're on your way!
+      </p>
+      <p class="text-[15px] sm:text-[20px] opacity-70 text-[rgba(40,37,39,0.7)] text-center leading-[1.3] w-full" style="font-family:'Nunito',sans-serif;font-weight:600">
+        We have received your submission. Our team will review your profile and contact you on your provided phone number and email address within 2 business days.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="navigateHome()"
+      class="relative w-full h-[50px] rounded-[8px] overflow-hidden hover:opacity-90 transition-opacity"
+      style="background:linear-gradient(-82.08deg, #90214d 0%, #cd3578 99.93%);box-shadow:inset 0px -2px 2px 0px #ea7cb5;border:1px solid #4a0d25;"
+    >
+      <span class="text-[20px] font-semibold text-white" style="font-family:'Nunito',sans-serif">Go Back</span>
+    </button>
+  </div>
+</div>
+
+<!-- ── Step 3 form ── -->
+<div *ngIf="!success" class="flex flex-col gap-6">
+
+  <!-- Upload Picture -->
+  <div class="flex flex-col gap-3">
+    <span class="text-[14px] sm:text-[16px] font-semibold text-[#282527] tracking-[0.8px]" style="font-family:'Nunito',sans-serif">
+      {{ isAcademy ? 'Upload Academy Image' : 'Upload Picture' }} *
+    </span>
+
+    <!-- Uploaded state -->
+    <div *ngIf="profilePicture; else profileDropZone" class="flex flex-col gap-1">
+      <div class="relative h-[136px] w-full rounded-[6px] overflow-hidden"
+        [style.background]="hasPicError ? '#fce7eb' : '#ffffff'"
+        style="border:1px solid rgba(40,37,39,0.12)">
+        <img *ngIf="profilePicPreview" [src]="profilePicPreview" [alt]="profilePicture.name" class="w-full h-full object-contain" />
+        <div *ngIf="!profilePicPreview" class="w-full h-full flex items-center justify-center">
+          <span class="text-[13px] font-semibold text-[#6b656a] px-4 text-center" style="font-family:'Nunito',sans-serif">
+            {{ profilePicture.name }}
+          </span>
+        </div>
+        <button type="button" (click)="clearProfilePicture()"
+          class="absolute top-2 right-2 size-6 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-red-50 transition-colors">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" class="text-[#282527]">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <p *ngIf="hasPicError" class="text-[12px] font-semibold text-[#ce0800]" style="font-family:'Nunito',sans-serif">
+        {{ picError === 'format' ? 'Invalid file format' : 'File exceeds 5 MB limit' }}
+      </p>
+    </div>
+
+    <!-- Drop zone -->
+    <ng-template #profileDropZone>
+      <div
+        class="h-[136px] rounded-[6px] border-dashed cursor-pointer flex items-center justify-center transition-colors"
+        [ngClass]="dragOverProfile ? 'border-[#90214d] bg-[#fce7eb]' : 'border-[rgba(40,37,39,0.2)]'"
+        style="border-width:1px"
+        (dragover)="$event.preventDefault(); dragOverProfile = true"
+        (dragleave)="dragOverProfile = false"
+        (drop)="onProfileDrop($event)"
+        (click)="profileFileInput.click()"
+      >
+        <div class="flex flex-col items-center gap-2 text-center px-4">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="opacity-70 text-[#282527]">
+            <path d="M12 3v12M7 8l5-5 5 5M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p class="text-[14px] sm:text-[16px] font-semibold opacity-70 text-[#282527]" style="font-family:'Nunito',sans-serif">
+            Drag and drop files here, or <span class="underline">browse</span>
+          </p>
+          <p class="text-[12px] sm:text-[13px] opacity-70 text-[#282527]" style="font-family:'Nunito',sans-serif;font-weight:400">
+            JPG, PNG or JPEG files up to 5MB each
+          </p>
+        </div>
+        <input #profileFileInput type="file" accept=".jpg,.jpeg,.png" class="hidden" (change)="onProfileFileSelected($event)" />
+      </div>
+    </ng-template>
+
+    <p *ngIf="submitted && !profilePicture" class="text-[13px] font-semibold text-[#ce0800] -mt-4" style="font-family:'Nunito',sans-serif">
+      Please upload a profile picture
+    </p>
+
+    <p class="text-[13px] text-[#6b656a]" style="font-family:'Nunito',sans-serif;font-weight:500">
+      <span class="underline font-semibold">Note:</span>
+      {{ isAcademy ? "This may be a photo of your premises or your academy's logo. Use a clear, well-lit image." : 'Use 400x400px square image with face centered' }}
+    </p>
+  </div>
+
+  <!-- Certifications -->
+  <div class="flex flex-col gap-2">
+    <span class="text-[14px] sm:text-[16px] font-semibold text-[#282527] tracking-[0.8px]" style="font-family:'Nunito',sans-serif">
+      Certifications
+    </span>
+
+    <!-- Empty state -->
+    <div
+      *ngIf="certifications.length === 0"
+      class="h-[136px] rounded-[6px] border-dashed cursor-pointer flex items-center justify-center transition-colors"
+      [ngClass]="dragOverCert ? 'border-[#90214d] bg-[#fce7eb]' : 'border-[rgba(40,37,39,0.2)]'"
+      style="border-width:1px"
+      (dragover)="$event.preventDefault(); dragOverCert = true"
+      (dragleave)="dragOverCert = false"
+      (drop)="onCertDrop($event)"
+      (click)="certFileInput.click()"
+    >
+      <div class="flex flex-col items-center gap-2 text-center px-4">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="opacity-70 text-[#282527]">
+          <path d="M12 3v12M7 8l5-5 5 5M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p class="text-[16px] font-semibold opacity-70 text-[#282527]" style="font-family:'Nunito',sans-serif">
+          Drag and drop files here, or <span class="underline">browse</span>
+        </p>
+        <p class="text-[13px] opacity-70 text-[#282527]" style="font-family:'Nunito',sans-serif;font-weight:400">
+          JPG, PNG or PDF files up to 5MB each
+        </p>
+      </div>
+      <input #certFileInput type="file" accept=".jpg,.jpeg,.png,.pdf" multiple class="hidden" (change)="onCertFilesSelected($event)" />
+    </div>
+
+    <!-- Grid of tiles once ≥1 file uploaded -->
+    <div *ngIf="certifications.length > 0" class="grid grid-cols-3 sm:grid-cols-5 gap-2 items-start">
+      <ng-container *ngFor="let i of certTiles">
+        <!-- Uploaded tile -->
+        <div *ngIf="i < certifications.length" class="flex-1 flex flex-col gap-1 min-w-0">
+          <div class="relative h-[136px] rounded-[6px] overflow-hidden" [style.background]="certErrors[i] ? '#fce7eb' : '#f0f0f0'">
+            <img *ngIf="certPreviews[i]" [src]="certPreviews[i]" [alt]="certifications[i].name" class="w-full h-full object-cover" />
+            <div *ngIf="!certPreviews[i]" class="w-full h-full flex flex-col items-center justify-center gap-2 bg-[#f5f5f5]">
+              <svg width="32" height="36" viewBox="0 0 32 36" fill="none">
+                <rect width="32" height="36" rx="4" fill="#E0E0E0"/>
+                <path d="M8 8h12l4 4v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z" fill="white"/>
+                <path d="M20 8l4 4h-4V8z" fill="#BDBDBD"/>
+                <rect x="9" y="16" width="14" height="2" rx="1" fill="#9E9E9E"/>
+                <rect x="9" y="20" width="10" height="2" rx="1" fill="#9E9E9E"/>
+                <rect x="9" y="24" width="12" height="2" rx="1" fill="#9E9E9E"/>
+              </svg>
+              <span class="text-[9px] font-semibold text-[#6b656a] px-2 text-center break-all max-w-full" style="font-family:'Nunito',sans-serif">
+                {{ truncateName(certifications[i].name) }}
+              </span>
+            </div>
+            <button type="button" (click)="removeCertFile(i)"
+              class="absolute top-2 right-2 size-6 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-red-50 transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" class="text-[#282527]">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <p *ngIf="certErrors[i]" class="text-[11px] font-semibold text-[#ce0800]" style="font-family:'Nunito',sans-serif">
+            {{ certErrors[i] === 'format' ? 'Invalid format' : 'Exceeds 5 MB' }}
+          </p>
+        </div>
+
+        <!-- Empty "+" tile -->
+        <button
+          *ngIf="i >= certifications.length"
+          type="button"
+          (click)="certFileInput2.click()"
+          class="flex-1 h-[136px] rounded-[6px] border border-dashed border-[#282527] flex items-center justify-center hover:bg-[rgba(40,37,39,0.03)] transition-colors min-w-0"
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="stroke-width:1.5" class="text-[#282527]">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </ng-container>
+
+      <input #certFileInput2 type="file" accept=".jpg,.jpeg,.png,.pdf" multiple class="hidden" (change)="onCertFilesSelected($event)" />
+    </div>
+
+    <p class="text-[13px] text-[#6b656a] leading-relaxed" style="font-family:'Nunito',sans-serif;font-weight:500">
+      Upload the following documents (maximum 5 files, 5 MB each): Government ID — Aadhaar card / PAN card / Passport,
+      your highest educational qualification certificate, and any relevant teaching or professional certification.
+      PDF format preferred. JPEG and PNG also accepted. Providing certificates is optional but highly recommended
+      for faster approval and greater credibility.
+    </p>
+  </div>
+
+  <!-- Achievement -->
+  <div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-3">
+      <span class="text-[14px] sm:text-[16px] font-semibold text-[#282527] tracking-[0.8px]" style="font-family:'Nunito',sans-serif">
+        Achievement
+      </span>
+      <input
+        type="text"
+        [ngModel]="achievement"
+        (ngModelChange)="onAchievementInput($event)"
+        placeholder="eg. Gold Medalist in Mathematics"
+        [maxlength]="achievementMax"
+        class="h-11 sm:h-12 w-full px-4 rounded-[6px] border border-[rgba(40,37,39,0.2)] focus:border-[#90214d] text-[14px] sm:text-[16px] font-semibold text-[#282527] placeholder:text-[rgba(40,37,39,0.5)] placeholder:font-semibold outline-none bg-white transition-colors"
+        style="font-family:'Nunito',sans-serif"
+        name="achievement"
+      />
+    </div>
+    <p class="text-[13px] text-[#6b656a]" style="font-family:'Nunito',sans-serif;font-weight:500">
+      Helps students and parents better understand your experience and accomplishments.
+    </p>
+  </div>
+
+  <!-- CTAs -->
+  <div class="flex gap-4 mt-2">
+    <button
+      type="button"
+      (click)="handleBack()"
+      class="flex-1 py-3 rounded-[8px] text-[13px] font-bold text-[#90214d] border border-[#90214d] hover:bg-[#fce7eb] transition-colors"
+      style="font-family:'Nunito',sans-serif"
+    >
+      Back
+    </button>
+    <button
+      type="button"
+      (click)="handleSubmit()"
+      [disabled]="isSubmitting"
+      class="flex-1 py-3 rounded-[8px] text-[13px] font-bold text-[#fffeff] transition-opacity"
+      [ngClass]="isValid && !isSubmitting ? 'opacity-100 hover:opacity-90' : 'opacity-50 cursor-not-allowed'"
+      style="font-family:'Nunito',sans-serif;background:linear-gradient(-72.81deg, #90214d 0%, #cd3578 99.93%);border:1px solid #4a0d25;"
+      [style.box-shadow]="isValid && !isSubmitting ? '0px 0px 0.5px rgba(144,33,77,0.2), inset 0px -2px 2px 0px #ea7cb5' : 'none'"
+    >
+      {{ isSubmitting ? 'Submitting…' : 'Submit Application' }}
+    </button>
+  </div>
+</div>

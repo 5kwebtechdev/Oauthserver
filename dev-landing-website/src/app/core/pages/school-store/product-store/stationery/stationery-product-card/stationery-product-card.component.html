@@ -1,0 +1,19 @@
+<article class="stpc-card" [class.oos]="product.outOfStock" (click)="onOpen()">
+  <div class="stpc-image">
+    <img [src]="product.img" [alt]="product.title" loading="lazy">
+    <span class="stpc-tag" *ngIf="product.tag">{{ product.tag }}</span>
+  </div>
+
+  <div class="stpc-body">
+    <span class="stpc-brand" *ngIf="product.brand">{{ product.brand }}</span>
+    <h3 class="stpc-title">{{ product.title }}</h3>
+    <div class="stpc-price-row">
+      <span class="stpc-price">{{ product.price }}</span>
+      <span class="stpc-mrp" *ngIf="product.mrp && product.mrp !== product.price">{{ product.mrp }}</span>
+    </div>
+  </div>
+
+  <button type="button" class="stpc-add" [disabled]="product.outOfStock" (click)="onAdd($event)">
+    {{ product.outOfStock ? 'Notify' : 'Add' }}
+  </button>
+</article>

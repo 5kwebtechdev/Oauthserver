@@ -1,0 +1,167 @@
+@if (isOpen) {
+
+  <!-- Backdrop -->
+  <div
+    class="fixed inset-0 z-[999] bg-black/40"
+    (click)="close()"
+    aria-hidden="true"
+  ></div>
+
+  <!-- Drawer panel (right side) -->
+  <div
+    class="fixed right-0 top-0 bottom-0 z-[1000] bg-white flex flex-col"
+    style="width:50%; font-family: 'Nunito', sans-serif; box-shadow: -4px 0 24px rgba(0,0,0,0.15); height: 100%; border-radius: 0;"
+  >
+
+    <!-- ── Header ── -->
+    <div class="flex items-center gap-[12px] px-[20px] py-[18px] border-b border-[rgba(40,37,39,0.1)] flex-shrink-0">
+      <button
+        type="button"
+        (click)="close()"
+        class="w-[36px] h-[36px] flex items-center justify-center rounded-full hover:bg-[rgba(40,37,39,0.06)] transition-colors flex-shrink-0"
+        aria-label="Close filters"
+      >
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="#282527" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <span class="font-bold text-[25px] text-[#282527] tracking-[-0.02em]" style="font-family: Fredoka; font-weight: 500;">All Filters</span>
+    </div>
+
+    <!-- ── Category Tab Bar ── -->
+    <div class="flex items-center gap-[6px] px-[14px] py-[12px] border-b border-[rgba(40,37,39,0.1)] flex-shrink-0">
+
+      <!-- Left arrow -->
+      <button
+        type="button"
+        (click)="scrollTabsLeft()"
+        [disabled]="!canScrollLeft"
+        class="w-[34px] h-[34px] flex items-center justify-center flex-shrink-0 transition-colors"
+        style="background: #90214D; border: 1px solid #4A0D25; border-radius: 8px;"
+        [class.opacity-60]="!canScrollLeft"
+        [class.cursor-not-allowed]="!canScrollLeft"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <!-- Visible tabs -->
+      <div class="flex flex-1 gap-[20px]">
+        @for (tab of visibleTabs; track tab.key) {
+          <button
+            type="button"
+            (click)="selectTab(tab.key)"
+            class="flex-1 flex flex-col items-center justify-center gap-[3px] py-[9px] px-[4px] transition-colors"
+            [class.bg-[rgba(144,33,77,0.08)]]="activeTabKey === tab.key"
+            [style.border-bottom]="activeTabKey === tab.key ? '3px solid #9BB2D4' : '3px solid transparent'"
+            [style.border-radius]="activeTabKey === tab.key ? '3px' : '10px'"
+          >
+            @if (tab.iconUrl) {
+              <img [src]="tab.iconUrl" alt="" style="width:44px;height:44px;object-fit:contain;" />
+            }
+            <span
+              class="font-semibold text-[16px] leading-[1.2] whitespace-nowrap"
+              [class.text-[#90214D]]="activeTabKey === tab.key"
+              [class.text-[rgba(40,37,39,0.6)]]="activeTabKey !== tab.key"
+            >{{ tab.label }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- Right arrow -->
+      <button
+        type="button"
+        (click)="scrollTabsRight()"
+        [disabled]="!canScrollRight"
+        class="w-[34px] h-[34px] flex items-center justify-center flex-shrink-0 transition-colors"
+        style="background: #90214D; border: 1px solid #4A0D25; border-radius: 8px;"
+        [class.opacity-60]="!canScrollRight"
+        [class.cursor-not-allowed]="!canScrollRight"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M9 18l6-6-6-6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── Two-Column Filter Layout ── -->
+    <div class="flex flex-1">
+
+      <!-- Left Column — filter field labels -->
+      <div class="w-[110px] min-w-[110px] border-r border-[rgba(40,37,39,0.1)] flex-shrink-0 bg-[#fafafa]">
+        @for (field of filterFields; track field.fieldKey) {
+          <button
+            type="button"
+            (click)="selectFilter(field.fieldKey)"
+            class="relative w-full text-left px-[12px] py-[15px] transition-colors"
+            [class.bg-white]="activeFieldKey === field.fieldKey"
+          >
+            @if (activeFieldKey === field.fieldKey) {
+              <span class="absolute left-0 top-[8px] bottom-[8px] w-[3px] rounded-r-full bg-[#5B68A8]"></span>
+            }
+            <span
+              class="font-semibold text-[16px] leading-[1.4]"
+              [class.text-[#90214D]]="activeFieldKey === field.fieldKey"
+              [class.text-[rgba(40,37,39,0.55)]]="activeFieldKey !== field.fieldKey"
+            >{{ field.fieldLabel }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- Right Column — checklist -->
+      <div class="flex-1">
+        @for (option of currentOptions; track option) {
+          <div
+            class="flex items-center justify-between px-[16px] py-[13px] border-b border-[rgba(40,37,39,0.06)] transition-colors hover:bg-[rgba(40,37,39,0.02)] cursor-pointer"
+            (click)="toggleOption(option)"
+          >
+            <span class="text-[16px] leading-[1.4] flex-1 pr-[10px] select-none text-[#282527]"
+              [class.font-semibold]="isChecked(option)"
+            >{{ option }}</span>
+
+            <div
+              class="w-[18px] h-[18px] rounded-[4px] border-[2px] flex items-center justify-center flex-shrink-0 transition-colors"
+              [class.bg-[#90214D]]="isChecked(option)"
+              [class.border-[#90214D]]="isChecked(option)"
+              [class.border-[rgba(40,37,39,0.25)]]="!isChecked(option)"
+            >
+              @if (isChecked(option)) {
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              }
+            </div>
+          </div>
+        }
+
+        @if (currentOptions.length === 0) {
+          <p class="text-center text-[14px] text-[rgba(40,37,39,0.4)] py-[40px] font-['Nunito',sans-serif]">No options available</p>
+        }
+      </div>
+    </div>
+
+    <!-- ── Sticky Footer ── -->
+    <div
+      class="flex items-center justify-between gap-[10px] px-[16px] py-[14px] border-t border-[rgba(40,37,39,0.1)] bg-white flex-shrink-0"
+      style="box-shadow: 0 -2px 10px rgba(0,0,0,0.06);"
+    >
+      <button
+        type="button"
+        (click)="clearFilters()"
+        class="h-[46px] px-[20px] rounded-[10px] border-[1px] border-[#45506A] bg-white font-bold text-[14px] text-[#282527] transition-colors hover:border-[#90214D] font-['Nunito',sans-serif] whitespace-nowrap"
+      >
+        Clear Filters
+      </button>
+
+      <button
+        type="button"
+        class="h-[46px] px-[16px] rounded-[12px] font-bold text-[14px] text-white font-['Nunito',sans-serif] transition-opacity hover:opacity-90 whitespace-nowrap"
+        style="background-image: linear-gradient(90.64deg, #7284B9 0.01%, #505D83 99.99%); box-shadow: 0px 0px 1px 0.5px #505D8333, 0px -2px 2px 0px #8AA0CA inset; border-radius: 10px;"
+      >
+        Show {{ resultCount }} results
+      </button>
+    </div>
+
+  </div>
+}

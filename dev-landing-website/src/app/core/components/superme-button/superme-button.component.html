@@ -1,0 +1,50 @@
+<ng-container *ngIf="type; else missingType">
+  <div
+    class="button"
+    [ngClass]="classMap"
+    [attr.role]="buttonRole"
+    [attr.tabindex]="disabled ? -1 : 0"
+    [attr.aria-disabled]="disabled"
+    [attr.disabled]="disabled ? true : null"
+    (click)="handleClick($event)"
+    (keydown)="handleKeydown($event)">
+    <!-- Prev / Next navigation buttons use inline SVGs -->
+    <ng-container *ngIf="type === 'prev'">
+      <span class="sr-only">Previous</span>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 17 30" fill="none" aria-hidden="true">
+        <path d="M0.585686 16.1408C-0.195362 15.3597 -0.195362 14.0934 0.585686 13.3123L13.3136 0.584427C14.0947 -0.196622 15.361 -0.196622 16.142 0.584427C16.9231 1.36548 16.9231 2.63181 16.142 3.41285L4.82833 14.7266L16.142 26.0403C16.9231 26.8213 16.9231 28.0876 16.142 28.8687C15.361 29.6497 14.0947 29.6497 13.3136 28.8687L0.585686 16.1408ZM2 14.7266V16.7266H1.9999V14.7266V12.7266H2V14.7266Z" fill="#FDFDFD"/>
+      </svg>
+    </ng-container>
+
+    <ng-container *ngIf="type === 'next'">
+      <span class="sr-only">Next</span>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 17 30" fill="none" aria-hidden="true">
+        <path d="M16.1419 16.1408C16.9229 15.3597 16.9229 14.0934 16.1419 13.3123L3.41393 0.584427C2.63288 -0.196622 1.36655 -0.196622 0.585504 0.584427C-0.195545 1.36548 -0.195545 2.63181 0.585504 3.41285L11.8992 14.7266L0.585504 26.0403C-0.195545 26.8213 -0.195545 28.0876 0.585504 28.8687C1.36655 29.6497 2.63288 29.6497 3.41393 28.8687L16.1419 16.1408ZM14.7275 14.7266V16.7266H14.7276V14.7266V12.7266H14.7275V14.7266Z" fill="#FDFDFD"/>
+      </svg>
+    </ng-container>
+
+    <!-- Regular button content -->
+    <ng-container *ngIf="type !== 'prev' && type !== 'next'">
+      <ng-container *ngIf="showLeadingIcon">
+        <img class="btn-icon start" [src]="icon ?? ''" alt="" />
+      </ng-container>
+
+      <!-- Allow projected inline SVG or custom icon markup as leading content -->
+      <ng-content></ng-content>
+
+      <div class="btn-text">
+        <span *ngIf="secondaryText" class="secondary-text">{{ secondaryText }}</span>
+        <p>{{ text }}</p>
+      </div>
+
+      <ng-container *ngIf="showTrailingIcon">
+        <img class="btn-icon end" [src]="icon ?? ''" alt="" />
+        <span class="btn-count" *ngIf="count !== null">{{ count }}</span>
+      </ng-container>
+    </ng-container>
+  </div>
+</ng-container>
+
+<ng-template #missingType>
+  <p class="missing-type">Button Style Not defined</p>
+</ng-template>

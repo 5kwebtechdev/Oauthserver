@@ -1,0 +1,35 @@
+<div class="badges-card">
+  <div class="items-container">
+    <div class="progress-container">
+      <div class="progress-text">{{ percentageText }}</div>
+
+      <div class="visuals-progress-wrapper">
+        <div class="icon-badge-wrapper">
+          <img class="badge-image" [src]="imageUrl" [alt]="title" />
+        </div>
+
+        <svg class="progress-ring" viewBox="0 0 100 100" aria-hidden="true">
+          <!-- background ring -->
+          <circle class="ring-bg" cx="50" cy="50" r="40" fill="none" stroke-width="8" />
+          <!-- progress ring -->
+          <circle
+            class="ring-progress"
+            cx="50"
+            cy="50"
+            r="40"
+            fill="none"
+            stroke-width="8"
+            [attr.stroke-dasharray]="(progress * 251.2) + ', 251.2'"
+          />
+        </svg>
+      </div>
+
+      <div class="badge-info">
+        <p class="level-text">{{ levelText || 'Level 1' }}</p>
+        <h3 class="title">{{ title }}</h3>
+      </div>
+    </div>
+
+    <p class="desc">{{ computedDescription }}</p>
+  </div>
+</div>

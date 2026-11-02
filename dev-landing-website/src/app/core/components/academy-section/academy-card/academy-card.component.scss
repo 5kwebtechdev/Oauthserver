@@ -1,0 +1,163 @@
+
+/* Mobile-first responsive academy card */
+
+.academy-card {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 0 6px rgba(107, 101, 106, 0.08);
+  align-items: start;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  cursor: pointer;
+}
+
+.academy-card:focus {
+  outline: 3px solid rgba(205, 53, 120, 0.16);
+  outline-offset: 2px;
+}
+
+.academy-card:active {
+  transform: translateY(1px);
+}
+
+.left-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.left-icon img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.title-and-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.card-title {
+  margin: 0;
+  color: #282527;
+  font-family: Nunito, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-weight: 600;
+  line-height: 1.3;
+  font-size: clamp(1rem, 2.2vw, 1.25rem); /* 16px - 20px */
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.card-meta {
+  margin-top: 6px;
+  color: rgba(40, 37, 39, 0.7);
+  font-family: inherit;
+  font-weight: 500;
+  font-size: clamp(0.875rem, 1.8vw, 1rem); /* 14px - 16px */
+  line-height: 1.3;
+}
+
+.level-pill {
+  border: 1px solid #4CAF50;
+  padding: 6px 12px;
+  color: #282527;
+  font-weight: 600;
+  font-size: 0.8125rem; /* 13px */
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.coin-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.coin-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.coin-value {
+  color: #282527;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.card-desc {
+  color: #282527;
+  font-weight: 500;
+  font-size: clamp(0.875rem, 1.8vw, 1rem);
+  line-height: 1.4;
+  opacity: 0.8;
+  margin: 8px 0 12px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.card-actions {
+  display: flex;
+  margin-top: auto;
+}
+
+
+.start-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Larger screens: more space and bigger thumbnail */
+@media (min-width: 720px) {
+  .academy-card {
+    grid-template-columns: 96px 1fr;
+    gap: 18px;
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .left-icon img {
+    width: 88px;
+    height: 88px;
+  }
+
+  .card-title { font-size: 1.25rem; }
+}
+
+/* Very small screens: stack image on top */
+@media (max-width: 420px) {
+  .academy-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .left-icon { order: -1; }
+
+  .card-actions { width: 100%; }
+}

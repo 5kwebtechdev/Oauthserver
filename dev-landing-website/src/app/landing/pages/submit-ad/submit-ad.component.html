@@ -1,0 +1,286 @@
+<div class="submit-ad-page">
+  <app-landing-navbar></app-landing-navbar>
+
+  <main class="submit-ad-main">
+    @if (submitted) {
+      <section class="submit-success" aria-live="polite">
+        <img [src]="successImg" alt="Ad submission received" width="1184" height="864" />
+        <div>
+          <h1>We've got your submission!</h1>
+          <p>Our team will review your ad and contact you on your provided phone number and email address within 2 business days.</p>
+        </div>
+        <button type="button" class="gradient-button" (click)="goBack()">Go Back</button>
+      </section>
+    } @else {
+      <div class="submit-ad-layout">
+        <section class="submit-ad-content" aria-labelledby="advertise-title">
+          <header class="submit-ad-header">
+            <img [src]="assetRoot + '/advertise-megaphone.png'" alt="" aria-hidden="true" width="1024" height="1024" />
+            <div>
+              <h1 id="advertise-title"><span>Advertise</span> {{ isAdvertisingPage ? 'With SuperMe' : 'on SuperMeApp' }}</h1>
+              <p class="submit-ad-header__lead">
+                @if (isAdvertisingPage) {
+                  Share your advertising idea with our team.<br />
+                  Explore suitable ways to introduce your brand in the SuperMe app.
+                } @else {
+                  Reach 1000s of motivated learners and parents<br />
+                  Promote your brand in a trusted space where growth happens daily.
+                }
+              </p>
+              <p class="submit-ad-header__note">
+                Please enter correct details, so that our team can get back to you
+              </p>
+            </div>
+          </header>
+
+          <form id="advertising-enquiry" class="advertise-form" (ngSubmit)="onSubmit()" novalidate>
+            <section class="form-section" aria-labelledby="details-heading">
+              <div class="form-section__heading">
+                <span>1</span>
+                <h2 id="details-heading">Your Details</h2>
+              </div>
+
+              <div class="details-grid details-grid--primary">
+                <div class="form-field">
+                  <label for="advertiser-name">Your Name <strong>*</strong></label>
+                  <input
+                    id="advertiser-name"
+                    type="text"
+                    placeholder="eg. Ramesh Kumar"
+                    [(ngModel)]="form.name"
+                    (blur)="touch('name')"
+                    name="advertiserName"
+                    maxlength="50"
+                    [class.form-control--error]="nameError"
+                  />
+                  @if (nameError) { <p class="field-error">{{ nameError }}</p> }
+                </div>
+
+                <div class="form-field">
+                  <label for="advertiser-email">Email</label>
+                  <input
+                    id="advertiser-email"
+                    type="email"
+                    placeholder="eg. you@company.com"
+                    [(ngModel)]="form.email"
+                    (blur)="touch('email')"
+                    name="advertiserEmail"
+                    [class.form-control--error]="emailError"
+                  />
+                  @if (emailError) { <p class="field-error">{{ emailError }}</p> }
+                </div>
+
+                <div class="form-field">
+                  <label for="advertiser-phone">Phone Number <strong>*</strong></label>
+                  <div class="phone-control" [class.form-control--error]="phoneError">
+                    <span>+91</span>
+                    <input
+                      id="advertiser-phone"
+                      type="tel"
+                      placeholder="Enter your number"
+                      [(ngModel)]="form.phone"
+                      (blur)="touch('phone')"
+                      name="advertiserPhone"
+                      maxlength="10"
+                    />
+                  </div>
+                  @if (phoneError) { <p class="field-error">{{ phoneError }}</p> }
+                </div>
+              </div>
+
+              <div class="details-grid details-grid--secondary">
+                <div class="form-field">
+                  <label for="advertiser-website">Organisation Website (If any)</label>
+                  <input
+                    id="advertiser-website"
+                    type="url"
+                    placeholder="eg. www.yourwebsite.com"
+                    [(ngModel)]="form.website"
+                    (blur)="touch('website')"
+                    name="advertiserWebsite"
+                    [class.form-control--error]="websiteError"
+                  />
+                  @if (websiteError) { <p class="field-error">{{ websiteError }}</p> }
+                </div>
+
+                <div class="form-field">
+                  <label for="advertiser-social">Social Media Handle (If any)</label>
+                  <input
+                    id="advertiser-social"
+                    type="url"
+                    placeholder="eg. you@company.com"
+                    [(ngModel)]="form.socialMedia"
+                    (blur)="touch('socialMedia')"
+                    name="advertiserSocial"
+                    [class.form-control--error]="socialMediaError"
+                  />
+                  @if (socialMediaError) { <p class="field-error">{{ socialMediaError }}</p> }
+                </div>
+              </div>
+            </section>
+
+            <section class="form-section" aria-labelledby="about-ad-heading">
+              <div class="form-section__heading">
+                <span>2</span>
+                <h2 id="about-ad-heading">About your ad</h2>
+              </div>
+
+              <div class="form-field">
+                <div class="field-label-row">
+                  <label for="ad-description">Tell Us About Your Ad <strong>*</strong></label>
+                  <small>{{ form.adDescription.length }}/300</small>
+                </div>
+                <textarea
+                  id="ad-description"
+                  placeholder="What are you promoting? Who is it for?"
+                  [(ngModel)]="form.adDescription"
+                  (blur)="touch('adDescription')"
+                  name="adDescription"
+                  maxlength="300"
+                  rows="4"
+                  [class.form-control--error]="adDescriptionError"
+                ></textarea>
+                @if (adDescriptionError) {
+                  <p class="field-error">{{ adDescriptionError }}</p>
+                } @else {
+                  <p class="field-help">Keep it between 50–300 words. The more context you give, the faster we can review it.</p>
+                }
+              </div>
+            </section>
+
+            <section class="form-section" aria-labelledby="banner-heading">
+              <div class="form-section__heading">
+                <span>3</span>
+                <h2 id="banner-heading">Ad banner</h2>
+              </div>
+
+              <div
+                class="upload-control"
+                [class.upload-control--dragging]="isDragging"
+                [class.upload-control--error]="fileError"
+                [class.upload-control--preview]="previewUrl"
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)"
+                (click)="!previewUrl && fileInput.click()"
+              >
+                @if (fileError) {
+                  <img [src]="assetRoot + '/upload.svg'" alt="" width="32" height="32" />
+                  <strong class="upload-error">{{ fileError }}</strong>
+                  <small>JPG, PNG or PDF files up to 5MB each</small>
+                } @else if (selectedFile && previewUrl) {
+                  <img class="upload-preview" [src]="previewUrl" [alt]="'Preview of ' + selectedFile.name" />
+                  <div class="upload-file-row">
+                    <span>{{ selectedFile.name }}</span>
+                    <button type="button" (click)="removeFile($event)">Remove</button>
+                  </div>
+                } @else if (selectedFile) {
+                  <img [src]="assetRoot + '/upload.svg'" alt="" width="32" height="32" />
+                  <strong>{{ selectedFile.name }}</strong>
+                  <button type="button" (click)="removeFile($event)">Remove file</button>
+                  <small>JPG, PNG or PDF files up to 5MB each</small>
+                } @else {
+                  <img [src]="assetRoot + '/upload.svg'" alt="" width="32" height="32" />
+                  <p>Drag and drop files here, or <u>browse</u></p>
+                  <small>JPG, PNG or PDF files up to 5MB each</small>
+                }
+              </div>
+              <p class="field-help">Use high quality images which is clear and easy to read</p>
+              <input
+                #fileInput
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf"
+                (change)="onFileChange($event)"
+                class="visually-hidden"
+                tabindex="-1"
+              />
+            </section>
+
+            <button
+              type="submit"
+              class="gradient-button advertise-form__submit"
+              [disabled]="!isFormValid || sending"
+            >
+              {{ sending ? 'Submitting…' : 'Submit for Review' }}
+            </button>
+            @if (sendError) { <p role="alert" class="form-submit-error">{{ sendError }}</p> }
+          </form>
+        </section>
+
+        <aside class="ad-placement" aria-labelledby="placement-title">
+          <header>
+            <div class="ad-placement__title-row">
+              <h2 id="placement-title">Where your ad appears</h2>
+              <img [src]="assetRoot + '/sparkle.svg'" alt="" aria-hidden="true" width="15" height="26" />
+            </div>
+            <p>{{ isAdvertisingPage ? 'Tell us what you want to promote. Our team will discuss suitable in-app options with you.' : 'Your ad can appear in multiple high-visibility spots across the SuperMeApp.' }}</p>
+          </header>
+          <img class="ad-placement__image" [src]="assetRoot + '/ad-placement.png'" alt="SuperMeApp advertising placements" width="887" height="1774" />
+          <div class="ad-placement__trust">
+            <span><img [src]="assetRoot + '/safe-trusted.svg'" alt="" width="40" height="40" /></span>
+            <div>
+              <strong>Safe, relevant, and trusted</strong>
+              <p>All ads are reviewed to ensure quality and a safe user experience.</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    }
+    @if (!submitted && isAdvertisingPage) {
+      <div class="advertise-info">
+        <section class="advertise-info__intro" aria-labelledby="advertise-benefits">
+          <h2 id="advertise-benefits">Why advertise with SuperMe?</h2>
+          <p>SuperMe brings planning, habits, learning, and family activities together in one app. If your product or service is relevant to that experience, tell us about it. We review enquiries and discuss whether an advertising opportunity is suitable.</p>
+        </section>
+
+        <section aria-labelledby="advertise-options">
+          <h2 id="advertise-options">Advertising opportunities</h2>
+          <div class="advertise-info__cards">
+            <article>
+              <h3>In-app placements</h3>
+              <p>Share your banner and the details of what you want to promote. Our team can explain the available placements during the review.</p>
+            </article>
+            <article>
+              <h3>Relevant promotions</h3>
+              <p>Describe who your offer is for and where it fits within SuperMe. We consider each request for relevance before discussing next steps.</p>
+            </article>
+          </div>
+        </section>
+
+        <section aria-labelledby="advertise-process">
+          <h2 id="advertise-process">How it works</h2>
+          <ol class="advertise-info__steps">
+            <li><strong>Tell us about your business.</strong> Add your contact details and a short description of the advertisement.</li>
+            <li><strong>Share your creative.</strong> You can attach a banner for our team to review.</li>
+            <li><strong>Discuss the next step.</strong> Our team will review the enquiry and contact you using the details you provide.</li>
+          </ol>
+        </section>
+
+        <section aria-labelledby="advertise-faq">
+          <h2 id="advertise-faq">Frequently asked questions</h2>
+          <div class="advertise-info__faq">
+            <article>
+              <h3>How do I enquire about advertising?</h3>
+              <p>Complete the <a routerLink="/advertise-with-us" fragment="advertising-enquiry">advertising enquiry form</a> above with your contact details and a description of your ad.</p>
+            </article>
+            <article>
+              <h3>Do I need a finished banner?</h3>
+              <p>You can send your enquiry without an attachment. If you already have a banner, you can include it for review.</p>
+            </article>
+            <article>
+              <h3>Where will my ad appear?</h3>
+              <p>Placement depends on the request and what is available. Our team can discuss the options after reviewing your enquiry.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="advertise-info__contact" aria-labelledby="advertise-contact">
+          <h2 id="advertise-contact">Talk to our team</h2>
+          <p>Ready to share your idea? <a routerLink="/advertise-with-us" fragment="advertising-enquiry">Send an advertising enquiry</a> or <a routerLink="/contact-us">contact us</a> with a question.</p>
+        </section>
+      </div>
+    }
+  </main>
+
+  <app-common-footer></app-common-footer>
+</div>

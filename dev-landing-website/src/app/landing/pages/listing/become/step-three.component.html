@@ -1,0 +1,102 @@
+<!-- SUCCESS -->
+<div *ngIf="success" class="success">
+  <div class="success__emoji">🎉</div>
+
+  <div class="success__content">
+    <h2>{{ config.successTitle }}</h2>
+    <p>{{ config.successCopy }}</p>
+
+    <button type="button" class="primary success__button" (click)="navigateHome()">
+      Go Back
+    </button>
+  </div>
+</div>
+
+<!-- FORM -->
+<div *ngIf="!success" class="listing-fields">
+  <div class="field">
+    <label>Upload Photos</label>
+    <p class="hint">
+      Add up to {{ maxImages }} clear JPG, PNG or WebP images. Maximum 5 MB each.
+    </p>
+
+    <div
+      *ngIf="images.length === 0"
+      class="drop-zone"
+      [class.drop-zone--active]="dragOver"
+      (dragover)="$event.preventDefault(); dragOver = true"
+      (dragleave)="dragOver = false"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()"
+    >
+      <div class="drop-zone__icon">↑</div>
+      <strong>Drag and drop photos here, or browse</strong>
+      <span>JPG, PNG, WEBP · max 5 MB</span>
+
+      <input
+        #fileInput
+        type="file"
+        accept=".jpg,.jpeg,.png,.webp"
+        multiple
+        hidden
+        (change)="onFilesSelected($event)"
+      />
+    </div>
+
+    <div *ngIf="images.length > 0" class="image-grid">
+      <div *ngFor="let image of images; let i = index" class="image-tile">
+        <img [src]="previews[i]" [alt]="image.name" />
+        <button type="button" class="image-tile__remove" (click)="removeImage(i)">×</button>
+        <p *ngIf="imageErrors[i]" class="error">{{ imageErrors[i] }}</p>
+      </div>
+
+      <button
+        *ngIf="images.length < maxImages"
+        type="button"
+        class="image-tile image-tile--add"
+        (click)="fileInput2.click()"
+      >
+        +
+      </button>
+
+      <input
+        #fileInput2
+        type="file"
+        accept=".jpg,.jpeg,.png,.webp"
+        multiple
+        hidden
+        (change)="onFilesSelected($event)"
+      />
+    </div>
+  </div>
+
+  <div class="review-note">
+    <strong>What happens next?</strong>
+    <p>
+      Your submission will be created as <b>Verification pending</b>.
+      A SuperMe admin will review it before it can appear publicly.
+    </p>
+  </div>
+
+  <p *ngIf="submitError" class="error submit-error">{{ submitError }}</p>
+
+  <div class="actions">
+    <button
+      type="button"
+      class="secondary"
+      [disabled]="isSubmitting"
+      (click)="back.emit()"
+    >
+      Back
+    </button>
+
+    <button
+      type="button"
+      class="primary"
+      [disabled]="!isValid"
+      (click)="handleSubmit()"
+    >
+      {{ isSubmitting ? 'Submitting...' : 'Submit Listing' }}
+    </button>
+  </div>
+</div>

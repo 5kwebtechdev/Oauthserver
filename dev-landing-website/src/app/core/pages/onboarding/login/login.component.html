@@ -1,0 +1,116 @@
+<div class="login-page">
+  <section class="login-panel" aria-label="Login form">
+    <button type="button" class="brand-button" (click)="goHome()" aria-label="Go to SuperMe home">
+      <app-logo></app-logo>
+    </button>
+
+    <button type="button" class="back-button" (click)="goBack()" aria-label="Go back">
+      <span aria-hidden="true">‹</span>
+      Back
+    </button>
+
+    <div class="login-copy">
+      <p class="eyebrow">Welcome back</p>
+      <h1>Login to SuperMe</h1>
+      <p>Continue your habits, learning, tasks, and pet growth from where you left off.</p>
+    </div>
+
+    <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="login-form">
+      <small class="helper-text">Only for login and safety</small>
+      <div class="input-group">
+        <input [ngClass]="{'error': email.invalid && email.dirty}" formControlName="email" type="email" placeholder="Email" />
+        <div class="error" *ngIf="email.invalid && email.dirty">
+          Oops! That email looks off. Please check it again.
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-with-toggle">
+          <input
+            formControlName="password"
+            [ngClass]="{'error': password.invalid && password.dirty}"
+            [type]="hidePassword ? 'password' : 'text'"
+            placeholder="Password"
+          />
+          <button type="button" class="toggle-eye" (click)="hidePassword = !hidePassword" [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'">
+            <svg *ngIf="hidePassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg *ngIf="!hidePassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
+        </div>
+        <a class="forgot-password" [routerLink]="['/auth/reset-password']" [queryParams]="{ mode: loginMode }">Forgot password?</a>
+      </div>
+
+      <div class="remember-row">
+        <label class="remember-me-item" for="rememberMe">
+          <input type="checkbox" [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}" id="rememberMe" />
+          <span>Remember me</span>
+        </label>
+      </div>
+
+      <button type="submit" class="login-btn" [disabled]="loading">
+        {{loading ? 'Logging in...' : 'Login'}}
+      </button>
+
+      <div class="error-message" *ngIf="loginError">{{ loginError }}</div>
+    </form>
+
+    <div class="or-divider"><span>OR</span></div>
+
+    <div class="social-login">
+      <social-media mode="login"></social-media>
+      <div class="signup-link">
+        <p>Don't have an account? <a routerLink="/auth/signup" [queryParams]="{step: '0.1'}">Sign up</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="splash-panel" aria-label="SuperMe preview">
+    <div class="splash-slide" *ngFor="let slide of splashSlides; let i = index" [class.active]="i === activeSlide">
+      <div class="splash-text">
+        <p class="splash-eyebrow">{{ slide.eyebrow }}</p>
+        <h2>{{ slide.title }}</h2>
+        <p>{{ slide.description }}</p>
+      </div>
+      <div class="splash-visual">
+        <img [src]="slide.image" [alt]="slide.title" />
+      </div>
+    </div>
+
+    <div class="splash-dots" aria-label="Splash slides">
+      <button
+        type="button"
+        *ngFor="let slide of splashSlides; let i = index"
+        [class.active]="i === activeSlide"
+        (click)="setActiveSlide(i)"
+        [attr.aria-label]="'Show slide ' + (i + 1)"
+      ></button>
+    </div>
+  </section>
+
+  <div class="country-modal-backdrop" *ngIf="showCountryCodeModal" (click)="closeCountryCodeModal()"></div>
+  <div class="country-modal" *ngIf="showCountryCodeModal" role="dialog" aria-modal="true">
+    <div class="country-modal__header">
+      <h3 class="country-modal__title">Country code</h3>
+      <button class="country-modal__close" (click)="closeCountryCodeModal()">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+    <div class="country-modal__content">
+      <div class="country-list">
+        <div class="country-item" *ngFor="let country of countries" (click)="selectCountry(country)"
+          [class.selected]="selectedCountry.code === country.code">
+          <span class="country-flag">{{country.flag}}</span>
+          <span class="country-name">{{country.name}}</span>
+          <span class="country-code">{{country.code}}</span>
+        </div>
+      </div>
+    </div>
+    <div class="country-modal__footer">
+      <button class="country-modal__done-btn" (click)="closeCountryCodeModal()">Done</button>
+    </div>
+  </div>
+</div>

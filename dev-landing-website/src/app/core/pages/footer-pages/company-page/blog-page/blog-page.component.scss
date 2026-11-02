@@ -1,0 +1,192 @@
+.blog-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.blogs-section {
+  padding: 64px 48px;
+  margin: 0 auto;
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 64px;
+
+    h2 {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 40px;
+      line-height: 56px;
+      letter-spacing: -2px;
+      color: #282527;
+      margin: 0 0 12px;
+    }
+
+    .section-subtitle {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 400;
+      font-size: 25px;
+      line-height: 35px;
+      color: #282527;
+      opacity: 0.7;
+      max-width: 658px;
+      margin: 0 auto;
+    }
+  }
+
+  .blogs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-bottom: 64px;
+  }
+
+  .blog-card {
+    background: #ffffff;
+    border-radius: 56px;
+    overflow: hidden;
+    box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0px 4px 12px 4px rgba(107, 101, 106, 0.15);
+    }
+
+    .blog-image {
+      width: 100%;
+      height: 264px;
+      border-radius: 56px;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .blog-content {
+      padding: 24px;
+
+      .blog-label {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #fcf3f6;
+        border: 0.771px solid #e1527c;
+        border-radius: 56px;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 16px;
+        color: #942038;
+        margin-bottom: 16px;
+      }
+
+      .blog-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 28px;
+        letter-spacing: -1px;
+        color: #282527;
+        margin: 0 0 8px;
+      }
+
+      .blog-description {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22.4px;
+        color: #282527;
+        opacity: 0.7;
+        margin: 0 0 32px;
+      }
+
+      .blog-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .read-time {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+
+          svg {
+            width: 24px;
+            height: 24px;
+          }
+
+          span {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 500;
+            font-size: 16px;
+            color: #282527;
+            opacity: 0.7;
+          }
+        }
+
+        .read-more {
+          font-family: 'Nunito', sans-serif;
+          font-weight: 500;
+          font-size: 20px;
+          color: #90214d;
+        }
+      }
+    }
+  }
+
+  .explore-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 16px 88px;
+    height: 56px;
+    background: linear-gradient(180deg, #c42e65 0%, #90214d 100%);
+    border: 1px solid #4a0d25;
+    border-radius: 8px;
+    box-shadow: inset 0px -2px 2px 0px #ea7cb5;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 22.4px;
+    color: #fffeff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(180deg, #d63570 0%, #a02556 100%);
+      transform: translateY(-2px);
+      box-shadow: inset 0px -2px 2px 0px #ea7cb5, 0px 4px 8px rgba(144, 33, 77, 0.2);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .blogs-section .blogs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .blogs-section .blogs-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header h2 {
+    font-size: 32px !important;
+    line-height: 44px !important;
+  }
+
+  .section-header .section-subtitle {
+    font-size: 18px !important;
+    line-height: 26px !important;
+  }
+}

@@ -1,0 +1,73 @@
+<section class="day-glance">
+  <superme-card-header [title]="'Your Day at a Glance'" [subtitleLeft]="'Check tasks'"
+    [subtitleMiddle]="'Finish activities'" [subtitleRight]="'Crush it'" [align]="'left'">
+    <a class="add-new-link" href="#" (click)="openAddNew($event)">Add New+</a>
+  </superme-card-header>
+
+  <div *ngIf="showActivityInput" class="modal-backdrop" (click)="closeActivityInput()">
+    <div class="modal-center" (click)="$event.stopPropagation()">
+      <activity-input (closed)="closeActivityInput()"></activity-input>
+    </div>
+  </div>
+
+  <div class="glance-columns">
+    <div class="col col-activities">
+      <div class="col-header">
+        <h3>Habit</h3>
+        <a class="glance-view-all" [routerLink]="['/home/habits']">View all ›</a>
+      </div>
+
+      <div class="cards">
+        <!-- Use the reusable habit-card component for activities -->
+        <activity-card *ngFor="let h of activities; let i = index" [activity]="h"
+          [startTime]="h.startTimeStamp || 0"
+          [endTime]="h.endTimeStamp || 0"
+          [inProgress]="isActivityInProgress(h)"
+          mode="single"
+          emitClickEvents="true"
+          (cardClick)="openActivityView($event)">
+        </activity-card>
+      </div>
+    </div>
+
+    <!-- Tasks column (middle) -->
+    <div class="col col-tasks">
+      <div class="col-header">
+        <h3 style="color:#F6AC72;">Tasks</h3>
+        <a class="glance-view-all" [routerLink]="['/home/tasks']">View all ›</a>
+      </div>
+
+      <div class="cards">
+        <!-- Use habit-card for tasks as well (habit-card supports tasks via habit.type) -->
+        <activity-card *ngFor="let t of tasks; let i = index" [activity]="t" 
+          [startTime]="t.startTimeStamp || 0"
+          [endTime]="t.endTimeStamp || 0" 
+          [inProgress]="false" 
+          mode="single"
+          emitClickEvents="true"
+          (cardClick)="openActivityView($event)">
+        </activity-card>
+      </div>
+    </div>
+
+    <!-- Time Table column (right) -->
+    <div class="col col-timetable">
+      <div class="col-header">
+        <h3 class="timetable-heading">Time Table</h3>
+        <a class="glance-view-all" [routerLink]="['/home']" [queryParams]="{view: 'day'}">View all ›</a>
+      </div>
+
+      <div class="cards">
+        <activity-card *ngFor="let s of timetable"
+          [activity]="s"
+          [startTime]="s.startTimeStamp || 0"
+          [endTime]="s.endTimeStamp || 0"
+          [inProgress]="false"
+          mode="single"
+          emitClickEvents="true"
+          (cardClick)="openTimetableDetail($event)">
+        </activity-card>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,812 @@
+// Mixins
+@use "sass:list" as list;
+@mixin border-color($color) {
+  border-bottom-color: $color;
+}
+
+@mixin input-style($color) {
+  color: $color !important;
+  opacity: 1 !important;
+
+  &:placeholder-shown {
+    border-bottom: 1px solid $color !important;
+  }
+}
+
+$theme-colors: (
+  habits: #7471BA,
+  tasks: #F6AC72,
+  timetable: #89B3B6
+);
+
+.habit-input-root {
+  padding: 16px;
+
+  @each $theme, $color in $theme-colors {
+    &.#{$theme} {
+      .title-input, .routine-section, .priority-selection, .notes,  .assign-coin {
+        @include border-color($color);
+        color: $color;
+      }
+    }
+  }
+
+.assign-coin {
+  display: flex;
+    justify-content: space-between;
+    padding: 0px 16px 16px 16px;
+    border-bottom: 1px solid;
+
+  label {
+    font-weight: 600;
+    color: #6B656A;
+  }
+
+  .coin-badges {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 8px;
+    align-items: center;
+    justify-content: start;
+  }
+
+  .coin-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 40px;
+    border-radius: 26px;
+    border: 1px solid #46456A;
+    background: transparent;
+    cursor: pointer;
+    font-family: Nunito, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #282527;
+    min-height: 34px;
+    position: relative;
+    --text_color: #282527;
+    --stroke_gradient: transparent;
+  }
+
+  .coin-badge:before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    width: calc(100% + 3px);
+    height: calc(100% + 3px);
+    top: -1.5px;
+    left: -1.5px;
+    border-radius: 1000px;
+    background: var(--stroke_gradient);
+    opacity: 0;
+  }
+
+  /* Selected badge: filled dark background matching 'add new' */
+  .coin-badge[aria-pressed="true"] {
+    background: #46456A;
+    border-color: #46456A;
+    color: #ffffff;
+    --text_color: white;
+    --stroke_gradient: #46456A;
+  }
+
+  .coin-badge[aria-pressed="true"]:before {
+    opacity: 1;
+  }
+}
+
+/* Tasks-specific coin badge colors */
+.habit-input-root.tasks .coin-badge,
+.habit-input-root.tasks .assign-coin .coin-badge,
+.coin-badge.task-coin {
+  border-radius: 26px !important;
+  border: 1px solid #F28745 !important;
+  background: transparent !important;
+  color: #282527 !important;
+}
+
+.habit-input-root.tasks .coin-badge[aria-pressed="true"],
+.habit-input-root.tasks .assign-coin .coin-badge[aria-pressed="true"],
+.coin-badge.task-coin[aria-pressed="true"] {
+  background: #B93915 !important;
+  border: 1px solid #B93915 !important;
+  color: #ffffff !important;
+  --text_color: white;
+  --stroke_gradient: #B93915;
+}
+}
+
+.habit-input-header superme-navigator {
+  display: inline-flex;
+  align-items: center;
+  gap: 40px;
+  margin: 36px 0 0 0 !important;
+}
+
+.header-toggle-label {
+  font-size: 14px;
+  color: #6B656A;
+  margin-right: 6px;
+}
+
+
+
+.section.days-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .days-top {
+    width: 100%;
+  }
+
+  .toggle-right {
+
+    ion-toggle,
+    superme-toggle {
+      --handle-background-checked: #90214D !important;
+      --background-checked: rgba(144, 33, 77, 0.12) !important;
+      --handle-background: #ffffff;
+      --background: #e6e6e6;
+    }
+
+    ion-toggle::part(handle) {
+      background: #90214D !important;
+      box-shadow: none !important;
+    }
+
+    ion-toggle[aria-checked="false"]::part(handle) {
+      background: #ffffff !important;
+    }
+
+    ion-toggle::part(track) {
+      background: #e6e6e6 !important;
+    }
+
+    ion-toggle[aria-checked="true"]::part(track) {
+      background: rgba(144, 33, 77, 0.12) !important;
+    }
+
+    .superme-toggle {
+      .track {
+        background: #e6e6e6 !important;
+      }
+
+      .thumb {
+        background: #ffffff !important;
+        box-shadow: none !important;
+      }
+
+      &[aria-checked="true"] {
+        .track {
+          background: rgba(144, 33, 77, 0.12) !important;
+        }
+
+        .thumb {
+          background: #90214D !important;
+        }
+      }
+    }
+  }
+}
+
+.toggler {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+
+  .col-4 {
+    flex: 1;
+    text-align: center;
+    padding: 8px 6px 12px 6px;
+    color: #222;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    font-family: Fredoka;
+    position: relative;
+
+    /* underline pseudo-element - grows when active */
+    &::before {
+      content: '';
+      position: absolute;
+      height: 2px;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      background: transparent;
+      transition: all 180ms ease-in-out;
+      border-radius: 2px;
+    }
+
+    &.active {
+      padding-right: 16px;
+
+      &:nth-child(1) {
+        color: #898CCA;
+      }
+
+      &:nth-child(2) {
+        color: #F6AC72;
+      }
+
+      &:nth-child(3) {
+        color: #89B3B6;
+        padding-right: 6px;
+      }
+
+      &::before {
+        background: currentColor !important;
+        width: 100% !important;
+        left: 0 !important;
+      }
+    }
+  }
+}
+
+.form-card {
+  padding: 0;
+  display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.title-input {
+  display: inline-flex;
+  padding: 30px 0px 0px 0px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  border-bottom: 1px solid #7471BA;
+  width: 100%;
+}
+
+.input-label {
+  font-weight: 600;
+  color: #777;
+  display: block;
+}
+
+.add-new-row {
+  margin-top: 0;
+  width: 100%;
+}
+
+.add-new-row superme-selectors,
+.add-new-row>superme-selectors {
+  display: block;
+  width: 100%;
+}
+
+.routine-section {
+  display: flex;
+  padding: 0px 0px 20px 0px;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+
+
+.timetable-header {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 36px;
+}
+
+.timetable-header h3 {
+  color: #6B656A;
+  font-family: Nunito, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+}
+
+.timetable-date-input {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+}
+
+.date-align {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0px 16px;
+  align-items: center;
+}
+
+.date-align .superme-input-group {
+  margin-left: auto;
+  max-width: 260px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.habit-input-root ::ng-deep .date-align .superme-input-group superme-datepicker input,
+.habit-input-root ::ng-deep .date-align .superme-input-group superme-datepicker input::placeholder {
+  text-align: right;
+  padding-right: 0px;
+}
+
+.timetable-datepicker {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.timetable-datepicker .date-text,
+.timetable-datepicker superme-datepicker {
+  color: #282527;
+  font-family: Nunito, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  padding: 0px !important;
+}
+
+.timetable-chevron {
+  width: 16px;
+  height: 16px;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timetable-chevron img {
+  width: 16px;
+  height: 16px;
+  transform: rotate(-90deg);
+  aspect-ratio: 1/1;
+  display: block;
+}
+
+.timetable-list {
+  margin-top: 8px;
+}
+
+.timetable-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.timetable-activity .superme-input-group input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #89B3B6;
+  padding: 8px 0;
+  font-size: 16px;
+  color: #bdbdbd;
+}
+
+.timetable-activity .superme-input-group input::placeholder {
+  color: #bdbdbd;
+}
+
+.timetable-time {
+  text-align: right;
+  min-width: 140px;
+}
+
+.timetable-time superme-timepicker {
+  display: inline-block;
+}
+
+.timetable-time span {
+  display: inline-block;
+  margin: 0 6px;
+  color: #6B656A;
+}
+
+.add-more {
+  margin-top: 12px;
+}
+
+.days {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.days-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.everyday-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  label {
+    color: #6B656A;
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+/* Unified label style for Repeat, Routine, Priority and Assign Coins */
+.routine-section label,
+.priority-selection label,
+.assign-coin label,
+.everyday-label label {
+  color: #6B656A;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.everyday-toggle {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.everyday-toggle .toggle-right {
+  display: flex;
+  align-items: center;
+}
+
+.everyday-toggle superme-toggle {
+  display: inline-flex;
+  align-items: center;
+}
+
+.everyday-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+}
+
+.day {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: #eee;
+  border: none;
+}
+
+.day.selected {
+  background: #90214D;
+  color: #ffffff;
+}
+
+.day:focus,
+.day:active {
+  outline: none;
+  box-shadow: none;
+}
+
+.time-row {
+  display: flex;
+  padding: 8px 0px 0px 16px;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+}
+
+.pick-time {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pick-time label {
+  color: #6B656A;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+}
+
+.habit-input-root .pick-time .superme-input-group .superme-timepicker-wrapper .time-display-input,
+.pick-time input.time-display-input {
+  width: 80px !important;
+  min-width: 80px !important;
+}
+
+.priority-row {
+  display: flex;
+  gap: 8px;
+}
+
+.priority-selection {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid;
+}
+
+.notes {
+  border-bottom: 1px solid;
+
+  textarea {
+    width: 85%;
+    height: 140px;
+    border-radius: 10px;
+    border: 1px solid;
+    padding: 12px;
+    transition: border-color 180ms ease-in-out, box-shadow 180ms ease-in-out;
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+$notes-themes: (
+  habits: (#8B8DCB, #7471BA),
+  tasks: (#FAD2AE, #F28745),
+  timetable: (#89B3B6, #3E5A60)
+);
+
+.habit-input-root {
+  @each $theme, $colors in $notes-themes {
+    &.#{$theme} .notes textarea {
+      border-color: list.nth($colors, 1);
+      &:focus { border-color: list.nth($colors, 2); }
+    }
+  }
+}
+
+/* Notes textarea: always black text, grey placeholder */
+.notes textarea {
+  color: #282527 !important;
+
+  &::placeholder {
+    color: #9E9E9E !important;
+    opacity: 1;
+  }
+}
+
+/* Tag input: grey placeholder, black typed text */
+.habit-input-root ::ng-deep .custom-tag-input__field {
+  color: #282527 !important;
+
+  &::placeholder {
+    color: #9E9E9E !important;
+    opacity: 1;
+  }
+}
+
+.submit-row {
+  margin-top: 16px;
+}
+
+.char-count {
+  text-align: right;
+  color: #999;
+  margin-top: 6px;
+}
+
+.superme-input-group input {
+  background: none !important;
+}
+
+.form-card .superme-input-group input,
+.form-card .superme-input-group ion-input {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 12px 0 !important;
+}
+
+.form-card .superme-input-group input:focus,
+.form-card .superme-input-group input:active,
+.form-card .superme-input-group ion-input:focus,
+.form-card .superme-input-group ion-input:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.title-input .superme-input-group input {
+  color: #6B656A;
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  opacity: 0.5;
+  padding: 0px !important;
+}
+
+/* Full-width underline when input is empty (has placeholder) */
+.title-input .superme-input-group input:placeholder-shown {
+  border-bottom: 1px solid #6B656A;
+  padding-bottom: 2px !important;
+}
+
+$title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
+
+.habit-input-root {
+  @each $theme, $color in $title-colors {
+    &.#{$theme} .title-input .superme-input-group input { @include input-style($color); }
+  }
+}
+
+.title-input .superme-input-group input:focus,
+.title-input .superme-input-group input:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.title-input .superme-input-group input,
+.habit-input-root .title-input .superme-input-group input {
+  &::placeholder { @extend %title-placeholder; }
+}
+
+%title-placeholder {
+  color: #6B656A !important;
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 140%;
+  opacity: 0.5;
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+  text-underline-position: under;
+}
+
+%input-placeholder {
+  color: #6B656A;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 140%;
+  opacity: 1;
+}
+
+.habit-input-root {
+  .superme-input-group input::placeholder { @extend %input-placeholder; }
+  ::ng-deep .superme-input-group ion-input input::placeholder,
+  ::ng-deep superme-datepicker input::placeholder,
+  ::ng-deep superme-timepicker input::placeholder { @extend %input-placeholder; }
+}
+
+.start-end-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 34px;
+}
+
+.start-end-row>div>label {
+  display: block;
+  color: #6B656A;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  width: 100%;
+}
+
+.superme-input-group {
+  margin-bottom: 0px !important;
+}
+
+.date-time-selection {
+ 
+  border-bottom: 1px solid;
+}
+
+::ng-deep .add-new-row .badge,
+::ng-deep .add-new-row .badge.medium,
+::ng-deep .add-new-row-btn,
+::ng-deep .add-new-row .badge p,
+::ng-deep .add-new-row-btn p {
+  margin: 0 !important;
+}
+
+.datepicker-wrapper .superme-input-group input,
+.superme-input-group ion-input {
+  background: white !important;
+}
+
+::ng-deep .datepicker-wrapper input {
+  background-color: #ffffff;
+}
+
+::ng-deep .superme-timepicker-wrapper input {
+  background-color: #ffffff;
+}
+
+.date-time--pick {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.day-selection-error {
+  color: #D32F2F;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 12px;
+  margin-top: 8px;
+  background-color: #FFEBEE;
+  border-radius: 4px;
+  border-left: 3px solid #D32F2F;
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Generic field-level inline error */
+.field-error {
+  color: #D32F2F;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  margin-top: 8px;
+  background-color: #FFEBEE;
+  border-radius: 4px;
+  border-left: 3px solid #D32F2F;
+  animation: fadeIn 0.25s ease-in;
+  width: 100%;
+}
+
+/* Utility to show multiple errors in deterministic bottom-to-top order if needed */
+.errors-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Error visual states for missing inputs */
+.superme-input-group.missing-placeholder {
+
+  /* native inputs */
+  input::placeholder,
+  input::-webkit-input-placeholder,
+  input:-ms-input-placeholder,
+  input::-ms-input-placeholder {
+    color: #D32F2F !important;
+    opacity: 1 !important;
+  }
+
+  /* ionic / custom components: reach into child inputs */
+  ::ng-deep input::placeholder,
+  ::ng-deep input::-webkit-input-placeholder,
+  ::ng-deep ion-input input::placeholder {
+    color: #D32F2F !important;
+    opacity: 1 !important;
+  }
+}
+
+.section.notes textarea.missing-border {
+  border-color: #D32F2F !important;
+  box-shadow: none !important;
+  /* remove blur / subtle shadow */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.bottom-margin {
+  margin-bottom: -32px;
+}
+
+.top-margin {
+  margin-top: -32px;
+}

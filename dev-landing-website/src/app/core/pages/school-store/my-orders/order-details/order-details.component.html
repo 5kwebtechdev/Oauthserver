@@ -1,0 +1,228 @@
+<div class="order-details-page">
+  <app-public-navbar></app-public-navbar>
+
+  <!-- Main Content -->
+  <main class="order-details-container">
+    <!-- Header with Back Button and Help Link -->
+    <div class="order-details-header">
+      <div class="header-left">
+        <button class="back-button" (click)="goBack()" aria-label="Go back">
+          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
+  <path d="M13.2929 27.2929C12.9024 27.6834 12.9024 28.3166 13.2929 28.7071L19.6569 35.0711C20.0474 35.4616 20.6805 35.4616 21.0711 35.0711C21.4616 34.6805 21.4616 34.0474 21.0711 33.6569L15.4142 28L21.0711 22.3431C21.4616 21.9526 21.4616 21.3195 21.0711 20.9289C20.6805 20.5384 20.0474 20.5384 19.6569 20.9289L13.2929 27.2929ZM42 29C42.5523 29 43 28.5523 43 28C43 27.4477 42.5523 27 42 27V28V29ZM14 28V29H42V28V27H14V28Z" fill="#282527"/>
+</svg>
+        </button>
+        <div class="header-title">
+          <h1>Order details</h1>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="help-link" (click)="onHelp()">Help</button>
+      </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="order-content">
+      <!-- Left Column: Order Details Card -->
+      <div class="order-details-card">
+        <!-- Product Info -->
+        <div class="product-section">
+          <div class="product-image">
+            <img [src]="orderItem.imageUrl" [alt]="orderItem.title" />
+          </div>
+          <div class="product-info">
+            <h2 class="product-title">{{ orderItem.title }}</h2>
+            <div class="product-meta">
+              <span class="product-size">Size: {{ orderItem.size }}</span>
+              <span class="product-qty">Qty: {{ orderItem.quantity }}</span>
+            </div>
+            <p class="product-school">{{ orderItem.schoolName }}</p>
+            <p class="product-price" *ngIf="!isDelivered">₹{{ orderItem.price }}</p>
+          </div>
+        </div>
+
+        <!-- Status Section - Only show for non-delivered orders -->
+        <div class="status-section" *ngIf="!isDelivered">
+          <p class="status-header" [style.color]="statusColor">{{ statusText }}</p>
+          
+          <!-- Tracking Timeline -->
+          <div class="tracking-timeline">
+            <div 
+              *ngFor="let status of trackingStatuses; let last = last"
+              class="timeline-item"
+              [class.completed]="status.status === 'completed'"
+              [class.in-progress]="status.status === 'in-progress'"
+              [class.pending]="status.status === 'pending'"
+            >
+              <div class="timeline-marker">
+                <div class="marker-icon">
+                  <svg 
+                    *ngIf="status.status === 'completed'" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="24" 
+                    height="24" 
+                    viewBox="0 0 24 24" 
+                    fill="none"
+                  >
+                    <circle cx="12" cy="12" r="12" fill="#4CAF50"/>
+                    <path d="M7 12L10.5 15.5L17 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <svg 
+                    *ngIf="status.status === 'in-progress'" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="24" 
+                    height="24" 
+                    viewBox="0 0 24 24" 
+                    fill="none"
+                  >
+                    <circle cx="12" cy="12" r="11" fill="#4CAF50" stroke="white" stroke-width="2"/>
+                  </svg>
+                  <svg 
+                    *ngIf="status.status === 'pending'" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="24" 
+                    height="24" 
+                    viewBox="0 0 24 24" 
+                    fill="none"
+                  >
+                    <circle cx="12" cy="12" r="11" fill="#CCCBCC" stroke="white" stroke-width="2"/>
+                  </svg>
+                </div>
+                <div class="marker-line" *ngIf="!last"></div>
+              </div>
+              <div class="timeline-content">
+                <p class="status-title">{{ status.title }}</p>
+                <p class="status-details" *ngIf="status.moreDetails">{{ status.moreDetails }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivered Status Section -->
+        <div class="delivered-status-section" *ngIf="isDelivered">
+          <p class="status-header delivered" [style.color]="statusColor">{{ statusText }}</p>
+          <p class="return-eligible" *ngIf="orderItem.returnEligibleTill">
+            Return / Exchange eligible till {{ orderItem.returnEligibleTill }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Right Column: Summary and Actions -->
+      <div class="order-summary-card">
+        <!-- Delivery Address -->
+        <div class="delivery-address">
+          <div class="address-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M16 2C10.48 2 6 6.48 6 12C6 19 16 30 16 30C16 30 26 19 26 12C26 6.48 21.52 2 16 2ZM16 15.5C14.07 15.5 12.5 13.93 12.5 12C12.5 10.07 14.07 8.5 16 8.5C17.93 8.5 19.5 10.07 19.5 12C19.5 13.93 17.93 15.5 16 15.5Z" fill="#90214D"/>
+            </svg>
+          </div>
+          <div class="address-content">
+            <p class="address-label">Delivery to:</p>
+            <p class="address-text">{{ deliveryAddress.name }}- {{ deliveryAddress.address }}</p>
+          </div>
+        </div>
+
+        <!-- Order Info - Only for delivered orders -->
+        <div class="order-info" *ngIf="isDelivered">
+          <p class="order-info-item">
+            <span class="info-label">Order Placed: </span>
+            <span class="info-value">{{ orderPlacedDate }}</span>
+          </p>
+          <p class="order-info-item">
+            <span class="info-label">Order number: </span>
+            <span class="info-value">{{ orderNumber }}</span>
+          </p>
+        </div>
+
+        <!-- Payment Information Accordion - Only for delivered orders -->
+        <div class="payment-accordion" *ngIf="isDelivered">
+          <button 
+            class="accordion-header" 
+            (click)="togglePaymentInfo()"
+            [class.open]="showPaymentInfo"
+          >
+            <span class="accordion-title">Payment Information</span>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="24" 
+              height="24" 
+              viewBox="0 0 24 24" 
+              fill="none"
+              [style.transform]="showPaymentInfo ? 'rotate(180deg)' : 'rotate(90deg)'"
+            >
+              <path d="M8.29289 5.29289C7.90237 5.68342 7.90237 6.31658 8.29289 6.70711L14.5858 13L8.29289 19.2929C7.90237 19.6834 7.90237 20.3166 8.29289 20.7071C8.68342 21.0976 9.31658 21.0976 9.70711 20.7071L16.7071 13.7071C17.0976 13.3166 17.0976 12.6834 16.7071 12.2929L9.70711 5.29289C9.31658 4.90237 8.68342 4.90237 8.29289 5.29289Z" fill="#6B656A"/>
+            </svg>
+          </button>
+          <div class="accordion-content" *ngIf="showPaymentInfo">
+            <!-- Payment details content can be added here -->
+            <p>Payment method details will be shown here</p>
+          </div>
+        </div>
+
+        <!-- Item Summary - Only for non-delivered orders -->
+        <div class="item-summary" *ngIf="!isDelivered">
+          <h3 class="summary-title">Item Summary</h3>
+          <div class="summary-items">
+            <div class="summary-row">
+              <span class="summary-label">Item Total</span>
+              <span class="summary-value">₹{{ itemSummary.itemTotal }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">GST & Other Charges</span>
+              <span class="summary-value">₹{{ itemSummary.gstCharges }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Delivery</span>
+              <span class="summary-value free">FREE</span>
+            </div>
+            <div class="summary-row total">
+              <span class="summary-label">TO PAY</span>
+              <span class="summary-value">₹{{ itemSummary.total }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <!-- Buttons for non-delivered orders -->
+          <ng-container *ngIf="!isDelivered">
+            <superme-button 
+              [text]="'Cancel Order'" 
+              [type]="'red'"
+              [size]="'medium'"
+              class="cancel-btn"
+              (clickEvent)="onCancelOrder()"
+            ></superme-button>
+            <superme-button 
+              [text]="'Share Tracking'" 
+              [type]="'magenta-transparent'"
+              [size]="'medium'"
+              class="share-btn"
+              (clickEvent)="onShareTracking()"
+            ></superme-button>
+          </ng-container>
+
+          <!-- Buttons for delivered orders -->
+          <ng-container *ngIf="isDelivered">
+            <superme-button 
+              [text]="'Download Invoice'" 
+              [type]="'magenta-transparent'"
+              [size]="'medium'"
+              class="download-btn"
+              (clickEvent)="onDownloadInvoice()"
+            ></superme-button>
+            <superme-button 
+              [text]="'Return / Exchange'" 
+              [type]="'magenta'"
+              [size]="'medium'"
+              class="return-btn"
+              (clickEvent)="onReturnExchange()"
+            ></superme-button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

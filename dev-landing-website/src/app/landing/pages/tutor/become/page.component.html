@@ -1,0 +1,84 @@
+<div class="become-tutor-page flex flex-col w-full min-h-screen" style="font-family:'Nunito',sans-serif">
+  <app-landing-navbar></app-landing-navbar>
+
+  <div class="become-tutor-main flex-1 flex flex-col items-center px-4 sm:px-8 md:px-10 py-6 sm:py-8 gap-8 sm:gap-14">
+    <!-- Hero -->
+    <div class="tutor-hero flex flex-col items-center gap-2 sm:gap-4 text-center px-1">
+      <div class="tutor-hero__eyebrow"><span></span> Teach. Inspire. Grow. <span></span></div>
+      <h1 class="tutor-hero__title text-[#282527]">
+        <ng-container *ngIf="isAcademyListing; else tutorTitle">List Your <span>Academy</span></ng-container>
+        <ng-template #tutorTitle>Shape the <span>Next Generation</span></ng-template>
+      </h1>
+      <p class="tutor-hero__copy text-[#282527]" style="font-weight:400">
+        <ng-container *ngIf="isAcademyListing; else tutorCopy">List your academy on SuperMeApp to help learners and parents discover your classes.</ng-container>
+        <ng-template #tutorCopy>Join SuperMe's trusted tutor community. Help students achieve their goals while growing your teaching
+        career. Set your own schedule, reach more learners, and connect with parents seeking trusted tutors.</ng-template>
+      </p>
+      <div class="tutor-hero__benefits" aria-label="Tutor community benefits">
+        <span>✓ Flexible schedule</span>
+        <span>✓ Trusted community</span>
+        <span>✓ Meaningful impact</span>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="tutor-form-card w-full flex flex-col gap-8 sm:gap-12">
+      <!-- Step indicators -->
+      <div class="tutor-steps flex items-start w-full">
+        <ng-container *ngFor="let s of steps; let idx = index">
+          <div class="tutor-step flex flex-col items-center gap-1 sm:gap-2" [class.tutor-step--future]="getState(s.num) === 'future'">
+            <div
+              class="tutor-step__number size-8 sm:size-10 rounded-full flex items-center justify-center flex-shrink-0"
+              [style.background]="getState(s.num) === 'completed' ? '#4caf50' : '#90214d'"
+            >
+              <svg *ngIf="getState(s.num) === 'completed'" width="14" height="14" viewBox="0 0 20 20" fill="none">
+                <path d="M4 10l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span *ngIf="getState(s.num) !== 'completed'" class="text-white text-[12px] sm:text-[20px] font-semibold leading-none">
+                {{ s.num }}
+              </span>
+            </div>
+            <span class="text-[9px] sm:text-[12px] md:text-[14px] font-semibold text-[#282527] text-center leading-tight whitespace-pre-line sm:whitespace-normal">
+              {{ s.label }}
+            </span>
+          </div>
+          <div *ngIf="!isLastStep(idx)" class="tutor-step__line flex-1 h-px bg-[rgba(40,37,39,0.15)]"></div>
+        </ng-container>
+      </div>
+
+      <!-- Step content + FAQ -->
+      <div class="tutor-form-content flex flex-col gap-8 sm:gap-12">
+        <app-tutor-step-one
+          *ngIf="currentStep === 1"
+          [initialData]="step1Data"
+          (next)="handleStep1Next($event)"
+        ></app-tutor-step-one>
+
+        <app-tutor-step-two
+          *ngIf="currentStep === 2 && step1Data"
+          [initialData]="step2Data"
+          [entityType]="step1Data.entityType"
+          (next)="handleStep2Next($event)"
+          (back)="goToStep1()"
+        ></app-tutor-step-two>
+
+        <app-tutor-step-three
+          *ngIf="currentStep === 3 && step1Data && step2Data"
+          [step1Data]="step1Data"
+          [step2Data]="step2Data"
+          [initialProfilePicture]="step3ProfilePic"
+          [initialCertifications]="step3Certs"
+          [initialAchievement]="step3Achievement"
+          (back)="goToStep2()"
+          (profilePictureChange)="step3ProfilePic = $event"
+          (certificationsChange)="step3Certs = $event"
+          (achievementChange)="step3Achievement = $event"
+        ></app-tutor-step-three>
+
+        <app-faq-section></app-faq-section>
+      </div>
+    </div>
+  </div>
+
+  <app-common-footer></app-common-footer>
+</div>

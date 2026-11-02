@@ -1,0 +1,204 @@
+// Pet Bubble Component Styles
+$bubble-background: #ffffff;
+$bubble-border: rgba(40, 37, 39, 0.2);
+$bubble-text-color: #282527;
+$bubble-border-radius: 16px;
+$bubble-tail-size: 16px;
+$bubble-padding-vertical: 16px;
+$bubble-padding-horizontal: 32px;
+$pet-padding-left: 24px;
+
+.pet-bubble-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  transition: all 0.3s ease;
+
+  &.clickable {
+    cursor: pointer;
+
+    .bubble-content {
+      cursor: pointer;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(40, 37, 39, 0.1);
+      }
+    }
+  }
+
+  // Position Variants
+  &.position-top {
+    align-items: flex-start;
+    padding-top: 12px;
+  }
+
+  &.position-center {
+    align-items: center;
+  }
+
+  &.position-bottom {
+    align-items: flex-end;
+    padding-bottom: 12px;
+  }
+}
+
+.pet-section {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Enforce the pet image size to match Figma spec: 107x168 (aspect-ratio 107/168).
+   The `superme-pet` child component sets inline width/height from its `size` input;
+   use a deep selector to override the image width while keeping the forwarded height. */
+:host ::ng-deep superme-pet .pet-image {
+  width: 107px !important;
+  height: 168px !important;
+  aspect-ratio: 107/168;
+  object-fit: contain;
+}
+
+.bubble-wrapper {
+  position: relative;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* When bubble is first (left) we want the tail to point right towards the pet */
+.pet-bubble-container.bubble-first {
+  .bubble-wrapper {
+    order: 1;
+  }
+  .pet-section {
+    order: 2;
+  }
+  .bubble-tail {
+    left: auto;
+    right: -8px;
+    border-width: 8px 0 8px 8px;
+    border-color: transparent transparent transparent $bubble-background;
+    filter: drop-shadow(2px 0px 1px rgba(40, 37, 39, 0.08));
+  }
+  .bubble-content {
+    padding-left: 24px;
+    padding-right: $bubble-padding-horizontal;
+  }
+}
+
+// Bubble Tail Pointer
+.bubble-tail {
+  position: absolute;
+  left: -8px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  z-index: 0;
+
+  &.tail-top {
+    top: 12px;
+    border-width: 8px 8px 8px 0;
+    border-color: transparent $bubble-background transparent transparent;
+    filter: drop-shadow(-2px 0px 1px rgba(40, 37, 39, 0.1));
+  }
+
+  &.tail-center {
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 8px 8px 8px 0;
+    border-color: transparent $bubble-background transparent transparent;
+    filter: drop-shadow(-2px 0px 1px rgba(40, 37, 39, 0.1));
+  }
+
+  &.tail-bottom {
+    bottom: 12px;
+    border-width: 8px 8px 0 0;
+    border-color: transparent $bubble-background transparent transparent;
+    filter: drop-shadow(-2px 0px 1px rgba(40, 37, 39, 0.1));
+  }
+}
+
+// Bubble Content Box
+.bubble-content {
+  position: relative;
+  z-index: 1;
+  background-color: $bubble-background;
+  border: 1px solid $bubble-border;
+  border-radius: $bubble-border-radius;
+  padding: $bubble-padding-vertical $bubble-padding-horizontal;
+  padding-left: $pet-padding-left;
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  transition: all 0.2s ease;
+}
+
+// Message Text
+.bubble-message {
+  font-family: 'Nunito';
+  width: 288px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: $bubble-text-color;
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+
+  // Handle multiline text properly
+  p {
+    margin: 0;
+    display: inline;
+
+    &:not(:last-child) {
+      display: block;
+    }
+  }
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  .pet-bubble-container {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .bubble-content {
+    padding: 12px 16px;
+    padding-left: 16px;
+  }
+
+  .bubble-message {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 480px) {
+  .pet-section {
+    order: 2;
+  }
+
+  .bubble-wrapper {
+    order: 1;
+    flex-basis: 100%;
+  }
+
+  .bubble-content {
+    width: 100%;
+    padding: 12px 16px;
+  }
+
+  .bubble-tail {
+    left: auto;
+    right: 16px;
+    top: -8px !important;
+    border-width: 0 8px 8px 8px;
+    border-color: transparent transparent $bubble-background transparent;
+    transform: none;
+  }
+}

@@ -1,0 +1,61 @@
+<app-public-navbar></app-public-navbar>
+
+<main class="streak-homepage">
+  <div class="page-header">
+    <h3 class="section-title">Your Streak Journey</h3>
+  </div>
+
+  <div class="page-container">
+    <aside class="left-col">
+      <div class="stat-list">
+        <streak-stat-card [title]="'Current Streak'" [icon]="'/assets/Icons-Neutral/Icon-Streak-CurrentStreak.png'" [value]="currentStreakDays"></streak-stat-card>
+        <streak-stat-card [title]="'Best Streak'" [icon]="'/assets/Icons-Neutral/Streak-best-streak-icon.png'" [value]="bestStreakDays"></streak-stat-card>
+        <streak-stat-card [title]="'Total Days Active'" [icon]="'/assets/Icons-Neutral/Streak-total-active-days-icon.png'" [value]="totalActiveDays"></streak-stat-card>
+      </div>
+    </aside>
+
+    <section class="right-col">
+      <!-- Loading state -->
+      <div class="loading-state" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Loading leaderboard...</p>
+      </div>
+
+      <div class="leaderboard-section" *ngIf="!isLoading">
+        <div class="leaderboard-top">
+          <h3 class="leaderboard-title">Top Streakers</h3>
+          <div class="panda-bubble">
+            <div class="bubble-text">{{ petMessage }}</div>
+            <img src="/assets/Images-Pet/Panda-Age1-Base.png" alt="panda" />
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="topStreakers.length === 0">
+          <p *ngIf="emptyMessage; else fallbackMsg">{{ emptyMessage }}</p>
+          <ng-template #fallbackMsg>
+            <p>No streakers yet! Be the first to build your streak.</p>
+          </ng-template>
+        </div>
+
+        <div class="leaderboard-card" *ngIf="topStreakers.length > 0">
+          <ul class="leader-list">
+            <li class="leader" *ngFor="let t of topStreakers" [ngClass]="{ 'highlighted': t.rank === currentUser?.rank }">
+              <div class="leader-left">
+                <div class="rank-container">
+                  <div class="rank">{{ t.rank }}</div>
+                </div>
+                <div class="avatar"><img [src]="t.avatar" alt="{{t.avatarName}}"></div>
+                <div class="name">{{ t.avatarName }}</div>
+              </div>
+              <div class="leader-right">{{ t.days }} days</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+  <app-footer></app-footer>
+
+

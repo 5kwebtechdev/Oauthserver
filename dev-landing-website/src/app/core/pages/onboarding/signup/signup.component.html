@@ -1,0 +1,337 @@
+<div class="signup-container">
+  <app-logo (click)="goHome()" style="cursor: pointer;"></app-logo>
+  <superme-navigator variant="warm" [heading]="headerText" [subtext]="headerSubtext" [showSubtext]="showHeaderSubtext" (back)="goBack()"></superme-navigator>
+
+  <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 5">
+    Step {{step}} of 4
+    <span>{{stepDescription[step-1]}}</span>
+    <div class="step-completion-slider {{returnSameNumber(step)}}"></div>
+  </h4>
+
+  <!-- Step 0.1: Phone/Email Entry -->
+  <div *ngIf="step === 0.1" [@slideIn] class="step-content-profile">
+    <form [formGroup]="signupForm">
+      <small class="helper-text">Only for login and safety</small>
+      <div class="input-group">
+        <input [ngClass]="{'error': email?.invalid && email?.dirty}" formControlName="email" type="email" placeholder="Email" />
+        <div class="error" *ngIf="email?.invalid && email?.dirty">Oops! That email looks off. Please check it again.</div>
+      </div>
+
+      <superme-button type="orange-onboard" size="full" text="Next" [disabled]="!signupForm.dirty || !isIdentifierValid()" (clickEvent)="signupFromLogin()"></superme-button>
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+    </form>
+
+    <div class="or-divider">
+      <svg xmlns="http://www.w3.org/2000/svg" width="128" height="1" viewBox="0 0 128 1" fill="none">
+        <path d="M0.5 0.5H126.75" stroke="url(#paint0_linear_9029_37482)" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="paint0_linear_9029_37482" x1="0.5" y1="1" x2="126.75" y2="1" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#772817" stop-opacity="0.2"/>
+            <stop offset="0.5" stop-color="#772817"/>
+            <stop offset="1" stop-color="#772817" stop-opacity="0.2"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span>OR</span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="128" height="1" viewBox="0 0 128 1" fill="none">
+        <path d="M0.5 0.5H126.75" stroke="url(#paint0_linear_9029_37482)" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="paint0_linear_9029_37482" x1="0.5" y1="1" x2="126.75" y2="1" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#772817" stop-opacity="0.2"/>
+            <stop offset="0.5" stop-color="#772817"/>
+            <stop offset="1" stop-color="#772817" stop-opacity="0.2"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    
+    <div class="terms-consent">
+      <div class="social-login">
+        <social-media mode="signup"></social-media>
+        <div  class="login-text">
+        <p>Already have an Account? <a routerLink="/auth/login">LogIn</a></p>
+        </div>
+      </div>
+      <!-- <label class="whatsapp-checkbox">
+        <input type="checkbox" [(ngModel)]="whatsappConsent" />
+        Receive offers, updates and reminders on <b><i class="fa-brands fa-whatsapp"></i> WhatsApp</b>.
+      </label> -->
+      <!-- <p class="terms">By continuing you accept our <a href="#" (click)="navigateToPrivacyPolicy(); $event.preventDefault()">Privacy Policy</a> and <a href="#" (click)="navigateToTermsOfUse(); $event.preventDefault()">Terms of Use</a>.</p> -->
+    </div>
+  </div>
+
+  <!-- Step 0.2: OTP Verification -->
+  <div *ngIf="step === 0.2" [@slideIn] class="step-content">
+    <div class="otp-container">
+      <div class="otp-inputs-container">
+        <div class="otp-inputs">
+          <input *ngFor="let digit of otpDigits; let i = index" type="tel" class="otp-digit" [value]="otpDigits[i]"
+            (input)="onOtpInput($event, i)" (keydown)="onOtpKeydown($event, i)" (keyup)="onOtpKeyup($event, i)"
+            (paste)="onOtpPaste($event)" (focus)="onOtpFocus($event, i)" maxlength="1" inputmode="numeric"
+            pattern="[0-9]*" autocomplete="one-time-code" [id]="'otp-input-' + i" />
+        </div>
+        <div class="otp-timer" *ngIf="!canResendOtp">{{formatTime(otpResendTimer)}}</div>
+      </div>
+      <div class="next-btn">
+      <superme-button type="orange-onboard" size="full" text="Next" [disabled]="!isOtpComplete()" (clickEvent)="verifyOtp()"></superme-button>
+      </div>
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <div class="otp-resend" *ngIf="canResendOtp">
+        <p>Didn't receive the code? <a href="#" (click)="resendOtp(); $event.preventDefault()">Resend</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 0.3: Password Creation -->
+  <div *ngIf="step === 0.3" [@slideIn] class="step-content">
+    <div class="password-container">
+      <form [formGroup]="passwordForm">
+        <div class="input-group">
+          <div class="input-with-toggle">
+            <input formControlName="password" [ngClass]="{'error': (password?.invalid || password?.value?.length < 6) && password?.dirty}"
+              [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
+            <span class="toggle-eye" (click)="hidePassword = !hidePassword" aria-hidden="true" role="button"
+              [class.active]="!hidePassword">
+              <svg xmlns="http://www.w3.org/2000/svg" width="17" height="16" viewBox="0 0 17 16" fill="none">
+                <path d="M16.4033 7.59477C14.8969 4.6556 11.9147 2.66699 8.49998 2.66699C5.08526 2.66699 2.10221 4.65699 0.596651 7.59505C0.533108 7.72074 0.5 7.85962 0.5 8.00046C0.5 8.14131 0.533108 8.28018 0.596651 8.40588C2.10304 11.345 5.08526 13.3337 8.49998 13.3337C11.9147 13.3337 14.8978 11.3437 16.4033 8.4056C16.4669 8.27991 16.5 8.14103 16.5 8.00019C16.5 7.85934 16.4669 7.72047 16.4033 7.59477ZM8.49998 12.0003C7.70886 12.0003 6.9355 11.7657 6.2777 11.3262C5.61991 10.8867 5.10722 10.262 4.80447 9.53106C4.50172 8.80015 4.4225 7.99589 4.57684 7.21996C4.73118 6.44404 5.11215 5.73131 5.67156 5.1719C6.23097 4.61249 6.9437 4.23153 7.71962 4.07718C8.49555 3.92284 9.29981 4.00206 10.0307 4.30481C10.7616 4.60756 11.3863 5.12025 11.8259 5.77804C12.2654 6.43584 12.5 7.2092 12.5 8.00033C12.5002 8.52568 12.397 9.04594 12.196 9.53136C11.9951 10.0168 11.7005 10.4578 11.329 10.8293C10.9575 11.2008 10.5164 11.4954 10.031 11.6964C9.5456 11.8973 9.02534 12.0006 8.49998 12.0003ZM8.49998 5.33366C8.26197 5.33699 8.02548 5.3724 7.79693 5.43894C7.98532 5.69496 8.07573 6.01002 8.05175 6.32698C8.02777 6.64394 7.891 6.94181 7.66623 7.16658C7.44147 7.39134 7.1436 7.52811 6.82664 7.55209C6.50968 7.57607 6.19462 7.48566 5.9386 7.29727C5.79281 7.83438 5.81913 8.40368 6.01384 8.92505C6.20856 9.44642 6.56187 9.8936 7.02404 10.2036C7.48622 10.5137 8.03399 10.671 8.59025 10.6534C9.14652 10.6359 9.68327 10.4443 10.125 10.1057C10.5666 9.76708 10.891 9.2985 11.0524 8.76588C11.2139 8.23326 11.2042 7.66343 11.0248 7.1366C10.8454 6.60976 10.5053 6.15245 10.0524 5.82902C9.59946 5.5056 9.05653 5.33235 8.49998 5.33366Z" fill="#B87D62" stroke="#B87D62"/>
+                </svg>
+            </span>
+          </div>
+          <div class="error" *ngIf="(password?.invalid || password?.value?.length < 6) && password?.dirty">
+            Password should be at least 6 characters long
+          </div>
+        </div>
+      </form>
+      <superme-button type="orange-onboard" size="full" text="Next" [disabled]="!passwordForm.valid" (clickEvent)="proceedWithPassword()"></superme-button>
+    </div>
+  </div>
+
+  <!-- Step 1: Role Selection -->
+  <div class="role-selection" *ngIf="step === 1" [@slideIn]>
+    <div class="role-selector" [ngClass]="{'active': roleSelected === 'child'}" (click)="roleSelected = 'child'">
+      <div class="role-content">
+        <div class="text-role">
+          <h2>Child</h2>
+          <h4>Learn and grow</h4>
+          <h4>Link with your parents</h4>
+          <h4>Earn rewards together</h4>
+        </div>
+        <img src="assets/Images-Transparent/Image-Role-Child.png" alt="Child" />
+      </div>
+    </div>
+
+    <div class="role-selector" style="padding: 16px 16px 0px 0px;" [ngClass]="{'active': roleSelected === 'parent'}" (click)="roleSelected = 'parent'">
+      <div class="role-content left-image">
+        <img src="assets/Images-Transparent/Image-Role-Parent.png" alt="Parent" />
+        <div class="text-role" style="text-align: right;">
+          <h2>Parent</h2>
+          <h4>Grow together</h4>
+          <h4>Link with child</h4>
+          <h4>Track progress</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="role-selector" [ngClass]="{'active': roleSelected === 'self'}" (click)="roleSelected = 'self'">
+      <div class="role-content">
+        <div class="text-role">
+          <h2>Self</h2>
+          <h4>Personal Journey</h4>
+          <h4>Daily Reflections</h4>
+          <h4>Mindful Growth</h4>
+        </div>
+        <img src="assets/Images-Transparent/Image-Role-Self.png" alt="Self" />
+      </div>
+    </div>
+
+    <superme-button type="orange-onboard" size="full" text="Save & Continue" [disabled]="!roleSelected" (clickEvent)="proceedWithRole()"></superme-button>
+  </div>
+
+  <!-- Step 2: Profile Information -->
+  <div *ngIf="step === 2" [@slideIn] class="step-content-profile">
+    <div class="profile">
+      <form [formGroup]="profileForm">
+        <h4>Full Name <span>Helps us address you respectfully.</span></h4>
+        <div class="input-group">
+          <input formControlName="name" type="text" placeholder="Full Name" />
+          @if (profileForm.get('name')?.errors?.['startsWithSuper'] && profileForm.get('name')?.dirty) {
+            <span class="field-error">Name cannot start with "super"</span>
+          }
+        </div>
+
+        <h4>Date of Birth <span *ngIf="computedAge !== null" class="age-count">{{computedAge}} years old</span></h4>
+        <div class="input-group">
+          <superme-birthdaypicker formControlName="dob" placeholder="Select Date of birth"></superme-birthdaypicker>
+        </div>
+
+        <h4>Gender <span>Used for identifying relation</span></h4>
+        <div class="gender-buttons">
+          <button type="button" class="gender-select-button" (click)="gender = 'male'" [ngClass]="{'active': gender === 'male'}">Male</button>
+          <button type="button" class="gender-select-button" (click)="gender = 'female'" [ngClass]="{'active': gender === 'female'}">Female</button>
+        </div>
+      </form>
+
+      <ng-container *ngIf="gender">
+        <ng-container *ngIf="currentRole === 'parent'; else nonParentAvatar">
+          <h4 style="margin-top: 15px">Profile picture</h4>
+          <div class="initial-avatar-preview">
+            <div class="initial-avatar-circle" [ngStyle]="parentImageService.getAvatarStyle(getNameInitial(), gender === 'female')">{{ getNameInitial() }}</div>
+            <p class="initial-avatar-hint">This will be used as your profile picture</p>
+          </div>
+        </ng-container>
+
+        <ng-template #nonParentAvatar>
+          <h4 style="margin-top: 15px">Choose an avatar</h4>
+          <div class="avatar-grid row">
+            <ng-container *ngFor="let avatar of avatars">
+              <div class="col-4 single-avatar" *ngIf="avatar.gender === gender" (click)="avatarSelected = avatar.key"
+                [ngClass]="{'active': avatarSelected === avatar.key}">
+                <img [src]="avatar.value" alt="Avatar" />
+              </div>
+            </ng-container>
+          </div>
+        </ng-template>
+      </ng-container>
+
+      <div class="referral-section" *ngIf="currentRole !== 'parent'">
+        <div class="referral-toggle" (click)="toggleReferral()">
+          <div class="referral-text">
+            <h4>Got a Referral Code?</h4>
+            <span>Tap to earn 100 bonus coins!</span>
+          </div>
+          <div class="referral-arrow" [ngClass]="{'open': showReferral}">
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+        <div class="referral-input-wrapper" *ngIf="showReferral">
+          <div class="input-group">
+            <input type="text" [value]="referralCode" (input)="onReferralInput($event)" placeholder="Code" maxlength="8" />
+            <div class="error" *ngIf="referralCode && referralCode.length > 8">Referral code must be up to 8 characters</div>
+            <div class="referral-validation" *ngIf="referralValidationStatus || referralErrorMessage">
+              <div class="validation-status" [ngClass]="referralValidationStatus">
+                <span *ngIf="referralValidationStatus === 'pending'" class="status-text">
+                  <i class="fa-solid fa-spinner fa-spin"></i> Validating...
+                </span>
+                <span *ngIf="referralValidationStatus === 'valid'" class="status-text success">
+                  <i class="fa-solid fa-check-circle"></i> Referral code applied!
+                </span>
+                <span *ngIf="referralValidationStatus === 'invalid'" class="status-text error">
+                  <i class="fa-solid fa-exclamation-circle"></i> {{referralErrorMessage || 'Invalid referral code'}}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <div class="profile-button-wrapper">
+        <superme-button type="orange-onboard" size="full" text="Save & Continue"
+          [disabled]="!isProfileComplete() || (showReferral && referralCode && (referralValidationStatus === 'invalid' || referralValidationStatus === 'pending'))"
+          (clickEvent)="registerOrProceed()"></superme-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Pet Selection -->
+  <div *ngIf="step === 4 && (currentRole === 'self' || currentRole === 'child')" [@slideIn] class="step-content">
+    <div class="pet-selection">
+        <div class="pet-carousel" role="list">
+          <div class="pet-card" *ngFor="let pet of pets; let i = index" [ngClass]="{'active': currentPetIndex === i}" (click)="selectPet(i)" role="listitem">
+            <div class="pet-card__inner">
+              <div class="pet-card__content">
+                <h4 class="pet-card__title">{{pet.displayName}}</h4>
+                <ul class="pet-card__features">
+                  <li *ngFor="let t of pet.text | slice:0:2">{{t}}</li>
+                </ul>
+              </div>
+              <div class="pet-card__image">
+                <img [src]="pet.image" alt="{{pet.name}}" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <superme-button type="orange-onboard" size="full" text="Let's get started" (clickEvent)="proceedWithPet()"></superme-button>
+  </div>
+
+  <!-- Step 5: Welcome -->
+  <div *ngIf="step === 5 && (currentRole === 'self' || currentRole === 'child')" [@slideIn] class="step-content welcome-page">
+    <img src="assets/Icons-Neutral/SuperMe Wordmark Logo.png" alt="Onboarding pet" class="onboarding-image" />
+    <div class="welcome-content">
+      <h1>Your Superpower is now active!</h1>
+      <p class="subtitle">You’re ready to master every part of your life. Use SuperMe to:</p>
+      <ul class="welcome-features">
+  <li>
+    <span class="dot"></span>
+    <span>Build unbreakable habits that stick.</span>
+  </li>
+  <li>
+    <span class="dot"></span>
+    <span>Crush your daily tasks with ease.</span>
+  </li>
+  <li>
+    <span class="dot"></span>
+    <span>Own your time and stay ahead.</span>
+  </li>
+  <li>
+    <span class="dot"></span>
+    <span>Unlock life learnings to level up.</span>
+  </li>
+</ul>
+
+    </div>
+    <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <superme-button type="orange-onboard" size="full" text="Begin My Journey" (clickEvent)="onBegin()"></superme-button>
+  </div>
+
+  <!-- Age Suggestion Modal -->
+  <div class="modal-backdrop" *ngIf="showAgeSuggestionModal" (click)="closeAgeSuggestionModal()"></div>
+  <div class="age-modal" *ngIf="showAgeSuggestionModal">
+    <div class="age-modal__content">
+      <h3>Personalized Experience Available</h3>
+      <p *ngIf="roleSelected === 'parent'">Based on your profile, you might love our Self mode</p>
+      <p *ngIf="roleSelected === 'child'">Based on your profile, you might love these</p>
+    </div>
+    <div class="age-modal__actions">
+      <button class="btn-secondary" *ngIf="roleSelected === 'parent'" (click)="closeAgeSuggestionModal()">Cancel</button>
+      <button class="btn-secondary" *ngIf="roleSelected === 'child'" (click)="selectSelfRole()">Try Self Role</button>
+      <button class="btn-primary" *ngIf="roleSelected === 'parent'" (click)="selectSelfRole()">Try Self Role</button>
+      <button class="btn-primary" *ngIf="roleSelected === 'child'" (click)="selectParentRole()">Try Parent Role</button>
+    </div>
+    <p class="age-modal__footer">You can always switch role in settings if you prefer</p>
+  </div>
+
+  <!-- Access Restricted Modal -->
+  <div class="modal-backdrop" *ngIf="showAccessRestrictedModal" (click)="closeAccessRestrictedModal()"></div>
+  <div class="age-modal" *ngIf="showAccessRestrictedModal">
+    <div class="age-modal__content">
+      <h3>Access Restricted</h3>
+      <p>Based on the date of birth entered, you are not eligible to create an account</p>
+    </div>
+    <div class="age-modal__actions">
+      <button class="btn-primary" (click)="closeAccessRestrictedModal()">Okay</button>
+    </div>
+  </div>
+
+  <!-- Country Code Modal -->
+  <div class="country-modal-backdrop" *ngIf="showCountryCodeModal" (click)="closeCountryCodeModal()"></div>
+  <div class="country-modal" *ngIf="showCountryCodeModal">
+    <div class="country-modal__header">
+      <h3>Country code</h3>
+      <button class="country-modal__close" (click)="closeCountryCodeModal()"><i class="fa-solid fa-times"></i></button>
+    </div>
+    <div class="country-modal__content">
+      <div class="country-list">
+        <div class="country-item" *ngFor="let country of countries" (click)="selectCountry(country)" [class.selected]="selectedCountry.code === country.code">
+          <span class="country-flag">{{country.flag}}</span>
+          <span class="country-name">{{country.name}}</span>
+          <span class="country-code">{{country.code}}</span>
+        </div>
+      </div>
+    </div>
+    <div class="country-modal__footer">
+      <button class="country-modal__done-btn" (click)="closeCountryCodeModal()">Done</button>
+    </div>
+  </div>
+</div>

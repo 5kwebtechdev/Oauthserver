@@ -1,0 +1,136 @@
+<section class="w-full px-[20px] min-[900px]:px-[32px] min-[1024px]:px-[40px]">
+  <div class="max-w-[1360px] mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col gap-[12px] items-center justify-center text-[#282527] text-center mb-[32px]">
+      <p class="font-['Nunito',sans-serif] font-bold text-[24px] min-[900px]:text-[28px] min-[1024px]:text-[32px] tracking-[-1.6px] leading-[normal]">
+        Unlock 360° Growth
+      </p>
+      <p class="font-['Nunito',sans-serif] font-normal opacity-70 text-[14px] min-[900px]:text-[18px] min-[1024px]:text-[20px] leading-[normal] max-w-[340px] min-[900px]:max-w-[520px]">
+        Explore features that build skills, spark creativity, and help you understand yourself better.
+      </p>
+    </div>
+
+    <!-- Desktop Accordion (900px+) -->
+    <div class="hidden min-[900px]:block">
+      <div
+        class="bg-white relative overflow-hidden w-full shadow-[0px_0px_2px_2px_rgba(107,101,106,0.1)]"
+        style="border-radius: clamp(32px, 4vw, 56px); aspect-ratio: 1360 / 395;"
+      >
+        <div class="h-full overflow-y-auto" style="width: 50%; scrollbar-width: none;">
+          <div
+            class="flex flex-col items-start w-full my-auto"
+            style="gap: clamp(4px,0.8vw,12px); padding-top: clamp(8px,1.2vw,24px); padding-bottom: clamp(4px,0.5vw,8px); padding-left: clamp(16px,2.4vw,32px); padding-right: clamp(16px,2.4vw,32px); min-height: 100%; justify-content: center;"
+          >
+            @for (item of items; track $index; let i = $index; let last = $last) {
+              <div
+                role="button"
+                tabindex="0"
+                (click)="setActive(i)"
+                (keydown.enter)="setActive(i)"
+                class="relative w-full flex items-center cursor-pointer bg-transparent outline-none text-left transition-[padding] duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]"
+                [style.paddingBottom]="activeIndex === i ? 'clamp(10px,1.2vw,16px)' : 'clamp(6px,0.7vw,10px)'"
+              >
+                @if (!last) {
+                  <div aria-hidden="true" class="absolute border-[rgba(40,37,39,0.5)] border-b border-solid inset-0 pointer-events-none"></div>
+                }
+                <div class="flex-1 min-w-0 flex flex-col leading-[normal] text-[#282527]">
+                  <p
+                    class="font-['Nunito',sans-serif] font-bold tracking-[-0.8px] transition-opacity duration-200"
+                    style="font-size: clamp(14px, 1.45vw, 20px)"
+                    [style.opacity]="activeIndex === i ? 1 : 0.7"
+                  >
+                    {{ item.title }}
+                  </p>
+                  <div
+                    class="grid transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]"
+                    [style.gridTemplateRows]="activeIndex === i ? '1fr' : '0fr'"
+                    [style.opacity]="activeIndex === i ? 1 : 0"
+                  >
+                    <div class="overflow-hidden">
+                      <p class="font-['Nunito',sans-serif] font-medium opacity-70 leading-[normal] pt-[6px]" style="font-size: clamp(11px, 1.1vw, 16px)">
+                        {{ item.description }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="shrink-0 ml-[8px] transition-[opacity,transform] duration-200 ease-out"
+                  [style.opacity]="activeIndex === i ? 1 : 0"
+                  [style.transform]="activeIndex === i ? 'scale(1)' : 'scale(0.7)'"
+                  [style.pointerEvents]="activeIndex === i ? 'auto' : 'none'"
+                  [style.width]="activeIndex === i ? 'auto' : '0'"
+                  style="overflow: hidden;"
+                >
+                  <a [routerLink]="item.href" class="shrink-0 block" style="width: clamp(36px,3.2vw,48px); height: clamp(36px,3.2vw,48px)">
+                    <svg class="block size-full" fill="none" viewBox="0 0 48 48">
+                      <rect fill="#90214D" height="48" rx="24" width="48"/>
+                      <path [attr.d]="arrowPath" fill="white"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Visual Panel -->
+        <div
+          class="absolute top-0 bottom-0 right-0 overflow-hidden"
+          style="width: 50%; border-top-right-radius: clamp(32px, 4vw, 56px); border-bottom-right-radius: clamp(32px, 4vw, 56px);"
+        >
+          @for (item of items; track $index; let i = $index) {
+            <div
+              class="absolute inset-0 overflow-hidden"
+              [style.backgroundColor]="item.bgColor"
+              [style.opacity]="i === activeIndex ? 1 : 0"
+              [style.pointerEvents]="i === activeIndex ? 'auto' : 'none'"
+              style="transition: opacity 0.4s ease;"
+            >
+              <img
+                alt=""
+                class="absolute right-0 bottom-0 size-full max-w-none object-cover object-center"
+                [src]="item.gif"
+                [attr.width]="item.imageWidth"
+                [attr.height]="item.imageHeight"
+                loading="lazy"
+                decoding="async"
+                style="width: 93%;height:85%; border-radius: 15px 0px 0px 0px;"
+              />
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile — horizontal carousel (<900px) -->
+    <div class="min-[900px]:hidden">
+      <div
+        class="flex gap-[16px] overflow-x-auto touch-auto snap-x snap-mandatory pb-[16px] px-[4px]"
+        style="scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch"
+      >
+        @for (item of items; track $index) {
+          <div class="snap-start growth-card-new shrink-0 w-[280px] rounded-[24px] overflow-hidden" style="box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.1411764705882353);">
+            <div class="relative overflow-hidden" style="aspect-ratio: 16/9" [style.backgroundColor]="item.bgColor">
+              <img
+                alt=""
+                class="absolute inset-0 size-full max-w-none object-cover object-center"
+                [src]="item.gif"
+                [attr.width]="item.imageWidth"
+                [attr.height]="item.imageHeight"
+                loading="lazy"
+                decoding="async"
+                style="transform: scale(1.06);"
+              />
+            </div>
+            <div class="p-[16px] growth-card-content" [style.backgroundColor]="item.bgColor">
+              <p class="font-['Nunito',sans-serif] font-bold text-[16px] text-[#FFFFFF] tracking-[-0.5px] mb-[4px]">{{ item.title }}</p>
+              <p class="font-['Nunito',sans-serif] font-normal opacity-70 text-[13px] text-[#FFFFFF] leading-[normal]">{{ item.description }}</p>
+            </div>
+          </div>
+        }
+        <div class="shrink-0 w-[16px]" aria-hidden="true"></div>
+      </div>
+    </div>
+
+  </div>
+</section>

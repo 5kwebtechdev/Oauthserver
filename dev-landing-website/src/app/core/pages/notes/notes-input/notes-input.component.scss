@@ -1,0 +1,397 @@
+/* Notes Input Container */
+.notes-input-container {
+  width: 100%;
+  max-width: 1144px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+  padding: 32px 22px;
+  min-height: calc(100vh - 160px);
+}
+
+/* Header Section */
+.notes-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.notes-heading {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-size: 25px;
+  line-height: 1.4;
+  color: #282527;
+  margin: 0;
+}
+
+/* Input Section */
+.input-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Title Row */
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.title-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.close-btn:hover {
+  opacity: 0.7;
+}
+
+.close-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Delete button (icon-only) */
+.delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.delete-btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.delete-btn svg {
+  width: 22px;
+  height: 24px;
+}
+
+/* Share button (icon-only) */
+.share-btn {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.share-btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.share-btn svg {
+  width: 24px;
+  height: 27px;
+}
+
+/* Title limit error message */
+.title-limit-msg {
+  font-family: 'Nunito';
+  font-size: 12px;
+  font-weight: 600;
+  color: #ac2b56;
+  width: 100%;
+  padding-left: 2px;
+}
+
+/* Title char counter */
+.title-char-count {
+  font-family: 'Nunito';
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b656a;
+  white-space: nowrap;
+  flex-shrink: 0;
+  &.near-limit {
+    color: #ac2b56;
+    font-weight: 700;
+  }
+}
+
+/* Title Input */
+.title-input {
+  flex: 1 1 0;
+  min-width: 0;
+  border: none;
+  outline: none;
+  font-family: 'Nunito';
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 1.4;
+  color: #282527;
+  padding: 12px 0;
+}
+
+.title-input::placeholder {
+  color: #6b656a;
+  opacity: 0.5;
+}
+
+/* Tag Section */
+.tag-section {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+}
+
+.tag-label {
+  font-family: 'Nunito';
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 1.4;
+  color: #282527;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.tag-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tag-pill {
+  border: 1px solid #6b656a;
+  border-radius: 31px;
+  padding: 12px 16px;
+  background: transparent;
+  font-family: 'Nunito';
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tag-pill:hover {
+  background: rgba(107, 101, 106, 0.05);
+}
+
+.tag-pill.selected {
+  background: #ac2b56;
+  color: #ffffff;
+  border-color: #ac2b56;
+}
+
+.tag-add-btn {
+  border: 1px solid #6b656a;
+  border-radius: 31px;
+  padding: 12px 16px;
+  background: #6B656A;
+  font-family: 'Nunito';
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.4;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+
+
+.tag-input {
+  padding: 12px 16px;
+  border: 1px solid #6b656a;
+  border-radius: 31px;
+  width: 120px;
+  font-size: 20px;
+  font-family: 'Nunito';
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.tag-input:focus {
+  border-color: #282527;
+}
+
+/* Tag Edit Container */
+.tag-edit-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #6b656a;
+  border-radius: 31px;
+  padding: 12px;
+  background: #fff;
+}
+
+.tag-edit-input {
+  border: none;
+  outline: none;
+  font-family: 'Nunito';
+  font-weight: 600;
+  width: 80px;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #282527;
+  background: transparent;
+}
+
+.tag-delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.tag-delete-btn:hover {
+  transform: scale(1.1);
+}
+
+.tag-delete-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Notes Content Area */
+.notes-content-area {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-height: 200px;
+}
+
+.line-separator {
+  width: 1px;
+  height: 35px;
+  background: #6b656a;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+.notes-textarea {
+  flex: 1;
+  min-height: 200px;
+  border: none;
+  outline: none;
+  font-family: 'Nunito';
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 1.4;
+  color: #6b656a;
+  resize: vertical;
+  padding: 8px;
+  white-space: pre-wrap;
+}
+
+.notes-textarea::placeholder {
+  color: #6b656a;
+  opacity: 0.7;
+}
+
+/* Action Buttons */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  width: 100%;
+}
+
+.btn-primary {
+  background: #ac2b56;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  font-family: 'Nunito';
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover {
+  background: #8f1950;
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .notes-input-container {
+    gap: 40px;
+  }
+
+  .notes-heading {
+    font-size: 20px;
+  }
+
+  .input-section {
+    padding: 24px;
+    gap: 32px;
+  }
+
+  .title-label {
+    font-size: 24px;
+  }
+
+  .tag-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .tag-label {
+    font-size: 20px;
+  }
+
+  .tag-pill,
+  .tag-add-btn {
+    font-size: 16px;
+    padding: 10px 14px;
+  }
+
+  .notes-textarea {
+    font-size: 20px;
+  }
+}

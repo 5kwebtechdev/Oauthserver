@@ -1,0 +1,150 @@
+<div class="coin-page-container">
+<app-public-navbar></app-public-navbar>
+<div class="coin-container" *ngIf="!redeemActive && !showHelpline">
+  <div class="coin-page">
+  <div class="hero">
+    <div class="coins-left">
+      <div class="coin-img">
+      <img class="coin-icon" src="/assets/Icons-Neutral/Icons-Coins-Big.png" alt="coins" />
+      </div>
+      <div class="coin-count">{{ totalCoins | number }}</div>
+    </div>
+
+    <div class="hero-right">
+      <div class="pets-bubble">
+        <div class="bubble-content">
+          <p class="bubble-text">Ready to Treat Yourself?</p>
+        </div>
+      </div>
+      <img class="panda" src="/assets/Images-Pet/Panda-Age1-Happy.png" alt="panda" />
+    </div>
+    
+  </div>
+  <div class="redeem-button-container">
+    <superme-button type="gold" text="Redeem" large (clickEvent)="toggleRedeem()" [attr.aria-pressed]="redeemActive"></superme-button>
+    </div>
+</div>
+  <app-ad-slider screen="COLINS"></app-ad-slider>
+  <main class="content">
+    <div class="title">
+    <h1 class="page-title">Spent Smart, Spent Fun!</h1>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading coin history...</p>
+    </div>
+
+    <!-- Empty state when there are no coins cards (reusable) -->
+    <superme-empty-state
+      *ngIf="!isLoading && (!coinsList || coinsList.length === 0)"
+      [title]="'No transactions yet!'"
+      [description]="'Your coins are ready to treat your pet with cool outfits and accessories.'"
+      [image]="'/assets/Images-Transparent/Image-Coins-Blank.png'">
+    </superme-empty-state>
+
+    <!-- Cards list when coins exist -->
+    <div *ngIf="!isLoading && coinsList && coinsList.length > 0" class="cards">
+      <div class="coin-day-group" *ngFor="let group of groupedCoinsList">
+        <div class="coin-day-divider">
+          <span>{{ group.label }}</span>
+        </div>
+        <sm-coin-card *ngFor="let c of group.items"
+          [title]="c.title"
+          [date]="c.date"
+          [imageSrc]="c.imageSrc"
+          [changeValue]="c.changeValue"
+          [contentType]="c.contentType">
+        </sm-coin-card>
+      </div>
+    </div>
+    <div class="chatbot" role="button" tabindex="0" (click)="toggleHelpline()" (keydown.enter)="toggleHelpline()" [attr.aria-expanded]="showHelpline" aria-controls="coin-helpline-panel">
+      <img src="/assets/Icons-Neutral/Icon-Chatbot.png" alt="chatbot" />
+    </div>
+  </main>
+  </div>
+<!-- Redeem content -->
+<div class="redeem-container" *ngIf="redeemActive && !showHelpline">
+  <div class="redeem-inner">
+    <div class="redeem-left">
+      <div class="balance-title">Your coins balance</div>
+      <div class="balance-row">
+        <img class="coin-icon" src="/assets/Icons-Neutral/Icons-Coins.png" alt="coins" />
+        <div class="coin-count">{{ totalCoins | number }}</div>
+      </div>
+    </div>
+    <div class="redeem-right"></div>
+  </div>
+<!--Main content of redeem-->
+    <!-- Header: back arrow + title + subtitle -->
+    <div class="redeem-header">
+      <button class="back-arrow" (click)="toggleRedeem()" aria-label="Back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+          <path d="M13.2929 27.2929C12.9024 27.6834 12.9024 28.3166 13.2929 28.7071L19.6569 35.0711C20.0474 35.4616 20.6805 35.4616 21.0711 35.0711C21.4616 34.6805 21.4616 34.0474 21.0711 33.6569L15.4142 28L21.0711 22.3431C21.4616 21.9526 21.4616 21.3195 21.0711 20.9289C20.6805 20.5384 20.0474 20.5384 19.6569 20.9289L13.2929 27.2929ZM42 29C42.5523 29 43 28.5523 43 28C43 27.4477 42.5523 27 42 27V28V29ZM14 28V29H42V28V27H14V28Z" fill="#282527"/>
+        </svg>
+      </button>
+      <div class="redeem-header-text">
+        <h2 class="redeem-title">Spend Your Coins!</h2>
+        <p class="redeem-sub">Earn coins · Pick your prize · Flaunt your style</p>
+      </div>
+    </div>
+
+    <!-- Empty state when there are no coins cards (reusable) -->
+     <div class="redeem-empty-state">
+    <superme-empty-state
+      [title]="'Your treasure vault is loading'"
+      [description]="'You have been crushing it and stacking coins. Soon, you will see pets and accessories to spend them on. Keep building your balance, the store opens soon.'"
+      [image]="'/assets/Images-Transparent/Redeem Coins-Blank.png'">
+    </superme-empty-state>
+    </div>
+
+    <!-- Category pills (e.g. Pets) as in design -->
+    <!-- <div class="redeem-categories">
+      <button class="category-pill" [class.active]="selectedCategory === 'Pets'" (click)="selectCategory('Pets')">Pets</button>
+      <button class="category-pill" [class.active]="selectedCategory === 'Accessories'" (click)="selectCategory('Accessories')">Accessories</button>
+      <!-- add more pills here if needed -->
+   <!--  </div>  -->
+
+    <!-- Main redeem content: use reusable redeem card component -->
+   <!--  <div class="redeem-main">
+      <div class="redeem-grid">
+        <sm-redeem-card *ngFor="let item of redeemItems[selectedCategory]"
+          [title]="item.title"
+          [imageSrc]="item.imageSrc"
+          [cost]="item.cost"
+          (click)="openConfirm(item)">
+        </sm-redeem-card>
+      </div>
+    </div> -->
+
+  </div>
+
+  <!--coin helpline-->
+  <sm-coin-helpline *ngIf="showHelpline" id="coin-helpline-panel" (close)="showHelpline = false"></sm-coin-helpline>
+
+  <!-- Confirm modal -->
+  <div class="redeem-modal-backdrop" *ngIf="showConfirm">
+    <div class="redeem-modal">
+      <div class="modal-image">
+        <img [src]="selectedItem?.imageSrc" [alt]="selectedItem?.title" />
+      </div>
+      <h3 class="modal-title">Are you sure you want to get this item?</h3>
+      <p class="modal-sub">You'll be left with:</p>
+      <div class="modal-balance">
+        <img class="coin-mini" src="/assets/Icons-Neutral/Icons-Coins.png" alt="coin" />
+        <div class="balance-amount">{{ (totalCoins - (selectedItem?.cost || 0)) | number }}</div>
+      </div>
+
+      <div class="modal-actions">
+        <superme-button type="white" text="Cancel" small (clickEvent)="cancelConfirm()"></superme-button>
+        <superme-button type="green" text="Get it now" small (clickEvent)="confirmRedeem()"></superme-button>
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <app-footer></app-footer>
+</div>

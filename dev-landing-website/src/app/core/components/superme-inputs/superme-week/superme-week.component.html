@@ -1,0 +1,47 @@
+<div class="week-nav-wrapper" *ngIf="showNavButtons">
+  <div class="week-nav-row">
+    <superme-button class="week-nav-btn" type="prev" (clickEvent)="prevWeek()"></superme-button>
+
+    <div class="week-nav-center">
+      <div class="week-container">
+        @for (day of weekDays; track day) {
+          <div
+            class="day-card"
+            [class.today]="isToday(day)"
+            [class.selected]="isSelected(day)"
+            (click)="selectDate(day)">
+            <div class="day">{{ day | date:'EEE' }}</div>
+            <div class="date">{{ day | date:'d' }}</div>
+            @if (showDayStats && dayStats[dateKey(day)]) {
+              <div class="day-stats">
+                <span class="day-stat habit-stat">{{ dayStats[dateKey(day)].habits }}</span>
+                <span class="day-stat task-stat">{{ dayStats[dateKey(day)].tasks }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <superme-button class="week-nav-btn" type="next" (clickEvent)="nextWeek()"></superme-button>
+  </div>
+</div>
+
+<div class="week-container" *ngIf="!showNavButtons">
+  @for (day of weekDays; track day) {
+    <div
+      class="day-card"
+      [class.today]="isToday(day)"
+      [class.selected]="isSelected(day)"
+      (click)="selectDate(day)">
+      <div class="day">{{ day | date:'EEE' }}</div>
+      <div class="date">{{ day | date:'d' }}</div>
+      @if (showDayStats && dayStats[dateKey(day)]) {
+        <div class="day-stats">
+          <span class="day-stat habit-stat">{{ dayStats[dateKey(day)].habits }}</span>
+          <span class="day-stat task-stat">{{ dayStats[dateKey(day)].tasks }}</span>
+        </div>
+      }
+    </div>
+  }
+</div>

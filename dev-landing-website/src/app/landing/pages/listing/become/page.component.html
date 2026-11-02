@@ -1,0 +1,102 @@
+<div class="listing-page flex flex-col w-full min-h-screen" style="font-family:'Nunito',sans-serif">
+  <app-landing-navbar></app-landing-navbar>
+
+  <main class="listing-main flex-1 flex flex-col items-center px-4 sm:px-8 md:px-10 py-6 sm:py-8 gap-8 sm:gap-14">
+
+    <!-- HERO -->
+    <section class="listing-hero">
+      <div class="listing-hero__eyebrow">
+        <span></span>
+        {{ config.eyebrow }}
+        <span></span>
+      </div>
+
+      <h1 class="listing-hero__title">
+        {{ config.titlePrefix }}
+        <span>{{ config.titleHighlight }}</span>
+      </h1>
+
+      <p class="listing-hero__copy">
+        {{ config.description }}
+      </p>
+
+      <div class="listing-hero__benefits">
+        <span *ngFor="let benefit of config.benefits">✓ {{ benefit }}</span>
+      </div>
+    </section>
+
+    <!-- FORM CARD -->
+    <section class="listing-form-card">
+
+      <!-- STEPS -->
+      <div class="listing-steps">
+        <ng-container *ngFor="let s of steps; let idx = index">
+          <div
+            class="listing-step"
+            [class.listing-step--future]="getState(s.num) === 'future'"
+          >
+            <div
+              class="listing-step__number"
+              [style.background]="getState(s.num) === 'completed' ? '#4caf50' : '#90214d'"
+            >
+              <svg
+                *ngIf="getState(s.num) === 'completed'"
+                width="14"
+                height="14"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <path
+                  d="M4 10l4 4 8-8"
+                  stroke="white"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+
+              <span *ngIf="getState(s.num) !== 'completed'">{{ s.num }}</span>
+            </div>
+
+            <span class="listing-step__label">{{ s.label }}</span>
+          </div>
+
+          <div
+            *ngIf="!isLastStep(idx)"
+            class="listing-step__line"
+          ></div>
+        </ng-container>
+      </div>
+
+      <!-- STEP CONTENT -->
+      <div class="listing-form-content">
+        <app-listing-step-one
+          *ngIf="currentStep === 1"
+          [config]="config"
+          [initialData]="step1Data"
+          (next)="handleStep1Next($event)"
+        ></app-listing-step-one>
+
+        <app-listing-step-two
+          *ngIf="currentStep === 2 && step1Data"
+          [config]="config"
+          [initialData]="step2Data"
+          (next)="handleStep2Next($event)"
+          (back)="goToStep1()"
+        ></app-listing-step-two>
+
+        <app-listing-step-three
+          *ngIf="currentStep === 3 && step1Data && step2Data"
+          [config]="config"
+          [basicData]="step1Data"
+          [detailsData]="step2Data"
+          [initialImages]="step3Images"
+          (imagesChange)="step3Images = $event"
+          (back)="goToStep2()"
+        ></app-listing-step-three>
+      </div>
+    </section>
+  </main>
+
+  <app-common-footer></app-common-footer>
+</div>

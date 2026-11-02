@@ -1,0 +1,76 @@
+<div class="planner-page">
+  <app-public-navbar></app-public-navbar>
+
+  <main class="planner-main">
+    <section class="planner-hero" aria-labelledby="planner-title">
+      <div class="planner-hero__copy">
+        <div class="planner-hero__intro">
+          <h1 id="planner-title">
+            Your Day, Your Way.<br />
+            All‑In‑One
+            <span class="planner-title-word">
+              Planner
+              <img [src]="assetRoot + '/planner-underline.svg'" alt="" aria-hidden="true" width="202" height="15" />
+            </span>
+          </h1>
+
+          <p>
+            Planner helps you organize your time, maintain consistent routines, and never miss what matters.
+          </p>
+          <a routerLink="/productivity-calendar" class="planner-related-link">Explore the productivity calendar</a>
+        </div>
+
+        <div class="planner-features">
+          <div class="planner-feature">
+            <span class="planner-feature__icon planner-feature__icon--timetable" aria-hidden="true">
+              <img [src]="assetRoot + '/timetable.png'" alt="" width="256" height="384" />
+            </span>
+            <div>
+              <h2>Time Table</h2>
+              <p>Create recurring schedules and time slots for school, practice, study, and other activities.</p>
+            </div>
+          </div>
+
+          <div class="planner-feature">
+            <span class="planner-feature__icon planner-feature__icon--events" aria-hidden="true">
+              <img [src]="assetRoot + '/events.png'" alt="" width="256" height="384" />
+            </span>
+            <div>
+              <h2>Events</h2>
+              <p>Keep track of birthdays, exams, meetings, and important milestones.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="planner-actions">
+          <a [href]="loginUrl" class="planner-action planner-action--login">Log in to mange your time</a>
+          <button type="button" (click)="openStoreDialog()" class="planner-action planner-action--signup">
+            <span>Try it for free</span>
+            <img [src]="assetRoot + '/cta-arrow.svg'" alt="" aria-hidden="true" width="18" height="15" />
+          </button>
+        </div>
+      </div>
+
+      <div class="planner-hero__visual">
+        <img [src]="assetRoot + '/planner-hero.png'" alt="Planner timetable and upcoming events preview" width="1254" height="1254" />
+      </div>
+    </section>
+
+    <section class="planner-benefits" aria-label="Planner benefits">
+      <article *ngFor="let benefit of benefits; let last = last" class="planner-benefit">
+        <div class="planner-benefit__content">
+          <span class="planner-benefit__icon" aria-hidden="true">
+            <img [src]="benefit.icon" alt="" width="40" height="40" />
+          </span>
+          <div>
+            <h2>{{ benefit.title }}</h2>
+            <p>{{ benefit.description }}</p>
+          </div>
+        </div>
+        <span *ngIf="!last" class="planner-benefit__divider" aria-hidden="true"></span>
+      </article>
+    </section>
+  </main>
+
+  <app-common-footer></app-common-footer>
+</div>

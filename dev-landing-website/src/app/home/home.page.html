@@ -1,0 +1,164 @@
+<div class="home-container">
+  <!-- Family Connected Modal -->
+  <div *ngIf="showFamilyConnectedModal" class="family-connected-modal">
+    <div class="modal-card">
+      <div class="modal-illustration">
+        <img src="/assets/images/panda-family.png" alt="panda" />
+      </div>
+      <h2>You're connected to your family</h2>
+      <p class="muted">This account is now set to {{ familyConnectedRole === 'child' ? 'Child' : 'Parent' }} and linked
+        to your family.</p>
+      <button class="btn-letbegin" (click)="closeFamilyConnectedModal()">Let's Begin</button>
+    </div>
+  </div>
+  <!-- Navbar Component -->
+   <div class="navbar-container">
+  <app-public-navbar></app-public-navbar>
+  </div>
+  <div *ngIf="showDayView">
+    <app-activity-timeline></app-activity-timeline>
+    <app-ad-slider screen="COLINS"></app-ad-slider>
+    <app-footer></app-footer>
+  </div>
+
+  <!-- When showCalendarView is true, render only the calendar between navbar and footer -->
+  <div *ngIf="showCalendarView">
+    <app-activity-calendar></app-activity-calendar>
+    <app-footer></app-footer>
+  </div>
+
+  <!-- Activity view (render when requested via ?view=activity-page) -->
+  <div *ngIf="showActivityView">
+    <!-- activity view (inline) -->
+    <app-activity-detail [activity]="selectedActivity"></app-activity-detail>
+    <app-footer></app-footer>
+  </div>
+
+  <!-- Main Content (hidden when showing day, habit, or calendar views) -->
+  <div *ngIf="!showDayView && !showActivityView && !showCalendarView">
+    <div class="hero-stats">
+      <section class="stat-left">
+        <div class="panda-bubble">
+          <div class="panda-img-wrap" #pandaRef>
+            <superme-pet
+              pet="panda"
+              mood="happy"
+              [size]="160">
+            </superme-pet>
+          </div>
+          <div class="bubble-text-wrap" #bubbleRef>
+            <div class="bubble-tail"></div>
+            <div class="bubble-box">
+              <p>You've got <strong>{{ tasksCount }} tasks</strong>, <strong>{{ habitsCount }} habits</strong>, and a challenge waiting for you today. Let's go!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="hero-center" aria-hidden="true">
+        <span class="star">⭐</span>
+        <span class="star">✨</span>
+        <span class="star">🌟</span>
+        <span class="star">✨</span>
+        <span class="star">⭐</span>
+      </div>
+
+      <section class="stat-right" #moodRef>
+        <mood-selector (valueChange)="onMoodChange($event)" [value]="currentMood"></mood-selector>
+      </section>
+    </div>
+
+    <!-- coin demo removed to avoid modifying homepage -->
+
+    <!-- Habit dashboard (replaces Day at a Glance) -->
+
+    <app-activity-dashboard *ngIf="!showActivityView && !showCalendarView"
+      (openActivity)="openActivityView($event)"></app-activity-dashboard>
+
+    <app-ad-slider *ngIf="!showActivityView && !showCalendarView" screen="HOME"></app-ad-slider>
+
+
+    <!-- Discover / Play section (cards grid) -->
+    <section class="discover-section">
+      <app-superme-home-header title="Start Curious, Play, Conquer!" [subtitleHtml]="discoverSubtitleHtml"
+        linkText="View all" linkHref="/home/content">
+      </app-superme-home-header>
+      @if (discoverLoading) {
+        <div class="flex items-center justify-center py-[48px]">
+          <svg class="animate-spin" width="36" height="36" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="20" stroke="#e5e7eb" stroke-width="4"/>
+            <path d="M44 24a20 20 0 0 0-20-20" stroke="#505D83" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </div>
+      } @else {
+        <div class="discover-grid">
+          @for (a of activities; track a.id ?? $index) {
+            <activity-card [activity]="a"></activity-card>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Reels / Made by Kids section — hidden for now -->
+    <!-- <section class="reels-section">
+      <app-superme-home-header title="Made by Kids, for Kids!" subtitle="Watch reels · Create · Get Inspired"
+        linkText="View all" linkHref="/home/reels">
+      </app-superme-home-header>
+      <div class="reels-grid">
+        <app-reels-card *ngFor="let r of reels" [reel]="r"></app-reels-card>
+      </div>
+    </section> -->
+
+
+    <app-tutor-dashboard (viewProfileClick)="onViewProfile($event)"></app-tutor-dashboard>
+
+    <!-- Journal section -->
+    <app-journal-dashboard></app-journal-dashboard>
+
+    <!-- Courses / Life Skills section (Masterclass - merged across all categories) -->
+    <section class="courses-section">
+      <app-superme-home-header title="Begin Your Life Skills Quest!" [subtitleHtml]="coursesSubtitleHtml"
+        linkText="View all" linkHref="/home/content" [linkState]="{ type: 'masterclass' }">
+      </app-superme-home-header>
+
+      @if (coursesLoading) {
+        <div class="flex items-center justify-center py-[48px]">
+          <svg class="animate-spin" width="36" height="36" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="20" stroke="#e5e7eb" stroke-width="4"/>
+            <path d="M44 24a20 20 0 0 0-20-20" stroke="#505D83" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </div>
+      } @else if (coursesError) {
+        <div class="text-center py-8 w-full">
+          <p class="text-gray-400 mb-3">{{ coursesError }}</p>
+          <superme-button type="pink" small="" text="Retry" (clickEvent)="loadMasterclassCourses()"></superme-button>
+        </div>
+      } @else {
+        <div class="courses-row">
+          @for (c of masterclassCourses; track c.id) {
+            <article class="course-card">
+              <div class="course-left">
+                <img class="course-thumb" [src]="c.thumbnailUrl || '/assets/Images-Transparent/Academy-Course-Thubmnail3.png'" [alt]="c.courseName" />
+              </div>
+              <div class="course-body">
+                <div class="course-head">
+                  <div class="course-title">{{ c.courseName }}</div>
+                  <div class="course-pill">{{ c.difficulty || 'Beginner' }}</div>
+                </div>
+                <div class="course-meta">{{ c.noOfLessons }} lessons • {{ c.duration }} min</div>
+                <p class="course-desc">{{ c.description }}</p>
+                <superme-button type="pink" text="Start Course" (clickEvent)="startCourse(c.id)"></superme-button>
+              </div>
+            </article>
+          }
+          @empty {
+            <p class="text-center text-gray-400 py-8 w-full">No courses available.</p>
+          }
+        </div>
+      }
+
+    </section>
+    <!-- Footer -->
+    <app-footer></app-footer>
+  </div>
+</div>

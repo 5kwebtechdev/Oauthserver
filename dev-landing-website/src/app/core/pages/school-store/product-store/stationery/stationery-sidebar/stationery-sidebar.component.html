@@ -1,0 +1,17 @@
+<div class="stsb-backdrop" *ngIf="isOpen" (click)="closeDrawer.emit()"></div>
+
+<aside class="stsb-panel" [class.open]="isOpen" role="navigation" aria-label="Stationery sub-categories">
+  <div class="stsb-head">
+    <span>Categories</span>
+    <button type="button" class="stsb-close" aria-label="Close categories" (click)="closeDrawer.emit()">✕</button>
+  </div>
+
+  <button
+    type="button"
+    class="stsb-subitem"
+    *ngFor="let item of items"
+    [class.active]="activeId === item.id"
+    (click)="onSelect(item)">
+    {{ item.label }}
+  </button>
+</aside>

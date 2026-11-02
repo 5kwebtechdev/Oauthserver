@@ -1,0 +1,150 @@
+@use "sass:list";
+
+.rp-shell {
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 20px 48px;
+  position: relative;
+
+  &--nodata {
+    justify-content: center;
+    gap: 24px;
+    text-align: center;
+  }
+}
+
+// ── Close ─────────────────────────────────────────────────────────────────────
+.rp-close {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  &:hover { opacity: 0.6; }
+}
+
+// ── Pet ───────────────────────────────────────────────────────────────────────
+.rp-pet {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.rp-pet-img {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+}
+
+// ── Celebration text ──────────────────────────────────────────────────────────
+.rp-celebration {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #282527;
+  margin: 12px 0 0;
+  text-align: center;
+}
+
+// ── Score pill ────────────────────────────────────────────────────────────────
+.rp-score-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 18px 0 0;
+}
+
+.rp-score-circle {
+  border-radius: 40px;
+  border: 3px solid #4CAF50;
+  padding: 10px 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  z-index: 1;
+}
+
+.rp-score-text {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+// Sparkle dots around score pill (high score only)
+$sparkle-colors: (#4CAF50, #FFD700, #4CAF50, #FF9800, #4CAF50, #FFD700, #4CAF50, #FF9800);
+
+.rp-dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+
+  @for $i from 0 through 7 {
+    $angle: $i * 45deg;
+    $color: list.nth($sparkle-colors, $i + 1);
+    &--#{$i} {
+      background: $color;
+      transform: translate(-50%, -50%) rotate($angle) translateY(-54px);
+    }
+  }
+}
+
+// ── Rewards ───────────────────────────────────────────────────────────────────
+.rp-rewards {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-top: 18px;
+}
+
+.rp-reward {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rp-plus {
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2ECC71;
+}
+
+.rp-reward-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.rp-reward-count {
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #282527;
+}
+
+// ── Badge cards (uses app-badges-card, same as badge page) ───────────────────
+.rp-badges {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 24px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.rp-badge-item {
+  display: flex;
+}

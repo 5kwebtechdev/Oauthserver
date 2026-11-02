@@ -1,0 +1,34 @@
+<article class="discover-card" role="button" tabindex="0" (click)="openDescription()" (keyup.enter)="openDescription()">
+  <div class="thumbnail">
+    <img [src]="imageUrl" (error)="onImgError($event)" [alt]="activity.title || 'activity thumbnail'" class="thumbnail-img" />
+    <div class="difficulty-badge" *ngIf="activity.type !== 'Article'">
+      <img class="difficulty-img" [src]="activity.diff === 'Hard' ? '/assets/Images-Transparent/Image-Content-Difficulty.png' : '/assets/Images-Transparent/Image-Content-Easy.png'" [alt]="activity.diff + ' difficulty'" />
+    </div>
+  </div>
+
+  <div class="card-content">
+    <div class="card-info">
+      <div class="title-row">
+        <h3 class="card-title">{{ activity.title }}</h3>
+        <div class="card-type">{{ typeLabel }}</div>
+      </div>
+      <p class="card-desc">{{ activity.desc }}</p>
+    </div>
+
+    <div class="card-actions">
+      <div class="rewards">
+        <div class="reward-item">
+          <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coin" class="coin-icon" />
+          <span class="coin-count">{{ activity.coins }}</span>
+        </div>
+        <div class="reward-item">
+          <img src="/assets/Icons-Neutral/Icon-Trophy.png" alt="trophy" class="trophy-icon" />
+          <span class="trophy-count">{{ activity.trophies }}</span>
+        </div>
+      </div>
+      <div class="cta-button">
+      <superme-button type="pink" [text]="buttonText" class="read-btn" (click)="openDescription(); $event.stopPropagation()"></superme-button>
+      </div>
+    </div>
+  </div>
+</article>
