@@ -62,7 +62,16 @@ jobs:
           cp deploy/apk-code-fe/nginx.conf deploy/apk-code-fe/deploy.sh bundle/
           tar -czf superme-dev-landing-and-apk.tar.gz -C bundle .
 
+      - name: Publish dev release bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: superme-dev-landing-and-apk
+          path: superme-dev-landing-and-apk.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Deploy dev landing page and APK app to port 4046
+        if: ${{ vars.DEV_LANDING_SSH_DEPLOY_ENABLED == 'true' }}
         env:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
