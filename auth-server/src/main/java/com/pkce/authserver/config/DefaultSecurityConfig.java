@@ -45,6 +45,8 @@ public class DefaultSecurityConfig {
     private String adminDevClientId;
     @Value("${app.frontend.apk-dev-client-id:}")
     private String apkDevClientId;
+    @Value("${app.frontend.android-dev-client-id:}")
+    private String androidDevClientId;
 
     // Was hardcoded to the prod domain - see FriendlyErrorController for the same issue
     // and fix. Each environment supplies its own value via AUTH_SERVER_LOGIN_URL.
@@ -77,7 +79,7 @@ public class DefaultSecurityConfig {
                         .requestMatchers("/adminlogout").permitAll()
                         // Mobile/web app's own, dedicated logout endpoint - see ApkLogoutController.
                         // Deliberately separate from /connect/logout's strict validation.
-                        .requestMatchers("/apklogout").permitAll()
+                        .requestMatchers("/apklogout", "/android-dev-logout").permitAll()
                         // Chrome DevTools auto-probes this on any site with DevTools
                         // open; harmless, but left unauthenticated it would otherwise
                         // get cached as the "saved request" and could hijack the
@@ -220,7 +222,8 @@ public class DefaultSecurityConfig {
 
     @Bean
     public AdminLoginContextFilter adminLoginContextFilter() {
-        return new AdminLoginContextFilter(adminClientId, adminDevClientId, apkDevClientId);
+        return new AdminLoginContextFilter(adminClientId, adminDevClientId,
+                apkDevClientId, androidDevClientId);
     }
 
     /**

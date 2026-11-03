@@ -29,6 +29,15 @@ public class RegisteredClientTokenSettingsUpdater implements ApplicationRunner {
     @Value("${app.security.token.refresh-token-ttl:PT25M}")
     private String refreshTokenTtl;
 
+    @Value("${app.security.android-dev-client.id:}")
+    private String androidDevClientId;
+
+    @Value("${app.security.android-dev-client.access-token-ttl:PT15M}")
+    private String androidDevAccessTokenTtl;
+
+    @Value("${app.security.android-dev-client.refresh-token-ttl:P7D}")
+    private String androidDevRefreshTokenTtl;
+
     @Override
     public void run(ApplicationArguments args) {
         List<String> ids = jdbcTemplate.queryForList(
@@ -39,11 +48,8 @@ public class RegisteredClientTokenSettingsUpdater implements ApplicationRunner {
                 continue;
             }
             TokenSettings current = client.getTokenSettings();
-            TokenSettings updated = TokenSettings.builder()
-                    .settings(settings -> settings.putAll(current.getSettings()))
-                    .accessTokenTimeToLive(Duration.parse(accessTokenTtl))
-                    .refreshTokenTimeToLive(Duration.parse(refreshTokenTtl))
-                    .build();
+            TokenSettings updated = resolveSettings(client.getClientId(), androidDevClientId,
+                    accessTokenTtl, refreshTokenTtl, androidDevAccessTokenTtl, androidDevRefreshTokenTtl, current);
             if (!updated.getSettings().equals(current.getSettings())) {
                 registeredClientRepository.save(RegisteredClient.from(client)
                         .tokenSettings(updated)
@@ -51,5 +57,19 @@ public class RegisteredClientTokenSettingsUpdater implements ApplicationRunner {
                 log.info("Updated OAuth2 token lifetimes for client '{}'", client.getClientId());
             }
         }
+    }
+
+    static TokenSettings resolveSettings(String clientId, String androidDevClientId,
+                                         String accessTokenTtl, String refreshTokenTtl,
+                                         String androidDevAccessTokenTtl, String androidDevRefreshTokenTtl,
+                                         TokenSettings current) {
+        boolean androidDevClient = clientId.equals(androidDevClientId) && !androidDevClientId.isBlank();
+        String selectedAccessTtl = androidDevClient ? androidDevAccessTokenTtl : accessTokenTtl;
+        String selectedRefreshTtl = androidDevClient ? androidDevRefreshTokenTtl : refreshTokenTtl;
+        return TokenSettings.builder()
+                .settings(settings -> settings.putAll(current.getSettings()))
+                .accessTokenTimeToLive(Duration.parse(selectedAccessTtl))
+                .refreshTokenTimeToLive(Duration.parse(selectedRefreshTtl))
+                .build();
     }
 }

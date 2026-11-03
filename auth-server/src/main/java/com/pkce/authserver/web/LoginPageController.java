@@ -65,6 +65,8 @@ public class LoginPageController {
     private String apkDevForgotUrl;
     @Value("${app.frontend.apk-dev-continue-with-email-url:}")
     private String apkDevEmailUrl;
+    @Value("${app.frontend.android-dev-client-id:}")
+    private String androidDevClientId;
 
     // Admin panel: a separate, much simpler branded page (see renderAdminLoginPage) - admin
     // accounts don't self-serve signup or Google sign-in, so this never touches the big
@@ -126,8 +128,9 @@ public class LoginPageController {
             String[] ids = authorizationRequest.getParameterValues("client_id");
             additional = !additionalClientId.isBlank() && ids != null && ids.length == 1
                     && additionalClientId.equals(ids[0]);
-            isApkDev = !apkDevClientId.isBlank() && ids != null && ids.length == 1
-                    && apkDevClientId.equals(ids[0]);
+            isApkDev = ids != null && ids.length == 1
+                    && ((!apkDevClientId.isBlank() && apkDevClientId.equals(ids[0]))
+                    || (!androidDevClientId.isBlank() && androidDevClientId.equals(ids[0])));
             boolean isAdminProd = !adminClientId.isBlank() && ids != null && ids.length == 1
                     && adminClientId.equals(ids[0]);
             isAdminDev = !adminDevClientId.isBlank() && ids != null && ids.length == 1

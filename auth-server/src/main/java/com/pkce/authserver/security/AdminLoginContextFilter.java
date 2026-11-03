@@ -55,11 +55,18 @@ public class AdminLoginContextFilter extends OncePerRequestFilter {
     private final String adminClientId;
     private final String adminDevClientId;
     private final String apkDevClientId;
+    private final String androidDevClientId;
 
     public AdminLoginContextFilter(String adminClientId, String adminDevClientId, String apkDevClientId) {
+        this(adminClientId, adminDevClientId, apkDevClientId, "");
+    }
+
+    public AdminLoginContextFilter(String adminClientId, String adminDevClientId,
+                                   String apkDevClientId, String androidDevClientId) {
         this.adminClientId = adminClientId;
         this.adminDevClientId = adminDevClientId;
         this.apkDevClientId = apkDevClientId;
+        this.androidDevClientId = androidDevClientId;
     }
 
     @Override
@@ -98,6 +105,7 @@ public class AdminLoginContextFilter extends OncePerRequestFilter {
         if (!adminDevClientId.isBlank() && adminDevClientId.equals(id)) return AdminClient.DEV;
         if (!adminClientId.isBlank() && adminClientId.equals(id)) return AdminClient.PROD;
         if (!apkDevClientId.isBlank() && apkDevClientId.equals(id)) return AdminClient.APK_DEV;
+        if (!androidDevClientId.isBlank() && androidDevClientId.equals(id)) return AdminClient.APK_DEV;
         return AdminClient.NONE;
     }
 }

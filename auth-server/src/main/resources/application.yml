@@ -165,6 +165,15 @@ app:
       id: ${APK_DEV_OAUTH_CLIENT_ID:}
       redirect-uris: ${APK_DEV_OAUTH_REDIRECT_URIS:}
       post-logout-redirect-uri: ${APK_DEV_OAUTH_POST_LOGOUT_REDIRECT_URI:}
+    android-dev-client:
+      # Native Android DEV app has an isolated public-client registration and token policy.
+      # Keep the id blank until the frontend supplies its exact callback URIs; this prevents a
+      # deployment from seeding an unusable client or changing the existing APK website client.
+      id: ${ANDROID_DEV_OAUTH_CLIENT_ID:}
+      redirect-uris: ${ANDROID_DEV_OAUTH_REDIRECT_URIS:}
+      post-logout-redirect-uris: ${ANDROID_DEV_OAUTH_POST_LOGOUT_REDIRECT_URIS:}
+      access-token-ttl: ${ANDROID_DEV_ACCESS_TOKEN_TTL:PT15M}
+      refresh-token-ttl: ${ANDROID_DEV_REFRESH_TOKEN_TTL:P7D}
   frontend:
     # Picks the admin-branded /login page (LoginPageController.renderAdminLoginPage) instead
     # of the SuperMeApp one, when the pending authorization's client_id matches this. Blank by
@@ -183,6 +192,7 @@ app:
     additional-forgot-password-url: ${SUPERME_FE_FORGOT_PASSWORD_URL:}
     additional-continue-with-email-url: ${SUPERME_FE_CONTINUE_WITH_EMAIL_URL:}
     apk-dev-client-id: ${APK_DEV_OAUTH_CLIENT_ID:}
+    android-dev-client-id: ${ANDROID_DEV_OAUTH_CLIENT_ID:}
     apk-dev-base-url: ${APK_DEV_FE_BASE_URL:}
     apk-dev-signup-url: ${APK_DEV_FE_SIGNUP_URL:}
     apk-dev-forgot-password-url: ${APK_DEV_FE_FORGOT_PASSWORD_URL:}

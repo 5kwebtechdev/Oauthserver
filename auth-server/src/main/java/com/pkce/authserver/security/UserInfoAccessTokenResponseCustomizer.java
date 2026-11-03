@@ -49,6 +49,8 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
 
     @Value("${app.frontend.apk-dev-client-id:}")
     private String apkDevClientId;
+    @Value("${app.frontend.android-dev-client-id:}")
+    private String androidDevClientId;
 
     @Override
     public void accept(OAuth2AccessTokenAuthenticationContext context) {
@@ -65,7 +67,8 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
         // different physical database from the mindfullP1.User every other client reads - see
         // SupermeUserInfoService.userPayloadForDev's Javadoc for why this must branch here
         // rather than always using the prod lookup.
-        boolean isApkDev = !apkDevClientId.isBlank() && apkDevClientId.equals(clientId);
+        boolean isApkDev = (!apkDevClientId.isBlank() && apkDevClientId.equals(clientId))
+                || (!androidDevClientId.isBlank() && androidDevClientId.equals(clientId));
 
         String subject;
         String authProvider;

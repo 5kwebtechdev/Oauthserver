@@ -84,6 +84,9 @@ public class AuthorizationServerConfig {
     @Value("${app.frontend.apk-dev-client-id:}")
     private String apkDevClientId;
 
+    @Value("${app.frontend.android-dev-client-id:}")
+    private String androidDevClientId;
+
     @Value("${app.frontend.admin-dev-client-id:}")
     private String adminDevClientId;
 
@@ -145,7 +148,7 @@ public class AuthorizationServerConfig {
                 // and admin clients in prod or dev. Preserve the authorization request and
                 // send the user to the correct login form for the target account store.
                 .addFilterBefore(new CrossClientAccountSwitchFilter(appClientId, additionalAppClientId,
-                                apkDevClientId, adminClientId, adminDevClientId),
+                                apkDevClientId, androidDevClientId, adminClientId, adminDevClientId),
                         AbstractPreAuthenticatedProcessingFilter.class)
                 // Runs ahead of the OIDC logout endpoint so an admin's access token is marked
                 // revoked as they log out - Spring's own logout never invalidates it. Placed
@@ -178,7 +181,8 @@ public class AuthorizationServerConfig {
                 // same destination, one fewer visible hop.
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
-                                new ClientAwareLoginEntryPoint(apkDevClientId, adminClientId, adminDevClientId),
+                                new ClientAwareLoginEntryPoint(apkDevClientId, androidDevClientId,
+                                        adminClientId, adminDevClientId),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 )

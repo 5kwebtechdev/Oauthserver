@@ -23,12 +23,19 @@ import java.io.IOException;
 public final class ClientAwareLoginEntryPoint implements AuthenticationEntryPoint {
 
     private final String apkDevClientId;
+    private final String androidDevClientId;
     private final String adminClientId;
     private final String adminDevClientId;
     private final RequestCache requestCache = new HttpSessionRequestCache();
 
     public ClientAwareLoginEntryPoint(String apkDevClientId, String adminClientId, String adminDevClientId) {
+        this(apkDevClientId, "", adminClientId, adminDevClientId);
+    }
+
+    public ClientAwareLoginEntryPoint(String apkDevClientId, String androidDevClientId,
+                                      String adminClientId, String adminDevClientId) {
         this.apkDevClientId = normalize(apkDevClientId);
+        this.androidDevClientId = normalize(androidDevClientId);
         this.adminClientId = normalize(adminClientId);
         this.adminDevClientId = normalize(adminDevClientId);
     }
@@ -38,7 +45,8 @@ public final class ClientAwareLoginEntryPoint implements AuthenticationEntryPoin
                           AuthenticationException authException) throws IOException, ServletException {
         String clientId = request.getParameter("client_id");
         String loginPath = "/login";
-        if (!apkDevClientId.isBlank() && apkDevClientId.equals(clientId)) {
+        if ((!apkDevClientId.isBlank() && apkDevClientId.equals(clientId))
+                || (!androidDevClientId.isBlank() && androidDevClientId.equals(clientId))) {
             loginPath = "/apklogin";
         } else if ((!adminClientId.isBlank() && adminClientId.equals(clientId))
                 || (!adminDevClientId.isBlank() && adminDevClientId.equals(clientId))) {

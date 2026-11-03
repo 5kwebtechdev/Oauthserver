@@ -25,7 +25,7 @@ public final class CrossClientAccountSwitchFilter extends OncePerRequestFilter {
 
     private final Set<String> appClientIds;
     private final Set<String> adminClientIds;
-    private final String apkDevClientId;
+    private final Set<String> apkDevClientIds;
     private final RequestCache requestCache = new HttpSessionRequestCache();
 
     public CrossClientAccountSwitchFilter(String apkDevClientId, String adminDevClientId) {
@@ -35,13 +35,22 @@ public final class CrossClientAccountSwitchFilter extends OncePerRequestFilter {
     public CrossClientAccountSwitchFilter(String appClientId, String additionalAppClientId,
                                           String apkDevClientId, String adminClientId,
                                           String adminDevClientId) {
-        this.appClientIds = java.util.stream.Stream.of(appClientId, additionalAppClientId, apkDevClientId)
+        this(appClientId, additionalAppClientId, apkDevClientId, "", adminClientId, adminDevClientId);
+    }
+
+    public CrossClientAccountSwitchFilter(String appClientId, String additionalAppClientId,
+                                          String apkDevClientId, String androidDevClientId,
+                                          String adminClientId, String adminDevClientId) {
+        this.apkDevClientIds = java.util.stream.Stream.of(apkDevClientId, androidDevClientId)
+                .map(CrossClientAccountSwitchFilter::normalize).filter(value -> !value.isBlank())
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        this.appClientIds = java.util.stream.Stream.of(appClientId, additionalAppClientId,
+                        apkDevClientId, androidDevClientId)
                 .map(CrossClientAccountSwitchFilter::normalize).filter(value -> !value.isBlank())
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
         this.adminClientIds = java.util.stream.Stream.of(adminClientId, adminDevClientId)
                 .map(CrossClientAccountSwitchFilter::normalize).filter(value -> !value.isBlank())
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
-        this.apkDevClientId = normalize(apkDevClientId);
     }
 
     @Override
@@ -54,7 +63,7 @@ public final class CrossClientAccountSwitchFilter extends OncePerRequestFilter {
 
         String clientId = request.getParameter("client_id");
         if (appClientIds.contains(clientId) && hasAdminSession()) {
-            String loginPath = clientId.equals(apkDevClientId) ? "/apklogin" : "/login";
+            String loginPath = apkDevClientIds.contains(clientId) ? "/apklogin" : "/login";
             switchAccount(request, response, loginPath + "?account_switch=admin");
             return;
         }

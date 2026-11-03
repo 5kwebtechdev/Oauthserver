@@ -31,25 +31,34 @@ public class HandoffTicketRedeemer {
     private final JdbcTemplate jdbcTemplate;
     private final JdbcTemplate devJdbcTemplate;
     private final String apkDevClientId;
+    private final String androidDevClientId;
 
     @Autowired
     public HandoffTicketRedeemer(JdbcTemplate jdbcTemplate,
                                  @Qualifier("primaryDevDataSource") DataSource primaryDevDataSource,
-                                 @Value("${app.frontend.apk-dev-client-id:}") String apkDevClientId) {
+                                 @Value("${app.frontend.apk-dev-client-id:}") String apkDevClientId,
+                                 @Value("${app.frontend.android-dev-client-id:}") String androidDevClientId) {
         this.jdbcTemplate = jdbcTemplate;
         this.devJdbcTemplate = new JdbcTemplate(primaryDevDataSource);
         this.apkDevClientId = apkDevClientId;
+        this.androidDevClientId = androidDevClientId;
     }
 
     /** Test/local constructor: both client routes share the same in-memory database. */
     public HandoffTicketRedeemer(JdbcTemplate jdbcTemplate) {
-        this(jdbcTemplate, jdbcTemplate, "");
+        this(jdbcTemplate, jdbcTemplate, "", "");
     }
 
     public HandoffTicketRedeemer(JdbcTemplate jdbcTemplate, JdbcTemplate devJdbcTemplate, String apkDevClientId) {
+        this(jdbcTemplate, devJdbcTemplate, apkDevClientId, "");
+    }
+
+    public HandoffTicketRedeemer(JdbcTemplate jdbcTemplate, JdbcTemplate devJdbcTemplate,
+                                 String apkDevClientId, String androidDevClientId) {
         this.jdbcTemplate = jdbcTemplate;
         this.devJdbcTemplate = devJdbcTemplate;
         this.apkDevClientId = apkDevClientId;
+        this.androidDevClientId = androidDevClientId;
     }
 
     /** Thrown for every rejection - expired, already used, or never existed - with no detail to probe. */
@@ -79,8 +88,11 @@ public class HandoffTicketRedeemer {
      */
     public String redeem(String ticket, String clientId, String userAgent, String ipAddress) {
         if (ticket == null || ticket.isBlank()) throw new TicketNotRedeemableException();
-        JdbcTemplate tickets = apkDevClientId != null && !apkDevClientId.isBlank()
-                && apkDevClientId.equals(clientId) ? devJdbcTemplate : jdbcTemplate;
+        boolean androidDevClient = androidDevClientId != null && !androidDevClientId.isBlank()
+                && androidDevClientId.equals(clientId);
+        boolean apkDevClient = apkDevClientId != null && !apkDevClientId.isBlank()
+                && apkDevClientId.equals(clientId);
+        JdbcTemplate tickets = apkDevClient || androidDevClient ? devJdbcTemplate : jdbcTemplate;
 
         // Claim first: only the request that actually flips used_at may proceed.
         //
