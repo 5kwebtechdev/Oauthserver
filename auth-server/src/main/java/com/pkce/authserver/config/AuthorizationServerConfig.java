@@ -26,6 +26,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.OAuth2Token;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
@@ -41,6 +42,8 @@ import org.springframework.security.oauth2.server.authorization.JdbcOAuth2Author
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationServerMetadata;
+import org.springframework.security.oauth2.server.authorization.oidc.OidcProviderConfiguration;
 import org.springframework.security.oauth2.server.authorization.token.DelegatingOAuth2TokenGenerator;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.JwtGenerator;
@@ -110,7 +113,10 @@ public class AuthorizationServerConfig {
         http
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
                 .with(authorizationServerConfigurer, (authorizationServer) -> authorizationServer
-                        .oidc(Customizer.withDefaults())
+                        .authorizationServerMetadataEndpoint(metadata -> metadata
+                                .authorizationServerMetadataCustomizer(AuthorizationServerConfig::customizeOAuthMetadata))
+                        .oidc(oidc -> oidc.providerConfigurationEndpoint(provider -> provider
+                                .providerConfigurationCustomizer(AuthorizationServerConfig::customizeOidcMetadata)))
                         // Swap in PKCE-aware converter + provider - see their Javadoc.
                         // The CONVERTER is the actual root gate: the stock one never even
                         // builds an authentication token for a public client's
@@ -125,8 +131,7 @@ public class AuthorizationServerConfig {
                                     providers.removeIf(PublicClientAuthenticationProvider.class::isInstance);
                                     providers.add(new PkceAwarePublicClientAuthenticationProvider(
                                             registeredClientRepository, authorizationService));
-                                })
-                        )
+                                }))
                         // Adds a "user" field (the caller's own profile) to every
                         // /oauth2/token response - see UserInfoAccessTokenResponseCustomizer's
                         // Javadoc for why this is RFC-allowed and how it avoids clobbering
@@ -306,5 +311,42 @@ public class AuthorizationServerConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    static void customizeOAuthMetadata(
+            OAuth2AuthorizationServerMetadata.Builder metadata) {
+        addSupportedPublicClientMethod(metadata);
+        metadata.scope("openid");
+        addSupportedScopes(metadata);
+    }
+
+    static void customizeOidcMetadata(
+            OidcProviderConfiguration.Builder metadata) {
+        addSupportedPublicClientMethod(metadata);
+        addSupportedScopes(metadata);
+    }
+
+    private static void addSupportedPublicClientMethod(OAuth2AuthorizationServerMetadata.Builder metadata) {
+        metadata.tokenEndpointAuthenticationMethods(methods -> {
+            if (!methods.contains(ClientAuthenticationMethod.NONE.getValue())) {
+                methods.add(ClientAuthenticationMethod.NONE.getValue());
+            }
+        });
+    }
+
+    private static void addSupportedPublicClientMethod(OidcProviderConfiguration.Builder metadata) {
+        metadata.tokenEndpointAuthenticationMethods(methods -> {
+            if (!methods.contains(ClientAuthenticationMethod.NONE.getValue())) {
+                methods.add(ClientAuthenticationMethod.NONE.getValue());
+            }
+        });
+    }
+
+    private static void addSupportedScopes(OAuth2AuthorizationServerMetadata.Builder metadata) {
+        metadata.scope("profile").scope("notes.read").scope("notes.write");
+    }
+
+    private static void addSupportedScopes(OidcProviderConfiguration.Builder metadata) {
+        metadata.scope("profile").scope("notes.read").scope("notes.write");
     }
 }
