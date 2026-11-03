@@ -86,7 +86,7 @@ class AndroidDevNativeLoginControllerTest {
     @Test
     void returnsShortLivedCodeBoundToAndroidClientAndPkceChallenge() throws Exception {
         var requestBody = new AndroidDevNativeLoginController.LoginRequest("test@example.com", "password", REDIRECT,
-                CHALLENGE, "S256", "random-state-value-123456", "captcha");
+                CHALLENGE, "S256", "random-oidc-nonce-value-123456", "captcha");
         MockHttpServletRequest request = request();
         MockHttpServletResponse response = new MockHttpServletResponse();
         AtomicReference<Object> result = new AtomicReference<>();
@@ -98,7 +98,7 @@ class AndroidDevNativeLoginControllerTest {
         var responseEntity = (org.springframework.http.ResponseEntity<java.util.Map<String, Object>>) result.get();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(60L, responseEntity.getBody().get("expires_in"));
-        assertEquals("random-state-value-123456", responseEntity.getBody().get("state"));
+        assertFalse(responseEntity.getBody().containsKey("state"));
         String codeValue = (String) responseEntity.getBody().get("code");
         assertNotNull(codeValue);
         assertFalse(codeValue.isBlank());
@@ -116,13 +116,14 @@ class AndroidDevNativeLoginControllerTest {
         assertEquals(REDIRECT, storedRequest.getRedirectUri());
         assertEquals(CHALLENGE, storedRequest.getAdditionalParameters().get("code_challenge"));
         assertEquals("S256", storedRequest.getAdditionalParameters().get("code_challenge_method"));
+        assertEquals("random-oidc-nonce-value-123456", storedRequest.getAdditionalParameters().get("nonce"));
     }
 
     @Test
     void failsClosedWhenServerSideTurnstileIsNotConfigured() throws Exception {
         when(turnstile.isConfigured()).thenReturn(false);
         var requestBody = new AndroidDevNativeLoginController.LoginRequest("test@example.com", "password", REDIRECT,
-                CHALLENGE, "S256", "random-state-value-123456", "captcha");
+                CHALLENGE, "S256", "random-oidc-nonce-value-123456", "captcha");
         MockHttpServletRequest request = request();
         AtomicReference<Object> result = new AtomicReference<>();
         new AdminLoginContextFilter("", "", "", CLIENT_ID).doFilter(request, new MockHttpServletResponse(),

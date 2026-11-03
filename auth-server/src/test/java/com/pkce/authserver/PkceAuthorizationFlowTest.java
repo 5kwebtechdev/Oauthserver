@@ -282,7 +282,7 @@ class PkceAuthorizationFlowTest {
                 "redirectUri", "superme://oauth/dev/callback",
                 "codeChallenge", challenge,
                 "codeChallengeMethod", "S256",
-                "state", "android-login-state-123456789012",
+                "nonce", "android-login-nonce-123456789012",
                 "turnstileToken", "test-turnstile-token");
         HttpResponse<String> loginResponse = send(HttpRequest.newBuilder(URI.create(baseUrl
                         + "/v1/auth/android-dev/login?client_id=supermeapp-dev-android"))
@@ -292,7 +292,7 @@ class PkceAuthorizationFlowTest {
                 loginResponse.headers().firstValue("Location").orElse(""), loginResponse.body()).isEqualTo(200);
         assertThat(loginResponse.headers().firstValue("Cache-Control")).contains("no-store");
         JsonNode loginJson = objectMapper.readTree(loginResponse.body());
-        assertThat(loginJson.get("state").asText()).isEqualTo(loginBody.get("state"));
+        assertThat(loginJson.has("state")).isFalse();
         assertThat(loginJson.get("expires_in").asInt()).isEqualTo(60);
 
         JsonNode tokens = tokenRequest(Map.of(
@@ -305,6 +305,8 @@ class PkceAuthorizationFlowTest {
         assertThat(tokens.get("access_token").asText()).isNotBlank();
         assertThat(tokens.get("refresh_token").asText()).isNotBlank();
         assertThat(tokens.get("id_token").asText()).isNotBlank();
+        assertThat(decodeClaims(tokens.get("id_token").asText()).get("nonce").asText())
+                .isEqualTo(loginBody.get("nonce"));
         assertThat(tokens.get("expires_in").asInt()).isBetween(899, 900);
 
         HttpResponse<String> revoked = revokeRequest(tokens.get("refresh_token").asText(), "supermeapp-dev-android");
@@ -413,9 +415,7 @@ class PkceAuthorizationFlowTest {
     }
 
     private java.util.List<String> decodeAudience(String jwt) throws Exception {
-        String payload = jwt.split("\\.")[1];
-        payload = payload + "=".repeat((4 - payload.length() % 4) % 4);
-        JsonNode claims = objectMapper.readTree(Base64.getUrlDecoder().decode(payload));
+        JsonNode claims = decodeClaims(jwt);
         JsonNode aud = claims.get("aud");
         java.util.List<String> result = new java.util.ArrayList<>();
         if (aud.isArray()) {
@@ -424,6 +424,12 @@ class PkceAuthorizationFlowTest {
             result.add(aud.asText());
         }
         return result;
+    }
+
+    private JsonNode decodeClaims(String jwt) throws Exception {
+        String payload = jwt.split("\\.")[1];
+        payload = payload + "=".repeat((4 - payload.length() % 4) % 4);
+        return objectMapper.readTree(Base64.getUrlDecoder().decode(payload));
     }
 
     @Test

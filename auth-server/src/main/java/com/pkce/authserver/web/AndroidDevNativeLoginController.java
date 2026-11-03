@@ -121,10 +121,10 @@ public class AndroidDevNativeLoginController {
                 .clientId(androidClientId)
                 .redirectUri(request.redirectUri())
                 .scopes(OIDC_SCOPES)
-                .state(request.state())
                 .additionalParameters(Map.of(
                         "code_challenge", request.codeChallenge(),
-                        "code_challenge_method", "S256"))
+                        "code_challenge_method", "S256",
+                        "nonce", request.nonce()))
                 .build();
 
         OAuth2Authorization authorization = OAuth2Authorization.withRegisteredClient(client)
@@ -142,7 +142,6 @@ public class AndroidDevNativeLoginController {
                 .header("Pragma", "no-cache")
                 .body(Map.of(
                 "code", codeValue,
-                "state", request.state(),
                 "expires_in", CODE_LIFETIME_SECONDS));
     }
 
@@ -166,6 +165,6 @@ public class AndroidDevNativeLoginController {
             @NotBlank String redirectUri,
             @NotBlank @Pattern(regexp = "^[A-Za-z0-9_-]{43}$") String codeChallenge,
             @NotBlank String codeChallengeMethod,
-            @NotBlank @Pattern(regexp = "^[A-Za-z0-9_-]{22,128}$") String state,
+            @NotBlank @Pattern(regexp = "^[A-Za-z0-9_-]{22,128}$") String nonce,
             @NotBlank String turnstileToken) { }
 }
