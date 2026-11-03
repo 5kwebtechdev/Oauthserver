@@ -42,8 +42,9 @@ public class PkceAwarePublicClientAuthenticationConverter implements Authenticat
         boolean authorizationCodeWithVerifier = AuthorizationGrantType.AUTHORIZATION_CODE.getValue().equals(grantType)
                 && StringUtils.hasText(request.getParameter(PkceParameterNames.CODE_VERIFIER));
         boolean refreshToken = AuthorizationGrantType.REFRESH_TOKEN.getValue().equals(grantType);
+        boolean tokenRevocation = "/oauth2/revoke".equals(request.getServletPath());
 
-        if (!authorizationCodeWithVerifier && !refreshToken) {
+        if (!authorizationCodeWithVerifier && !refreshToken && !tokenRevocation) {
             return null;
         }
 

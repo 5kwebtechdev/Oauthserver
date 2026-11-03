@@ -32,7 +32,11 @@ public class TurnstileLoginFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        boolean isLoginSubmit = "POST".equalsIgnoreCase(request.getMethod()) && request.getRequestURI().endsWith("/login");
+        // Match only the hosted HTML form. API routes such as
+        // /v1/auth/android-dev/login validate their own JSON captcha token and must not be
+        // redirected to an HTML error page by this form-only filter.
+        boolean isLoginSubmit = "POST".equalsIgnoreCase(request.getMethod())
+                && "/login".equals(request.getServletPath());
         if (isLoginSubmit) {
             String token = request.getParameter("cf-turnstile-response");
             if (!turnstileVerificationService.verify(token, request.getRemoteAddr())) {

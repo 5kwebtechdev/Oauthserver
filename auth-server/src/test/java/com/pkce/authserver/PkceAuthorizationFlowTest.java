@@ -6,17 +6,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.pkce.authserver.repository.SupermeUserRepository;
 import com.pkce.authserver.repository.UserPasswordRepository;
 import com.pkce.authserver.superme.model.User;
+import com.pkce.authserver.service.TurnstileVerificationService;
 
 import java.net.CookieManager;
 import java.net.URI;
@@ -36,9 +39,18 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@TestPropertySource(properties = {
+        "app.security.android-dev-client.id=supermeapp-dev-android",
+        "app.security.android-dev-client.redirect-uris=superme://oauth/dev/callback",
+        "app.security.android-dev-client.post-logout-redirect-uris=superme://oauth/dev/logout",
+        "app.frontend.android-dev-client-id=supermeapp-dev-android"
+})
 class PkceAuthorizationFlowTest {
 
     @LocalServerPort
@@ -55,6 +67,9 @@ class PkceAuthorizationFlowTest {
 
     @Autowired
     private UserPasswordRepository userPasswordRepository;
+
+    @MockBean
+    private TurnstileVerificationService turnstileVerificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final Pattern CSRF_PATTERN = Pattern.compile("name=\"_csrf\"[^>]*value=\"([^\"]+)\"");
@@ -76,6 +91,8 @@ class PkceAuthorizationFlowTest {
 
     @BeforeEach
     void setUp() {
+        when(turnstileVerificationService.isConfigured()).thenReturn(true);
+        when(turnstileVerificationService.verify(nullable(String.class), anyString())).thenReturn(true);
         baseUrl = "http://localhost:" + port;
         http = HttpClient.newBuilder()
                 .cookieHandler(new CookieManager())
@@ -253,6 +270,69 @@ class PkceAuthorizationFlowTest {
         assertThat(tokens.get("__status").asInt()).isEqualTo(200);
         assertThat(tokens.has("access_token")).isTrue();
         assertThat(tokens.has("refresh_token")).isTrue();
+    }
+
+    @Test
+    void androidNativeCredentialLoginIssuesPkceCodeThenNormalTokenEndpointReturnsOAuthTokens() throws Exception {
+        String verifier = b64url("android-verifier-1234567890-abcdefghijklmnopqrstuvwxyz".getBytes(StandardCharsets.UTF_8));
+        String challenge = sha256(verifier);
+        Map<String, String> loginBody = Map.of(
+                "identifier", testUser.getEmail(),
+                "password", TEST_PASSWORD,
+                "redirectUri", "superme://oauth/dev/callback",
+                "codeChallenge", challenge,
+                "codeChallengeMethod", "S256",
+                "state", "android-login-state-123456789012",
+                "turnstileToken", "test-turnstile-token");
+        HttpResponse<String> loginResponse = send(HttpRequest.newBuilder(URI.create(baseUrl
+                        + "/v1/auth/android-dev/login?client_id=supermeapp-dev-android"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(loginBody))));
+        assertThat(loginResponse.statusCode()).as("location=%s body=%s",
+                loginResponse.headers().firstValue("Location").orElse(""), loginResponse.body()).isEqualTo(200);
+        assertThat(loginResponse.headers().firstValue("Cache-Control")).contains("no-store");
+        JsonNode loginJson = objectMapper.readTree(loginResponse.body());
+        assertThat(loginJson.get("state").asText()).isEqualTo(loginBody.get("state"));
+        assertThat(loginJson.get("expires_in").asInt()).isEqualTo(60);
+
+        JsonNode tokens = tokenRequest(Map.of(
+                "grant_type", "authorization_code",
+                "client_id", "supermeapp-dev-android",
+                "redirect_uri", "superme://oauth/dev/callback",
+                "code", loginJson.get("code").asText(),
+                "code_verifier", verifier), null);
+        assertThat(tokens.get("__status").asInt()).isEqualTo(200);
+        assertThat(tokens.get("access_token").asText()).isNotBlank();
+        assertThat(tokens.get("refresh_token").asText()).isNotBlank();
+        assertThat(tokens.get("id_token").asText()).isNotBlank();
+        assertThat(tokens.get("expires_in").asInt()).isBetween(899, 900);
+
+        HttpResponse<String> revoked = revokeRequest(tokens.get("refresh_token").asText(), "supermeapp-dev-android");
+        assertThat(revoked.statusCode()).isEqualTo(200);
+        String logoutUrl = baseUrl + "/android-dev-logout?id_token_hint="
+                + java.net.URLEncoder.encode(tokens.get("id_token").asText(), StandardCharsets.UTF_8)
+                + "&post_logout_redirect_uri="
+                + java.net.URLEncoder.encode("superme://oauth/dev/logout", StandardCharsets.UTF_8);
+        HttpResponse<String> logout = send(HttpRequest.newBuilder(URI.create(logoutUrl)).GET());
+        assertThat(logout.statusCode()).isEqualTo(302);
+        assertThat(logout.headers().firstValue("Location")).contains("superme://oauth/dev/logout");
+
+        JsonNode refreshAfterLogout = tokenRequest(Map.of(
+                "grant_type", "refresh_token",
+                "client_id", "supermeapp-dev-android",
+                "refresh_token", tokens.get("refresh_token").asText()), null);
+        assertThat(refreshAfterLogout.get("__status").asInt()).isEqualTo(400);
+        assertThat(refreshAfterLogout.get("error").asText()).isEqualTo("invalid_grant");
+    }
+
+    private HttpResponse<String> revokeRequest(String token, String clientId) throws Exception {
+        String form = Map.of("token", token, "token_type_hint", "refresh_token", "client_id", clientId)
+                .entrySet().stream()
+                .map(e -> e.getKey() + "=" + java.net.URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
+                .collect(Collectors.joining("&"));
+        return send(HttpRequest.newBuilder(URI.create(baseUrl + "/oauth2/revoke"))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(form)));
     }
 
     @Test

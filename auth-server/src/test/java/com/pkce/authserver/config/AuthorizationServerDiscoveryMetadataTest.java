@@ -25,6 +25,8 @@ class AuthorizationServerDiscoveryMetadataTest {
         var metadata = builder.build();
         assertThat(metadata.getClaims().get("token_endpoint_auth_methods_supported"))
                 .asList().contains("none");
+        assertThat(metadata.getClaims().get("revocation_endpoint_auth_methods_supported"))
+                .asList().contains("none");
         assertThat(metadata.getClaims().get("scopes_supported")).isEqualTo(APP_SCOPES);
     }
 

@@ -69,6 +69,11 @@ public class TurnstileVerificationService {
         }
     }
 
+    /** Whether server-side verification is configured. Native credential login fails closed when it is not. */
+    public boolean isConfigured() {
+        return StringUtils.hasText(properties.getSecretKey());
+    }
+
     private record TurnstileResponse(boolean success) {
     }
 }

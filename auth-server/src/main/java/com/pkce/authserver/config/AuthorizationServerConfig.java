@@ -316,6 +316,7 @@ public class AuthorizationServerConfig {
     static void customizeOAuthMetadata(
             OAuth2AuthorizationServerMetadata.Builder metadata) {
         addSupportedPublicClientMethod(metadata);
+        addSupportedPublicRevocationMethod(metadata);
         metadata.scope("openid");
         addSupportedScopes(metadata);
     }
@@ -336,6 +337,14 @@ public class AuthorizationServerConfig {
 
     private static void addSupportedPublicClientMethod(OidcProviderConfiguration.Builder metadata) {
         metadata.tokenEndpointAuthenticationMethods(methods -> {
+            if (!methods.contains(ClientAuthenticationMethod.NONE.getValue())) {
+                methods.add(ClientAuthenticationMethod.NONE.getValue());
+            }
+        });
+    }
+
+    private static void addSupportedPublicRevocationMethod(OAuth2AuthorizationServerMetadata.Builder metadata) {
+        metadata.tokenRevocationEndpointAuthenticationMethods(methods -> {
             if (!methods.contains(ClientAuthenticationMethod.NONE.getValue())) {
                 methods.add(ClientAuthenticationMethod.NONE.getValue());
             }
