@@ -74,6 +74,10 @@ public class DefaultSecurityConfig {
                         .requestMatchers("/error").permitAll()
                         // Selected from the saved OAuth client by LoginPageController.
                         .requestMatchers("/apklogin", "/adminlogin").permitAll()
+                        // The Android DEV Google security check is a separate hosted flow;
+                        // its callback form is protected by the session CSRF token rendered in
+                        // the page and its Turnstile token is verified server-side.
+                        .requestMatchers("/android-dev/google-security", "/android-dev/google-security/complete").permitAll()
                         // Admin panel's own, dedicated logout endpoint - see AdminLogoutController.
                         // Deliberately separate from /connect/logout (shared with the APK/web app).
                         .requestMatchers("/adminlogout").permitAll()
