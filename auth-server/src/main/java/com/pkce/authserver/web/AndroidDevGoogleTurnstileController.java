@@ -84,7 +84,8 @@ public class AndroidDevGoogleTurnstileController {
 
     /** The Custom Tab opens this auth-hosted page; the widget remains on auth.supermeapp.com. */
     @GetMapping(value = "/android-dev/google-security", produces = "text/html;charset=UTF-8")
-    public ResponseEntity<String> securityPage(@RequestParam String transaction, HttpServletRequest request) {
+    public ResponseEntity<String> securityPage(@RequestParam("transaction") String transaction,
+            HttpServletRequest request) {
         if (handoffs.findTransaction(transaction).isEmpty()) {
             return html(HttpStatus.GONE, simplePage("Security check expired", "Start Google sign-in again."));
         }
@@ -99,7 +100,7 @@ public class AndroidDevGoogleTurnstileController {
 
     /** Cloudflare posts its response to this same-origin endpoint; the CAPTCHA token is never redirected. */
     @PostMapping(value = "/android-dev/google-security/complete", consumes = "application/x-www-form-urlencoded")
-    public ResponseEntity<String> completeHostedCheck(@RequestParam String transaction,
+    public ResponseEntity<String> completeHostedCheck(@RequestParam("transaction") String transaction,
             @RequestParam(name = "cf-turnstile-response", required = false) String captcha,
             HttpServletRequest request) {
         Optional<AndroidDevGoogleHandoffStore.LoginAttempt> attempt = handoffs.findTransaction(transaction);

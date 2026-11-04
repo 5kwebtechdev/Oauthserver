@@ -50,7 +50,8 @@ import static org.mockito.Mockito.when;
         "app.security.android-dev-client.id=supermeapp-dev-android",
         "app.security.android-dev-client.redirect-uris=superme://oauth/dev/callback",
         "app.security.android-dev-client.post-logout-redirect-uris=superme://oauth/dev/logout",
-        "app.frontend.android-dev-client-id=supermeapp-dev-android"
+        "app.frontend.android-dev-client-id=supermeapp-dev-android",
+        "app.turnstile.site-key=test-public-site-key"
 })
 class PkceAuthorizationFlowTest {
 
@@ -290,6 +291,115 @@ class PkceAuthorizationFlowTest {
                 "refresh_token", originalRefreshToken), null);
         assertThat(replay.get("__status").asInt()).isEqualTo(400);
         assertThat(replay.get("error").asText()).isEqualTo("invalid_grant");
+    }
+
+    @Test
+    void hostedAndroidGoogleCheckIsAnonymousAndCompletesTicketAndPkceFlow() throws Exception {
+        final String androidClientId = "supermeapp-dev-android";
+        final String androidRedirect = "superme://oauth/dev/callback";
+        final String verifier = b64url("hosted-google-flow-verifier-012345678901234567890".getBytes(StandardCharsets.UTF_8));
+        final String googleNonce = b64url("hosted-google-flow-google-nonce-0123456789".getBytes(StandardCharsets.UTF_8));
+        final String oidcNonce = b64url("hosted-google-flow-oidc-nonce-0123456789".getBytes(StandardCharsets.UTF_8));
+        final String state = b64url("hosted-google-flow-state-012345678901234567890".getBytes(StandardCharsets.UTF_8));
+        final String challenge = sha256(verifier);
+
+        when(googleLoginService.verifyAndUpsertAndroidDev(
+                anyString(), org.mockito.ArgumentMatchers.eq(googleNonce), anyString(), anyString()))
+                .thenReturn(new GoogleLoginService.Result(testUser, false, "google-subject-hosted-test"));
+        String initBody = objectMapper.writeValueAsString(Map.of(
+                "clientId", androidClientId,
+                "redirectUri", androidRedirect,
+                "codeChallenge", challenge,
+                "codeChallengeMethod", "S256",
+                "googleNonce", googleNonce,
+                "oidcNonce", oidcNonce,
+                "state", state));
+        HttpResponse<String> initiated = send(HttpRequest.newBuilder(URI.create(baseUrl
+                + "/v1/auth/android-dev/google/turnstile"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(initBody)));
+        assertThat(initiated.statusCode()).isEqualTo(200);
+        JsonNode initiation = objectMapper.readTree(initiated.body());
+        assertThat(initiation.get("expires_in").asInt()).isEqualTo(300);
+        String transaction = initiation.get("transactionId").asText();
+
+        // No auth-server login cookie is created or required to load the hosted widget.
+        HttpResponse<String> page = send(HttpRequest.newBuilder(URI.create(baseUrl
+                + "/android-dev/google-security?transaction=" + transaction)).GET());
+        assertThat(page.statusCode()).isEqualTo(200);
+        assertThat(page.headers().firstValue("Content-Type").orElse("")).startsWith("text/html");
+        assertThat(page.body()).contains("test-public-site-key", "challenges.cloudflare.com/turnstile");
+        assertThat(page.headers().firstValue("Location")).isEmpty();
+
+        Matcher csrfMatcher = CSRF_PATTERN.matcher(page.body());
+        assertThat(csrfMatcher.find()).isTrue();
+        String form = "transaction=" + java.net.URLEncoder.encode(transaction, StandardCharsets.UTF_8)
+                + "&cf-turnstile-response=mocked-captcha-response&_csrf="
+                + java.net.URLEncoder.encode(csrfMatcher.group(1), StandardCharsets.UTF_8);
+        HttpResponse<String> verified = send(HttpRequest.newBuilder(URI.create(baseUrl
+                + "/android-dev/google-security/complete"))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(form)));
+        assertThat(verified.statusCode()).isEqualTo(302);
+        String callback = verified.headers().firstValue("Location").orElseThrow();
+        assertThat(callback).startsWith(androidRedirect + "?").contains("state=" + state)
+                .contains("android_google_ticket=").doesNotContain("mocked-captcha-response");
+        String ticket = parseQuery(callback).get("android_google_ticket");
+
+        HttpResponse<String> secondInitiation = send(HttpRequest.newBuilder(URI.create(baseUrl
+                + "/v1/auth/android-dev/google/turnstile"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(initBody)));
+        String cancelledTransaction = objectMapper.readTree(secondInitiation.body())
+                .get("transactionId").asText();
+        HttpResponse<String> cancelled = send(HttpRequest.newBuilder(URI.create(baseUrl
+                + "/v1/auth/android-dev/google/turnstile/cancel"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(
+                        Map.of("transactionId", cancelledTransaction)))));
+        assertThat(cancelled.statusCode()).isEqualTo(200);
+        assertThat(objectMapper.readTree(cancelled.body()).get("cancelled").asBoolean()).isTrue();
+        HttpResponse<String> cancelledPage = send(HttpRequest.newBuilder(URI.create(baseUrl
+                + "/android-dev/google-security?transaction=" + cancelledTransaction)).GET());
+        assertThat(cancelledPage.statusCode()).isEqualTo(410);
+
+        // The transaction has been converted to a ticket and cannot be replayed or
+        // turned into another ticket after the successful CAPTCHA verification.
+        HttpResponse<String> replay = send(HttpRequest.newBuilder(URI.create(baseUrl
+                + "/android-dev/google-security?transaction=" + transaction)).GET());
+        assertThat(replay.statusCode()).isEqualTo(410);
+
+        String exchangeBody = objectMapper.writeValueAsString(Map.of(
+                "clientId", androidClientId,
+                "handoffTicket", ticket,
+                "googleIdToken", "mocked-google-id-token"));
+        HttpResponse<String> exchanged = send(HttpRequest.newBuilder(URI.create(baseUrl
+                + "/v1/auth/android-dev/google/exchange"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(exchangeBody)));
+        assertThat(exchanged.statusCode()).isEqualTo(200);
+        String code = objectMapper.readTree(exchanged.body()).get("code").asText();
+
+        JsonNode tokens = tokenRequest(Map.of(
+                "grant_type", "authorization_code",
+                "client_id", androidClientId,
+                "redirect_uri", androidRedirect,
+                "code", code,
+                "code_verifier", verifier), null);
+        assertThat(tokens.get("__status").asInt()).isEqualTo(200);
+        assertThat(tokens.hasNonNull("access_token")).isTrue();
+        assertThat(tokens.hasNonNull("refresh_token")).isTrue();
+        String[] jwtParts = tokens.get("id_token").asText().split("\\.");
+        JsonNode claims = objectMapper.readTree(Base64.getUrlDecoder().decode(jwtParts[1]));
+        assertThat(claims.get("nonce").asText()).isEqualTo(oidcNonce);
+
+        HttpResponse<String> reusedTicket = send(HttpRequest.newBuilder(URI.create(baseUrl
+                + "/v1/auth/android-dev/google/exchange"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(exchangeBody)));
+        assertThat(reusedTicket.statusCode()).isEqualTo(401);
+        assertThat(objectMapper.readTree(reusedTicket.body()).get("error").asText())
+                .isEqualTo("invalid_handoff");
     }
 
     @Test

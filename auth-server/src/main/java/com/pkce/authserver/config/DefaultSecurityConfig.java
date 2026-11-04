@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -52,6 +53,25 @@ public class DefaultSecurityConfig {
     // and fix. Each environment supplies its own value via AUTH_SERVER_LOGIN_URL.
     @Value("${app.security.login-url:https://authprod.supermeapp.com/login}")
     private String loginUrl = "https://authprod.supermeapp.com/login";
+
+    /**
+     * Keep the DEV Android Google security page outside the authorization-server and
+     * catch-all login chains. This flow starts before Android has any auth-server
+     * session, so these browser routes must be reachable anonymously. The POST still
+     * uses Spring's normal session CSRF protection; Turnstile is independently
+     * verified by the controller before a transaction can become a ticket.
+     */
+    @Bean
+    @Order(0)
+    public SecurityFilterChain androidDevGoogleSecurityPageChain(HttpSecurity http) throws Exception {
+        http.securityMatcher(new OrRequestMatcher(
+                        new AntPathRequestMatcher("/android-dev/google-security"),
+                        new AntPathRequestMatcher("/android-dev/google-security/complete")))
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
+                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(
+                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
+        return http.build();
+    }
 
     /**
      * Catch-all chain: the login form shown mid-authorization-code-flow, the (demo-only)

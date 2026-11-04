@@ -55,4 +55,17 @@ class AndroidDevGoogleHandoffStoreTest {
         assertThat(store.findTransaction("T".repeat(43))).isEmpty();
         assertThat(store.issueTicket("T".repeat(43), "H".repeat(43), Instant.now().plusSeconds(120))).isEmpty();
     }
+
+    @Test
+    void cancellationInvalidatesTransactionAndPreventsTicketIssuance() {
+        var attempt = new AndroidDevGoogleHandoffStore.LoginAttempt("supermeapp-dev-android",
+                "superme://oauth/dev/callback", "A".repeat(43), "googleNonceValue0123456789",
+                "oidcNonceValue0123456789", "stateValue012345678901");
+        store.createTransaction("T".repeat(43), attempt, Instant.now().plusSeconds(300));
+
+        assertThat(store.cancelTransaction("T".repeat(43))).isTrue();
+        assertThat(store.findTransaction("T".repeat(43))).isEmpty();
+        assertThat(store.issueTicket("T".repeat(43), "H".repeat(43), Instant.now().plusSeconds(120))).isEmpty();
+        assertThat(store.cancelTransaction("T".repeat(43))).isFalse();
+    }
 }
