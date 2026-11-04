@@ -93,6 +93,14 @@ public class GoogleLoginService {
         return (dev ? devTransaction : primaryTransaction).execute(status -> findVerifiedUser(jwt, dev));
     }
 
+    /** Explicit native DEV path; it never falls back to the production user database. */
+    public Result verifyAndUpsertAndroidDev(String googleIdToken, String googleNonce,
+                                            String expectedAudience, String expectedAuthorizedParty) {
+        Jwt jwt = googleIdentityVerifier.verifyAndroidDev(
+                googleIdToken, expectedAudience, expectedAuthorizedParty, googleNonce);
+        return devTransaction.execute(status -> findVerifiedUser(jwt, true));
+    }
+
     private Result findVerifiedUser(Jwt jwt, boolean dev) {
         String email = jwt.getClaimAsString("email");
         String providerId = jwt.getSubject();

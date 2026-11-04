@@ -6,6 +6,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 /**
  * Verifies a Google-issued ID token (signature, issuer, audience and expiry are all checked by the
@@ -21,6 +22,37 @@ public class GoogleIdentityVerifier {
     private final JwtDecoder googleIdTokenDecoder;
 
     public Jwt verify(String googleIdToken) {
+        Jwt jwt = decode(googleIdToken);
+        requireVerifiedEmail(jwt);
+        return jwt;
+    }
+
+    /** Strict claim checks for the DEV native SDK, isolated from the hosted website GIS flow. */
+    public Jwt verifyAndroidDev(String googleIdToken, String expectedAudience,
+                                String expectedAuthorizedParty, String expectedNonce) {
+        Jwt jwt = decode(googleIdToken);
+        requireVerifiedEmail(jwt);
+        if (!StringUtils.hasText(jwt.getClaimAsString("email"))
+                || !Boolean.TRUE.equals(jwt.getClaimAsBoolean("email_verified"))) {
+            throw new BadCredentialsException("Google account email is not verified");
+        }
+        if (expectedAudience == null || !expectedAudience.equals(expectedAudience.trim())
+                || jwt.getAudience() == null || jwt.getAudience().size() != 1
+                || !jwt.getAudience().contains(expectedAudience)) {
+            throw new BadCredentialsException("Google ID token has an invalid audience");
+        }
+        if (expectedAuthorizedParty == null || expectedAuthorizedParty.isBlank()
+                || !expectedAuthorizedParty.equals(jwt.getClaimAsString("azp"))) {
+            throw new BadCredentialsException("Google ID token has an invalid authorized party");
+        }
+        if (expectedNonce == null || expectedNonce.isBlank()
+                || !expectedNonce.equals(jwt.getClaimAsString("nonce"))) {
+            throw new BadCredentialsException("Google ID token nonce does not match this sign-in attempt");
+        }
+        return jwt;
+    }
+
+    private Jwt decode(String googleIdToken) {
         Jwt jwt;
         try {
             jwt = googleIdTokenDecoder.decode(googleIdToken);
@@ -29,13 +61,15 @@ public class GoogleIdentityVerifier {
             // before it ever gets as far as throwing a JwtException.
             throw new BadCredentialsException("Invalid Google ID token", e);
         }
+        return jwt;
+    }
 
+    private static void requireVerifiedEmail(Jwt jwt) {
         Boolean emailVerified = jwt.getClaimAsBoolean("email_verified");
         String email = jwt.getClaimAsString("email");
         if (email == null || Boolean.FALSE.equals(emailVerified)) {
             throw new BadCredentialsException("Google account email is not verified");
         }
-        return jwt;
     }
 
     public String verifiedEmailOf(String googleIdToken) {

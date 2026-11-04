@@ -207,6 +207,11 @@ app:
     # Must match the SuperMeAppFE web OAuth client ID. Override with GOOGLE_CLIENT_ID in
     # deployment environments if the FE client is rotated; never use the old PKCE Demo ID.
     client-id: ${GOOGLE_CLIENT_ID:124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com}
+    # Native Google Sign-In is validated only by the DEV Android exchange. `aud`
+    # is the public web/server client ID set in the native SDK; `azp` is the Android
+    # app client ID. These values are identifiers, not secrets.
+    android-dev-audience: ${GOOGLE_CLIENT_ID:124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com}
+    android-dev-authorized-party: ${ANDROID_DEV_GOOGLE_ANDROID_CLIENT_ID:124581866222-kgg99hqv2fcmac8rfra4mslsuqcb40kq.apps.googleusercontent.com}
   superme:
     # Off by default: mindfullP1 is shared with a running production app, so a fresh
     # deployment reads and authenticates without modifying anyone's data. Turning this on

@@ -20,6 +20,7 @@ import com.pkce.authserver.repository.SupermeUserRepository;
 import com.pkce.authserver.repository.UserPasswordRepository;
 import com.pkce.authserver.superme.model.User;
 import com.pkce.authserver.service.TurnstileVerificationService;
+import com.pkce.authserver.service.GoogleLoginService;
 
 import java.net.CookieManager;
 import java.net.URI;
@@ -70,6 +71,9 @@ class PkceAuthorizationFlowTest {
 
     @MockBean
     private TurnstileVerificationService turnstileVerificationService;
+
+    @MockBean
+    private GoogleLoginService googleLoginService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final Pattern CSRF_PATTERN = Pattern.compile("name=\"_csrf\"[^>]*value=\"([^\"]+)\"");
@@ -225,6 +229,67 @@ class PkceAuthorizationFlowTest {
                 "code", parseQuery(location).get("code")), null);
         assertThat(tokens.get("__status").asInt()).isEqualTo(200);
         assertThat(tokens.get("user").get("id").asLong()).isEqualTo(testUser.getId());
+    }
+
+    @Test
+    void nativeGoogleCodeExchangesForNonceBoundTokensAndRotatesRefreshToken() throws Exception {
+        final String androidClientId = "supermeapp-dev-android";
+        final String androidRedirect = "superme://oauth/dev/callback";
+        final String verifier = b64url("android-google-flow-verifier-abcdefghijklmnopqrstuvwxyz".getBytes(StandardCharsets.UTF_8));
+        final String oidcNonce = b64url("android-google-flow-oidc-nonce-0123456789".getBytes(StandardCharsets.UTF_8));
+        final String googleNonce = b64url("android-google-flow-google-nonce-0123456789".getBytes(StandardCharsets.UTF_8));
+        when(googleLoginService.verifyAndUpsertAndroidDev(
+                anyString(), org.mockito.ArgumentMatchers.eq(googleNonce), anyString(), anyString()))
+                .thenReturn(new GoogleLoginService.Result(testUser, false, "google-subject-test"));
+
+        String challenge = sha256(verifier);
+        String exchangeBody = objectMapper.writeValueAsString(Map.of(
+                "googleIdToken", "mocked-google-id-token",
+                "clientId", androidClientId,
+                "redirectUri", androidRedirect,
+                "codeChallenge", challenge,
+                "codeChallengeMethod", "S256",
+                "googleNonce", googleNonce,
+                "oidcNonce", oidcNonce,
+                "turnstileToken", "mocked-captcha-token"));
+        HttpResponse<String> handoff = send(HttpRequest.newBuilder(URI.create(baseUrl + "/v1/auth/android-dev/google"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(exchangeBody)));
+        assertThat(handoff.statusCode()).isEqualTo(200);
+        JsonNode handoffJson = objectMapper.readTree(handoff.body());
+        assertThat(handoffJson.get("expires_in").asLong()).isEqualTo(60);
+        assertThat(handoff.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+
+        JsonNode tokens = tokenRequest(Map.of(
+                "grant_type", "authorization_code",
+                "client_id", androidClientId,
+                "redirect_uri", androidRedirect,
+                "code", handoffJson.get("code").asText(),
+                "code_verifier", verifier), null);
+        assertThat(tokens.get("__status").asInt()).isEqualTo(200);
+        assertThat(tokens.hasNonNull("access_token")).isTrue();
+        assertThat(tokens.hasNonNull("refresh_token")).isTrue();
+        assertThat(tokens.hasNonNull("id_token")).isTrue();
+        String[] jwtParts = tokens.get("id_token").asText().split("\\.");
+        JsonNode idClaims = objectMapper.readTree(Base64.getUrlDecoder().decode(jwtParts[1]));
+        assertThat(idClaims.get("nonce").asText()).isEqualTo(oidcNonce);
+
+        String originalRefreshToken = tokens.get("refresh_token").asText();
+        JsonNode refreshed = tokenRequest(Map.of(
+                "grant_type", "refresh_token",
+                "client_id", androidClientId,
+                "refresh_token", originalRefreshToken), null);
+        assertThat(refreshed.get("__status").asInt()).isEqualTo(200);
+        assertThat(refreshed.hasNonNull("access_token")).isTrue();
+        assertThat(refreshed.hasNonNull("refresh_token")).isTrue();
+        assertThat(refreshed.get("refresh_token").asText()).isNotEqualTo(originalRefreshToken);
+
+        JsonNode replay = tokenRequest(Map.of(
+                "grant_type", "refresh_token",
+                "client_id", androidClientId,
+                "refresh_token", originalRefreshToken), null);
+        assertThat(replay.get("__status").asInt()).isEqualTo(400);
+        assertThat(replay.get("error").asText()).isEqualTo("invalid_grant");
     }
 
     @Test

@@ -122,15 +122,17 @@ public class LoginPageController {
         var saved = session == null ? null : session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
         boolean additional = false;
         boolean isApkDev = false;
+        boolean isAndroidDev = false;
         boolean isAdmin = false;
         boolean isAdminDev = false;
         if (saved instanceof org.springframework.security.web.savedrequest.SavedRequest authorizationRequest) {
             String[] ids = authorizationRequest.getParameterValues("client_id");
             additional = !additionalClientId.isBlank() && ids != null && ids.length == 1
                     && additionalClientId.equals(ids[0]);
-            isApkDev = ids != null && ids.length == 1
-                    && ((!apkDevClientId.isBlank() && apkDevClientId.equals(ids[0]))
-                    || (!androidDevClientId.isBlank() && androidDevClientId.equals(ids[0])));
+            isAndroidDev = ids != null && ids.length == 1
+                    && !androidDevClientId.isBlank() && androidDevClientId.equals(ids[0]);
+            isApkDev = isAndroidDev || (ids != null && ids.length == 1
+                    && !apkDevClientId.isBlank() && apkDevClientId.equals(ids[0]));
             boolean isAdminProd = !adminClientId.isBlank() && ids != null && ids.length == 1
                     && adminClientId.equals(ids[0]);
             isAdminDev = !adminDevClientId.isBlank() && ids != null && ids.length == 1
@@ -219,6 +221,17 @@ public class LoginPageController {
         String turnstileWidget = turnstileSiteKey.isBlank()
                 ? ""
                 : "<div class=\"cf-turnstile\" data-sitekey=\"" + turnstileSiteKey + "\"></div>";
+        // A native Android client intercepts this exact action URI in the app and starts
+        // Google's native SDK. It carries no identity token, credentials, code, or nonce.
+        // Other clients retain the existing Google Identity Services button unchanged.
+        String googleIdentityScript = isAndroidDev
+                ? ""
+                : "<script src=\"https://accounts.google.com/gsi/client\" async defer></script>";
+        String googleControlReadyClass = isAndroidDev ? " is-ready" : "";
+        String googleButtonTarget = isAndroidDev
+                ? "<a id=\"google-native-action\" href=\"superme://oauth/dev/google\" "
+                    + "aria-label=\"Continue with Google\" style=\"position:absolute;inset:0;z-index:1;display:block;\"></a>"
+                : "<div id=\"google-signin-button\"></div>";
 
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter writer = response.getWriter()) {
@@ -829,7 +842,7 @@ public class LoginPageController {
                             }
                           }
                         </style>
-                        <script src="https://accounts.google.com/gsi/client" async defer></script>
+                        %s
                         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
                         <script>
                           (() => {
@@ -905,7 +918,7 @@ public class LoginPageController {
                             <a href="%s" style="display:none;" tabindex="-1" aria-hidden="true">Continue with email</a>
                           </form>
                           <div class="divider">OR</div>
-                          <div class="google-signin-control">
+                          <div class="google-signin-control%s">
                             <div class="google-signin-face" aria-hidden="true">
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22" aria-hidden="true">
                                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -915,7 +928,7 @@ public class LoginPageController {
                               </svg>
                               <span>Continue with Google</span>
                             </div>
-                            <div id="google-signin-button"></div>
+                            %s
                           </div>
                           <p id="google-signin-error" class="alert alert-danger" style="display:none; margin-top:0.75rem;"></p>
                             </div>
@@ -1043,6 +1056,7 @@ public class LoginPageController {
                       </body>
                     </html>
                     """.formatted(
+                    googleIdentityScript,
                     PANDA_IMAGE_DATA,
                     hasError ? "<div class=\"alert alert-danger\">Invalid email or password.</div>" : "",
                     loggedOut ? "<div class=\"alert alert-success\">You have been signed out.</div>" : "",
@@ -1053,6 +1067,8 @@ public class LoginPageController {
                     turnstileWidget,
                     pageForgotUrl,
                     pageEmailUrl,
+                    googleControlReadyClass,
+                    googleButtonTarget,
                     pageSignupUrl,
                     pageBaseUrl,
                     googleClientId

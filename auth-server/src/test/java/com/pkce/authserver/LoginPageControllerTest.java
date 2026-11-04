@@ -29,7 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
         "app.frontend.additional-client-id=supermeapp-web-4204",
         "app.frontend.additional-base-url=http://localhost:4204/",
         "app.frontend.additional-signup-url=http://localhost:4204/signup",
-        "app.frontend.additional-forgot-password-url=http://localhost:4204/forgot-password"
+        "app.frontend.additional-forgot-password-url=http://localhost:4204/forgot-password",
+        "app.security.android-dev-client.id=supermeapp-dev-android",
+        "app.security.android-dev-client.redirect-uris=superme://oauth/dev/callback",
+        "app.security.android-dev-client.post-logout-redirect-uris=superme://oauth/dev/logout",
+        "app.frontend.android-dev-client-id=supermeapp-dev-android"
 })
 @ActiveProfiles("test")
 class LoginPageControllerTest {
@@ -129,6 +133,33 @@ class LoginPageControllerTest {
                 HttpResponse.BodyHandlers.ofString());
         assertThat(login.statusCode()).isEqualTo(200);
         assertThat(login.body()).contains("href=\"http://localhost:4204/signup\"", "href=\"http://localhost:4204/forgot-password\"");
+    }
+
+    @Test
+    void nativeAndroidClientGetsActionLinkInsteadOfEmbeddedGoogleIdentityServices() throws Exception {
+        var cookies = new java.net.CookieManager();
+        cookies.setCookiePolicy(java.net.CookiePolicy.ACCEPT_ALL);
+        HttpClient http = HttpClient.newBuilder().cookieHandler(cookies).followRedirects(HttpClient.Redirect.NEVER).build();
+        String query = "/oauth2/authorize?response_type=code&client_id=supermeapp-dev-android"
+                + "&redirect_uri=superme%3A%2F%2Foauth%2Fdev%2Fcallback"
+                + "&scope=openid%20profile%20notes.read%20notes.write&state=test-state"
+                + "&nonce=oidc_nonce_12345678901234567890"
+                + "&code_challenge=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&code_challenge_method=S256";
+        var authorization = http.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + query)).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(authorization.statusCode()).isEqualTo(302);
+
+        var loginRedirect = http.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/login")).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(loginRedirect.statusCode()).isEqualTo(302);
+        String apkLoginUrl = loginRedirect.headers().firstValue("Location").orElseThrow();
+        var login = http.send(HttpRequest.newBuilder(URI.create(apkLoginUrl)).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(login.statusCode()).isEqualTo(200);
+        assertThat(login.body()).contains("href=\"superme://oauth/dev/google\"");
+        assertThat(login.body()).doesNotContain("accounts.google.com/gsi/client", "id=\"google-signin-button\"");
+        assertThat(login.body()).contains("challenges.cloudflare.com/turnstile/v0/api.js");
     }
 
     @Test

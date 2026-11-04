@@ -110,7 +110,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
         // No rate limit here meant real signature-verification work ran on every
         // request for free - cheap for an attacker to flood, not cheap for this server.
-        if (path.endsWith("/google-login")) {
+        if (path.endsWith("/google-login") || path.endsWith("/android-dev/google")) {
             return "google-login";
         }
         return null;
