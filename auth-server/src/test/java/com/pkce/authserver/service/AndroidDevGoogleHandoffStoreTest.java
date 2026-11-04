@@ -25,7 +25,7 @@ class AndroidDevGoogleHandoffStoreTest {
                   code_challenge VARCHAR(128) NOT NULL, google_nonce VARCHAR(128) NOT NULL,
                   oidc_nonce VARCHAR(128) NOT NULL, state_value VARCHAR(128) NOT NULL,
                   expires_at TIMESTAMP(6) NOT NULL, created_at TIMESTAMP(6) NOT NULL,
-                  consumed_at TIMESTAMP(6) NULL)
+                  expires_at_epoch_ms BIGINT NULL, consumed_at TIMESTAMP(6) NULL)
                 """);
         store = new AndroidDevGoogleHandoffStore(dataSource);
     }
