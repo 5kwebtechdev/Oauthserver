@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationContext;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -83,6 +85,8 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
             return;
         }
 
+        logIssuedTokens(context, authResult, clientId, subject);
+
         var payload = isApkDev
                 ? userInfoService.userPayloadForDev(subject, authProvider, socialProviderId)
                 : userInfoService.userPayloadFor(subject, authProvider, socialProviderId);
@@ -94,6 +98,53 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
                 },
                 () -> log.warn("Access token subject '{}' has no matching user - omitting 'user' from the token response", subject)
         );
+    }
+
+    /**
+     * One structured audit line per issued token pair, for both the authorization_code (login)
+     * and refresh_token (silent refresh) grants - lets us trace exactly which client/user got
+     * what TTL and when, without ever logging a full token value.
+     */
+    private void logIssuedTokens(OAuth2AccessTokenAuthenticationContext context,
+                                  OAuth2AccessTokenAuthenticationToken authResult,
+                                  String clientId, String subject) {
+        String grantType = currentGrantType();
+
+        var accessToken = authResult.getAccessToken();
+        var refreshToken = authResult.getRefreshToken();
+
+        log.info("[TOKEN ISSUED] grant={} client={} user={} access_token={} (expires_at={}) refresh_token={} (expires_at={})",
+                grantType,
+                clientId,
+                subject,
+                mask(accessToken.getTokenValue()),
+                accessToken.getExpiresAt(),
+                refreshToken != null ? mask(refreshToken.getTokenValue()) : "none",
+                refreshToken != null ? refreshToken.getExpiresAt() : "n/a");
+    }
+
+    /**
+     * Reads the "grant_type" form parameter off the current /oauth2/token request - this
+     * customizer's inputs (OAuth2AccessTokenAuthenticationContext/Token) are the same shape for
+     * every grant, so the original request is the only reliable place left to tell a fresh login
+     * apart from a silent refresh.
+     */
+    private static String currentGrantType() {
+        try {
+            var attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attributes == null) return "unknown";
+            String value = attributes.getRequest().getParameter("grant_type");
+            return value != null ? value : "unknown";
+        } catch (RuntimeException e) {
+            return "unknown";
+        }
+    }
+
+    /** First and last 10 characters only - never enough to reconstruct or replay the token. */
+    private static String mask(String token) {
+        if (token == null) return "none";
+        if (token.length() <= 20) return token;
+        return token.substring(0, 10) + "..." + token.substring(token.length() - 10);
     }
 
     /**
