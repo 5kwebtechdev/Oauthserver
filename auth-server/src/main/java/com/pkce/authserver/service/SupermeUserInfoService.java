@@ -37,6 +37,7 @@ public class SupermeUserInfoService {
 
     private final SupermeUserLookup userLookup;
     private final SupermeUserDevLookup userDevLookup;
+    private final com.pkce.authserver.repository.SupermeCoinTransactionRepository coinTransactionRepository;
     private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
@@ -51,7 +52,26 @@ public class SupermeUserInfoService {
 
     @Transactional(readOnly = true)
     public Optional<Map<String, Object>> userPayloadFor(String identifier, String authProvider, String socialProviderId) {
-        return buildPayload(userLookup.findByIdentifier(identifier), authProvider, socialProviderId);
+        Optional<com.pkce.authserver.superme.model.User> user = userLookup.findByIdentifier(identifier);
+        return buildPayload(user, authProvider, socialProviderId)
+                .map(payload -> withComputedCoins(payload, user.orElse(null)));
+    }
+
+    /**
+     * Overrides the DTO's "coins" with SUM(CoinTransaction.amount) for this user - the stored
+     * User.coins column can drift out of sync with the real ledger (confirmed on a live account:
+     * stored balance read 502 while the ledger's true net was 597). Only applied on the prod path
+     * (mindfullP1, same datasource this repository reads) - never on userPayloadForDev's dev-user
+     * path, which resolves against a different datasource (superme_db) that this repository does
+     * not read from.
+     */
+    private Map<String, Object> withComputedCoins(Map<String, Object> payload, com.pkce.authserver.superme.model.User user) {
+        if (user == null) {
+            return payload;
+        }
+        int computed = coinTransactionRepository.sumEarnedByUser(user) + coinTransactionRepository.sumSpentByUser(user);
+        payload.put("coins", computed);
+        return payload;
     }
 
     /**
