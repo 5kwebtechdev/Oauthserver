@@ -8,6 +8,10 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * Verifies a Google-issued ID token (signature, issuer, audience and expiry are all checked by the
  * configured JwtDecoder - see GoogleIdTokenDecoderConfig) and reports the identity it carries.
@@ -27,9 +31,15 @@ public class GoogleIdentityVerifier {
         return jwt;
     }
 
-    /** Strict claim checks for the DEV native SDK, isolated from the hosted website GIS flow. */
+    /**
+     * Strict claim checks for the DEV native SDK, isolated from the hosted website GIS flow.
+     * {@code expectedAuthorizedParties} is the set of azp values allowed to present this
+     * audience - more than one native Android OAuth client (e.g. a sideloaded APK build and the
+     * Google Play build) can share the same server-side audience, so azp is checked by set
+     * membership rather than a single exact match.
+     */
     public Jwt verifyAndroidDev(String googleIdToken, String expectedAudience,
-                                String expectedAuthorizedParty, String expectedNonce) {
+                                Set<String> expectedAuthorizedParties, String expectedNonce) {
         Jwt jwt = decode(googleIdToken);
         requireVerifiedEmail(jwt);
         if (!StringUtils.hasText(jwt.getClaimAsString("email"))
@@ -41,8 +51,10 @@ public class GoogleIdentityVerifier {
                 || !jwt.getAudience().contains(expectedAudience)) {
             throw new BadCredentialsException("Google ID token has an invalid audience");
         }
-        if (expectedAuthorizedParty == null || expectedAuthorizedParty.isBlank()
-                || !expectedAuthorizedParty.equals(jwt.getClaimAsString("azp"))) {
+        String azp = jwt.getClaimAsString("azp");
+        if (expectedAuthorizedParties == null || expectedAuthorizedParties.isEmpty()
+                || azp == null || azp.isBlank()
+                || !expectedAuthorizedParties.contains(azp)) {
             throw new BadCredentialsException("Google ID token has an invalid authorized party");
         }
         if (expectedNonce == null || expectedNonce.isBlank()
@@ -50,6 +62,21 @@ public class GoogleIdentityVerifier {
             throw new BadCredentialsException("Google ID token nonce does not match this sign-in attempt");
         }
         return jwt;
+    }
+
+    /**
+     * Parses a comma-separated azp allow-list (trims whitespace, discards empty entries). A
+     * single bare value (the existing single-client configuration) parses to a one-element set,
+     * so existing deployments with only one configured azp keep working unchanged.
+     */
+    public static Set<String> parseAuthorizedParties(String rawCommaSeparated) {
+        if (rawCommaSeparated == null) {
+            return Set.of();
+        }
+        return Arrays.stream(rawCommaSeparated.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
     }
 
     private Jwt decode(String googleIdToken) {

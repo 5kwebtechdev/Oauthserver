@@ -75,7 +75,7 @@ class AndroidDevGoogleLoginControllerTest {
         account = new User();
         account.setEmail("dev-user@example.com");
         when(googleLogin.verifyAndUpsertAndroidDev("google-id-token", GOOGLE_NONCE,
-                "google-server-client.apps.googleusercontent.com", "google-android-client.apps.googleusercontent.com"))
+                "google-server-client.apps.googleusercontent.com", java.util.Set.of("google-android-client.apps.googleusercontent.com")))
                 .thenReturn(new GoogleLoginService.Result(account, false, "google-subject"));
         UserDetails details = org.springframework.security.core.userdetails.User.withUsername("dev-user@example.com")
                 .password("unused").authorities("ROLE_USER").build();
@@ -152,7 +152,7 @@ class AndroidDevGoogleLoginControllerTest {
     @Test
     void leavesUnknownGoogleAccountsForTheExistingProfileOnboardingFlow() {
         var identity = new GoogleLoginService.GoogleIdentity("google-subject", "new@example.com", "New User", null);
-        when(googleLogin.verifyAndUpsertAndroidDev(anyString(), anyString(), anyString(), anyString()))
+        when(googleLogin.verifyAndUpsertAndroidDev(anyString(), anyString(), anyString(), org.mockito.ArgumentMatchers.any()))
                 .thenThrow(new GoogleLoginService.AccountNotRegisteredException(identity));
 
         var response = controller.exchange(request(), servletRequest());

@@ -116,7 +116,8 @@ public class AndroidDevGoogleLoginController {
         GoogleLoginService.Result account;
         try {
             account = googleLoginService.verifyAndUpsertAndroidDev(
-                    request.googleIdToken(), request.googleNonce(), googleAudience, googleAuthorizedParty);
+                    request.googleIdToken(), request.googleNonce(), googleAudience,
+                    com.pkce.authserver.service.GoogleIdentityVerifier.parseAuthorizedParties(googleAuthorizedParty));
         } catch (GoogleLoginService.AccountNotRegisteredException e) {
             GoogleLoginService.GoogleIdentity identity = e.getIdentity();
             return error(HttpStatus.CONFLICT, "registration_required",
