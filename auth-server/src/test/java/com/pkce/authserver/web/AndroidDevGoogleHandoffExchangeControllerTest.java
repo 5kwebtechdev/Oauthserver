@@ -75,7 +75,7 @@ class AndroidDevGoogleHandoffExchangeControllerTest {
         account = new User();
         account.setEmail("android-dev-user@example.test");
         when(googleLogin.verifyAndUpsertAndroidDev("google-id-token", GOOGLE_NONCE,
-                "google-web-client.apps.googleusercontent.com", "google-android-client.apps.googleusercontent.com"))
+                "google-web-client.apps.googleusercontent.com", java.util.Set.of("google-android-client.apps.googleusercontent.com")))
                 .thenReturn(new GoogleLoginService.Result(account, false, "google-subject"));
         UserDetails details = org.springframework.security.core.userdetails.User.withUsername("android-dev-user@example.test")
                 .password("unused").authorities("ROLE_USER").build();
@@ -99,7 +99,7 @@ class AndroidDevGoogleHandoffExchangeControllerTest {
                 .containsEntry("code_challenge_method", "S256").containsEntry("nonce", OIDC_NONCE);
         verify(handoffs).consumeTicket(TICKET);
         verify(googleLogin).verifyAndUpsertAndroidDev("google-id-token", GOOGLE_NONCE,
-                "google-web-client.apps.googleusercontent.com", "google-android-client.apps.googleusercontent.com");
+                "google-web-client.apps.googleusercontent.com", java.util.Set.of("google-android-client.apps.googleusercontent.com"));
     }
 
     @Test

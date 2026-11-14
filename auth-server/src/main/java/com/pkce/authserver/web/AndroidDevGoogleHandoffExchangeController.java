@@ -92,7 +92,8 @@ public class AndroidDevGoogleHandoffExchangeController {
         GoogleLoginService.Result account;
         try {
             account = googleLoginService.verifyAndUpsertAndroidDev(request.googleIdToken(),
-                    attempt.get().googleNonce(), googleAudience, googleAuthorizedParty);
+                    attempt.get().googleNonce(), googleAudience,
+                    com.pkce.authserver.service.GoogleIdentityVerifier.parseAuthorizedParties(googleAuthorizedParty));
         } catch (GoogleLoginService.AccountNotRegisteredException e) {
             GoogleLoginService.GoogleIdentity identity = e.getIdentity();
             return error(HttpStatus.CONFLICT, "registration_required", "Complete your SuperMe profile before signing in.",

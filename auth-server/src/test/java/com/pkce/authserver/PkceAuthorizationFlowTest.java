@@ -240,7 +240,7 @@ class PkceAuthorizationFlowTest {
         final String oidcNonce = b64url("android-google-flow-oidc-nonce-0123456789".getBytes(StandardCharsets.UTF_8));
         final String googleNonce = b64url("android-google-flow-google-nonce-0123456789".getBytes(StandardCharsets.UTF_8));
         when(googleLoginService.verifyAndUpsertAndroidDev(
-                anyString(), org.mockito.ArgumentMatchers.eq(googleNonce), anyString(), anyString()))
+                anyString(), org.mockito.ArgumentMatchers.eq(googleNonce), anyString(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new GoogleLoginService.Result(testUser, false, "google-subject-test"));
 
         String challenge = sha256(verifier);
@@ -304,7 +304,7 @@ class PkceAuthorizationFlowTest {
         final String challenge = sha256(verifier);
 
         when(googleLoginService.verifyAndUpsertAndroidDev(
-                anyString(), org.mockito.ArgumentMatchers.eq(googleNonce), anyString(), anyString()))
+                anyString(), org.mockito.ArgumentMatchers.eq(googleNonce), anyString(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new GoogleLoginService.Result(testUser, false, "google-subject-hosted-test"));
         String initBody = objectMapper.writeValueAsString(Map.of(
                 "clientId", androidClientId,
