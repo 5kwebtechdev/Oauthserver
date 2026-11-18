@@ -120,9 +120,7 @@ class RegistrationFlowTest {
 
         User saved = userRepository.findByEmail(email).orElseThrow();
         assertThat(saved.getName()).isEqualTo("Otp Person");
-        // New DB: gender round-trips through UserGenderIdConverter's master-id switch, which
-        // always reads back the upper-case canonical form regardless of the case it was written in.
-        assertThat(saved.getGender()).isEqualTo("FEMALE");
+        assertThat(saved.getGender()).isEqualTo("female");
         assertThat(saved.getRelationship()).isEqualTo(Relationship.SELF);
         assertThat(saved.isEmailVerified()).isTrue();
         // Their arithmetic: no pet -> step 5, and the 10-coin signup bonus.

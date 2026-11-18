@@ -174,10 +174,10 @@ class GoogleLoginFlowTest {
         User seeded = SupermeUserFixture.user(email);
         seeded.setDateOfBirth(LocalDate.now().minusYears(20));
         seeded = userRepository.save(seeded);
-        // This is the legacy AGE_18_TO_24 master id (10) that UserAgeGroupIdConverter still
-        // canonicalizes to AGE_18_TO_29 on read - the new-schema equivalent of the ENUM value
-        // that previously made Hibernate fail before it could finish finding the account by email.
-        jdbcTemplate.update("UPDATE user_profile SET age_group_id = ? WHERE user_id = ?", 10, seeded.getId());
+        // Legacy ENUM value still present in the live column that User.getAgeGroup() canonicalizes
+        // to AGE_18_TO_29 on read - this previously made Hibernate fail before it could finish
+        // finding the account by email.
+        jdbcTemplate.update("UPDATE User SET ageGroup = ? WHERE id = ?", "AGE_18_TO_24", seeded.getId());
         when(googleIdTokenDecoder.decode(anyString())).thenReturn(googleJwt(email));
 
         HttpClient http = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();
