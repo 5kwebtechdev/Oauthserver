@@ -61,8 +61,9 @@ import java.time.Period;
         @SecondaryTable(name = "user_profile", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
         @SecondaryTable(name = "user_referrals", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
         @SecondaryTable(name = "user_ui_state", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
-        @SecondaryTable(name = "user_wallet", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
-        @SecondaryTable(name = "user_module_links", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id"))
+        @SecondaryTable(name = "user_wallet", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id"))
+        // user_module_links exists live but is unused: family_id/avatar_id/pet_id are read from
+        // the main User table instead (see the family/avatar/pet fields below).
 })
 @NoArgsConstructor
 @AllArgsConstructor
@@ -232,17 +233,22 @@ public class User {
     // ─────────────────────────────
     // Relationships
     // ─────────────────────────────
+    // family_id/avatar_id/pet_id live on the main User table (bigint, confirmed via SHOW COLUMNS
+    // against the live dev DB) - NOT on user_module_links, whose same-named columns are "int
+    // unsigned" and would mismatch Family/Avatar/Pet's own bigint PKs. The User-normalization
+    // migration added user_module_links but never actually moved these three FKs onto it, and
+    // never touched Family/Avatar/Pet's own tables at all.
     @ManyToOne
     @JsonBackReference
-    @JoinColumn(name = "family_id", table = "user_module_links")
+    @JoinColumn(name = "family_id")
     private Family family;
 
     @OneToOne
-    @JoinColumn(name = "avatar_id", table = "user_module_links")
+    @JoinColumn(name = "avatar_id")
     private Avatar avatar;
 
     @ManyToOne
-    @JoinColumn(name = "pet_id", table = "user_module_links")
+    @JoinColumn(name = "pet_id")
     private Pet pet;
 
     @Column(name = "dailyActivityStreak", nullable = false, table = "user_activity")

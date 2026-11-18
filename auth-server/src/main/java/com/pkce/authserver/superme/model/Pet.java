@@ -1,8 +1,6 @@
 package com.pkce.authserver.superme.model;
 
-import com.pkce.authserver.superme.converter.UserGenderIdConverter;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,7 +10,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Copied from SuperMeBE (com.superme.model.Pet). gender now resolves through the gender master table. */
+/**
+ * Copied verbatim from SuperMeBE (com.superme.model.Pet). Maps the existing superme_db table -
+ * this table was NOT touched by the User-normalization migration (confirmed via SHOW COLUMNS
+ * against the live dev DB: plain bigint `id`, plain varchar `gender`, no pet_id/gender_id).
+ */
 @Entity
 @Data
 @NoArgsConstructor
@@ -22,16 +24,13 @@ public class Pet {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pet_id")
-    private Integer id;
+    private Long id;
 
-    @Column(name = "petName", nullable = false, length = 100)
+    @Column(nullable = false)
     private String petName;
 
-    @Convert(converter = UserGenderIdConverter.class)
-    @Column(name = "gender_id")
+    @Column(nullable = true)
     private String gender;
 
-    @Column(name = "url", length = 255)
     private String url;
 }

@@ -13,11 +13,14 @@
 -- quoting would make the name case-sensitive and stop it matching the entity, which has no
 -- explicit @Table beyond "User" and so refers to the table unquoted.
 --
--- Reflects SuperMeBE's post-migration normalized schema: User itself only carries user_id, and the
--- rest of its scalar columns live across the user_* secondary tables below, matching the
--- @SecondaryTables declared on com.pkce.authserver.superme.model.User. gender/relationship/role/
--- ageGroup are tiny Byte ids resolved through hardcoded-switch converters (no real master-table FK
--- enforced here - the converters are the only thing that needs the id to mean what it says).
+-- Only User/UserPassword and the user_* secondary tables were actually touched by the live
+-- User-normalization migration (confirmed via SHOW COLUMNS against the real dev DB) - gender/
+-- relationship/role/ageGroup moved into user_profile/user_access as tiny Byte ids resolved through
+-- hardcoded-switch converters (no real master-table FK enforced here), and User.id moved from
+-- BIGINT to INT UNSIGNED. Avatar/Pet/Family/FamilyMember/CoinTransaction are each still exactly
+-- their old flat shape - plain BIGINT ids, plain gender/type/description columns - and User's own
+-- avatar_id/family_id/pet_id columns (BIGINT, matching those tables) were never actually moved
+-- onto user_module_links; that table exists but is unused by this server's mappings.
 --
 -- Only the columns the ported entities actually map are present. The real User table has many more
 -- secondary-table columns across all its features; the entities map all of its scalar columns the
@@ -25,32 +28,32 @@
 -- (calendarEvents, coinHistory, rewards, badges, notes) that own no column on User at all.
 
 CREATE TABLE Family (
-    family_id   INT       NOT NULL AUTO_INCREMENT,
+    id          BIGINT    NOT NULL AUTO_INCREMENT,
     familyCode  VARCHAR(255) NOT NULL,
     familyName  VARCHAR(255) NOT NULL,
-    createdBy   INT       DEFAULT NULL,
+    createdBy   BIGINT    DEFAULT NULL,
     createdAt   DATE         NOT NULL,
-    PRIMARY KEY (family_id),
+    PRIMARY KEY (id),
     UNIQUE (familyCode)
 );
 
 CREATE TABLE Avatar (
-    avatar_id       INT       NOT NULL AUTO_INCREMENT,
+    id              BIGINT    NOT NULL AUTO_INCREMENT,
     avatarName      VARCHAR(100) NOT NULL,
-    gender_id       TINYINT      DEFAULT NULL,
+    gender          VARCHAR(255) DEFAULT NULL,
     url             VARCHAR(255) DEFAULT NULL,
     avatarImageName VARCHAR(255) DEFAULT NULL,
     renamedByUser   BOOLEAN      NOT NULL DEFAULT FALSE,
-    PRIMARY KEY (avatar_id),
+    PRIMARY KEY (id),
     UNIQUE (avatarName)
 );
 
 CREATE TABLE Pet (
-    pet_id    INT       NOT NULL AUTO_INCREMENT,
+    id        BIGINT    NOT NULL AUTO_INCREMENT,
     petName   VARCHAR(255) NOT NULL,
-    gender_id TINYINT      DEFAULT NULL,
+    gender    VARCHAR(255) DEFAULT NULL,
     url       VARCHAR(255) DEFAULT NULL,
-    PRIMARY KEY (pet_id)
+    PRIMARY KEY (id)
 );
 
 CREATE TABLE User (
@@ -59,9 +62,9 @@ CREATE TABLE User (
     createdDateTime  TIMESTAMP DEFAULT NULL,
     createdByAdminId INT DEFAULT NULL,
     deleted    BOOLEAN DEFAULT NULL,
-    family_id  INT DEFAULT NULL,
-    avatar_id  INT DEFAULT NULL,
-    pet_id     INT DEFAULT NULL,
+    family_id  BIGINT DEFAULT NULL,
+    avatar_id  BIGINT DEFAULT NULL,
+    pet_id     BIGINT DEFAULT NULL,
     PRIMARY KEY (user_id)
 );
 
@@ -175,6 +178,8 @@ CREATE TABLE user_ui_state (
     PRIMARY KEY (user_id)
 );
 
+-- Exists in the live DB but unused by this server's mappings - User's avatar_id/family_id/pet_id
+-- are read from the main User table instead (see comment at the top of this file).
 CREATE TABLE user_module_links (
     user_id   INT NOT NULL,
     family_id INT DEFAULT NULL,
@@ -184,21 +189,23 @@ CREATE TABLE user_module_links (
 );
 
 CREATE TABLE UserPassword (
-    user_password_id INT       NOT NULL AUTO_INCREMENT,
-    user_id          INT       DEFAULT NULL,
-    password         VARCHAR(255) NOT NULL,
-    PRIMARY KEY (user_password_id),
+    id       BIGINT    NOT NULL AUTO_INCREMENT,
+    user_id  INT       DEFAULT NULL,
+    password VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id),
     UNIQUE (user_id)
 );
 
 CREATE TABLE FamilyMember (
-    family_member_id INT NOT NULL AUTO_INCREMENT,
-    family_id         INT NOT NULL,
-    user_id           INT NOT NULL,
-    dateOfBirth       DATE   NOT NULL,
-    PRIMARY KEY (family_member_id)
+    id          BIGINT NOT NULL AUTO_INCREMENT,
+    family_id   BIGINT NOT NULL,
+    user_id     INT    NOT NULL,
+    dateOfBirth DATE   NOT NULL,
+    PRIMARY KEY (id)
 );
 
+-- Exist in the live DB but unused by this server's mappings - CoinTransaction's type/description
+-- are still real, required columns there (see comment on CoinTransaction.java).
 CREATE TABLE master_coin_transaction_types (
     type_id INT      NOT NULL AUTO_INCREMENT,
     value   VARCHAR(64) NOT NULL,
@@ -216,10 +223,11 @@ CREATE TABLE coin_transaction_reason (
 -- article/lesson/course/challenge/admin-action columns, all nullable and all belonging to features
 -- this server has nothing to do with.
 CREATE TABLE CoinTransaction (
-    coin_transaction_id       INT    NOT NULL AUTO_INCREMENT,
-    user_id                   INT    NOT NULL,
-    amount                    INT       NOT NULL,
-    coin_transaction_reason_id INT   NOT NULL,
-    timestamp                 TIMESTAMP NOT NULL,
-    PRIMARY KEY (coin_transaction_id)
+    id          BIGINT    NOT NULL AUTO_INCREMENT,
+    user_id     INT       NOT NULL,
+    amount      INT       NOT NULL,
+    type        VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    timestamp   TIMESTAMP NOT NULL,
+    PRIMARY KEY (id)
 );

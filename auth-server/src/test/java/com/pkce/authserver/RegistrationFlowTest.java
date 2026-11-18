@@ -190,7 +190,7 @@ class RegistrationFlowTest {
         assertThat(saved.getFamily()).isNotNull();
         assertThat(saved.getFamily().getFamilyName()).isEqualTo("Google Family");
         assertThat(saved.getFamily().getFamilyCode()).hasSize(8);
-        assertThat(saved.getFamily().getCreatedBy()).isEqualTo(saved.getId());
+        assertThat(saved.getFamily().getCreatedBy()).isEqualTo(saved.getId().longValue());
         // Parent starter coins, and a pet pushes the onboarding step to 6.
         assertThat(saved.getCoins()).isEqualTo(500);
         assertThat(saved.getOnboardingStep()).isEqualTo(6);

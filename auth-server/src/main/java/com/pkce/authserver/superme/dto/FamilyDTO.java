@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FamilyDTO {
-    private Integer id;
+    private Long id;
     private String familyCode;
     private String familyName;
 }
