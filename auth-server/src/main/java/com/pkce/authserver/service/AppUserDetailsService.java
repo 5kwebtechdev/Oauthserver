@@ -1,9 +1,5 @@
 package com.pkce.authserver.service;
 
-import com.pkce.authserver.admin.model.Admin;
-import com.pkce.authserver.admin.model.AdminAccountStatus;
-import com.pkce.authserver.admin.model.AdminPassword;
-import com.pkce.authserver.admin.repository.AdminRepository;
 import com.pkce.authserver.admindev.model.AdminDev;
 import com.pkce.authserver.admindev.model.AdminDevAccountStatus;
 import com.pkce.authserver.admindev.model.AdminPasswordDev;
@@ -12,7 +8,6 @@ import com.pkce.authserver.repository.UserPasswordRepository;
 import com.pkce.authserver.security.AdminLoginContextFilter;
 import com.pkce.authserver.superme.model.User;
 import com.pkce.authserver.superme.model.UserPassword;
-import com.pkce.authserver.supermedev.repository.UserPasswordDevRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -38,16 +33,12 @@ import java.util.Set;
  *   - a soft-deleted account (deleted = true) is refused, which is modelled as "disabled" here so
  *     DaoAuthenticationProvider produces it without reimplementing the check.
  *
- * Admin-panel login (added): if the pending authorization is for an admin client
- * (AdminLoginContextFilter.currentAdminClient), only the matching Admin table is ever consulted
- * (same BCrypt scheme as SuperMeBE's admin AuthService) - mindfullP1.User is skipped entirely, so
- * a regular SuperMeApp end-user account can never successfully authenticate into an admin-client
- * session just because its credentials happen to be valid. PROD checks mindfullAdmin via
- * AdminRepository; DEV checks SuperMeBE's dev admin database via AdminDevRepository - these are
- * two genuinely different physical databases (see AdminDevDataSourceConfig), not just different
- * client ids reading the same data. All other clients authenticate only against the regular User
- * table. This prevents admin credentials from producing app tokens whose user profile cannot be
- * resolved by the application.
+ * Admin-panel login: if the pending authorization is for the admin client
+ * (AdminLoginContextFilter.currentAdminClient == ADMIN), only the Admin table is ever consulted
+ * (same BCrypt scheme as SuperMeBE's admin AuthService) - the regular User table is skipped
+ * entirely, so a regular SuperMeApp end-user account can never successfully authenticate into an
+ * admin-client session just because its credentials happen to be valid. All other clients
+ * authenticate only against the regular User table.
  */
 @Service
 @RequiredArgsConstructor
@@ -56,10 +47,7 @@ public class AppUserDetailsService implements UserDetailsService {
     private final SupermeUserLookup userLookup;
     private final UserPasswordRepository userPasswordRepository;
     private final LoginAttemptService loginAttemptService;
-    private final AdminRepository adminRepository;
-    private final AdminDevRepository adminDevRepository;
-    private final SupermeUserDevLookup userDevLookup;
-    private final UserPasswordDevRepository userPasswordDevRepository;
+    private final AdminDevRepository adminRepository;
 
     /**
      * A password that no PasswordEncoder can ever match, for the login paths where a password was
@@ -72,15 +60,8 @@ public class AppUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
-        AdminLoginContextFilter.AdminClient adminClient = AdminLoginContextFilter.currentAdminClient();
-        if (adminClient == AdminLoginContextFilter.AdminClient.DEV) {
-            return loadAdminDevByIdentifier(identifier);
-        }
-        if (adminClient == AdminLoginContextFilter.AdminClient.PROD) {
+        if (AdminLoginContextFilter.currentAdminClient() == AdminLoginContextFilter.AdminClient.ADMIN) {
             return loadAdminByIdentifier(identifier);
-        }
-        if (adminClient == AdminLoginContextFilter.AdminClient.APK_DEV) {
-            return loadUserDevByIdentifier(identifier);
         }
 
         Optional<User> user = userLookup.findByIdentifier(identifier);
@@ -96,34 +77,8 @@ public class AppUserDetailsService implements UserDetailsService {
     }
 
     private UserDetails loadAdminByIdentifier(String identifier) {
-        Admin admin = adminRepository.findByEmail(identifier)
+        AdminDev admin = adminRepository.findByEmail(identifier)
                 .or(() -> adminRepository.findByPhone(identifier))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
-
-        String passwordHash = Optional.ofNullable(admin.getPassword())
-                .map(AdminPassword::getHashedPassword)
-                .filter(hash -> hash != null && !hash.isBlank())
-                .orElseThrow(() -> new UsernameNotFoundException("Admin has no password set: " + identifier));
-
-        boolean deleted = Boolean.TRUE.equals(admin.getDeleted());
-        boolean inactive = admin.getStatus() != AdminAccountStatus.ACTIVE;
-        boolean expired = admin.getExpiryDate() != null
-                && admin.getExpiryDate().isBefore(java.time.LocalDateTime.now());
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(identifier)
-                .password(passwordHash)
-                .disabled(deleted || inactive)
-                .accountExpired(expired)
-                .authorities(Set.of(
-                        new SimpleGrantedAuthority("ROLE_" + admin.getRole().name()),
-                        new SimpleGrantedAuthority(AdminLoginContextFilter.ADMIN_ACCOUNT_AUTHORITY)))
-                .build();
-    }
-
-    /** Dev-database counterpart of loadAdminByIdentifier - see class Javadoc. */
-    private UserDetails loadAdminDevByIdentifier(String identifier) {
-        AdminDev admin = adminDevRepository.findByEmail(identifier)
-                .or(() -> adminDevRepository.findByPhone(identifier))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
 
         String passwordHash = Optional.ofNullable(admin.getPassword())
@@ -144,26 +99,6 @@ public class AppUserDetailsService implements UserDetailsService {
                         new SimpleGrantedAuthority("ROLE_" + admin.getRole().name()),
                         new SimpleGrantedAuthority(AdminLoginContextFilter.ADMIN_ACCOUNT_AUTHORITY)))
                 .build();
-    }
-
-    /**
-     * Dev-database counterpart of the default User lookup above, for APK_DEV clients (e.g.
-     * devapk.supermeapp.com) - checks UserDevRepository/superme_db instead of mindfullP1.User, so
-     * identity resolves against the same database devapis.supermeapp.com actually reads/writes.
-     * See UserDevRepository's Javadoc: this reads the same User entity as the default path, just
-     * through a different EntityManagerFactory, so it can reuse toUserDetails() directly. Unlike
-     * the default path there is no admin-table fallback: a dev client authenticating a
-     * non-existent dev user should simply fail, not accidentally resolve against prod admin data.
-     */
-    private UserDetails loadUserDevByIdentifier(String identifier) {
-        User user = userDevLookup.findByIdentifier(identifier)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
-
-        String passwordHash = userPasswordDevRepository.findByUser(user)
-                .map(UserPassword::getPassword)
-                .orElseThrow(() -> new UsernameNotFoundException("User has no password set: " + identifier));
-
-        return toUserDetails(user, identifier, passwordHash);
     }
 
     /**

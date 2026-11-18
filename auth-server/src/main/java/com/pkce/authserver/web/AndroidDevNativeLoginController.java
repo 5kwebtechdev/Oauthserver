@@ -1,10 +1,9 @@
 package com.pkce.authserver.web;
 
-import com.pkce.authserver.security.AdminLoginContextFilter;
-import com.pkce.authserver.service.SupermeUserDevLookup;
+import com.pkce.authserver.service.SupermeUserLookup;
 import com.pkce.authserver.service.TurnstileVerificationService;
 import com.pkce.authserver.superme.model.User;
-import com.pkce.authserver.supermedev.repository.UserPasswordDevRepository;
+import com.pkce.authserver.repository.UserPasswordRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -53,8 +52,8 @@ public class AndroidDevNativeLoginController {
     private static final Set<String> OIDC_SCOPES = Set.of(
             OidcScopes.OPENID, OidcScopes.PROFILE, "notes.read", "notes.write");
 
-    private final SupermeUserDevLookup userLookup;
-    private final UserPasswordDevRepository passwordRepository;
+    private final SupermeUserLookup userLookup;
+    private final UserPasswordRepository passwordRepository;
     private final PasswordEncoder passwordEncoder;
     private final RegisteredClientRepository clients;
     private final OAuth2AuthorizationService authorizations;
@@ -101,12 +100,6 @@ public class AndroidDevNativeLoginController {
         if (user == null || storedHash == null || !passwordEncoder.matches(request.password(), storedHash)
                 || Boolean.TRUE.equals(user.getDeleted()) || !user.isEnabled()) {
             return error(HttpStatus.UNAUTHORIZED, "invalid_credentials", "The credentials are invalid or the account is unavailable.");
-        }
-
-        // This endpoint is native-only. The existing request-context filter maps this explicit
-        // client to the DEV user database; reject any accidental non-DEV context before issuance.
-        if (AdminLoginContextFilter.currentAdminClient() != AdminLoginContextFilter.AdminClient.APK_DEV) {
-            return error(HttpStatus.BAD_REQUEST, "invalid_client", "Android DEV client context is required.");
         }
 
         Authentication principal = org.springframework.security.authentication.UsernamePasswordAuthenticationToken

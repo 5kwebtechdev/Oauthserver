@@ -1,12 +1,12 @@
 package com.pkce.authserver.web;
 
 import com.pkce.authserver.security.AdminLoginContextFilter;
-import com.pkce.authserver.service.SupermeUserDevLookup;
+import com.pkce.authserver.service.SupermeUserLookup;
 import com.pkce.authserver.service.TurnstileVerificationService;
 import com.pkce.authserver.superme.enums.Relationship;
 import com.pkce.authserver.superme.model.User;
 import com.pkce.authserver.superme.model.UserPassword;
-import com.pkce.authserver.supermedev.repository.UserPasswordDevRepository;
+import com.pkce.authserver.repository.UserPasswordRepository;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,8 +39,8 @@ class AndroidDevNativeLoginControllerTest {
     private static final String REDIRECT = "superme://oauth/dev/callback";
     private static final String CHALLENGE = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
-    private SupermeUserDevLookup userLookup;
-    private UserPasswordDevRepository passwords;
+    private SupermeUserLookup userLookup;
+    private UserPasswordRepository passwords;
     private PasswordEncoder encoder;
     private RegisteredClientRepository clients;
     private OAuth2AuthorizationService authorizations;
@@ -51,8 +51,8 @@ class AndroidDevNativeLoginControllerTest {
 
     @BeforeEach
     void setUp() {
-        userLookup = mock(SupermeUserDevLookup.class);
-        passwords = mock(UserPasswordDevRepository.class);
+        userLookup = mock(SupermeUserLookup.class);
+        passwords = mock(UserPasswordRepository.class);
         encoder = mock(PasswordEncoder.class);
         clients = mock(RegisteredClientRepository.class);
         authorizations = mock(OAuth2AuthorizationService.class);

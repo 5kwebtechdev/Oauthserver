@@ -21,38 +21,31 @@ import java.time.Instant;
  * Admin clients only, deliberately. The SuperMeApp end-user flow is untouched: it keeps
  * validating offline with no per-request lookup, so nothing in this class can affect it.
  *
- * Rows live in the ADMIN database, not this server's own: prod admins in mindfullAdmin,
- * devadmin.supermeapp.com in SuperMeBE's dev admin database, chosen per request by the same
- * client-id routing AppUserDetailsService uses (AdminLoginContextFilter). That matters because
- * SuperMeBE reads the row back through its own admin datasource, which points at exactly one of
- * those two - writing to the wrong one would silently never be seen.
+ * Rows live in the single admin database this deployment talks to (see AdminDataSourceConfig),
+ * not this server's own - SuperMeBE reads the row back through its own admin datasource.
  *
- * Plain JdbcTemplate rather than a JPA entity on purpose: the admin EntityManagerFactories run
- * ddl-auto=validate, so mapping an entity here would make this server refuse to start anywhere
- * the table has not been created yet (the AdminDev "missing table" deploy crash, again). Every
- * statement is also failure-tolerant - see the catch blocks - because an audit write must never
- * be what stops an admin from logging in.
+ * Plain JdbcTemplate rather than a JPA entity on purpose: the admin EntityManagerFactory runs
+ * ddl-auto=validate, so mapping an entity here would make this server refuse to start if the
+ * table has not been created yet. Every statement is also failure-tolerant - see the catch
+ * blocks - because an audit write must never be what stops an admin from logging in.
  */
 @Service
 @Slf4j
 public class AdminTokenSessionStore {
 
-    private final JdbcTemplate prodAdmin;
-    private final JdbcTemplate devAdmin;
+    private final JdbcTemplate admin;
     private final String adminClientId;
     private final String adminDevClientId;
 
     public AdminTokenSessionStore(@Qualifier("adminDataSource") DataSource adminDataSource,
-                                  @Qualifier("adminDevDataSource") DataSource adminDevDataSource,
                                   @Value("${app.frontend.admin-client-id:}") String adminClientId,
                                   @Value("${app.frontend.admin-dev-client-id:}") String adminDevClientId) {
-        this.prodAdmin = new JdbcTemplate(adminDataSource);
-        this.devAdmin = new JdbcTemplate(adminDevDataSource);
+        this.admin = new JdbcTemplate(adminDataSource);
         this.adminClientId = adminClientId;
         this.adminDevClientId = adminDevClientId;
     }
 
-    /** True when this client id is one of the two admin panels - nothing else is recorded. */
+    /** True when this client id is one of the admin panels - nothing else is recorded. */
     public boolean isAdminClient(String clientId) {
         return templateFor(clientId) != null;
     }
@@ -60,24 +53,24 @@ public class AdminTokenSessionStore {
     /** Which admin database a client id belongs to, for callers that revoke by client rather than request. */
     public AdminLoginContextFilter.AdminClient adminClientFor(String clientId) {
         if (clientId == null || clientId.isBlank()) return AdminLoginContextFilter.AdminClient.NONE;
-        if (!adminDevClientId.isBlank() && adminDevClientId.equals(clientId)) return AdminLoginContextFilter.AdminClient.DEV;
-        if (!adminClientId.isBlank() && adminClientId.equals(clientId)) return AdminLoginContextFilter.AdminClient.PROD;
+        if ((!adminDevClientId.isBlank() && adminDevClientId.equals(clientId))
+                || (!adminClientId.isBlank() && adminClientId.equals(clientId))) {
+            return AdminLoginContextFilter.AdminClient.ADMIN;
+        }
         return AdminLoginContextFilter.AdminClient.NONE;
     }
 
     private JdbcTemplate templateFor(String clientId) {
         if (clientId == null || clientId.isBlank()) return null;
-        if (!adminDevClientId.isBlank() && adminDevClientId.equals(clientId)) return devAdmin;
-        if (!adminClientId.isBlank() && adminClientId.equals(clientId)) return prodAdmin;
+        if ((!adminDevClientId.isBlank() && adminDevClientId.equals(clientId))
+                || (!adminClientId.isBlank() && adminClientId.equals(clientId))) {
+            return admin;
+        }
         return null;
     }
 
     private JdbcTemplate templateFor(AdminLoginContextFilter.AdminClient client) {
-        return switch (client) {
-            case DEV -> devAdmin;
-            case PROD -> prodAdmin;
-            default -> null;
-        };
+        return client == AdminLoginContextFilter.AdminClient.ADMIN ? admin : null;
     }
 
     /**

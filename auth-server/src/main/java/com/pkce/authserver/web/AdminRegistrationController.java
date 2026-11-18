@@ -1,6 +1,6 @@
 package com.pkce.authserver.web;
 
-import com.pkce.authserver.admin.model.Admin;
+import com.pkce.authserver.admindev.model.AdminDev;
 import com.pkce.authserver.service.AdminRegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ public class AdminRegistrationController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only a super admin can create admin accounts");
         }
 
-        Admin created = adminRegistrationService.createAdmin(request);
+        AdminDev created = adminRegistrationService.createAdmin(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "id", created.getId(),
                 "email", created.getEmail(),

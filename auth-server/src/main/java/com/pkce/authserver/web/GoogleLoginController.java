@@ -57,7 +57,7 @@ public class GoogleLoginController {
         } catch (GoogleLoginService.AccountNotRegisteredException e) {
             GoogleLoginService.GoogleIdentity identity = e.getIdentity();
             if (!hasRegistrationProfile(request)
-                    || AdminLoginContextFilter.currentAdminClient() == AdminLoginContextFilter.AdminClient.APK_DEV) {
+                    || AdminLoginContextFilter.currentAdminClient() == AdminLoginContextFilter.AdminClient.ANDROID_APP) {
                 // Google does not disclose DOB, gender or family role. Ask the FE to collect those
                 // real values before creating a SuperMe account; never invent profile data.
                 Map<String, Object> body = new HashMap<>();

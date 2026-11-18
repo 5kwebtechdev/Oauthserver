@@ -3,8 +3,6 @@ package com.pkce.authserver.service;
 import com.pkce.authserver.config.SupermeProperties;
 import com.pkce.authserver.repository.SupermeUserRepository;
 import com.pkce.authserver.superme.model.User;
-import com.pkce.authserver.security.AdminLoginContextFilter;
-import com.pkce.authserver.supermedev.repository.UserDevRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -39,22 +37,16 @@ public class GoogleLoginService {
     private final GoogleIdentityVerifier googleIdentityVerifier;
     private final SupermeUserRepository userRepository;
     private final SupermeProperties supermeProperties;
-    private final UserDevRepository devUserRepository;
-    private final TransactionTemplate primaryTransaction;
-    private final TransactionTemplate devTransaction;
+    private final TransactionTemplate transaction;
 
     public GoogleLoginService(GoogleIdentityVerifier googleIdentityVerifier,
                               SupermeUserRepository userRepository,
                               SupermeProperties supermeProperties,
-                              UserDevRepository devUserRepository,
-                              @Qualifier("transactionManager") PlatformTransactionManager primaryManager,
-                              @Qualifier("primaryDevTransactionManager") PlatformTransactionManager devManager) {
+                              @Qualifier("transactionManager") PlatformTransactionManager transactionManager) {
         this.googleIdentityVerifier = googleIdentityVerifier;
         this.userRepository = userRepository;
         this.supermeProperties = supermeProperties;
-        this.devUserRepository = devUserRepository;
-        this.primaryTransaction = new TransactionTemplate(primaryManager);
-        this.devTransaction = new TransactionTemplate(devManager);
+        this.transaction = new TransactionTemplate(transactionManager);
     }
 
     /** No account yet - carries the verified Google identity so registration can be pre-filled. */
@@ -89,24 +81,23 @@ public class GoogleLoginService {
 
     public Result verifyAndUpsert(String googleIdToken) {
         Jwt jwt = googleIdentityVerifier.verify(googleIdToken);
-        boolean dev = AdminLoginContextFilter.currentAdminClient() == AdminLoginContextFilter.AdminClient.APK_DEV;
-        return (dev ? devTransaction : primaryTransaction).execute(status -> findVerifiedUser(jwt, dev));
+        return transaction.execute(status -> findVerifiedUser(jwt));
     }
 
-    /** Explicit native DEV path; it never falls back to the production user database. */
+    /** Native Android entry point - same single account database as every other client now. */
     public Result verifyAndUpsertAndroidDev(String googleIdToken, String googleNonce,
                                             String expectedAudience, java.util.Set<String> expectedAuthorizedParties) {
         Jwt jwt = googleIdentityVerifier.verifyAndroidDev(
                 googleIdToken, expectedAudience, expectedAuthorizedParties, googleNonce);
-        return devTransaction.execute(status -> findVerifiedUser(jwt, true));
+        return transaction.execute(status -> findVerifiedUser(jwt));
     }
 
-    private Result findVerifiedUser(Jwt jwt, boolean dev) {
+    private Result findVerifiedUser(Jwt jwt) {
         String email = jwt.getClaimAsString("email");
         String providerId = jwt.getSubject();
 
-        User user = findByProviderId(providerId, dev)
-                .or(() -> dev ? devUserRepository.findByEmail(email) : userRepository.findByEmail(email))
+        User user = findByProviderId(providerId)
+                .or(() -> userRepository.findByEmail(email))
                 .orElseThrow(() -> new AccountNotRegisteredException(new GoogleIdentity(
                         providerId, email, jwt.getClaimAsString("name"), jwt.getClaimAsString("picture"))));
 
@@ -114,7 +105,7 @@ public class GoogleLoginService {
             throw new BadCredentialsException("This account is not active");
         }
 
-        linkProviderIfNeeded(user, providerId, jwt.getClaimAsString("picture"), dev);
+        linkProviderIfNeeded(user, providerId, jwt.getClaimAsString("picture"));
         return new Result(user, false, providerId);
     }
 
@@ -124,10 +115,8 @@ public class GoogleLoginService {
      * soft-deleted, enabled, and with an identifier we can actually log in as; ties break on the
      * lowest id so the same Google account always lands on the same row rather than alternating.
      */
-    private Optional<User> findByProviderId(String providerId, boolean dev) {
-        List<User> matches = dev
-                ? devUserRepository.findByOauth2ProviderIdAndOauth2ProviderType(providerId, PROVIDER_TYPE)
-                : userRepository.findByOauth2ProviderIdAndOauth2ProviderType(providerId, PROVIDER_TYPE);
+    private Optional<User> findByProviderId(String providerId) {
+        List<User> matches = userRepository.findByOauth2ProviderIdAndOauth2ProviderType(providerId, PROVIDER_TYPE);
         if (matches.size() > 1) {
             log.warn("Google provider id {} is linked to {} rows in the shared user table - picking the best usable one",
                     providerId, matches.size());
@@ -151,7 +140,7 @@ public class GoogleLoginService {
         return StringUtils.hasText(user.getPhone()) ? user.getPhone() : null;
     }
 
-    private void linkProviderIfNeeded(User user, String providerId, String pictureUrl, boolean dev) {
+    private void linkProviderIfNeeded(User user, String providerId, String pictureUrl) {
         boolean needsLink = !providerId.equals(user.getOauth2ProviderId())
                 || !PROVIDER_TYPE.equals(user.getOauth2ProviderType())
                 || (StringUtils.hasText(pictureUrl) && !pictureUrl.equals(user.getOauth2AvatarUrl()));
@@ -168,8 +157,7 @@ public class GoogleLoginService {
         if (StringUtils.hasText(pictureUrl)) {
             user.setOauth2AvatarUrl(pictureUrl);
         }
-        if (dev) devUserRepository.save(user);
-        else userRepository.save(user);
+        userRepository.save(user);
         log.info("Linked Google provider id to existing account '{}'", user.getEmail());
     }
 }

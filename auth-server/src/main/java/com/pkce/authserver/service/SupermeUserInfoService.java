@@ -36,7 +36,6 @@ public class SupermeUserInfoService {
             };
 
     private final SupermeUserLookup userLookup;
-    private final SupermeUserDevLookup userDevLookup;
     private final com.pkce.authserver.repository.SupermeCoinTransactionRepository coinTransactionRepository;
     private final ObjectMapper objectMapper;
 
@@ -60,10 +59,7 @@ public class SupermeUserInfoService {
     /**
      * Overrides the DTO's "coins" with SUM(CoinTransaction.amount) for this user - the stored
      * User.coins column can drift out of sync with the real ledger (confirmed on a live account:
-     * stored balance read 502 while the ledger's true net was 597). Only applied on the prod path
-     * (mindfullP1, same datasource this repository reads) - never on userPayloadForDev's dev-user
-     * path, which resolves against a different datasource (superme_db) that this repository does
-     * not read from.
+     * stored balance read 502 while the ledger's true net was 597).
      */
     private Map<String, Object> withComputedCoins(Map<String, Object> payload, com.pkce.authserver.superme.model.User user) {
         if (user == null) {
@@ -72,20 +68,6 @@ public class SupermeUserInfoService {
         int computed = coinTransactionRepository.sumEarnedByUser(user) + coinTransactionRepository.sumSpentByUser(user);
         payload.put("coins", computed);
         return payload;
-    }
-
-    /**
-     * Dev-datasource counterpart, for the /oauth2/token "user" payload of an APK_DEV client (e.g.
-     * devapk.supermeapp.com) - see UserInfoAccessTokenResponseCustomizer, which picks this over
-     * userPayloadFor based on the issuing RegisteredClient's id. Without this, a dev-client login
-     * correctly resolved against superme_db (AppUserDetailsService) would still have its "user"
-     * token payload built from prod's mindfullP1.User, which either returns a different account's
-     * data or - for an identifier that only exists in superme_db - nothing at all, breaking the
-     * Angular app's OIDC login (it requires this payload's "id" to complete sign-in).
-     */
-    @Transactional(readOnly = true)
-    public Optional<Map<String, Object>> userPayloadForDev(String identifier, String authProvider, String socialProviderId) {
-        return buildPayload(userDevLookup.findByIdentifier(identifier), authProvider, socialProviderId);
     }
 
     private Optional<Map<String, Object>> buildPayload(

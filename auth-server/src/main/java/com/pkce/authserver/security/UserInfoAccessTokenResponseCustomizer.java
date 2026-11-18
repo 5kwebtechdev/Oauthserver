@@ -5,7 +5,6 @@ import com.pkce.authserver.service.AdminTokenSessionStore;
 import com.pkce.authserver.service.SupermeUserInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationContext;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -49,11 +48,6 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
     private final SupermeUserInfoService userInfoService;
     private final AdminTokenSessionStore adminTokenSessions;
 
-    @Value("${app.frontend.apk-dev-client-id:}")
-    private String apkDevClientId;
-    @Value("${app.frontend.android-dev-client-id:}")
-    private String androidDevClientId;
-
     @Override
     public void accept(OAuth2AccessTokenAuthenticationContext context) {
         OAuth2AccessTokenAuthenticationToken authResult = context.getAuthentication();
@@ -64,13 +58,6 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
         // authorization_code and refresh_token grants, which is exactly what the admin session
         // audit needs. Admin clients only - recordIssued ignores anything else.
         recordAdminSession(clientId, tokenValue);
-
-        // APK_DEV's User identity lives in SuperMeBE's dev database (superme_db), a genuinely
-        // different physical database from the mindfullP1.User every other client reads - see
-        // SupermeUserInfoService.userPayloadForDev's Javadoc for why this must branch here
-        // rather than always using the prod lookup.
-        boolean isApkDev = (!apkDevClientId.isBlank() && apkDevClientId.equals(clientId))
-                || (!androidDevClientId.isBlank() && androidDevClientId.equals(clientId));
 
         String subject;
         String authProvider;
@@ -87,9 +74,7 @@ public class UserInfoAccessTokenResponseCustomizer implements Consumer<OAuth2Acc
 
         logIssuedTokens(context, authResult, clientId, subject);
 
-        var payload = isApkDev
-                ? userInfoService.userPayloadForDev(subject, authProvider, socialProviderId)
-                : userInfoService.userPayloadFor(subject, authProvider, socialProviderId);
+        var payload = userInfoService.userPayloadFor(subject, authProvider, socialProviderId);
         payload.ifPresentOrElse(
                 userPayload -> {
                     Map<String, Object> merged = new HashMap<>(authResult.getAdditionalParameters());

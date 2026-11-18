@@ -18,7 +18,7 @@ class HandoffLoginClientContextTest {
 
         filter.doFilter(request, new MockHttpServletResponse(), (req, res) ->
                 assertThat(AdminLoginContextFilter.currentAdminClient())
-                        .isEqualTo(AdminLoginContextFilter.AdminClient.APK_DEV));
+                        .isEqualTo(AdminLoginContextFilter.AdminClient.ANDROID_APP));
 
         assertThat(AdminLoginContextFilter.currentAdminClient())
                 .isEqualTo(AdminLoginContextFilter.AdminClient.NONE);

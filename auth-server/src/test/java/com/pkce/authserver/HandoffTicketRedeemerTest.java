@@ -9,9 +9,6 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -24,8 +21,6 @@ class HandoffTicketRedeemerTest {
 
     private EmbeddedDatabase database;
     private JdbcTemplate jdbc;
-    private EmbeddedDatabase devDatabase;
-    private JdbcTemplate devJdbc;
     private HandoffTicketRedeemer redeemer;
 
     @BeforeEach
@@ -33,25 +28,9 @@ class HandoffTicketRedeemerTest {
         database = new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
                 .generateUniqueName(true).build();
         jdbc = new JdbcTemplate(database);
-        devDatabase = new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
-                .generateUniqueName(true).build();
-        devJdbc = new JdbcTemplate(devDatabase);
         // H2-native types; the production table is MySQL (see the deployment DDL), but what is
         // under test here is the claim-once logic, which is plain SQL either way.
         jdbc.execute("""
-                CREATE TABLE app_handoff_ticket (
-                  id IDENTITY PRIMARY KEY,
-                  ticket VARCHAR(64) NOT NULL UNIQUE,
-                  user_id BIGINT NOT NULL,
-                  subject VARCHAR(255) NOT NULL,
-                  issued_at TIMESTAMP NOT NULL,
-                  expires_at TIMESTAMP NOT NULL,
-                  used_at TIMESTAMP NULL,
-                  redeemed_user_agent VARCHAR(512) NULL,
-                  redeemed_ip VARCHAR(64) NULL
-                )
-                """);
-        devJdbc.execute("""
                 CREATE TABLE app_handoff_ticket (
                   id IDENTITY PRIMARY KEY,
                   ticket VARCHAR(64) NOT NULL UNIQUE,
@@ -72,14 +51,12 @@ class HandoffTicketRedeemerTest {
                 + "'java.sql.Timestamp utcNow() { return java.sql.Timestamp.valueOf("
                 + "java.time.LocalDateTime.now(java.time.ZoneOffset.UTC)); }'";
         jdbc.execute(utcAlias);
-        devJdbc.execute(utcAlias);
-        redeemer = new HandoffTicketRedeemer(jdbc, devJdbc, "apk-dev");
+        redeemer = new HandoffTicketRedeemer(jdbc);
     }
 
     @AfterEach
     void shutdownDatabases() {
         database.shutdown();
-        devDatabase.shutdown();
     }
 
     /** Seconds relative to the DATABASE's own UTC clock, matching how production writes these. */
@@ -96,26 +73,6 @@ class HandoffTicketRedeemerTest {
         assertThat(redeemer.redeem("good-ticket")).isEqualTo("user@example.test");
     }
 
-    @Test
-    void devClientRedeemsTicketFromTheDevDatabase() {
-        devJdbc.update("INSERT INTO app_handoff_ticket (ticket, user_id, subject, issued_at, expires_at) VALUES (?,?,?,?,?)",
-                "dev-ticket", 7L, "dev@example.test", Timestamp.from(Instant.now()),
-                Timestamp.from(Instant.now().plusSeconds(60)));
-
-        assertThat(redeemer.redeem("dev-ticket", "apk-dev")).isEqualTo("dev@example.test");
-    }
-
-    @Test
-    void productionClientCannotRedeemDevDatabaseTicket() {
-        devJdbc.update("INSERT INTO app_handoff_ticket (ticket, user_id, subject, issued_at, expires_at) VALUES (?,?,?,?,?)",
-                "dev-only-ticket", 7L, "dev@example.test", Timestamp.from(Instant.now()),
-                Timestamp.from(Instant.now().plusSeconds(60)));
-
-        assertThatThrownBy(() -> redeemer.redeem("dev-only-ticket", "production-client"))
-                .isInstanceOf(HandoffTicketRedeemer.TicketNotRedeemableException.class);
-        assertThat(redeemer.redeem("dev-only-ticket", "apk-dev")).isEqualTo("dev@example.test");
-    }
-
     /**
      * The point of recording the redeeming device is that it is a DIFFERENT device from the one
      * that asked for the pass - that difference is the hand-off, and it is what makes the row
@@ -125,7 +82,7 @@ class HandoffTicketRedeemerTest {
     void redeemingRecordsWhereThePassWasUsed() {
         insert("audited", 60);
 
-        redeemer.redeem("audited", null, "Mozilla/5.0 (Macintosh) Chrome/155", "203.0.113.7");
+        redeemer.redeem("audited", "Mozilla/5.0 (Macintosh) Chrome/155", "203.0.113.7");
 
         var row = jdbc.queryForMap(
                 "SELECT redeemed_user_agent, redeemed_ip, used_at FROM app_handoff_ticket WHERE ticket = ?",
@@ -140,7 +97,7 @@ class HandoffTicketRedeemerTest {
     void anAbsurdlyLongUserAgentIsTruncatedRatherThanFailingTheSignIn() {
         insert("long-ua", 60);
 
-        assertThat(redeemer.redeem("long-ua", null, "x".repeat(5000), "203.0.113.9"))
+        assertThat(redeemer.redeem("long-ua", "x".repeat(5000), "203.0.113.9"))
                 .isEqualTo("user@example.test");
 
         String stored = jdbc.queryForObject(

@@ -1,15 +1,8 @@
 package com.pkce.authserver.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import javax.sql.DataSource;
-
-import java.sql.Timestamp;
-import java.time.Instant;
 
 /**
  * Redeems the one-time pass SuperMeBE issues (see its HandoffTicketService) when a signed-in app
@@ -29,36 +22,9 @@ import java.time.Instant;
 public class HandoffTicketRedeemer {
 
     private final JdbcTemplate jdbcTemplate;
-    private final JdbcTemplate devJdbcTemplate;
-    private final String apkDevClientId;
-    private final String androidDevClientId;
 
-    @Autowired
-    public HandoffTicketRedeemer(JdbcTemplate jdbcTemplate,
-                                 @Qualifier("primaryDevDataSource") DataSource primaryDevDataSource,
-                                 @Value("${app.frontend.apk-dev-client-id:}") String apkDevClientId,
-                                 @Value("${app.frontend.android-dev-client-id:}") String androidDevClientId) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.devJdbcTemplate = new JdbcTemplate(primaryDevDataSource);
-        this.apkDevClientId = apkDevClientId;
-        this.androidDevClientId = androidDevClientId;
-    }
-
-    /** Test/local constructor: both client routes share the same in-memory database. */
     public HandoffTicketRedeemer(JdbcTemplate jdbcTemplate) {
-        this(jdbcTemplate, jdbcTemplate, "", "");
-    }
-
-    public HandoffTicketRedeemer(JdbcTemplate jdbcTemplate, JdbcTemplate devJdbcTemplate, String apkDevClientId) {
-        this(jdbcTemplate, devJdbcTemplate, apkDevClientId, "");
-    }
-
-    public HandoffTicketRedeemer(JdbcTemplate jdbcTemplate, JdbcTemplate devJdbcTemplate,
-                                 String apkDevClientId, String androidDevClientId) {
         this.jdbcTemplate = jdbcTemplate;
-        this.devJdbcTemplate = devJdbcTemplate;
-        this.apkDevClientId = apkDevClientId;
-        this.androidDevClientId = androidDevClientId;
     }
 
     /** Thrown for every rejection - expired, already used, or never existed - with no detail to probe. */
@@ -73,12 +39,7 @@ public class HandoffTicketRedeemer {
      * what SupermeUserLookup resolves accounts by).
      */
     public String redeem(String ticket) {
-        return redeem(ticket, null);
-    }
-
-    /** Routes dev-client tickets to the same dev database where SuperMeBE issued them. */
-    public String redeem(String ticket, String clientId) {
-        return redeem(ticket, clientId, null, null);
+        return redeem(ticket, null, null);
     }
 
     /**
@@ -86,13 +47,8 @@ public class HandoffTicketRedeemer {
      * redeems it are different devices by definition, so holding both ends is what turns the row
      * into a readable hand-off: this account moved from that app to this browser, at this time.
      */
-    public String redeem(String ticket, String clientId, String userAgent, String ipAddress) {
+    public String redeem(String ticket, String userAgent, String ipAddress) {
         if (ticket == null || ticket.isBlank()) throw new TicketNotRedeemableException();
-        boolean androidDevClient = androidDevClientId != null && !androidDevClientId.isBlank()
-                && androidDevClientId.equals(clientId);
-        boolean apkDevClient = apkDevClientId != null && !apkDevClientId.isBlank()
-                && apkDevClientId.equals(clientId);
-        JdbcTemplate tickets = apkDevClient || androidDevClient ? devJdbcTemplate : jdbcTemplate;
 
         // Claim first: only the request that actually flips used_at may proceed.
         //
@@ -101,7 +57,7 @@ public class HandoffTicketRedeemer {
         // Instant sent from here was being compared against a timestamp stored five and a half
         // hours apart - which silently kept 60-second passes usable for hours. UTC_TIMESTAMP()
         // on both sides is the same instant whatever each connection's session zone is.
-        int claimed = tickets.update("""
+        int claimed = jdbcTemplate.update("""
                         UPDATE app_handoff_ticket
                            SET used_at = UTC_TIMESTAMP(),
                                redeemed_user_agent = ?,
@@ -111,7 +67,7 @@ public class HandoffTicketRedeemer {
                 trim(userAgent, 512), trim(ipAddress, 64), ticket);
         if (claimed != 1) throw new TicketNotRedeemableException();
 
-        String subject = tickets.query(
+        String subject = jdbcTemplate.query(
                 "SELECT subject FROM app_handoff_ticket WHERE ticket = ?",
                 rs -> rs.next() ? rs.getString(1) : null,
                 ticket);

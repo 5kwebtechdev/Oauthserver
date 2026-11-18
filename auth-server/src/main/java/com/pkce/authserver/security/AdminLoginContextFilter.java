@@ -13,19 +13,20 @@ import java.io.IOException;
  * Carries "which non-default client (if any) is the pending OAuth authorization for" from the
  * saved authorization request through to AppUserDetailsService, which has no other way to know
  * which client a /login POST is authenticating for - UserDetailsService.loadUserByUsername only
- * receives the identifier, not the HttpServletRequest. Named for its original purpose (admin
- * routing); APK_DEV was added later for the same underlying need, not worth a rename.
+ * receives the identifier, not the HttpServletRequest.
  *
- * What this enables, all in AppUserDetailsService:
- *   - Admin-panel logins (either variant) are restricted to the Admin table only, never falling
- *     back to the shared SuperMeApp User table - without this, someone entering a regular
- *     end-user account's credentials on the admin login page authenticates successfully as that
- *     account, and only fails later, confusingly, on every admin API call.
- *   - devadmin.supermeapp.com logins check the DEV admin database (AdminDevRepository), not prod.
- *   - APK_DEV (e.g. devapk.supermeapp.com) logins check the DEV primary database
- *     (UserDevRepository/superme_db) instead of prod's mindfullP1 - same reasoning as admin-dev:
- *     this one process serves both prod and dev clients, which read genuinely different physical
- *     databases, not just different client ids against the same data.
+ * This deployment talks to exactly one set of databases (superme_db / superme_db_admin - see
+ * PrimaryDataSourceConfig / AdminDataSourceConfig), decided once by the env file, never per
+ * request. What this filter still decides per request is not "which database" but:
+ *   - ADMIN: the pending login is for the admin panel, so AppUserDetailsService must restrict
+ *     itself to the Admin table only, never falling back to the shared SuperMeApp User table -
+ *     without this, someone entering a regular end-user account's credentials on the admin login
+ *     page authenticates successfully as that account, and only fails later, confusingly, on
+ *     every admin API call. Both the prod-admin and dev-admin client ids map here: there is only
+ *     one admin database to check in this deployment.
+ *   - ANDROID_APP: the request is from the native Android client specifically, for the few
+ *     behavioral differences that are about which client is asking rather than which database to
+ *     read (e.g. GoogleLoginController requiring a full profile before auto-registering).
  *
  * ThreadLocal because Spring Security's authentication machinery (DaoAuthenticationProvider ->
  * UserDetailsService) runs on the same request thread with no request-scoped bean plumbed
@@ -37,14 +38,12 @@ public class AdminLoginContextFilter extends OncePerRequestFilter {
     /** Distinguishes principals loaded from an Admin table from app Users with admin-like roles. */
     public static final String ADMIN_ACCOUNT_AUTHORITY = "AUTH_SERVER_ADMIN_ACCOUNT";
 
-    public enum AdminClient { NONE, PROD, DEV, APK_DEV }
+    public enum AdminClient { NONE, ADMIN, ANDROID_APP }
 
     private static final ThreadLocal<AdminClient> ADMIN_CLIENT = new ThreadLocal<>();
 
-    /** Kept for callers that only care whether this is an admin login at all, of either variant. */
     public static boolean isAdminLoginPending() {
-        AdminClient value = currentAdminClient();
-        return value == AdminClient.PROD || value == AdminClient.DEV;
+        return currentAdminClient() == AdminClient.ADMIN;
     }
 
     public static AdminClient currentAdminClient() {
@@ -81,13 +80,10 @@ public class AdminLoginContextFilter extends OncePerRequestFilter {
     }
 
     private AdminClient computeAdminClient(HttpServletRequest request) {
-        // Direct SPA Google, handoff, and post-registration password login can precede
-        // /oauth2/authorize, so no saved request exists yet. These endpoints accept explicit
-        // public client context to select the account database for this login attempt.
+        // Direct SPA Google and handoff login can precede /oauth2/authorize, so no saved request
+        // exists yet. These endpoints accept explicit public client context to identify the client.
         if (("/api/auth/google-login".equals(request.getServletPath())
-                || "/api/auth/handoff-login".equals(request.getServletPath())
-                || "/v1/auth/session-login".equals(request.getServletPath())
-                || "/v1/auth/android-dev/login".equals(request.getServletPath()))
+                || "/api/auth/handoff-login".equals(request.getServletPath()))
                 && request.getParameter("client_id") != null) {
             return clientForId(request.getParameter("client_id"));
         }
@@ -103,10 +99,10 @@ public class AdminLoginContextFilter extends OncePerRequestFilter {
     }
 
     private AdminClient clientForId(String id) {
-        if (!adminDevClientId.isBlank() && adminDevClientId.equals(id)) return AdminClient.DEV;
-        if (!adminClientId.isBlank() && adminClientId.equals(id)) return AdminClient.PROD;
-        if (!apkDevClientId.isBlank() && apkDevClientId.equals(id)) return AdminClient.APK_DEV;
-        if (!androidDevClientId.isBlank() && androidDevClientId.equals(id)) return AdminClient.APK_DEV;
+        if (!adminDevClientId.isBlank() && adminDevClientId.equals(id)) return AdminClient.ADMIN;
+        if (!adminClientId.isBlank() && adminClientId.equals(id)) return AdminClient.ADMIN;
+        if (!apkDevClientId.isBlank() && apkDevClientId.equals(id)) return AdminClient.ANDROID_APP;
+        if (!androidDevClientId.isBlank() && androidDevClientId.equals(id)) return AdminClient.ANDROID_APP;
         return AdminClient.NONE;
     }
 }

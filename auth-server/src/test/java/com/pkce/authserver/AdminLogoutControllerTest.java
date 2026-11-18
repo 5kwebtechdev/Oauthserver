@@ -117,11 +117,11 @@ class AdminLogoutControllerTest {
         RegisteredClient registeredClient = mock(RegisteredClient.class);
         when(registeredClient.getClientId()).thenReturn("supermeadmin-web");
         when(registeredClientRepository.findById("reg-id-1")).thenReturn(registeredClient);
-        when(adminTokenSessions.adminClientFor("supermeadmin-web")).thenReturn(AdminLoginContextFilter.AdminClient.PROD);
+        when(adminTokenSessions.adminClientFor("supermeadmin-web")).thenReturn(AdminLoginContextFilter.AdminClient.ADMIN);
 
         controller.logout("valid-id-token", null, new MockHttpServletRequest());
 
-        verify(adminTokenSessions).revoke(eq(AdminLoginContextFilter.AdminClient.PROD), eq("abc123"), eq("LOGOUT"));
+        verify(adminTokenSessions).revoke(eq(AdminLoginContextFilter.AdminClient.ADMIN), eq("abc123"), eq("LOGOUT"));
         verify(authorizationService).remove(authorization);
     }
 }

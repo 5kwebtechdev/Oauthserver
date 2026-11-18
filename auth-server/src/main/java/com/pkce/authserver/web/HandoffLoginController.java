@@ -52,7 +52,7 @@ public class HandoffLoginController {
                                                             HttpServletResponse httpResponse) {
         String subject;
         try {
-            subject = redeemer.redeem(request.ticket(), clientId,
+            subject = redeemer.redeem(request.ticket(),
                     httpRequest.getHeader("User-Agent"), clientIp(httpRequest));
         } catch (HandoffTicketRedeemer.TicketNotRedeemableException e) {
             // One response for expired, spent and unknown alike - nothing to learn by guessing.

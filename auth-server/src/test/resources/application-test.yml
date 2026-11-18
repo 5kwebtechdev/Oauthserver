@@ -20,31 +20,10 @@ spring:
     password:
   admin:
     datasource:
-      # Separate throwaway H2 schema standing in for mindfullAdmin - create-drop below
-      # builds Admin/AdminPassword straight from the entities, since there is no real
+      # Separate throwaway H2 schema standing in for superme_db_admin - create-drop below
+      # builds AdminDev/AdminPasswordDev straight from the entities, since there is no real
       # admin database to validate against in tests.
       jdbc-url: jdbc:h2:mem:authserver_admin_test;MODE=MySQL;DB_CLOSE_DELAY=-1
-      driver-class-name: org.h2.Driver
-      username: sa
-      password:
-  admin-dev:
-    datasource:
-      # Own throwaway H2 schema too - without this override, application.yml's nested
-      # ${DB_ADMIN_DEV_URL:${DB_ADMIN_URL:...}} default would resolve to a real remote
-      # MySQL URL, and ddl-auto=validate would try to connect to it at test context startup.
-      jdbc-url: jdbc:h2:mem:authserver_admin_dev_test;MODE=MySQL;DB_CLOSE_DELAY=-1
-      driver-class-name: org.h2.Driver
-      username: sa
-      password:
-  primary-dev:
-    datasource:
-      # Points at the SAME H2 schema as the main datasource above (not a separate one like
-      # admin-dev) - UserDev/UserPasswordDev map to the identical "User"/"UserPassword"
-      # tables that db/testmigration already creates for the primary datasource, so a
-      # second throwaway schema would just be an empty duplicate. Without this override,
-      # application.yml's ${DB_PRIMARY_DEV_URL:...} default would try a real remote MySQL
-      # connection at test context startup.
-      jdbc-url: jdbc:h2:mem:authserver_test;MODE=MySQL;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE,USER
       driver-class-name: org.h2.Driver
       username: sa
       password:
@@ -86,13 +65,6 @@ spring:
 app:
   admin-datasource:
     ddl-auto: create-drop
-  admin-dev-datasource:
-    ddl-auto: create-drop
-  primary-dev-datasource:
-    # validate, not create-drop: this schema is shared with the main datasource above,
-    # which already owns creating these tables via Flyway - a second EMF trying
-    # create-drop against the same live schema would fight over DDL ownership.
-    ddl-auto: validate
   security:
     issuer: http://localhost:9000
     token:

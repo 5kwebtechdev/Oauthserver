@@ -4,9 +4,6 @@ import com.pkce.authserver.compat.dto.AuthenticationRequest;
 import com.pkce.authserver.compat.dto.LoginResponse;
 import com.pkce.authserver.compat.dto.UserResponseDto;
 import com.pkce.authserver.repository.UserPasswordRepository;
-import com.pkce.authserver.security.AdminLoginContextFilter;
-import com.pkce.authserver.service.SupermeUserDevLookup;
-import com.pkce.authserver.supermedev.repository.UserPasswordDevRepository;
 import com.pkce.authserver.service.LoginAttemptService;
 import com.pkce.authserver.service.SupermeUserLookup;
 import com.pkce.authserver.service.TokenIssuanceService;
@@ -60,9 +57,7 @@ public class SupermeAuthCompatController {
     private final UserRegistrationService registrationService;
     private final SupermeOtpService otpService;
     private final SupermeUserLookup userLookup;
-    private final SupermeUserDevLookup userDevLookup;
     private final UserPasswordRepository userPasswordRepository;
-    private final UserPasswordDevRepository userPasswordDevRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenIssuanceService tokenIssuanceService;
     private final LoginAttemptService loginAttemptService;
@@ -135,11 +130,7 @@ public class SupermeAuthCompatController {
 
         String identifier = StringUtils.hasText(request.getEmail()) ? request.getEmail() : request.getPhone();
         boolean sessionLogin = httpRequest.getRequestURI().endsWith("/session-login");
-        boolean apkDevSessionLogin = sessionLogin
-                && AdminLoginContextFilter.currentAdminClient() == AdminLoginContextFilter.AdminClient.APK_DEV;
-        User user = (apkDevSessionLogin
-                ? userDevLookup.findByIdentifier(identifier)
-                : userLookup.findByIdentifier(identifier)).orElse(null);
+        User user = userLookup.findByIdentifier(identifier).orElse(null);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found."));
         }
@@ -149,22 +140,15 @@ public class SupermeAuthCompatController {
         // lockout never sees it. Without these three calls the account-level brute-force defence
         // simply would not exist here - and per-IP rate limiting does not substitute for it, since
         // an attacker spreading guesses across addresses is bounded by neither.
-        // Dev and prod databases have independent user ID sequences. Applying the prod
-        // lockout table to a dev user could lock an unrelated production account with the
-        // same numeric ID; dev requests remain covered by the auth server's IP rate limit.
-        if (!apkDevSessionLogin && loginAttemptService.isLocked(Long.valueOf(user.getId()))) {
+        if (loginAttemptService.isLocked(Long.valueOf(user.getId()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "This account is temporarily locked. Please try again later."));
         }
 
-        String storedHash = (apkDevSessionLogin
-                ? userPasswordDevRepository.findByUser(user)
-                : userPasswordRepository.findByUser(user))
+        String storedHash = userPasswordRepository.findByUser(user)
                 .map(UserPassword::getPassword).orElse(null);
         if (storedHash == null || !passwordEncoder.matches(request.getPassword(), storedHash)) {
-            if (!apkDevSessionLogin) {
-                loginAttemptService.recordFailure(Long.valueOf(user.getId()), identifier, httpRequest.getRemoteAddr());
-            }
+            loginAttemptService.recordFailure(Long.valueOf(user.getId()), identifier, httpRequest.getRemoteAddr());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Incorrect password."));
         }
         if (Boolean.TRUE.equals(user.getDeleted())) {
@@ -176,9 +160,7 @@ public class SupermeAuthCompatController {
                     .body(Map.of("message", "This account has been disabled."));
         }
 
-        if (!apkDevSessionLogin) {
-            loginAttemptService.recordSuccess(Long.valueOf(user.getId()));
-        }
+        loginAttemptService.recordSuccess(Long.valueOf(user.getId()));
 
         if (sessionLogin) {
             // Signup already has the new user's credentials. Establish the browser
