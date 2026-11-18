@@ -52,16 +52,16 @@ import java.time.Period;
 @Entity
 @Table(name = "User")
 @SecondaryTables({
-        @SecondaryTable(name = "user_access", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
-        @SecondaryTable(name = "user_activity", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
-        @SecondaryTable(name = "user_auth", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
-        @SecondaryTable(name = "user_streak", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
-        @SecondaryTable(name = "user_onboarding", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
-        @SecondaryTable(name = "user_pet_progress", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
-        @SecondaryTable(name = "user_profile", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
-        @SecondaryTable(name = "user_referrals", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
-        @SecondaryTable(name = "user_ui_state", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
-        @SecondaryTable(name = "user_wallet", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id"))
+        @SecondaryTable(name = "user_access", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "id")),
+        @SecondaryTable(name = "user_activity", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "id")),
+        @SecondaryTable(name = "user_auth", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "id")),
+        @SecondaryTable(name = "user_streak", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "id")),
+        @SecondaryTable(name = "user_onboarding", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "id")),
+        @SecondaryTable(name = "user_pet_progress", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "id")),
+        @SecondaryTable(name = "user_profile", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "id")),
+        @SecondaryTable(name = "user_referrals", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "id")),
+        @SecondaryTable(name = "user_ui_state", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "id")),
+        @SecondaryTable(name = "user_wallet", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "id"))
         // user_module_links exists live but is unused: family_id/avatar_id/pet_id are read from
         // the main User table instead (see the family/avatar/pet fields below).
 })
@@ -75,9 +75,12 @@ public class User {
     // ─────────────────────────────
     // Basic Information
     // ─────────────────────────────
+    // The main User table's PK column is literally "id" (confirmed via SHOW COLUMNS against the
+    // live dev DB) - only the secondary tables below use "user_id" as their own PK/FK column name
+    // referencing back to it.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Column(name = "id")
     private Integer id;
 
     @Column(name = "name", nullable = false, length = 150, table = "user_profile")

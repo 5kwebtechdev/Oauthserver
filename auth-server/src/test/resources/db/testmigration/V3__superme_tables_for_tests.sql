@@ -56,8 +56,10 @@ CREATE TABLE Pet (
     PRIMARY KEY (id)
 );
 
+-- PK is "id", not "user_id" (confirmed via SHOW COLUMNS against the live dev DB) - only the
+-- secondary tables below use "user_id" as their own PK/FK column name referencing back to it.
 CREATE TABLE User (
-    user_id    INT NOT NULL AUTO_INCREMENT,
+    id         INT NOT NULL AUTO_INCREMENT,
     enabled    BOOLEAN NOT NULL DEFAULT TRUE,
     createdDateTime  TIMESTAMP DEFAULT NULL,
     createdByAdminId INT DEFAULT NULL,
@@ -65,7 +67,7 @@ CREATE TABLE User (
     family_id  BIGINT DEFAULT NULL,
     avatar_id  BIGINT DEFAULT NULL,
     pet_id     BIGINT DEFAULT NULL,
-    PRIMARY KEY (user_id)
+    PRIMARY KEY (id)
 );
 
 CREATE TABLE user_profile (
