@@ -68,7 +68,7 @@ public class ForgotPasswordService {
         // A verified-by-email reset is at least as strong a proof of ownership as a correct
         // password - clear any lockout from unrelated failed-password attempts so this is also
         // this account's self-service recovery path, not just a password change.
-        loginAttemptRepository.findById(user.getId()).ifPresent(attempt -> {
+        loginAttemptRepository.findById(user.getId().longValue()).ifPresent(attempt -> {
             attempt.setFailedAttempts(0);
             attempt.setAccountNonLocked(true);
             attempt.setLockedUntil(null);

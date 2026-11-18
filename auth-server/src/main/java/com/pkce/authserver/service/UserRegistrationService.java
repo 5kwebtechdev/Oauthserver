@@ -275,17 +275,17 @@ public class UserRegistrationService {
             LocalDateTime referralCreatedAt = LocalDateTime.now();
             referralRewardRepository.save(ReferralReward.builder()
                     .referrer(referrer)
-                    .referredUserId(savedUser.getId())
+                    .referredUserId(savedUser.getId().longValue())
                     .referredUserName(savedUser.getName())
                     .coins(REFERRAL_BONUS_COINS)
                     .notified(false)
                     .createdAt(referralCreatedAt)
                     .build());
 
-            recordReferralPopupEvent(savedUser.getId(), ReferralPopupEvent.Type.REFERRAL_RECEIVED,
-                    referrer.getId(), referralCreatedAt);
-            recordReferralPopupEvent(referrer.getId(), ReferralPopupEvent.Type.REFERRAL_JOINED,
-                    savedUser.getId(), referralCreatedAt);
+            recordReferralPopupEvent(savedUser.getId().longValue(), ReferralPopupEvent.Type.REFERRAL_RECEIVED,
+                    referrer.getId().longValue(), referralCreatedAt);
+            recordReferralPopupEvent(referrer.getId().longValue(), ReferralPopupEvent.Type.REFERRAL_JOINED,
+                    savedUser.getId().longValue(), referralCreatedAt);
         }
 
         if (request.getFamilyCode() != null && !request.getFamilyCode().isBlank()) {
@@ -345,8 +345,8 @@ public class UserRegistrationService {
         return referrer;
     }
 
-    private void recordReferralPopupEvent(Integer recipientUserId, ReferralPopupEvent.Type type,
-                                          Integer relatedUserId, LocalDateTime createdAt) {
+    private void recordReferralPopupEvent(Long recipientUserId, ReferralPopupEvent.Type type,
+                                          Long relatedUserId, LocalDateTime createdAt) {
         if (referralPopupEventRepository.existsByRecipientUserIdAndTypeAndRelatedUserId(
                 recipientUserId, type, relatedUserId)) {
             return;

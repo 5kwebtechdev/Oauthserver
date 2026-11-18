@@ -152,7 +152,7 @@ public class SupermeAuthCompatController {
         // Dev and prod databases have independent user ID sequences. Applying the prod
         // lockout table to a dev user could lock an unrelated production account with the
         // same numeric ID; dev requests remain covered by the auth server's IP rate limit.
-        if (!apkDevSessionLogin && loginAttemptService.isLocked(user.getId())) {
+        if (!apkDevSessionLogin && loginAttemptService.isLocked(Long.valueOf(user.getId()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "This account is temporarily locked. Please try again later."));
         }
@@ -163,7 +163,7 @@ public class SupermeAuthCompatController {
                 .map(UserPassword::getPassword).orElse(null);
         if (storedHash == null || !passwordEncoder.matches(request.getPassword(), storedHash)) {
             if (!apkDevSessionLogin) {
-                loginAttemptService.recordFailure(user.getId(), identifier, httpRequest.getRemoteAddr());
+                loginAttemptService.recordFailure(Long.valueOf(user.getId()), identifier, httpRequest.getRemoteAddr());
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Incorrect password."));
         }
@@ -177,7 +177,7 @@ public class SupermeAuthCompatController {
         }
 
         if (!apkDevSessionLogin) {
-            loginAttemptService.recordSuccess(user.getId());
+            loginAttemptService.recordSuccess(Long.valueOf(user.getId()));
         }
 
         if (sessionLogin) {

@@ -37,7 +37,7 @@ public class LoginAttemptListener {
         String identifier = event.getAuthentication().getName();
         String ip = remoteAddress(event.getAuthentication());
         userLookup.findByIdentifier(identifier)
-                .ifPresent(user -> loginAttemptService.recordFailure(user.getId(), identifier, ip));
+                .ifPresent(user -> loginAttemptService.recordFailure(Long.valueOf(user.getId()), identifier, ip));
     }
 
     @EventListener
@@ -47,7 +47,7 @@ public class LoginAttemptListener {
             return;
         }
         userLookup.findByIdentifier(event.getAuthentication().getName())
-                .ifPresent(user -> loginAttemptService.recordSuccess(user.getId()));
+                .ifPresent(user -> loginAttemptService.recordSuccess(Long.valueOf(user.getId())));
     }
 
     private String remoteAddress(Authentication authentication) {

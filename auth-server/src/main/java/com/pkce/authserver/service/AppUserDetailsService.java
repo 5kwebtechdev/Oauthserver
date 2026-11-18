@@ -190,7 +190,7 @@ public class AppUserDetailsService implements UserDetailsService {
                 .username(username)
                 .password(password)
                 .disabled(!user.isEnabled() || deleted)
-                .accountLocked(loginAttemptService.isLocked(user.getId()))
+                .accountLocked(loginAttemptService.isLocked(Long.valueOf(user.getId())))
                 .authorities(Set.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())))
                 .build();
     }

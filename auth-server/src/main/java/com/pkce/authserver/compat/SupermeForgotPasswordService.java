@@ -181,7 +181,7 @@ public class SupermeForgotPasswordService {
         // Not in theirs, because they have no lockout: a verified-by-email reset is at least as
         // strong a proof of ownership as a correct password, so it doubles as the recovery path out
         // of a lockout this server applied (see LoginAttempt).
-        loginAttemptRepository.findById(user.getId()).ifPresent(attempt -> {
+        loginAttemptRepository.findById(user.getId().longValue()).ifPresent(attempt -> {
             attempt.setFailedAttempts(0);
             attempt.setAccountNonLocked(true);
             attempt.setLockedUntil(null);

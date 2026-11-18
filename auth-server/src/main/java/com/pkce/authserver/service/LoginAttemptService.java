@@ -36,7 +36,7 @@ public class LoginAttemptService {
      * by a scheduled job - the next lookup after the lock runs out is what unlocks it.
      */
     @Transactional
-    public boolean isLocked(Integer userId) {
+    public boolean isLocked(Long userId) {
         Optional<LoginAttempt> found = loginAttemptRepository.findById(userId);
         if (found.isEmpty()) {
             return false;
@@ -57,7 +57,7 @@ public class LoginAttemptService {
 
     /** Counts a wrong password and locks the account once the configured threshold is reached. */
     @Transactional
-    public void recordFailure(Integer userId, String identifier, String ip) {
+    public void recordFailure(Long userId, String identifier, String ip) {
         LoginAttempt attempt = loginAttemptRepository.findById(userId)
                 .orElseGet(() -> new LoginAttempt(userId));
 
@@ -84,7 +84,7 @@ public class LoginAttemptService {
 
     /** Clears the counter after a correct password, so a lockout needs consecutive failures. */
     @Transactional
-    public void recordSuccess(Integer userId) {
+    public void recordSuccess(Long userId) {
         loginAttemptRepository.findById(userId).ifPresent(attempt -> {
             if (attempt.getFailedAttempts() > 0 || !attempt.isAccountNonLocked()) {
                 attempt.setFailedAttempts(0);

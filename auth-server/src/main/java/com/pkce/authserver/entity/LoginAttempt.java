@@ -27,9 +27,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class LoginAttempt {
 
+    // This table's own user_id column is BIGINT on disk - it predates, and is independent of,
+    // SuperMeBE's User PK type. SuperMeBE's User.id moving to Integer in the schema migration
+    // does not change this table's column type, so this stays Long.
     @Id
     @Column(name = "user_id")
-    private Integer userId;
+    private Long userId;
 
     @Column(name = "failed_attempts", nullable = false)
     private int failedAttempts = 0;
@@ -41,7 +44,7 @@ public class LoginAttempt {
     @Column(name = "locked_until")
     private LocalDateTime lockedUntil;
 
-    public LoginAttempt(Integer userId) {
+    public LoginAttempt(Long userId) {
         this.userId = userId;
     }
 }

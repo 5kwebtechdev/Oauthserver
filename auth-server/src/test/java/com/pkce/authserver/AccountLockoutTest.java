@@ -62,7 +62,7 @@ class AccountLockoutTest {
     }
 
     private LoginAttempt attemptStateOf(User user) {
-        return loginAttemptRepository.findById(user.getId()).orElseThrow();
+        return loginAttemptRepository.findById(user.getId().longValue()).orElseThrow();
     }
 
     private void attemptLogin(HttpClient http, String identifier, String password) throws Exception {
@@ -158,7 +158,7 @@ class AccountLockoutTest {
         String password = "RealPassword123!";
         User user = seedUser(password);
 
-        LoginAttempt locked = new LoginAttempt(user.getId());
+        LoginAttempt locked = new LoginAttempt(user.getId().longValue());
         locked.setAccountNonLocked(false);
         locked.setFailedAttempts(3);
         locked.setLockedUntil(LocalDateTime.now().minusMinutes(1)); // already expired
