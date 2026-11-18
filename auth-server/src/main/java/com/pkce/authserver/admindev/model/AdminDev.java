@@ -39,9 +39,11 @@ import java.time.LocalDateTime;
 @Setter
 public class AdminDev {
 
+    // superme_db_admin's Admin.id is INT UNSIGNED, not BIGINT (confirmed via information_schema
+    // against the live dev admin DB) - unlike prod's mindfullAdmin.Admin, which stays BIGINT.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     private String fullName;
     private String email;

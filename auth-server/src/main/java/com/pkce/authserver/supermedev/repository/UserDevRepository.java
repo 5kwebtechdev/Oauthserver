@@ -15,7 +15,7 @@ import java.util.List;
  * onboardingStep, ...) that UserInfoAccessTokenResponseCustomizer's "user" token payload needs -
  * a slim duplicate entity (the earlier approach here) could only support login, not that payload.
  */
-public interface UserDevRepository extends JpaRepository<User, Long> {
+public interface UserDevRepository extends JpaRepository<User, Integer> {
 
     List<User> findByOauth2ProviderIdAndOauth2ProviderType(String providerId, String providerType);
 
