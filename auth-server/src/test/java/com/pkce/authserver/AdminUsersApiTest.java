@@ -116,7 +116,7 @@ class AdminUsersApiTest {
 
         boolean seededPresent = false;
         for (JsonNode user : body.get("users")) {
-            if (seeded.getId().equals(user.get("id").asLong())) {
+            if (seeded.getId().equals(user.get("id").asInt())) {
                 seededPresent = true;
                 // No OAuth provider linked, so the derived provider reads as LOCAL.
                 assertThat(user.get("authProvider").asText()).isEqualTo("LOCAL");

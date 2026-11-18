@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
  * in this server's /oauth2/token "user" payload matches the ledger instead of the stored
  * User.coins column, which can drift out of sync with it.
  */
-public interface SupermeCoinTransactionRepository extends JpaRepository<CoinTransaction, Long> {
+public interface SupermeCoinTransactionRepository extends JpaRepository<CoinTransaction, Integer> {
 
     @Query("SELECT COALESCE(SUM(ct.amount), 0) FROM CoinTransaction ct WHERE ct.user = :user AND ct.amount > 0")
     int sumEarnedByUser(@Param("user") User user);

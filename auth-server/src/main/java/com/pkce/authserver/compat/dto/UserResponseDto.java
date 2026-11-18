@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @Builder
 public class UserResponseDto {
 
-    private Long id;
+    private Integer id;
     private String name;
     private String username;
     private String email;

@@ -43,7 +43,7 @@ class GoogleClientRoutingTest {
                 .subject("google-sub").claim("email", "same@example.test").build());
     }
 
-    private User account(long id) {
+    private User account(int id) {
         var user = new User();
         user.setId(id);
         user.setEmail("same@example.test");

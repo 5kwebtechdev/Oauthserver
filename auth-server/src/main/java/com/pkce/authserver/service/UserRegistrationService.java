@@ -4,7 +4,6 @@ import com.pkce.authserver.config.SupermeProperties;
 import com.pkce.authserver.entity.ReferralPopupEvent;
 import com.pkce.authserver.entity.ReferralReward;
 import com.pkce.authserver.repository.AvatarRepository;
-import com.pkce.authserver.repository.CoinTransactionRepository;
 import com.pkce.authserver.repository.FamilyMemberRepository;
 import com.pkce.authserver.repository.FamilyRepository;
 import com.pkce.authserver.repository.PetRepository;
@@ -77,7 +76,7 @@ public class UserRegistrationService {
     private final FamilyMemberRepository familyMemberRepository;
     private final AvatarRepository avatarRepository;
     private final PetRepository petRepository;
-    private final CoinTransactionRepository coinTransactionRepository;
+    private final CoinTransactionWriter coinTransactionWriter;
     private final ReferralRewardRepository referralRewardRepository;
     private final ReferralPopupEventRepository referralPopupEventRepository;
     private final PasswordEncoder passwordEncoder;
@@ -290,7 +289,7 @@ public class UserRegistrationService {
         }
 
         if (request.getFamilyCode() != null && !request.getFamilyCode().isBlank()) {
-            Long registeredUserId = savedUser.getId();
+            Integer registeredUserId = savedUser.getId();
             familyRepository.findByFamilyCode(request.getFamilyCode()).ifPresent(existedFamily -> {
                 if (existedFamily.getCreatedBy() == null) {
                     existedFamily.setCreatedBy(registeredUserId);
@@ -346,8 +345,8 @@ public class UserRegistrationService {
         return referrer;
     }
 
-    private void recordReferralPopupEvent(Long recipientUserId, ReferralPopupEvent.Type type,
-                                          Long relatedUserId, LocalDateTime createdAt) {
+    private void recordReferralPopupEvent(Integer recipientUserId, ReferralPopupEvent.Type type,
+                                          Integer relatedUserId, LocalDateTime createdAt) {
         if (referralPopupEventRepository.existsByRecipientUserIdAndTypeAndRelatedUserId(
                 recipientUserId, type, relatedUserId)) {
             return;
@@ -422,7 +421,7 @@ public class UserRegistrationService {
         throw new RegistrationException("Invalid relationship type provided.");
     }
 
-    private Family createFamily(String familyName, String familyCode, Long createdBy) {
+    private Family createFamily(String familyName, String familyCode, Integer createdBy) {
         Family family = new Family();
         family.setFamilyName(familyName);
         family.setFamilyCode(familyCode);
@@ -461,7 +460,7 @@ public class UserRegistrationService {
     }
 
     private void recordCoins(User user, int amount, String type, String description) {
-        coinTransactionRepository.save(CoinTransaction.builder()
+        coinTransactionWriter.save(CoinTransaction.builder()
                 .user(user)
                 .amount(amount)
                 .type(type)

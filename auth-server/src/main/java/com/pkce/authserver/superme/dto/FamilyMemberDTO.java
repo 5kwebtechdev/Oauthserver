@@ -12,8 +12,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FamilyMemberDTO {
-    private Long id;
-    private Long userId;
+    private Integer id;
+    private Integer userId;
     private String name;
     private Relationship relationship;
     private LocalDate dateOfBirth;

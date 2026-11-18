@@ -29,7 +29,7 @@ public class LoginAttempt {
 
     @Id
     @Column(name = "user_id")
-    private Long userId;
+    private Integer userId;
 
     @Column(name = "failed_attempts", nullable = false)
     private int failedAttempts = 0;
@@ -41,7 +41,7 @@ public class LoginAttempt {
     @Column(name = "locked_until")
     private LocalDateTime lockedUntil;
 
-    public LoginAttempt(Long userId) {
+    public LoginAttempt(Integer userId) {
         this.userId = userId;
     }
 }

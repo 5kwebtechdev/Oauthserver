@@ -1,6 +1,8 @@
 package com.pkce.authserver.superme.model;
 
+import com.pkce.authserver.superme.converter.UserGenderIdConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,7 +12,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Copied verbatim from SuperMeBE (com.superme.model.Pet). Maps the existing mindfullP1 table. */
+/** Copied from SuperMeBE (com.superme.model.Pet). gender now resolves through the gender master table. */
 @Entity
 @Data
 @NoArgsConstructor
@@ -20,13 +22,16 @@ public class Pet {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "pet_id")
+    private Integer id;
 
-    @Column(nullable = false)
+    @Column(name = "petName", nullable = false, length = 100)
     private String petName;
 
-    @Column(nullable = true)
+    @Convert(converter = UserGenderIdConverter.class)
+    @Column(name = "gender_id")
     private String gender;
 
+    @Column(name = "url", length = 255)
     private String url;
 }

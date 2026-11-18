@@ -229,7 +229,7 @@ class PkceAuthorizationFlowTest {
                 "redirect_uri", PUBLIC_REDIRECT_URI, "code_verifier", verifier,
                 "code", parseQuery(location).get("code")), null);
         assertThat(tokens.get("__status").asInt()).isEqualTo(200);
-        assertThat(tokens.get("user").get("id").asLong()).isEqualTo(testUser.getId());
+        assertThat(tokens.get("user").get("id").asInt()).isEqualTo(testUser.getId());
     }
 
     @Test

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * show different fields, such as the authProvider derived below.
  */
 public record AdminUserResponse(
-        Long id,
+        Integer id,
         String name,
         String username,
         String email,

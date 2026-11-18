@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ReferralPopupEventRepository extends JpaRepository<ReferralPopupEvent, Long> {
 
     boolean existsByRecipientUserIdAndTypeAndRelatedUserId(
-            Long recipientUserId, ReferralPopupEvent.Type type, Long relatedUserId);
+            Integer recipientUserId, ReferralPopupEvent.Type type, Integer relatedUserId);
 }

@@ -33,12 +33,13 @@ public class Family {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "family_id")
+    private Integer id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "familyCode", nullable = false, unique = true, length = 8)
     private String familyCode;
 
-    @Column(nullable = false)
+    @Column(name = "familyName", nullable = false, length = 150)
     private String familyName;
 
     @OneToMany(mappedBy = "family", cascade = CascadeType.ALL)
@@ -48,10 +49,10 @@ public class Family {
     @Transient
     private String joinToken;
 
-    @Column(nullable = true)
-    private Long createdBy;
+    @Column(name = "createdBy", nullable = true)
+    private Integer createdBy;
 
-    @Column(nullable = false)
+    @Column(name = "createdAt", nullable = false)
     private LocalDate createdAt;
 
     public static String generateFamilyName(String mainUserName) {

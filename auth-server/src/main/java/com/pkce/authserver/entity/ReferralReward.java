@@ -35,7 +35,7 @@ public class ReferralReward {
     private User referrer;
 
     @Column(name = "referred_user_id")
-    private Long referredUserId;
+    private Integer referredUserId;
 
     @Column(name = "referred_user_name")
     private String referredUserName;

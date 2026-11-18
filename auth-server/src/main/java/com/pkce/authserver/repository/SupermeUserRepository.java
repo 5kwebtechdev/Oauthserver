@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 /** Reads SuperMeBE's live mindfullP1.User table. See SupermeUserLookup for how logins resolve an identifier. */
-public interface SupermeUserRepository extends JpaRepository<User, Long> {
+public interface SupermeUserRepository extends JpaRepository<User, Integer> {
 
     Optional<User> findByEmail(String email);
 

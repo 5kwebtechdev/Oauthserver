@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface FamilyMemberRepository extends JpaRepository<FamilyMember, Long> {
+public interface FamilyMemberRepository extends JpaRepository<FamilyMember, Integer> {
 
     /**
      * Backs SuperMeBE's two-children / two-parents-per-family limits. The relationship lives on
