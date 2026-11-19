@@ -57,7 +57,7 @@ CREATE TABLE Pet (
 );
 
 CREATE TABLE User (
-    id                     INT          NOT NULL AUTO_INCREMENT,
+    user_id                INT          NOT NULL AUTO_INCREMENT,
     name                   VARCHAR(255) NOT NULL,
     username               VARCHAR(255) DEFAULT NULL,
     email                  VARCHAR(255) DEFAULT NULL,
@@ -120,7 +120,7 @@ CREATE TABLE User (
     oauth2_provider_id     VARCHAR(255) DEFAULT NULL,
     oauth2_provider_type   VARCHAR(255) DEFAULT NULL,
     oauth2_avatar_url      VARCHAR(255) DEFAULT NULL,
-    PRIMARY KEY (id),
+    PRIMARY KEY (user_id),
     UNIQUE (username),
     UNIQUE (email),
     UNIQUE (phone),

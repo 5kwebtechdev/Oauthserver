@@ -177,7 +177,7 @@ class GoogleLoginFlowTest {
         // Legacy ENUM value still present in the live column that User.getAgeGroup() canonicalizes
         // to AGE_18_TO_29 on read - this previously made Hibernate fail before it could finish
         // finding the account by email.
-        jdbcTemplate.update("UPDATE User SET ageGroup = ? WHERE id = ?", "AGE_18_TO_24", seeded.getId());
+        jdbcTemplate.update("UPDATE User SET ageGroup = ? WHERE user_id = ?", "AGE_18_TO_24", seeded.getId());
         when(googleIdTokenDecoder.decode(anyString())).thenReturn(googleJwt(email));
 
         HttpClient http = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();
