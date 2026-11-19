@@ -28,7 +28,8 @@ public class UserPassword {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "user_password_id")
+    private Integer id;
 
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)

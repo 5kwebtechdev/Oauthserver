@@ -28,7 +28,7 @@
 -- (calendarEvents, coinHistory, rewards, badges, notes) that own no column on User at all.
 
 CREATE TABLE Family (
-    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    id          INT          NOT NULL AUTO_INCREMENT,
     familyCode  VARCHAR(255) NOT NULL,
     familyName  VARCHAR(255) NOT NULL,
     createdBy   BIGINT       DEFAULT NULL,
@@ -128,10 +128,10 @@ CREATE TABLE User (
 );
 
 CREATE TABLE UserPassword (
-    id       BIGINT       NOT NULL AUTO_INCREMENT,
-    user_id  INT          DEFAULT NULL,
-    password VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id),
+    user_password_id INT          NOT NULL AUTO_INCREMENT,
+    user_id           INT          DEFAULT NULL,
+    password          VARCHAR(255) NOT NULL,
+    PRIMARY KEY (user_password_id),
     UNIQUE (user_id)
 );
 
