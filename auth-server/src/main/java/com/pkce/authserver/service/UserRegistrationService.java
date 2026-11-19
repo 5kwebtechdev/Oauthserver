@@ -12,6 +12,7 @@ import com.pkce.authserver.repository.ReferralRewardRepository;
 import com.pkce.authserver.repository.SupermeUserRepository;
 import com.pkce.authserver.repository.UserPasswordRepository;
 import com.pkce.authserver.superme.dto.RegisterRequest;
+import com.pkce.authserver.superme.enums.AgeGroup;
 import com.pkce.authserver.superme.enums.Relationship;
 import com.pkce.authserver.superme.model.Avatar;
 import com.pkce.authserver.superme.model.CoinTransaction;
@@ -24,14 +25,17 @@ import com.pkce.authserver.superme.util.AvatarNameGenerator;
 import com.pkce.authserver.superme.util.FamilyCodeGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -81,6 +85,7 @@ public class UserRegistrationService {
     private final ReferralPopupEventRepository referralPopupEventRepository;
     private final PasswordEncoder passwordEncoder;
     private final SupermeProperties supermeProperties;
+    private final JdbcTemplate jdbcTemplate;
 
     /** Thrown for every rejection a caller can fix, mapped to 400 by RegisterController. */
     public static class RegistrationException extends RuntimeException {
@@ -210,6 +215,7 @@ public class UserRegistrationService {
         User referrer = applyReferralToNewUser(request, user);
 
         User savedUser = userRepository.save(user);
+        syncUserProfile(savedUser);
 
         if (referrer != null) {
             recordCoins(savedUser, REFERRAL_BONUS_COINS, "REFERRAL_BONUS",
@@ -508,5 +514,34 @@ public class UserRegistrationService {
         } catch (IllegalArgumentException e) {
             throw new RegistrationException("Invalid relationship type provided.");
         }
+    }
+
+    // SuperMeBE's new schema (master_genders/master_relationships/master_age_groups) resolves
+    // these via fixed IDs matching the seeded rows (see UserGenderIdConverter/
+    // UserRelationshipIdConverter/UserAgeGroupIdConverter in com.superme.converter). user_profile
+    // is a secondary table on SuperMeBE's User entity but this server's User.java deliberately
+    // stays flat (see its class comment), so a signup here must write user_profile itself or
+    // SuperMeBE's reads (which only look at user_profile) see this account as having no
+    // gender/relationship/age group at all.
+    private static final Map<String, Integer> GENDER_MASTER_IDS = Map.of(
+            "male", 1, "female", 2, "other", 3, "all", 4, "prefer_not_to_say", 5);
+    private static final Map<Relationship, Integer> RELATIONSHIP_MASTER_IDS = Map.of(
+            Relationship.CHILD, 1, Relationship.PARENT, 2, Relationship.SELF, 3);
+    private static final Map<AgeGroup, Integer> AGE_GROUP_MASTER_IDS = Map.of(
+            AgeGroup.BELOW_11, 1, AgeGroup.AGE_11_TO_13, 2, AgeGroup.AGE_14_TO_15, 3,
+            AgeGroup.AGE_16_TO_17, 4, AgeGroup.AGE_18_TO_29, 5, AgeGroup.AGE_30_PLUS, 6);
+
+    private void syncUserProfile(User user) {
+        Integer genderId = GENDER_MASTER_IDS.get(user.getGender());
+        Integer relationshipId = RELATIONSHIP_MASTER_IDS.get(user.getRelationship());
+        Integer ageGroupId = AGE_GROUP_MASTER_IDS.get(user.getAgeGroup());
+        jdbcTemplate.update(
+                "INSERT INTO user_profile (user_id, age, age_group_id, dateOfBirth, email, gender_id, name, phone, relationship_id, username, dobChanged) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0) "
+                        + "ON DUPLICATE KEY UPDATE age=VALUES(age), age_group_id=VALUES(age_group_id), dateOfBirth=VALUES(dateOfBirth), "
+                        + "email=VALUES(email), gender_id=VALUES(gender_id), name=VALUES(name), phone=VALUES(phone), "
+                        + "relationship_id=VALUES(relationship_id), username=VALUES(username)",
+                user.getId(), user.getAge(), ageGroupId, Date.valueOf(user.getDateOfBirth()), user.getEmail(),
+                genderId, user.getName(), user.getPhone(), relationshipId, user.getUsername());
     }
 }
