@@ -33,7 +33,7 @@ public class Family {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "familyCode", nullable = false, unique = true, length = 8)
     private String familyCode;
