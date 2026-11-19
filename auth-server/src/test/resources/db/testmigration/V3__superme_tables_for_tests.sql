@@ -174,3 +174,13 @@ CREATE TABLE user_profile (
     dobChanged      BOOLEAN      NOT NULL DEFAULT FALSE,
     PRIMARY KEY (user_id)
 );
+
+-- referralCode/usedReferralCode moved here off the flat User columns the same way as user_profile.
+CREATE TABLE user_referrals (
+    user_id           INT         NOT NULL,
+    referralCode      VARCHAR(8)  DEFAULT NULL,
+    joinedWithReferral BOOLEAN    NOT NULL DEFAULT FALSE,
+    referralCount     INT         NOT NULL DEFAULT 0,
+    usedReferralCode  VARCHAR(8)  DEFAULT NULL,
+    PRIMARY KEY (user_id)
+);
