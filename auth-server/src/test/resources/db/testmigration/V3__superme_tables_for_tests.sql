@@ -155,3 +155,22 @@ CREATE TABLE CoinTransaction (
     timestamp   TIMESTAMP    NOT NULL,
     PRIMARY KEY (id)
 );
+
+-- New-schema secondary table that mirrors gender/relationship/age-group/name/username/email/
+-- phone/dateOfBirth off master_* lookup tables. SuperMeBE's User entity reads these fields through
+-- this table (not the flat User columns above), so UserRegistrationService.syncUserProfile writes
+-- it directly on every signup. Only the columns that write touches.
+CREATE TABLE user_profile (
+    user_id         INT          NOT NULL,
+    age             INT          DEFAULT NULL,
+    age_group_id    INT          DEFAULT NULL,
+    dateOfBirth     DATE         NOT NULL,
+    email           VARCHAR(255) DEFAULT NULL,
+    gender_id       INT          DEFAULT NULL,
+    name            VARCHAR(255) NOT NULL,
+    phone           VARCHAR(255) DEFAULT NULL,
+    relationship_id INT          DEFAULT NULL,
+    username        VARCHAR(255) DEFAULT NULL,
+    dobChanged      BOOLEAN      NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (user_id)
+);
