@@ -120,7 +120,7 @@ class RegistrationFlowTest {
 
         User saved = userRepository.findByEmail(email).orElseThrow();
         assertThat(saved.getName()).isEqualTo("Otp Person");
-        assertThat(saved.getGender()).isEqualTo("FEMALE");
+        assertThat(saved.getGender()).isEqualTo("female");
         assertThat(saved.getRelationship()).isEqualTo(Relationship.SELF);
         assertThat(saved.isEmailVerified()).isTrue();
         // Their arithmetic: no pet -> step 5, and the 10-coin signup bonus.
