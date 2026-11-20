@@ -28,14 +28,15 @@ public class ReferralReward {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "referral_reward_id")
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "referrer_id", nullable = false)
     private User referrer;
 
     @Column(name = "referred_user_id")
-    private Long referredUserId;
+    private Integer referredUserId;
 
     @Column(name = "referred_user_name")
     private String referredUserName;

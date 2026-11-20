@@ -281,7 +281,7 @@ public class UserRegistrationService {
             LocalDateTime referralCreatedAt = LocalDateTime.now();
             referralRewardRepository.save(ReferralReward.builder()
                     .referrer(referrer)
-                    .referredUserId(savedUser.getId().longValue())
+                    .referredUserId(savedUser.getId())
                     .referredUserName(savedUser.getName())
                     .coins(REFERRAL_BONUS_COINS)
                     .notified(false)
