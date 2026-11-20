@@ -41,14 +41,14 @@ public class ReferralPopupEvent {
     private String eventId;
 
     @Column(name = "recipient_user_id", nullable = false)
-    private Long recipientUserId;
+    private Integer recipientUserId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 32)
     private Type type;
 
     @Column(name = "related_user_id", nullable = false)
-    private Long relatedUserId;
+    private Integer relatedUserId;
 
     @Column(name = "amount", nullable = false)
     private int amount;
