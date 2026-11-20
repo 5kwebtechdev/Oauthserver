@@ -34,7 +34,8 @@ public class ReferralPopupEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "referral_popup_event_id")
+    private Integer id;
 
     @Column(name = "event_id", nullable = false, unique = true, length = 36)
     private String eventId;
