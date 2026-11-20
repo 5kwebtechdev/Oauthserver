@@ -8,9 +8,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -19,15 +22,14 @@ import java.time.LocalDateTime;
  * SuperMeBE's coin ledger (com.superme.model.CoinTransaction), carried over because registration
  * writes to it: a signup bonus of 10 coins, 500 for a PARENT, and 100 on each side of a referral.
  *
- * Confirmed via SHOW COLUMNS against the live dev DB: type/description are still real, NOT NULL
- * columns on this table (SuperMeBE's own newer model treats them as derived-only and resolves a
- * coin_transaction_reason_id instead, but that migration was never actually applied to this
- * table's `type`/`description` columns - they're still required and still the source of truth
- * here). coin_transaction_reason_id does exist but is nullable, so it's left unset.
- *
- * Only the columns this server's registration flow fills are mapped - their version also has
- * habit/task associations plus article/lesson/course/challenge/admin-action columns, all of which
- * belong to features this server has nothing to do with and all of which are nullable.
+ * type/description are @Transient here, mirroring SuperMeBE's own current model: both DBs this
+ * server runs against (superme_db and superapp_db) resolve a transaction's label through
+ * coin_transaction_reason_id instead - superapp_db dropped the flat type/description columns
+ * entirely (NOT NULL FK there), while superme_db kept them only as unused legacy columns nothing
+ * reads back (SuperMeBE's own CoinTransactionWriter stopped writing them for the same reason).
+ * CoinTransactionWriter resolves/creates the MasterCoinTransactionTypes + CoinTransactionReason
+ * rows and sets coinTransactionReasonId before saving, exactly like SuperMeBE's version; the
+ * getters below just let existing callers keep reading getType()/getDescription() after a reload.
  */
 @Entity
 @Data
@@ -48,12 +50,30 @@ public class CoinTransaction {
     @Column(nullable = false)
     private int amount; // Positive for earning, negative for spending
 
-    @Column(nullable = false)
+    @Transient
+    @Getter(AccessLevel.NONE)
     private String type; // e.g. "FIRST_SIGNUP_BONUS", "REGISTRATION_BONUS", "REFERRAL_BONUS"
 
-    @Column(nullable = false)
+    @Transient
+    @Getter(AccessLevel.NONE)
     private String description;
+
+    @Column(name = "coin_transaction_reason_id")
+    private Integer coinTransactionReasonId;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "coin_transaction_reason_id", insertable = false, updatable = false)
+    private CoinTransactionReason reasonRef;
 
     @Column(nullable = false)
     private LocalDateTime timestamp; // Time of the transaction
+
+    public String getType() {
+        return type != null ? type
+                : reasonRef == null || reasonRef.getTypeRef() == null ? null : reasonRef.getTypeRef().getValue();
+    }
+
+    public String getDescription() {
+        return description != null ? description : reasonRef == null ? null : reasonRef.getDescription();
+    }
 }

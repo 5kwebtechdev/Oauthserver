@@ -17,8 +17,9 @@
 -- Avatar, Pet, Family, FamilyMember, and CoinTransaction are all still their original flat shape -
 -- gender/relationship/role/ageGroup are still plain columns directly on User (not resolved
 -- through any master-reference table), avatar_id/family_id/pet_id/createdByAdminId are still
--- plain columns on User itself, and CoinTransaction's type/description are still real, required
--- columns. The only schema change from the original mapping is every table's own PK: BIGINT ->
+-- plain columns on User itself. CoinTransaction's type/description are resolved through
+-- coin_transaction_reason_id now (see CoinTransactionWriter), not real columns. The only other
+-- schema change from the original mapping is every table's own PK: BIGINT ->
 -- INT UNSIGNED for User, unchanged (still BIGINT) for the others. The new user_*/user_module_links
 -- tables exist live but nothing in this server's Java maps to them, so they are not recreated here.
 --
@@ -142,13 +143,28 @@ CREATE TABLE FamilyMember (
 -- article/lesson/course/challenge/admin-action columns, all nullable and all belonging to features
 -- this server has nothing to do with.
 CREATE TABLE CoinTransaction (
-    coin_transaction_id INT          NOT NULL AUTO_INCREMENT,
-    user_id              INT          NOT NULL,
-    amount                INT          NOT NULL,
-    type                  VARCHAR(255) NOT NULL,
-    description           VARCHAR(255) NOT NULL,
-    timestamp             TIMESTAMP    NOT NULL,
+    coin_transaction_id      INT       NOT NULL AUTO_INCREMENT,
+    user_id                  INT       NOT NULL,
+    amount                   INT       NOT NULL,
+    coin_transaction_reason_id INT     DEFAULT NULL,
+    timestamp                TIMESTAMP NOT NULL,
     PRIMARY KEY (coin_transaction_id)
+);
+
+-- Lookup tables CoinTransaction's reason resolves through (see CoinTransactionWriter) - both
+-- master_coin_transaction_types and coin_transaction_reason exist live on both superme_db and
+-- superapp_db.
+CREATE TABLE master_coin_transaction_types (
+    type_id INT          NOT NULL AUTO_INCREMENT,
+    value   VARCHAR(64)  NOT NULL,
+    PRIMARY KEY (type_id)
+);
+
+CREATE TABLE coin_transaction_reason (
+    coin_transaction_reason_id INT          NOT NULL AUTO_INCREMENT,
+    type_id                    INT          DEFAULT NULL,
+    description                VARCHAR(255) NOT NULL,
+    PRIMARY KEY (coin_transaction_reason_id)
 );
 
 -- role_id lives here, not on User itself (same split as relationship_id/age_group_id on
