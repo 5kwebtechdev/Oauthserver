@@ -146,7 +146,7 @@ CREATE TABLE CoinTransaction (
     coin_transaction_id      INT       NOT NULL AUTO_INCREMENT,
     user_id                  INT       NOT NULL,
     amount                   INT       NOT NULL,
-    coin_transaction_reason_id SMALLINT DEFAULT NULL,
+    coin_transaction_reason_id INT     DEFAULT NULL,
     timestamp                TIMESTAMP NOT NULL,
     PRIMARY KEY (coin_transaction_id)
 );
@@ -161,7 +161,7 @@ CREATE TABLE master_coin_transaction_types (
 );
 
 CREATE TABLE coin_transaction_reason (
-    coin_transaction_reason_id SMALLINT     NOT NULL AUTO_INCREMENT,
+    coin_transaction_reason_id INT          NOT NULL AUTO_INCREMENT,
     type_id                    TINYINT      DEFAULT NULL,
     description                VARCHAR(255) NOT NULL,
     PRIMARY KEY (coin_transaction_reason_id)

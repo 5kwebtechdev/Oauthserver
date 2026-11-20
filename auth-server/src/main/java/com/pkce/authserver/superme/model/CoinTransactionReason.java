@@ -21,11 +21,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CoinTransactionReason {
 
-    // SMALLINT UNSIGNED on the live table, not INT like SuperMeBE's own (unvalidated) declaration.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "coin_transaction_reason_id", nullable = false)
-    private Short coinTransactionReasonId;
+    private Integer coinTransactionReasonId;
 
     // TINYINT UNSIGNED on the live table, matching MasterCoinTransactionTypes.typeId.
     @Column(name = "type_id")
