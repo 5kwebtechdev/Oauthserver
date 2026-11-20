@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +29,11 @@ public class Avatar {
     @Column(nullable = false, unique = true, length = 100)
     private String avatarName;
 
-    @Column
+    // Dead flat column on superme_db (already replaced by gender_id there) and gone entirely on
+    // superapp_db's Avatar (gender_id with a FK is the only form it takes now) - never read back
+    // anywhere in this codebase, so @Transient keeps the one write site harmless on both schemas
+    // instead of breaking strict validation against whichever DB doesn't have the column.
+    @Transient
     private String gender;
 
     private String url;
