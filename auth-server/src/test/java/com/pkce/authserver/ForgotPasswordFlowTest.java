@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -48,6 +49,9 @@ class ForgotPasswordFlowTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @MockBean
     private EmailService emailService;
 
@@ -61,7 +65,7 @@ class ForgotPasswordFlowTest {
 
     private User seedUser(String email) {
         return SupermeUserFixture.saveWithPassword(
-                userRepository, userPasswordRepository, passwordEncoder, email, "OldPassword123!");
+                userRepository, userPasswordRepository, passwordEncoder, jdbcTemplate, email, "OldPassword123!");
     }
 
     private String storedHashOf(User user) {

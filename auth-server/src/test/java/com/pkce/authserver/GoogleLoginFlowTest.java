@@ -149,7 +149,7 @@ class GoogleLoginFlowTest {
         String email = "existing-google-" + System.nanoTime() + "@example.com";
         // No password row: a social-login-only account, which is the common case for this flow and
         // must not be a blocker (131 of the live accounts have no UserPassword at all).
-        User seeded = SupermeUserFixture.saveWithoutPassword(userRepository, email);
+        User seeded = SupermeUserFixture.saveWithoutPassword(userRepository, jdbcTemplate, email);
         when(googleIdTokenDecoder.decode(anyString())).thenReturn(googleJwt(email));
 
         HttpClient http = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();
@@ -205,11 +205,13 @@ class GoogleLoginFlowTest {
         first.setOauth2ProviderId(sharedSub);
         first.setOauth2ProviderType("GOOGLE");
         first = userRepository.save(first);
+        SupermeUserFixture.syncProfile(jdbcTemplate, first);
 
         User second = SupermeUserFixture.user(emailB);
         second.setOauth2ProviderId(sharedSub);
         second.setOauth2ProviderType("GOOGLE");
-        userRepository.save(second);
+        second = userRepository.save(second);
+        SupermeUserFixture.syncProfile(jdbcTemplate, second);
 
         Jwt jwt = Jwt.withTokenValue("fake-google-token")
                 .header("alg", "RS256")
@@ -245,7 +247,8 @@ class GoogleLoginFlowTest {
         phoneOnly.setPhone(phone);
         phoneOnly.setOauth2ProviderId(sub);
         phoneOnly.setOauth2ProviderType("GOOGLE");
-        userRepository.save(phoneOnly);
+        phoneOnly = userRepository.save(phoneOnly);
+        SupermeUserFixture.syncProfile(jdbcTemplate, phoneOnly);
 
         Jwt jwt = Jwt.withTokenValue("fake-google-token")
                 .header("alg", "RS256")
@@ -273,7 +276,8 @@ class GoogleLoginFlowTest {
         String email = "deleted-google-" + System.nanoTime() + "@example.com";
         User user = SupermeUserFixture.user(email);
         user.setDeleted(true);
-        userRepository.save(user);
+        user = userRepository.save(user);
+        SupermeUserFixture.syncProfile(jdbcTemplate, user);
         when(googleIdTokenDecoder.decode(anyString())).thenReturn(googleJwt(email));
 
         HttpClient http = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();
@@ -283,7 +287,7 @@ class GoogleLoginFlowTest {
     @Test
     void googleLogin_resumesOriginalAuthorizeRequest() throws Exception {
         String email = "resume-" + System.nanoTime() + "@example.com";
-        SupermeUserFixture.saveWithoutPassword(userRepository, email);
+        SupermeUserFixture.saveWithoutPassword(userRepository, jdbcTemplate, email);
         when(googleIdTokenDecoder.decode(anyString())).thenReturn(googleJwt(email));
 
         HttpClient http = HttpClient.newBuilder()
@@ -331,7 +335,7 @@ class GoogleLoginFlowTest {
     @Test
     void existingGoogleAdminUser_issuedTokenCarriesRoleAdmin() throws Exception {
         String email = "google-admin-" + System.nanoTime() + "@example.com";
-        SupermeUserFixture.saveWithPassword(userRepository, userPasswordRepository, passwordEncoder,
+        SupermeUserFixture.saveWithPassword(userRepository, userPasswordRepository, passwordEncoder, jdbcTemplate,
                 email, null, "unused-password", Role.ADMIN);
 
         when(googleIdTokenDecoder.decode(anyString())).thenReturn(googleJwt(email));

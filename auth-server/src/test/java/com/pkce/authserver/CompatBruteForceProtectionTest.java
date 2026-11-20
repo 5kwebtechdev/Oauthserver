@@ -49,6 +49,9 @@ class CompatBruteForceProtectionTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @MockBean
     private EmailService emailService;
 
@@ -106,7 +109,7 @@ class CompatBruteForceProtectionTest {
         doNothing().when(emailService).sendHtmlMail(anyString(), anyString(), anyString());
         String email = "bf-reset-" + System.nanoTime() + "@yopmail.com";
         SupermeUserFixture.saveWithPassword(
-                userRepository, userPasswordRepository, passwordEncoder, email, "OldPassword1");
+                userRepository, userPasswordRepository, passwordEncoder, jdbcTemplate, email, "OldPassword1");
 
         post("/v1/auth/forgot-password", "{\"email\":\"" + email + "\"}");
         String realOtp = captureOtp("Reset Your Password - SuperMe");
@@ -144,7 +147,7 @@ class CompatBruteForceProtectionTest {
     void compatLogin_locksTheAccountAfterRepeatedWrongPasswords() throws Exception {
         String email = "bf-login-" + System.nanoTime() + "@yopmail.com";
         SupermeUserFixture.saveWithPassword(
-                userRepository, userPasswordRepository, passwordEncoder, email, "RealPassword1");
+                userRepository, userPasswordRepository, passwordEncoder, jdbcTemplate, email, "RealPassword1");
 
         for (int i = 0; i < 3; i++) {
             HttpResponse<String> wrong = post("/v1/auth/login",

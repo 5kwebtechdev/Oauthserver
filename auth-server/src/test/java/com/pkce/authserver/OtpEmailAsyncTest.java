@@ -9,6 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -46,6 +47,9 @@ class OtpEmailAsyncTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @MockBean
     private JavaMailSender mailSender;
 
@@ -53,7 +57,7 @@ class OtpEmailAsyncTest {
     void slowFailingMailSend_doesNotBlockOrFail_theHttpResponse() throws Exception {
         String email = "async-fp-" + System.nanoTime() + "@example.com";
         SupermeUserFixture.saveWithPassword(
-                userRepository, userPasswordRepository, passwordEncoder, email, "OldPassword123!");
+                userRepository, userPasswordRepository, passwordEncoder, jdbcTemplate, email, "OldPassword123!");
 
         // Simulates a slow, ultimately-failing SMTP round trip - well longer than any
         // reasonable HTTP response time, so the assertion below only passes if the send

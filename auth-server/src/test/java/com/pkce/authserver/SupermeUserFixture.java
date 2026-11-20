@@ -45,14 +45,16 @@ public final class SupermeUserFixture {
     public static User saveWithPassword(SupermeUserRepository users,
                                         UserPasswordRepository passwords,
                                         PasswordEncoder encoder,
+                                        JdbcTemplate jdbcTemplate,
                                         String email,
                                         String rawPassword) {
-        return saveWithPassword(users, passwords, encoder, email, null, rawPassword, Role.USER);
+        return saveWithPassword(users, passwords, encoder, jdbcTemplate, email, null, rawPassword, Role.USER);
     }
 
     public static User saveWithPassword(SupermeUserRepository users,
                                         UserPasswordRepository passwords,
                                         PasswordEncoder encoder,
+                                        JdbcTemplate jdbcTemplate,
                                         String email,
                                         String phone,
                                         String rawPassword,
@@ -61,6 +63,12 @@ public final class SupermeUserFixture {
         user.setPhone(phone);
         user.setRole(role);
         User saved = users.save(user);
+        // email/phone/username/dateOfBirth/relationship/age/ageGroup all live on user_profile,
+        // read through User.profileRef (see its comment) - no save() path writes them, so
+        // findByEmail/findByPhone/findByUsername (which join through that association) won't
+        // find this user at all without this, exactly like real registrations get via
+        // UserRegistrationService.syncUserProfile.
+        syncProfile(jdbcTemplate, saved);
         passwords.save(UserPassword.builder()
                 .user(saved)
                 .password(encoder.encode(rawPassword))
@@ -69,8 +77,10 @@ public final class SupermeUserFixture {
     }
 
     /** Saves a user with no UserPassword row - the state 131 of the live accounts are in. */
-    public static User saveWithoutPassword(SupermeUserRepository users, String email) {
-        return users.save(user(email));
+    public static User saveWithoutPassword(SupermeUserRepository users, JdbcTemplate jdbcTemplate, String email) {
+        User saved = users.save(user(email));
+        syncProfile(jdbcTemplate, saved);
+        return saved;
     }
 
     /**

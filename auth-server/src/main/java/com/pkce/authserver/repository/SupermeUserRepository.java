@@ -8,50 +8,31 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-/** Reads SuperMeBE's live mindfullP1.User table. See SupermeUserLookup for how logins resolve an identifier. */
+/** Reads SuperMeBE's live superapp_db.User table. See SupermeUserLookup for how logins resolve an identifier. */
 public interface SupermeUserRepository extends JpaRepository<User, Integer> {
 
-    // email/phone/username moved off the flat User columns onto user_profile when SuperMeBE's own
-    // app adopted the new schema (see UserRegistrationService.syncUserProfile); a signup made since
-    // then has these fields set ONLY on user_profile, with User's own columns left null. Every
-    // legacy row that still has the flat column also has the matching (or newer) user_profile value
-    // (verified against the live data before this change), so COALESCE(profile, flat) is a strict
-    // superset of the old derived-query behavior - it still matches a row that, for whatever reason,
-    // only ever had the flat column (e.g. a user_profile-less fixture in a test).
-    // Entity-returning native queries must also join user_access/user_module_links: User maps
-    // role_id/avatar_id/pet_id from those secondary tables, and Hibernate needs every mapped
-    // column present in the result set to hydrate the entity, even from a native query.
-    @Query(value = "SELECT u.*, ua.role_id, uml.avatar_id, uml.pet_id FROM User u " +
-            "LEFT JOIN user_profile up ON up.user_id = u.user_id " +
-            "LEFT JOIN user_access ua ON ua.user_id = u.user_id " +
-            "LEFT JOIN user_module_links uml ON uml.user_id = u.user_id " +
-            "WHERE COALESCE(up.email, u.email) = :email", nativeQuery = true)
+    // email/phone/username live on user_profile only, read through User.profileRef (see its
+    // comment for why that's a lazy association rather than a @SecondaryTable column). JPQL,
+    // not native SQL: navigating an association in the WHERE clause lets Hibernate generate its
+    // own correct join/select, instead of a hand-written native query needing to list - and keep
+    // in sync - every column of every secondary table User still maps (role_id, last_active_time,
+    // the user_auth/user_streak/user_onboarding/user_referrals/user_wallet columns, ...) just to
+    // hydrate the entity, which a native query's result set would otherwise be missing.
+    @Query("SELECT u FROM User u WHERE u.profileRef.email = :email")
     Optional<User> findByEmail(@Param("email") String email);
 
-    @Query(value = "SELECT u.*, ua.role_id, uml.avatar_id, uml.pet_id FROM User u " +
-            "LEFT JOIN user_profile up ON up.user_id = u.user_id " +
-            "LEFT JOIN user_access ua ON ua.user_id = u.user_id " +
-            "LEFT JOIN user_module_links uml ON uml.user_id = u.user_id " +
-            "WHERE COALESCE(up.phone, u.phone) = :phone", nativeQuery = true)
+    @Query("SELECT u FROM User u WHERE u.profileRef.phone = :phone")
     Optional<User> findByPhone(@Param("phone") String phone);
 
-    @Query(value = "SELECT u.*, ua.role_id, uml.avatar_id, uml.pet_id FROM User u " +
-            "LEFT JOIN user_profile up ON up.user_id = u.user_id " +
-            "LEFT JOIN user_access ua ON ua.user_id = u.user_id " +
-            "LEFT JOIN user_module_links uml ON uml.user_id = u.user_id " +
-            "WHERE COALESCE(up.username, u.username) = :username", nativeQuery = true)
+    @Query("SELECT u FROM User u WHERE u.profileRef.username = :username")
     Optional<User> findByUsername(@Param("username") String username);
 
-    @Query(value = "SELECT COUNT(*) > 0 FROM User u LEFT JOIN user_profile up ON up.user_id = u.user_id WHERE COALESCE(up.username, u.username) = :username", nativeQuery = true)
+    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.profileRef.username = :username")
     boolean existsByUsername(@Param("username") String username);
 
-    // referralCode/usedReferralCode moved to user_referrals the same way.
-    @Query(value = "SELECT u.*, ua.role_id, uml.avatar_id, uml.pet_id FROM User u " +
-            "LEFT JOIN user_referrals ur ON ur.user_id = u.user_id " +
-            "LEFT JOIN user_access ua ON ua.user_id = u.user_id " +
-            "LEFT JOIN user_module_links uml ON uml.user_id = u.user_id " +
-            "WHERE UPPER(COALESCE(ur.referralCode, u.referralCode)) = UPPER(:referralCode)", nativeQuery = true)
-    Optional<User> findByReferralCodeIgnoreCase(@Param("referralCode") String referralCode);
+    // referralCode/usedReferralCode are real (non-Transient) columns on user_referrals, so this
+    // is a normal derived/JPQL path - unlike email/phone/username above, no association needed.
+    Optional<User> findByReferralCodeIgnoreCase(String referralCode);
 
     /**
      * Returns a List, not an Optional, because these two columns carry no unique constraint and the

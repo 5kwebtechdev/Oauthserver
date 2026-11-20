@@ -53,12 +53,15 @@ class AccountLockoutTest {
     @Autowired
     private SecurityEventRepository securityEventRepository;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     private static final Pattern CSRF_PATTERN = Pattern.compile("name=\"_csrf\"[^>]*value=\"([^\"]+)\"");
 
     private User seedUser(String correctPassword) {
         String email = "lockout-" + System.nanoTime() + "@example.com";
         return SupermeUserFixture.saveWithPassword(
-                userRepository, userPasswordRepository, passwordEncoder, email, correctPassword);
+                userRepository, userPasswordRepository, passwordEncoder, jdbcTemplate, email, correctPassword);
     }
 
     private LoginAttempt attemptStateOf(User user) {
@@ -177,7 +180,7 @@ class AccountLockoutTest {
         String password = "RealPassword123!";
         String email = "phone-login-" + System.nanoTime() + "@example.com";
         String phone = "+91 98765" + (10000 + (int) (System.nanoTime() % 80000));
-        SupermeUserFixture.saveWithPassword(userRepository, userPasswordRepository, passwordEncoder,
+        SupermeUserFixture.saveWithPassword(userRepository, userPasswordRepository, passwordEncoder, jdbcTemplate,
                 email, phone, password, com.pkce.authserver.superme.enums.Role.USER);
 
         HttpClient http = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();
@@ -187,7 +190,7 @@ class AccountLockoutTest {
     @Test
     void userWithoutPasswordRow_cannotLogIn() throws Exception {
         String email = "nopassword-" + System.nanoTime() + "@example.com";
-        SupermeUserFixture.saveWithoutPassword(userRepository, email);
+        SupermeUserFixture.saveWithoutPassword(userRepository, jdbcTemplate, email);
 
         HttpClient http = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();
         assertThat(redirectedToSuccess(http, email, "AnyPassword123!")).isFalse();

@@ -48,6 +48,9 @@ class AdminUsersApiTest {
     @Autowired
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private String signToken(String subject, String... roles) throws Exception {
@@ -100,7 +103,7 @@ class AdminUsersApiTest {
     void adminRole_seesPagedUserList() throws Exception {
         String email = "admin-list-" + System.nanoTime() + "@example.com";
         User seeded = SupermeUserFixture.saveWithPassword(
-                userRepository, userPasswordRepository, passwordEncoder, email, "Password123!");
+                userRepository, userPasswordRepository, passwordEncoder, jdbcTemplate, email, "Password123!");
 
         String token = signToken("admin", "ROLE_ADMIN");
         HttpResponse<String> resp = callUsersApi(token);

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.net.URI;
@@ -42,6 +43,9 @@ class SupermeCompatApiTest {
 
     @Autowired
     private SupermeUserRepository userRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @MockBean
     private EmailService emailService;
@@ -190,7 +194,8 @@ class SupermeCompatApiTest {
         String nationalPhone = "9" + String.format("%09d", Math.floorMod(System.nanoTime(), 1_000_000_000L));
         User existing = SupermeUserFixture.user("phone-owner-" + System.nanoTime() + "@example.com");
         existing.setPhone("+91" + nationalPhone);
-        userRepository.save(existing);
+        existing = userRepository.save(existing);
+        SupermeUserFixture.syncProfile(jdbcTemplate, existing);
 
         HttpResponse<String> phoneCheck = get("/v1/auth/check/alreadyRegistered?identifier="
                 + nationalPhone + "&countryCode=%2B91");
@@ -213,7 +218,8 @@ class SupermeCompatApiTest {
     @Test
     void sendOtp_forAnAddressThatAlreadyHasAnAccount_isRefused() throws Exception {
         String email = "compat-taken-" + System.nanoTime() + "@yopmail.com";
-        userRepository.save(SupermeUserFixture.user(email));
+        User taken = userRepository.save(SupermeUserFixture.user(email));
+        SupermeUserFixture.syncProfile(jdbcTemplate, taken);
 
         HttpResponse<String> resp = post("/v1/api/auth/send-otp", "{\"email\":\"" + email + "\"}");
         assertThat(resp.statusCode()).isEqualTo(400);

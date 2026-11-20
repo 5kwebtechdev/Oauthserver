@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -47,6 +48,9 @@ class SupermeForgotPasswordCompatTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @MockBean
     private EmailService emailService;
 
@@ -62,7 +66,7 @@ class SupermeForgotPasswordCompatTest {
 
     private User seedUser(String email, String password) {
         return SupermeUserFixture.saveWithPassword(
-                userRepository, userPasswordRepository, passwordEncoder, email, password);
+                userRepository, userPasswordRepository, passwordEncoder, jdbcTemplate, email, password);
     }
 
     /** Runs step 1 and returns both the code and the HTML body it was sent in. */

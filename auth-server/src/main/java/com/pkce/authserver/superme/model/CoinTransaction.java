@@ -58,8 +58,9 @@ public class CoinTransaction {
     @Getter(AccessLevel.NONE)
     private String description;
 
+    // SMALLINT UNSIGNED on the live table, matching CoinTransactionReason.coinTransactionReasonId.
     @Column(name = "coin_transaction_reason_id")
-    private Integer coinTransactionReasonId;
+    private Short coinTransactionReasonId;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "coin_transaction_reason_id", insertable = false, updatable = false)

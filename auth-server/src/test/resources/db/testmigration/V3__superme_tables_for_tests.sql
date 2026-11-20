@@ -13,20 +13,18 @@
 -- quoting would make the name case-sensitive and stop it matching the entity, which has no
 -- explicit @Table beyond "User" and so refers to the table unquoted.
 --
--- Confirmed via SHOW COLUMNS/information_schema against the live dev DB: User, UserPassword,
--- Avatar, Pet, Family, FamilyMember, and CoinTransaction are all still their original flat shape -
--- gender/relationship/role/ageGroup are still plain columns directly on User (not resolved
--- through any master-reference table), avatar_id/family_id/pet_id/createdByAdminId are still
--- plain columns on User itself. CoinTransaction's type/description are resolved through
--- coin_transaction_reason_id now (see CoinTransactionWriter), not real columns. The only other
--- schema change from the original mapping is every table's own PK: BIGINT ->
--- INT UNSIGNED for User, unchanged (still BIGINT) for the others. The new user_*/user_module_links
--- tables exist live but nothing in this server's Java maps to them, so they are not recreated here.
---
--- Only the columns the ported entities actually map are present. The real User table has many more
--- columns across all its features; the entity maps all of its scalar columns the login/
--- registration path needs, so the difference is just the five mappedBy collections
--- (calendarEvents, coinHistory, rewards, badges, notes) that own no column on User at all.
+-- Confirmed via SHOW COLUMNS against superapp_db: User itself only carries five columns
+-- (user_id, createdDateTime, enabled, deleted, createdByAdminId) - everything else (name/email/
+-- phone/gender/dateOfBirth/relationship/age/ageGroup on user_profile; role on user_access;
+-- avatar_id/pet_id/family_id on user_module_links; isLoggedIn/emailVerified/lastLoginDate/
+-- usernameChanged/oauth2_* on user_auth; coins/lifetimeCoinsEarned/lastDailyBonusDate on
+-- user_wallet; currentStreak/highestStreak/freeStreakRestoresUsed/lastMissedStreak* on
+-- user_streak; onboardingStep/as_child/moodInitialized on user_onboarding;
+-- dailyActivityStreak/learningActivityStreak/totalActiveDays/lastStreakDate/learningStreak/
+-- lastLearningDate/activityStreak/lastActivityDate/last_active_time on user_activity;
+-- referralCode/usedReferralCode/referralCount/joinedWithReferral on user_referrals) lives on a
+-- secondary table, exactly matching com.superme.model.User's own @SecondaryTables layout.
+-- Avatar/Pet/Family/FamilyMember/CoinTransaction are unaffected by that split.
 
 CREATE TABLE Family (
     family_id   INT          NOT NULL AUTO_INCREMENT,
@@ -59,68 +57,11 @@ CREATE TABLE Pet (
 
 CREATE TABLE User (
     user_id                INT          NOT NULL AUTO_INCREMENT,
-    name                   VARCHAR(255) NOT NULL,
-    username               VARCHAR(255) DEFAULT NULL,
-    email                  VARCHAR(255) DEFAULT NULL,
-    phone                  VARCHAR(255) DEFAULT NULL,
-    gender                 VARCHAR(255) NOT NULL,
-    dateOfBirth            DATE         NOT NULL,
-    dobChanged             BOOLEAN      NOT NULL DEFAULT FALSE,
-    usernameChanged        BOOLEAN      NOT NULL DEFAULT FALSE,
-    deleted                BOOLEAN      DEFAULT NULL,
-    as_child               BOOLEAN      DEFAULT NULL,
-    enabled                BOOLEAN      NOT NULL DEFAULT TRUE,
-    isLoggedIn             BOOLEAN      NOT NULL DEFAULT FALSE,
-    emailVerified          BOOLEAN      NOT NULL DEFAULT FALSE,
-    onboardingStep         INT          NOT NULL DEFAULT 1,
-    emailVerificationToken VARCHAR(255) DEFAULT NULL,
-    lastLoginDate          TIMESTAMP    DEFAULT NULL,
-    last_active_time       TIMESTAMP    DEFAULT NULL,
     createdDateTime        TIMESTAMP    DEFAULT NULL,
-    createdByAdminId       BIGINT       DEFAULT NULL,
-    referralCode           VARCHAR(255) DEFAULT NULL,
-    usedReferralCode       VARCHAR(255) DEFAULT NULL,
-    referralCount          INT          NOT NULL DEFAULT 0,
-    joinedWithReferral     BOOLEAN      NOT NULL DEFAULT FALSE,
-    coins                  INT          NOT NULL DEFAULT 0,
-    lifetimeCoinsEarned    INT          NOT NULL DEFAULT 0,
-    currentStreak          INT          NOT NULL DEFAULT 0,
-    highestStreak          INT          NOT NULL DEFAULT 0,
-    age                    INT          NOT NULL DEFAULT 0,
-    family_id              INT          DEFAULT NULL,
-    dailyActivityStreak    INT          NOT NULL DEFAULT 0,
-    learningActivityStreak INT          NOT NULL DEFAULT 0,
-    lastDailyBonusDate     DATE         DEFAULT NULL,
-    lastStreakDate         DATE         DEFAULT NULL,
-    totalActiveDays        INT          NOT NULL DEFAULT 0,
-    lastMissedStreakDate   DATE         DEFAULT NULL,
-    lastMissedStreakAt     TIMESTAMP    DEFAULT NULL,
-    lastStreakCount        INT          DEFAULT NULL,
-    freeStreakRestoresUsed INT          NOT NULL DEFAULT 0,
-    petAgeStage                  INT     NOT NULL DEFAULT 1,
-    petActivityCount              DOUBLE  NOT NULL DEFAULT 0,
-    petTaskCompletionCount        INT     NOT NULL DEFAULT 0,
-    petHabitCompletionCount       INT     NOT NULL DEFAULT 0,
-    petQuizCompletionCount        INT     NOT NULL DEFAULT 0,
-    petPuzzleCompletionCount      INT     NOT NULL DEFAULT 0,
-    petArticleCompletionCount     INT     NOT NULL DEFAULT 0,
-    petLessonCompletionCount      INT     NOT NULL DEFAULT 0,
-    bonusCoinOverlayDismissed     BOOLEAN NOT NULL DEFAULT FALSE,
-    lastDailyLoginOverlayDate     DATE    DEFAULT NULL,
-    lastStreakMilestoneCelebrated INT     NOT NULL DEFAULT 0,
-    moodInitialized               BOOLEAN NOT NULL DEFAULT FALSE,
-    learningStreak         INT          NOT NULL DEFAULT 0,
-    lastLearningDate       DATE         DEFAULT NULL,
-    activityStreak         INT          NOT NULL DEFAULT 0,
-    lastActivityDate       DATE         DEFAULT NULL,
-    oauth2_provider_id     VARCHAR(255) DEFAULT NULL,
-    oauth2_provider_type   VARCHAR(255) DEFAULT NULL,
-    oauth2_avatar_url      VARCHAR(255) DEFAULT NULL,
-    PRIMARY KEY (user_id),
-    UNIQUE (username),
-    UNIQUE (email),
-    UNIQUE (phone),
-    UNIQUE (emailVerificationToken)
+    enabled                BOOLEAN      NOT NULL DEFAULT TRUE,
+    deleted                BOOLEAN      DEFAULT NULL,
+    createdByAdminId       TINYINT      DEFAULT NULL,
+    PRIMARY KEY (user_id)
 );
 
 CREATE TABLE UserPassword (
@@ -146,7 +87,7 @@ CREATE TABLE CoinTransaction (
     coin_transaction_id      INT       NOT NULL AUTO_INCREMENT,
     user_id                  INT       NOT NULL,
     amount                   INT       NOT NULL,
-    coin_transaction_reason_id INT     DEFAULT NULL,
+    coin_transaction_reason_id SMALLINT DEFAULT NULL,
     timestamp                TIMESTAMP NOT NULL,
     PRIMARY KEY (coin_transaction_id)
 );
@@ -161,21 +102,21 @@ CREATE TABLE master_coin_transaction_types (
 );
 
 CREATE TABLE coin_transaction_reason (
-    coin_transaction_reason_id INT          NOT NULL AUTO_INCREMENT,
+    coin_transaction_reason_id SMALLINT     NOT NULL AUTO_INCREMENT,
     type_id                    TINYINT      DEFAULT NULL,
     description                VARCHAR(255) NOT NULL,
     PRIMARY KEY (coin_transaction_reason_id)
 );
 
 -- role_id lives here, not on User itself (same split as relationship_id/age_group_id on
--- user_profile below).
+-- user_profile below). TINYINT, matching superapp_db's role_id.
 CREATE TABLE user_access (
-    user_id INT NOT NULL,
-    role_id INT DEFAULT NULL,
+    user_id INT     NOT NULL,
+    role_id TINYINT DEFAULT NULL,
     PRIMARY KEY (user_id)
 );
 
--- avatar_id/pet_id live here, not on User itself.
+-- avatar_id/pet_id/family_id live here, not on User itself.
 CREATE TABLE user_module_links (
     user_id    INT NOT NULL,
     avatar_id  INT DEFAULT NULL,
@@ -187,14 +128,15 @@ CREATE TABLE user_module_links (
 -- New-schema secondary table that mirrors gender/relationship/age-group/name/username/email/
 -- phone/dateOfBirth off master_* lookup tables. SuperMeBE's User entity reads these fields through
 -- this table (not the flat User columns above), so UserRegistrationService.syncUserProfile writes
--- it directly on every signup. Only the columns that write touches.
+-- it directly on every signup. Only the columns that write touches. TINYINT for
+-- age/gender_id/relationship_id/age_group_id, matching superapp_db.
 CREATE TABLE user_profile (
     user_id         INT          NOT NULL,
-    age             INT          DEFAULT NULL,
+    age             TINYINT      DEFAULT NULL,
     age_group_id    TINYINT      DEFAULT NULL,
     dateOfBirth     DATE         NOT NULL,
     email           VARCHAR(255) DEFAULT NULL,
-    gender_id       INT          DEFAULT NULL,
+    gender_id       TINYINT      DEFAULT NULL,
     name            VARCHAR(255) NOT NULL,
     phone           VARCHAR(255) DEFAULT NULL,
     relationship_id TINYINT      DEFAULT NULL,
@@ -210,5 +152,71 @@ CREATE TABLE user_referrals (
     joinedWithReferral BOOLEAN    NOT NULL DEFAULT FALSE,
     referralCount     INT         NOT NULL DEFAULT 0,
     usedReferralCode  VARCHAR(8)  DEFAULT NULL,
+    PRIMARY KEY (user_id)
+);
+
+-- usernameChanged/isLoggedIn/emailVerified/lastLoginDate/oauth2_* moved here off the flat User
+-- columns, matching superapp_db's user_auth.
+CREATE TABLE user_auth (
+    user_id                INT          NOT NULL,
+    usernameChanged        BOOLEAN      NOT NULL DEFAULT FALSE,
+    isLoggedIn             BOOLEAN      NOT NULL DEFAULT FALSE,
+    emailVerified          BOOLEAN      NOT NULL DEFAULT FALSE,
+    emailVerificationToken VARCHAR(255) DEFAULT NULL,
+    lastLoginDate          TIMESTAMP    DEFAULT NULL,
+    oauth2_provider_id     VARCHAR(255) DEFAULT NULL,
+    oauth2_provider_type   VARCHAR(32)  DEFAULT NULL,
+    oauth2_avatar_url      VARCHAR(255) DEFAULT NULL,
+    PRIMARY KEY (user_id),
+    UNIQUE (emailVerificationToken)
+);
+
+-- coins/lifetimeCoinsEarned/lastDailyBonusDate moved here off the flat User columns, matching
+-- superapp_db's user_wallet.
+CREATE TABLE user_wallet (
+    user_id             INT  NOT NULL,
+    coins               INT  NOT NULL DEFAULT 0,
+    lifetimeCoinsEarned INT  NOT NULL DEFAULT 0,
+    lastDailyBonusDate  DATE DEFAULT NULL,
+    PRIMARY KEY (user_id)
+);
+
+-- currentStreak/highestStreak/freeStreakRestoresUsed/lastMissedStreak* moved here off the flat
+-- User columns, matching superapp_db's user_streak.
+CREATE TABLE user_streak (
+    user_id                INT       NOT NULL,
+    currentStreak          INT       NOT NULL DEFAULT 0,
+    highestStreak          INT       NOT NULL DEFAULT 0,
+    lastMissedStreakDate   DATE      DEFAULT NULL,
+    lastMissedStreakAt     TIMESTAMP DEFAULT NULL,
+    lastStreakCount        INT       DEFAULT NULL,
+    freeStreakRestoresUsed INT       NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id)
+);
+
+-- onboardingStep/as_child/moodInitialized moved here off the flat User columns, matching
+-- superapp_db's user_onboarding.
+CREATE TABLE user_onboarding (
+    user_id         INT     NOT NULL,
+    onboardingStep  INT     NOT NULL DEFAULT 1,
+    as_child        BOOLEAN DEFAULT NULL,
+    moodInitialized BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (user_id)
+);
+
+-- dailyActivityStreak/learningActivityStreak/totalActiveDays/lastStreakDate/learningStreak/
+-- lastLearningDate/activityStreak/lastActivityDate/last_active_time moved here off the flat
+-- User columns, matching superapp_db's user_activity.
+CREATE TABLE user_activity (
+    user_id                INT       NOT NULL,
+    dailyActivityStreak    INT       NOT NULL DEFAULT 0,
+    learningActivityStreak INT       NOT NULL DEFAULT 0,
+    lastStreakDate         DATE      DEFAULT NULL,
+    totalActiveDays        INT       NOT NULL DEFAULT 0,
+    learningStreak         INT       NOT NULL DEFAULT 0,
+    lastLearningDate       DATE      DEFAULT NULL,
+    activityStreak         INT       NOT NULL DEFAULT 0,
+    lastActivityDate       DATE      DEFAULT NULL,
+    last_active_time       TIMESTAMP DEFAULT NULL,
     PRIMARY KEY (user_id)
 );

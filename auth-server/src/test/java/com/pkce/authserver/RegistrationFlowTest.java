@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -55,6 +56,9 @@ class RegistrationFlowTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @MockBean
     private EmailService emailService;
@@ -120,7 +124,9 @@ class RegistrationFlowTest {
 
         User saved = userRepository.findByEmail(email).orElseThrow();
         assertThat(saved.getName()).isEqualTo("Otp Person");
-        assertThat(saved.getGender()).isEqualTo("female");
+        // UserGenderIdConverter round-trips gender_id back to the uppercase master value
+        // ("FEMALE"), not the lowercase string the registration request/API contract uses.
+        assertThat(saved.getGender()).isEqualTo("FEMALE");
         assertThat(saved.getRelationship()).isEqualTo(Relationship.SELF);
         assertThat(saved.isEmailVerified()).isTrue();
         // Their arithmetic: no pet -> step 5, and the 10-coin signup bonus.
@@ -250,7 +256,8 @@ class RegistrationFlowTest {
         // An address that already has an account is told to sign in, and gets no code - sending one
         // would let anyone trigger mail to an arbitrary registered user.
         String takenEmail = "reg-taken-" + System.nanoTime() + "@example.com";
-        userRepository.save(SupermeUserFixture.user(takenEmail));
+        User takenUser = userRepository.save(SupermeUserFixture.user(takenEmail));
+        SupermeUserFixture.syncProfile(jdbcTemplate, takenUser);
         org.mockito.Mockito.reset(emailService);
 
         HttpResponse<String> taken = postJson(http, "/api/auth/register/request-otp",
@@ -317,7 +324,8 @@ class RegistrationFlowTest {
 
         User existing = SupermeUserFixture.user(email);
         existing.setOnboardingStep(7); // fully onboarded
-        userRepository.save(existing);
+        existing = userRepository.save(existing);
+        SupermeUserFixture.syncProfile(jdbcTemplate, existing);
 
         String otp = registrationOtpFor(email);
         String body = """

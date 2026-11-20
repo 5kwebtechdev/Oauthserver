@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.net.CookieManager;
@@ -45,6 +46,9 @@ class ContinueWithEmailAndProfileTest {
     @Autowired
     private SupermeUserRepository userRepository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @MockBean
     private EmailService emailService;
 
@@ -76,7 +80,7 @@ class ContinueWithEmailAndProfileTest {
         HttpClient http = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();
         String base = "http://localhost:" + port;
         String email = "cwe-" + System.nanoTime() + "@example.com";
-        SupermeUserFixture.saveWithoutPassword(userRepository, email);
+        SupermeUserFixture.saveWithoutPassword(userRepository, jdbcTemplate, email);
 
         String otp = requestOtp(http, base, email);
         assertThat(otp).matches("\\d{6}");
@@ -119,7 +123,8 @@ class ContinueWithEmailAndProfileTest {
         String email = "cwe-deleted-" + System.nanoTime() + "@example.com";
         var user = SupermeUserFixture.user(email);
         user.setDeleted(true);
-        userRepository.save(user);
+        user = userRepository.save(user);
+        SupermeUserFixture.syncProfile(jdbcTemplate, user);
 
         String otp = requestOtp(http, base, email);
         HttpResponse<String> verifyResp = postJson(http, base, "/api/auth/continue-with-email/verify",

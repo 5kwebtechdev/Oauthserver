@@ -108,8 +108,7 @@ class PkceAuthorizationFlowTest {
                 .build();
 
         testUser = SupermeUserFixture.saveWithPassword(userRepository, userPasswordRepository,
-                passwordEncoder, "pkce-flow-" + System.nanoTime() + "@example.com", TEST_PASSWORD);
-        SupermeUserFixture.syncProfile(jdbcTemplate, testUser);
+                passwordEncoder, jdbcTemplate, "pkce-flow-" + System.nanoTime() + "@example.com", TEST_PASSWORD);
 
         confidentialClientId = "test-confidential-" + UUID.randomUUID();
         registeredClientRepository.save(RegisteredClient.withId(UUID.randomUUID().toString())
