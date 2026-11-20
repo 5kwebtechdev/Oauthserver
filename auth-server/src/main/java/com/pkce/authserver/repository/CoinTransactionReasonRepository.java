@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface CoinTransactionReasonRepository extends JpaRepository<CoinTransactionReason, Integer> {
+public interface CoinTransactionReasonRepository extends JpaRepository<CoinTransactionReason, Short> {
     Optional<CoinTransactionReason> findFirstByTypeIdAndDescription(Byte typeId, String description);
 }
