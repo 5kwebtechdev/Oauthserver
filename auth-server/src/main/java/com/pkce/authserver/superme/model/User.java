@@ -201,9 +201,10 @@ public class User {
     @Column
     private LocalDateTime createdDateTime;
 
-    // Id of the admin who created this user (null for self-registered users)
+    // Id of the admin who created this user (null for self-registered users). TINYINT UNSIGNED on
+    // the live table (admin accounts are few), unlike every other *_id column here which is INT.
     @Column
-    private Long createdByAdminId;
+    private Byte createdByAdminId;
 
     @Column
     private String referralCode; // This user's own referral code (shared with others)
