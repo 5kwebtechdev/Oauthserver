@@ -70,6 +70,9 @@ class PkceAuthorizationFlowTest {
     @Autowired
     private UserPasswordRepository userPasswordRepository;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @MockBean
     private TurnstileVerificationService turnstileVerificationService;
 
@@ -106,6 +109,7 @@ class PkceAuthorizationFlowTest {
 
         testUser = SupermeUserFixture.saveWithPassword(userRepository, userPasswordRepository,
                 passwordEncoder, "pkce-flow-" + System.nanoTime() + "@example.com", TEST_PASSWORD);
+        SupermeUserFixture.syncProfile(jdbcTemplate, testUser);
 
         confidentialClientId = "test-confidential-" + UUID.randomUUID();
         registeredClientRepository.save(RegisteredClient.withId(UUID.randomUUID().toString())

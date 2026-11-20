@@ -11,9 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Copied verbatim from SuperMeBE (com.superme.model.Pet). Maps the existing superme_db table -
- * this table was NOT touched by the User-normalization migration (confirmed via SHOW COLUMNS
- * against the live dev DB: plain bigint `id`, plain varchar `gender`, no pet_id/gender_id).
+ * Copied verbatim from SuperMeBE (com.superme.model.Pet).
  */
 @Entity
 @Data
@@ -24,7 +22,8 @@ public class Pet {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "pet_id")
+    private Integer id;
 
     @Column(nullable = false)
     private String petName;

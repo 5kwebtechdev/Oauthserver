@@ -33,6 +33,7 @@ public class Family {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "family_id")
     private Integer id;
 
     @Column(name = "familyCode", nullable = false, unique = true, length = 8)
@@ -49,7 +50,7 @@ public class Family {
     private String joinToken;
 
     @Column(name = "createdBy", nullable = true)
-    private Long createdBy;
+    private Integer createdBy;
 
     @Column(name = "createdAt", nullable = false)
     private LocalDate createdAt;

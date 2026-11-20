@@ -1,13 +1,16 @@
 package com.pkce.authserver.superme.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.pkce.authserver.superme.converter.UserAgeGroupIdConverter;
+import com.pkce.authserver.superme.converter.UserRelationshipIdConverter;
+import com.pkce.authserver.superme.converter.UserRoleIdConverter;
 import com.pkce.authserver.superme.enums.AgeGroup;
 import com.pkce.authserver.superme.enums.Relationship;
 import com.pkce.authserver.superme.enums.Role;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,6 +19,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.SecondaryTable;
+import jakarta.persistence.SecondaryTables;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -58,12 +67,31 @@ import java.time.Period;
  * onboarding. This server authenticates accounts that already exist; it never creates them.
  */
 @Entity
+@Table(name = "User")
+@SecondaryTables({
+    // role_id lives in user_access, avatar_id/pet_id in user_module_links - these moved off User's
+    // own flat columns during the schema migration (confirmed via SHOW COLUMNS: User no longer has
+    // role/avatar_id/pet_id columns at all). Neither secondary table has other NOT NULL columns
+    // this entity doesn't map, so Hibernate's automatic insert on save is safe for both.
+    //
+    // relationship_id/age_group_id also moved, to user_profile - but that table additionally has
+    // NOT NULL dateOfBirth/name/age/dobChanged that this entity doesn't map (those stay flat on
+    // User), so a @SecondaryTable here would make Hibernate try to insert an incomplete row on
+    // every save and violate them. See the UserProfileRef association below instead: read-only,
+    // never inserts/updates, and the single writer (UserRegistrationService.syncUserProfile)
+    // populates every NOT NULL user_profile column together via its own upsert.
+    @SecondaryTable(name = "user_access", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id")),
+    @SecondaryTable(name = "user_module_links", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id", referencedColumnName = "user_id"))
+})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Getter
 @Setter
 public class User {
+
+    private static final UserRelationshipIdConverter RELATIONSHIP_ID_CONVERTER = new UserRelationshipIdConverter();
+    private static final UserAgeGroupIdConverter AGE_GROUP_ID_CONVERTER = new UserAgeGroupIdConverter();
 
     // ─────────────────────────────
     // Basic Information
@@ -101,9 +129,21 @@ public class User {
     @Builder.Default
     private boolean usernameChanged = false;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    // Transient + read-only Ref fallback (see UserProfileRef) - matches the pattern SuperMeBE's own
+    // entities use for location fields. Never Hibernate-written; see the @SecondaryTables comment.
+    @Transient
+    @Getter(AccessLevel.NONE)
     private Relationship relationship;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
+    private UserProfileRef profileRef;
+
+    public Relationship getRelationship() {
+        if (relationship != null) return relationship;
+        Integer id = profileRef == null ? null : profileRef.getRelationshipId();
+        return id == null ? null : RELATIONSHIP_ID_CONVERTER.convertToEntityAttribute(id.byteValue());
+    }
 
     @Column(name = "deleted", nullable = true)
     private Boolean deleted;
@@ -127,8 +167,8 @@ public class User {
     // ─────────────────────────────
     // Authentication & Account Status
     // ─────────────────────────────
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = UserRoleIdConverter.class)
+    @Column(name = "role_id", table = "user_access", nullable = false)
     @Builder.Default
     private Role role = Role.USER;
 
@@ -206,24 +246,27 @@ public class User {
     @Builder.Default
     private int age = 0;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private AgeGroup ageGroup = AgeGroup.BELOW_11;
+    // Transient + Ref fallback - see the comment on `relationship` above for why. No field
+    // initializer here (unlike the old default of BELOW_11): that would run on every Hibernate
+    // load too and defeat the null check the getter relies on to fall back to profileRef.
+    @Transient
+    @Getter(AccessLevel.NONE)
+    private AgeGroup ageGroup;
 
     // ─────────────────────────────
     // Relationships
     // ─────────────────────────────
     @ManyToOne
     @JsonBackReference
+    @JoinColumn(name = "family_id")
     private Family family;
 
     @OneToOne
-    @JoinColumn(name = "avatar_id")
+    @JoinColumn(name = "avatar_id", table = "user_module_links")
     private Avatar avatar;
 
     @ManyToOne
-    @JoinColumn(name = "pet_id")
+    @JoinColumn(name = "pet_id", table = "user_module_links")
     private Pet pet;
 
     @Column(nullable = false)
@@ -359,7 +402,9 @@ public class User {
 
     /** Returns the current age-band identifier for older values still stored in production. */
     public AgeGroup getAgeGroup() {
-        return ageGroup == null ? null : ageGroup.canonical();
+        if (ageGroup != null) return ageGroup.canonical();
+        Integer id = profileRef == null ? null : profileRef.getAgeGroupId();
+        return id == null ? AgeGroup.BELOW_11 : AGE_GROUP_ID_CONVERTER.convertToEntityAttribute(id.byteValue());
     }
 
     public boolean isUsingPhone() {

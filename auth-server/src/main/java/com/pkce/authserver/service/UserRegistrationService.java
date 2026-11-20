@@ -298,7 +298,7 @@ public class UserRegistrationService {
             Integer registeredUserId = savedUser.getId();
             familyRepository.findByFamilyCode(request.getFamilyCode()).ifPresent(existedFamily -> {
                 if (existedFamily.getCreatedBy() == null) {
-                    existedFamily.setCreatedBy(registeredUserId.longValue());
+                    existedFamily.setCreatedBy(registeredUserId);
                     familyRepository.save(existedFamily);
                 }
             });
@@ -431,7 +431,7 @@ public class UserRegistrationService {
         Family family = new Family();
         family.setFamilyName(familyName);
         family.setFamilyCode(familyCode);
-        family.setCreatedBy(createdBy == null ? null : createdBy.longValue());
+        family.setCreatedBy(createdBy);
         return familyRepository.save(family);
     }
 

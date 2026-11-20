@@ -28,32 +28,32 @@
 -- (calendarEvents, coinHistory, rewards, badges, notes) that own no column on User at all.
 
 CREATE TABLE Family (
-    id          INT          NOT NULL AUTO_INCREMENT,
+    family_id   INT          NOT NULL AUTO_INCREMENT,
     familyCode  VARCHAR(255) NOT NULL,
     familyName  VARCHAR(255) NOT NULL,
-    createdBy   BIGINT       DEFAULT NULL,
+    createdBy   INT          DEFAULT NULL,
     createdAt   DATE         NOT NULL,
-    PRIMARY KEY (id),
+    PRIMARY KEY (family_id),
     UNIQUE (familyCode)
 );
 
 CREATE TABLE Avatar (
-    id              BIGINT       NOT NULL AUTO_INCREMENT,
+    avatar_id       INT          NOT NULL AUTO_INCREMENT,
     avatarName      VARCHAR(100) NOT NULL,
     gender          VARCHAR(255) DEFAULT NULL,
     url             VARCHAR(255) DEFAULT NULL,
     avatarImageName VARCHAR(255) DEFAULT NULL,
     renamedByUser   BOOLEAN      NOT NULL DEFAULT FALSE,
-    PRIMARY KEY (id),
+    PRIMARY KEY (avatar_id),
     UNIQUE (avatarName)
 );
 
 CREATE TABLE Pet (
-    id      BIGINT       NOT NULL AUTO_INCREMENT,
+    pet_id  INT          NOT NULL AUTO_INCREMENT,
     petName VARCHAR(255) NOT NULL,
     gender  VARCHAR(255) DEFAULT NULL,
     url     VARCHAR(255) DEFAULT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (pet_id)
 );
 
 CREATE TABLE User (
@@ -66,10 +66,8 @@ CREATE TABLE User (
     dateOfBirth            DATE         NOT NULL,
     dobChanged             BOOLEAN      NOT NULL DEFAULT FALSE,
     usernameChanged        BOOLEAN      NOT NULL DEFAULT FALSE,
-    relationship           VARCHAR(16)  NOT NULL,
     deleted                BOOLEAN      DEFAULT NULL,
     as_child               BOOLEAN      DEFAULT NULL,
-    role                   VARCHAR(16)  NOT NULL,
     enabled                BOOLEAN      NOT NULL DEFAULT TRUE,
     isLoggedIn             BOOLEAN      NOT NULL DEFAULT FALSE,
     emailVerified          BOOLEAN      NOT NULL DEFAULT FALSE,
@@ -88,10 +86,7 @@ CREATE TABLE User (
     currentStreak          INT          NOT NULL DEFAULT 0,
     highestStreak          INT          NOT NULL DEFAULT 0,
     age                    INT          NOT NULL DEFAULT 0,
-    ageGroup               VARCHAR(16)  NOT NULL,
-    family_id              BIGINT       DEFAULT NULL,
-    avatar_id              BIGINT       DEFAULT NULL,
-    pet_id                 BIGINT       DEFAULT NULL,
+    family_id              INT          DEFAULT NULL,
     dailyActivityStreak    INT          NOT NULL DEFAULT 0,
     learningActivityStreak INT          NOT NULL DEFAULT 0,
     lastDailyBonusDate     DATE         DEFAULT NULL,
@@ -136,24 +131,41 @@ CREATE TABLE UserPassword (
 );
 
 CREATE TABLE FamilyMember (
-    id          BIGINT NOT NULL AUTO_INCREMENT,
-    family_id   BIGINT NOT NULL,
-    user_id     INT    NOT NULL,
-    dateOfBirth DATE   NOT NULL,
-    PRIMARY KEY (id)
+    family_member_id INT    NOT NULL AUTO_INCREMENT,
+    family_id         INT    NOT NULL,
+    user_id           INT    NOT NULL,
+    dateOfBirth       DATE   NOT NULL,
+    PRIMARY KEY (family_member_id)
 );
 
 -- Only the columns this server's registration flow fills; the real table also carries habit/task/
 -- article/lesson/course/challenge/admin-action columns, all nullable and all belonging to features
 -- this server has nothing to do with.
 CREATE TABLE CoinTransaction (
-    id          BIGINT       NOT NULL AUTO_INCREMENT,
-    user_id     INT          NOT NULL,
-    amount      INT          NOT NULL,
-    type        VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NOT NULL,
-    timestamp   TIMESTAMP    NOT NULL,
-    PRIMARY KEY (id)
+    coin_transaction_id INT          NOT NULL AUTO_INCREMENT,
+    user_id              INT          NOT NULL,
+    amount                INT          NOT NULL,
+    type                  VARCHAR(255) NOT NULL,
+    description           VARCHAR(255) NOT NULL,
+    timestamp             TIMESTAMP    NOT NULL,
+    PRIMARY KEY (coin_transaction_id)
+);
+
+-- role_id lives here, not on User itself (same split as relationship_id/age_group_id on
+-- user_profile below).
+CREATE TABLE user_access (
+    user_id INT NOT NULL,
+    role_id INT DEFAULT NULL,
+    PRIMARY KEY (user_id)
+);
+
+-- avatar_id/pet_id live here, not on User itself.
+CREATE TABLE user_module_links (
+    user_id    INT NOT NULL,
+    avatar_id  INT DEFAULT NULL,
+    pet_id     INT DEFAULT NULL,
+    family_id  INT DEFAULT NULL,
+    PRIMARY KEY (user_id)
 );
 
 -- New-schema secondary table that mirrors gender/relationship/age-group/name/username/email/

@@ -18,20 +18,39 @@ public interface SupermeUserRepository extends JpaRepository<User, Integer> {
     // (verified against the live data before this change), so COALESCE(profile, flat) is a strict
     // superset of the old derived-query behavior - it still matches a row that, for whatever reason,
     // only ever had the flat column (e.g. a user_profile-less fixture in a test).
-    @Query(value = "SELECT u.* FROM User u LEFT JOIN user_profile up ON up.user_id = u.user_id WHERE COALESCE(up.email, u.email) = :email", nativeQuery = true)
+    // Entity-returning native queries must also join user_access/user_module_links: User maps
+    // role_id/avatar_id/pet_id from those secondary tables, and Hibernate needs every mapped
+    // column present in the result set to hydrate the entity, even from a native query.
+    @Query(value = "SELECT u.*, ua.role_id, uml.avatar_id, uml.pet_id FROM User u " +
+            "LEFT JOIN user_profile up ON up.user_id = u.user_id " +
+            "LEFT JOIN user_access ua ON ua.user_id = u.user_id " +
+            "LEFT JOIN user_module_links uml ON uml.user_id = u.user_id " +
+            "WHERE COALESCE(up.email, u.email) = :email", nativeQuery = true)
     Optional<User> findByEmail(@Param("email") String email);
 
-    @Query(value = "SELECT u.* FROM User u LEFT JOIN user_profile up ON up.user_id = u.user_id WHERE COALESCE(up.phone, u.phone) = :phone", nativeQuery = true)
+    @Query(value = "SELECT u.*, ua.role_id, uml.avatar_id, uml.pet_id FROM User u " +
+            "LEFT JOIN user_profile up ON up.user_id = u.user_id " +
+            "LEFT JOIN user_access ua ON ua.user_id = u.user_id " +
+            "LEFT JOIN user_module_links uml ON uml.user_id = u.user_id " +
+            "WHERE COALESCE(up.phone, u.phone) = :phone", nativeQuery = true)
     Optional<User> findByPhone(@Param("phone") String phone);
 
-    @Query(value = "SELECT u.* FROM User u LEFT JOIN user_profile up ON up.user_id = u.user_id WHERE COALESCE(up.username, u.username) = :username", nativeQuery = true)
+    @Query(value = "SELECT u.*, ua.role_id, uml.avatar_id, uml.pet_id FROM User u " +
+            "LEFT JOIN user_profile up ON up.user_id = u.user_id " +
+            "LEFT JOIN user_access ua ON ua.user_id = u.user_id " +
+            "LEFT JOIN user_module_links uml ON uml.user_id = u.user_id " +
+            "WHERE COALESCE(up.username, u.username) = :username", nativeQuery = true)
     Optional<User> findByUsername(@Param("username") String username);
 
     @Query(value = "SELECT COUNT(*) > 0 FROM User u LEFT JOIN user_profile up ON up.user_id = u.user_id WHERE COALESCE(up.username, u.username) = :username", nativeQuery = true)
     boolean existsByUsername(@Param("username") String username);
 
     // referralCode/usedReferralCode moved to user_referrals the same way.
-    @Query(value = "SELECT u.* FROM User u LEFT JOIN user_referrals ur ON ur.user_id = u.user_id WHERE UPPER(COALESCE(ur.referralCode, u.referralCode)) = UPPER(:referralCode)", nativeQuery = true)
+    @Query(value = "SELECT u.*, ua.role_id, uml.avatar_id, uml.pet_id FROM User u " +
+            "LEFT JOIN user_referrals ur ON ur.user_id = u.user_id " +
+            "LEFT JOIN user_access ua ON ua.user_id = u.user_id " +
+            "LEFT JOIN user_module_links uml ON uml.user_id = u.user_id " +
+            "WHERE UPPER(COALESCE(ur.referralCode, u.referralCode)) = UPPER(:referralCode)", nativeQuery = true)
     Optional<User> findByReferralCodeIgnoreCase(@Param("referralCode") String referralCode);
 
     /**

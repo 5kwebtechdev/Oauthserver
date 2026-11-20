@@ -11,9 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Copied verbatim from SuperMeBE (com.superme.model.Avatar). Maps the existing superme_db table -
- * this table was NOT touched by the User-normalization migration (confirmed via SHOW COLUMNS
- * against the live dev DB: plain bigint `id`, plain varchar `gender`, no avatar_id/gender_id).
+ * Copied verbatim from SuperMeBE (com.superme.model.Avatar).
  */
 @Entity
 @Data
@@ -24,7 +22,8 @@ public class Avatar {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "avatar_id")
+    private Integer id;
 
     @Column(nullable = false, unique = true, length = 100)
     private String avatarName;

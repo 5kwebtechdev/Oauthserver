@@ -2,12 +2,17 @@ package com.pkce.authserver;
 
 import com.pkce.authserver.repository.SupermeUserRepository;
 import com.pkce.authserver.repository.UserPasswordRepository;
+import com.pkce.authserver.superme.converter.UserAgeGroupIdConverter;
+import com.pkce.authserver.superme.converter.UserRelationshipIdConverter;
+import com.pkce.authserver.superme.enums.AgeGroup;
 import com.pkce.authserver.superme.enums.Relationship;
 import com.pkce.authserver.superme.enums.Role;
 import com.pkce.authserver.superme.model.User;
 import com.pkce.authserver.superme.model.UserPassword;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.sql.Date;
 import java.time.LocalDate;
 
 /**
@@ -66,5 +71,28 @@ public final class SupermeUserFixture {
     /** Saves a user with no UserPassword row - the state 131 of the live accounts are in. */
     public static User saveWithoutPassword(SupermeUserRepository users, String email) {
         return users.save(user(email));
+    }
+
+    /**
+     * Writes the user_profile row real registrations get via UserRegistrationService.syncUserProfile.
+     * relationship/ageGroup are Transient on User (see User.java's comment on why) - no save() path
+     * writes them, so any test that reads getRelationship()/getAgeGroup() back off a reloaded User
+     * needs this called once after the user itself is saved.
+     */
+    public static void syncProfile(JdbcTemplate jdbcTemplate, User user) {
+        Integer relationshipId = new UserRelationshipIdConverter()
+                .convertToDatabaseColumn(user.getRelationship()) instanceof Byte b ? b.intValue() : null;
+        AgeGroup ageGroup = user.getAgeGroup() == null ? AgeGroup.BELOW_11 : user.getAgeGroup();
+        Integer ageGroupId = new UserAgeGroupIdConverter()
+                .convertToDatabaseColumn(ageGroup) instanceof Byte b ? b.intValue() : null;
+        int age = user.getDateOfBirth() == null ? 0
+                : java.time.Period.between(user.getDateOfBirth(), LocalDate.now()).getYears();
+        jdbcTemplate.update(
+                "INSERT INTO user_profile (user_id, age, age_group_id, dateOfBirth, email, gender_id, name, phone, relationship_id, username, dobChanged) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0) "
+                        + "ON DUPLICATE KEY UPDATE age=VALUES(age), age_group_id=VALUES(age_group_id), dateOfBirth=VALUES(dateOfBirth), "
+                        + "email=VALUES(email), name=VALUES(name), phone=VALUES(phone), relationship_id=VALUES(relationship_id), username=VALUES(username)",
+                user.getId(), age, ageGroupId, Date.valueOf(user.getDateOfBirth()), user.getEmail(),
+                null, user.getName(), user.getPhone(), relationshipId, user.getUsername());
     }
 }
