@@ -1,11 +1,11 @@
 // Dev counterpart of environment.auth2.ts - same auth-server (one process serves both prod
 // and dev PKCE clients), but its own client_id (APK_DEV_OAUTH_CLIENT_ID on the auth-server)
-// and the dev SuperMeBE backend (devapis.supermeapp.com), so this never touches the real
-// prod 4204 client or the prod business API.
+// and the dev SuperMeBE backend (new.supermeapp.com, talking to superapp_db), so this never
+// touches the real prod 4204 client or the prod business API.
 export const environment = {
   oauth: { enabled: true, issuer: 'https://auth.supermeapp.com', clientId: 'supermeapp-dev-web' },
   production: false,
-  apiUrl: 'https://devapis.supermeapp.com/v1',
+  apiUrl: 'https://new.supermeapp.com/v1',
   publicWebUrl: 'https://devapk.supermeapp.com',
   // Keep this in sync with the Razorpay account used by the backend.
   // Razorpay Key ID is public; the Key Secret must remain backend-only.
