@@ -155,14 +155,14 @@ CREATE TABLE CoinTransaction (
 -- master_coin_transaction_types and coin_transaction_reason exist live on both superme_db and
 -- superapp_db.
 CREATE TABLE master_coin_transaction_types (
-    type_id INT          NOT NULL AUTO_INCREMENT,
+    type_id TINYINT      NOT NULL AUTO_INCREMENT,
     value   VARCHAR(64)  NOT NULL,
     PRIMARY KEY (type_id)
 );
 
 CREATE TABLE coin_transaction_reason (
     coin_transaction_reason_id INT          NOT NULL AUTO_INCREMENT,
-    type_id                    INT          DEFAULT NULL,
+    type_id                    TINYINT      DEFAULT NULL,
     description                VARCHAR(255) NOT NULL,
     PRIMARY KEY (coin_transaction_reason_id)
 );

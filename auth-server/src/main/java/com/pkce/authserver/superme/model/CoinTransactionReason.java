@@ -26,8 +26,9 @@ public class CoinTransactionReason {
     @Column(name = "coin_transaction_reason_id", nullable = false)
     private Integer coinTransactionReasonId;
 
+    // TINYINT UNSIGNED on the live table, matching MasterCoinTransactionTypes.typeId.
     @Column(name = "type_id")
-    private Integer typeId;
+    private Byte typeId;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "type_id", insertable = false, updatable = false)
