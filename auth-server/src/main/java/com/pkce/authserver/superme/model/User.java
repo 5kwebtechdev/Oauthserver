@@ -141,8 +141,8 @@ public class User {
 
     public Relationship getRelationship() {
         if (relationship != null) return relationship;
-        Integer id = profileRef == null ? null : profileRef.getRelationshipId();
-        return id == null ? null : RELATIONSHIP_ID_CONVERTER.convertToEntityAttribute(id.byteValue());
+        Byte id = profileRef == null ? null : profileRef.getRelationshipId();
+        return id == null ? null : RELATIONSHIP_ID_CONVERTER.convertToEntityAttribute(id);
     }
 
     @Column(name = "deleted", nullable = true)
@@ -404,8 +404,8 @@ public class User {
     /** Returns the current age-band identifier for older values still stored in production. */
     public AgeGroup getAgeGroup() {
         if (ageGroup != null) return ageGroup.canonical();
-        Integer id = profileRef == null ? null : profileRef.getAgeGroupId();
-        return id == null ? AgeGroup.BELOW_11 : AGE_GROUP_ID_CONVERTER.convertToEntityAttribute(id.byteValue());
+        Byte id = profileRef == null ? null : profileRef.getAgeGroupId();
+        return id == null ? AgeGroup.BELOW_11 : AGE_GROUP_ID_CONVERTER.convertToEntityAttribute(id);
     }
 
     public boolean isUsingPhone() {

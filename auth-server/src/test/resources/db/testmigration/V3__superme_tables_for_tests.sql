@@ -175,13 +175,13 @@ CREATE TABLE user_module_links (
 CREATE TABLE user_profile (
     user_id         INT          NOT NULL,
     age             INT          DEFAULT NULL,
-    age_group_id    INT          DEFAULT NULL,
+    age_group_id    TINYINT      DEFAULT NULL,
     dateOfBirth     DATE         NOT NULL,
     email           VARCHAR(255) DEFAULT NULL,
     gender_id       INT          DEFAULT NULL,
     name            VARCHAR(255) NOT NULL,
     phone           VARCHAR(255) DEFAULT NULL,
-    relationship_id INT          DEFAULT NULL,
+    relationship_id TINYINT      DEFAULT NULL,
     username        VARCHAR(255) DEFAULT NULL,
     dobChanged      BOOLEAN      NOT NULL DEFAULT FALSE,
     PRIMARY KEY (user_id)

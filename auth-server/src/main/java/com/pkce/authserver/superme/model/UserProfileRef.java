@@ -26,9 +26,11 @@ public class UserProfileRef {
     @Column(name = "user_id")
     private Integer userId;
 
+    // TINYINT UNSIGNED on the live table, unlike role_id (confirmed INT) - same lookup-table-id
+    // family but resized down separately.
     @Column(name = "relationship_id")
-    private Integer relationshipId;
+    private Byte relationshipId;
 
     @Column(name = "age_group_id")
-    private Integer ageGroupId;
+    private Byte ageGroupId;
 }
