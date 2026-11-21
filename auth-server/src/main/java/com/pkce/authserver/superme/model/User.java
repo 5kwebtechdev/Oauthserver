@@ -56,10 +56,14 @@ import java.time.LocalDateTime;
  * them (except where UserRegistrationService explicitly upserts a specific secondary table).
  *
  * Omitted from the copy: User's five pure mappedBy collections (calendarEvents, coinHistory,
- * rewards, badges, notes - own no column, pull in entity graphs this server has no use for), and
- * every pet-progress (user_pet_progress)/UI-overlay-dismissal (user_ui_state)/
- * activity-streak (user_activity, besides last_active_time) field nothing in this codebase
- * reads or writes - confirmed by grep before leaving them out, same reasoning as the collections.
+ * rewards, badges, notes - own no column, pull in entity graphs this server has no use for),
+ * and every pet-progress (user_pet_progress)/UI-overlay-dismissal (user_ui_state) field, since
+ * nothing in this codebase reads or writes them. The activity-streak/streak/onboarding fields
+ * below (activityStreak, dailyActivityStreak, learningActivityStreak, learningStreak,
+ * totalActiveDays, moodInitialized, freeStreakRestoresUsed) are the one exception: nothing
+ * reads them back either, but they're NOT NULL with no default on the live tables, so leaving
+ * them out broke the very first INSERT into those secondary tables on registration - confirmed
+ * live via POST /api/auth/register ("Field 'activityStreak' doesn't have a default value").
  */
 @Entity
 @Table(name = "User")
@@ -220,6 +224,13 @@ public class User {
     @Builder.Default
     private Integer onboardingStep = 1;
 
+    // NOT NULL with no default on the live table, same reasoning as activityStreak etc. above -
+    // nothing here reads it back, but the first INSERT into user_onboarding (as_child/
+    // onboardingStep on registration) needs a value for it regardless.
+    @Column(name = "moodInitialized", nullable = false, table = "user_onboarding")
+    @Builder.Default
+    private boolean moodInitialized = false;
+
     @Column(name = "emailVerificationToken", unique = true, table = "user_auth")
     private String emailVerificationToken;
 
@@ -228,6 +239,33 @@ public class User {
 
     @Column(name = "last_active_time", table = "user_activity")
     private LocalDateTime lastActiveTime;
+
+    // activityStreak/dailyActivityStreak/learningActivityStreak/learningStreak/totalActiveDays
+    // are NOT NULL with no default on the live user_activity table. Nothing in this codebase
+    // reads them back (confirmed via grep before leaving them out originally - see the class
+    // comment), but every column on a @SecondaryTable Hibernate doesn't know about with a
+    // nullable=false mapping must still be supplied on INSERT, or the very first write to this
+    // table (a new registration's lastActiveTime) fails outright: confirmed live via
+    // POST /api/auth/register - "Field 'activityStreak' doesn't have a default value".
+    @Column(name = "activityStreak", nullable = false, table = "user_activity")
+    @Builder.Default
+    private int activityStreak = 0;
+
+    @Column(name = "dailyActivityStreak", nullable = false, table = "user_activity")
+    @Builder.Default
+    private int dailyActivityStreak = 0;
+
+    @Column(name = "learningActivityStreak", nullable = false, table = "user_activity")
+    @Builder.Default
+    private int learningActivityStreak = 0;
+
+    @Column(name = "learningStreak", nullable = false, table = "user_activity")
+    @Builder.Default
+    private int learningStreak = 0;
+
+    @Column(name = "totalActiveDays", nullable = false, table = "user_activity")
+    @Builder.Default
+    private int totalActiveDays = 0;
 
     @Column
     private LocalDateTime createdDateTime;
@@ -272,6 +310,11 @@ public class User {
     @Column(name = "highestStreak", nullable = false, table = "user_streak")
     @Builder.Default
     private int highestStreak = 0;
+
+    // NOT NULL with no default on the live table, same reasoning as activityStreak etc. above.
+    @Column(name = "freeStreakRestoresUsed", nullable = false, table = "user_streak")
+    @Builder.Default
+    private int freeStreakRestoresUsed = 0;
 
     // ─────────────────────────────
     // Derived Attributes
