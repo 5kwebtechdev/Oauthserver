@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { sessionStorageAdapter as nativeStorage } from '../storage/session-storage';
 import { BadgeSocketService } from './badge-socket.service';
@@ -150,6 +151,7 @@ describe('PKCE session bridge', () => {
     expect(prepareLogout).toHaveBeenCalledTimes(1);
   });
   it('renders the signed-out route before stalled native cleanup and continues after its deadline', fakeAsync(() => {
+    spyOn(Capacitor, "isNativePlatform").and.returnValue(true);
     const navigateRoot = jasmine.createSpy().and.resolveTo(true);
     const openNativeLogout = jasmine.createSpy().and.resolveTo();
     const clearExternalAuthSessions = jasmine.createSpy().and.returnValue(new Promise(() => {}));
