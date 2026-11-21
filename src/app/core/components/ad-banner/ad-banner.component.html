@@ -33,10 +33,10 @@
     </div>
 
     <div class="adb__dots" *ngIf="ads.length > 1" role="group" aria-label="Carousel position">
-      <span class="adb__counter" aria-live="polite">
-        {{ currentIndex + 1 }}/{{ ads.length }}
-      </span>
       <ng-container *ngFor="let ad of ads; let i = index">
+        <span *ngIf="i === currentIndex" class="adb__counter" aria-live="polite" aria-atomic="true">
+          {{ currentIndex + 1 }}/{{ ads.length }}
+        </span>
         <button *ngIf="i !== currentIndex"
           class="adb__dot"
           type="button"

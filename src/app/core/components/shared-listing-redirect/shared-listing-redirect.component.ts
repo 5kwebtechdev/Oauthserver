@@ -43,10 +43,9 @@ export class SharedListingRedirectComponent implements OnInit {
       return;
     }
 
-    if (!Capacitor.isNativePlatform()) {
-      // A share link is an app hand-off link. If the app is not installed the
-      // public URL is opened in a browser, so send the user to the Android
-      // download page instead of exposing an authenticated/empty web route.
+    if (!Capacitor.isNativePlatform() && type !== 'quiz') {
+      // Other listing links keep their existing app-store handoff. Quizzes
+      // open their guarded preview in either the browser or installed app.
       this.redirectToStore();
       return;
     }
@@ -58,7 +57,9 @@ export class SharedListingRedirectComponent implements OnInit {
   private internalRoute(type: SharedListingType, id: string): string {
     const encodedId = encodeURIComponent(id);
     switch (type) {
-      case 'quiz': return `/authed/content/description/${encodedId}`;
+      case 'quiz': return /^\d+$/.test(id)
+        ? `/authed/content/description/${encodedId}`
+        : `/authed/content/quiz/${encodedId}`;
       case 'counselor': return `/authed/counselors/${encodedId}`;
       case 'event': return `/authed/education/events?sharedId=${encodedId}`;
       case 'workshop': return `/authed/education/workshops?sharedId=${encodedId}`;

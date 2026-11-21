@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": ["src/app/core/interceptors/auth.interceptor.spec.ts", "src/**/*.d.ts"]
+}

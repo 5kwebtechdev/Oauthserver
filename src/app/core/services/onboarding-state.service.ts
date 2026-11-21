@@ -1,3 +1,5 @@
+import { secureTemporaryStorage as sessionStorage } from '../storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
 
 export const SPLASH_COMPLETED_KEY = 'superme_splash_completed_v1';
@@ -39,6 +41,7 @@ export interface RegistrationDraftData {
   socialDetailsCompleted?: boolean;
   socialFamilyCompleted?: boolean;
   socialRolePending?: boolean;
+  nativeGoogleRegistration?: boolean;
   selectedSignupRole?: 'child' | 'parent' | 'self';
   familyLinkSkipped?: boolean;
   [key: string]: unknown;

@@ -4,7 +4,8 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../services/auth.service';
-import { HandoffLinkService } from '../../services/handoff-link.service';
+import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
 
 export type AdScreen =
   // Student screens
@@ -26,7 +27,7 @@ export type AdScreen =
   | 'TUTOR_PARENTS'
   | 'ROCKS_PARENTS';
 
-type AdClickActionType = 'IN_APP_SCREEN' | 'EXTERNAL_URL';
+type AdClickActionType = 'IN_APP_SCREEN' | 'EXTERNAL_URL' | 'NO_ACTION';
 
 interface AdItem {
   id: number;
@@ -35,7 +36,7 @@ interface AdItem {
   image: string;
   clickActionType?: AdClickActionType;
   externalUrl?: string | null;
-  inAppScreen?: AdScreen | null;
+  inAppScreen?: string | null;
 }
 
 const IN_APP_ROUTE_MAP: Record<string, string> = {
@@ -49,13 +50,24 @@ const IN_APP_ROUTE_MAP: Record<string, string> = {
   ARTICLES:       '/article',
   ROCKS:          '/reels',
   ROCKS_PARENTS:  '/reels',
-  TUTOR:          '/find-a-tutor',
-  TUTOR_PARENTS:  '/find-a-tutor',
-  PARENT_TUTOR:   '/find-a-tutor',
+  TUTOR:          '/tutors',
+  TUTOR_HOME:     '/tutors',
+  TUTOR_PARENTS:  '/tutors',
+  PARENT_TUTOR:   '/tutors',
   ACCELERARY:     '/academies',
   EDUHUB:         '/education',
   EDUHUB_PARENTS: '/education',
   STUDENT_STORE:  '/authed/school-store',
+  VIEW_ALL_HABITS: '/activity-page?tab=habits',
+  VIEW_ALL_TASKS:  '/activity-page?tab=tasks',
+  QUIZ:            '/quiz',
+  ARTICLE:         '/article',
+  MASTER_CLASS:    '/master-class',
+  ACADEMIES:       '/academies',
+  COUNSELORS:      '/counselors',
+  EVENTS:          '/education/events',
+  PG_HOSTELS:      '/education/pg-hostels',
+  SECOND_HAND_BOOKS: '/second-hand-books',
 };
 
 @Component({
@@ -91,8 +103,7 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     private http: HttpClient,
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef,
-    private handoffLinks: HandoffLinkService
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -234,25 +245,38 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     // Measure the actual rendered slot so resizing and all variants agree.
     const target = el.children[this.currentIndex] as HTMLElement | undefined;
     if (!target) return;
-    el.style.transform = `translateX(${-target.offsetLeft}px)`;
+    const centerOffset = (el.clientWidth - target.offsetWidth) / 2;
+    el.style.transform = `translateX(${centerOffset - target.offsetLeft}px)`;
   }
 
   onAdClick(ad: AdItem): void {
-    try {
-      if (ad.clickActionType === 'EXTERNAL_URL' && ad.externalUrl) {
-        // Carries the signed-in user across to our own pages so the browser does not ask them to
-        // sign in again; any other destination opens as a plain link with nothing attached. See
-        // HandoffLinkService for why the pass is one-time and why native needs '_system'.
-        void this.handoffLinks.openWithSession(ad.externalUrl);
+    if (ad.clickActionType === 'EXTERNAL_URL' && ad.externalUrl) {
+      let url: URL;
+      try {
+        url = new URL(ad.externalUrl);
+      } catch {
         return;
       }
-      if (ad.clickActionType === 'IN_APP_SCREEN' && ad.inAppScreen) {
-        const route = IN_APP_ROUTE_MAP[ad.inAppScreen];
-        if (route) {
-          this.router.navigateByUrl(route).catch(() => {});
-        }
+      if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
+
+      if (Capacitor.isNativePlatform()) {
+        void Browser.open({ url: url.href }).catch(error => {
+          console.warn('Could not open the ad link in the native browser', error);
+        });
+      } else {
+        window.location.assign(url.href);
       }
-    } catch (e) {}
+      return;
+    }
+
+    if (ad.clickActionType === 'IN_APP_SCREEN' && ad.inAppScreen) {
+      const screen = ad.inAppScreen.trim().toUpperCase().replace(/-/g, '_');
+      if (Object.prototype.hasOwnProperty.call(IN_APP_ROUTE_MAP, screen)) {
+        void this.router.navigateByUrl(IN_APP_ROUTE_MAP[screen]).catch(error => {
+          console.warn('Could not open the ad destination', error);
+        });
+      }
+    }
   }
 
   onAdImageError(index: number): void {

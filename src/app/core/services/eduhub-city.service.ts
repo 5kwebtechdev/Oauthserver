@@ -1,9 +1,13 @@
+import { LOCATION_COUNTRIES } from '../components/education-section/eduhub-location-picker/location.data';
+import { secureTemporaryStorage as sessionStorage } from '../storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 
 const EDUHUB_CITY_STORAGE_KEY = 'superme_eduhub_city';
 const EDUHUB_STATE_STORAGE_KEY = 'superme_eduhub_state';
 const EDUHUB_AUTO_LOCATION_KEY = 'superme_eduhub_auto_location';
+export const ALL_EDUHUB_LOCATIONS = '__all__';
 const CURRENT_LOCATION_OPTION = '__current_location__';
 
 @Injectable({ providedIn: 'root' })
@@ -17,8 +21,29 @@ export class EduHubCityService {
   private readonly locationSubject = new BehaviorSubject<void>(undefined);
   readonly location$ = this.locationSubject.asObservable();
 
+  private readonly countrySubject = new BehaviorSubject<string>(this.readCountry());
+  readonly country$ = this.countrySubject.pipe(map(code => code === ALL_EDUHUB_LOCATIONS ? 'IN' : code));
+  get country(): string { return this.countrySubject.value; }
+
+  selectCountry(country: string, city: string): void {
+    const code = country === ALL_EDUHUB_LOCATIONS ? country : String(country || '').trim().toUpperCase();
+    if (code !== ALL_EDUHUB_LOCATIONS && !/^[A-Z]{2}$/.test(code)) return;
+    const sameCity = !this.state && city === this.citySubject.value;
+    this.countrySubject.next(code);
+    try { localStorage.setItem('superme_eduhub_country', code); } catch {}
+    this.selectCity(city);
+    if (sameCity) this.locationSubject.next();
+  }
+
+  private readCountry(): string {
+    try { return localStorage.getItem('superme_eduhub_country') || 'IN'; } catch { return 'IN'; }
+  }
+
+  get allCities(): boolean { return !this.state && this.citySubject.value === ALL_EDUHUB_LOCATIONS; }
+
   get city(): string {
-    return this.stateSubject.value ? '' : this.citySubject.value;
+    if (this.allCities) return '';
+    return this.isAutomaticLocation && this.automaticCity ? this.automaticCity : this.stateSubject.value ? '' : this.citySubject.value;
   }
 
   get state(): string { return this.stateSubject.value; }
@@ -29,7 +54,17 @@ export class EduHubCityService {
   get filter(): { city?: string; state?: string } {
     return this.state
       ? { state: this.state, ...(this.isAutomaticLocation && this.automaticCity ? { city: this.automaticCity } : {}) }
-      : { city: this.city };
+      : this.city ? { city: this.city } : {};
+  }
+
+  get academyFilter(): { country?: string; city?: string; state?: string } {
+    const country = LOCATION_COUNTRIES.find(option => option.code === this.country)?.name;
+    const { city, state } = this.filter;
+    return {
+      ...(country ? { country } : {}),
+      ...(city ? { city } : {}),
+      ...(state && this.country === 'IN' ? { state } : {})
+    };
   }
 
   selectState(state: string): void {
@@ -48,7 +83,11 @@ export class EduHubCityService {
     this.locationSubject.next();
   }
 
-  applyResolvedLocation(location: { city: string; state: string; source: 'device' | 'ip' | 'default' }): void {
+  applyResolvedLocation(location: { city: string; state: string; source: 'device' | 'ip' | 'default'; country?: string }): void {
+    if (location.country && /^[A-Z]{2}$/.test(location.country)) {
+      this.countrySubject.next(location.country);
+      try { localStorage.setItem('superme_eduhub_country', location.country); } catch {}
+    }
     this.automaticCity = String(location.city || '').trim();
     this.automaticSource = location.source;
     const state = String(location.state || '').trim();

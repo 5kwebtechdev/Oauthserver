@@ -337,3 +337,92 @@
 .superme-popup-container > * { flex-shrink: 0; }
 .superme-popup-heading, .superme-popup-subtitle { line-height: 1.5; }
 .superme-popup-single-cta { max-width: 100%; }
+
+.activity-confirmation {
+  max-width: 329px;
+  padding: 0 0 8px;
+  border-radius: 24px;
+  gap: 16px;
+  box-shadow: 0 12px 24px rgba(40, 31, 51, 0.18);
+
+  .superme-popup-content {
+    gap: 4px;
+  }
+
+  .superme-popup-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+    border-radius: 0;
+    margin-bottom: 8px;
+  }
+
+  .superme-popup-heading,
+  .superme-popup-subtitle {
+    padding-inline: 16px;
+    font-family: var(--font-sans);
+  }
+
+  .superme-popup-heading {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .superme-popup-subtitle {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.33;
+    color: #625c64;
+  }
+
+  .activity-rewards {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 13px;
+      border: 1px solid #ffb622;
+      border-radius: 999px;
+      color: #282527;
+      font: 800 17px/24px var(--font-sans);
+    }
+
+    span + span {
+      border-color: #d88000;
+    }
+
+    img {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .superme-popup-dual-cta {
+    flex-wrap: nowrap;
+    gap: 12px;
+    padding-inline: 12px;
+  }
+
+  .superme-popup-dual-cta .superme-button {
+    flex: 1 1 0;
+    min-height: 44px;
+    padding: 6px;
+    border: 1.5px solid #bb2124;
+    border-radius: 16px;
+    box-shadow: none;
+    background: white;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .superme-popup-dual-cta .superme-button:last-child {
+    border-color: #4caf50;
+    background: #4caf50;
+    color: white;
+  }
+}

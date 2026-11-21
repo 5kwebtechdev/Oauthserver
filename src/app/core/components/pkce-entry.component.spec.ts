@@ -62,4 +62,36 @@ describe('PKCE entry routing', () => {
       queryParams: { step: 2, role: 'child' }
     });
   });
+  it('opens hosted sign in once on Android without collecting local credentials', async () => {
+    const login = jasmine.createSpy().and.resolveTo();
+    component = new PkceEntryComponent(
+      { nativeDev: true, init: async () => {}, error: '', token: null, login } as any,
+      {} as any, onboarding,
+      { snapshot: { routeConfig: { path: 'login' }, queryParamMap: { get: () => null } } } as any,
+      router
+    );
+    await component.ngOnInit();
+    expect(login).toHaveBeenCalledOnceWith('');
+  });
+  it('retries hosted Android sign in without reloading the WebView', () => {
+    const login = jasmine.createSpy().and.resolveTo();
+    (component.pkce as any).nativeDev = true;
+    (component.pkce as any).login = login;
+    component.failed = true;
+    component.retry();
+    expect(login).toHaveBeenCalledTimes(1);
+    expect(component.failed).toBeFalse();
+  });
+  it('does not reopen hosted login automatically after Android logout', async () => {
+    const login = jasmine.createSpy().and.resolveTo();
+    component = new PkceEntryComponent(
+      { nativeDev: true, init: async () => {}, error: '', token: null, login } as any,
+      {} as any, onboarding,
+      { snapshot: { routeConfig: { path: 'login' }, queryParamMap: { get: (key: string) => key === 'loggedOut' ? '1' : null } } } as any,
+      router
+    );
+    await component.ngOnInit();
+    expect(login).not.toHaveBeenCalled();
+    expect(component.message).toContain('signed out');
+  });
 });

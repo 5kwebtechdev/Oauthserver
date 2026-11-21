@@ -257,7 +257,7 @@ export class JournalsComponent implements OnInit, OnDestroy {
           this.cdr.detectChanges();
           return;
         }
-        const res = resp.body;
+        const res = Array.isArray(resp.body) ? resp.body : (resp.body as { entries?: unknown }).entries;
         if (!Array.isArray(res)) {
           console.warn('Unexpected journal entries response, expected array', res);
           return;

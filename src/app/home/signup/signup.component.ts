@@ -1,3 +1,4 @@
+import { secureTemporaryStorage as sessionStorage } from '../../core/storage/session-storage';
 import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit, OnDestroy, NgZone, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -158,30 +159,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public get oauthAccountEmail(): string {
     if (!this.isOAuthSignup) return '';
     return this.resolveAppleAccountEmail(this.signupForm?.get('email')?.value);
-  }
-
-  /**
-   * Google/Apple never supply a username - only name/email - and the profile step otherwise
-   * leaves it for the user to type from scratch even though we already have enough to suggest
-   * one. Only fills an EMPTY control, and only once per page load (not on every keystroke) via
-   * the step===2 check at its call site, so it never fights a username the user is actively
-   * typing or has already set.
-   */
-  private suggestUsernameFromOAuthIdentityIfEmpty(): void {
-    if (!this.isOAuthSignup) return;
-    const usernameControl = this.profileForm.get('username');
-    if (!usernameControl || usernameControl.value) return;
-
-    const source = this.oauthAccountName || this.oauthAccountEmail.split('@')[0] || '';
-    const sanitized = source
-      .normalize('NFKD')
-      .replace(/[^a-zA-Z0-9]/g, '')
-      .toLowerCase()
-      .slice(0, 15);
-    if (!sanitized) return;
-
-    usernameControl.setValue(sanitized);
-    usernameControl.markAsDirty();
   }
 
   /** The immutable account name supplied by Apple or returned by our backend. */
@@ -711,10 +688,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         return;
       }
 
-      if (this.step === 2) {
-        this.suggestUsernameFromOAuthIdentityIfEmpty();
-      }
-
       this.enforceParentFlowRestrictions();
       this.renderer.setStyle(document.documentElement, '--step', this.step);
       this.syncSignupStatusBar();
@@ -944,6 +917,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private profileIdentityValidator(validators: ValidatorFn[]): ValidatorFn {
     const validate = Validators.compose(validators);
     return control => this.isOAuthSignup && this.currentRole !== 'parent'
+      && !(this.pkceAuth.nativeDev && this.onboardingState.getRegistrationState()?.savedData?.nativeGoogleRegistration === true)
       ? null : validate?.(control) || null;
   }
 
@@ -1532,7 +1506,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    if ((!this.isOAuthSignup || this.currentRole === 'parent') && this.profileForm.get('dob')?.invalid) {
+    const nativeGoogleRegistration = this.pkceAuth.nativeDev && this.onboardingState.getRegistrationState()?.savedData?.nativeGoogleRegistration === true;
+    if (nativeGoogleRegistration && !this.gender) {
+      this.core.triggerToasrt('Please select your gender.');
+      return;
+    }
+    if ((nativeGoogleRegistration || !this.isOAuthSignup || this.currentRole === 'parent') && this.profileForm.get('dob')?.invalid) {
       this.core.triggerToasrt('Please select your date of birth.');
       return;
     }
@@ -3699,7 +3678,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const idToken    = sessionStorage.getItem('oauth_signup_id_token')
       || this.pkceAuth.getGoogleSignupProof?.()
       || '';
-    if (idToken && !sessionStorage.getItem('oauth_signup_id_token')) {
+    if (idToken && !this.pkceAuth.nativeDev && !sessionStorage.getItem('oauth_signup_id_token')) {
       sessionStorage.setItem('oauth_signup_id_token', idToken);
     }
     const accessToken = sessionStorage.getItem('oauth_signup_access_token') || '';

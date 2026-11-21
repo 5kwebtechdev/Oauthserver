@@ -35,7 +35,7 @@
         </div>
         <div class="info-row">
           <div class="info-label"><span class="info-icon"><img [src]="detailIcon('date')" alt="" /></span><span>Time</span></div>
-          <strong>{{ activityTimeRange }}</strong>
+          <strong [class.reward-completed-time]="isChild && habit.status.toLowerCase() === 'completed'">{{ activityTimeRange }}</strong>
         </div>
         <div class="info-row">
           <div class="info-label"><span class="info-icon"><img [src]="detailIcon('repeat')" alt="" /></span><span>Repeat</span></div>

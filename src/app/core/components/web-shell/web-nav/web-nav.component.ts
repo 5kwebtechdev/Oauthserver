@@ -22,7 +22,6 @@ const CHILD_SELF_NAV_ITEMS: WebNavItem[] = [
     link: '/content',
     children: [
       { label: 'Quiz', link: '/quiz' },
-      { label: 'Puzzle', link: '/puzzle' },
       { label: 'Article', link: '/article' },
       { label: 'Master Class', link: '/master-class' },
       { label: 'Reels', link: '/reels' },
@@ -202,13 +201,13 @@ export class WebNavComponent implements OnInit {
     event.preventDefault();
     event.stopPropagation();
 
-    if (!item.link) {
+    if (item.children?.length) {
       this.toggleMenu(item.label, event);
       return;
     }
 
     this.closeMenu();
-    void this.router.navigateByUrl(item.link);
+    if (item.link) void this.router.navigateByUrl(item.link);
   }
 
   closeMenu(): void {

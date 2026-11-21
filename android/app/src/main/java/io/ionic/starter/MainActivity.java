@@ -28,6 +28,17 @@ import io.ionic.starter.plugins.NativeCredentialsPlugin;
 import io.ionic.starter.plugins.PlayStoreUpdatePlugin;
 
 public class MainActivity extends BridgeActivity {
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reapply real device insets after hosted auth or another native activity.
+        // Capacitor's existing edge-to-edge handler remains responsible for margins.
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+            .show(androidx.core.view.WindowInsetsCompat.Type.statusBars());
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            androidx.core.view.ViewCompat.requestApplyInsets(getBridge().getWebView());
+        }
+    }
 
     private static final String KEY_CHECKED = "referralChecked";
     private String timerTitle;
@@ -97,6 +108,9 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(io.ionic.starter.plugins.SecureSessionPlugin.class);
+        registerPlugin(io.ionic.starter.plugins.AuthWebViewPlugin.class);
+        registerPlugin(io.ionic.starter.plugins.NativeGoogleAuthPlugin.class);
         registerPlugin(ActiveTimerPlugin.class);
         registerPlugin(AppCheckPlugin.class);
         registerPlugin(CrashlyticsPlugin.class);
@@ -104,6 +118,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NativeCredentialsPlugin.class);
         registerPlugin(PlayStoreUpdatePlugin.class);
         super.onCreate(savedInstanceState);
+        getBridge().setWebViewClient(new io.ionic.starter.media.OptimizedMediaWebViewClient(getBridge()));
         getBridge().getWebView().setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
         checkInstallReferrer();
     }

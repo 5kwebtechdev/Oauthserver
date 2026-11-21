@@ -11,6 +11,8 @@ export interface CoinLeaderboardUser {
   displayName: string;
   username: string | null;
   avatar?: string | null;
+  age?: number;
+  ageGroup?: string;
   coins: number;
 }
 

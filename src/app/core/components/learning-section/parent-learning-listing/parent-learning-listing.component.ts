@@ -1,3 +1,4 @@
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
 import { CommonModule, Location } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -42,7 +43,10 @@ export class ParentLearningListingComponent implements OnInit, OnDestroy {
       icon: 'assets/figma/parent-home/parent-learning-quizzes.webp'
     }
   ];
-  readonly pageSize = Capacitor.isNativePlatform() ? 5 : 6;
+  get pageSize(): number {
+    if (Capacitor.isNativePlatform()) return 5;
+    return this.selectedCategory === 'blogs' ? 9 : 6;
+  }
 
   selectedCategory: ParentLearningCategory = 'blogs';
   searchOpen = false;

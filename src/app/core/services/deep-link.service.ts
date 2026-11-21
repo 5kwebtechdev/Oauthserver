@@ -1,3 +1,4 @@
+import { secureTemporaryStorage as sessionStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
@@ -56,6 +57,7 @@ export class DeepLinkService {
   }
 
   private handleUrl(rawUrl: string, coldStart = false): void {
+    if (/^superme:\/\/oauth\/dev\/(?:callback|logout)(?:[?#]|$)/.test(rawUrl)) return;
     const route = this.toInternalRoute(rawUrl);
     if (!route) return;
 

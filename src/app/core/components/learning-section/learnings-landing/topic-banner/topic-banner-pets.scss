@@ -1,0 +1,80 @@
+// Each pet's pivots for each topic, in % of its canvas. Printed by tools/slice-topic-pets.mjs: paste
+// its output here after recutting a pet.
+//   --tb-rays                    the point the three rays fan out from
+//   --tb-lid-*                   top of each eye (the lid closes down from here) and the eye's slant
+//   --tb-touch-x, --tb-touch-y   Articles: where the fingertip meets the tablet
+//   --tb-aspect, --tb-width      only for artwork that is not the usual square 1254px canvas
+
+.tb-rig--articles-panda {
+  --tb-rays: 29.11% 34.29%;
+  --tb-lid-left: 39.21% 30.54%;
+  --tb-lid-left-slant: -15deg;
+  --tb-lid-right: 59.07% 36.46%;
+  --tb-lid-right-slant: -15deg;
+  --tb-touch-x: 38.12%;
+  --tb-touch-y: 63.24%;
+}
+
+.tb-rig--articles-dragon {
+  --tb-rays: 29.82% 34.13%;
+  --tb-lid-left: 36.23% 25.5%;
+  --tb-lid-left-slant: -8deg;
+  --tb-lid-right: 57.62% 30.8%;
+  --tb-lid-right-slant: -10deg;
+  --tb-touch-x: 37.4%;
+  --tb-touch-y: 62.44%;
+}
+
+.tb-rig--articles-llama {
+  --tb-rays: 31.9% 33.01%;
+  --tb-lid-left: 38.03% 28.44%;
+  --tb-lid-left-slant: -8deg;
+  --tb-lid-right: 58.11% 33.02%;
+  --tb-lid-right-slant: -10deg;
+  --tb-touch-x: 37.4%;
+  --tb-touch-y: 62.68%;
+}
+
+.tb-rig--articles-owl {
+  --tb-rays: 28.47% 30.78%;
+  --tb-lid-left: 38.22% 28.56%;
+  --tb-lid-left-slant: -10deg;
+  --tb-lid-right: 60.78% 34.11%;
+  --tb-lid-right-slant: -12deg;
+  --tb-touch-x: 37.56%;
+  --tb-touch-y: 64.91%;
+}
+
+.tb-rig--masterclass-panda {
+  --tb-rays: 28.47% 33.01%;
+  --tb-lid-left: 39.98% 32.4%;
+  --tb-lid-left-slant: -12deg;
+  --tb-lid-right: 60.25% 38.79%;
+  --tb-lid-right-slant: -12deg;
+}
+
+.tb-rig--masterclass-dragon {
+  --tb-aspect: 1346 / 1168;
+  --tb-width: 1.0734;
+  --tb-rays: 31.8% 33.65%;
+  --tb-lid-left: 37.45% 25.69%;
+  --tb-lid-left-slant: -10deg;
+  --tb-lid-right: 57.16% 32.68%;
+  --tb-lid-right-slant: -8deg;
+}
+
+.tb-rig--masterclass-llama {
+  --tb-rays: 29.03% 33.01%;
+  --tb-lid-left: 36.67% 27.8%;
+  --tb-lid-left-slant: -8deg;
+  --tb-lid-right: 56.74% 33.71%;
+  --tb-lid-right-slant: -8deg;
+}
+
+.tb-rig--masterclass-owl {
+  --tb-rays: 27.91% 30.22%;
+  --tb-lid-left: 39.28% 25.53%;
+  --tb-lid-left-slant: -10deg;
+  --tb-lid-right: 61.61% 31.83%;
+  --tb-lid-right-slant: -10deg;
+}

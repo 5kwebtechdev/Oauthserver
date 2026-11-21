@@ -1,46 +1,7 @@
-            <article class="event-card">
-              <div class="event-card__top">
-                <div class="event-card__image" [class.event-card__image--empty]="!getImage(item)">
-                  <app-profile-image fallbackCategory="event" [src]="getImage(item)" [name]="getDisplayName(item)" [alt]="getDisplayName(item)"></app-profile-image>
-                </div>
-
-                <div class="event-card__details">
-                  <div class="event-card__header">
-                      <div class="event-card__identity">
-                        <div class="event-card__name-row">
-                        <h3>{{ getDisplayName(item) }}</h3>
-                        <img *ngIf="item.verified" class="event-card__verified"
-                          src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified">
-                      </div>
-                      <p class="event-card__location">
-                        <img src="assets/figma/learning-details/calendar.svg" alt="" aria-hidden="true">
-                        <span>{{ getEventMeta(item) || 'Date & time to be announced' }}</span>
-                      </p>
-                    </div>
-
-                    <div class="event-card__quick-actions">
-                      <button type="button" class="quick-action quick-action--favourite"
-                        [disabled]="likeInProgress" [attr.aria-pressed]="isFavourite(item)"
-                        [class.is-selected]="isFavourite(item)"
-                        [attr.aria-label]="isFavourite(item) ? 'Remove from favourites' : 'Add to favourites'"
-                        (click)="toggleFavourite(item)">
-                        <span class="quick-action__heart" aria-hidden="true"></span>
-                      </button>
-                      <button type="button" class="quick-action quick-action--share" aria-label="Share listing"
-                        (click)="shareItem(item)">
-                        <img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true">
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="event-card__footer">
-                <span *ngIf="getFeeLabel(item)" class="event-card__fee" [class.event-card__fee--free]="getFeeLabel(item) === 'FREE'">
-                  {{ getFeeLabel(item) }}
-                </span>
-                <button type="button" class="event-card__details-button" (click)="viewDetails.emit(item)">
-                  View Details
-                </button>
-              </div>
-            </article>
+<article class="education-listing" [class.education-listing--home]="homePreview">
+<button type="button" class="education-listing__profile" (click)="viewDetails.emit(item)" [attr.aria-label]="'View '+getDisplayName(item)">
+<span class="education-listing__photo education-listing__photo--tall"><app-profile-image fallbackCategory="event" [src]="getImage(item)" [name]="getDisplayName(item)"></app-profile-image></span>
+<span class="education-listing__body"><span class="education-listing__name"><strong>{{getDisplayName(item)}}</strong><span *ngIf="item.verified" class="education-listing__verified"><img src="assets/figma/eduhub-cards/verified.png" alt="Verified"></span></span><span class="education-listing__fields"><span class="education-listing__field"><span class="education-listing__icon"><span><img src="assets/figma/eduhub-cards/calendar.svg" alt=""></span></span><span class="education-listing__field-text"><span class="education-listing__label">Date &amp; Time</span><span class="education-listing__value">{{getEventMeta(item) || 'Date to be announced'}}</span></span></span><span class="education-listing__field education-listing__field--secondary education-listing__field--venue"><span class="education-listing__icon"><span><img src="assets/figma/eduhub-cards/location-amber.svg" alt=""></span></span><span class="education-listing__field-text"><span class="education-listing__label">Venue</span><span class="education-listing__value" [class.education-listing__value--venue]="item.unlocked">{{item.unlocked ? (item.exactLocation || item.address || item.venue || getLocation(item) || 'Venue unavailable') : 'Details locked'}}</span><span *ngIf="!item.unlocked" class="education-listing__helper">Click to unlock the venue</span></span></span></span></span></button>
+<div class="education-listing__footer"><button class="education-listing__fee" type="button" (click)="viewDetails.emit(item)">{{getFeeLabel(item)}}</button>
+<button class="education-listing__like" type="button" [disabled]="likeInProgress" [attr.aria-pressed]="isFavourite(item)" aria-label="Favourite event" (click)="toggleFavourite(item)"><span><img src="assets/figma/eduhub-cards/heart.svg" alt=""></span>{{item.champsLiked || 0}}</button>
+<button class="education-listing__share" type="button" aria-label="Share event" (click)="shareItem(item)"><img src="assets/figma/parent-eduhub-inner/share.svg" alt=""></button></div></article>

@@ -1069,3 +1069,16 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+// Match the public navigation: stable triggers and click-open submenus.
+@media (min-width: 769px) {
+  .web-header__nav-link:hover,
+  .web-header__nav-link:focus-visible,
+  .web-header__nav-link.active,
+  .web-header__nav-item.open .web-header__nav-link,
+  .web-header__dropdown-link:hover,
+  .web-header__dropdown-link:focus-visible { transform: none; }
+  .web-header__dropdown { animation: none; }
+  .web-header__nav-item:hover .web-header__chevron { transform: rotate(-90deg); }
+  .web-header__nav-item:hover .web-header__chevron.open { transform: rotate(90deg); }
+}

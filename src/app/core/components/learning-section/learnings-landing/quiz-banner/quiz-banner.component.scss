@@ -1,0 +1,308 @@
+// Learnings › Quiz banner. Colours / type come from the SuperMeApp tokens (theme/superme-tokens).
+// The pet has its own stylesheets (quiz-banner-pet.scss, quiz-banner-pets.scss).
+
+// ---------------------------------------------------------------------------
+// Motion constants
+// ---------------------------------------------------------------------------
+
+$fade-in: 320ms;
+
+// Headline: slides up into place once, then stays still.
+$text-ease: cubic-bezier(0.22, 1, 0.36, 1);
+$text-duration: 700ms;
+$text-delay: 150ms;
+$text-mask-end: $text-delay + $text-duration; // clipping is dropped after this
+
+// Tagline pill follows the headline in.
+$tagline-delay: $text-delay + 220ms;
+$tagline-duration: 520ms;
+
+// The arc under "Quiz" draws in once the headline has landed, then its loop takes over.
+$underline-delay: $text-delay + $text-duration - 100ms;
+$underline-duration: 480ms;
+
+// "Quiz" loop: the arc is wiped and re-drawn like a pen stroke, a sheen follows the pen, then the
+// word settles with a small damped pop. Same loop as "Tutor" / "Counselor" in the EduHub headers.
+$accent-loop: 4800ms;
+$accent-loop-delay: $underline-delay + $underline-duration;
+
+// Banner art colours with no matching SuperMeApp token (raw values in Figma).
+$quiz-yellow: #fcc005; /* not in design tokens */
+$quiz-underline: #fcc904; /* not in design tokens */
+
+// ---------------------------------------------------------------------------
+// Layout (Figma frame: 393 x 138)
+// ---------------------------------------------------------------------------
+
+:host {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--sm-v1-900); // shown only until the backdrop decodes
+  font-family: var(--sm-font-body);
+}
+
+// Placed as in Figma: full height, wider than the banner so the sunburst sits behind the pet.
+.qb-bg {
+  position: absolute;
+  top: 0;
+  left: -18.07%;
+  z-index: -1;
+  width: 129.35%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+
+.qb-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 24px 0;
+}
+
+.qb-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.qb-title {
+  font-family: var(--sm-font-body);
+  margin: 0;
+  color: var(--sm-v1-neutral100);
+  font-size: var(--sm-font-size-display-sm);
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1.111; // 40px on 36px
+  white-space: nowrap;
+}
+
+.qb-line,
+.qb-line-in {
+  display: block;
+}
+
+// "Quiz" is painted by a gradient (all yellow except one lighter band) so the sheen can travel
+// through the letters; at rest only the yellow part is visible.
+.qb-accent {
+  position: relative;
+  display: inline-block;
+  transform-origin: 50% 85%; // baseline: the word grows up from where it sits
+  color: $quiz-yellow;
+  background: linear-gradient(
+    100deg,
+    $quiz-yellow 40%,
+    color-mix(in srgb, $quiz-yellow 30%, var(--sm-v1-neutral100)) 50%,
+    $quiz-yellow 60%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  // Side room so the pop and the italic overhang never clip the "Q" or "z".
+  padding: 0 0.14em;
+  margin: 0 -0.14em;
+}
+
+// The arc: 78.1 x 10 at 2px / 41px from the headline's corner in Figma, in em of the 36px headline.
+.qb-underline {
+  position: absolute;
+  left: calc(0.14em + 0.056em); // cancels the accent's side padding
+  top: calc(100% + 0.027em);
+  width: 2.169em;
+  height: 0.278em;
+  fill: $quiz-underline;
+}
+
+// Artwork is cropped to the pill, as in Figma (163 x 30).
+.qb-tagline {
+  position: relative;
+  width: 163px;
+  height: 30px;
+  overflow: hidden;
+
+  img {
+    position: absolute;
+    left: -1.56%;
+    top: -42.93%;
+    width: 102.89%;
+    height: 186.12%;
+    max-width: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Intro (once). Everything waits until the images are decoded.
+// ---------------------------------------------------------------------------
+
+@keyframes qb-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes qb-line-up {
+  from {
+    transform: translate3d(0, 105%, 0);
+  }
+}
+
+// The line masks its own text only while it slides in; afterwards the clip is gone, so the
+// "Quiz" pop and the arc below it can never be cut off.
+@keyframes qb-line-mask {
+  from,
+  to {
+    clip-path: inset(-1em -1em -0.1em -1em);
+  }
+}
+
+@keyframes qb-tagline-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+}
+
+// Both ends explicit: clip-path can't interpolate to "none", it would just snap at 50%.
+@keyframes qb-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+:host(:not(.is-ready)) {
+  .qb-bg,
+  .qb-line-in,
+  .qb-underline,
+  .qb-tagline,
+  .qb-pet {
+    opacity: 0;
+  }
+}
+
+:host(.is-ready) {
+  .qb-bg,
+  .qb-pet {
+    animation: qb-fade-in $fade-in ease-out both;
+  }
+
+  .qb-line {
+    animation: qb-line-mask $text-mask-end linear;
+  }
+
+  .qb-line-in {
+    animation: qb-line-up $text-duration $text-ease $text-delay both;
+  }
+
+  .qb-tagline {
+    animation: qb-tagline-in $tagline-duration $text-ease $tagline-delay both;
+  }
+
+  .qb-underline {
+    animation:
+      qb-draw $underline-duration cubic-bezier(0.65, 0, 0.35, 1) $underline-delay both,
+      qb-underline-loop $accent-loop linear $accent-loop-delay infinite;
+  }
+
+  .qb-accent {
+    animation:
+      qb-sheen $accent-loop linear $accent-loop-delay infinite,
+      qb-pop $accent-loop linear $accent-loop-delay infinite;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// "Quiz" loop
+// ---------------------------------------------------------------------------
+
+// Hold -> pen lifts the arc off to the right -> (hidden) pen returns -> redraws left to right.
+@keyframes qb-underline-loop {
+  0%,
+  55% {
+    clip-path: inset(0 0 0 0);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  63% {
+    clip-path: inset(0 0 0 100%);
+  }
+  67% {
+    clip-path: inset(0 100% 0 0);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  79%,
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+// Light band crosses the word left to right, trailing the pen.
+@keyframes qb-sheen {
+  0%,
+  72% {
+    background-position: 100% 0;
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  90%,
+  100% {
+    background-position: 0 0;
+  }
+}
+
+// Pop as the pen finishes: overshoot, then a damped settle (each swing ~1/4 of the last).
+@keyframes qb-pop {
+  0%,
+  76% {
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  80% {
+    transform: scale(1.06);
+    animation-timing-function: ease-in-out;
+  }
+  85% {
+    transform: scale(0.985);
+    animation-timing-function: ease-in-out;
+  }
+  90% {
+    transform: scale(1.004);
+    animation-timing-function: ease-in-out;
+  }
+  94%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+:host(.is-offscreen) {
+  .qb-accent,
+  .qb-underline {
+    animation-play-state: paused;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reduced motion: final frame, nothing moves.
+// ---------------------------------------------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+  :host *,
+  :host(.is-ready) * {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
+
+// Keep the complete pet and headline inside narrow phones; 393px Figma stays unchanged.
+@media (max-width: 359px) {
+  .qb-row { padding-inline: 12px; }
+  .qb-title { font-size: 30px; }
+  .qb-tagline { width: 145px; height: 27px; }
+  .qb-pet { width: 112px; height: 116px; }
+}

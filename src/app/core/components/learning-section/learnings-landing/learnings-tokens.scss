@@ -1,0 +1,70 @@
+:host {
+
+  /* Font families */
+  --sm-font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --sm-font-display: 'Fredoka', 'Nunito', system-ui, sans-serif;
+
+  /* Font sizes — General, default mode "Mobile" */
+  --sm-font-size-micro: 11px;
+  --sm-font-size-caption: 12px;
+  --sm-font-size-body-sm: 13px;
+  --sm-font-size-body: 15px;
+  --sm-font-size-subhead: 17px;
+  --sm-font-size-title-sm: 20px;
+  --sm-font-size-title: 24px;
+  --sm-font-size-headline: 28px;
+  --sm-font-size-feature: 32px;
+  --sm-font-size-display-sm: 36px;
+  --sm-font-size-display: 48px;
+  --sm-font-size-display-lg: 64px;
+
+  /* Colours — default mode "Habit" */
+  --sm-v1-100: #E8ECF7;
+  --sm-v1-300: #A1A7D8;
+  --sm-v1-500main: #8B8DCB;
+  --sm-v1-600: #7471BA;
+  --sm-v1-800: #524F84;
+  --sm-v1-900: #45456A;
+  --sm-v1-neutral100: #FFFFFF;
+  --sm-v1-neutral300: #D9D6D8;
+  --sm-v1-neutral500: #A19CA0;
+  --sm-v1-neutral600: #878286;
+  --sm-v1-neutral800: #6B656A;
+  --sm-v1-neutral900: #282527;
+  --sm-v1-accent100: #F1E9EC;
+  --sm-v1-accent300: #CD3578;
+  --sm-v1-accent500main: #90214D;
+  --sm-v1-accent600: #76183D;
+  --sm-v1-accent800: #461528;
+  --sm-v1-accent900: #280F19;
+  --sm-v1-success100: #E8F5E9;
+  --sm-v1-success300: #81C784;
+  --sm-v1-success500main: #4CAF50;
+  --sm-v1-success800: #2E7D32;
+  --sm-v1-error100: #F8E9E9;
+  --sm-v1-error300: #DA8587;
+  --sm-v1-error500main: #BB2124;
+  --sm-v1-warning100: #F3F0EB;
+  --sm-v1-warning300: #E3CBAA;
+  --sm-v1-warning500main: #F0AD4E;
+  --sm-v1-warning600: #D8840D;
+  --sm-v1-warning800: #7D5011;
+  --sm-v1-warning900: #46300F;
+  --sm-v1-tutor100: #D9E5F9;
+  --sm-v1-tutor200: #B2CAF2;
+  --sm-v1-tutor400: #1472C8;
+  --sm-v1-tutor500: #3158A8;
+  --sm-v1-tutor600: #1432A8;
+  --sm-v1-accentnew100: #EBE6F5;
+  --sm-v1-accentnew2: #7341A7;
+  --sm-v1-accentnew300: #AF97D8;
+  --sm-v1-accentnew600main: #432477;
+  --sm-v1-accentnew800: #2C174F;
+  --sm-v1-100: #FCF3F6;
+  --sm-v1-300: #F0A5BC;
+  --sm-v1-500main: #E1527C;
+  --sm-v1-600: #CF3359;
+  --sm-v1-800: #AC2456;
+  --sm-v1-900: #942038;
+
+}

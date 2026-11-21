@@ -1,16 +1,10 @@
-<label class="eduhub-city-selector" [class.is-detecting]="isDetectingLocation"
-  [attr.title]="locationMessage || 'Select EduHub state or region'">
-  <span class="sr-only">Select state or region</span>
-  <span class="eduhub-city-selector__pin" aria-hidden="true"></span>
-  <span class="eduhub-city-selector__value" aria-hidden="true">
-    {{ isDetectingLocation ? 'Detecting location…' : (stateLabels[selectedLocation] || selectedLocation || 'Select state') }}
-  </span>
-  <select [ngModel]="selectedLocation" (ngModelChange)="selectLocation($event)"
-    [disabled]="isDetectingLocation" aria-label="Select EduHub state or region">
-    <option *ngIf="selectedLocation && !states.includes(selectedLocation)"
-      [value]="selectedLocation">{{ selectedLocation }}</option>
-    <option *ngFor="let state of states" [value]="state">{{ stateLabels[state] || state }}</option>
-  </select>
-  <span class="eduhub-city-selector__chevron" aria-hidden="true"></span>
+<ng-container *ngIf="!automaticOnly">
+  <button type="button" class="location-chip" aria-label="Select country" (click)="openPicker('country')">
+    <span aria-hidden="true">{{ allCountries ? '' : country.flag }}</span> {{ allCountries ? 'All' : country.shortName }}<span class="location-caret" aria-hidden="true"></span>
+  </button>
+  <button type="button" class="location-chip location-chip--city" aria-label="Select city" (click)="openPicker('city')">
+    {{ isDetectingLocation ? 'Locating…' : (displayedCity || 'Select city') }}<span class="location-caret" aria-hidden="true"></span>
+  </button>
+  <app-location-sheet style="display: contents" [title]="pickerTitle" [options]="pickerOptions" [selected]="pickerSelected" (pick)="pickLocation($event)"></app-location-sheet>
   <span class="sr-only" role="status" aria-live="polite">{{ locationMessage }}</span>
-</label>
+</ng-container>

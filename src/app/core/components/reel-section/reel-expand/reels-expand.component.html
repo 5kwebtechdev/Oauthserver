@@ -9,6 +9,7 @@
     <div class="media-wrap" (click)="togglePlayPause($event)">
       <iframe
         *ngIf="current.youtubeEmbedUrl"
+        (load)="onYoutubeLoad()"
         #youtubePlayer
         class="reel-youtube-player"
         [src]="current.youtubeEmbedUrl"

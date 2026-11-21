@@ -22,6 +22,9 @@ export class BadgeSectionComponent implements OnInit, OnDestroy {
   loading = true;
   error = false;
   allIndividuals = false;
+  hoveredTier: import('./badge-view-model').TierState | null = null;
+  focusedTier: import('./badge-view-model').TierState | null = null;
+  pinnedTier: import('./badge-view-model').TierState | null = null;
   selected: BadgeCard | null = null;
   shareMessage = '';
   sharePopupVisible = false;

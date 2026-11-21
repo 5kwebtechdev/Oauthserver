@@ -59,6 +59,50 @@
         *ngIf="secondaryArticleContent" [innerHTML]="secondaryArticleContent">
       </section>
 
+      <section #articleQuestionsSection class="article-questions" *ngIf="showArticleQuestions && articleQuestions.length" aria-labelledby="article-questions-title">
+        <h2 id="article-questions-title">Questions</h2>
+        <article class="article-question" *ngFor="let question of articleQuestions; let index = index; trackBy: trackQuestion">
+          <h3>{{ index + 1 }}. {{ question.questionText }}</h3>
+          <ng-container *ngIf="question.hasAttachments && question.attachmentUrl">
+            <img *ngIf="question.attachmentType?.startsWith('image/')" [src]="question.attachmentUrl"
+              [alt]="'Attachment for question ' + (index + 1)" loading="lazy" (error)="hideBrokenImage($event)">
+            <a *ngIf="!question.attachmentType?.startsWith('image/')" [href]="question.attachmentUrl" target="_blank" rel="noopener noreferrer">View question attachment</a>
+          </ng-container>
+          <div class="article-question__options" role="group" [attr.aria-label]="question.questionText">
+            <button type="button" *ngFor="let option of question.options; let optionIndex = index; trackBy: trackQuestionOption"
+              class="article-answer" [attr.aria-pressed]="selectedArticleAnswers[question.id] === option.id"
+              [class.is-selected]="selectedArticleAnswers[question.id] === option.id"
+              [class.is-correct]="articleAnswersChecked && (selectedArticleAnswers[question.id] === option.id ? answerCorrect(question.id) === true : option.isCorrect === true)"
+              [class.is-incorrect]="articleAnswersChecked && selectedArticleAnswers[question.id] === option.id && answerCorrect(question.id) === false"
+              [disabled]="articleAnswersChecked || submittingArticleAnswers" (click)="selectArticleAnswer(question.id, option.id)">
+              <span class="article-answer__letter">{{ ['A', 'B', 'C', 'D', 'E', 'F'][optionIndex] || optionIndex + 1 }}</span>
+              <span>{{ option.optionText }}</span>
+              <small *ngIf="articleAnswersChecked && (selectedArticleAnswers[question.id] === option.id ? answerCorrect(question.id) === true : option.isCorrect === true)">Correct answer</small>
+              <small *ngIf="articleAnswersChecked && selectedArticleAnswers[question.id] === option.id && answerCorrect(question.id) === false">Your answer</small>
+            </button>
+          </div>
+        </article>
+        <button *ngIf="isAuthenticated && !isParentAssignment" type="button" class="article-answers-submit" [disabled]="!allArticleQuestionsAnswered || articleAnswersChecked || submittingArticleAnswers || isMarking" (click)="checkArticleAnswers()">
+          {{ submittingArticleAnswers ? 'Submitting…' : articleAnswersChecked ? 'Answers submitted' : 'Submit answers' }}
+        </button>
+        <p *ngIf="!isAuthenticated">Log in to submit your answers.</p>
+        <p *ngIf="articleAnswerError" role="alert">{{ articleAnswerError }}</p>
+        <p *ngIf="articleAnswerResult" role="status">Answers submitted. +{{ articleAnswerResult.questionCoinsAwarded }} question coins credited.</p>
+      </section>
+
+      <section class="learning-details-related" *ngIf="relatedArticles.length">
+        <h2>Related articles</h2>
+        <button *ngFor="let relatedArticle of relatedArticles; trackBy: trackRelatedChallenge"
+          type="button" class="learning-details-related__card" (click)="openRelatedArticle(relatedArticle)"
+          [attr.aria-label]="'Read ' + relatedArticle.title">
+          <span class="learning-details-related__image">
+            <img *ngIf="hasRelatedImage(relatedArticle)" [src]="relatedArticle.image" [alt]="relatedArticle.title"
+              loading="lazy" (error)="hideBrokenImage($event)">
+          </span>
+          <span class="learning-details-related__body"><strong>{{ relatedArticle.title }}</strong></span>
+        </button>
+      </section>
+
       <section class="learning-details-related" *ngIf="relatedChallenges.length">
         <h2>Since you read this, try these</h2>
         <button *ngFor="let relatedChallenge of relatedChallenges; trackBy: trackRelatedChallenge"
@@ -87,17 +131,17 @@
         </button>
       </section>
 
-      <section class="learning-details-action" *ngIf="isAuthenticated && !isParentAssignment">
+      <section class="learning-details-action" *ngIf="isAuthenticated && !isParentAssignment && !showArticleQuestions">
         <button type="button" class="learning-details-action__button" (click)="confirmMarkAsRead()"
           [disabled]="isMarkAsReadDisabled" [class.learning-details-action__button--complete]="isArticleRead"
-          [attr.aria-label]="isArticleRead ? 'Article already read' : (!readTimerComplete ? 'Read this article, available in ' + readTimerDisplay : 'Mark this article as read')">
+          [attr.aria-label]="isArticleRead ? 'Article already read' : (!readTimerComplete ? articleReadAction + ', available in ' + readTimerDisplay : articleReadAction)">
           <ion-spinner *ngIf="isMarking" name="crescent"></ion-spinner>
           <ng-container *ngIf="!isMarking">
             <img src="assets/figma/learning-details/thumb-up.svg" alt="" aria-hidden="true">
-            <span>{{ isArticleRead ? 'Already Read' : 'Read This' }}</span>
-            <span class="learning-details-action__reward" *ngIf="articleCoins > 0">
+            <span>{{ isArticleRead ? 'Already Read' : (articleCoins > 0 ? 'Read & Earn' : 'Read This') }}</span>
+            <span class="learning-details-action__reward" *ngIf="!isArticleRead && articleCoins > 0">
+              {{ articleCoins }}
               <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true">
-              +{{ articleCoins }}
             </span>
           </ng-container>
         </button>
@@ -137,7 +181,7 @@
             [disabled]="isSubmittingFeedback"
             [attr.aria-pressed]="selectedHelpfulness === option.value">
             <span class="learning-details-feedback__image">
-              <img [src]="option.image" alt="" aria-hidden="true">
+              <img [src]="option.image" [class.learning-details-feedback__image--helpful]="option.value === 'helpful'" alt="" aria-hidden="true">
             </span>
             <span class="learning-details-feedback__label">{{ option.label }}</span>
           </button>

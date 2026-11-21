@@ -170,6 +170,12 @@ export class AvatarService {
     ) || null;
   }
 
+  /** Resolve API leaderboard values without changing an explicitly saved avatar. */
+  getLeaderboardAvatar(value: unknown, age?: number): AvatarDefinition | null {
+    const filename = String(value || '').split(/[\\/]/).pop() || '';
+    return this.getAvatarAsset(filename) || this.getLegacyAvatar({ avatarImageName: filename, age });
+  }
+
   /** Resolve a current Figma avatar, preserving old saved avatar values safely. */
   getAvatarForUser(user: any): AvatarDefinition {
     const ageGroup = this.getAgeGroup(user?.dateOfBirth || user?.dob);
@@ -215,14 +221,19 @@ export class AvatarService {
       }
     }
 
-    const oldImage = normalized.match(/(?:image)?(?:onboarding|details)avatar(female|male)?(\d+)/i);
+    const oldImage = normalized.replace(/[^a-z0-9]/g, '').match(/(?:image)?(?:onboarding|details)avatar(female|male)?(\d+)/i);
     if (oldImage) {
       gender = this.normalizeGender(oldImage[1]) || gender;
       index = Number(oldImage[2]);
     }
 
     if (!gender || !index || index < 1 || index > 6) return null;
-    const group = this.getAgeGroup(user?.dateOfBirth || user?.dob) || 'AGE_25_PLUS';
+    const age = user?.age;
+    const group = this.getAgeGroup(user?.dateOfBirth || user?.dob)
+      || (typeof age === 'number' && Number.isFinite(age) && age >= 0
+        ? AVATAR_GROUPS.find(candidate => age >= candidate.minimumAge
+          && (candidate.maximumAge === null || age <= candidate.maximumAge))?.ageGroup : null)
+      || 'AGE_25_PLUS';
     return ALL_AVATARS.find(avatar => avatar.ageGroup === group && avatar.gender === gender && avatar.index === index) || null;
   }
 

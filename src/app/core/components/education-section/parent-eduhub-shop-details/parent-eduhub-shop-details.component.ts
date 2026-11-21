@@ -1,3 +1,4 @@
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
 import { CommonModule, Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';

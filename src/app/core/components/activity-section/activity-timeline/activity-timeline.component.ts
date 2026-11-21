@@ -1,3 +1,5 @@
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../../../storage/session-storage';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';

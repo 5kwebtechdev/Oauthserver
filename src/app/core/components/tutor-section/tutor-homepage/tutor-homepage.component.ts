@@ -1,3 +1,4 @@
+import { TutorHeaderComponent as AcademyDesignHeaderComponent } from '../../education-section/academy-design-header/tutor-header.component';
 import { Component, Output, EventEmitter, HostListener, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -23,7 +24,7 @@ import { EduHubCityService } from '../../../services/eduhub-city.service';
 @Component({
   selector: 'tutor-homepage',
   standalone: true,
-  imports: [
+  imports: [AcademyDesignHeaderComponent,
     CommonModule,
     FormsModule,
     IonicModule,
@@ -40,6 +41,7 @@ import { EduHubCityService } from '../../../services/eduhub-city.service';
   styleUrls: ['./tutor-homepage.component.scss']
 })
 export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter {
+  academyBack(): void { this.router.navigate(['/authed/education']); }
   tutors: TutorListItem[] = [];
   isLoading = false;
   loadError = false;

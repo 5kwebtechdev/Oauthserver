@@ -162,6 +162,9 @@ const routes: Routes = [
         path: 'content',
         loadComponent: () => import('../core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent)
       }, {
+        path: 'content/quiz/:slug',
+        loadComponent: () => import('../core/components/learning-section/learning-description/learning-description.component').then(m => m.LearningDescriptionComponent)
+      }, {
         path: 'content/description/:id',
         loadComponent: () => import('../core/components/learning-section/learning-description/learning-description.component').then(m => m.LearningDescriptionComponent)
       }, {

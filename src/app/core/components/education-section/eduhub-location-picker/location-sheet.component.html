@@ -1,0 +1,32 @@
+<dialog #sheet class="ls-sheet" aria-labelledby="ls-title" (click)="onDialogClick($event)" (cancel)="onCancel($event)">
+  <div class="ls-panel">
+    <header class="ls-head">
+      <h2 id="ls-title">{{ title() }}</h2>
+      <button type="button" class="ls-close" aria-label="Close" (click)="close()">
+        <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" /></svg>
+      </button>
+    </header>
+
+    @if (showSearch()) {
+      <input
+        class="ls-search"
+        type="search"
+        placeholder="Search"
+        aria-label="Search this list"
+        [value]="query()"
+        (input)="query.set($any($event.target).value)"
+      />
+    }
+
+    <div #list class="ls-list">
+      @for (option of visibleOptions(); track option.value) {
+        <label class="ls-option">
+          <input type="radio" name="ls-option" [checked]="option.value === selected()" (click)="pick.emit(option.value)" />
+          {{ option.label }}
+        </label>
+      } @empty {
+        <p class="ls-empty">No matches found</p>
+      }
+    </div>
+  </div>
+</dialog>

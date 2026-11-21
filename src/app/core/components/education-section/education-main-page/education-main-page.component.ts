@@ -1,3 +1,5 @@
+import { SecondHandBooksBannerComponent } from '../../second-hand-books-banner/second-hand-books-banner.component';
+import { EduHubCategoryIconComponent } from '../eduhub-category-icon/eduhub-category-icon.component';
 import { ChangeDetectorRef, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -56,7 +58,7 @@ interface ParentShopCategoryDefinition {
     selector: 'app-education-main-page',
     standalone: true,
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    imports: [
+    imports: [SecondHandBooksBannerComponent, EduHubCategoryIconComponent,
         CommonModule,
         IonicModule,
         RouterModule,
@@ -138,12 +140,7 @@ export class EducationMainPageComponent implements OnInit {
             image: 'assets/figma/parent-eduhub/stationery.webp',
             aliases: ['stationery']
         },
-        {
-            id: 'second-hand-books',
-            label: 'Second-hand Books',
-            image: 'assets/figma/parent-eduhub/second-hand-books.webp',
-            aliases: ['second hand book', 'secondhand book', 'used book']
-        }
+
     ];
 
     constructor(
@@ -171,14 +168,6 @@ export class EducationMainPageComponent implements OnInit {
                 label: 'Learning Support',
                 icon: 'assets/figma/eduhub-categories/learning.svg',
                 categories: this.parentLearningCategories
-            },
-            {
-                key: 'pre-loved',
-                label: 'Pre-Loved Finds',
-                icon: 'assets/figma/eduhub-categories/pre-loved.svg',
-                categories: this.parentShopCategories.filter(category => category.id === 'store-second-hand-books'),
-                loading: this.parentShopCategoriesLoading,
-                error: this.parentShopCategoriesError
             },
             {
                 key: 'shops',
@@ -214,7 +203,6 @@ export class EducationMainPageComponent implements OnInit {
         const presentation: Record<string, { image: string; description: string; displayTitle?: string }> = {
             tutors: { image: 'tutor', description: 'Find & Contact trusted tutors' },
             academies: { image: 'academy', description: 'Explore courses & classes' },
-            'store-second-hand-books': { image: 'second-hand', displayTitle: 'Second Hand Books', description: 'Buy & sell used textbooks, competitive exam guides, fiction & non-fiction books.' },
             'store-stationery-shops': { image: 'stationery', displayTitle: 'Stationery Shops', description: 'Notebooks, pens & everyday essentials.' },
             'store-book-stores': { image: 'books', displayTitle: 'Book Stores', description: 'Find book stores near you.' },
             'store-sports-shop': { image: 'sports', description: 'For football, cricket, tennis and other sports goods near you.' },
@@ -222,7 +210,7 @@ export class EducationMainPageComponent implements OnInit {
             events: { image: 'events', description: 'Discover. Learn. Experience events and workshops near you.' },
             hostels: { image: 'hostels', description: 'Find safe & affordable PGs and hostels.' }
         };
-        const displayOrder = ['learning-support', 'pre-loved', 'living', 'guidance', 'activities', 'shops'];
+        const displayOrder = ['learning-support', 'living', 'guidance', 'activities', 'shops'];
         return sections.sort((a, b) => displayOrder.indexOf(a.key) - displayOrder.indexOf(b.key)).map(section => ({ ...section, categories: section.categories.map(category => {
             const visual = presentation[category.id];
             const image = `assets/figma/eduhub-categories/${visual.image}.png`;

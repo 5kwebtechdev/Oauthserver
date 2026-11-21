@@ -96,3 +96,9 @@ select:disabled {
 @media (prefers-reduced-motion: reduce) {
   .is-detecting .eduhub-city-selector__pin { animation: none; }
 }
+:host { gap: 8px; max-width: 100%; align-items: center; --sm-font-body: Nunito, sans-serif; --sm-font-size-body: 17px; --sm-font-size-subhead: 19px; --sm-v1-neutral100: #fff; --sm-v1-neutral300: #d9d6d8; --sm-v1-neutral800: #433e42; --sm-v1-neutral900: #282527; --sm-v1-tutor600: #1432a8; }
+.location-chip { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; padding: 4px 8px; border: 0; border-radius: 20px; background: #fff; color: #282527; font: 600 15px/1.3 Nunito, sans-serif; white-space: nowrap; cursor: pointer; }
+.location-chip--city { max-width: 145px; overflow: hidden; text-overflow: ellipsis; }
+.location-chip:focus-visible { outline: 2px solid #1432a8; outline-offset: 2px; }
+.location-caret { width: 0; height: 0; border: 5px solid transparent; border-top-color: currentColor; transform: translateY(3px); flex: none; }
+@media(max-width:359px) { :host{gap:4px}.location-chip{padding:4px 6px;font-size:13px}.location-chip--city{max-width:110px} }

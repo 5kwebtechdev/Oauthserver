@@ -1,0 +1,95 @@
+<header class="lp-header">
+  <div class="lp-bar">
+    <h1 class="lp-title">Learnings</h1>
+    <button type="button" class="lp-search" (click)="toggleSearch()" [attr.aria-expanded]="searchOpen" aria-controls="learning-search" aria-label="Search learnings">
+      <img src="assets/learnings/search.svg" alt="" />
+    </button>
+  </div>
+  <div class="lp-tabs" role="tablist" aria-label="Learnings">
+    <button *ngFor="let option of tabs; let i = index" type="button" role="tab" class="lp-tab"
+      [class.lp-tab--first]="i === 0" [class.lp-tab--last]="i === 2" [class.lp-tab--active]="tab === option.id"
+      [attr.aria-selected]="tab === option.id" [attr.aria-controls]="'learning-results'" [attr.id]="'learning-tab-' + option.id" (click)="selectTab(option.id)">
+      <img class="lp-tab-shape lp-tab-shape--on" src="assets/learnings/tab-active.svg" alt="" />
+      <img class="lp-tab-shape lp-tab-shape--off" [src]="'assets/learnings/' + (i === 2 ? 'tab-3.svg' : 'tab-2.svg')" alt="" />
+      <span class="lp-tab-body">
+        <span class="lp-tab-name"><img [class]="'lp-tab-icon lp-tab-icon--' + (i === 0 ? 'quiz' : option.id)" [src]="'assets/learnings/' + option.icon" alt="" />{{ option.label }}</span>
+        <span *ngIf="metrics(option.id) as stats" class="lp-tab-progress" [attr.aria-label]="stats.total === null ? 'Loading progress' : stats.completed + ' of ' + stats.total + ' completed'">
+          <span class="lp-tab-count"><span>{{ stats.total === null ? '—' : stats.completed + '/' + stats.total }}</span><span class="lp-tab-divider"></span><span>{{ stats.percent === null ? '—' : stats.percent + '%' }}</span></span>
+          <span class="lp-tab-track"><span class="lp-tab-fill" [style.width.%]="stats.percent || 0"></span></span>
+        </span>
+      </span>
+    </button>
+  </div>
+  <ng-container [ngSwitch]="tab">
+    <app-quiz-banner *ngSwitchCase="'quizzes'" [pet]="pet"></app-quiz-banner>
+    <app-topic-banner *ngSwitchCase="'articles'" topic="articles" [pet]="pet"></app-topic-banner>
+    <app-topic-banner *ngSwitchCase="'masterclass'" topic="masterclass" [pet]="pet"></app-topic-banner>
+  </ng-container>
+</header>
+<div class="lp-filters">
+  <div class="lp-filter"><span>Progress</span><button type="button" class="lp-pill" aria-label="Filter by progress" aria-haspopup="dialog" [attr.aria-expanded]="filterSheet === 'progress'" (click)="openFilter('progress')"><span>{{ progressLabel }}</span><img src="assets/learnings/caret.svg" alt="" /></button></div>
+  <div class="lp-filter lp-filter--category"><span>Category</span><button type="button" class="lp-pill" aria-label="Filter by category" aria-haspopup="dialog" [attr.aria-expanded]="filterSheet === 'category'" (click)="openFilter('category')"><span>{{ category || 'All' }}</span><img src="assets/learnings/caret.svg" alt="" /></button></div>
+</div>
+
+<ion-modal class="lp-filter-modal" [class.lp-filter-modal--category]="filterSheet === 'category'" [isOpen]="filterSheet !== null" [initialBreakpoint]="desktopFilters ? undefined : 1" [breakpoints]="desktopFilters ? undefined : [0, 1]" [handle]="!desktopFilters" [backdropDismiss]="true" aria-labelledby="learning-filter-title" (didDismiss)="filterSheet = null">
+  <ng-template>
+    <section class="lp-sheet">
+      <header class="lp-sheet-header"><h2 id="learning-filter-title">{{ filterSheet === 'category' ? 'Choose a category' : 'Progress' }}</h2><button type="button" aria-label="Close filters" (click)="filterSheet = null">×</button></header>
+      <div *ngIf="filterSheet === 'progress'" class="lp-progress-options" role="radiogroup" aria-label="Progress">
+        <button *ngFor="let option of progressOptions" type="button" role="radio" [attr.aria-checked]="progress === option.value" [class.is-selected]="progress === option.value" (click)="chooseProgress(option.value)"><span>{{ option.label }}</span><span class="lp-radio" aria-hidden="true"></span></button>
+      </div>
+      <div *ngIf="filterSheet === 'category'" class="lp-category-options" role="group" aria-label="Choose a category">
+        <button type="button" [class.is-selected]="!category" [attr.aria-pressed]="!category" (click)="chooseCategory('')"><span class="lp-all-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>All</span></button>
+        <button *ngFor="let group of active.categories" type="button" [class.is-selected]="category === categoryName(group)" [attr.aria-pressed]="category === categoryName(group)" (click)="chooseCategory(categoryName(group))"><app-img [src]="categoryImage(group) || fallbackImage()" [fallback]="fallbackImage()" [alt]="''" objectFit="contain"></app-img><span>{{ categoryLabel(group) }}</span></button>
+      </div>
+    </section>
+  </ng-template>
+</ion-modal>
+<app-eduhub-directory-search #directorySearch id="learning-search" [open]="searchOpen" label="learnings"
+  [terms]="searchTerms" [busy]="active.loading || active.error" [resultCount]="items.length" [results]="learningResults"
+  (searched)="submitSearch($event)" (dismissed)="searchOpen && toggleSearch()"></app-eduhub-directory-search>
+
+<section id="learning-results" role="tabpanel" [attr.aria-labelledby]="'learning-tab-' + tab" [attr.aria-busy]="active.loading">
+  <ng-container [ngTemplateOutlet]="learningResults"></ng-container>
+</section>
+
+<ng-template #learningResults>
+  <div *ngIf="active.loading" class="lp-state" role="status"><ion-spinner name="crescent"></ion-spinner><p>Loading learnings…</p></div>
+  <div *ngIf="!active.loading && active.error" class="lp-state lp-state--error" role="alert"><p>Some learning content could not be loaded.</p><button type="button" (click)="reload()">Try again</button></div>
+  <ng-container *ngIf="!active.loading">
+    <ul class="lp-list" *ngIf="items.length; else noContent">
+      <li *ngFor="let item of items; trackBy: trackItem">
+        <button type="button" [class]="item.type === 'masterclass' ? 'lp-course' : 'lp-card'" (click)="searchOpen && directorySearch.dismiss(); openItem.emit(item)" [attr.aria-label]="'Open ' + item.title">
+          <span [class]="item.type === 'masterclass' ? 'lp-course-thumb' : 'lp-thumb'" [class.lp-thumb--article]="item.type === 'article'"><app-img [src]="item.image" [fallback]="fallbackImage()" [alt]="item.title" objectFit="cover"></app-img><span *ngIf="item.type === 'quiz' && difficulty(item)" class="lp-level" [class.is-easy]="difficulty(item) === 'Easy'" [class.is-medium]="difficulty(item) === 'Medium'">{{ difficulty(item) }}</span></span>
+          <span [class]="item.type === 'masterclass' ? 'lp-course-body' : 'lp-card-body'">
+            <ng-container *ngIf="item.type === 'masterclass'; else standardCard">
+              <span class="lp-course-head"><span class="lp-course-text"><h2 class="lp-card-title">{{ item.title }}</h2><span *ngIf="lessons(item) !== null" class="lp-course-lessons">{{ lessons(item) }} lessons</span></span><span *ngIf="difficulty(item)" class="lp-course-level">{{ difficulty(item) }}</span></span>
+            </ng-container>
+            <ng-template #standardCard><h2 class="lp-card-title">{{ item.title }}</h2></ng-template>
+            <span class="lp-meta">
+              <span class="lp-coins">
+                <span>Earn {{ item.coins || 0 }}</span>
+                <img src="assets/icons/superme-coin.webp" alt="coins" />
+                <span *ngIf="bonus(item) as extra" class="lp-bonus">
+                  +<img src="assets/icons/superme-coin.webp" alt="bonus coins" /><b>{{ extra }}</b>
+                </span>
+              </span>
+              <span *ngIf="duration(item) as time" class="lp-time">
+                <img src="assets/learnings/schedule.svg" alt="Duration" />{{ time }}
+              </span>
+            </span>
+          </span>
+        </button>
+      </li>
+    </ul>
+    <ng-template #noContent><div *ngIf="!active.error" class="lp-state"><p>{{ query || category || progress !== 'all' ? 'No learnings match these filters.' : 'New learnings will appear here when available.' }}</p></div></ng-template>
+  </ng-container>
+</ng-template>
+
+<nav *ngIf="!query && totalPages > 1" class="lp-pagination" aria-label="Learning pages">
+  <button type="button" (click)="changePage(page - 1)" [disabled]="active.loading || page === 0">Previous</button>
+  <button type="button" *ngFor="let number of pageNumbers" (click)="changePage(number)"
+    [disabled]="active.loading || number === page" [attr.aria-current]="number === page ? 'page' : null"
+    [attr.aria-label]="'Page ' + (number + 1)">{{ number + 1 }}</button>
+  <button type="button" (click)="changePage(page + 1)" [disabled]="active.loading || page >= totalPages - 1">Next</button>
+</nav>

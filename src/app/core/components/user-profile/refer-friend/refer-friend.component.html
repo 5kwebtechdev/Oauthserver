@@ -4,7 +4,9 @@
     <div class="rf-waves rf-waves--right" aria-hidden="true"><img src="assets/figma/refer-friend/waves.png" alt=""></div>
 
     <main class="rf-main">
-      <superme-navigator class="rf-nav" heading="" backIcon="arrowSvg"></superme-navigator>
+      <div class="rf-nav"><button type="button" aria-label="Go back" (click)="goBack()">
+        <img src="assets/figma/refer-friend/back.svg" alt="">
+      </button></div>
       <app-contest-banner class="contest-entry" [months]="contestMonths" (open)="openContest()"></app-contest-banner>
 
       <section class="rf-hero" aria-labelledby="rf-title">

@@ -52,8 +52,8 @@ import { AuthService } from 'src/app/core/services/auth.service';
             <div class="reward-card-summary__meta">
               <span class="reward-card-summary__coins">
                 <img src="assets/icons/superme-coin.webp" alt="">
-                +{{ getItemCoins(item) }}
-                <span *ngIf="isRewardAssigned(item)" class="reward-card-summary__assigned-coins">
+                {{ rewardMode ? '−' : '+' }}{{ rewardMode ? getRewardCoins(item) : getItemCoins(item) }}
+                <span *ngIf="!rewardMode && isRewardAssigned(item)" class="reward-card-summary__assigned-coins">
                   +<img src="assets/icons/superme-coin.webp" alt="">{{ getRewardCoins(item) }}
                 </span>
               </span>
@@ -97,7 +97,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
         <button type="button" class="parenting-toolkit__card" (click)="openParentingQuizzes()"
           [attr.aria-label]="'View all ' + parentingQuizCount + ' parenting quizzes'">
           <span class="parenting-toolkit__card-icon">
-            <img src="assets/figma/parent-home/parent-learning-quizzes.webp" alt="" aria-hidden="true">
+            <img src="assets/figma/parent-child-learning/tab-quizzes.webp" alt="" aria-hidden="true">
           </span>
           <span class="parenting-toolkit__card-copy">
             <strong id="parenting-toolkit-title">Quizzes</strong>
@@ -1083,6 +1083,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
         }
 
         .parenting-toolkit__card-icon {
+          // Use the tightly cropped quiz asset so its visible artwork fills this slot.
           display: flex;
           width: 40px;
           height: 40px;
@@ -1092,6 +1093,8 @@ import { AuthService } from 'src/app/core/services/auth.service';
           overflow: hidden;
 
           img {
+            display: block;
+            flex-shrink: 0;
             width: 40px;
             height: 40px;
             object-fit: contain;
@@ -1340,11 +1343,8 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
     const relationship = String(this.authService.getUserRelationship() || '').trim().toUpperCase();
     const isChildOrSelf = relationship === 'CHILD' || relationship === 'SELF';
 
-    if (this.parentLearningViewAll && relationship === 'PARENT') {
-      void this.router.navigate(['/authed/parent-learning'], {
-        queryParams: { category: this.parentLearningCategory },
-        state: { source: this.source || '/authed/parent-account' }
-      });
+    if (this.parentLearningViewAll && (this.contentMode === 'parenting' || relationship === 'PARENT')) {
+      this.openParentingListing(this.parentLearningCategory);
       return;
     }
 
@@ -1359,16 +1359,17 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   openParentingBlogs(): void {
-    void this.router.navigate(['/authed/parent-learning'], {
-      queryParams: { category: 'blogs' },
-      state: { source: this.source || '/authed/parent-account' }
-    });
+    this.openParentingListing('blogs');
   }
 
   openParentingQuizzes(): void {
-    void this.router.navigate(['/authed/parent-learning'], {
-      queryParams: { category: 'quizzes' },
-      state: { source: this.source || '/authed/parent-account' }
+    this.openParentingListing('quizzes');
+  }
+
+  private openParentingListing(category: 'blogs' | 'quizzes'): void {
+    void this.router.navigate(['/parent-learning'], {
+      queryParams: { category },
+      state: { source: this.source || '/parent-account' }
     });
   }
 
@@ -1491,11 +1492,11 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
       ? forkJoin([
           this.learningService.fetchArticleCards(true, scopedUserId, undefined, true).pipe(
             tap(items => this.parentingBlogCount = items.length),
-            map(items => this.pickLatestItems(items, 2))
+            map(items => this.pickLatestItems(items, 6))
           ),
           this.learningService.fetchQuizCards(true, scopedUserId, undefined, true).pipe(
             tap(items => this.parentingQuizCount = items.length),
-            map(items => this.pickLatestItems(items, 2))
+            map(items => this.pickLatestItems(items, 6))
           )
         ]).pipe(map(([articles, quizzes]) => {
           quizItemsForRequest = quizzes;
@@ -1511,7 +1512,7 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
           this.learningService.fetchQuizCards(true, scopedUserId, scopedAge),
           this.learningService.fetchPuzzleCards(true, scopedUserId, scopedAge),
           this.learningService.fetchArticleCards(true, scopedUserId, scopedAge)
-        ]).pipe(map(groups => this.pickDistinctLatestItems(groups)));
+        ]).pipe(map(groups => this.pickDistinctLatestItems(groups, this.rewardMode ? 6 : undefined)));
 
     requests
       .subscribe({
@@ -1531,24 +1532,29 @@ export class LearningSectionComponent implements OnInit, OnChanges, AfterViewIni
       });
   }
 
-  /** One card per feed, without showing the same challenge twice when scoped APIs overlap. */
-  private pickDistinctLatestItems(groups: any[][]): any[] {
+  /** Prefer a mix of feeds and skip duplicates when scoped APIs overlap. */
+  private pickDistinctLatestItems(groups: any[][], limit?: number): any[] {
     const seen = new Set<string>();
     const selected: any[] = [];
-    for (const cards of groups) {
-      for (const card of this.pickLatestItems(cards, cards.length)) {
-        const raw = card.rawData || card;
-        const id = raw.challengeId ?? raw.articleId ?? raw.id ?? card.id;
-        const kind = card.type === 'article' ? 'article' : 'challenge';
-        const key = id != null
-          ? `${kind}:${id}`
-          : `${kind}:${String(card.title || '').trim().toLowerCase()}:${String(card.image || '').trim()}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        selected.push(card);
-        break;
+    const feeds = groups.map(cards => this.pickLatestItems(cards, cards.length));
+    do {
+      for (const feed of feeds) {
+        while (feed.length) {
+          const card = feed.shift();
+          const raw = card.rawData || card;
+          const id = raw.challengeId ?? raw.articleId ?? raw.id ?? card.id;
+          const kind = card.type === 'article' ? 'article' : 'challenge';
+          const key = id != null
+            ? `${kind}:${id}`
+            : `${kind}:${String(card.title || '').trim().toLowerCase()}:${String(card.image || '').trim()}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          selected.push(card);
+          if (selected.length === limit) return selected;
+          break;
+        }
       }
-    }
+    } while (limit !== undefined && feeds.some(feed => feed.length));
     return selected;
   }
 

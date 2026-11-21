@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core';
+import { environment } from '../../environments/environment';
+import { PkceEntryComponent } from '../core/components/pkce-entry.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomePage } from './home.page';
@@ -15,7 +18,7 @@ const routes: Routes = [
     canActivate: [startupGuard]
   }, {
     path: 'login',
-    component: LoginComponent,
+    component: Capacitor.getPlatform() === 'android' && (environment as any).androidOAuth?.enabled === true ? PkceEntryComponent : LoginComponent,
     canActivate: [guestGuard]
   }, {
     path: 'sign-up',

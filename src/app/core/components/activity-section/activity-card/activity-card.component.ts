@@ -1,9 +1,12 @@
-import { Component, Input, OnInit, ViewChild, ElementRef, booleanAttribute, AfterViewInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { MicroRewardService } from 'src/app/core/services/micro-reward/micro-reward.service';
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../../../storage/session-storage';
+import { inject, Component, Input, OnInit, ViewChild, ElementRef, booleanAttribute, AfterViewInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { NgClass, NgIf, CommonModule, NgForOf } from "@angular/common";
 import { RouterModule } from '@angular/router';
 import { LongPressDirective } from "../../../directives/gestureControlDirective";
 import { SupermeButtonComponent } from "../../superme-button/superme-button.component";
-import { SupermePopupComponent, SupermePopupConfig, SupermePopupCTA } from '../../superme-popup/superme-popup.component';
+import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 
 import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
 import { GlanceBlankStateComponent } from './glance-blank-state.component';
@@ -22,7 +25,7 @@ import { CoerceBoolean } from "../../../coerceBoolean.decorator";
 import { Habit } from '../habit.types';
 import { FocusTimerService } from '../../superme-timer/focus-timer.service';
 import { focusSchedule, timerSnapshot } from '../../superme-timer/timer-state';
-import { catchError, finalize, forkJoin, of, skip, Subscription } from 'rxjs';
+import { catchError, finalize, forkJoin, of, skip, Subscription, timeout } from 'rxjs';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
@@ -33,7 +36,7 @@ import { CalendarApi } from '../../../api/calendar.api';
 import { getEventTypeIcon } from '../event-type-icon';
 import { isCalendarMirrorOfPersonalEvent, isHomePersonalEvent, isHomePlannerSchedule } from '../home-calendar-kind';
 import { eventOccurrences } from '../personal-event-occurrences';
-import { activityRewardIconHtml } from '../activity-reward-icon';
+import { activityConfirmationConfig } from '../activity-confirmation-config';
 import { CustomToastService } from '../../../services/custom-toast.service';
 
 @Component({
@@ -57,6 +60,9 @@ import { CustomToastService } from '../../../services/custom-toast.service';
   ]
 })
 export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+  showCompletionReward = false;
+  private readonly microReward = inject(MicroRewardService);
+  private readonly rewardElement = inject<ElementRef<HTMLElement>>(ElementRef);
 
   @Input()
   habit: Habit | null = null;
@@ -98,6 +104,22 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     return !this.glanceDataLoading && (this.glanceLoadError || this.glancePlannerLoadError || this.dailyHabitsError || this.dailyTasksError);
   }
   get glanceDataReady(): boolean { return !this.glanceDataLoading && !this.glanceDataError; }
+  get showLoadedParentActivities(): boolean {
+    if (this.mode !== 'list' || !this.isParentOverride) return false;
+    switch (this.currentActive) {
+      case 'habits': return this.hasHabits;
+      case 'tasks': return this.hasTasks;
+      case 'timetable': return this.hasTimetables || this.hasGlancePlannerCards;
+      default: return this.hasHabits || this.hasTasks || this.hasTimetables || this.hasGlancePlannerCards;
+    }
+  }
+
+  retryParentPlan(): void {
+    if (this.dailyHabitsError) this.loadHabits(true);
+    if (this.dailyTasksError) this.loadTodayTasks();
+    if (this.glancePlannerLoadError) this.loadGlancePlannerCards(true);
+  }
+
   private loadedDailyHabits: any[] | null = null;
   private loadedDailyTasks: any[] | null = null;
   private loadedDailyPlanners: any[] = [];
@@ -547,31 +569,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     if (!this.isLetsGoEnabled()) return;
 
     // Configure popup content (image, heading, subtitle, CTAs)
-    const primary: SupermePopupCTA = {
-      text: 'Start Now',
-      buttonStyle: 'green',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (primaryAction) output
-    };
-
-    const secondary: SupermePopupCTA = {
-      text: 'Discard',
-      buttonStyle: 'bronze-transparent',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (secondaryAction) output
-    };
-
-    this.startPopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-Start.webp',
-      imageAlt: 'Ready to Start',
-      heading: 'Ready to Start?',
-      subtitle: "You're about to begin this habit!",
-      primaryCTA: primary,
-      secondaryCTA: secondary,
-      showCloseButton: false,
-      backdrop: true,
-      ctaDirection: 'row'
-    };
+    this.startPopupConfig = activityConfirmationConfig('start');
 
     this.showStartPopup = true;
   }
@@ -597,34 +595,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const coins = this.getCoinReward();
     const streak = Math.max(1, this.getStreak());
 
-    // Build heading HTML to include coin and streak rows
-    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:var(--text-base);">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;text-align:left;"><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('coin')}<div style="font-weight:600;">+${coins}</div></div><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('streak')}<div style="font-weight:600;">${streak}</div></div></div>`;
-
-    const primary: SupermePopupCTA = {
-      text: 'Confirm',
-      buttonStyle: 'green',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (primaryAction) output
-    };
-
-    const secondary: SupermePopupCTA = {
-      text: 'Discard',
-      buttonStyle: 'bronze-transparent',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (secondaryAction) output
-    };
-
-    this.completePopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-GreatWork.webp',
-      imageAlt: 'Great Work',
-      heading: headingHtml,
-      subtitle: '',
-      primaryCTA: primary,
-      secondaryCTA: secondary,
-      showCloseButton: false,
-      backdrop: true,
-      ctaDirection: 'row'
-    };
+    this.completePopupConfig = activityConfirmationConfig('complete', { coins, streak });
 
     this.showCompletePopup = true;
   }
@@ -739,33 +710,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const coins = this.getCoinReward();
     const streak = Math.max(1, this.getStreak());
 
-    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:var(--text-base);">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;">${activityRewardIconHtml('coin')}<div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;">${activityRewardIconHtml('streak')}<div style="font-weight:600;">${streak}</div></div></div>`;
-
-    const primary: SupermePopupCTA = {
-      text: 'Keep Going',
-      buttonStyle: 'green',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (primaryAction) output
-    };
-
-    const secondary: SupermePopupCTA = {
-      text: 'Abort Anyways',
-      buttonStyle: 'bronze-transparent',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (secondaryAction) output
-    };
-
-    this.abortPopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-Abort.webp',
-      imageAlt: 'Abort',
-      heading: headingHtml,
-      subtitle: '',
-      primaryCTA: primary,
-      secondaryCTA: secondary,
-      showCloseButton: false,
-      backdrop: true,
-      ctaDirection: 'row'
-    };
+    this.abortPopupConfig = activityConfirmationConfig('abort', { coins, streak });
 
     this.showAbortPopup = true;
   }
@@ -949,11 +894,48 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     if (!this.habit) return;
 
     // Skipped is a terminal state and must never be completed from a stale UI.
+    const user = this.authService.getUserData();
+    const animateReward = String(user?.relationship).toUpperCase() === 'CHILD';
+    const source = this.rewardElement.nativeElement;
+    const activityId = this.habit.id;
+    const card = source.querySelector<HTMLElement>('.habit-wrapper, .task-at-a-glance');
+    const origin = (source.querySelector('.activity-reward__icon') ?? source).getBoundingClientRect();
+    if (animateReward) this.microReward.unlockSound();
+
     const status = this.habit.status?.toLowerCase();
     if (status === 'skipped' || !this.isDoneEnabled()) {
       console.log('Done button is not enabled - need to click Let\'s Go first');
       return;
     }
+
+    const playCompletionReward = async (response: any) => {
+      if (!animateReward) return;
+      const coins = Number(response?.coinsAwarded ?? response?.coinsEarned ?? this.getCoinReward());
+      if (!Number.isFinite(coins) || coins <= 0) return;
+      this.showCompletionReward = true;
+      const home = this.router.url.split(/[?#]/)[0].endsWith('/home');
+      await this.microReward.celebrate({
+        from: origin, coins, balance: Number(user?.coins) || 0, confetti: 'both',
+        screenCoin: home ? source.ownerDocument.querySelector<HTMLElement>('.coin-pill-icon') : null,
+        pill: home ? 'auto' : 'floating',
+      }).catch(() => undefined);
+      this.showCompletionReward = false;
+      if (!card?.isConnected || this.habit?.id !== activityId || this.getStatus() !== 'completed' || !card.getAnimations) return;
+      this.showCompletionReward = true;
+      const previousStyle = card.getAttribute('style');
+      const previousAnimations = card.getAnimations();
+      try {
+        await this.microReward.slideOut(card);
+      } catch {
+        // The completion stays saved if the browser interrupts the visual.
+      } finally {
+        this.showCompletionReward = false;
+        card.getAnimations().filter(animation => !previousAnimations.includes(animation))
+          .forEach(animation => animation.cancel());
+        if (previousStyle == null) card.removeAttribute('style');
+        else card.setAttribute('style', previousStyle);
+      }
+    };
 
     // Check if this is a task or habit and call the appropriate API
     if (this.habit.type === 'tasks') {
@@ -963,7 +945,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       };
 
       this.taskApi.completeTask(this.habit.id).subscribe({
-        next: (res: any) => {
+        next: async (res: any) => {
           if (res && res.requiresConfirmation === true) {
             this.openCoinCapConfirmPopup(res.message || '', this.habit!.id, 'tasks');
             return;
@@ -989,6 +971,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
             const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             this.calendarService.clearCache(formatted, 'day');
           } catch (e) { /* ignore */ }
+          if (animateReward) await playCompletionReward(res);
           this.loadTodayTasks();
           this.clearProgress();
           // Notify that a task was completed so dashboard refreshes
@@ -1013,14 +996,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     } else {
       // Call habit API for habits (existing code)
       this.habitApi.completeHabit(this.habit.id).subscribe({
-        next: (res: any) => {
+        next: async (res: any) => {
           if (res && res.requiresConfirmation === true) {
             this.openCoinCapConfirmPopup(res.message || '', this.habit!.id, 'habits');
             return;
           }
           this.trackCompletion('habits', this.habit?.title || '');
           const updated = { ...this.habit!, status: 'completed' } as Habit;
-          this.habitService.completeHabit(updated.id);
           this.habit = updated;
           // Clear the saved ongoing state
           this.clearOngoingState();
@@ -1040,6 +1022,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
             const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             this.calendarService.clearCache(formatted, 'day');
           } catch (e) { /* ignore */ }
+          if (animateReward) await playCompletionReward(res);
+          this.habitService.completeHabit(updated.id);
           this.loadHabits();
           this.clearProgress();
           // Trigger change detection to update button states in other components
@@ -1204,6 +1188,12 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           this.habits = [];
           this.tasks = [];
           this.timetables = [];
+          this.hasHabits = false;
+          this.hasTasks = false;
+          this.hasTimetables = false;
+          this.totalHabitsLoaded = this.totalHabitsCompleted = 0;
+          this.totalTasksLoaded = this.totalTasksCompleted = 0;
+          this.totalTimetablesLoaded = 0;
           this.loadedDailyHabits = null;
           this.loadedDailyTasks = null;
           this.loadedDailyPlanners = [];
@@ -2039,7 +2029,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     this.dailyHabitsError = false;
     // Get all habits using the service
     // this.habitService.loadHabitsBySearch({}).subscribe({
-    this.habitService.loadTodayHabits(force, true).pipe(finalize(() => { this.dailyPending--; this.cdr.markForCheck(); })).subscribe({
+    const habits$ = this.habitService.loadTodayHabits(force, true);
+    const request$ = this.isParentOverride ? habits$.pipe(timeout({ first: 15000 })) : habits$;
+    request$.pipe(finalize(() => { this.dailyPending--; this.cdr.markForCheck(); })).subscribe({
       next: () => {
         if (requestId !== this.habitsRequestId) return;
         // Only today's activities show on Home. Sort by proximity to current time (recency relative to now)
@@ -2195,7 +2187,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const now = Date.now();
 
-    this.calendarService.getUserCalendar(formatted, 'day').pipe(finalize(() => { this.dailyPending--; this.cdr.markForCheck(); })).subscribe({
+    const calendar$ = this.calendarService.getUserCalendar(formatted, 'day');
+    const request$ = this.isParentOverride ? calendar$.pipe(timeout({ first: 15000 })) : calendar$;
+    request$.pipe(finalize(() => { this.dailyPending--; this.cdr.markForCheck(); })).subscribe({
       next: (resp: any) => {
         if (requestId !== this.tasksRequestId) return;
         if (resp?.loadError) { this.dailyTasksError = true; return; }
@@ -2378,6 +2372,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
     this.glancePlannerLoading = true;
     const isParentHome = (this.isParentOverride ?? this.authService.isParentUser());
+    const selectedChildId = this.profileSelectorService.getSelectedChild()?.id;
     const windowEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30);
     const monthDates: string[] = [formatted];
     if (isParentHome) {
@@ -2390,10 +2385,21 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     // Parent Planner can expose child Events through its calendar projection,
     // including in the next month. Keep /events/all as the preferred full record.
     forkJoin({
-      calendars: forkJoin(monthDates.map(date => this.calendarService.getUserPlannerCalendarMonth(date))),
-      events: this.eventApi.getEvents().pipe(catchError(() => of([])))
+      calendars: forkJoin(monthDates.map(date => {
+        const calendar$ = this.calendarService.getUserPlannerCalendarMonth(date);
+        return isParentHome ? calendar$.pipe(
+          timeout({ first: 15000 }),
+          catchError(() => of({ events: [], loadError: true }))
+        ) : calendar$;
+      })),
+      events: (isParentHome ? this.eventApi.getEvents().pipe(timeout({ first: 15000 }))
+        : this.eventApi.getEvents()).pipe(catchError(() => of([])))
     }).subscribe({
       next: ({ calendars, events }: { calendars: any[]; events: any[] }) => {
+        if (isParentHome && selectedChildId !== this.profileSelectorService.getSelectedChild()?.id) {
+          this.finishGlancePlannerLoad();
+          return;
+        }
         const calendar = calendars[0];
         const calendarEvents = Array.isArray(calendar?.events) ? calendar.events : [];
         const projectedEvents = isParentHome

@@ -1,0 +1,153 @@
+<!-- Bar: Filters button, then category chips, or the chosen category's field chips. -->
+<div #bar class="tf-bar" role="toolbar" aria-label="Tutor filters">
+  <button type="button" class="tf-chip" [class.is-on]="appliedCount() > 0" (click)="openSheet()">
+    <svg class="tf-sliders" viewBox="0 0 20 20" aria-hidden="true">
+      <path d="M3 6h7M14 6h3M3 14h3M10 14h7" />
+      <circle cx="12" cy="6" r="2" />
+      <circle cx="8" cy="14" r="2" />
+    </svg>
+    Filters
+    @if (appliedCount() > 0) {
+      <span class="tf-badge">{{ appliedCount() }}</span>
+    }
+  </button>
+
+  @for (field of commonFields; track field.id) {
+    <ng-container [ngTemplateOutlet]="fieldChip" [ngTemplateOutletContext]="{ $implicit: field }" />
+  }
+
+  @if (appliedCategory(); as category) {
+    <button
+      type="button"
+      class="tf-chip is-on"
+      [attr.aria-label]="'Remove category ' + category.label"
+      (click)="clearCategory()"
+    >
+      {{ category.label }}
+      <svg class="tf-x" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" /></svg>
+    </button>
+
+    @for (field of category.fields; track field.id) {
+      <ng-container [ngTemplateOutlet]="fieldChip" [ngTemplateOutletContext]="{ $implicit: field }" />
+    }
+  } @else {
+    @for (category of categories; track category.id) {
+      <button type="button" class="tf-chip" (click)="selectCategory(category.id)">{{ category.label }}</button>
+    }
+  }
+</div>
+
+<ng-template #fieldChip let-field>
+  <button type="button" class="tf-chip" [class.is-on]="countOf(applied(), field.id) > 0" (click)="openSheet(field.id)">
+    {{ field.label }}
+    @if (countOf(applied(), field.id) > 0) {
+      <span class="tf-badge">{{ countOf(applied(), field.id) }}</span>
+    }
+    <svg class="tf-caret" viewBox="0 0 8.94 5.22" aria-hidden="true">
+      <path d="M0.752053 0H8.18955C8.8583 0 9.19268 0.809375 8.7208 1.28125L5.00205 5C4.7083 5.29375 4.2333 5.29375 3.94268 5L0.220803 1.28125C-0.251072 0.809375 0.0833026 0 0.752053 0Z" />
+    </svg>
+  </button>
+</ng-template>
+
+<!-- Sheet: tabs on the left (Category + the fields it unlocks), options on the right. -->
+<dialog #sheet class="tf-sheet" aria-labelledby="tf-title" (click)="onDialogClick($event)" (cancel)="onCancel($event)">
+  <div class="tf-panel">
+    <div
+      class="tf-grab"
+      aria-hidden="true"
+      (pointerdown)="onGrabStart($event)"
+      (pointermove)="onGrabMove($event)"
+      (pointerup)="onGrabEnd($event)"
+      (pointercancel)="onGrabEnd($event)"
+    >
+      <span></span>
+    </div>
+
+    <header class="tf-head">
+      <h2 id="tf-title">Filters</h2>
+      <button type="button" class="tf-close" aria-label="Close filters" (click)="closeSheet()">
+        <svg class="tf-x" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" /></svg>
+      </button>
+    </header>
+
+    <div class="tf-body">
+      <div class="tf-rail" role="tablist" aria-orientation="vertical">
+        <button
+          type="button"
+          role="tab"
+          class="tf-tab"
+          [class.is-active]="activeTab() === categoryTab"
+          [attr.aria-selected]="activeTab() === categoryTab"
+          (click)="setTab(categoryTab)"
+        >
+          Category
+          @if (draftCategory(); as category) {
+            <small>{{ category.label }}</small>
+          }
+        </button>
+
+        @for (field of draftFields(); track field.id) {
+          <button
+            type="button"
+            role="tab"
+            class="tf-tab"
+            [class.is-active]="activeTab() === field.id"
+            [attr.aria-selected]="activeTab() === field.id"
+            (click)="setTab(field.id)"
+          >
+            {{ field.label }}
+            @if (countOf(draft(), field.id) > 0) {
+              <span class="tf-badge">{{ countOf(draft(), field.id) }}</span>
+            }
+          </button>
+        }
+      </div>
+
+      <div #pane class="tf-pane" role="tabpanel">
+        @if (activeField(); as field) {
+          @for (group of field.groups; track group.label) {
+            @if (group.label) {
+              <h3 class="tf-group">{{ group.label }}</h3>
+            }
+            @for (option of group.options; track option) {
+              <label class="tf-option">
+                <input
+                  [type]="field.single ? 'radio' : 'checkbox'"
+                  [checked]="isSelected(field.id, optionValue(group, option))"
+                  (click)="toggleOption(field, optionValue(group, option))"
+                />
+                {{ option }}
+              </label>
+            }
+          }
+        } @else {
+          @if (!draftCategory()) {
+            <p class="tf-hint">
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <circle cx="8" cy="8" r="6.5" />
+                <path d="M8 7.2v3.6M8 5.2v.1" />
+              </svg>
+              Pick a category to see its filters
+            </p>
+          }
+          @for (category of categories; track category.id) {
+            <label class="tf-option">
+              <input
+                type="radio"
+                name="tf-category"
+                [checked]="draft().category === category.id"
+                (click)="pickCategory(category)"
+              />
+              {{ category.label }}
+            </label>
+          }
+        }
+      </div>
+    </div>
+
+    <footer class="tf-foot">
+      <button type="button" class="tf-clear" [disabled]="draftCount() === 0" (click)="clearAll()">Clear all</button>
+      <button type="button" class="tf-apply" (click)="apply()">Apply filters</button>
+    </footer>
+  </div>
+</dialog>

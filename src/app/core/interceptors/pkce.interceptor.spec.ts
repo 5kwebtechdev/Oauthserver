@@ -8,7 +8,8 @@ describe('PKCE API interceptor', () => {
   let interceptor: PkceInterceptor;
   beforeEach(() => {
     localStorage.clear();
-    pkce = { enabled: true, token: 'initial', refresh: jasmine.createSpy().and.callFake(async () => { pkce.token = 'renewed'; }) };
+    pkce = { enabled: true, token: 'initial', refresh: jasmine.createSpy().and.callFake(async () => { pkce.token = 'renewed'; }),
+      logoutAfterRefreshFailure: jasmine.createSpy().and.returnValue(Promise.resolve()) };
     interceptor = new PkceInterceptor(pkce);
   });
   afterEach(() => localStorage.clear());
@@ -34,6 +35,14 @@ describe('PKCE API interceptor', () => {
     await expectAsync(firstValueFrom(interceptor.intercept(new HttpRequest('GET', environment.apiUrl + '/tasks'), handler))).toBeRejected();
     expect(handler.handle).toHaveBeenCalledTimes(2);
     expect(pkce.refresh).toHaveBeenCalledTimes(1);
+    expect(pkce.logoutAfterRefreshFailure).toHaveBeenCalledTimes(1);
+  });
+  it('logs out after a missing or invalid refresh token without another API retry', async () => {
+    pkce.refresh.and.returnValue(Promise.reject(new Error('invalid_grant')));
+    const handler = { handle: jasmine.createSpy().and.returnValue(throwError(() => new HttpErrorResponse({ status: 401 }))) };
+    await expectAsync(firstValueFrom(interceptor.intercept(new HttpRequest('GET', environment.apiUrl + '/tasks'), handler))).toBeRejected();
+    expect(handler.handle).toHaveBeenCalledTimes(1);
+    expect(pkce.logoutAfterRefreshFailure).toHaveBeenCalledTimes(1);
   });
   it('honors public authentication requests', async () => {
     const handler = { handle: jasmine.createSpy().and.returnValue(of(new HttpResponse({ status: 200 }))) };

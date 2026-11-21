@@ -2,6 +2,7 @@ import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { OAuthModule } from 'angular-oauth2-oidc';
 import { PkceAuthService } from './core/services/pkce-auth.service';
 import { PkceInterceptor } from './core/interceptors/pkce.interceptor';
+import { WalletBalanceInterceptor } from './core/interceptors/wallet-balance.interceptor';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -33,6 +34,7 @@ import { BadgeArtComponent } from './core/components/badge-section/badge-art.com
   providers: [
     { provide: APP_INITIALIZER, multi: true, useFactory: (auth: PkceAuthService) => () => auth.init(), deps: [PkceAuthService] },
     { provide: HTTP_INTERCEPTORS, useClass: PkceInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: WalletBalanceInterceptor, multi: true },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: AppCheckInterceptor, multi: true },

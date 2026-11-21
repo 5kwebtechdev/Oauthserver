@@ -1,3 +1,8 @@
+import { EduHubDirectorySearchComponent } from '../eduhub-directory-search/eduhub-directory-search.component';
+import { EventHeaderComponent } from '../event-design/event-header/event-header.component';
+import { EventFiltersComponent } from '../event-design/event-filters/event-filters.component';
+import { EventFilterState } from '../event-design/event-filters/event-filters.data';
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
 import { CommonModule, Location } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -31,11 +36,13 @@ interface EventListingRouteData {
 @Component({
   selector: 'app-eduhub-events',
   standalone: true,
-  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, EduHubEventCardComponent],
+  imports: [EventFiltersComponent, EduHubDirectorySearchComponent,EventHeaderComponent,CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, EduHubEventCardComponent],
   templateUrl: './eduhub-events.component.html',
   styleUrls: ['./eduhub-events.component.scss']
 })
 export class EduHubEventsComponent implements OnInit, OnDestroy {
+  designFilters: EventFilterState = { selections: {}, dateRange: null };
+  onDesignFilters(filters: EventFilterState): void { this.designFilters = filters; }
   readonly loadingCards = [0, 1, 2];
 
   entityType: EduHubEventEntityType = 'Events';
@@ -49,7 +56,11 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
   page = 0;
   totalPages = 0;
   totalElements = 0;
+  get directorySearchTerms(): string[] { return this.items.map(item => this.getDisplayName(item)); }
+  runDirectorySearch(value: string): void { this.updateSearch(value); }
   searchOpen = false;
+  get searchLocationLabel(): string { return this.cityService.filter.city || this.cityService.filter.state || this.cityService.academyFilter.country || 'All locations'; }
+
   searchQuery = '';
   filterOpen = false;
   // Active listings are the default catalogue. Verification is an optional
@@ -118,7 +129,7 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
   get visibleItems(): EduHubEventItem[] {
     const query = this.normalise(this.searchQuery);
     const city = this.normalise(this.cityService.city);
-    return this.items.filter(item => {
+    const results = this.items.filter(item => {
       const matchesQuery = !query || this.normalise([
         item.name,
         item.title,
@@ -131,8 +142,20 @@ export class EduHubEventsComponent implements OnInit, OnDestroy {
       ].join(' ')).includes(query);
       const matchesFilter = this.activeFilter !== 'verified' || !!item.verified;
       const matchesCity = !city || this.normalise([item.city, item.address, item.venue].join(' ')).includes(city);
-      return matchesQuery && matchesFilter && matchesCity;
+      const range = this.designFilters.dateRange;
+      const date = item.startDt ? new Date(item.startDt) : null;
+      const day = date && !Number.isNaN(date.getTime()) ? [date.getFullYear(), String(date.getMonth()+1).padStart(2,'0'), String(date.getDate()).padStart(2,'0')].join('-') : '';
+      return matchesQuery && matchesFilter && matchesCity && (!range || (!!day && day >= range.from && day <= range.to));
     });
+    const sort = this.designFilters.selections['sort']?.[0];
+    if (sort) results.sort((a,b) => {
+      const left = a.isFree ? 0 : a.fee;
+      const right = b.isFree ? 0 : b.fee;
+      if (left == null) return right == null ? 0 : 1;
+      if (right == null) return -1;
+      return (left-right) * (sort === 'Price: High to Low' ? -1 : 1);
+    });
+    return results;
   }
 
   get eduAdScreen(): AdScreen {

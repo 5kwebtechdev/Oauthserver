@@ -1,4 +1,6 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { MicroRewardService } from 'src/app/core/services/micro-reward/micro-reward.service';
+import { inject, ElementRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
@@ -17,6 +19,10 @@ import { of } from 'rxjs';
   styleUrls: ['./academy-lessons.component.scss']
 })
 export class AcademyLessonsComponent implements OnInit, OnDestroy {
+  private readonly authService = inject(AuthService);
+  private destroyed = false;
+  private readonly microReward = inject(MicroRewardService);
+  private readonly rewardElement = inject<ElementRef<HTMLElement>>(ElementRef);
   @Input() lessonId: number | string | undefined;
   @Input() courseId: string | undefined;
   @Input() courseTitle: string | undefined;
@@ -295,17 +301,22 @@ export class AcademyLessonsComponent implements OnInit, OnDestroy {
     }
 
     this.isCompleting = true;
+    const user = this.authService.getUserData();
+    const animateReward = String(user?.relationship).toUpperCase() === 'CHILD';
+    if (animateReward) this.microReward.unlockSound();
     this.completionError = '';
     this.academyService.completeLessonById(this.lesson.id)
       .pipe(
         catchError(() => {
           this.completionError = 'We could not save your progress. Please try again.';
           return of(null);
-        }),
-        finalize(() => this.isCompleting = false)
+        })
       )
-      .subscribe(response => {
-        if (!response || !this.lesson) return;
+      .subscribe(async response => {
+        if (!response || !this.lesson || this.destroyed) {
+          this.isCompleting = false;
+          return;
+        }
 
         this.lesson = { ...this.lesson, ...response, isCompleted: true };
         this.doneClicked = true;
@@ -318,6 +329,14 @@ export class AcademyLessonsComponent implements OnInit, OnDestroy {
           this.courseLessons[this.currentLessonIndex].isCompleted = true;
         }
 
+        if (animateReward) {
+          await this.microReward.celebrate({
+            from: this.rewardElement.nativeElement, coins: this.lessonCoins ?? 0,
+            balance: Number(user?.coins) || 0, pill: 'floating', confetti: false,
+          }).catch(() => undefined);
+        }
+        this.isCompleting = false;
+        if (this.destroyed) return;
         if (this.isLastLesson) {
           this.close();
         } else {
@@ -388,6 +407,7 @@ export class AcademyLessonsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.clearFocusTimer();
   }
 }

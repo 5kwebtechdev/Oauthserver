@@ -1,0 +1,7 @@
+// Opt-in QA only: exercise the actual shrunk, signed release rather than debug.
+// This does not disable signing, shrinkers, Firebase or any release validation.
+gradle.beforeProject { project ->
+    project.plugins.withId('com.android.application') {
+        project.androidComponents.finalizeDsl { androidDsl -> androidDsl.testBuildType = 'release' }
+    }
+}

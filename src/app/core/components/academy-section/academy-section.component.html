@@ -14,7 +14,7 @@
     <span class="academy__feature-copy">
       <strong>Articles</strong>
       <small>Expand your knowledge</small>
-      <em>{{ articleCount }} {{ articleCount === 1 ? 'article' : 'articles' }}</em>
+      <em *ngIf="articleCount !== null">{{ articleCount }} {{ articleCount === 1 ? 'article' : 'articles' }} pending</em>
     </span>
     <img class="academy__feature-arrow" src="assets/figma/child-home/skills-arrow.svg" alt="" aria-hidden="true">
   </button>
@@ -25,7 +25,7 @@
       <span class="academy__feature-copy">
         <strong>MasterClass</strong>
         <small>Learn from the best</small>
-        <em>{{ masterClassCount }} {{ masterClassCount === 1 ? 'course' : 'courses' }}</em>
+        <em *ngIf="masterClassCount !== null">{{ masterClassCount }} {{ masterClassCount === 1 ? 'course' : 'courses' }} pending</em>
       </span>
       <img class="academy__feature-arrow" src="assets/figma/child-home/skills-arrow.svg" alt="" aria-hidden="true">
     </button>
@@ -76,13 +76,13 @@
       </button>
     </div>
 
-    <p class="academy__empty" *ngIf="!loading && state === 3">
+    <p class="academy__empty" *ngIf="!loading && state === 3 && masterClassCount === 0">
       You’ve completed all courses! Amazing work!
     </p>
 
     <p class="academy__empty"
-      *ngIf="!loading && state !== 3 && !courses.length && !lessons.length">
-      No courses available right now.
+      *ngIf="!loading && masterClassCount !== null && !(state === 3 && masterClassCount === 0) && !courses.length && !lessons.length">
+      {{ masterClassCount === 0 ? 'No courses available right now.' : 'Explore MasterClass to see your pending courses.' }}
     </p>
   </div>
 </section>

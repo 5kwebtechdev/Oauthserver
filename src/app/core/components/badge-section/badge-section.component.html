@@ -48,14 +48,28 @@
   </ng-template>
   <ng-template #individualCard let-badge="badge"><article class="individual-card" [class.earned-reveal]="earnedRevealActive"><app-badge-art [art]="badge.art" [src]="badge.icon" [label]="badge.name"></app-badge-art><h3 [title]="badge.name">{{ badge.name }}</h3><time *ngIf="badge.earnedDate" [attr.datetime]="badge.earnedDate">{{ badge.earnedDate | date:'MMM dd, yyyy':'UTC' }}</time></article></ng-template>
   <ng-template #individualEmpty><div class="individual-empty"><h3>No badges yet!</h3><p>Stay consistent with your habits and<br /> tasks to earn your first badge.</p></div></ng-template>
-  <ion-modal class="badge-detail-modal" [isOpen]="selected !== null" (didDismiss)="selected = null" [backdropDismiss]="true" aria-label="Badge details">
+  <ion-modal class="badge-detail-modal" [isOpen]="selected !== null" (didDismiss)="selected = null; pinnedTier = null; hoveredTier = null; focusedTier = null" [backdropDismiss]="true" aria-label="Badge details">
     <ng-template><section *ngIf="selected as badge" class="badge-detail">
       <button type="button" class="sheet-close icon-button" aria-label="Close badge details" (click)="selected = null"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19" /></svg></button>
       <h2>{{ badge.name }}</h2><p class="sheet-description">{{ badge.description }}</p>
       <div *ngIf="badge.tiers.length" class="tier-grid"><div *ngFor="let state of badge.tiers" class="tier-column" [attr.data-tier]="state.name" [class.upcoming]="state.earned === false" [class.unknown]="state.earned === null">
-        <span class="tier-label">{{ state.name }}</span><app-badge-art [art]="state.art" [label]="badge.name + ' ' + state.name"></app-badge-art>
+        <span class="tier-label">{{ state.name }}</span><button type="button" class="tier-date-trigger" [attr.aria-label]="state.name + ' dates'"
+          [attr.aria-expanded]="(hoveredTier || focusedTier || pinnedTier) === state"
+          aria-controls="badge-tier-dates" (pointerenter)="$event.pointerType === 'mouse' && (hoveredTier = state)"
+          (pointerleave)="hoveredTier = null" (focus)="focusedTier = state" (blur)="focusedTier = null"
+          (click)="focusedTier = null; pinnedTier = pinnedTier === state ? null : state">
+          <app-badge-art [art]="state.art" [label]="badge.name + ' ' + state.name"></app-badge-art>
+        </button>
         <strong>{{ state.target | number:'1.0-0' }}</strong><span>{{ badge.definition?.unit }}</span><time *ngIf="state.earnedDate" [attr.datetime]="state.earnedDate">{{ state.earnedDate | date:'MMM dd,yyyy':'UTC' }}</time><small *ngIf="state.earned && !state.earnedDate">Earned</small>
       </div></div>
+      <div *ngIf="badge.tiers.length" id="badge-tier-dates" class="tier-dates" aria-live="polite">
+        <ng-container *ngIf="(hoveredTier || focusedTier || pinnedTier) as tier; else tierDateHint">
+          <strong>{{ tier.name }}</strong>
+          <span>Start date: {{ (tier.startDate?.slice(0, 10) | date:'MMM d, yyyy':'UTC') || 'Not available' }}</span>
+          <span>Earned date: {{ (tier.earnedDate?.slice(0, 10) | date:'MMM d, yyyy':'UTC') || (tier.earned === false ? 'Not earned yet' : 'Not available') }}</span>
+        </ng-container>
+        <ng-template #tierDateHint><span>Choose a badge level to see its dates.</span></ng-template>
+      </div>
     </section></ng-template>
   </ion-modal>
 </ion-content>

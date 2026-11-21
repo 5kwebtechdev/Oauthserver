@@ -37,7 +37,7 @@ export const CONTEST_LINKS = {
 /** Display order on the podium: 2nd, 1st, 3rd. */
 export const PODIUM_PRIZES: PodiumPrize[] = [
   { rank: 2, tier: 'silver', label: 'Samsung S26', image: `${ASSETS}/samsung-s26.webp`, standImage: `${ASSETS}/stand-silver.png` },
-  { rank: 1, tier: 'gold', label: 'Iphone 18 Pro', image: `${ASSETS}/iphone-18-pro.png`, standImage: `${ASSETS}/stand-gold.png` },
+  { rank: 1, tier: 'gold', label: 'iPhone 18 Pro', image: `${ASSETS}/iphone-18-pro.png`, standImage: `${ASSETS}/stand-gold.png` },
   { rank: 3, tier: 'bronze', label: 'Samsung S26 FE', image: `${ASSETS}/samsung-s26-fe.webp`, standImage: `${ASSETS}/stand-bronze.png` },
 ];
 

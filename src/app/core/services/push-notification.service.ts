@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';

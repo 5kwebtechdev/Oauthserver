@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../../../storage/session-storage';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FamilyActionsService } from '../../../services/family-actions.service';
 import { displayName } from '../../../models/display-name';
@@ -8,7 +9,6 @@ import { IonicModule } from '@ionic/angular';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
-import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermePopupComponent } from '../../superme-popup/superme-popup.component';
 import { InstructioListComponent } from './instructio-list';
@@ -25,7 +25,7 @@ import { Clipboard } from '@capacitor/clipboard';
 @Component({
   standalone: true,
   selector: 'family-connection',
-  imports: [CommonModule, FormsModule, IonicModule, QRCodeComponent, SupermeNavigatorComponent, ProfileFactsComponent, SupermePetComponent, SupermeButtonComponent, SupermePopupComponent, InstructioListComponent],
+  imports: [CommonModule, FormsModule, IonicModule, QRCodeComponent, SupermeNavigatorComponent, ProfileFactsComponent, SupermeButtonComponent, SupermePopupComponent, InstructioListComponent],
   templateUrl: './family-connection.component.html',
   styleUrls: ['./family-connection.component.scss', './parent-family.component.scss']
 })

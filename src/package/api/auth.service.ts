@@ -1,3 +1,5 @@
+import { secureTemporaryStorage as sessionStorage } from '../../app/core/storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../../app/core/storage/session-storage';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';

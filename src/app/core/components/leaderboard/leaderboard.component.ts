@@ -2,7 +2,7 @@ import { CommonModule, Location } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { IonicModule, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
-import { Share } from '@capacitor/share';
+import { BrowserRankShare, LeaderboardRankShareService } from '../../services/leaderboard-rank-share.service';
 import { Subscription } from 'rxjs';
 import { AvatarService } from '../../services/avatar.service';
 import {
@@ -28,6 +28,9 @@ export class LeaderboardComponent implements OnInit, OnDestroy, ViewWillEnter, V
   error: 'unavailable' | 'failed' | 'access' | 'invalid' | null = null;
   paginationError = false;
   shareFeedback = '';
+  sharingRank = false;
+  browserShare: BrowserRankShare | null = null;
+  browserShareUrl: string | null = null;
   groups: CoinLeaderboardGroup[] = [];
   private request?: Subscription;
   private groupRequest?: Subscription;
@@ -41,7 +44,8 @@ export class LeaderboardComponent implements OnInit, OnDestroy, ViewWillEnter, V
   constructor(
     private readonly leaderboard: CoinLeaderboardService,
     private readonly avatars: AvatarService,
-    private readonly location: Location
+    private readonly location: Location,
+    private readonly rankShare: LeaderboardRankShareService
   ) {}
 
   ngOnInit(): void {
@@ -55,8 +59,10 @@ export class LeaderboardComponent implements OnInit, OnDestroy, ViewWillEnter, V
     if (this.loadedOnce) this.load();
     this.loadedOnce = true;
   }
-  ionViewWillLeave(): void { this.active = false; }
+  ionViewWillLeave(): void { this.active = false; this.clearBrowserShare(); }
   ngOnDestroy(): void {
+    this.active = false;
+    this.clearBrowserShare();
     this.requestVersion++;
     this.request?.unsubscribe();
     this.groupRequest?.unsubscribe();
@@ -92,6 +98,7 @@ export class LeaderboardComponent implements OnInit, OnDestroy, ViewWillEnter, V
     this.scope = scope;
     this.result = null;
     this.shareFeedback = '';
+    this.clearBrowserShare();
     if (scope === 'GLOBAL') this.load();
     else {
       this.requestVersion++;
@@ -149,38 +156,83 @@ export class LeaderboardComponent implements OnInit, OnDestroy, ViewWillEnter, V
   }
 
   async shareRank(): Promise<void> {
-    if (!this.currentUserInTopTen) return;
-    const rank = this.result!.currentUser.rank!;
-    const text = `I am ranked #${rank} on SuperMeApp!`;
-    this.shareFeedback = '';
+    if (!this.currentUserInTopTen || this.sharingRank) return;
+    this.sharingRank = true;
+    this.clearBrowserShare();
+    this.shareFeedback = 'Preparing your achievement card…';
     try {
-      const capability = await Share.canShare();
-      if (capability.value) {
-        await Share.share({ title: 'My SuperMeApp rank', text, dialogTitle: 'Share your rank' });
-        return;
+      const fallback = await this.rankShare.share(message => {
+        if (this.active) this.shareFeedback = message;
+      });
+      this.shareFeedback = '';
+      if (fallback && this.active && this.scope === 'GLOBAL') {
+        this.browserShare = fallback;
+        this.browserShareUrl = URL.createObjectURL(fallback.file);
+        if (fallback.canShare) {
+          this.shareFeedback = 'Your card is ready. Choose Share image, or download it and copy the message.';
+        } else {
+          this.downloadRankImage();
+          // Clipboard permissions can stay pending in an unfocused browser.
+          // The prepared download must remain usable while that resolves.
+          void this.copyRankMessage();
+        }
       }
     } catch (error) {
-      if (this.isShareCancelled(error)) return;
-    }
-    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-      try {
-        await navigator.share({ title: 'My SuperMeApp rank', text });
-        return;
-      } catch (error) {
-        if (this.isShareCancelled(error)) return;
+      this.shareFeedback = '';
+      if (!this.isShareCancelled(error)) {
+        this.shareFeedback = error instanceof Error ? error.message : 'Unable to share your rank right now.';
       }
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      this.shareFeedback = 'Your rank message was copied.';
-    } catch {
-      this.shareFeedback = 'Unable to share your rank right now.';
+    } finally {
+      this.sharingRank = false;
     }
   }
 
+  downloadRankImage(): void {
+    if (!this.browserShare || !this.browserShareUrl) return;
+    const link = document.createElement('a');
+    link.href = this.browserShareUrl;
+    link.download = this.browserShare.file.name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  async copyRankMessage(): Promise<void> {
+    const prepared = this.browserShare;
+    if (!prepared) return;
+    const copied = await this.rankShare.copyMessage(prepared.text);
+    if (this.browserShare !== prepared) return;
+    this.shareFeedback = copied
+      ? 'Sharing message copied. Download the image below if the download did not start.'
+      : 'Download your image below. Choose Copy message, or select and copy the message manually.';
+  }
+
+  async sharePreparedImage(): Promise<void> {
+    if (!this.browserShare || this.sharingRank) return;
+    this.sharingRank = true;
+    try {
+      const shared = await this.rankShare.shareInBrowser(this.browserShare.file, this.browserShare.text);
+      this.shareFeedback = shared ? 'Your achievement card was shared.'
+        : 'Image sharing is unavailable. Download your image and copy the message below.';
+    } catch (error) {
+      if (!this.isShareCancelled(error)) this.shareFeedback = 'Download your image and copy the message below.';
+    } finally {
+      this.sharingRank = false;
+    }
+  }
+
+  private clearBrowserShare(): void {
+    if (this.browserShareUrl) URL.revokeObjectURL(this.browserShareUrl);
+    this.browserShareUrl = null;
+    this.browserShare = null;
+  }
+
   private isShareCancelled(error: unknown): boolean {
-    const value = String(error instanceof Error ? error.message : error).toLowerCase();
-    return value.includes('cancel') || value.includes('abort');
+    if (error instanceof DOMException && error.name === 'AbortError') return true;
+    const message = typeof error === 'object' && error && 'message' in error
+      ? error.message
+      : error;
+    return /\b(cancel(?:ed|led|lation)?|abort(?:ed)?)\b/i.test(String(message));
   }
 
   avatarUrl(user: CoinLeaderboardUser): string | null {
@@ -188,7 +240,7 @@ export class LeaderboardComponent implements OnInit, OnDestroy, ViewWillEnter, V
     if (this.failedAvatars.has(key)) return this.defaultAvatarUrl;
     const value = user.avatar?.trim();
     if (value && (/^https?:\/\//i.test(value) || value.startsWith('assets/'))) return value;
-    const asset = this.avatars.getAvatarAsset(value);
+    const asset = this.avatars.getLeaderboardAvatar(value, user.age);
     return asset?.value ?? this.defaultAvatarUrl;
   }
 

@@ -14,6 +14,7 @@ import { ShareLinkService } from '../../../services/share-link.service';
   styleUrls: ['./eduhub-event-card.component.scss']
 })
 export class EduHubEventCardComponent {
+  @Input() homePreview = false;
   @Input({ required: true }) item!: EduHubEventItem;
   @Input() entityType: EduHubEventEntityType = 'Events';
   @Output() viewDetails = new EventEmitter<EduHubEventItem>();
@@ -44,7 +45,7 @@ export class EduHubEventCardComponent {
     if (item.fee == null) return 'Contact for pricing';
     const fee = Number(item.fee);
     if (!Number.isFinite(fee)) return 'Contact for pricing';
-    return fee === 0 ? 'FREE' : `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / Person`;
+    return fee === 0 ? 'FREE' : `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)}/person`;
   }
 
   isFavourite(item: EduHubEventItem): boolean { return !!item.likedBySelf; }

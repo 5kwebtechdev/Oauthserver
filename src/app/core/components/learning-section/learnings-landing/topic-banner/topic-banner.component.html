@@ -1,0 +1,46 @@
+<!-- Decorative backdrop; the sunburst sits behind the pet. -->
+<img data-layer class="tb-bg" [src]="assetBase() + '/bg.webp'" alt="" aria-hidden="true" />
+
+<div class="tb-row">
+  <div class="tb-copy">
+    <h2 class="tb-title">
+      <span class="tb-line">
+        <span class="tb-line-in">
+          <span class="tb-accent">
+            {{ copy().word }}
+            <svg class="tb-underline" [attr.viewBox]="copy().underlineBox" preserveAspectRatio="none" aria-hidden="true">
+              <path [attr.d]="copy().underline" />
+            </svg>
+          </span>
+          Time!
+        </span>
+      </span>
+    </h2>
+
+    <!-- The tagline is artwork, so it is read out through the label instead. -->
+    <div class="tb-tagline" role="img" [attr.aria-label]="copy().tagline">
+      <img data-layer [src]="topicAssets() + '/tagline.webp'" alt="" />
+    </div>
+  </div>
+
+  <!--
+    The pet: one static image, with the eyelids, the three rays and (Articles only) the touch ripple
+    on top. Every image is the pet's full canvas, so the layers register on their own.
+    Only the chosen pet's images are requested.
+  -->
+  <div class="tb-pet" aria-hidden="true">
+    <div [class]="'tb-rig tb-rig--' + topic() + '-' + activePet()">
+      <img data-layer class="tb-part" [src]="petAssets() + '/base.webp'" alt="" />
+      <img data-layer class="tb-part tb-lid tb-lid--left" [src]="petAssets() + '/lid-left.webp'" alt="" />
+      <img data-layer class="tb-part tb-lid tb-lid--right" [src]="petAssets() + '/lid-right.webp'" alt="" />
+
+      <img data-layer class="tb-part tb-ray tb-ray--1" [src]="petAssets() + '/ray-1.webp'" alt="" />
+      <img data-layer class="tb-part tb-ray tb-ray--2" [src]="petAssets() + '/ray-2.webp'" alt="" />
+      <img data-layer class="tb-part tb-ray tb-ray--3" [src]="petAssets() + '/ray-3.webp'" alt="" />
+
+      <!-- Shown for Articles only (see topic-banner-pet.scss). -->
+      <span class="tb-ripple tb-ripple--1"></span>
+      <span class="tb-ripple tb-ripple--2"></span>
+    </div>
+  </div>
+</div>

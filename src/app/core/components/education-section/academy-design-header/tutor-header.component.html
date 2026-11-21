@@ -1,0 +1,79 @@
+<!--
+  Pins while scrolling, along with the filter bar below. It sits over the scene at the top of the
+  screen, and everything else here scrolls away behind it.
+  sm-type-desktop: same type mode as the Figma frame (title 28px / 35px line, chips body-sm 15px).
+-->
+<nav class="th-nav sm-type-desktop">
+  <button type="button" class="th-back" aria-label="Back" (click)="back.emit()">
+    <svg viewBox="0 0 48 48" aria-hidden="true">
+      <path
+        d="M36 25C36.5523 25 37 24.5523 37 24C37 23.4477 36.5523 23 36 23V24V25ZM12 24V25H36V24V23H12V24ZM11.2929 23.2929C10.9024 23.6834 10.9024 24.3166 11.2929 24.7071L17.6569 31.0711C18.0474 31.4616 18.6805 31.4616 19.0711 31.0711C19.4616 30.6805 19.4616 30.0474 19.0711 29.6569L13.4142 24L19.0711 18.3431C19.4616 17.9526 19.4616 17.3195 19.0711 16.9289C18.6805 16.5384 18.0474 16.5384 17.6569 16.9289L11.2929 23.2929Z"
+      />
+    </svg>
+  </button>
+
+  <div class="th-chips"><eduhub-city-selector></eduhub-city-selector></div>
+  <button type="button" class="th-search" [attr.aria-label]="'Search ' + listingTitle()" (click)="search.emit()">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M19.6 21L13.3 14.7C12.8 15.1 12.225 15.4167 11.575 15.65C10.925 15.8833 10.2333 16 9.5 16C7.68333 16 6.14583 15.3708 4.8875 14.1125C3.62917 12.8542 3 11.3167 3 9.5C3 7.68333 3.62917 6.14583 4.8875 4.8875C6.14583 3.62917 7.68333 3 9.5 3C11.3167 3 12.8542 3.62917 14.1125 4.8875C15.3708 6.14583 16 7.68333 16 9.5C16 10.2333 15.8833 10.925 15.65 11.575C15.4167 12.225 15.1 12.8 14.7 13.3L21 19.6L19.6 21ZM9.5 14C10.75 14 11.8125 13.5625 12.6875 12.6875C13.5625 11.8125 14 10.75 14 9.5C14 8.25 13.5625 7.1875 12.6875 6.3125C11.8125 5.4375 10.75 5 9.5 5C8.25 5 7.1875 5.4375 6.3125 6.3125C5.4375 7.1875 5 8.25 5 9.5C5 10.75 5.4375 11.8125 6.3125 12.6875C7.1875 13.5625 8.25 14 9.5 14Z"
+      />
+    </svg>
+  </button>
+</nav>
+
+<div class="th-top sm-type-desktop">
+  <!-- Scenery, back to front. The sky is at "infinity" so it never parallaxes. -->
+  <div class="th-scene" aria-hidden="true">
+    @for (set of sceneSets(); track set.id) {
+      <div
+        class="th-set"
+        [class.th-set--intro]="set.intro"
+        [class.th-set--swap]="!set.intro"
+        (animationend)="onSceneShown(set, $event)"
+      >
+        <img data-layer class="th-layer th-sky" [src]="layerUrl(set.scene, 'sky')" alt="" />
+        <img data-layer class="th-layer th-skyline" [src]="layerUrl(set.scene, 'skyline')" alt="" />
+        <img data-layer class="th-layer th-trees" [src]="layerUrl(set.scene, 'trees')" alt="" />
+      </div>
+    }
+  </div>
+
+  <div class="th-hero">
+    <h1 class="th-title">
+      <span class="th-line"><span class="th-line-in">Finding the right</span></span>
+      <span class="th-line">
+        <span class="th-line-in">
+          <span class="th-accent">
+            {{ listingTitle() }}
+            <svg class="th-underline" viewBox="0 0 71.74 7.4" preserveAspectRatio="none" aria-hidden="true">
+              <path
+                d="M1.53152 3.45093C1.01369 3.56629 0.566823 3.88251 0.290537 4.33544C0.0141734 4.78806 -0.0689762 5.3403 0.0580677 5.86525C0.185112 6.39021 0.511565 6.84332 0.9643 7.11949C1.41711 7.39597 1.95912 7.47287 2.47239 7.3387C2.47239 7.3387 2.47239 7.3387 2.47239 7.3387C3.53586 7.05991 4.64518 6.79889 5.76787 6.55584C25.8776 2.72052 47.067 1.12087 67.4614 4.09146C68.6004 4.29512 69.7235 4.52803 70.8092 4.79523C70.9989 4.842 71.2011 4.81079 71.3707 4.71043C71.5404 4.60996 71.6636 4.44857 71.7138 4.25978C71.764 4.071 71.7373 3.86971 71.6399 3.69822C71.5426 3.52684 71.3826 3.3993 71.1947 3.34563C71.1947 3.34563 71.1947 3.34563 71.1947 3.34563C70.0827 3.02832 68.9363 2.74757 67.7762 2.49724C47.0231 -1.27113 25.8757 -0.43697 5.0168 2.75433C3.8413 2.96537 2.67101 3.19664 1.53152 3.45093Z"
+              />
+            </svg>
+          </span>
+          for you
+        </span>
+      </span>
+    </h1>
+
+    <!-- The pet stays still; only the location pin (and its ping marks) moves. -->
+    <div class="th-pet" aria-hidden="true">
+      <div [class]="'th-rig th-rig--' + activePet()">
+        <img data-layer class="th-part" [src]="petAssets() + '/body.webp'" alt="" />
+        <img data-layer class="th-part th-pin-lines" [src]="petAssets() + '/pin-lines.webp'" alt="" />
+        <img data-layer class="th-part th-pin" [src]="petAssets() + '/pin.webp'" alt="" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="academy-refer">
+  <img class="academy-refer__icon" [src]="assetBase() + '/refer-megaphone.webp'" alt="">
+  <div class="academy-refer__copy">
+    <p>Know {{ listingTitle() === 'Academy' ? 'an Academy' : 'a Tutor' }}?</p>
+    <small>Refer them to get listed on EduHub.</small>
+  </div>
+  <button type="button" (click)="refer.emit()">Refer for listing</button>
+</div>
+<ng-content></ng-content>

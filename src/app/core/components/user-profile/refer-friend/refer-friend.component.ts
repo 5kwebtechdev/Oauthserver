@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { AuthService, ReferralCodeResponse } from '../../../services/auth.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
+import { Platform } from '@ionic/angular';
+import { NavigationService } from '../../../services/navigation.service';
 import { environment } from '../../../../../environments/environment';
 import { NavController } from '@ionic/angular';
 import { ContestBannerComponent } from '../../../../referral/components/contest-banner/contest-banner.component';
@@ -14,7 +15,7 @@ import { ReferralShareService } from '../../../services/referral-share.service';
 @Component({
   standalone: true,
   selector: 'refer-friend',
-  imports: [CommonModule, SupermeNavigatorComponent, IonicModule, ContestBannerComponent],
+  imports: [CommonModule, IonicModule, ContestBannerComponent],
   templateUrl: './refer-friend.component.html',
   styleUrls: ['./refer-friend.component.scss']
 })
@@ -30,9 +31,37 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   readonly contestMonths = CONTEST_DURATION_MONTHS;
+  private backSubscription?: Subscription;
+  private leaving = false;
 
   constructor(private authService: AuthService, private toastCtrl: ToastController,
-    private nav: NavController, private referralShare: ReferralShareService) { }
+    private nav: NavController, private referralShare: ReferralShareService,
+    private navigation: NavigationService, private platform: Platform) { }
+
+  ionViewDidEnter(): void {
+    this.leaving = false;
+    this.backSubscription?.unsubscribe();
+    this.backSubscription = this.platform.backButton.subscribeWithPriority(100, () => this.goBack());
+  }
+
+  ionViewWillLeave(): void {
+    this.backSubscription?.unsubscribe();
+  }
+
+  goBack(): void {
+    if (this.leaving) return;
+    this.leaving = true;
+    // The contest belongs to this referral flow, not its parent destination.
+    // Skip stale contest/referral entries left by previous back navigations.
+    const target = [...this.navigation.getHistory()].reverse().find(url =>
+      !/^\/(?:app\/)?(?:authed\/)?refer-friend(?:[/?#]|$)/.test(url)
+    ) || '/authed/user-profile';
+    this.navigation.replaceHistory(target);
+    void Promise.resolve(this.nav.navigateRoot(target, { replaceUrl: true, animated: false })).then(
+      navigated => { if (!navigated) this.leaving = false; },
+      () => { this.leaving = false; }
+    );
+  }
 
   openContest(): void {
     void this.nav.navigateForward('/authed/refer-friend/contest');
@@ -56,6 +85,7 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.backSubscription?.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
     clearTimeout(this.copiedTimer);

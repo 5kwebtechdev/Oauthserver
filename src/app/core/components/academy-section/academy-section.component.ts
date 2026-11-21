@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { AcademyService, AcademyFeedCourse, AcademyFeedLesson } from '../../services/academy.service';
+import { AcademyService, AcademyFeedCourse, AcademyFeedLesson, academyPendingCount } from '../../services/academy.service';
 import { AuthService } from '../../services/auth.service';
 import { LearningService } from '../../services/learning.service';
 import { catchError, forkJoin, map, of } from 'rxjs';
@@ -39,10 +39,11 @@ export class AcademySectionComponent implements OnInit, OnDestroy {
   lessons: AcademyFeedLesson[] = [];
   private readonly courseProgressById = new Map<number, number>();
   private feedRequestId = 0;
-  articleCount = 0;
+  articleCount: number | null = null;
+  private pendingCourseCount: number | null = null;
 
-  get masterClassCount(): number {
-    return this.state === 2 ? this.lessons.length : this.courses.length;
+  get masterClassCount(): number | null {
+    return this.pendingCourseCount;
   }
 
   constructor(
@@ -55,14 +56,6 @@ export class AcademySectionComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.refreshFromApi();
 
-    this.learningService.getArticleCards().subscribe({
-      next: (cards) => {
-        this.articleCount = Array.isArray(cards) ? cards.length : 0;
-      },
-      error: () => {
-        this.articleCount = 0;
-      }
-    });
   }
 
   ngOnDestroy(): void {
@@ -72,6 +65,7 @@ export class AcademySectionComponent implements OnInit, OnDestroy {
   refreshFromApi(): void {
     const requestId = ++this.feedRequestId;
     const age = this.authService.getCurrentUserAge() ?? undefined;
+    this.refreshPendingCounts(requestId, age);
     this.loading = true;
     this.courseProgressById.clear();
     this.academyService.getAcademyFeed(age).subscribe({
@@ -87,6 +81,28 @@ export class AcademySectionComponent implements OnInit, OnDestroy {
       error: () => {
         if (requestId === this.feedRequestId) this.loading = false;
       }
+    });
+  }
+
+  private refreshPendingCounts(requestId: number, age?: number): void {
+    this.articleCount = null;
+    this.pendingCourseCount = null;
+    this.learningService.fetchArticleCategories(false, null, age).subscribe({
+      next: categories => {
+        if (requestId !== this.feedRequestId) return;
+        this.articleCount = categories.reduce((total, category) => total + Number(category.pendingCount ?? category.count ?? 0), 0);
+      },
+      // An unavailable count is not a confirmed zero or a completed library.
+      error: () => {}
+    });
+    this.academyService.getCategories(age).subscribe({
+      next: categories => {
+        if (requestId !== this.feedRequestId) return;
+        this.pendingCourseCount = categories
+          .filter(category => (category.status || 'ACTIVE').toUpperCase() === 'ACTIVE')
+          .reduce((total, category) => total + academyPendingCount(category), 0);
+      },
+      error: () => {}
     });
   }
 

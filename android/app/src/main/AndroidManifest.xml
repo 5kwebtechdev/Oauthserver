@@ -13,6 +13,8 @@
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config">
 
+        <activity android:name=".AuthWebViewActivity" android:exported="false" android:theme="@style/AppTheme.NoActionBar" android:windowSoftInputMode="adjustResize" />
+
         <service android:name="io.capawesome.capacitorjs.plugins.firebase.messaging.MessagingService" tools:node="remove" />
         <service android:name=".BirthdayMessagingService" android:exported="false">
             <intent-filter><action android:name="com.google.firebase.MESSAGING_EVENT" /></intent-filter>
@@ -96,6 +98,8 @@
     <!-- Geolocation -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- A dependency requests portrait orientation; keep it optional for Play device filtering. -->
+    <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 </manifest>

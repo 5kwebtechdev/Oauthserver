@@ -1,3 +1,5 @@
+import { MicroRewardService } from 'src/app/core/services/micro-reward/micro-reward.service';
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
 import { Component, ViewChild, OnInit, OnDestroy, Inject, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent, Platform } from '@ionic/angular';
@@ -61,7 +63,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             await Share.share({
                 title,
                 text: `Try ${title} on SuperMe!`,
-                url: this.shareLinks.buildListingLink('quiz', this.challenge.challengeId),
+                url: this.shareLinks.buildQuizLink(this.challenge),
                 dialogTitle: `Share ${title}`
             });
         } catch (error: any) {
@@ -212,7 +214,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         private petAgeService: PetAgeService,
         private platform: Platform,
         private shareLinks: ShareLinkService,
-        @Optional() @Inject(AuthService) private authService: AuthService | null = null
+        @Optional() @Inject(AuthService) private authService: AuthService | null = null,
+        private readonly microReward?: MicroRewardService
     ) { }
 
     ionViewWillEnter(): void {
@@ -685,35 +688,31 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.stopTimer();
 
         // Prepare answers payload in the format expected by the backend
-        const questionAnswers: { [key: string]: string } = {};
+        const questionAnswers: { [key: string]: number } = {};
         const skippedQuestions: number[] = [];
+        let invalidSelection = false;
 
-        // Convert our internal tracking to the expected format
+        // The batch API accepts question_option IDs for every question type.
+        // Correctness and rewards are determined by the server.
         this.questions.forEach(question => {
             const answer = this.questionAnswers[question.id];
-            if (answer.selected !== null && answer.selected !== undefined && answer.selected !== '') {
-                let answerValue = answer.selected;
-
-                if (question.type === 'true-false') {
-                    // API requires lowercase "true" / "false"
-                    answerValue = answerValue.toLowerCase();
-                } else if (question.type === 'visual') {
-                    // Decision rule: optionText != null → send optionText, else → send optionId as string
-                    const backendQ = this.challenge?.questions.find(q => q.questionId === question.id);
-                    if (backendQ && answer.selectedOptionId !== null && answer.selectedOptionId !== undefined) {
-                        const selectedOpt = backendQ.options.find(o => o.optionId === answer.selectedOptionId);
-                        if (selectedOpt) {
-                            answerValue = (selectedOpt.optionText || '').trim() || String(selectedOpt.optionId);
-                        }
-                    }
+            if (answer?.selected !== null && answer?.selected !== undefined && answer.selected !== '') {
+                const optionId = answer.selectedOptionId;
+                if (optionId == null || !Number.isFinite(optionId)) {
+                    invalidSelection = true;
+                    return;
                 }
-
-                questionAnswers[String(question.id)] = answerValue;
+                questionAnswers[String(question.id)] = optionId;
             } else {
-                // API expects number[] for skippedQuestions
                 skippedQuestions.push(question.id);
             }
         });
+
+        if (invalidSelection) {
+            this.isSubmitting = false;
+            alert('An answer could not be submitted. Please select the answer again.');
+            return;
+        }
 
         // If there are skipped questions, confirm submission
         if (skippedQuestions.length > 0) {
@@ -723,6 +722,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                 return;
             }
         }
+
+        this.microReward?.unlockSound();
 
         // Create payload that matches the expected format
         const payload = {
@@ -740,7 +741,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             next: (response) => {
                 console.log('Submission successful:', response);
                 this.petAgeService.recordActivity(this.challenge?.category === 'QUIZ' ? 'quizzes' : 'puzzles');
-                this.navigateToResult(response);
+                this.navigateToResult(response, true);
             },
             error: (error) => {
                 console.error('Submission failed:', error);
@@ -785,7 +786,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
      * `getCurrentNavigation()` state to that component, so router state alone
      * would incorrectly render the default 0/0 result.
      */
-    private navigateToResult(submissionResult: unknown): void {
+    private navigateToResult(submissionResult: unknown, playMicroReward = false): void {
         if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('superme:learning-completed', {
                 detail: { id: this.challenge?.challengeId, type: 'challenge' }
@@ -807,7 +808,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.isSubmitting = false;
         this.router.navigate(['/authed/content/result'], {
             replaceUrl: true,
-            state: resultState
+            state: { ...resultState, playMicroReward }
         });
     }
 
@@ -875,7 +876,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.stopTimer();
         // The challenge now opens directly from its listing, so leaving should
         // return there instead of reopening the retired detail/start screen.
-        this.router.navigateByUrl(this.returnUrl);
+        this.showLeaveChallengePopup = false;
+        this.router.navigateByUrl(this.returnUrl, { replaceUrl: true, state: { quizExit: true } });
     }
 
     restartQuiz() {

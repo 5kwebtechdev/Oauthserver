@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/core/components/learning-section/learnings-landing/*.spec.ts",
+    "src/app/core/components/learning-section/learning-main/learning-pending-count.spec.ts",
+    "src/app/core/components/learning-section/quiz-navigation.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

@@ -1,72 +1,11 @@
 <ion-content fullscreen class="eduhub-events-content">
   <div class="eduhub-events-page">
-    <header class="events-hero">
-      <div class="events-toolbar">
-        <div class="events-toolbar__title">
-          <button type="button" class="toolbar-button toolbar-button--back" aria-label="Back" (click)="goBack()">
-            <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
-          </button>
-          <div class="events-toolbar__heading">
-            <h1>{{ title }}</h1>
-            <eduhub-city-selector></eduhub-city-selector>
-          </div>
-        </div>
+    <app-event-header (back)="goBack()" (search)="toggleSearch()" (refer)="referForListing()" [filterState]="designFilters" (filtersChange)="onDesignFilters($event)">
 
-        <button type="button" class="toolbar-button toolbar-button--search" aria-label="Search listings"
-          [attr.aria-expanded]="searchOpen" (click)="toggleSearch()">
-          <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
-        </button>
-      </div>
-
-      <div class="events-search" *ngIf="searchOpen">
-        <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
-        <input #searchInput type="search" autocomplete="off" [value]="searchQuery"
-          [placeholder]="'Search ' + title.toLowerCase()"
-          (input)="updateSearch(searchInput.value)">
-        <button type="button" aria-label="Close search" (click)="toggleSearch()">×</button>
-      </div>
-
-      <div class="events-hero__content">
-        <div class="events-speech" aria-hidden="true">
-          <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="">
-          <p><span class="callout-lead">Find exciting <strong>{{ title }}</strong></span><br>around you.</p>
-        </div>
-        <img *ngIf="isPandaPet" class="events-mascot" src="assets/figma/child-learning/header-pet.webp" alt="" aria-hidden="true">
-        <superme-pet *ngIf="!isPandaPet" class="events-mascot" mood="happy" [size]="120"></superme-pet>
-      </div>
-    </header>
-
+    </app-event-header>
+<ng-template #directoryResults>
     <main class="events-main">
-      <button type="button" class="refer-card" (click)="referForListing()">
-        <img class="refer-card__icon" src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
-        <span class="refer-card__copy">
-          <strong>Know an Organizer?</strong>
-          <small>Refer them to get listed on EduHub.</small>
-        </span>
-        <span class="refer-card__cta">Refer for listing</span>
-      </button>
-
-      <section class="events-section" aria-labelledby="events-nearby-title">
-        <header class="events-section__header">
-          <div class="events-section__copy">
-            <h2 id="events-nearby-title">{{ sectionTitle }}</h2>
-            <p>Classifieds listings only. Contact sellers directly to enquire or buy.</p>
-          </div>
-
-          <div class="verified-filter" (click)="$event.stopPropagation()">
-            <button type="button" class="verified-filter__button" [attr.aria-expanded]="filterOpen"
-              (click)="toggleFilter($event)">
-              <span>{{ activeFilterLabel }}</span>
-              <img src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
-            </button>
-            <div class="verified-filter__menu" *ngIf="filterOpen" role="menu">
-              <button type="button" role="menuitem" [class.is-selected]="activeFilter === 'verified'"
-                (click)="selectFilter('verified', $event)">Verified</button>
-              <button type="button" role="menuitem" [class.is-selected]="activeFilter === 'all'"
-                (click)="selectFilter('all', $event)">All</button>
-            </div>
-          </div>
-        </header>
+      <section class="events-section" aria-label="Events and workshops">
 
         <div class="events-loading" *ngIf="isLoading" aria-label="Loading listings">
           <article class="event-card event-card--skeleton" *ngFor="let card of loadingCards">
@@ -112,7 +51,13 @@
         </ion-infinite-scroll>
       </section>
     </main>
+</ng-template>
+<ng-container *ngIf="!searchOpen" [ngTemplateOutlet]="directoryResults"></ng-container>
   </div>
 
   <app-footer></app-footer>
+<ng-template #directoryFilters>
+  <app-event-filters [filterState]="designFilters" (filtersChange)="onDesignFilters($event)"></app-event-filters>
+</ng-template>
+<app-eduhub-directory-search [filters]="directoryFilters" [locationLabel]="searchLocationLabel" [busy]="isLoading" [open]="searchOpen" [label]="title" [terms]="directorySearchTerms" [resultCount]="visibleItems.length" [results]="directoryResults" (searched)="runDirectorySearch($event)" (dismissed)="searchOpen && toggleSearch()"></app-eduhub-directory-search>
 </ion-content>

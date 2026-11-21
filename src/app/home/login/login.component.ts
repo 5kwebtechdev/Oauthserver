@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../../core/storage/session-storage';
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, NgZone, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
@@ -70,7 +71,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     return this.signInForm.get('password');
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.loading) {
       return;
     }
@@ -84,12 +85,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         email: this.signInForm.get('email')?.value,
         password: this.signInForm.get('password')?.value
       };
-
-      console.log('[LoginComponent] Attempting login with credentials:', {
-        mode: 'email',
-        email: credentials.email,
-        hasPassword: !!credentials.password
-      });
 
       this.authService.login(credentials).subscribe({
         next: (response) => {
@@ -164,11 +159,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.loading = false;
           this.clearPassword();
-          console.error('[LoginComponent] Login error', {
-            status: error.status,
-            error: error.error,
-            url: error.url
-          });
+          console.warn('[LoginComponent] Sign in failed', { status: error?.status });
 
           // Extract backend message if present
           let backendMsg: string | null = null;

@@ -5,6 +5,8 @@ import { AlertController, IonicModule } from '@ionic/angular';
 import { EventApi, EventDto } from '../../../api/event.api';
 import { HabitService } from '../habit.service';
 import { getEventTypeIcon } from '../event-type-icon';
+import { AuthService } from '../../../services/auth.service';
+import { ProfileSelectorService } from '../../../services/profile-selector-service';
 
 type EventDetailData = Partial<EventDto> & {
   title?: string; startDate?: string; notes?: string; description?: string;
@@ -29,7 +31,9 @@ export class EventDetailComponent implements OnInit {
     private router: Router,
     private events: EventApi,
     private alerts: AlertController,
-    private habits: HabitService
+    private habits: HabitService,
+    private auth: AuthService,
+    private profileSelector: ProfileSelectorService
   ) {}
 
   ngOnInit(): void {
@@ -47,7 +51,12 @@ export class EventDetailComponent implements OnInit {
   }
 
   private loadEvent(id: string): void {
-    this.events.getEvent(id).subscribe({
+    const childId = this.profileSelector.getChildId();
+    const request = this.auth.isParentUser() && childId !== null && childId !== undefined
+      && String(childId).trim() !== ''
+      ? this.events.getChildEvent(id, childId)
+      : this.events.getEvent(id);
+    request.subscribe({
       next: response => {
         this.event = response;
         this.loading = false;

@@ -38,6 +38,8 @@
                 [screen]="eduAdScreen" variant="eduhub-parent">
             </ad-banner>
 
+            <app-second-hand-books-banner class="eduhub-books-banner"></app-second-hand-books-banner>
+
             <div class="parent-eduhub-sections">
                 <section class="parent-eduhub-section"
                     *ngFor="let section of filteredParentEduHubSections; trackBy: trackSection"
@@ -70,8 +72,7 @@
                             [attr.aria-label]="'Open ' + category.label"
                             (click)="openParentCategory(category)">
                             <span class="parent-eduhub-card__image" aria-hidden="true">
-                                <img [src]="category.image" alt="" loading="lazy"
-                                    (error)="onCategoryImageError($event, category)">
+                                <app-eduhub-category-icon [category]="category.id"></app-eduhub-category-icon>
                             </span>
                             <span class="parent-eduhub-card__copy">
                                 <span class="parent-eduhub-card__label">{{ category.displayTitle || category.label }}</span>
@@ -100,6 +101,7 @@
             <div class="edu-ad-wrap">
                 <ad-banner [screen]="eduAdScreen"></ad-banner>
             </div>
+            <app-second-hand-books-banner class="eduhub-books-banner"></app-second-hand-books-banner>
             <div class="edu-item-list">
                 <a class="edu-item-cards" routerLink="/authed/tutors">
                     <h1>Find a Tutor</h1>

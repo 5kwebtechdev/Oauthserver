@@ -210,7 +210,9 @@
 <ng-template #nonParentLearningView>
   <ng-container *ngIf="childView; else standardLearningView">
     <ion-content fullscreen class="child-learning-content">
-      <main class="child-learning-page">
+      <app-learnings-landing *ngIf="!selectedCategoryItem" [tab]="landingTab" [refreshVersion]="learningRefreshVersion"
+        (tabChange)="selectCategory($event)" (openItem)="openChildLearningItem($event)"></app-learnings-landing>
+      <main *ngIf="selectedCategoryItem" class="child-learning-page">
         <header class="child-learning-hero" [class.child-learning-hero--detail]="selectedCategoryItem">
           <img class="child-learning-hero__background"
             src="assets/figma/child-learning/header-background.webp" alt="" aria-hidden="true">

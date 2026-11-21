@@ -1,6 +1,6 @@
 // Shared ad slot dimensions (CSS pixels). Smaller containers scale both axes.
 // Compact carousel artwork uses a 5:3 slot across every placement.
-// Images always use contain: other aspect ratios get background space, not cropping.
+// Home fills the slot with cover. Other placements preserve the whole image.
 $width: 500px;
 $height: 300px;
 $slot-max-width: 520px;

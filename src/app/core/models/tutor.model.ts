@@ -304,6 +304,9 @@ export function formatExperience(exp: Experience | string): string {
     };
     if (expMap[exp]) return expMap[exp];
 
+    const counselorYears = /^COUNSELOR_([1-9][0-9]*)_PLUS$/.exec(exp)?.[1];
+    if (counselorYears) return `${counselorYears}+ years Exp`;
+
     // Academy-style range enums, e.g. RANGE_1_3 -> "1-3 years Exp", RANGE_10_PLUS -> "10+ years Exp"
     if (typeof exp === 'string' && exp.startsWith('RANGE_')) {
         const parts = exp.replace('RANGE_', '').split('_');
@@ -362,6 +365,9 @@ export function getExperienceYears(exp: Experience | string): number {
         'PLUS_10': 10
     };
     if (expMap[exp] !== undefined) return expMap[exp];
+
+    const counselorYears = /^COUNSELOR_([1-9][0-9]*)_PLUS$/.exec(exp)?.[1];
+    if (counselorYears) return Number(counselorYears);
 
     // Academy-style range enums, e.g. RANGE_1_3 -> 3, RANGE_10_PLUS -> 10
     if (typeof exp === 'string' && exp.startsWith('RANGE_')) {

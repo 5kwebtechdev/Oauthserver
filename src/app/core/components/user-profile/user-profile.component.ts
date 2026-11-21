@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../../storage/session-storage';
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { displayName } from '../../models/display-name';
 import { Router } from '@angular/router';

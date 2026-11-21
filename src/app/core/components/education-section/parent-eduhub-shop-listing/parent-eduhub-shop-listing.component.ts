@@ -1,3 +1,8 @@
+import { EduHubDirectorySearchComponent } from '../eduhub-directory-search/eduhub-directory-search.component';
+import { SportsShopHeaderComponent } from '../sports-shop-design/sports-shop-header/sports-shop-header.component';
+import { BookstoreHeaderComponent } from '../bookstore-design/bookstore-header/bookstore-header.component';
+import { StationeryShopHeaderComponent } from '../stationery-design/stationery-shop-header/stationery-shop-header.component';
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
 import { CommonModule, Location } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
@@ -86,7 +91,7 @@ interface EduHubShopListing {
 @Component({
   selector: 'app-parent-eduhub-shop-listing',
   standalone: true,
-  imports: [
+  imports: [EduHubDirectorySearchComponent,SportsShopHeaderComponent,BookstoreHeaderComponent,StationeryShopHeaderComponent,
     CommonModule,
     IonicModule,
     AdBannerComponent,
@@ -112,7 +117,12 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
   listings: EduHubShopListing[] = [];
   loading = true;
   loadError = '';
+  get directorySearchTerms(): string[] { return this.listings.map(item => item.name); }
+  runDirectorySearch(value: string): void { this.updateSearch(value); }
   searchOpen = false;
+  get searchLocationLabel(): string { return this.cityService.filter.city || this.cityService.filter.state || this.cityService.academyFilter.country || 'All locations'; }
+
+  searchVerifiedOnly = false;
   searchQuery = '';
   sortOpen = false;
   selectedSort: DirectorySort = 'verified';
@@ -205,6 +215,13 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     this.sortOpen = false;
   }
 
+  get isSportsShopDesign(): boolean { return /sport/i.test(this.categoryLabel + ' ' + this.entityType); }
+  get isBookstoreDesign(): boolean {
+    const label = this.categoryLabel + ' ' + this.entityType;
+    return /book/i.test(label) && !/second|used|pre.?loved/i.test(label);
+  }
+  get isStationeryDesign(): boolean { return /station[ae]ry/i.test(this.categoryLabel + ' ' + this.entityType); }
+
   get pageTitle(): string {
     const label = this.categoryLabel.trim() || 'Shops';
     const normalized = label.toLowerCase();
@@ -243,7 +260,7 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
           item.fullAddress,
           item.entityType
         ].join(' ')).includes(query);
-      return matchesCity && matchesQuery;
+      return matchesCity && matchesQuery && (!this.searchOpen || !this.searchVerifiedOnly || item.verified);
     });
 
     if (this.selectedSort === 'nearest') {
@@ -263,7 +280,10 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
 
   toggleSearch(): void {
     this.searchOpen = !this.searchOpen;
-    if (!this.searchOpen) this.searchQuery = '';
+    if (!this.searchOpen) {
+      this.searchQuery = '';
+      this.searchVerifiedOnly = false;
+    }
   }
 
   updateSearch(value: string): void {

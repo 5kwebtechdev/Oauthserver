@@ -1,0 +1,63 @@
+:host {
+  display: flex;
+  align-items: center;
+  padding: 12px 8px 12px 0;
+  border-radius: 16px;
+  background: var(--sm-v1-tutor100);
+  box-shadow: 0 0 2px 0.5px color-mix(in srgb, var(--sm-v1-tutor500) 50%, transparent);
+  font-family: var(--sm-font-body);
+  font-weight: 600;
+}
+
+.rb-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+
+.rb-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.rb-title,
+.rb-sub {
+  margin: 0;
+}
+
+.rb-title {
+  color: var(--sm-v1-neutral900);
+  font-size: var(--sm-font-size-body);
+}
+
+.rb-sub {
+  color: var(--sm-v1-neutral800);
+  font-size: var(--sm-font-size-caption);
+}
+
+.rb-cta {
+  flex: none;
+  margin: 0;
+  padding: 12px 8px;
+  border: 0;
+  border-radius: 27px;
+  background: var(--sm-v1-tutor600);
+  color: var(--sm-v1-neutral100);
+  font: inherit;
+  font-size: var(--sm-font-size-body-sm);
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease-out;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sm-v1-tutor600);
+    outline-offset: 2px;
+  }
+}

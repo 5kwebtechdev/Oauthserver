@@ -31,6 +31,10 @@ export class ShareLinkService {
     return `${this.publicAppUrl}/share/${encodeURIComponent(type)}/${encodeURIComponent(value)}`;
   }
 
+  buildQuizLink(quiz: { challengeId: number; slug?: string | null }): string {
+    return this.buildListingLink('quiz', quiz.slug?.trim() || quiz.challengeId);
+  }
+
   getAndroidStoreUrl(): string {
     return String(environment.firebase?.remoteConfig?.defaults?.android_store_url
       || 'https://play.google.com/store/apps/details?id=com.superme.app').trim();

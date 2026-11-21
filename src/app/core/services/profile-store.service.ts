@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, distinctUntilChanged, map, shareReplay } from 'rxjs';
 import { ChildInfo } from '../models/child-info.model';

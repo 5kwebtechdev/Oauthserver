@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';

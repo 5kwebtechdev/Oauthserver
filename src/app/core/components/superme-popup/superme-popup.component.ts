@@ -24,6 +24,8 @@ export interface SupermePopupCTA {
 }
 
 export interface SupermePopupConfig {
+  activityConfirmation?: boolean;
+  activityRewards?: { coins: number; streak: number };
   image?: string;
   imageAlt?: string;
   heading?: string;
@@ -68,8 +70,10 @@ export class SupermePopupComponent implements OnInit {
   // Computed properties
   get finalConfig(): SupermePopupConfig {
     return {
+      activityConfirmation: this.config.activityConfirmation,
+      activityRewards: this.config.activityRewards,
       image: this.config.image || this.image,
-      imageAlt: this.config.imageAlt || this.imageAlt,
+      imageAlt: this.config.imageAlt ?? this.imageAlt,
       heading: this.config.heading || this.heading,
       subtitle: this.config.subtitle || this.subtitle,
       primaryCTA: this.config.primaryCTA || this.primaryCTA,

@@ -1,3 +1,6 @@
+import { SecondHandBooksBannerComponent } from '../../core/components/second-hand-books-banner/second-hand-books-banner.component';
+import { secureTemporaryStorage as sessionStorage } from '../../core/storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../../core/storage/session-storage';
 import { MOOD_ASSET_ALIASES } from '../../core/models/mood-assets';
 import { FamilyActionsService } from '../../core/services/family-actions.service';
 import { Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
@@ -36,6 +39,7 @@ import { environment } from '../../../environments/environment';
 import { LearningService } from '../../core/services/learning.service';
 
 type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
+type ParentMessageTemplate = 'celebrate' | 'encourage' | 'activity-nudge';
 type FamilyMessageType = 'CELEBRATE' | 'ENCOURAGE' | 'CUSTOM';
 
 interface MoodBalanceSegment {
@@ -85,6 +89,7 @@ interface FamilySwitcherParent {
         LearningSectionComponent,
         AcademySectionComponent,
         TutorCardComponent,
+        SecondHandBooksBannerComponent,
     ],
     providers: [RefreshService]
 })
@@ -99,7 +104,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     private performanceRequestId = 0;
     private messageComposerCloseTimer?: ReturnType<typeof setTimeout>;
     private messageComposerTrigger?: HTMLElement;
-    private activeMessageTemplate?: 'celebrate' | 'encourage';
+    private activeMessageTemplate?: ParentMessageTemplate;
     private managedChildRefreshTimers: ReturnType<typeof setTimeout>[] = [];
     private readonly assigningLearningItems = new Set<string>();
     private switcherTouchStartX = 0;
@@ -118,6 +123,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public selectedMood: string | null = null;
     public showFamilyAck = false;
     public familyAckRole = '';
+    public familyAckCreated = false;
     public showMessageComposer = false;
     public messageComposerClosing = false;
     public isSendingMessage = false;
@@ -541,9 +547,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             const rawAck = sessionStorage.getItem('family_connected_ack');
             if (rawAck) {
                 sessionStorage.removeItem('family_connected_ack');
-                const ack = JSON.parse(rawAck) as { source?: string; role?: string };
+                const ack = JSON.parse(rawAck) as { source?: string; role?: string; created?: boolean };
                 if (ack.source === 'self-role-switch' && (ack.role === 'Parent' || ack.role === 'Child')) {
                     this.familyAckRole = ack.role;
+                    this.familyAckCreated = ack.role === 'Parent' && ack.created === true;
                     this.showFamilyAck = true;
                 }
             }
@@ -1389,7 +1396,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.familyActions.openAddChild(this.familyCode);
     }
 
-    openMessageComposer(template?: 'celebrate' | 'encourage'): void {
+    openMessageComposer(template?: ParentMessageTemplate): void {
         if (this.messageComposerCloseTimer) clearTimeout(this.messageComposerCloseTimer);
 
         this.messageComposerTrigger = document.activeElement instanceof HTMLElement
@@ -1546,12 +1553,15 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         }, 220);
     }
 
-    private getMessageTemplate(template?: 'celebrate' | 'encourage'): string {
+    private getMessageTemplate(template?: ParentMessageTemplate): string {
         if (template === 'celebrate') {
             return `I'm proud of your progress today, ${this.selectedChildName}!`;
         }
         if (template === 'encourage') {
             return `Keep going, ${this.selectedChildName}. You've got this!`;
+        }
+        if (template === 'activity-nudge') {
+            return 'You’ve still got some activities left for today, go for it! 💪';
         }
         return '';
     }

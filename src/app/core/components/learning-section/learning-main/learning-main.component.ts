@@ -1,5 +1,8 @@
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
 import { Component, ElementRef, Input, OnInit, OnDestroy, NgZone, ViewChild } from '@angular/core';
-import { IonContent, ViewWillEnter } from '@ionic/angular';
+import { IonContent, ViewWillEnter, Platform } from '@ionic/angular';
+import { NavigationService } from '../../../services/navigation.service';
+import { Subscription } from 'rxjs';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -14,7 +17,7 @@ import { LearningCardData, LearningCategorySummary } from 'src/app/core/models/l
 import { articleRoute } from 'src/app/core/models/article-route';
 import { EmptyStateComponent } from 'src/app/core/components/empty-state/empty-state.component';
 import { CustomToastService } from 'src/app/core/services/custom-toast.service';
-import { AcademyCategory, AcademyService, Course } from 'src/app/core/services/academy.service';
+import { AcademyCategory, AcademyService, Course, academyPendingCount } from 'src/app/core/services/academy.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
 import { ProfileStoreService } from 'src/app/core/services/profile-store.service';
@@ -27,6 +30,8 @@ import { SectionComingSoonComponent } from '../../section-coming-soon/section-co
 import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { UserService } from 'src/app/core/services/user.service';
 
+import { LearningsLandingComponent, LearningsLandingTab } from '../learnings-landing/learnings-landing.component';
+
 type LearningCategoryTab = 'puzzles' | 'quizzes' | 'articles' | 'masterclass';
 type ParentLearningStatus = 'pending' | 'completed';
 
@@ -35,10 +40,11 @@ type ParentLearningStatus = 'pending' | 'completed';
   templateUrl: './learning-main.component.html',
   styleUrls: ['./learning-main.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, SupermePetComponent, EmptyStateComponent, SkeletonImageComponent, LearningChallengeCardComponent, LearningArticleCardComponent, SectionComingSoonComponent, AdBannerComponent],
+  imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, SupermePetComponent, EmptyStateComponent, SkeletonImageComponent, LearningChallengeCardComponent, LearningArticleCardComponent, SectionComingSoonComponent, AdBannerComponent, LearningsLandingComponent],
   providers: [LearningService]
 })
 export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
+  private hardwareBackSubscription?: Subscription;
   @ViewChild(IonContent) ionContent?: IonContent;
   @Input() title: string = '';
   @Input() body: string = '';
@@ -46,6 +52,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   @ViewChild('childTabs') private childTabs?: ElementRef<HTMLElement>;
 
   selectedCategory: LearningCategoryTab = 'quizzes';
+  learningRefreshVersion = 0;
+  private learningLandingEntered = false;
+  get landingTab(): LearningsLandingTab { return this.selectedCategory === 'puzzles' ? 'quizzes' : this.selectedCategory; }
   parentView = false;
   childView = false;
   childCoins = 0;
@@ -213,7 +222,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     private zone: NgZone,
     private route: ActivatedRoute,
     private location: Location,
-    private userService: UserService
+    private userService: UserService,
+    private platform: Platform,
+    private navigation: NavigationService
   ) { }
 
   /** Panda uses the same Figma artwork shown on Home/Coins instead of the generic 3D render. */
@@ -369,7 +380,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       this.closeCategoryContent();
       return;
     }
-    this.location.back();
+    const home = this.parentView ? '/authed/parent-account' : '/authed/home';
+    this.navigation.replaceHistory(home);
+    void this.router.navigateByUrl(home, { replaceUrl: true });
   }
 
   retryParentLoad(): void {
@@ -735,6 +748,11 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   ionViewWillEnter(): void {
+    this.hardwareBackSubscription?.unsubscribe();
+    this.hardwareBackSubscription = this.platform.backButton.subscribeWithPriority(100, () => {
+      this.goBackFromParentLearning();
+    });
+    if ((history as any)?.state?.quizExit) this.closeCategoryContent();
     // Ionic caches Learning: refresh the authoritative balance after quizzes
     // (including hint spending/repeat attempts), not just the category list.
     if (!this.parentView) {
@@ -759,6 +777,8 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       return;
     }
 
+    if (this.learningLandingEntered) this.learningRefreshVersion++;
+    this.learningLandingEntered = true;
     // Refresh the category summaries when returning to the main Learning page.
     if (!this.parentView || this.hasSelectedChild) {
       this.loadTab(this.selectedCategory, true);
@@ -766,6 +786,8 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   private loadTab(tab: LearningCategoryTab, forceRefresh = false): void {
+    // The new learner landing owns its flat feed. Parent/category detail flows keep their existing loader.
+    if (this.childView && !this.selectedCategoryItem) return;
     if (!forceRefresh && this.loadedTabs.has(tab)) return;
     if (this.loadingTabs[tab]) return;
     if (this.parentView && !this.hasSelectedChild) return;
@@ -848,12 +870,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   private resolveAcademyPendingCount(category: AcademyCategory): number {
-    const pending = category.pending ?? category.pendingCount ?? category.pendingCourseCount;
-    if (pending != null) return this.toCategoryCount(pending);
-
-    const total = this.toCategoryCount(category.courseCount);
-    const completed = category.completedCount ?? category.completedCourseCount;
-    return completed == null ? total : Math.max(0, total - this.toCategoryCount(completed));
+    return academyPendingCount(category);
   }
 
   private toCategoryCount(value: unknown): number {
@@ -868,7 +885,13 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     return title.toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase());
   }
 
+  ionViewWillLeave(): void {
+    this.hardwareBackSubscription?.unsubscribe();
+    this.hardwareBackSubscription = undefined;
+  }
+
   ngOnDestroy(): void {
+    this.hardwareBackSubscription?.unsubscribe();
     this.stopVoiceSearch();
     this.childRequestCancel$.next();
     this.childRequestCancel$.complete();

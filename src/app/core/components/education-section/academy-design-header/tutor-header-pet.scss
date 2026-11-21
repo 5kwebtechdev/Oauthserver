@@ -1,0 +1,142 @@
+// The pet in the header: its box, each pet's placement, and the location pin's hop. Apart from
+// tutor-header.component.scss so that neither passes Angular's default 8 kB limit per stylesheet.
+
+// Under gravity, position is quadratic in time.
+$hop: 1400ms;
+$hop-height: -8px;
+$ease-out-quad: cubic-bezier(0.333, 0.667, 0.667, 1); // rising, decelerating
+$ease-in-quad: cubic-bezier(0.333, 0, 0.667, 0.333); // falling, accelerating
+
+.th-pet {
+  position: relative;
+  flex-shrink: 0;
+  width: 104px;
+  height: 118px;
+}
+
+.th-rig,
+.th-part {
+  position: absolute;
+}
+
+// Each pet's art is a 1254px canvas placed as in its own Figma frame, in % of the 104 x 118 box that
+// the header always keeps for the pet, so the headline doesn't move. Pivots are in % of the canvas,
+// and tools/slice-pets.js prints them.
+.th-rig {
+  --th-pin-tip: 19.14% 40.27%;
+  --th-pin-lines-origin: 19.1% 25.5%;
+  left: -12.93%;
+  top: -3.04%;
+  width: 120.69%;
+  height: 106.25%;
+}
+
+.th-rig--llama {
+  --th-pin-tip: 20.53% 42.5%;
+  --th-pin-lines-origin: 20.53% 27.51%;
+  left: -11.38%;
+  top: -1.68%;
+  width: 119.2%;
+  height: 105.29%;
+}
+
+.th-rig--owl {
+  --th-pin-tip: 15.11% 39.79%;
+  --th-pin-lines-origin: 15.11% 25.6%;
+  left: -11.52%;
+  top: -0.72%;
+  width: 118.52%;
+  height: 103.97%;
+}
+
+.th-rig--dragon {
+  --th-pin-tip: 14.04% 40.27%;
+  --th-pin-lines-origin: 14.04% 25.12%;
+  left: -13.04%;
+  top: -4%;
+  width: 125.27%;
+  height: 110.15%;
+}
+
+.th-part {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// Anticipation squash -> launch (stretched, fastest) -> apex (round, slowest) ->
+// fall (stretched) -> impact squash -> damped settle -> rest. sx * sy ~ 1 keeps volume.
+@keyframes th-pin-hop {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1, 1);
+    animation-timing-function: ease-out;
+  }
+  6% {
+    transform: translate3d(0, 0, 0) scale(1.1, 0.9);
+    animation-timing-function: ease-in;
+  }
+  10% {
+    transform: translate3d(0, 0, 0) scale(0.92, 1.08);
+    animation-timing-function: $ease-out-quad;
+  }
+  32% {
+    transform: translate3d(0, $hop-height, 0) scale(1, 1);
+    animation-timing-function: $ease-in-quad;
+  }
+  54% {
+    transform: translate3d(0, 0, 0) scale(0.94, 1.06);
+    animation-timing-function: ease-out;
+  }
+  60% {
+    transform: translate3d(0, 0, 0) scale(1.12, 0.88);
+    animation-timing-function: ease-in-out;
+  }
+  68% {
+    transform: translate3d(0, 0, 0) scale(0.97, 1.03);
+    animation-timing-function: ease-in-out;
+  }
+  76% {
+    transform: translate3d(0, 0, 0) scale(1.01, 0.99);
+    animation-timing-function: ease-in-out;
+  }
+  82%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1, 1);
+  }
+}
+
+// The "ping" marks leave with the pin and burst back out on landing.
+@keyframes th-pin-lines {
+  0%,
+  6% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: ease-in;
+  }
+  16%,
+  54% {
+    opacity: 0;
+    transform: scale(0.6);
+    animation-timing-function: ease-out;
+  }
+  64% {
+    opacity: 1;
+    transform: scale(1.15);
+    animation-timing-function: ease-in-out;
+  }
+  76%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.th-pin {
+  transform-origin: var(--th-pin-tip);
+  animation: th-pin-hop $hop linear infinite;
+}
+
+.th-pin-lines {
+  transform-origin: var(--th-pin-lines-origin);
+  animation: th-pin-lines $hop linear infinite;
+}

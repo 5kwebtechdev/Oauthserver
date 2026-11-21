@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, map, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -69,6 +69,15 @@ export class EventApi {
       .pipe(map(response => this.normalizeEvents(response)));
   }
 
+  updateChildEvent(id: string | number, childId: string | number, payload: EventPayload): Observable<EventDto[]> {
+    const body: EventPayload & { forUserId?: unknown } = { ...payload };
+    delete body.forUserId;
+    return this.http.put<EventDto | EventDto[]>(`${this.base}/events/for-child/update/${id}`, body, {
+      headers: this.headers(),
+      params: new HttpParams().set('forUserId', String(childId))
+    }).pipe(map(response => this.normalizeEvents(response)));
+  }
+
   getEvents(): Observable<EventDto[]> {
     return this.http.get<EventDto[]>(`${this.base}/events/all`, { headers: this.headers() }).pipe(
       map(events => this.normalizeEvents(events)),
@@ -87,6 +96,13 @@ export class EventApi {
   getEvent(id: string | number): Observable<EventDto> {
     return this.http.get<EventDto>(`${this.base}/events/${id}`, { headers: this.headers() })
       .pipe(map(event => this.normalizeEvent(event)));
+  }
+
+  getChildEvent(id: string | number, childId: string | number): Observable<EventDto> {
+    return this.http.get<EventDto>(`${this.base}/events/for-child/${id}`, {
+      headers: this.headers(),
+      params: new HttpParams().set('forUserId', String(childId))
+    }).pipe(map(event => this.normalizeEvent(event)));
   }
 
   private normalizeEvents(response: EventDto | EventDto[] | null): EventDto[] {

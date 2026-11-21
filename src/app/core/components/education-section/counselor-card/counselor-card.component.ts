@@ -3,7 +3,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy } from '@a
 import { Subscription } from 'rxjs';
 import { Share } from '@capacitor/share';
 import { Tutor, TutorCategory, formatContactModes, formatExperience, formatTeachingMode } from '../../../models/tutor.model';
-import { teachingSummary } from '../../../models/teaching-display';
+import { teachingGroups, teachingSummary } from '../../../models/teaching-display';
 import { TeachingDisplayService } from '../../../services/teaching-display.service';
 import { TutorLikeService } from '../../../services/tutor-like.service';
 import { CoreService } from '../../../services/core.service';
@@ -58,6 +58,37 @@ export class CounselorCardComponent implements OnChanges, OnDestroy {
     return `${values.slice(0, 2).join(', ')} + ${values.length - 2}`;
   }
 
+  /** Presentation only: reuse the existing category/option label resolver. */
+  get educationRows(): { label: string; value: string; icon: string }[] {
+    if (!this.education) return [
+      { label: 'Specialization', value: this.getSpecializationLabel(this.counselor), icon: 'specialization' },
+      { label: 'Qualifications', value: this.counselor.qualification?.trim() || 'Not specified', icon: 'class' }
+    ];
+    const group = teachingGroups(this.counselor, this.categories, this.categoryKey)[0];
+    if (!group) return [{ label: 'Teaching', value: this.getSpecializationLabel(this.counselor), icon: 'subjects' }];
+    const fields: Record<string, [string, string, string][]> = {
+      SCHOOL: [['Subjects', 'Subjects', 'subjects'], ['Class', 'Class', 'class']],
+      COLLEGE: [['Degree / Stream', 'Degree / Stream', 'degree'], ['Year', 'Year', 'year']],
+      LANGUAGES: [['Languages', 'Languages', 'languages'], ['Level', 'Level', 'level']],
+      HOBBIES: [['Skill', 'Skill', 'hobbies'], ['Level', 'Level', 'level']],
+      EXAMS: [['Exams', 'Target Exam', 'exams']],
+      SPORTS: [['Activities', 'Activities', 'sports'], ['Age Group', 'Age Group', 'age']],
+      OTHERS: [['Skill', 'Skill', 'others'], ['Level', 'Level', 'level']]
+    };
+    return (fields[group.key] || []).reduce<{ label: string; value: string; icon: string }[]>((rows, [source, label, icon]) => {
+      const row = group.rows.find(item => item.label === source);
+      if (row) {
+        const value = source === 'Class'
+          ? row.value.replace(/\bclass\s+/gi, '').trim()
+          : row.value;
+        rows.push({ label, value, icon });
+      }
+      return rows;
+    }, []);
+  }
+
+  get likeCount(): number { return this.likes.getCount(this.counselor.id); }
+
   getAvailability(counselor: Tutor): string {
     if (counselor.entityType === 'ACADEMY' && counselor.teachingMode) {
       return formatTeachingMode(counselor.teachingMode);
@@ -86,7 +117,7 @@ export class CounselorCardComponent implements OnChanges, OnDestroy {
       PER_COURSE: 'Course',
       PER_SUBJECT: 'Subject'
     };
-    return `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / ${labels[String(counselor.feeType)] || (this.education ? 'Hour' : 'Session')}`;
+    return `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)}/${(labels[String(counselor.feeType)] || (this.education ? 'Hour' : 'Session')).toLowerCase()}`;
   }
 
   private getSpecializations(counselor: Tutor): string[] {

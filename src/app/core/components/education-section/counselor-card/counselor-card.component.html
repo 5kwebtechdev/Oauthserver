@@ -1,35 +1,48 @@
-            <article class="counselor-card" [class.education-card]="education">
-              <div class="counselor-card__top">
-                <div class="counselor-card__photo">
-                  <app-profile-image
-                    [fallbackCategory]="counselor.entityType === 'ACADEMY' ? 'academy' : (education ? 'tutor' : 'counselor')"
-                    [src]="getProfileImage(counselor)"
-                    [name]="getName(counselor)"
-                    [alt]="getName(counselor) + ' profile image'">
-                  </app-profile-image>
-                </div>
-                <div class="counselor-card__body">
-                  <div class="counselor-card__headline">
-                    <div class="counselor-card__identity">
-                      <div class="counselor-card__name"><h3>{{ getName(counselor) }}</h3>
-                        <img *ngIf="isVerified(counselor)" src="assets/figma/parent-eduhub-inner/verified.svg" alt="Verified" title="Verified"></div>
-                      <p *ngIf="!guest" class="counselor-card__specialization">{{ getSpecializationLabel(counselor) }}</p>
-                      <p *ngIf="!guest && (homePreview || getAvailability(counselor) || !education)" class="counselor-card__stats"><span *ngIf="homePreview; else regularMode"><img src="assets/figma/eduhub-home/online-mode.svg" alt="" aria-hidden="true">{{ getHomeMode(counselor) }}</span><ng-template #regularMode><span *ngIf="getAvailability(counselor) as availability"><img src="assets/figma/eduhub-home/online-mode.svg" alt="" aria-hidden="true">{{ availability }}</span></ng-template><span *ngIf="!education"><img src="assets/Icons-Neutral/Icon-Tutor-Experience.webp" alt="" aria-hidden="true">{{ getExperience(counselor) }}</span></p>
-                    </div>
-                    <div *ngIf="!guest" class="counselor-card__actions">
-                      <button type="button" class="counselor-action counselor-action--heart" [class.is-liked]="isLiked(counselor)" [disabled]="isLikePending(counselor)" [attr.aria-label]="isLiked(counselor) ? 'Unlike ' + 'counselor'.toLowerCase() : 'Like ' + 'counselor'.toLowerCase()" [attr.aria-pressed]="isLiked(counselor)" (click)="toggleLike($event, counselor)">
-                        <svg viewBox="0 0 16 16" aria-hidden="true">
-                          <path d="M8 14l-.97-.87C5.91 12.12 4.98 11.25 4.25 10.52 3.52 9.78 2.93 9.13 2.5 8.54c-.43-.58-.74-1.12-.91-1.61a4.45 4.45 0 0 1-.26-1.5c0-1.04.35-1.91 1.05-2.61.7-.7 1.58-1.05 2.62-1.05.58 0 1.13.12 1.65.36.52.25.97.59 1.35 1.04.38-.45.83-.79 1.35-1.04.52-.24 1.07-.36 1.65-.36 1.04 0 1.92.35 2.62 1.05.7.7 1.05 1.57 1.05 2.61 0 .51-.09 1.01-.26 1.5-.17.49-.48 1.03-.91 1.61-.43.59-1.02 1.24-1.75 1.98-.73.73-1.66 1.6-2.78 2.61L8 14Z"/>
-                        </svg>
-                      </button>
-                      <button *ngIf="!education" type="button" class="counselor-action counselor-action--share" [attr.aria-label]="'Share ' + 'counselor'.toLowerCase()" (click)="shareCounselor(counselor)"><img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true"></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div *ngIf="!guest" class="counselor-card__footer"><span>{{ getFee(counselor) }}</span><button type="button" (click)="viewProfile.emit(counselor)">Check Full Profile</button></div>
-              <div *ngIf="guest" class="counselor-card__guest-cta">
-                <span>Log in to view more details</span>
-                <button type="button" (click)="viewProfile.emit(counselor)">Log in</button>
-              </div>
-            </article>
+<article class="education-listing" [class.education-listing--home]="homePreview">
+  <button type="button" class="education-listing__profile"
+    [attr.aria-label]="(guest ? 'Log in to view ' : 'View profile for ') + getName(counselor)"
+    (click)="viewProfile.emit(counselor)">
+    <span class="education-listing__photo" [class.education-listing__photo--counselor]="!education && counselor.entityType !== 'ACADEMY'">
+      <app-profile-image [fallbackCategory]="counselor.entityType === 'ACADEMY' ? 'academy' : (education ? 'tutor' : 'counselor')"
+        [src]="getProfileImage(counselor)" [name]="getName(counselor)" [alt]="getName(counselor) + ' profile image'">
+      </app-profile-image>
+    </span>
+    <span class="education-listing__body">
+      <span class="education-listing__name">
+        <strong [title]="getName(counselor)">{{ getName(counselor) }}</strong>
+        <span *ngIf="isVerified(counselor)" class="education-listing__verified">
+          <img src="assets/figma/eduhub-cards/verified.png" alt="Verified">
+        </span>
+      </span>
+      <span *ngIf="!guest" class="education-listing__fields">
+        <span *ngFor="let row of educationRows; let index = index"
+          class="education-listing__field" [class.education-listing__field--secondary]="index === 1"
+          [class.education-listing__field--exam]="row.icon === 'exams'">
+          <span class="education-listing__icon"><span><img [src]="'assets/figma/eduhub-cards/' + row.icon + '.svg'" alt=""></span></span>
+          <span class="education-listing__field-text">
+            <span class="education-listing__label">{{ row.label }}</span>
+            <span class="education-listing__value" [title]="row.value">{{ row.value }}</span>
+          </span>
+        </span>
+      </span>
+      <span *ngIf="guest" class="education-listing__guest">Log in to view more details</span>
+    </span>
+  </button>
+  <div *ngIf="!guest" class="education-listing__footer">
+    <button type="button" class="education-listing__fee" (click)="viewProfile.emit(counselor)" [title]="getFee(counselor)">{{ getFee(counselor) }}</button>
+    <span class="education-listing__mode" [title]="getAvailability(counselor)">
+      <img src="assets/figma/eduhub-cards/mode.svg" alt="">{{ getAvailability(counselor) || 'Not specified' }}
+    </span>
+    <span *ngIf="homePreview" class="education-listing__like" [attr.aria-label]="(likeCount | number) + ' likes'">
+      <span><img src="assets/figma/eduhub-cards/heart.svg" alt=""></span>{{ likeCount | number }}
+    </span>
+    <button *ngIf="!homePreview" type="button" class="education-listing__like" [class.is-liked]="isLiked(counselor)"
+      [disabled]="isLikePending(counselor)" [attr.aria-pressed]="isLiked(counselor)"
+      [attr.aria-label]="(isLiked(counselor) ? 'Unlike ' : 'Like ') + getName(counselor)"
+      (click)="toggleLike($event, counselor)">
+      <span><img src="assets/figma/eduhub-cards/heart.svg" alt=""></span>{{ likeCount | number }}
+    </button>
+    <button *ngIf="!education && !homePreview" type="button" class="education-listing__share" aria-label="Share counselor" (click)="shareCounselor(counselor)"><img src="assets/figma/parent-eduhub-inner/share.svg" alt=""></button>
+  </div>
+  <button *ngIf="guest" type="button" class="education-listing__login" (click)="viewProfile.emit(counselor)">Log in</button>
+</article>

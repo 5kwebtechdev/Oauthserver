@@ -194,22 +194,21 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   async close(): Promise<void> {
-    if (this.route.snapshot.paramMap.has('id')) {
+    const isRoutedProfile = this.route.snapshot.paramMap.has('id');
+    if (!isRoutedProfile) {
+      const modal = await this.modalCtrl.getTop().catch(() => undefined);
+      if (modal?.component === TutorProfileComponent && await modal.dismiss()) return;
+    }
+
+    const previous = this.router.lastSuccessfulNavigation?.previousNavigation?.finalUrl;
+    if (previous && this.router.serializeUrl(previous) !== this.router.url) {
       this.location.back();
       return;
     }
 
-    try {
-      const topModal = await this.modalCtrl.getTop();
-      if (topModal) {
-        await topModal.dismiss();
-        return;
-      }
-    } catch {
-      // Fall back to browser history below.
-    }
-
-    this.location.back();
+    const directory = this.isCounselorProfile ? 'counselors'
+      : this.tutor?.entityType === 'ACADEMY' ? 'academies' : 'tutors';
+    await this.router.navigate(['/authed', directory], { replaceUrl: true });
   }
 
   toggleLike(): void {
@@ -449,13 +448,13 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   getFeeTypeString(): string {
     const labels: Record<string, string> = {
-      PER_HOUR: '/ Hour',
-      PER_MONTH: '/Month',
-      PER_SESSION: '/Session',
-      PER_COURSE: '/Course',
-      PER_SUBJECT: '/Subject'
+      PER_HOUR: '/hour',
+      PER_MONTH: '/month',
+      PER_SESSION: '/session',
+      PER_COURSE: '/course',
+      PER_SUBJECT: '/subject'
     };
-    return labels[String(this.tutor?.feeType || '')] || '/ Hour';
+    return labels[String(this.tutor?.feeType || '')] || '/hour';
   }
 
   isChildUser(): boolean {
@@ -546,7 +545,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     const fee = this.getHourlyRate();
     const feeTypes: Record<string, string> = { PER_SESSION: 'Session', PER_HOUR: 'Hour', PER_MONTH: 'Month', PER_COURSE: 'Course', PER_SUBJECT: 'Subject' };
     return fee > 0
-      ? `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / ${feeTypes[String(this.tutor?.feeType)] || 'Session'}`
+      ? `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)}/${(feeTypes[String(this.tutor?.feeType)] || 'Session').toLowerCase()}`
       : 'Not specified';
   }
 

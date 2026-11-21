@@ -1,17 +1,23 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 import { GOOGLE_AUTH_CAPACITOR_CONFIG } from './src/app/core/config/google-auth.config';
 
+// Set only when syncing the production Android build; DEV/iOS retain their origin.
+const productionAndroid = process.env['SUPERME_ANDROID_PRODUCTION'] === 'true';
+
 const config: CapacitorConfig = {
   appId: 'com.superme.app',
   appName: 'SuperMeApp',
   webDir: 'www',
   server: {
+    ...(productionAndroid ? { androidScheme: 'https', hostname: 'app.supermeapp.com' } : {}),
     allowNavigation: [
       'api.supermeapp.com',
       '*.supermeapp.com'
     ]
   },
   android: {
+    // Native plugin arguments can contain OAuth callback URLs; never log them.
+    loggingBehavior: 'none',
     allowMixedContent: true,
     // Android 15+ enforces edge-to-edge rendering, so the legacy StatusBar
     // overlay flag alone cannot keep the WebView below the system bars.

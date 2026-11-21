@@ -1,3 +1,7 @@
+import { secureTemporaryStorage as sessionStorage } from '../storage/session-storage';
+import { flushSecureSession } from '../storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
+import { Capacitor } from '@capacitor/core';
 import { Injectable } from '@angular/core';
 import { PkceAuthService } from './pkce-auth.service';
 import { HttpClient } from '@angular/common/http';
@@ -21,6 +25,7 @@ import {
 } from './onboarding-state.service';
 
 export interface LoginCredentials {
+  turnstileToken?: string;
   email?: string;
   phone?: string;
   password: string;
@@ -110,6 +115,26 @@ export interface UserSession {
   providedIn: 'root'
 })
 export class AuthService {
+  // Session timeout configuration
+  // Sessions persist until manual logout for both web and mobile platforms
+  private readonly SESSION_PERSIST_UNTIL_LOGOUT = Number.MAX_SAFE_INTEGER; // Persist indefinitely until manual logout
+  private readonly TOKEN_REFRESH_INTERVAL = 30 * 1000; // Check every 30 seconds for testing (change to 5 * 60 * 1000 for production)
+
+  // Storage keys
+  private readonly TOKEN_KEY = 'auth_token';
+  private readonly USER_ID_KEY = 'user_id';
+  private readonly LOGIN_TIME_KEY = 'login_time';
+  private readonly LAST_ACTIVITY_KEY = 'last_activity';
+  private readonly REMEMBER_ME_KEY = 'remember_me';
+  private readonly PLATFORM_KEY = 'platform';
+  private readonly FIRST_LOGGED_FOR_DAY_KEY = 'superme_first_logged_for_the_day';
+  // In-memory only. Used solely for Parent Home → Add Child → Parent Home,
+  // where an unrelated request must not turn a successful child creation
+  // into an unexpected login redirect.
+  private managedChildParentSession: { token: string; userId: number; user: any } | null = null;
+
+  private isMobilePlatform: boolean = false;
+
   private apiUrl = environment.apiUrl;
 
   // Observable to track authentication state
@@ -137,30 +162,6 @@ export class AuthService {
   private familyChildCreatedSubject = new Subject<any>();
   public familyChildCreated$ = this.familyChildCreatedSubject.asObservable();
 
-  // Session timeout configuration
-  // Sessions persist until manual logout for both web and mobile platforms
-  private readonly SESSION_PERSIST_UNTIL_LOGOUT = Number.MAX_SAFE_INTEGER; // Persist indefinitely until manual logout
-  private readonly TOKEN_REFRESH_INTERVAL = 30 * 1000; // Check every 30 seconds for testing (change to 5 * 60 * 1000 for production)
-
-  // Storage keys
-  private readonly TOKEN_KEY = 'auth_token';
-  private readonly USER_ID_KEY = 'user_id';
-  private readonly LOGIN_TIME_KEY = 'login_time';
-  private readonly LAST_ACTIVITY_KEY = 'last_activity';
-  private readonly REMEMBER_ME_KEY = 'remember_me';
-  private readonly PLATFORM_KEY = 'platform';
-  private readonly FIRST_LOGGED_FOR_DAY_KEY = 'superme_first_logged_for_the_day';
-  // In-memory only. Used solely for Parent Home → Add Child → Parent Home,
-  // where an unrelated request must not turn a successful child creation
-  // into an unexpected login redirect.
-  private managedChildParentSession: { token: string; userId: number; user: any } | null = null;
-
-  private isMobilePlatform: boolean = false;
-
-  // Tracks which account THIS tab currently believes is active, so a storage event can
-  // tell "same account, token refreshed elsewhere" apart from "a different account signed
-  // in elsewhere" - see onStorageChanged/syncSessionFromStorage.
-  private lastKnownUserId: string | null = localStorage.getItem(this.USER_ID_KEY);
 
   constructor(
     private pkce: PkceAuthService,
@@ -179,54 +180,6 @@ export class AuthService {
     this.detectPlatform();
     this.initSessionMonitoring();
     this.syncPetFromUserData(this.userDataSubject.value);
-    // The browser's 'storage' event fires only in OTHER tabs/windows of this origin when
-    // localStorage changes - never in the tab that made the change - which is exactly the
-    // cross-tab notification needed here. Without this, two different accounts could
-    // appear simultaneously "logged in" in two tabs (one showing stale cached UI for an
-    // account whose token another tab just overwrote), and a logout in one tab would only
-    // reach other tabs after up to 30s via the existing checkSessionValidity() poll.
-    window.addEventListener('storage', (event) => this.onStorageChanged(event));
-  }
-
-  /**
-   * Reacts to a localStorage change made by another tab. Two different accounts must never
-   * appear simultaneously logged in across tabs of the same browser: if a different account
-   * signed in elsewhere, this tab's cached state (UI, in-memory subjects, route guards) is
-   * for the wrong account now, so it reloads to re-bootstrap cleanly from the new,
-   * authoritative state - effectively "logging out" the stale view, as expected. If the
-   * SAME account's token was simply refreshed elsewhere, this tab's subjects are updated
-   * quietly instead, so same-account tabs stay in sync without a disruptive reload.
-   */
-  private onStorageChanged(event: StorageEvent): void {
-    if (event.key !== this.TOKEN_KEY && event.key !== this.USER_ID_KEY) return;
-    this.syncSessionFromStorage();
-  }
-
-  private syncSessionFromStorage(): void {
-    const currentUserId = localStorage.getItem(this.USER_ID_KEY);
-
-    if (!currentUserId) {
-      if (this.isAuthenticatedSubject.value) {
-        console.log('[AuthService] Session ended in another tab, logging out here too');
-        this.logout();
-      }
-      this.lastKnownUserId = null;
-      return;
-    }
-
-    if (this.lastKnownUserId && currentUserId !== this.lastKnownUserId) {
-      console.log('[AuthService] A different account signed in on another tab - reloading to re-sync');
-      window.location.reload();
-      return;
-    }
-
-    this.lastKnownUserId = currentUserId;
-    const isValid = this.hasValidSession();
-    if (isValid !== this.isAuthenticatedSubject.value) {
-      this.isAuthenticatedSubject.next(isValid);
-    }
-    this.currentUserSubject.next(this.getCurrentSession());
-    this.userDataSubject.next(this.loadUserDataFromStorage());
   }
 
   /**
@@ -262,7 +215,7 @@ export class AuthService {
    * Check if there's a valid session in localStorage
    */
   private hasValidSession(): boolean {
-    if (this.pkce.enabled && !this.pkce.token) return false;
+    if (this.pkce.enabled && !this.pkce.token && !(this.pkce.nativeDev && this.pkce.hasRefreshToken)) return false;
     const token = localStorage.getItem(this.TOKEN_KEY);
     const userId = localStorage.getItem(this.USER_ID_KEY);
     const lastActivity = localStorage.getItem(this.LAST_ACTIVITY_KEY);
@@ -309,13 +262,18 @@ export class AuthService {
   }
 
   /**
-   * Check session validity and handle expiration. Also a fallback for the storage-event
-   * listener (onStorageChanged): that fires instantly but could in principle be missed by a
-   * throttled/backgrounded tab, so this periodic poll catches the same account-switch/
-   * logout drift within TOKEN_REFRESH_INTERVAL regardless.
+   * Check session validity and handle expiration
    */
   private checkSessionValidity(): void {
-    this.syncSessionFromStorage();
+    const isValid = this.hasValidSession();
+
+    if (!isValid && this.isAuthenticatedSubject.value) {
+      console.log('[AuthService] Session expired, logging out');
+      this.logout();
+    } else if (isValid !== this.isAuthenticatedSubject.value) {
+      this.isAuthenticatedSubject.next(isValid);
+      this.currentUserSubject.next(this.getCurrentSession());
+    }
   }
 
   /**
@@ -856,7 +814,7 @@ export class AuthService {
     );
   }
 
-  async logout(redirectToLogin: boolean = true): Promise<void> {
+  async logout(redirectToLogin: boolean = true, refreshBeforeLogout: boolean = true): Promise<void> {
     console.log('[AuthService] Logging out user');
 
     // Capture the id before any local state is cleared, and call the backend
@@ -877,29 +835,41 @@ export class AuthService {
     // Start device-token cleanup while the old session is still identifiable,
     // but revoke all local/in-memory access immediately rather than waiting on
     // network or native sign-out operations.
-    const oidcLogout = await this.pkce.prepareLogout();
+    const oidcLogout = await this.pkce.prepareLogout(refreshBeforeLogout);
     const pushCleanup = this.pushNotifications.clearToken().catch(() => {});
     this.clearLocalUserState();
+    await flushSecureSession();
     this.analytics.clearUserId();
     this.crashlytics.clearUserId();
 
     // Logout should always stay inside the current app host. During local
     // development, sending web users to environment.publicWebUrl jumps from
     // localhost to the production marketing site and makes logout look broken.
-    const navigation = redirectToLogin && !oidcLogout
-      ? this.navCtrl.navigateRoot('/login', { animated: false })
+    const navigation = redirectToLogin && Capacitor.isNativePlatform() && (!oidcLogout || this.pkce.nativeDev)
+      ? this.navCtrl.navigateRoot(this.pkce.nativeDev ? '/login?loggedOut=1' : '/login', { animated: false })
       : Promise.resolve(true);
 
-    await Promise.all([
-      navigation,
+    // The signed-out route must render before any optional native SDK cleanup.
+    await navigation;
+    const cleanup = Promise.all([
       pushCleanup,
-      this.authSessionCleanup.clearExternalAuthSessions()
-    ]);
+      this.authSessionCleanup.clearExternalAuthSessions(!this.pkce.nativeDev)
+    ].map(task => task.catch(() => {})));
+    if (this.pkce.nativeDev) {
+      await new Promise<void>(resolve => {
+        const timer = setTimeout(resolve, 2500);
+        void cleanup.finally(() => { clearTimeout(timer); resolve(); });
+      });
+    } else await cleanup;
 
-    if (oidcLogout && redirectToLogin) { window.location.assign(oidcLogout); return; }
+    if (oidcLogout && redirectToLogin) {
+      if (this.pkce.nativeDev) await this.pkce.openNativeLogout(oidcLogout);
+      else window.location.assign(oidcLogout);
+      return;
+    }
 
-    if (redirectToLogin && typeof window !== 'undefined' && !window.location.pathname.endsWith('/login')) {
-      window.location.replace('/login');
+    if (redirectToLogin && typeof window !== 'undefined') {
+      window.location.replace(Capacitor.isNativePlatform() ? '/login' : '/');
     }
   }
 

@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import {
@@ -11,6 +12,7 @@ import {
 import { Observable, throwError } from 'rxjs';
 import { catchError, filter, tap } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
+import { PkceAuthService } from '../services/pkce-auth.service';
 import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
 
@@ -19,11 +21,14 @@ export class AuthInterceptor implements HttpInterceptor {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private pkce: PkceAuthService
   ) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    if (environment.oauth.enabled && !Capacitor.isNativePlatform()) return next.handle(request);
+    // OAuth sessions use PkceInterceptor's serialized refresh/retry handling.
+    // The legacy handler must never log them out on the initial expired-token 401.
+    if (this.pkce.enabled) return next.handle(request);
     // Public authentication exchanges (OAuth, login, OTP, etc.) must not
     // inherit a token from a previous app session. This is especially
     // important on web, where the Google account picker can complete while an

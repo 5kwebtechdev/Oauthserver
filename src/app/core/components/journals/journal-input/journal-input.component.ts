@@ -1,6 +1,7 @@
+import { MicroRewardService } from 'src/app/core/services/micro-reward/micro-reward.service';
 import { CommonModule, Location } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { inject, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
@@ -38,6 +39,8 @@ interface UploadedJournalImage {
   styleUrls: ['./journal-input.component.scss'],
 })
 export class JournalInputComponent implements OnInit, OnDestroy {
+  private readonly microReward = inject(MicroRewardService);
+  private readonly rewardElement = inject<ElementRef<HTMLElement>>(ElementRef);
   @Input() initialText = '';
   @Input() placeholder = 'Add a note to your journal';
   @Output() save = new EventEmitter<string>();
@@ -46,7 +49,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   private static readonly MAX_IMAGES = 3;
-  private static readonly MAX_IMAGE_BYTES = 1 * 1024 * 1024;
+  private static readonly MAX_IMAGE_BYTES = 2 * 1024 * 1024;
   text = '';
   selected: Record<string, number | null> = {};
   selectedFeelings: number[] = [];
@@ -285,7 +288,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
   async submit(): Promise<void> {
     if (this.submitting) return;
     if (this.uploadedImages.some(({ file }) => file && file.size > JournalInputComponent.MAX_IMAGE_BYTES)) {
-      this.imageUploadError = 'Each image must be 1 MB or less.';
+      this.imageUploadError = 'Each image must be 2 MB or less.';
       return;
     }
     if (!this.dailyMood) {
@@ -314,17 +317,27 @@ export class JournalInputComponent implements OnInit, OnDestroy {
     });
 
     this.submitting = true;
+    const user = this.authService.getUserData();
+    const isNewChildEntry = this.editingEntryId == null && String(user?.relationship).toUpperCase() === 'CHILD';
+    const origin = this.rewardElement.nativeElement.getBoundingClientRect();
+    if (isNewChildEntry) this.microReward.unlockSound();
     const request = this.editingEntryId != null
       ? this.http.put(`${environment.apiUrl}/journal/${encodeURIComponent(String(this.editingEntryId))}`, formData, this.authHeaders())
       : this.http.post(`${environment.apiUrl}/journal/add`, formData, this.authHeaders());
 
     request.subscribe({
-      next: () => {
+      next: (response: any) => {
         this.refreshService.notifyJournalAdded();
         this.save.emit(this.text);
         this.resetForm();
         this.submitting = false;
-        void this.router.navigate(['/journal-output']);
+        void this.router.navigate(['/journal-output']).then(navigated => {
+          if (!navigated || !isNewChildEntry) return;
+          return this.microReward.celebrate({
+            from: origin, coins: Number(response?.coinsAwarded ?? response?.coinsEarned ?? 0),
+            balance: Number(user?.coins) || 0, pill: 'floating', confetti: false,
+          });
+        }).catch(() => undefined);
       },
       error: (error) => {
         console.error('Failed to add journal', error);
@@ -375,7 +388,7 @@ export class JournalInputComponent implements OnInit, OnDestroy {
         return;
       }
       if (file.size > JournalInputComponent.MAX_IMAGE_BYTES) {
-        this.imageUploadError = 'Each image must be 1 MB or less.';
+        this.imageUploadError = 'Each image must be 2 MB or less.';
         return;
       }
 

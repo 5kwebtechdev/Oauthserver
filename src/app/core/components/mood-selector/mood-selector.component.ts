@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../../storage/session-storage';
 import { MOOD_ASSETS, MOOD_ASSET_ALIASES } from '../../models/mood-assets';
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 import { IonicModule, ViewWillEnter } from '@ionic/angular';

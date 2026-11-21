@@ -2239,3 +2239,9 @@ footer {
     .home-referral-tools .coin-pill span { font-size: 11px; }
   }
 }
+
+// Native insets reserve system-bar space; this is the header's visual gap.
+@media (max-width: 767px) {
+  :host-context(.plt-capacitor) .user-profile-section { padding-top: 20px; }
+  :host-context(.plt-capacitor) .home-referral-header { overflow: visible; }
+}

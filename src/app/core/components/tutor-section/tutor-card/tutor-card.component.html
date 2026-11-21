@@ -3,7 +3,7 @@
     <div>
       <h3 id="eduhub-title"><span>Edu</span><span>Hub</span></h3>
       <p><span>Tutors</span><img src="assets/figma/eduhub-home/tagline-dot.svg" alt="" aria-hidden="true"><span>Academies</span><img src="assets/figma/eduhub-home/tagline-dot.svg" alt="" aria-hidden="true"><span>And more</span></p>
-      <eduhub-city-selector class="eduhub-home-city"></eduhub-city-selector>
+      <eduhub-city-selector [automaticOnly]="true" style="display: none"></eduhub-city-selector>
     </div>
     <div class="eduhub-listings" *ngIf="!isLoading">
       <img [src]="listingVerifiedAsset" alt="" aria-hidden="true">
@@ -18,7 +18,7 @@
       [attr.data-category]="category.key"
       [attr.aria-pressed]="selectedCategoryKey === category.key ? 'true' : 'false'"
       (click)="selectCategory(category)">
-      <span class="eduhub-category__image" aria-hidden="true"><img [src]="category.image" alt=""></span>
+      <span class="eduhub-category__image" aria-hidden="true"><app-eduhub-category-icon [category]="category.key"></app-eduhub-category-icon></span>
       <span>{{ category.label }}</span>
     </button>
   </nav>
@@ -31,7 +31,7 @@
       <div *ngIf="tutorLoadError" role="alert">Tutors could not be loaded. <button type="button" (click)="retryTutors()">Try again</button></div>
       <div class="eduhub-tutors" *ngIf="visibleTutors.length">
         <ng-container *ngFor="let tutor of visibleTutors; trackBy: trackTutor">
-          <app-counselor-card *ngIf="getEducationProfile(tutor) as profile" class="eduhub-event-preview" [counselor]="profile" [education]="true" (viewProfile)="onViewProfile(tutor)"></app-counselor-card>
+          <app-counselor-card *ngIf="getEducationProfile(tutor) as profile" class="eduhub-education-preview" [counselor]="profile" [education]="true" [homePreview]="true" (viewProfile)="onViewProfile(tutor)"></app-counselor-card>
         </ng-container>
       </div>
       <ng-container *ngIf="!visibleTutors.length && !tutorLoadError" [ngTemplateOutlet]="eduhubEmptyState"></ng-container>
@@ -40,7 +40,7 @@
     <ng-container *ngIf="selectedCategoryKey === 'academies'">
       <div class="eduhub-tutors" *ngIf="visibleAcademies.length">
         <ng-container *ngFor="let academy of visibleAcademies; trackBy: trackTutor">
-          <app-counselor-card *ngIf="getEducationProfile(academy) as profile" class="eduhub-event-preview" [counselor]="profile" [education]="true" (viewProfile)="onViewAcademyProfile(academy)"></app-counselor-card>
+          <app-counselor-card *ngIf="getEducationProfile(academy) as profile" class="eduhub-education-preview" [counselor]="profile" [education]="true" [homePreview]="true" (viewProfile)="onViewAcademyProfile(academy)"></app-counselor-card>
         </ng-container>
       </div>
       <ng-container *ngIf="!visibleAcademies.length" [ngTemplateOutlet]="eduhubEmptyState"></ng-container>
@@ -49,21 +49,21 @@
     <ng-container *ngIf="visibleExternalPreviews.length">
       <div class="eduhub-tutors">
         <ng-container *ngFor="let listing of visibleExternalPreviews; trackBy: trackPreview">
-        <app-eduhub-event-card *ngIf="listing.event as event; else externalPreview" class="eduhub-event-preview"
-          [item]="event" [entityType]="event.entityType.toLowerCase() === 'workshop' ? 'Workshop' : 'Events'"
+        <app-eduhub-event-card *ngIf="listing.event as event; else externalPreview" class="eduhub-education-preview"
+          [homePreview]="true" [item]="event" [entityType]="event.entityType.toLowerCase() === 'workshop' ? 'Workshop' : 'Events'"
           (viewDetails)="onViewExternalDetails(listing)"></app-eduhub-event-card>
         <ng-template #externalPreview>
-        <app-eduhub-shop-card *ngIf="listing.shop as shop; else genericPreview" class="eduhub-event-preview"
+        <app-eduhub-shop-card *ngIf="listing.shop as shop; else genericPreview" class="eduhub-education-preview"
           [category]="selectedCategoryKey"
-          [item]="shop" (viewDetails)="onViewExternalDetails(listing)"
+          [homePreview]="true" [item]="shop" (viewDetails)="onViewExternalDetails(listing)"
           (favourite)="toggleShopLike(listing)" (share)="shareShop(listing)"
           (directions)="openShopDirections(listing)" (contact)="openShopContact(listing)"></app-eduhub-shop-card>
         <ng-template #genericPreview>
-        <app-counselor-card *ngIf="listing.counselor as counselor; else otherPreview" class="eduhub-event-preview"
+        <app-counselor-card *ngIf="listing.counselor as counselor; else otherPreview" class="eduhub-education-preview"
           [counselor]="counselor" [homePreview]="true" (viewProfile)="onViewCounselorProfile($event)"></app-counselor-card>
         <ng-template #otherPreview>
-        <app-pg-hostel-card *ngIf="listing.hostel as hostel; else standardPreview" class="eduhub-event-preview"
-          [item]="hostel" (viewDetails)="onViewExternalDetails(listing)"></app-pg-hostel-card>
+        <app-pg-hostel-card *ngIf="listing.hostel as hostel; else standardPreview" class="eduhub-education-preview"
+          [homePreview]="true" [item]="hostel" (viewDetails)="onViewExternalDetails(listing)"></app-pg-hostel-card>
         <ng-template #standardPreview>
         <article class="eduhub-tutor"
           [class.eduhub-tutor--clickable]="true"

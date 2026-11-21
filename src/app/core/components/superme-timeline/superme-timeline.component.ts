@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../../storage/session-storage';
 import { Component, Input, OnInit, OnChanges, SimpleChanges, Output, EventEmitter, HostListener } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 

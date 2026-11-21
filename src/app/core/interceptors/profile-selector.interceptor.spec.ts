@@ -1,4 +1,4 @@
-import { HttpHandler, HttpHeaders, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpHandler, HttpHeaders, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
 import { BehaviorSubject, of } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { ProfileSelectorInterceptor } from './profile-selector.interceptor';
@@ -40,4 +40,28 @@ describe('ProfileSelectorInterceptor account-level overlays', () => {
     expect(forwarded.params.has('forUserId')).toBeFalse();
     expect(forwarded.headers.has('X-Skip-Profile-Selector')).toBeFalse();
   });
+  it('keeps the child-event update target in the query without adding it to the body', () => {
+    const selector = {
+      child$: new BehaviorSubject<number | null>(1112),
+      getSelectedChild: () => ({ id: 1112, age: 15 })
+    } as unknown as ProfileSelectorService;
+    TestBed.configureTestingModule({ providers: [{ provide: ProfileSelectorService, useValue: selector }] });
+    const interceptor = TestBed.runInInjectionContext(() => new ProfileSelectorInterceptor());
+    const handler = jasmine.createSpyObj<HttpHandler>('HttpHandler', ['handle']);
+    handler.handle.and.returnValue(of(new HttpResponse({ status: 200 })));
+    const payload = { name: 'Birthday', allDay: true, eventStartDate: '2026-11-20' };
+    const request = new HttpRequest('PUT', '/v1/events/for-child/update/1102', payload, {
+      params: new HttpParams().set('forUserId', '1112'),
+      headers: new HttpHeaders().set('Authorization', 'Bearer test-parent-token')
+    });
+    interceptor.intercept(request, handler).subscribe();
+    const forwarded = handler.handle.calls.mostRecent().args[0];
+    expect(handler.handle).toHaveBeenCalledTimes(1);
+    expect(forwarded.url).toBe('/v1/events/for-child/update/1102');
+    expect(forwarded.params.get('forUserId')).toBe('1112');
+    expect(forwarded.body).toEqual(payload);
+    expect(forwarded.body.forUserId).toBeUndefined();
+    expect(forwarded.headers.get('Authorization')).toBe('Bearer test-parent-token');
+  });
+
 });

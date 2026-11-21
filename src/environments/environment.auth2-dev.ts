@@ -1,8 +1,9 @@
 // Dev counterpart of environment.auth2.ts - same auth-server (one process serves both prod
 // and dev PKCE clients), but its own client_id (APK_DEV_OAUTH_CLIENT_ID on the auth-server)
-// and the dev SuperMeBE backend (new.supermeapp.com, talking to superapp_db), so this never
-// touches the real prod 4204 client or the prod business API.
+// and the dev SuperMeBE backend (new.supermeapp.com), so this never touches the real
+// prod 4204 client or the prod business API.
 export const environment = {
+  androidOAuth: { enabled: true, googleTurnstileSiteKey: '0x4AAAAAAFy7PP8fwWp7IphF', turnstileSiteKey: '0x4AAAAAAFx5F-tnu3JbBf9n', clientId: 'supermeapp-dev-android', redirectUri: 'superme://oauth/dev/callback', logoutRedirectUri: 'superme://oauth/dev/logout' },
   oauth: { enabled: true, issuer: 'https://auth.supermeapp.com', clientId: 'supermeapp-dev-web' },
   production: false,
   apiUrl: 'https://new.supermeapp.com/v1',

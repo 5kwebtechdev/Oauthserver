@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { SignInWithAppleResponse } from '@capacitor-community/apple-sign-in';
 
 type AppleMockScenario = 'first-login' | 'returning-login' | 'cancelled' | 'error';

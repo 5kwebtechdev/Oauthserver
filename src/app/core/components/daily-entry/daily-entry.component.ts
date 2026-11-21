@@ -1,3 +1,5 @@
+import { MicroRewardService } from '../../services/micro-reward/micro-reward.service';
+import { sessionStorageAdapter as localStorage } from '../../storage/session-storage';
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, Input, NgZone, OnChanges, OnDestroy, OnInit, Optional } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
@@ -94,7 +96,7 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
     private userService: UserService,
     @Optional() private notificationNavigation?: NotificationNavigationService,
     @Optional() private platform?: Platform,
-    @Optional() private coins?: CoinService) {}
+    @Optional() private coins?: CoinService, @Optional() private rewards?: MicroRewardService) {}
 
   get isReward(): boolean { return this.active === 'DAILY_LOGIN' || this.active === 'STREAK_MILESTONE'; }
   get isReferral(): boolean { return isReferralOverlay(this.active); }
@@ -300,6 +302,21 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
     // selector's successful moodSaved event may consume it.
     if (type === 'MOOD_PROMPT' && !moodSaved) return;
     const key = this.entryKey;
+    const user = this.auth.getUserData();
+    const role = String(user?.relationship).toUpperCase();
+    const referral = isReferralOverlay(type);
+    const coins = referral && (role === 'CHILD' || role === 'PARENT') ? Number(this.referralEvent?.amount)
+      : this.isReward && role === 'CHILD' ? Number(this.rewardDailyCoins) + Number(this.rewardMilestoneCoins ?? 0) : 0;
+    if (coins > 0) this.rewards?.unlockSound();
+    const playReward = async () => {
+      if (!(coins > 0) || !this.rewards || this.destroyed || this.context() !== key) return;
+      const origin = new DOMRect(window.innerWidth / 2, window.innerHeight / 2, 0, 0);
+      await this.rewards.celebrate({
+        from: origin, coins, balance: Math.max(0, (Number(this.availableCoins ?? user?.coins) || 0) - coins),
+        screenCoin: document.querySelector<HTMLElement>('.coin-pill-icon, .parent-coin-pill img'),
+        pill: referral ? 'auto' : 'screen', confetti: false,
+      }).catch(() => undefined);
+    };
     if (isReferralOverlay(type)) {
       const eventId = this.referralEvent?.eventId;
       this.busy = true;
@@ -310,6 +327,7 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
         this.markSeen(type, eventId);
         this.active = null;
         this.referralEvent = null;
+        await playReward();
       } catch {
         if (this.context() === key) this.notice = 'Couldn’t close this celebration. Please try again.';
       } finally {
@@ -325,6 +343,7 @@ export class DailyEntryComponent implements OnInit, OnChanges, OnDestroy {
     try { await firstValueFrom(this.api.dismissHomeOverlay(type, this.rewardEventId).pipe(timeout(15_000))); }
     catch { /* Presentation receipt prevents a repeat; retry consumption on the next check. */ }
     finally {
+      await playReward();
       this.rewardEventId = null;
       this.busy = false;
       this.lastAttempt = 0;

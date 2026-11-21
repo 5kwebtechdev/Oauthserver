@@ -59,6 +59,7 @@ export interface ChallengeQuestion {
  */
 export interface Challenge {
     challengeId: number;
+    slug?: string | null;
     name: string;
     description: string;
     descriptionExpanded: string;
@@ -95,13 +96,26 @@ export interface Challenge {
 /**
  * Article Interface
  */
+export interface ArticleQuestion {
+    id: number;
+    questionOrder: number;
+    questionText: string;
+    coinsForCorrectAnswer?: number;
+    hasAttachments?: boolean;
+    attachmentUrl?: string;
+    attachmentType?: string;
+    options: { id: number; optionText: string; optionOrder: number; isCorrect?: boolean }[];
+}
+
 export interface Article {
+    questions?: ArticleQuestion[];
     id: number;
     /** Stable, unique slug assigned by the backend. */
     slug?: string;
     title: string;
     description: string;
     tags: string[];
+    keywords?: string[] | string | null;
     ageGroup: AgeGroup;
     thumbnailUrl: string;
     content: string;
@@ -181,6 +195,8 @@ export interface ChallengeSubmissionRequest {
  * Challenge Submission Response
  */
 export interface ChallengeSubmissionResponse {
+    totalCorrect?: number;
+    totalPoints?: number;
     success: boolean;
     celebrationText: string;
     correctCount: number;

@@ -1,3 +1,4 @@
+import { secureTemporaryStorage as sessionStorage } from '../../storage/session-storage';
 import { Component, Input, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -144,6 +145,12 @@ export class SocialMediaComponent implements OnInit {
   private async signInWithGoogle(): Promise<void> {
     if (this.isSocialLoginInProgress) return;
     this.isSocialLoginInProgress = true;
+
+    if (this.pkceAuth.nativeDev) {
+      try { await this.pkceAuth.login(); }
+      finally { this.isSocialLoginInProgress = false; }
+      return;
+    }
 
     // The Capacitor plugin's browser implementation still uses the deprecated
     // `gapi.auth2` API, which can return `server_error` after account selection

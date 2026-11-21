@@ -17,8 +17,6 @@
             class="web-header__nav-item"
             [class.web-header__nav-item--direct]="!item.children"
             [class.open]="openMenu === item.label"
-            (mouseenter)="item.children && openMenuOn(item.label)"
-            (mouseleave)="item.children && closeMenu()"
           >
             <a
               *ngIf="!item.children"

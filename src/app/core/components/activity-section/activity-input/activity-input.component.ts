@@ -1,3 +1,5 @@
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../../../storage/session-storage';
 import { Component, OnInit, AfterViewInit, ViewChild, Input, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, ViewWillEnter } from '@ionic/angular';
@@ -995,7 +997,12 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         this.loadingEditEvent = true;
         this.eventEditLoadFailed = false;
         this.serverErrorMessage = '';
-        this.eventApi.getEvent(eventId).subscribe({
+        const childId = this.profileSelector.getChildId();
+        const eventRequest = this.authService.isParentUser() && childId !== null && childId !== undefined
+          && String(childId).trim() !== ''
+          ? this.eventApi.getChildEvent(eventId, childId)
+          : this.eventApi.getEvent(eventId);
+        eventRequest.subscribe({
           next: event => {
             this.loadingEditEventId = null;
             this.loadingEditEvent = false;
@@ -1958,8 +1965,14 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     };
 
     this.isSubmitting = true;
+    const childId = this.editingId && this.authService.isParentUser()
+      ? this.profileSelector.getChildId() : null;
+    const editingChildEvent = childId !== null && childId !== undefined
+      && String(childId).trim() !== '';
     const request$ = this.editingId
-      ? this.eventApi.updateEvent(this.editingId, payload)
+      ? editingChildEvent
+        ? this.eventApi.updateChildEvent(this.editingId, childId!, payload)
+        : this.eventApi.updateEvent(this.editingId, payload)
       : this.eventApi.createEvent(payload);
 
     request$.subscribe({

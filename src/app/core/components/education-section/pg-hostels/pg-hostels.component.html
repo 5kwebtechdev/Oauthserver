@@ -1,26 +1,23 @@
 <ion-content class="page">
   <main>
-    <header class="hero">
-      <div class="hero-top">
-        <button class="back" type="button" aria-label="Back to EduHub" (click)="back()"><img [src]="asset + 'listing-back.svg'" alt=""></button>
-        <div class="hero-title"><h1>PG/Hostel</h1><eduhub-city-selector></eduhub-city-selector></div>
-        <span class="search-icon" aria-hidden="true"><img [src]="asset + 'listing-search.svg'" alt=""></span>
-      </div>
-      <div class="hero-art"><div class="speech"><p>Find trusted <span>PG/ Hostels</span> around you.</p></div><img [src]="asset + 'listing-pet.png'" alt="" aria-hidden="true"></div>
-    </header>
+    <app-hostel-header (back)="back()" (search)="toggleSearch()" (refer)="referForListing()" [filterState]="designFilters" (filtersChange)="onDesignFilters($event)">
 
-    <div class="refer-banner"><img [src]="asset + 'listing-frame44236.png'" alt=""><div class="refer-copy"><strong>Know a PG/Hostel?</strong><span>Refer them to get listed on Eduhub.</span></div><span class="refer-label">Refer for listing</span></div>
-
+    </app-hostel-header>
+<ng-template #directoryResults>
     <section class="results" aria-live="polite">
-      <div class="results-heading"><div><h2>PG/Hostels near you</h2><p>Classifieds listings only. Contact sellers directly to enquire or buy.</p></div><span class="verified-chip">Verified <img [src]="asset + 'listing-chevron-left.svg'" alt=""></span></div>
-      <button class="filter-trigger" type="button" (click)="openFilters()" [attr.aria-label]="hasActiveFilters ? 'Filters applied. Open filters' : 'Open filters'"><img [src]="asset + 'listing-page-info.svg'" alt="">Filters <img class="chevron" [src]="asset + 'listing-chevron-left.svg'" alt=""></button>
       <p class="state" *ngIf="loading">Loading PG / Hostels…</p>
       <div class="state" *ngIf="!loading && error"><p>{{ error }}</p><button type="button" (click)="load()">Try again</button></div>
       <p class="state" *ngIf="!loading && !error && !items.length">No PG / Hostels match these filters. Try changing the city or clearing a filter.</p>
       <div class="cards" *ngIf="!loading && !error && items.length"><app-pg-hostel-card *ngFor="let item of items; trackBy: trackItem" [item]="item" (viewDetails)="openDetails($event)"></app-pg-hostel-card></div>
       <div class="pages" *ngIf="!loading && !error && totalPages > 1"><button type="button" [disabled]="page === 0" (click)="changePage(page - 1)">Previous</button><span>Page {{ page + 1 }} of {{ totalPages }}</span><button type="button" [disabled]="page + 1 >= totalPages" (click)="changePage(page + 1)">Next</button></div>
     </section>
+</ng-template>
+<ng-container *ngIf="!searchOpen" [ngTemplateOutlet]="directoryResults"></ng-container>
   </main>
+<ng-template #directoryFilters>
+  <app-hostel-filters [filterState]="designFilters" (filtersChange)="onDesignFilters($event)"></app-hostel-filters>
+</ng-template>
+<app-eduhub-directory-search [filters]="directoryFilters" [locationLabel]="searchLocationLabel" [busy]="loading" [open]="searchOpen" [label]="'PG / Hostels'" [terms]="directorySearchTerms" [resultCount]="total" [results]="directoryResults" (searched)="runDirectorySearch($event)" (dismissed)="searchOpen && toggleSearch()"></app-eduhub-directory-search>
 </ion-content>
 
 <div class="sheet-backdrop" *ngIf="sheetOpen" (click)="closeFilters()"></div>

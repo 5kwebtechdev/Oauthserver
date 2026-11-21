@@ -1,4 +1,6 @@
-import { Component, OnInit, OnDestroy, Optional } from '@angular/core';
+import { MicroRewardService } from 'src/app/core/services/micro-reward/micro-reward.service';
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
+import { Component, OnInit, OnDestroy, Optional, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
@@ -21,6 +23,7 @@ interface ResultNavigationState {
   challenge?: Challenge;
   timeTaken?: number;
   source?: string;
+  playMicroReward?: boolean;
 }
 
 @Component({
@@ -38,7 +41,7 @@ interface ResultNavigationState {
   templateUrl: './result-page.component.html',
   styleUrls: ['./result-page.component.scss']
 })
-export class ResultPageComponent implements OnInit, OnDestroy {
+export class ResultPageComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly resultStorageKey = 'superme.challenge-result';
   private returnUrl = '/authed/content';
 
@@ -73,13 +76,17 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   private backButtonSub?: Subscription;
   private badgeProgressSub?: Subscription;
 
+  private playResultReward = false;
+
   constructor(
     private router: Router,
     private loadingService: LoadingService,
     private platform: Platform,
     private badgePopupService: BadgePopupService,
     private badgeApi: BadgeApi,
-    @Optional() private authService?: AuthService
+    @Optional() private authService?: AuthService,
+    private readonly microReward?: MicroRewardService,
+    private readonly element?: ElementRef<HTMLElement>
   ) {
     // Get data from router state
     const navigation = this.router.getCurrentNavigation();
@@ -91,6 +98,7 @@ export class ResultPageComponent implements OnInit, OnDestroy {
       || this.getStoredResultNavigationState();
 
     if (state?.submissionResult) {
+      this.playResultReward = state.playMicroReward === true;
       this.submissionResult = this.unwrapSubmissionResult(state.submissionResult);
       this.challenge = state.challenge || null;
       this.timeTaken = state.timeTaken || 0;
@@ -134,8 +142,22 @@ export class ResultPageComponent implements OnInit, OnDestroy {
     // Do not push a second history entry here: that made the first Back press
     // land on the same result page again. Replace the current entry instead,
     // then let the previous page's popstate take us back to the content list.
-    history.replaceState({ ...(history.state || {}), resultPage: true }, '', window.location.href);
+    history.replaceState({ ...(history.state || {}), resultPage: true, playMicroReward: false }, '', window.location.href);
     window.addEventListener('popstate', this.handlePopState);
+  }
+
+  ngAfterViewInit(): void {
+    const role = String(this.authService?.getUserData()?.relationship).toUpperCase();
+    if (!this.playResultReward || (role !== 'CHILD' && role !== 'PARENT')) return;
+    const from = this.element?.nativeElement.querySelector<HTMLElement>('.reward-icon');
+    if (!from) return;
+    requestAnimationFrame(() => {
+      if (!from.isConnected) return;
+      void this.microReward?.celebrate({
+        from, coins: this.coinsEarned, balance: Math.max(0, this.totalCoins - this.coinsEarned),
+        pill: 'floating', confetti: false,
+      }).catch(() => undefined);
+    });
   }
 
   ngOnDestroy(): void {
@@ -208,6 +230,7 @@ export class ResultPageComponent implements OnInit, OnDestroy {
     const raw = result as unknown as Record<string, unknown>;
     const numberValue = (...keys: string[]): number => {
       for (const key of keys) {
+        if (raw[key] == null || raw[key] === '') continue;
         const value = Number(raw[key]);
         if (Number.isFinite(value)) return value;
       }
@@ -216,7 +239,7 @@ export class ResultPageComponent implements OnInit, OnDestroy {
 
     this.hasSubmissionResult = true;
     this.totalQuestions = numberValue('totalQuestions', 'total_questions');
-    this.correctAnswers = numberValue('correctCount', 'correct_count');
+    this.correctAnswers = numberValue('totalCorrect', 'total_correct', 'correctCount', 'correct_count');
     this.scorePercentage = numberValue('percentageScore', 'percentage_score');
     this.coinsEarned = numberValue('coinsEarned', 'coins_earned');
     this.trophiesEarned = numberValue('trophiesEarned', 'trophies_earned');

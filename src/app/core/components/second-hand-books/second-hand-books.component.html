@@ -369,7 +369,7 @@
           </div>
           <div class="books-hero__message">
             <div class="books-speech"><p><strong>Find &amp; Sell</strong> Books near you</p><span>Save up to <strong>80%</strong> on books</span></div>
-            <img class="books-hero__pet" src="assets/figma/second-hand-books/pet-latest.webp" alt="" aria-hidden="true">
+            <superme-pet *ngIf="!usesPandaArt" class="books-hero__pet" [animated]="true" mood="happy" [size]="126"></superme-pet><img *ngIf="usesPandaArt" class="books-hero__pet" src="assets/figma/second-hand-books/pet-latest.webp" alt="" aria-hidden="true">
           </div>
         </header>
 

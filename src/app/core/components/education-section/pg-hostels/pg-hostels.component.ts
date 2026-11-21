@@ -1,3 +1,8 @@
+import { EduHubDirectorySearchComponent } from '../eduhub-directory-search/eduhub-directory-search.component';
+import { HostelHeaderComponent } from '../hostel-design/hostel-header/hostel-header.component';
+import { HostelFiltersComponent } from '../hostel-design/hostel-filters/hostel-filters.component';
+import { HostelFilterState } from '../hostel-design/hostel-filters/hostel-filters.data';
+import { Share } from '@capacitor/share';
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,11 +18,33 @@ type FilterCategory = 'suitable' | 'type' | 'occupancy' | 'amenities' | 'cost';
 
 @Component({
   selector: 'app-pg-hostels', standalone: true,
-  imports: [CommonModule, IonicModule, EduHubCitySelectorComponent, PgHostelCardComponent],
+  imports: [HostelFiltersComponent, EduHubDirectorySearchComponent,HostelHeaderComponent,CommonModule, IonicModule, EduHubCitySelectorComponent, PgHostelCardComponent],
   templateUrl: './pg-hostels.component.html',
   styleUrls: ['./pg-hostels.component.scss']
 })
 export class PgHostelsComponent implements OnInit, OnDestroy {
+  get directorySearchTerms(): string[] { return this.items.map(item => item.name || item.title || 'PG / Hostel'); }
+  runDirectorySearch(value: string): void { this.updateSearch(value); }
+  searchOpen = false;
+  get searchLocationLabel(): string { return this.cities.filter.city || this.cities.filter.state || this.cities.academyFilter.country || 'All locations'; }
+
+  searchQuery = '';
+  priceSort = '';
+  toggleSearch(): void { this.searchOpen = !this.searchOpen; if (!this.searchOpen && this.searchQuery) this.updateSearch(''); }
+  updateSearch(value: string): void { this.searchQuery = value; this.page = 0; this.load(); }
+  async referForListing(): Promise<void> {
+    try { await Share.share({title:'Refer a PG / Hostel',url:'https://supermeapp.com'}); }
+    catch { /* Share dismissal leaves the directory intact. */ }
+  }
+  designFilters: HostelFilterState = { selections: {} };
+
+  onDesignFilters(state: HostelFilterState): void {
+    this.designFilters = state;
+    this.selected = { suitable: state.selections['suitable'] || [], type: state.selections['type'] || [],
+      occupancy: state.selections['occupancy'] || [], amenities: state.selections['amenities'] || [], cost: this.selected.cost };
+    this.priceSort = state.selections['sort']?.[0] || '';
+    this.page = 0; this.load();
+  }
   readonly asset = 'assets/figma/pg-hostels/';
   readonly categories: { key: FilterCategory; label: string; icon: string }[] = [
     { key: 'suitable', label: 'Suitable for', icon: 'filter-user.svg' },
@@ -104,7 +131,7 @@ export class PgHostelsComponent implements OnInit, OnDestroy {
     this.request?.unsubscribe();
     this.loading = true;
     this.error = '';
-    if (this.hasActiveFilters) {
+    if (this.hasActiveFilters || this.searchQuery.trim() || this.priceSort) {
       // The existing endpoint only accepts city/type/suitable/food. Fetch its pages
       // without new API parameters so the Figma's multi-select filters are complete.
       const base = this.cities.filter;
@@ -114,6 +141,12 @@ export class PgHostelsComponent implements OnInit, OnDestroy {
         map(pages => pages.reduce((items: PgHostel[], result) => items.concat(result.content), []).filter(item => this.matches(item)))
       ).subscribe({
         next: matches => {
+          if (this.priceSort) matches.sort((a,b) => {
+            const x = a.monthlyRent ?? a.rent ?? a.price, y = b.monthlyRent ?? b.rent ?? b.price;
+            if (x == null) return y == null ? 0 : 1;
+            if (y == null) return -1;
+            return (Number(x)-Number(y)) * (this.priceSort === 'Price: High to Low' ? -1 : 1);
+          });
           this.total = matches.length;
           this.totalPages = Math.ceil(matches.length / 10);
           this.items = matches.slice(this.page * 10, (this.page + 1) * 10);
@@ -135,6 +168,8 @@ export class PgHostelsComponent implements OnInit, OnDestroy {
   }
 
   private matches(item: PgHostel): boolean {
+    const query = this.searchQuery.trim().toLowerCase();
+    if (query && ![item.name, item.title, item.address, item.city, item.state].filter(Boolean).join(' ').toLowerCase().includes(query)) return false;
     const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
     const contains = (selected: string[], value: string) => !selected.length || selected.some(option => normalize(value).includes(normalize(option)));
     if (!contains(this.selected.suitable, String(item.suitableFor || ''))) return false;

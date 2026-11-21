@@ -1,0 +1,298 @@
+@use 'sass:list';
+@use 'sass:math';
+
+// The pet in the Quiz banner: its box, the layer rig, and one looping sequence shared by every pet:
+//   blink -> head tilts towards the clipboard -> question + options A-D appear on the sheet ->
+//   yellow rays shrink and expand -> head comes back up -> sheet clears -> repeat.
+// Where each pet's eyes, sheet and rays sit is in quiz-banner-pets.scss.
+
+// ---------------------------------------------------------------------------
+// Timeline. Every part runs the same $cycle, so the parts can never drift apart.
+// Times below are ms from the start of the cycle.
+// ---------------------------------------------------------------------------
+
+$cycle: 8000ms;
+$start-delay: 700ms; // lets the headline land first
+
+$blink-1: 300ms; // before the tilt
+$blink-2: 1450ms; // looking at the clipboard
+$blink-3: 6100ms; // back up
+$blink-close: 80ms;
+$blink-shut: 50ms;
+$blink-open: 110ms;
+
+$tilt-start: 650ms;
+$tilt-in: 450ms;
+// Clockwise, about the point where the head touches the clipboard: the face turns down towards it,
+// and the head only ever slides further behind the clipboard, scarf and hand (no gap can open).
+$tilt-angle: 4.6deg;
+$tilt-back: 5400ms;
+$tilt-out: 450ms;
+
+$sheet-start: 1500ms; // first question line
+$question-stagger: 180ms;
+$options-start: 2050ms;
+$option-stagger: 200ms;
+$sheet-in: 320ms;
+$sheet-clear: 6500ms - $sheet-start; // each element stays this long, then fades (so they clear in turn)
+$sheet-out: 300ms;
+
+$rays-start: 3100ms;
+$ray-stagger: 80ms;
+
+@function at($ms) {
+  @return math.percentage(math.div($ms, $cycle));
+}
+
+// ---------------------------------------------------------------------------
+// Rig
+// ---------------------------------------------------------------------------
+
+// Figma: 129.5 x 134.07 box, with the 1254px canvas placed slightly larger than the box.
+.qb-pet {
+  position: relative;
+  flex: none;
+  width: 129.5px;
+  height: 134.07px;
+}
+
+.qb-rig,
+.qb-part {
+  position: absolute;
+}
+
+.qb-rig {
+  left: -4.98%;
+  top: -0.66%;
+  width: 107.73%;
+  height: 104.07%;
+}
+
+.qb-part {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+.qb-head {
+  transform-origin: var(--qb-neck);
+}
+
+// Eyelids are open (flat) unless a blink is running.
+.qb-lid {
+  transform: scaleY(0);
+}
+
+.qb-lid--left {
+  --qb-slant: var(--qb-lid-left-slant);
+  transform-origin: var(--qb-lid-left);
+}
+
+.qb-lid--right {
+  --qb-slant: var(--qb-lid-right-slant);
+  transform-origin: var(--qb-lid-right);
+}
+
+.qb-question--1 {
+  transform-origin: var(--qb-q1);
+}
+
+.qb-question--2 {
+  transform-origin: var(--qb-q2);
+}
+
+@each $letter in (a, b, c, d) {
+  .qb-option--#{$letter} {
+    transform-origin: var(--qb-opt-#{$letter});
+  }
+}
+
+.qb-ray {
+  transform-origin: var(--qb-rays);
+}
+
+// ---------------------------------------------------------------------------
+// Keyframes
+// ---------------------------------------------------------------------------
+
+// The lid closes down along the eye's own slant, from its top edge.
+@mixin lid($scale) {
+  transform: rotate(var(--qb-slant)) scaleY($scale) rotate(calc(var(--qb-slant) * -1));
+}
+
+@keyframes qb-blink {
+  0% {
+    @include lid(0);
+  }
+  @each $blink in ($blink-1, $blink-2, $blink-3) {
+    #{at($blink)} {
+      @include lid(0);
+      animation-timing-function: ease-in;
+    }
+    #{at($blink + $blink-close)},
+    #{at($blink + $blink-close + $blink-shut)} {
+      @include lid(1);
+      animation-timing-function: ease-out;
+    }
+    #{at($blink + $blink-close + $blink-shut + $blink-open)} {
+      @include lid(0);
+    }
+  }
+  100% {
+    @include lid(0);
+  }
+}
+
+// Tilt with a small overshoot and settle, hold while the sheet fills, then back up the same way.
+// It never goes past upright on the way back, so the head never lifts off the clipboard.
+@keyframes qb-head-tilt {
+  0%,
+  #{at($tilt-start)} {
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.3, 1);
+  }
+  #{at($tilt-start + $tilt-in)} {
+    transform: rotate($tilt-angle + 0.6deg);
+    animation-timing-function: ease-in-out;
+  }
+  #{at($tilt-start + $tilt-in + 220ms)},
+  #{at($tilt-back)} {
+    transform: rotate($tilt-angle);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
+  }
+  #{at($tilt-back + $tilt-out + 150ms)},
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+// Question lines are "written" from their left end, along the sheet's slant.
+@mixin written($scale) {
+  transform: rotate(var(--qb-sheet-slant)) scaleX($scale) rotate(calc(var(--qb-sheet-slant) * -1));
+}
+
+@keyframes qb-question {
+  0% {
+    opacity: 0;
+    @include written(0);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  #{at($sheet-in)},
+  #{at($sheet-clear)} {
+    opacity: 1;
+    @include written(1);
+    animation-timing-function: ease-in;
+  }
+  #{at($sheet-clear + $sheet-out)},
+  100% {
+    opacity: 0;
+    @include written(1);
+  }
+}
+
+// Options pop in: overshoot, then settle.
+@keyframes qb-option {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  #{at($sheet-in * 0.6)} {
+    opacity: 1;
+    transform: scale(1.07);
+    animation-timing-function: ease-in-out;
+  }
+  #{at($sheet-in)},
+  #{at($sheet-clear)} {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: ease-in;
+  }
+  #{at($sheet-clear + $sheet-out)},
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+// Three shrink / expand beats towards the point the rays share, then rest.
+@keyframes qb-rays {
+  0%,
+  #{at($rays-start)} {
+    transform: scale(1);
+    animation-timing-function: ease-in-out;
+  }
+  #{at($rays-start + 250ms)},
+  #{at($rays-start + 950ms)},
+  #{at($rays-start + 1650ms)} {
+    transform: scale(0.7);
+    animation-timing-function: ease-in-out;
+  }
+  #{at($rays-start + 600ms)},
+  #{at($rays-start + 1300ms)} {
+    transform: scale(1.14);
+    animation-timing-function: ease-in-out;
+  }
+  #{at($rays-start + 2000ms)} {
+    transform: scale(1.08);
+    animation-timing-function: ease-in-out;
+  }
+  #{at($rays-start + 2250ms)},
+  100% {
+    transform: scale(1);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Run
+// ---------------------------------------------------------------------------
+
+@mixin loop($name, $offset: 0ms) {
+  animation: $name $cycle linear ($start-delay + $offset) infinite both;
+}
+
+:host(.is-ready) {
+  .qb-head {
+    @include loop(qb-head-tilt);
+  }
+
+  .qb-lid {
+    @include loop(qb-blink);
+  }
+
+  .qb-question--1 {
+    @include loop(qb-question, $sheet-start);
+  }
+
+  .qb-question--2 {
+    @include loop(qb-question, $sheet-start + $question-stagger);
+  }
+
+  $options: (a, b, c, d);
+
+  @each $letter in $options {
+    .qb-option--#{$letter} {
+      @include loop(qb-option, $options-start + (list.index($options, $letter) - 1) * $option-stagger);
+    }
+  }
+
+  @for $i from 1 through 3 {
+    .qb-ray--#{$i} {
+      @include loop(qb-rays, ($i - 1) * $ray-stagger);
+    }
+  }
+}
+
+:host(.is-offscreen) {
+  .qb-head,
+  .qb-lid,
+  .qb-question,
+  .qb-option,
+  .qb-ray {
+    animation-play-state: paused;
+  }
+}
+
+// Reduced motion (see quiz-banner.component.scss): animations are off, so the lids stay open and
+// the sheet shows the question and all four options.

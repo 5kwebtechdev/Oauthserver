@@ -1,0 +1,502 @@
+@use 'sass:map';
+
+// EduHub › Sports Shop header. Colours / type come from the SuperMeApp tokens (theme/superme-tokens).
+
+// ---------------------------------------------------------------------------
+// Motion constants
+// ---------------------------------------------------------------------------
+
+// Intro: one camera pull-back. A single camera move means every layer shares the same
+// duration and easing; only the amplitude differs, scaled by 1 / depth.
+$intro-duration: 1600ms;
+$intro-ease: cubic-bezier(0.22, 1, 0.36, 1); // decelerates to rest, no overshoot (camera is heavy)
+$fade-in: 320ms;
+$scene-swap: 450ms; // cross-fade when the country changes (the parallax itself only runs on open)
+
+// Displacement at the start of the intro (frame px). Sky sits at infinity -> 0.
+$depth-far: (y: 12px, scale: 1.04); // skyline, Gateway, water
+$depth-near: (y: 24px, scale: 1.08); // corner trees, pet
+
+// Headline: the two lines slide up into place during the camera move (once), then stay still.
+$text-ease: cubic-bezier(0.22, 1, 0.36, 1);
+$text-duration: 700ms;
+$text-delay: 200ms;
+$text-stagger: 110ms;
+$text-mask-end: $text-delay + $text-stagger + $text-duration; // clipping is dropped after this
+
+// The accent word only starts once the camera has settled: the underline draws in, then the loop runs.
+$underline-delay: $intro-duration;
+$underline-duration: 480ms;
+
+// Accent loop: underline is wiped and re-drawn like a pen stroke, a sheen follows the pen,
+// then the word settles with a small damped pop. Starts as soon as the intro underline lands.
+$accent-loop: 4800ms;
+$accent-loop-delay: $underline-delay + $underline-duration;
+
+// Panda layer geometry: the art is a 1254px canvas shown at 127.57% x 104.33% of the
+// 97 x 118 Figma box. Pivots are in % of that canvas.
+
+// Scroll: hero layers drift down at this fraction of the scroll, so they recede rather than slide
+// straight into the pinned bar, and the hero fades out before it gets there.
+$scene-drift: 0.3;
+$hero-drift: 0.35;
+$hero-fade-speed: 1.6;
+$pinned-lift: 8px; // the pinned bar sits this much tighter under the status bar
+
+// ---------------------------------------------------------------------------
+// Layout
+// ---------------------------------------------------------------------------
+
+// display: contents makes the nav a direct child of the screen, so it stays
+// pinned for its whole length instead of only until the header's own box ends.
+:host {
+  --th-safe-top: var(--ion-safe-area-top, env(safe-area-inset-top, 0px));
+  --th-nav-height: calc(var(--th-safe-top) + 12px + 48px);
+  --th-progress: 0; // 0 at the top of the screen, 1 once collapsed (set while scrolling)
+  --th-scroll: 0px;
+
+  display: contents;
+}
+
+.th-refer {
+  margin: 12px 16px 0;
+}
+
+.th-top {
+  min-height: clamp(232px, 60vw, 300px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: calc(-1 * var(--th-nav-height)); // the scene runs up behind the nav
+  padding-top: calc(var(--th-nav-height) + 12px);
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 24px 24px 0 0;
+  background-color: var(--sm-v1-tutor100); // shown only until the sky decodes
+  font-family: var(--sm-font-body);
+}
+
+.th-scene {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translate3d(0, calc(var(--th-scroll) * #{$scene-drift}), 0);
+}
+
+.th-set {
+  position: absolute;
+  inset: 0;
+}
+
+.th-set--swap {
+  animation: th-fade-in $scene-swap ease-out both;
+}
+
+.th-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom; // Align all scenery layers to the same full-width crop.
+  transform-origin: 50% 50%; // camera optical centre
+}
+
+.th-hero .th-pet {
+  align-self: flex-end;
+}
+
+.th-nav {
+  position: sticky;
+  top: -$pinned-lift;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--th-safe-top) + 12px) 16px 0;
+  isolation: isolate;
+  font-family: var(--sm-font-body);
+
+  // Clear over the scene at the top, solid white once collapsed.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--sm-v1-neutral100);
+    box-shadow: 0 2px 4px color-mix(in srgb, var(--sm-v1-neutral800) 15%, transparent);
+    opacity: var(--th-progress);
+  }
+}
+
+.th-back,
+.th-chip,
+.th-search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease-out;
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sm-v1-tutor600);
+    outline-offset: 2px;
+  }
+}
+
+.th-back {
+  width: 48px;
+  height: 48px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: none;
+
+  svg {
+    width: 48px;
+    height: 48px;
+    fill: var(--sm-v1-neutral900);
+  }
+}
+
+.th-chips {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 4px;
+  margin-right: 4px;
+}
+
+.th-chip {
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  background: var(--sm-v1-neutral100);
+  color: var(--sm-v1-neutral900);
+  font-size: var(--sm-font-size-body-sm);
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.th-chip {
+  min-width: 0;
+  transition:
+    transform 120ms ease-out,
+    box-shadow 160ms ease-out;
+}
+
+// White chips need an edge once the bar behind them turns white.
+:host(.is-pinned) .th-chip {
+  box-shadow: 0 0 0 1px var(--sm-v1-neutral300);
+}
+
+.th-chip--fixed {
+  flex: none;
+}
+
+// Long city / state names shorten rather than push the search button off screen.
+.th-chip-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.th-caret {
+  flex: none;
+  width: 8.94px;
+  height: 5.22px;
+  fill: var(--sm-v1-neutral900);
+}
+
+.th-search {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 29px;
+  background: var(--sm-v1-tutor600);
+
+  svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--sm-v1-neutral100);
+  }
+}
+
+.th-hero {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0 20px 0 24px;
+  opacity: calc(1 - var(--th-progress) * #{$hero-fade-speed});
+  transform: translate3d(0, calc(var(--th-scroll) * #{$hero-drift}), 0);
+}
+
+.th-title {
+  font-family: var(--sm-font-body, Nunito, sans-serif);
+  margin: -4px 0 0; // three lines: starts a little higher, so "for you" stays above the corner trees
+  color: var(--sm-v1-neutral900);
+  font-size: var(--sm-font-size-title-sm); // 24px, as in the Figma header
+  font-weight: 800;
+  line-height: 32px;
+  white-space: nowrap;
+}
+
+.th-line,
+.th-line-in {
+  display: block;
+}
+
+// Clear of the underline above.
+.th-line + .th-line + .th-line {
+  margin-top: 5px;
+}
+
+// Text is painted by a gradient (all tutor600 except one tutor400 band) so the sheen can
+// travel through the letters; at rest only the tutor600 part is visible.
+.th-accent {
+  position: relative;
+  display: inline-block;
+  transform-origin: 50% 85%; // baseline: the word grows up from where it sits
+  color: var(--sm-v1-tutor600);
+  background: linear-gradient(100deg, var(--sm-v1-tutor600) 40%, var(--sm-v1-tutor400) 50%, var(--sm-v1-tutor600) 60%);
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  // Side room so the pop (and the glyph's own overhang) never clips the first or last letter.
+  padding: 0 0.08em;
+  margin: 0 -0.08em;
+}
+
+.th-underline {
+  position: absolute;
+  left: 0.08em; // cancels the accent's side padding
+  top: calc(100% - 0.04em);
+  width: 6em;
+  height: 0.3085em;
+  fill: var(--sm-v1-tutor500);
+}
+
+// ---------------------------------------------------------------------------
+// Intro (once). Layers wait in their start pose until the images are decoded.
+// ---------------------------------------------------------------------------
+
+@mixin camera-start($depth, $extra-x: 0px, $extra-y: 0px) {
+  transform: translate3d($extra-x, map.get($depth, y) + $extra-y, 0) scale(map.get($depth, scale));
+}
+
+@keyframes th-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes th-camera-far {
+  from {
+    @include camera-start($depth-far);
+  }
+}
+
+@keyframes th-camera-near {
+  from {
+    @include camera-start($depth-near);
+  }
+}
+
+// The pet sits right of / below the optical centre, so the same dolly also pushes it
+// outward by (offset from centre x (scale - 1)): ~125px x 0.08 = 10px, ~58px x 0.08 = 4.6px.
+@keyframes th-camera-pet {
+  from {
+    @include camera-start($depth-near, 10px, 4.6px);
+  }
+}
+
+@keyframes th-line-up {
+  from {
+    transform: translate3d(0, 105%, 0);
+  }
+}
+
+// Each line masks its own text only while it slides in (bottom edge = just under the line,
+// so descenders show); afterwards the clip is gone and the word's pop can never be cut off.
+@keyframes th-line-mask {
+  from,
+  to {
+    clip-path: inset(-1em -1em -0.3em -1em);
+  }
+}
+
+// Both ends explicit: clip-path can't interpolate to "none", it would just snap at 50%.
+@keyframes th-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+:host(:not(.is-ready)) {
+  .th-layer,
+  .th-pet,
+  .th-line-in,
+  .th-underline {
+    opacity: 0;
+  }
+}
+
+:host(.is-ready) {
+  .th-set--intro .th-sky {
+    animation: th-fade-in $fade-in ease-out both;
+  }
+
+  .th-set--intro .th-skyline {
+    animation:
+      th-camera-far $intro-duration $intro-ease both,
+      th-fade-in $fade-in ease-out both;
+  }
+
+  .th-set--intro .th-trees {
+    animation:
+      th-camera-near $intro-duration $intro-ease both,
+      th-fade-in $fade-in ease-out both;
+  }
+
+  .th-pet {
+    animation:
+      th-camera-pet $intro-duration $intro-ease both,
+      th-fade-in $fade-in ease-out both;
+  }
+
+  .th-line {
+    animation: th-line-mask $text-mask-end linear;
+  }
+
+  .th-line-in {
+    animation: th-line-up $text-duration $text-ease $text-delay both;
+  }
+
+  .th-line + .th-line .th-line-in {
+    animation-delay: $text-delay + $text-stagger;
+  }
+
+  .th-line + .th-line + .th-line .th-line-in {
+    animation-delay: $text-delay + $text-stagger * 2;
+  }
+
+  .th-underline {
+    animation:
+      th-draw $underline-duration cubic-bezier(0.65, 0, 0.35, 1) $underline-delay both,
+      th-underline-loop $accent-loop linear $accent-loop-delay infinite;
+  }
+
+  .th-accent {
+    animation:
+      th-sheen $accent-loop linear $accent-loop-delay infinite,
+      th-pop $accent-loop linear $accent-loop-delay infinite;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Loops: accent word + pin hop
+// ---------------------------------------------------------------------------
+
+// Hold -> pen lifts the line off to the right -> (hidden) pen returns -> redraws left to right.
+@keyframes th-underline-loop {
+  0%,
+  55% {
+    clip-path: inset(0 0 0 0);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  63% {
+    clip-path: inset(0 0 0 100%);
+  }
+  67% {
+    clip-path: inset(0 100% 0 0);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  79%,
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+// Light band crosses the word left to right, trailing the pen.
+@keyframes th-sheen {
+  0%,
+  72% {
+    background-position: 100% 0;
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  90%,
+  100% {
+    background-position: 0 0;
+  }
+}
+
+// Pop as the pen finishes: overshoot, then a damped settle (each swing ~1/4 of the last).
+@keyframes th-pop {
+  0%,
+  76% {
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  80% {
+    transform: scale(1.06);
+    animation-timing-function: ease-in-out;
+  }
+  85% {
+    transform: scale(0.985);
+    animation-timing-function: ease-in-out;
+  }
+  90% {
+    transform: scale(1.004);
+    animation-timing-function: ease-in-out;
+  }
+  94%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+:host(.is-offscreen) {
+  .th-accent,
+  .th-underline,
+  .th-pin,
+  .th-pin-lines {
+    animation-play-state: paused;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reduced motion: final frame, nothing moves.
+// ---------------------------------------------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+  :host *,
+  :host(.is-ready) * {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .th-scene,
+  .th-hero {
+    transform: none;
+  }
+}
+
+:host { --sm-font-body:Nunito,sans-serif; --sm-font-size-title:28px; --sm-font-size-title-sm:24px; --sm-font-size-body:17px; --sm-font-size-body-sm:15px; --sm-font-size-caption:13px; --sm-v1-neutral100:#fff; --sm-v1-neutral200:#f5f4f5; --sm-v1-neutral300:#d9d6d8; --sm-v1-neutral500:#a19ca0; --sm-v1-neutral600:#6b656a; --sm-v1-neutral800:#433e42; --sm-v1-neutral900:#282527; --sm-v1-tutor100:#e7eef9; --sm-v1-tutor200:#d3e1f7; --sm-v1-tutor400:#b2caf2; --sm-v1-tutor500:#3158a8; --sm-v1-tutor600:#1432a8; }
+
+:host { --sm-font-size-micro:11px; --sm-font-size-subhead:19px; }

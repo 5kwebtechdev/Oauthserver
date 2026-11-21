@@ -1,5 +1,24 @@
 <!-- Family connected acknowledgment -->
 <div class="family-ack-backdrop" *ngIf="showFamilyAck" (click)="dismissFamilyAck()">
+  <div *ngIf="familyAckRole === 'Parent'; else standardFamilyAck"
+    class="role-switch-confirmation role-switch-confirmation--parent" role="dialog" aria-modal="true"
+    [attr.aria-label]="familyAckCreated ? 'Family created' : 'You’re in parent mode'" (click)="$event.stopPropagation()" (keydown.escape)="dismissFamilyAck()">
+    <div class="role-switch-confirmation__art">
+      <img src="assets/figma/role-switch/parent-success.png" alt="">
+    </div>
+    <button autofocus type="button" class="role-switch-confirmation__close" aria-label="Close" (click)="dismissFamilyAck()">
+      <img src="assets/figma/role-switch/close.svg" alt="">
+    </button>
+    <ng-container *ngIf="familyAckCreated; else joinedFamily">
+      <h2>Family created</h2>
+      <p>Your family is all set. Your child's activities and progress are now visible from your account.</p>
+    </ng-container>
+    <ng-template #joinedFamily>
+      <h2>You're in parent mode</h2>
+      <p>You've joined the family. Your child's activities and progress are now visible from your account.</p>
+    </ng-template>
+  </div>
+  <ng-template #standardFamilyAck>
   <div class="family-ack-popup" (click)="$event.stopPropagation()">
     <img class="family-ack-popup__img" src="assets/Images-Transparent/Image-Parents-Family.webp" alt=""
       aria-hidden="true">
@@ -9,6 +28,7 @@
     </p>
     <button class="family-ack-popup__btn" type="button" (click)="dismissFamilyAck()">Let's Begin</button>
   </div>
+  </ng-template>
 </div>
 
 <ion-content class="parent-home-content" [scrollY]="!showMessageComposer">
@@ -45,7 +65,7 @@
             <span>{{ parentCoins.toLocaleString('en-IN') }}</span>
           </button>
           <a class="parent-refer-button" routerLink="/authed/refer-friend" aria-label="Refer a friend">
-            <img src="assets/figma/streak-screen/gift.png" alt="" aria-hidden="true">
+            <img src="assets/figma/streak-screen/gift-icon-192.webp" loading="eager" fetchpriority="high" decoding="async" alt="" aria-hidden="true">
           </a>
           <button type="button" class="notification-button"
             [attr.aria-label]="unreadNotificationCount ? 'Open notifications, ' + unreadNotificationCount + ' unread' : 'Open notifications'"
@@ -262,33 +282,37 @@
         </learning-section>
       </section>
 
+      <app-second-hand-books-banner class="parent-books-banner"></app-second-hand-books-banner>
       <tutor-card class="parent-eduhub"></tutor-card>
 
       <section class="parent-message" aria-labelledby="parent-message-title">
         <h2 id="parent-message-title">Send a message to {{ selectedChildName }}!</h2>
         <div class="parent-message__card">
-          <img class="parent-message__icon" src="assets/figma/parent-home/message.webp" alt=""
-            aria-hidden="true">
-          <div class="parent-message__content">
-            <div>
+          <div class="parent-message__intro">
+            <img class="parent-message__icon" src="assets/figma/parent-home/message-education.png" alt="">
+            <div class="parent-message__content">
               <strong>Check in with {{ selectedChildName }}</strong>
               <p>Celebrate progress, encourage, or simply write what you want to convey.</p>
             </div>
-            <div class="parent-message__actions">
-              <div>
-                <button type="button" [disabled]="isSendingMessage" (click)="openMessageComposer('celebrate')">
-                  <img src="assets/figma/parent-home/celebrate.svg" alt="" aria-hidden="true">
-                  Celebrate
-                </button>
-                <button type="button" [disabled]="isSendingMessage" (click)="openMessageComposer('encourage')">
-                  <img src="assets/figma/parent-home/encourage.svg" alt="" aria-hidden="true">
-                  Encourage
-                </button>
-              </div>
-              <button type="button" class="parent-message__write" (click)="openMessageComposer()">
-                Write Now
-              </button>
-            </div>
+          </div>
+          <div class="parent-message__actions">
+            <button type="button" [disabled]="isSendingMessage" (click)="openMessageComposer('celebrate')">
+              <img src="assets/figma/parent-home/message-celebration.svg" alt="">
+              Celebrate
+            </button>
+            <button type="button" [disabled]="isSendingMessage" (click)="openMessageComposer('encourage')">
+              <img src="assets/figma/parent-home/message-favorite.svg" alt="">
+              Encourage
+            </button>
+            <button type="button" [disabled]="isSendingMessage" (click)="openMessageComposer('activity-nudge')">
+              <img src="assets/figma/parent-home/message-nudge.svg" alt="">
+              Activity Nudge
+            </button>
+            <button type="button" class="parent-message__write" [disabled]="isSendingMessage"
+              aria-label="Custom message" (click)="openMessageComposer()">
+              <img src="assets/figma/parent-home/message-edit.svg" alt="">
+              Custom
+            </button>
           </div>
         </div>
       </section>
@@ -332,6 +356,7 @@
         <academy-section></academy-section>
       </section>
 
+      <app-second-hand-books-banner class="parent-books-banner"></app-second-hand-books-banner>
       <tutor-card class="parent-eduhub"></tutor-card>
     </ng-container>
   </main>

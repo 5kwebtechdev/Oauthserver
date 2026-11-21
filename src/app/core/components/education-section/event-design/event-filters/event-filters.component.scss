@@ -1,0 +1,384 @@
+// Filter bar + slide-up sheet. Colours / type come from the SuperMeApp tokens.
+
+// iOS-style sheet curve: quick start, long soft landing, no bounce.
+$sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
+$sheet-open: 340ms;
+
+:host {
+  display: block;
+  font-family: var(--sm-font-body);
+}
+
+// ---------------------------------------------------------------------------
+// Bar
+// ---------------------------------------------------------------------------
+
+.tf-bar {
+  display: flex;
+  gap: 8px;
+  padding: 2px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tf-chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid var(--sm-v1-neutral300);
+  border-radius: 12px;
+  background: var(--sm-v1-neutral100);
+  color: var(--sm-v1-neutral900);
+  font: inherit;
+  font-size: var(--sm-font-size-body-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease-out;
+  animation: tf-chip-in 220ms ease-out both;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &.is-on {
+    border-color: var(--sm-v1-tutor600);
+    background: var(--sm-v1-tutor100);
+    color: var(--sm-v1-tutor600);
+  }
+}
+
+@keyframes tf-chip-in {
+  from {
+    opacity: 0;
+    transform: translate3d(8px, 0, 0);
+  }
+}
+
+.tf-sliders {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.tf-caret {
+  width: 8.94px;
+  height: 5.22px;
+  fill: currentColor;
+}
+
+.tf-x {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.tf-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--sm-v1-tutor600);
+  color: var(--sm-v1-neutral100);
+  font-size: var(--sm-font-size-micro);
+  font-weight: 700;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--sm-v1-tutor600);
+  outline-offset: 2px;
+}
+
+// ---------------------------------------------------------------------------
+// Sheet
+// ---------------------------------------------------------------------------
+
+// Width and left edge are set in code to match the screen (see shared/sheet-dialog.ts).
+.tf-sheet {
+  box-sizing: border-box;
+  max-width: none;
+  max-height: none;
+  margin: auto 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 24px 24px 0 0;
+  overflow: hidden;
+  background: var(--sm-v1-neutral100);
+  color: var(--sm-v1-neutral900);
+  font-family: var(--sm-font-body);
+
+  &[open] {
+    animation: tf-sheet-up $sheet-open $sheet-ease;
+  }
+
+  &[open]::backdrop {
+    animation: tf-backdrop-in $sheet-open ease-out;
+  }
+
+  &::backdrop {
+    background: color-mix(in srgb, var(--sm-v1-neutral900, black) 50%, transparent);
+  }
+}
+
+@keyframes tf-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes tf-backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+// Fixed height so the sheet doesn't jump when switching between short and long option lists.
+.tf-panel {
+  display: flex;
+  flex-direction: column;
+  height: min(72dvh, 560px);
+}
+
+.tf-grab {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 6px;
+  cursor: grab;
+  touch-action: none;
+
+  span {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--sm-v1-neutral300);
+  }
+}
+
+.tf-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 8px 16px;
+  border-bottom: 1px solid var(--sm-v1-neutral300);
+
+  h2 {
+    margin: 0;
+    font-size: var(--sm-font-size-subhead);
+    font-weight: 700;
+  }
+}
+
+.tf-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--sm-v1-neutral900);
+  cursor: pointer;
+
+  .tf-x {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.tf-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.tf-rail {
+  flex: none;
+  width: 124px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: color-mix(in srgb, var(--sm-v1-neutral300) 30%, var(--sm-v1-neutral100));
+}
+
+.tf-tab {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 8px 8px 16px;
+  border: 0;
+  background: none;
+  color: var(--sm-v1-neutral800);
+  font: inherit;
+  font-size: var(--sm-font-size-body-sm);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+
+  &.is-active {
+    background: var(--sm-v1-neutral100);
+    color: var(--sm-v1-neutral900);
+    font-weight: 700;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 8px auto 8px 0;
+      width: 4px;
+      border-radius: 0 2px 2px 0;
+      background: var(--sm-v1-tutor600);
+    }
+  }
+}
+
+.tf-pane {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 16px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.tf-group {
+  margin: 12px 0 2px;
+  color: var(--sm-v1-neutral800);
+  font-size: var(--sm-font-size-caption);
+  font-weight: 700;
+}
+
+.tf-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  font-size: var(--sm-font-size-body);
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  input {
+    position: relative;
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    border: 1.5px solid var(--sm-v1-neutral500);
+    background: var(--sm-v1-neutral100);
+    appearance: none;
+    cursor: pointer;
+    transition:
+      background-color 120ms ease-out,
+      border-color 120ms ease-out;
+
+    &:checked {
+      border-color: var(--sm-v1-tutor600);
+      background: var(--sm-v1-tutor600);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--sm-v1-tutor600);
+      outline-offset: 2px;
+    }
+  }
+
+  input[type='checkbox'] {
+    border-radius: 6px;
+
+    // Tick drawn as a shape centred in its own box, so it stays centred in the checkbox.
+    &:checked::after {
+      $tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.25l3 3 6-6.5' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--sm-v1-neutral100);
+      -webkit-mask: $tick center / contain no-repeat;
+      mask: $tick center / contain no-repeat;
+    }
+  }
+
+  input[type='radio'] {
+    border-radius: 50%;
+
+    &:checked::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      background: var(--sm-v1-neutral100);
+    }
+  }
+}
+
+.tf-foot {
+  flex: none;
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--sm-v1-neutral300);
+}
+
+.tf-clear,
+.tf-apply {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 27px;
+  font: inherit;
+  font-size: var(--sm-font-size-body);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tf-clear {
+  flex: 1;
+  border: 1px solid var(--sm-v1-tutor600);
+  background: var(--sm-v1-neutral100);
+  color: var(--sm-v1-tutor600);
+
+  &:disabled {
+    border-color: var(--sm-v1-neutral300);
+    color: var(--sm-v1-neutral500);
+    cursor: default;
+  }
+}
+
+.tf-apply {
+  flex: 2;
+  border: 0;
+  background: var(--sm-v1-tutor600);
+  color: var(--sm-v1-neutral100);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tf-chip,
+  .tf-sheet[open],
+  .tf-sheet[open]::backdrop {
+    animation: none;
+  }
+}

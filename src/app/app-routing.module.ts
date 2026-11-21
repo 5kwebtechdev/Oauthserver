@@ -10,6 +10,11 @@ import { legacyAuthedRedirectGuard } from './core/authe-guard/authe-guard';
 import { OurPoliciesComponent } from './core/components/user-profile/our-policies/our-policies.component';
 
 const routes: Routes = [
+  ...(Capacitor.getPlatform() === 'android' && (environment as any).androidOAuth?.enabled === true ? [
+    { path: 'login', component: PkceEntryComponent },
+    { path: 'home/login', redirectTo: 'login', pathMatch: 'full' as const },
+    { path: 'callback', component: PkceEntryComponent }
+  ] : []),
   ...(environment.oauth.enabled && !Capacitor.isNativePlatform() ? [
     { path: 'login', component: PkceEntryComponent },
     { path: 'callback', component: PkceEntryComponent },

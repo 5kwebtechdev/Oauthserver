@@ -1,6 +1,6 @@
 :host { display: block; width: 100%; }
 .mood-header {
-  position: relative; width: 100%; height: 174px; overflow: hidden; border-radius: 24px;
+  position: relative; width: 100%; min-height: 174px; box-sizing: border-box; padding-bottom: 82px; overflow: hidden; border-radius: 24px;
   background: center / cover url('../../../../assets/Images-Thumbnails/HeaderV2.webp');
   font-family: var(--font-sans, 'Nunito', sans-serif); color: #282527;
   &.home-period-evening { background-image: url('../../../../assets/Images-Thumbnails/HeaderV2-evening.webp'); }
@@ -16,10 +16,10 @@
   }
 }
 .mood-message {
-  position: absolute; top: 8px; left: 8px; width: 245px; max-width: 68%; height: 74px;
-  border: 0; padding: 0; background: transparent; text-align: left;
+  position: relative; margin: 8px 0 0 8px; width: 245px; max-width: 68%; min-height: 74px; box-sizing: border-box;
+  border: 0; padding: 8px 31px 16px 12px; background: transparent; text-align: left;
   &__shape { position: absolute; inset: 0; width: 100%; height: 100%; }
-  &__copy { position: absolute; top: 8px; left: 12px; width: calc(100% - 43px); font-size: 13px; font-weight: 600; line-height: 1.5; }
+  &__copy { position: relative; display: block; overflow-wrap: anywhere; font-size: 13px; font-weight: 600; line-height: 1.5; }
   strong { color: #432477; font-weight: 700; }
 }
 .mood-pill {
@@ -121,15 +121,15 @@
 .home-period-evening, .home-period-night { .mood-stat { color: white; text-shadow: 0 1px 3px #282527; span { color: white; } } }
 button:focus-visible, a:focus-visible { outline: 2px solid #432477; outline-offset: 2px; }
 @media (max-width: 360px) {
-  .mood-message { height: 84px; }
+  .mood-message { min-height: 84px; }
   .mood-message__copy { font-size: 12px; line-height: 1.45; }
   .mood-pill { font-size: 12px; gap: 2px; padding-inline: 5px; }
   .mood-stats { left: 8px; padding-inline: 8px; gap: 10px; }
   .mood-pet { right: 8px; }
 }
 @media (min-width: 768px) {
-  .mood-header { height: 210px; }
-  .mood-message { left: auto; right: 156px; top: 24px; }
+  .mood-header { min-height: 210px; }
+  .mood-message { margin: 24px 156px 0 auto; }
   .mood-pill { top: 16px; right: 16px; }
   .mood-pet { right: 24px; transform: scale(1.14); transform-origin: bottom right; }
   .mood-stats { left: 32px; bottom: 24px; }

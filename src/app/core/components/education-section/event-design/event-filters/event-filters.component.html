@@ -1,0 +1,113 @@
+<!-- Bar: Filters button, Sort, Mode and Date dropdowns, then one-tap dates. -->
+<div class="tf-bar" role="toolbar" aria-label="Event and workshop filters">
+  <button type="button" class="tf-chip" [class.is-on]="appliedCount() > 0" (click)="openSheet()">
+    <svg class="tf-sliders" viewBox="0 0 20 20" aria-hidden="true">
+      <path d="M3 6h7M14 6h3M3 14h3M10 14h7" />
+      <circle cx="12" cy="6" r="2" />
+      <circle cx="8" cy="14" r="2" />
+    </svg>
+    Filters
+    @if (appliedCount() > 0) {
+      <span class="tf-badge">{{ appliedCount() }}</span>
+    }
+  </button>
+
+  @for (field of barFields; track field.id) {
+    <button type="button" class="tf-chip" [class.is-on]="countOf(applied(), field.id) > 0" (click)="openSheet(field.id)">
+      {{ field.label }}
+      @if (countOf(applied(), field.id) > 0) {
+        <span class="tf-badge">{{ countOf(applied(), field.id) }}</span>
+      }
+      <svg class="tf-caret" viewBox="0 0 8.94 5.22" aria-hidden="true">
+        <path d="M0.752053 0H8.18955C8.8583 0 9.19268 0.809375 8.7208 1.28125L5.00205 5C4.7083 5.29375 4.2333 5.29375 3.94268 5L0.220803 1.28125C-0.251072 0.809375 0.0833026 0 0.752053 0Z" />
+      </svg>
+    </button>
+  }
+
+  <button type="button" class="tf-chip" [class.is-on]="customDates()" (click)="openDates()">
+    {{ customDates() ?? 'Date' }}
+    <svg class="tf-caret" viewBox="0 0 8.94 5.22" aria-hidden="true">
+      <path d="M0.752053 0H8.18955C8.8583 0 9.19268 0.809375 8.7208 1.28125L5.00205 5C4.7083 5.29375 4.2333 5.29375 3.94268 5L0.220803 1.28125C-0.251072 0.809375 0.0833026 0 0.752053 0Z" />
+    </svg>
+  </button>
+
+  @for (quick of quickDates; track quick.preset) {
+    <button
+      type="button"
+      class="tf-chip"
+      [class.is-on]="isQuickOn(quick.preset)"
+      [attr.aria-pressed]="isQuickOn(quick.preset)"
+      (click)="toggleQuick(quick.preset)"
+    >
+      {{ quick.label }}
+    </button>
+  }
+</div>
+
+<!-- Sheet: tabs on the left, options on the right. From the Date chip it shows only the calendar. -->
+<dialog #sheet class="tf-sheet" aria-labelledby="tf-title" (click)="onDialogClick($event)" (cancel)="onCancel($event)">
+  <div class="tf-panel">
+    <div
+      class="tf-grab"
+      aria-hidden="true"
+      (pointerdown)="onGrabStart($event)"
+      (pointermove)="onGrabMove($event)"
+      (pointerup)="onGrabEnd($event)"
+      (pointercancel)="onGrabEnd($event)"
+    >
+      <span></span>
+    </div>
+
+    <header class="tf-head">
+      <h2 id="tf-title">{{ dateOnly() ? 'Select dates' : 'Filters' }}</h2>
+      <button type="button" class="tf-close" aria-label="Close filters" (click)="closeSheet()">
+        <svg class="tf-x" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" /></svg>
+      </button>
+    </header>
+
+    <div class="tf-body">
+      @if (!dateOnly()) {
+        <div class="tf-rail" role="tablist" aria-orientation="vertical">
+          @for (field of fields; track field.id) {
+            <button
+              type="button"
+              role="tab"
+              class="tf-tab"
+              [class.is-active]="activeTab() === field.id"
+              [attr.aria-selected]="activeTab() === field.id"
+              (click)="setTab(field.id)"
+            >
+              {{ field.label }}
+              @if (countOf(draft(), field.id) > 0) {
+                <span class="tf-badge">{{ countOf(draft(), field.id) }}</span>
+              }
+            </button>
+          }
+        </div>
+      }
+
+      <div #pane class="tf-pane" role="tabpanel">
+        @if (activeField(); as field) {
+          @if (field.calendar) {
+            <app-event-date-calendar [range]="draft().dateRange" (rangeChange)="setDates($event)" />
+          }
+          @for (option of field.options; track option) {
+            <label class="tf-option">
+              <input
+                [type]="field.single ? 'radio' : 'checkbox'"
+                [checked]="isSelected(field.id, option)"
+                (click)="toggleOption(field, option)"
+              />
+              {{ option }}
+            </label>
+          }
+        }
+      </div>
+    </div>
+
+    <footer class="tf-foot">
+      <button type="button" class="tf-clear" [disabled]="dateOnly() ? !draft().dateRange : draftCount() === 0" (click)="clearAll()">{{ dateOnly() ? 'Clear dates' : 'Clear all' }}</button>
+      <button type="button" class="tf-apply" (click)="apply()">{{ dateOnly() ? 'Apply dates' : 'Apply filters' }}</button>
+    </footer>
+  </div>
+</dialog>

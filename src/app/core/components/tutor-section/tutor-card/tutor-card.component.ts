@@ -1,3 +1,5 @@
+import { EduHubCategoryIconComponent } from '../../education-section/eduhub-category-icon/eduhub-category-icon.component';
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from "@ionic/angular";
@@ -91,7 +93,7 @@ interface EduHubPreview {
   selector: 'tutor-card',
   templateUrl: './tutor-card.component.html',
   styleUrls: ['./tutor-card.component.scss'],
-  imports: [CommonModule, IonicModule, ProfileImageComponent, EduHubCitySelectorComponent, EduHubEventCardComponent, EduHubShopCardComponent, CounselorCardComponent, PgHostelCardComponent],
+  imports: [EduHubCategoryIconComponent,CommonModule, IonicModule, ProfileImageComponent, EduHubCitySelectorComponent, EduHubEventCardComponent, EduHubShopCardComponent, CounselorCardComponent, PgHostelCardComponent],
   standalone: true
 })
 export class TutorCardComponent implements OnInit, OnDestroy {
@@ -117,7 +119,6 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/eduhub-navigation/book-stores.png', route: '/authed/education/shops' },
     { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/eduhub-navigation/sports-shops.png', route: '/authed/education/shops' },
     { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/eduhub-navigation/stationery.png', route: '/authed/education/shops' },
-    { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/eduhub-navigation/second-hand-books.png', route: '/second-hand-books' },
     { key: 'hostels', label: 'PG / Hostels', image: 'assets/figma/eduhub-navigation/hostels.png', route: '/authed/education/pg-hostels' }
   ];
 
@@ -134,6 +135,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   private academyProfiles = new Map<number, Tutor>();
   private academyLoaded = false;
   private academyLoading = false;
+  private academyRequest?: Subscription;
 
   private readonly externalCategorySources: Partial<Record<CategoryKey, { endpoint: 'events' | 'shops' | 'tutors' | 'pg-hostels'; entityType: string }>> = {
     workshops: { endpoint: 'events', entityType: 'Workshop' },
@@ -185,11 +187,11 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   /** The Home preview must never render more than the first four tutors. */
   get visibleTutors(): TutorListItem[] {
-    return this.filterBySelectedCity(this.tutors).slice(0, this.maxTutors);
+    return (this.showingOnlineFallback ? this.tutors : this.filterBySelectedCity(this.tutors)).slice(0, this.maxTutors);
   }
 
   get visibleAcademies(): TutorListItem[] {
-    return this.filterBySelectedCity(this.academyTutors).slice(0, this.maxTutors);
+    return this.academyTutors.slice(0, this.maxTutors);
   }
 
   get hasMoreTutors(): boolean {
@@ -334,7 +336,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     // also the source used by their full listing pages, so Home cannot drift
     // to a different endpoint or silently miss the `content` payload.
     if (categoryKey === 'workshops' || categoryKey === 'events') {
-      this.subscriptions.add(this.eduhubEventsService.getCombinedPage(0, 20, this.cityService.city).subscribe({
+      this.subscriptions.add(this.eduhubEventsService.getCombinedPage(0, 20, this.homeCity).subscribe({
         next: response => {
           // Category artwork is navigation chrome, not a person's/listing's
           // profile image. Keep it as a fallback only for shop cards that
@@ -431,6 +433,11 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       this.loadExternalCategory(this.selectedCategoryKey);
     }
     this.refreshHomeTutors();
+    this.academyRequest?.unsubscribe();
+    this.academyLoading = false;
+    this.academyTutors = [];
+    this.academyProfiles.clear();
+    this.academyTotalCount = 0;
     this.academyLoaded = false;
     if (this.selectedCategoryKey === 'academies') this.loadAcademies();
   }
@@ -447,8 +454,12 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     });
   }
 
+  private get homeCity(): string {
+    return this.cityService.filter.city || this.cityService.city;
+  }
+
   private matchesSelectedCity(location: unknown): boolean {
-    const city = this.cityService.city.trim().toLocaleLowerCase();
+    const city = this.homeCity.trim().toLocaleLowerCase();
     return !city || String(location ?? '').toLocaleLowerCase().includes(city);
   }
 
@@ -540,7 +551,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     const source = this.externalCategorySources[this.selectedCategoryKey];
     void this.router.navigate(['/authed/education/shops'], {
       queryParams: { entityType: source?.entityType, label: this.selectedCategory.label,
-        city: this.cityService.city, listing: listing.id, action: 'contact' }
+        city: this.homeCity, listing: listing.id, action: 'contact' }
     });
   }
 
@@ -612,50 +623,46 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     this.academyLoading = true;
     this.isLoading = true;
 
-    this.subscriptions.add(
-      this.http.get<any>(`${environment.apiUrl}/tutors`, {
-        headers: this.academyHeaders(),
-        params: { entityType: 'ACADEMY', ...this.cityService.filter }
-      }).subscribe({
-        next: (res) => {
-          const raw = Array.isArray(res)
-            ? res
-            : (res?.data?.tutors ?? res?.data?.content ?? res?.data ?? res?.tutors ?? res?.content ?? []);
+    this.academyRequest = this.http.get<any>(`${environment.apiUrl}/tutors`, {
+      headers: this.academyHeaders(),
+      params: { entityType: 'ACADEMY', ...this.cityService.academyFilter }
+    }).subscribe({
+      next: (res) => {
+        const raw = Array.isArray(res)
+          ? res
+          : (res?.data?.tutors ?? res?.data?.content ?? res?.data ?? res?.tutors ?? res?.content ?? []);
 
-          this.academyProfiles.clear();
-          const mapped: TutorListItem[] = (Array.isArray(raw) ? raw : [])
-            // Academy discovery must be driven by account activity, not the
-            // verification flag. Unverified active academies are visible but
-            // simply do not receive a Verified badge.
-            .filter((academy: any) => this.isActiveDirectoryListing(academy))
-            .map((a: any) => {
-              const { listItem, profile } = this.mapAcademy(a);
-              if (listItem.id != null) this.academyProfiles.set(Number(listItem.id), profile);
-              return listItem;
-            });
+        this.academyProfiles.clear();
+        const mapped: TutorListItem[] = (Array.isArray(raw) ? raw : [])
+          // Academy discovery must be driven by account activity, not the
+          // verification flag. Unverified active academies are visible but
+          // simply do not receive a Verified badge.
+          .filter((academy: any) => this.isActiveDirectoryListing(academy))
+          .map((a: any) => {
+            const { listItem, profile } = this.mapAcademy(a);
+            if (listItem.id != null) this.academyProfiles.set(Number(listItem.id), profile);
+            return listItem;
+          });
 
-          // Keep every academy; `visibleAcademies` filters by city first and
-          // only then limits the Home preview. Slicing here hid Bengaluru
-          // academies whenever they were not among the first four API rows.
-          this.academyTutors = mapped;
-          this.tutorService.setDirectoryCache(
-            'ACADEMY',
-            Array.from(this.academyProfiles.values())
-          );
-          this.academyTotalCount = Number(res?.data?.totalElements ?? mapped.length);
-          this.academyLoaded = true;
-          this.academyLoading = false;
-          if (this.selectedCategoryKey === 'academies') this.isLoading = false;
-        },
-        error: () => {
-          this.academyTutors = [];
-          this.academyTotalCount = 0;
-          this.academyLoaded = true;
-          this.academyLoading = false;
-          if (this.selectedCategoryKey === 'academies') this.isLoading = false;
-        }
-      })
-    );
+        this.academyTutors = mapped;
+        this.tutorService.setDirectoryCache(
+          'ACADEMY',
+          Array.from(this.academyProfiles.values())
+        );
+        this.academyTotalCount = Number(res?.data?.totalElements ?? mapped.length);
+        this.academyLoaded = true;
+        this.academyLoading = false;
+        if (this.selectedCategoryKey === 'academies') this.isLoading = false;
+      },
+      error: () => {
+        this.academyTutors = [];
+        this.academyTotalCount = 0;
+        this.academyLoaded = true;
+        this.academyLoading = false;
+        if (this.selectedCategoryKey === 'academies') this.isLoading = false;
+      }
+    });
+    this.subscriptions.add(this.academyRequest);
   }
 
   // Mirrors AcademiesListComponent's mapping so the two screens agree on
@@ -764,7 +771,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       void this.router.navigate(['/authed/tutors'], {
         queryParams: this.cityService.filter,
         state: {
-          city: this.cityService.city,
+          city: this.homeCity,
           state: this.cityService.state,
           directoryItems: visibleProfiles
         }
@@ -805,7 +812,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
       void this.router.navigate([this.selectedCategory.route], {
         queryParams: this.cityService.filter,
         state: {
-          city: this.cityService.city,
+          city: this.homeCity,
           state: this.cityService.state,
           directoryItems: visibleProfiles
         }
@@ -883,7 +890,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
     void this.router.navigate(['/authed/education/shops', listing.id], {
       state: {
-        city: this.cityService.city,
+        city: this.homeCity,
         categoryLabel: labelByCategory[this.selectedCategoryKey],
         listing: detailListing
       }

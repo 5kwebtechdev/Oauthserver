@@ -1,0 +1,130 @@
+// Date filter calendar. Colours / type come from the SuperMeApp tokens.
+
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+.dc-top {
+  position: sticky;
+  top: -4px; // the pane's top padding
+  z-index: 1;
+  padding: 8px 0 4px;
+  background: var(--sm-v1-neutral100);
+}
+
+// Same info box as the tutor filters.
+.dc-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--sm-v1-tutor100);
+  color: var(--sm-v1-tutor600);
+  font-size: var(--sm-font-size-caption);
+  font-weight: 600;
+
+  svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+  }
+}
+
+// Beside the tabs the longest prompt wraps: keep room for two lines, so the calendar doesn't move.
+@container (max-width: 300px) {
+  .dc-hint {
+    box-sizing: border-box;
+    min-height: 48px;
+  }
+}
+
+.dc-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  row-gap: 2px;
+}
+
+.dc-weekdays span {
+  color: var(--sm-v1-neutral800);
+  font-size: var(--sm-font-size-caption);
+  font-weight: 700;
+  text-align: center;
+}
+
+.dc-month {
+  margin-top: 12px;
+
+  h3 {
+    margin: 0 0 8px;
+    color: var(--sm-v1-neutral900);
+    font-size: var(--sm-font-size-body);
+    font-weight: 700;
+  }
+}
+
+.dc-day {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sm-v1-neutral900);
+  font: inherit;
+  font-size: var(--sm-font-size-body-sm);
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  span {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min(34px, 100%);
+    aspect-ratio: 1;
+    border-radius: 50%;
+  }
+
+  // The band joining the two chosen days.
+  &.is-between::before,
+  &.is-range-start::before,
+  &.is-range-end::before {
+    content: '';
+    position: absolute;
+    inset: 3px 0;
+    background: var(--sm-v1-tutor100);
+  }
+
+  &.is-range-start::before {
+    left: 50%;
+  }
+
+  &.is-range-end::before {
+    right: 50%;
+  }
+
+  &.is-today span {
+    box-shadow: inset 0 0 0 1px var(--sm-v1-tutor600);
+  }
+
+  &.is-end span {
+    background: var(--sm-v1-tutor600);
+    color: var(--sm-v1-neutral100);
+    font-weight: 700;
+  }
+
+  &:disabled {
+    color: var(--sm-v1-neutral300);
+    cursor: default;
+  }
+}

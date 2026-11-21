@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse } from '@angular/common/http';
 import { Observable, from, throwError } from 'rxjs';
@@ -24,12 +25,26 @@ export class PkceInterceptor implements HttpInterceptor {
     // Public account exchanges must not inherit an old bearer token.
     if (/\/auth\/(?:login|register|oauth2|forgot-password|check)(?:[/?]|$)/.test(url.pathname) || url.pathname.includes('/api/auth/')) return next.handle(req);
     const attach = () => this.pkce.token ? req.clone({ setHeaders: { Authorization: 'Bearer ' + this.pkce.token } }) : req;
+    const sentToken = this.pkce.token;
     const userId = localStorage.getItem('user_id');
     const currentUser = (event: HttpEvent<unknown>) => !(event instanceof HttpResponse)
       || !userId || localStorage.getItem('user_id') === userId;
     return next.handle(attach()).pipe(filter(currentUser), catchError(error => {
       if (!(error instanceof HttpErrorResponse) || error.status !== 401 || req.headers.get('X-Skip-Auth-Handler') === 'true') return throwError(() => error);
-      return from(this.pkce.refresh()).pipe(switchMap(() => next.handle(attach()).pipe(filter(currentUser))), catchError(renewalError => throwError(() => renewalError)));
+      // A concurrent request may already have rotated the token before this 401 arrived.
+      const refresh = this.pkce.token && this.pkce.token !== sentToken
+        ? Promise.resolve() : this.pkce.refresh();
+      return from(refresh).pipe(
+        switchMap(() => next.handle(attach()).pipe(filter(currentUser))),
+        catchError(renewalError => {
+          // A missing/expired refresh token or a second 401 ends this session.
+          if (this.pkce.nativeDev && !(renewalError?.error?.error === 'invalid_grant' || renewalError?.message === 'No refresh token is stored.')) return throwError(() => renewalError);
+          void this.pkce.logoutAfterRefreshFailure().catch(logoutError => {
+            console.error('[PkceInterceptor] Session cleanup failed after refresh error', logoutError);
+          });
+          return throwError(() => renewalError);
+        })
+      );
     }));
   }
 }

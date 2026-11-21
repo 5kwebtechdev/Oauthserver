@@ -1,10 +1,16 @@
 <ng-template #glanceLoadingState>
-  <div *ngIf="glanceDataLoading" class="glance-loading" role="status" aria-label="Loading today's activities" aria-busy="true">
+  <div *ngIf="glanceDataLoading && !showLoadedParentActivities" class="glance-loading" role="status" aria-label="Loading today's activities" aria-busy="true">
     <ion-skeleton-text [animated]="true" class="glance-loading__image"></ion-skeleton-text>
     <ion-skeleton-text [animated]="true"></ion-skeleton-text>
     <ion-skeleton-text [animated]="true"></ion-skeleton-text>
   </div>
-  <div *ngIf="glanceDataError" class="glance-loading" role="status">Couldn't load today's activities. Pull down to retry.</div>
+  <div *ngIf="glanceDataError" class="glance-loading" role="status">
+    <ng-container *ngIf="isParentOverride; else glanceDefaultError">
+      Some of today’s activities couldn’t load.
+      <button type="button" (click)="retryParentPlan()">Try again</button>
+    </ng-container>
+    <ng-template #glanceDefaultError>Couldn't load today's activities. Pull down to retry.</ng-template>
+  </div>
 </ng-template>
 <ng-template #glanceTabs>
     <div class="container w-full glance-tabs-shell">
@@ -87,7 +93,7 @@
 <!-- Planner tab: grouped schedule cards with expand/collapse, shared by List and Recent modes -->
 <ng-template #plannerCards>
   <section class="glance-planner-cards"
-    *ngIf="glanceDataReady && !glanceBlankState && (currentActive === 'all' || currentActive === 'timetable') && hasGlancePlannerCards">
+    *ngIf="(glanceDataReady || showLoadedParentActivities) && !glanceBlankState && (currentActive === 'all' || currentActive === 'timetable') && hasGlancePlannerCards">
     <div class="glance-action-swipe glance-action-swipe--planner"
       *ngFor="let card of glancePlannerCards; let i = index; trackBy: trackGlancePlannerCard"
       [class.is-swipe-open]="getActionSwipeOffset('planner-' + card.id) > 0"
@@ -155,7 +161,7 @@
 
   <!-- Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'habits' && hasHabits">
+    *ngIf="(glanceDataReady || showLoadedParentActivities) && !glanceBlankState && currentActive === 'habits' && hasHabits">
     <activity-card *ngFor="let habitItem of filteredRecentHabits.slice(0, maxItemsToShow)" [habit]="habitItem" [autoExpand]="true" [homeTiming]="true" [homeHabitCard]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
@@ -164,7 +170,7 @@
 
   <!-- Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'tasks' && hasTasks">
+    *ngIf="(glanceDataReady || showLoadedParentActivities) && !glanceBlankState && currentActive === 'tasks' && hasTasks">
     <activity-card *ngFor="let taskItem of filteredRecentTasks.slice(0, maxItemsToShow)" [habit]="taskItem" [autoExpand]="true" [homeTiming]="true" [homeTaskCard]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
@@ -174,7 +180,7 @@
   <!-- Grouped planner cards use the same layout in Planner and All. -->
   <ng-container *ngTemplateOutlet="plannerCards"></ng-container>
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
+    *ngIf="(glanceDataReady || showLoadedParentActivities) && !glanceBlankState && currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
     <activity-card *ngFor="let ttItem of timetables.slice(0, maxItemsToShow)" [habit]="ttItem"
       [startTime]="ttItem.startTimeStamp || 0" [endTime]="ttItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
@@ -183,7 +189,7 @@
 
   <!-- Combined Items (when all tab is active - sorted by closest start time) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
+    *ngIf="(glanceDataReady || showLoadedParentActivities) && !glanceBlankState && currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
@@ -220,7 +226,7 @@
 
   <!-- Recent Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'habits' && hasHabits">
+    *ngIf="(glanceDataReady || showLoadedParentActivities) && !glanceBlankState && currentActive === 'habits' && hasHabits">
     <activity-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem" [autoExpand]="true" [homeTiming]="true" [homeHabitCard]="true"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
@@ -229,7 +235,7 @@
 
   <!-- Recent Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'tasks' && hasTasks">
+    *ngIf="(glanceDataReady || showLoadedParentActivities) && !glanceBlankState && currentActive === 'tasks' && hasTasks">
     <activity-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem" [autoExpand]="true" [homeTiming]="true" [homeTaskCard]="true"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
@@ -239,8 +245,8 @@
   <!-- Grouped planner cards use the same layout in Planner and All. -->
   <ng-container *ngTemplateOutlet="plannerCards"></ng-container>
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
-    <activity-card *ngFor="let ttItem of filteredRecentTimetables" [habit]="ttItem"
+    *ngIf="(glanceDataReady || showLoadedParentActivities) && !glanceBlankState && currentActive === 'timetable' && hasTimetables && !hasGlancePlannerCards">
+    <activity-card *ngFor="let ttItem of (isParentOverride ? timetables : filteredRecentTimetables)" [habit]="ttItem"
       [startTime]="ttItem.startTimeStamp || 0" [endTime]="ttItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
     </activity-card>
@@ -248,7 +254,7 @@
 
   <!-- Recent Combined Items (when all tab is active - sorted by closest start time) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="glanceDataReady && !glanceBlankState && currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
+    *ngIf="(glanceDataReady || showLoadedParentActivities) && !glanceBlankState && currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)"
@@ -288,6 +294,7 @@
       </button>
     </div>
   <div class="habit-wrapper"
+    [class.habit-wrapper--reward-completed]="showCompletionReward"
     [class.habit-wrapper--compact]="isCompactHomeActivity"
     [class.habit-wrapper--compact-task]="isCompactHomeActivity && habit?.type === 'tasks'"
     role="button"
@@ -299,6 +306,8 @@
     [style.transform]="'translateX(-' + swipeOffset + 'px)'"
     [style.transition]="swipeTracking ? 'none' : 'transform 0.25s ease, translate 180ms ease, scale 180ms ease, box-shadow 180ms ease, filter 180ms ease'"
     [ngClass]="{'expanded': isCardExpanded, 'isRunningLate': isRunningLate,'missedTime': missedTime, 'task': habit?.type === 'tasks', 'timetable': habit?.type === 'timetable'}">
+    <img *ngIf="showCompletionReward" class="activity-completion-check"
+      src="assets/figma/family-success/check.svg" alt="Completed">
     <div *ngIf="habit?.type === 'timetable'" class="planner-home-card" long-press
       [delay]="1500" (press)="onLongPress()">
       <span class="planner-home-card__icon" aria-hidden="true">

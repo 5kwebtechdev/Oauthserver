@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { SupermeLoadingComponent } from './superme-loading/superme-loading.component';
 import { PkceAuthService } from '../services/pkce-auth.service';
 import { AuthService } from '../services/auth.service';
 
@@ -17,9 +18,10 @@ import { AuthService } from '../services/auth.service';
  */
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SupermeLoadingComponent],
   template: `
-    <main style="padding:2rem;text-align:center">
+    <app-superme-loading [visible]="!failed"></app-superme-loading>
+    <main *ngIf="failed" style="padding:2rem;text-align:center">
       <p role="status">{{ message }}</p>
       <button *ngIf="failed" (click)="signInNormally()">Sign in</button>
     </main>

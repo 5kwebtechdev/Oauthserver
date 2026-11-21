@@ -1,3 +1,5 @@
+import { secureTemporaryStorage as sessionStorage } from '../../core/storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../../core/storage/session-storage';
 import { Component, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
 import { NotificationNavigationService } from '../../core/services/notification-navigation.service';
 import { NotificationUnreadService } from '../../core/services/notification-unread.service';

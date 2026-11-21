@@ -1,0 +1,72 @@
+// Each pet's pivots, in % of its 1254px canvas. Printed by tools/slice-pets.mjs: paste its output
+// here after recutting a pet. Apart from the other stylesheets to stay under Angular's default
+// 8 kB limit per stylesheet.
+//   --qb-neck               where the head meets the clipboard; the head tilts about it
+//   --qb-rays               the point the three rays fan out from
+//   --qb-lid-*              top of each eye (the lid closes down from here) and the eye's slant
+//   --qb-sheet-slant        tilt of the lines on the clipboard
+//   --qb-q*, --qb-opt-*     left end of each question line, centre of each option
+
+.qb-rig--panda {
+  --qb-neck: 36.28% 37.48%;
+  --qb-rays: 32.3% 27.51%;
+  --qb-lid-left: 45.36% 24.88%;
+  --qb-lid-left-slant: -18deg;
+  --qb-lid-right: 65.59% 31.09%;
+  --qb-lid-right-slant: -14deg;
+  --qb-sheet-slant: -7.9deg;
+  --qb-q1: 18.26% 45.61%;
+  --qb-q2: 18.58% 48.09%;
+  --qb-opt-a: 29.76% 51.95%;
+  --qb-opt-b: 31.3% 56.82%;
+  --qb-opt-c: 32.8% 61.84%;
+  --qb-opt-d: 34.29% 67.19%;
+}
+
+.qb-rig--dragon {
+  --qb-neck: 32.7% 39.47%;
+  --qb-rays: 29.9% 29.9%;
+  --qb-lid-left: 37.57% 22.22%;
+  --qb-lid-left-slant: -15deg;
+  --qb-lid-right: 60.36% 27.12%;
+  --qb-lid-right-slant: -10deg;
+  --qb-sheet-slant: -12.9deg;
+  --qb-q1: 15.35% 48.96%;
+  --qb-q2: 16.59% 51.24%;
+  --qb-opt-a: 27.31% 53.11%;
+  --qb-opt-b: 28.99% 57.46%;
+  --qb-opt-c: 30.86% 61.64%;
+  --qb-opt-d: 32.66% 66.03%;
+}
+
+.qb-rig--llama {
+  --qb-neck: 33.89% 40.67%;
+  --qb-rays: 30.7% 30.7%;
+  --qb-lid-left: 40.77% 26.52%;
+  --qb-lid-left-slant: -8deg;
+  --qb-lid-right: 60.97% 30.75%;
+  --qb-lid-right-slant: -8deg;
+  --qb-sheet-slant: -11.4deg;
+  --qb-q1: 15.87% 48.84%;
+  --qb-q2: 17.07% 51.24%;
+  --qb-opt-a: 27.47% 53.91%;
+  --qb-opt-b: 29.03% 58.29%;
+  --qb-opt-c: 30.78% 62.76%;
+  --qb-opt-d: 32.5% 67.38%;
+}
+
+.qb-rig--owl {
+  --qb-neck: 34.29% 37.48%;
+  --qb-rays: 27.11% 26.71%;
+  --qb-lid-left: 41.18% 25.33%;
+  --qb-lid-left-slant: -12deg;
+  --qb-lid-right: 65.45% 29.36%;
+  --qb-lid-right-slant: -10deg;
+  --qb-sheet-slant: -11.3deg;
+  --qb-q1: 15.35% 45.5%;
+  --qb-q2: 16.11% 48.41%;
+  --qb-opt-a: 26.63% 50.8%;
+  --qb-opt-b: 28.43% 55.9%;
+  --qb-opt-c: 30.26% 61.24%;
+  --qb-opt-d: 31.98% 66.55%;
+}

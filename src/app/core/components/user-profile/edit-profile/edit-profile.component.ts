@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../../../storage/session-storage';
 import { Component, OnInit, OnDestroy, ViewChildren, QueryList, ElementRef, AfterViewInit } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';

@@ -1,0 +1,42 @@
+<div class="dc-top">
+  <p class="dc-hint" aria-live="polite">
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.5" />
+      <path d="M8 7.2v3.6M8 5.2v.1" />
+    </svg>
+    {{ hint() }}
+  </p>
+  <div class="dc-grid dc-weekdays" aria-hidden="true">
+    @for (weekday of weekdays; track $index) {
+      <span>{{ weekday }}</span>
+    }
+  </div>
+</div>
+
+@for (month of months; track month.label) {
+  <section class="dc-month">
+    <h3>{{ month.label }}</h3>
+    <div class="dc-grid">
+      @for (blank of month.blanks; track blank) {
+        <span></span>
+      }
+      @for (day of month.days; track day) {
+        <button
+          type="button"
+          class="dc-day"
+          [class.is-today]="day === today"
+          [class.is-end]="isEnd(day)"
+          [class.is-between]="isBetween(day)"
+          [class.is-range-start]="isRangeStart(day)"
+          [class.is-range-end]="isRangeEnd(day)"
+          [disabled]="isDisabled(day)"
+          [attr.aria-label]="ariaLabel(day)"
+          [attr.aria-pressed]="isEnd(day) || isBetween(day)"
+          (click)="pick(day)"
+        >
+          <span>{{ dayOfMonth(day) }}</span>
+        </button>
+      }
+    </div>
+  </section>
+}

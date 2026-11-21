@@ -1,5 +1,9 @@
+import { toSignal } from '@angular/core/rxjs-interop';
+import { PetAgeService } from '../../services/pet-age.service';
+import { SupermePetComponent } from '../superme-pet/superme-pet.component';
+import { secureTemporaryStorage as sessionStorage } from '../../storage/session-storage';
 import { CommonModule, Location } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { inject, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppLauncher } from '@capacitor/app-launcher';
@@ -111,11 +115,15 @@ interface SellerConditionOption {
 @Component({
   selector: 'app-second-hand-books',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, FooterComponent, SupermeDropdownComponent, ProfileImageComponent, ProfileFactsComponent],
+  imports: [SupermePetComponent,CommonModule, FormsModule, IonicModule, FooterComponent, SupermeDropdownComponent, ProfileImageComponent, ProfileFactsComponent],
   templateUrl: './second-hand-books.component.html',
   styleUrls: ['./second-hand-books.component.scss']
 })
 export class SecondHandBooksComponent implements OnInit, OnDestroy {
+  private readonly eduHubPets = inject(PetAgeService);
+  readonly eduHubPetState = toSignal(this.eduHubPets.petData$, { initialValue: this.eduHubPets.getCurrentPetData() });
+  get usesPandaArt(): boolean { return !this.eduHubPetState().petType || this.eduHubPetState().petType === 'panda'; }
+
   readonly secondHandBookFaqs = EDUHUB_FAQS['secondHandBooks'];
   readonly bookTypes: Array<{ value: BookType; label: string; icon: string }> = SECOND_HAND_BOOK_TYPES.map(type => ({
     ...type,

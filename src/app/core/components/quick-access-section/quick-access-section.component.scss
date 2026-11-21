@@ -84,3 +84,16 @@
   .qa-shortcut-icon { flex-basis: 32px; width: 32px; height: 32px; }
   .qa-shortcut-label { font-size: 12px; }
 }
+
+.qa-shortcut-books { background:#fef2db; box-shadow:0 0 2px .3px rgba(255,168,0,.5); }
+.qa-books-art { position:relative; display:block; flex:0 0 31px; width:31px; height:30px; overflow:hidden; }
+.qa-books-art img { position:absolute; width:127.47%; height:135.41%; max-width:none; left:-12.09%; top:-22.18%; }
+.qa-shortcut-books .qa-shortcut-label { white-space:normal; }
+.qa-shortcuts:not(.qa-shortcuts--with-journal) .qa-shortcut-books .qa-shortcut-label { max-width:72px; line-height:15px; }
+.qa-shortcuts--with-journal .qa-books-art { flex-basis:34px; width:34px; height:32px; }
+@media (min-width: 360px) {
+  .qa-shortcuts:not(.qa-shortcuts--with-journal) {
+    .qa-shortcut-icon { flex-basis:40px; width:40px; height:40px; }
+    .qa-shortcut-label { font-size:13px; }
+  }
+}

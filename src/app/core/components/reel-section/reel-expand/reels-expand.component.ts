@@ -48,7 +48,23 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     private readonly reelBookmarks: ReelBookmarksService
   ) {}
 
+  private readonly youtubeMessage = (event: MessageEvent) => {
+    if (event.origin !== 'https://www.youtube.com' || event.source !== this.youtubePlayer?.nativeElement.contentWindow) return;
+    let data: any;
+    try { data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data; } catch { return; }
+    const state = data?.event === 'onStateChange' ? data.info : data?.info?.playerState;
+    if (typeof state === 'number') this.isPlaying = state === 1;
+    if (data?.event === 'onReady') this.onYoutubeLoad();
+  };
+
+  onYoutubeLoad(): void {
+    const frame = this.youtubePlayer?.nativeElement.contentWindow;
+    frame?.postMessage(JSON.stringify({ event: 'listening', id: 'superme-reel' }), 'https://www.youtube.com');
+    frame?.postMessage(JSON.stringify({ event: 'command', func: 'addEventListener', args: ['onStateChange'] }), 'https://www.youtube.com');
+  }
+
   ngOnInit(): void {
+    window.addEventListener('message', this.youtubeMessage);
     // open single reel
     this.boundOpenSingle = (ev: any) => {
       try {
@@ -101,6 +117,7 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    window.removeEventListener('message', this.youtubeMessage);
     if (this.boundOpenSingle) {
       window.removeEventListener('openReelExpanded', this.boundOpenSingle as EventListener);
     }
@@ -216,8 +233,8 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     }
 
     if (this.current?.youtubeEmbedUrl) {
-      this.isPlaying = !this.isPlaying;
-      this.sendYoutubeCommand(this.isPlaying ? 'playVideo' : 'pauseVideo');
+      // Confirm playback through player events rather than toggling a UI-only flag.
+      this.sendYoutubeCommand(this.isPlaying ? 'pauseVideo' : 'playVideo');
       this.showPlayPauseIndicatorBriefly();
       return;
     }
@@ -525,14 +542,11 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // YouTube requires an HTTP referrer or equivalent client identity. A
-    // Capacitor iOS page uses a custom local scheme, so it cannot provide a
-    // normal HTTP referrer and YouTube otherwise responds with player error
-    // 153. Identify the native app with its public web origin; browsers keep
-    // their actual origin so localhost and production web builds both work.
-    const playerOrigin = Capacitor.isNativePlatform()
-      ? 'https://supermeapp.com'
-      : window.location.origin;
+    // Use the actual HTTP(S) embedding origin, including Android's localhost.
+    // Only custom-scheme WebViews need the public-origin fallback.
+    const playerOrigin = /^https?:$/.test(window.location.protocol)
+      ? window.location.origin
+      : 'https://supermeapp.com';
     const params = new URLSearchParams({
       autoplay: '1',
       playsinline: '1',
@@ -567,7 +581,7 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
       event: 'command',
       func: command,
       args: []
-    }), '*');
+    }), 'https://www.youtube.com');
   }
 
   private showPlayPauseIndicatorBriefly(): void {

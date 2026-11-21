@@ -74,6 +74,10 @@ Thumbs.db
 # Keystore files
 *.keystore
 *.jks
+*.p12
+*.pfx
+*.mobileprovision
+*.provisionprofile
 
 android/*.keystore
 android/*.jks
@@ -83,6 +87,10 @@ android/app/*.jks
 
 # Local gradle secrets
 android/gradle.properties
+**/keystore.properties
+**/key.properties
+**/signing.properties
+**/credentials.properties
 
 # Android build folders
 android/build/
@@ -103,7 +111,8 @@ src/assets/Icons-Neutral/TotalActiveDays-3D.png
 
 # Local scripts
 monitor-logs.ps1
-rebuild-apk.ps1*.apk
+rebuild-apk.ps1
+*.apk
 *.aab
 
 # Generated distributable builds are published outside Git (App Store / Play

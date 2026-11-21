@@ -77,7 +77,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
         [disabled]="isAssigningToChild || assignmentComplete || (isParentAssignment && !parentAssignmentChildId)">
         <span *ngIf="!isAssigningToChild">{{ assignmentComplete ? 'Assigned' : (isParentAssignment ? 'Assign' : 'Start') }}</span>
         <span *ngIf="isParentAssignment && !isAssigningToChild && !assignmentComplete" class="assignment-coin-reward">
-          <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true"> +{{ assignmentCoins }}
+          <img src="assets/icons/superme-coin.webp" alt="" aria-hidden="true"> −{{ assignmentCoins }}
         </span>
         <span *ngIf="isAssigningToChild">Assigning...</span>
       </button>
@@ -104,8 +104,8 @@ import { Challenge } from 'src/app/core/models/learning.models';
        own single safe-area inset for the navigator on notched devices. */
     .content-description-screen { width: min(100%, 960px); margin: 0 auto; padding: calc(var(--sat, 0px) + 12px) 20px 32px; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; gap: 20px; }
     .content-description-screen .back-title { display: flex; align-items: center; min-width: 0; }
-    .content-description-screen .desc-image { width: 100%; height: clamp(200px, 27vw, 320px); display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 16px; background: #f6f4f4; }
-    .content-description-screen .desc-image .hero-image { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; }
+    .content-description-screen .desc-image { display: flex; justify-content: center; }
+    .content-description-screen .desc-image .hero-image { display: block; width: auto; height: auto; max-width: 100%; max-height: clamp(200px, 27vw, 320px); border-radius: 16px; }
     .content-description-screen .meta-cards { width: 100%; }
     .content-description-screen .meta-cards .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; width: 100%; margin: 0; }
     .content-description-screen .meta-cards .col-6 { width: auto; max-width: none; min-width: 0; padding: 0; }
@@ -123,7 +123,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
     .assignment-coin-reward img { width: 20px; height: 20px; object-fit: contain; vertical-align: middle; }
     @media (max-width: 700px) {
       .content-description-screen { padding-inline: 16px; gap: 16px; }
-      .content-description-screen .desc-image { height: clamp(190px, 54vw, 260px); }
+      .content-description-screen .desc-image .hero-image { max-height: clamp(190px, 54vw, 260px); }
       .content-description-screen .meta-cards .row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
       .content-description-screen .meta-cards .meta { padding: 12px; }
       .content-description-screen .meta-cards .meta-value { font-size: 16px; }
@@ -175,12 +175,14 @@ export class LearningDescriptionComponent implements OnInit {
       this.returnUrl = '/parent-account';
     }
 
-    // Get challenge ID from route parameters
     const challengeId = this.route.snapshot.paramMap.get('id');
-    console.log('Challenge ID from route:', challengeId);
+    const slug = this.route.snapshot.paramMap.get('slug');
 
-    if (challengeId) {
-      this.learningService.fetchChallengeById(Number(challengeId)).subscribe({
+    if (challengeId || slug) {
+      const challengeRequest = slug
+        ? this.learningService.fetchChallengeBySlug(slug)
+        : this.learningService.fetchChallengeById(Number(challengeId));
+      challengeRequest.subscribe({
         next: (challenge) => {
           console.log('Challenge loaded:', challenge);
           this.challenge = challenge;

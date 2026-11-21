@@ -1,5 +1,6 @@
 import { JournalOutputComponent } from './journal-output.component';
 import { dailyMoodRecord, moodDateKey } from '../../../services/daily-mood-records.service';
+import { of } from 'rxjs';
 
 describe('Journal card and calendar shared mood', () => {
   function create() {
@@ -24,5 +25,17 @@ describe('Journal card and calendar shared mood', () => {
     component.entries = [{ date: new Date(), mood: 'Happy' }];
     component.dailyMoodRecords = {};
     expect(component.filteredEntries[0].mood).toBe('');
+  });
+  it('uses all-time streaks from the response even when the selected month has no entries', () => {
+    const http = { get: jasmine.createSpy().and.returnValue(of({ body: { entries: [], currentStreak: 3, bestStreak: 12 } })) };
+    const component = new JournalOutputComponent({} as any, http as any,
+      { getToken: () => null } as any, {} as any, {} as any, {} as any, { watch: () => of({}) } as any);
+    component.retry();
+    expect(component.entries).toEqual([]);
+    expect(component.currentStreak).toBe(3);
+    expect(component.bestStreak).toBe(12);
+    component.prevMonth();
+    expect(component.currentStreak).toBe(3);
+    expect(component.bestStreak).toBe(12);
   });
 });

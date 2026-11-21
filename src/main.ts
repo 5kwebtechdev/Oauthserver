@@ -1,3 +1,4 @@
+import { initializeSecureSession } from './app/core/storage/session-storage';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { AppModule } from './app/app.module';
@@ -32,9 +33,29 @@ const hideStartupLoader = () => {
 
 };
 
-platformBrowserDynamic().bootstrapModule(AppModule)
-  .then(hideStartupLoader)
-  .catch(err => {
-    hideStartupLoader();
-    console.log(err);
-  });
+window.addEventListener('superme:secure-storage-error', () => {
+  const existing = document.getElementById('secure-session-error');
+  if (existing) return;
+  const message = document.createElement('p');
+  message.id = 'secure-session-error';
+  message.textContent = 'Your session could not be saved securely. Please reopen the app before continuing.';
+  message.setAttribute('role', 'alert');
+  document.body.appendChild(message);
+});
+
+function showStartupFailure(stage: 'storage' | 'application', error: unknown): void {
+  hideStartupLoader();
+  // Only a non-sensitive stage is exposed; never print tokens or an OAuth response.
+  console.error('Application startup failed at stage:', stage);
+  const message = document.createElement('p');
+  message.textContent = stage === 'storage'
+    ? 'Unable to open secure storage (STARTUP-STORAGE). Please close and reopen the app. Existing session data has not been erased.'
+    : 'Unable to start the app (STARTUP-APP). Please close and reopen it.';
+  message.setAttribute('role', 'alert');
+  document.body.appendChild(message);
+}
+initializeSecureSession().then(
+  () => platformBrowserDynamic().bootstrapModule(AppModule).then(hideStartupLoader)
+    .catch(error => showStartupFailure('application', error)),
+  error => showStartupFailure('storage', error)
+);

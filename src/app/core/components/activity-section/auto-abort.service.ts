@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../../storage/session-storage';
 import { Injectable, OnDestroy } from '@angular/core';
 import { HabitApi } from '../../api/habit.api';
 import { TaskApi } from '../../api/task.api';

@@ -815,3 +815,6 @@ ion-infinite-scroll {
 }}
 @media (min-width:768px) and (max-width:1023px){:host-context(html:not(.plt-capacitor)){.eduhub-events-page{padding-inline:18px}.events-main{padding-inline:22px}.events-list,.events-loading{grid-template-columns:1fr}}}
 @media (prefers-reduced-motion:reduce){:host-context(html:not(.plt-capacitor)) .refer-card,:host-context(html:not(.plt-capacitor)) .event-card{transition:none}}
+
+.event-live-search {display:flex;align-items:center;gap:8px;margin:12px 16px;padding:10px 12px;border:1px solid #d9d6d8;border-radius:12px;background:#fff;
+ img {width:20px;height:20px;} input {min-width:0;flex:1;border:0;background:transparent;font:15px Nunito,sans-serif;} button {border:0;background:transparent;font-size:22px;}}

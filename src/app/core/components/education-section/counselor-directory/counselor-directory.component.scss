@@ -1,6 +1,16 @@
 :host { display: block; --blue: #1432a8; --pale-blue: #d9e5f9; --mid-blue: #b2caf2; --text: #282527; --muted: #6b656a; }
 .counselor-directory-content { --background: #fff; --padding-top: 0px; --padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
 .counselor-directory-page { min-height: 100%; overflow-x: clip; background: #fff; }
+@media (max-width: 767px) {
+  .counselor-filter-row {
+    position: sticky;
+    top: calc(var(--ion-safe-area-top, env(safe-area-inset-top, 0px)) + 52px);
+    z-index: 4;
+    background: #fff;
+    padding-block: 8px;
+    box-shadow: 0 2px 4px rgba(67, 62, 66, .12);
+  }
+}
 button { font: inherit; -webkit-tap-highlight-color: transparent; }
 .counselor-hero { position: relative; min-height: calc(240px + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); overflow: hidden; background: #c8cbff url('/assets/figma/counselors/hero-background.webp') center bottom / 100% 100% no-repeat; }
 .counselor-toolbar { position: relative; z-index: 3; display: flex; width: 100%; max-width: 520px; min-height: 66px; align-items: center; justify-content: space-between; margin: auto; padding: 8px 16px; box-sizing: border-box; }
@@ -87,3 +97,59 @@ button { font: inherit; -webkit-tap-highlight-color: transparent; }
   .education-filter-overlay { padding: 0; }
   .education-filter-dialog { width: 100%; height: 100dvh; border-radius: 0; }
 }
+
+.academy-live-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  margin: 12px 16px;
+  padding: 4px 8px 4px 12px;
+  box-sizing: border-box;
+  border: 1px solid #d9d6d8;
+  border-radius: 12px;
+  background: #fff;
+
+  img { width: 20px; height: 20px; flex: 0 0 20px; }
+  input {
+    min-width: 0;
+    width: 100%;
+    flex: 1;
+    height: 40px;
+    box-sizing: border-box;
+    padding: 8px 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #282527;
+    font: 16px/24px Nunito, sans-serif;
+    &::placeholder { color: #6b656a; opacity: 1; }
+    // The explicit close button is the single control at the end of the field.
+    &::-webkit-search-cancel-button { -webkit-appearance: none; }
+  }
+  &:focus-within { border-color: #3158a8; }
+  button {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #282527;
+    font-size: 22px;
+    line-height: 1;
+  }
+  .academy-live-search__submit {
+    width: auto;
+    flex: 0 0 auto;
+    padding-inline: 12px;
+    border-radius: 9px;
+    background: #1432a8;
+    color: #fff;
+    font: 700 14px/1.2 Nunito, sans-serif;
+  }
+}
+
+.counselor-list-section { scroll-margin-top: calc(var(--ion-safe-area-top, env(safe-area-inset-top, 0px)) + 64px); }

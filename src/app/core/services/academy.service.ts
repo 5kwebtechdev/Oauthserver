@@ -66,6 +66,18 @@ export interface AcademyCategory {
   completedCourseCount?: number;
 }
 
+/** Shared by the Home total and the MasterClass category grid. */
+export function academyPendingCount(category: AcademyCategory): number {
+  const count = (value: unknown) => {
+    const number = Number(value ?? 0);
+    return Number.isFinite(number) ? Math.max(0, Math.floor(number)) : 0;
+  };
+  const pending = category.pending ?? category.pendingCount ?? category.pendingCourseCount;
+  if (pending != null) return count(pending);
+  const completed = category.completedCount ?? category.completedCourseCount;
+  return Math.max(0, count(category.courseCount) - count(completed));
+}
+
 // Academy Feed API — /courses/academy-feed
 export interface AcademyFeedCourse {
   id: number;

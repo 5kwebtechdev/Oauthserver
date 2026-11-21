@@ -130,3 +130,5 @@ ion-content {
     .parent-eduhub-hero-copy { grid-template-columns: minmax(0, 1fr) 160px; }
     .parent-eduhub-hero-copy > div:first-child { align-self: center; }
 }
+
+.eduhub-books-banner { display:block; margin:24px 16px 0; width:calc(100% - 32px); }

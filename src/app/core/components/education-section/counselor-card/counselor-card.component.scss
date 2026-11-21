@@ -1,3 +1,4 @@
+@use "../listing-card";
 :host { display:block; min-width:0; --text:#282527; --muted:#6b656a; --blue:#1432a8; }
 .counselor-card { width:100%; padding:8px; border-radius:24px; background:#fff; box-shadow:0 0 2px 2px rgba(107,101,106,.1); box-sizing:border-box; }
 .counselor-card__top { display:flex; min-width:0; align-items:center; }
@@ -17,3 +18,9 @@
 .counselor-card__specialization { grid-column: 1; }
 .counselor-card__stats { grid-column: 1 / -1; grid-row: 3; }
 .counselor-card__actions { grid-column: 2; grid-row: 1 / 3; }
+
+// Tutor/academy variants from EduHub Card Revamp. Counselor cards above retain
+// their own layout; the same listing data and handlers power both presentations.
+.education-listing__photo.education-listing__photo--counselor app-profile-image.eduhub-fallback {
+  transform: none;
+}

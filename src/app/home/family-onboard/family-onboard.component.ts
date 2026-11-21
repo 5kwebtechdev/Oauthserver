@@ -1,3 +1,5 @@
+import { secureTemporaryStorage as sessionStorage } from '../../core/storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../../core/storage/session-storage';
 import { Component, OnInit, OnDestroy, Input, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';

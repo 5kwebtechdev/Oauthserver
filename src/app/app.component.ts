@@ -1,3 +1,5 @@
+import { secureTemporaryStorage as sessionStorage } from './core/storage/session-storage';
+import { sessionStorageAdapter as localStorage } from './core/storage/session-storage';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError, Event as RouterEvent } from '@angular/router';
@@ -181,6 +183,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.platform.backButton.subscribeWithPriority(9999, (processNextHandler) => {
       if (this.isAppUpdateBlocked) {
         console.log('[AppUpdate] Hardware back button blocked — app update required');
+        return;
+      }
+
+      // This achievement is an app-level overlay, not a router destination.
+      // Consume Back here so the page underneath does not navigate/re-enter.
+      if (this.showBadgePopup) {
+        this.onBadgePopupClose(false);
         return;
       }
 

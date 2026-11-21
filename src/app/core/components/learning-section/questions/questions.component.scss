@@ -738,8 +738,9 @@
 .quiz-hint-copy > span { font-size: var(--text-sm); }
 .quiz-hint-meta { font-size: var(--text-xs); }
 .quiz-hint-meta > span:last-child { white-space: normal; }
-.quiz-hint-card { grid-template-columns: 72px minmax(0, 1fr); }
-.quiz-hint-meta { grid-column: 2; justify-self: start; }
+// Keep cost and remaining hints beside the copy for parent quizzes too.
+// Use the three-column layout above, including its small-screen sizing.
+.quiz-hint-meta { grid-column: 3; grid-row: 1; justify-self: end; }
 
 // The SELF and CHILD quiz uses the pink learning palette from Figma.
 // Parenting quizzes keep the existing purple palette above.
@@ -760,6 +761,5 @@
 }
 
 @media (max-width: 350px) {
-    .quiz-question-content:not(.quiz-question-content--parent) .quiz-hint-card { grid-template-columns: 60px minmax(0, 1fr); }
-    .quiz-question-content:not(.quiz-question-content--parent) .quiz-hint-meta { grid-column: 2; }
+    .quiz-question-content:not(.quiz-question-content--parent) .quiz-hint-card { grid-template-columns: 60px minmax(0, 1fr) max-content; }
 }

@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, map, of, tap, throwError } from 'rxjs';
@@ -24,10 +25,46 @@ export interface ArticleAssignmentResponse {
     assignedAt: string;
 }
 
+export interface ArticleAnswerResult {
+    articleId: number;
+    completed: boolean;
+    questionCoinsAwarded: number;
+    answers: { questionId: number; selectedOptionId: number; correct: boolean; coinsAwarded: number }[];
+}
+
 @Injectable({
     providedIn: 'root'
 })
 export class LearningService {
+    submitArticleAnswers(articleId: number, questionAnswers: Record<number, number>): Observable<ArticleAnswerResult> {
+        return this.http.post<ArticleAnswerResult>(`${this.apiUrl}/articles/${articleId}/submit-answers`,
+            { questionAnswers }, { headers: this.getHeaders() });
+    }
+    fetchLearningPage(type: 'QUIZ' | 'ARTICLE' | 'MASTERCLASS', page: number, progress: string,
+        category: string, age: number | null, size = 12) {
+        let params = new HttpParams().set('type', type).set('page', page).set('size', size).set('progress', progress);
+        if (category) params = params.set('category', category);
+        if (age != null) params = params.set('age', age);
+        return this.http.get<{
+            items: Array<{ id: number; slug?: string; title: string; description: string; category: string | null;
+                thumbnailUrl: string; coins: number; parentAssignedCoins?: number; difficulty?: string;
+                durationMinutes?: number; completed: boolean }>;
+            page: number; totalPages: number; totalPending: number; totalCompleted: number;
+        }>(`${this.apiUrl}/learning/items`, { headers: this.getHeaders(), params }).pipe(
+            map(result => ({
+                page: result?.page ?? page, totalPages: result?.totalPages ?? 0,
+                totalPending: result?.totalPending ?? 0, totalCompleted: result?.totalCompleted ?? 0,
+                items: (result?.items ?? []).map((item): LearningCardData => ({
+                    id: item.id, slug: item.slug, title: item.title, description: item.description,
+                    subType: item.category ?? undefined, image: item.thumbnailUrl, coins: item.coins,
+                    difficulty: item.difficulty, buttonText: '',
+                    type: type === 'QUIZ' ? 'quiz' : type === 'ARTICLE' ? 'article' : 'masterclass',
+                    rawData: item
+                }))
+            }))
+        );
+    }
+
     private apiUrl = environment.apiUrl;
 
     // Cache for challenges and articles
@@ -167,11 +204,21 @@ export class LearningService {
             );
     }
 
+    fetchChallengeBySlug(slug: string): Observable<Challenge | null> {
+        return this.http.get<Challenge>(
+            `${this.apiUrl}/challenges/by-slug/${encodeURIComponent(slug)}`,
+            { headers: this.getHeaders() }
+        ).pipe(
+            map(challenge => challenge ? this.normalizeChallenge(challenge) : null),
+            catchError(() => of(null))
+        );
+    }
+
     /**
      * Submit challenge answers (new format)
      */
     submitChallengeNewFormat(challengeId: number, payload: {
-        questionAnswers: { [key: string]: string },
+        questionAnswers: { [key: string]: number },
         timeTaken: number,
         skippedQuestions: number[]
     }, forUserId?: string | number | null): Observable<any> {
@@ -216,6 +263,7 @@ export class LearningService {
                         || (forUserId != null && String(forUserId) !== submittingUserId)) return;
                     const result = response?.data ?? response;
                     if (result?.success === false) return;
+                    if (result?.walletUserId != null && String(result.walletUserId) !== submittingUserId) return;
                     this.userService.updateCoinBalance(result?.totalCoins ?? result?.total_coins);
                 })
             );

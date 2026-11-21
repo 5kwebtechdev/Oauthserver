@@ -1,4 +1,6 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { MicroRewardService } from 'src/app/core/services/micro-reward/micro-reward.service';
+import { sessionStorageAdapter as localStorage } from '../../../storage/session-storage';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
@@ -7,13 +9,14 @@ import { Share } from '@capacitor/share';
 import { Subject, of } from 'rxjs';
 import { map, switchMap, takeUntil } from 'rxjs/operators';
 import { SupermePopupConfig } from '../../superme-popup/superme-popup.component';
-import { LearningService } from 'src/app/core/services/learning.service';
+import { ArticleAnswerResult, LearningService } from 'src/app/core/services/learning.service';
 import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { UserService } from 'src/app/core/services/user.service';
-import { Article, Challenge, LearningCardData } from 'src/app/core/models/learning.models';
+import { Article, ArticleQuestion, Challenge, LearningCardData } from 'src/app/core/models/learning.models';
 import { environment } from 'src/environments/environment';
+import { articleRoute } from '../../../models/article-route';
 
 type HelpfulnessValue = 'very-helpful' | 'helpful' | 'not-helpful';
 type ArticleFeedback = 'VERY_HELPFUL' | 'HELPFUL' | 'NOT_HELPFUL';
@@ -38,8 +41,63 @@ interface HelpfulnessOption {
   providers: [LearningService]
 })
 export class ArticlePageComponent implements OnInit, OnDestroy {
+  articleQuestions: ArticleQuestion[] = [];
+  showArticleQuestions = false;
+  @ViewChild('articleQuestionsSection') articleQuestionsSection?: ElementRef<HTMLElement>;
+  selectedArticleAnswers: Record<number, number> = {};
+  articleAnswersChecked = false;
+  submittingArticleAnswers = false;
+  articleAnswerError = '';
+  articleAnswerResult: ArticleAnswerResult | null = null;
+
+  answerCorrect(questionId: number): boolean | undefined {
+    return this.articleAnswerResult?.answers.find(answer => answer.questionId === questionId)?.correct;
+  }
+
+  get allArticleQuestionsAnswered(): boolean {
+    return this.articleQuestions.length > 0 && this.articleQuestions.every(question =>
+      question.options.some(option => option.id === this.selectedArticleAnswers[question.id]));
+  }
+
+  selectArticleAnswer(questionId: number, optionId: number): void {
+    if (!this.articleAnswersChecked && !this.submittingArticleAnswers) this.selectedArticleAnswers[questionId] = optionId;
+  }
+
+  checkArticleAnswers(): void {
+    if (!this.article || !this.showArticleQuestions || !this.isAuthenticated || this.isParentAssignment || !this.allArticleQuestionsAnswered
+      || this.submittingArticleAnswers || this.articleAnswersChecked || this.isMarking) return;
+    this.submittingArticleAnswers = true;
+    this.articleAnswerError = '';
+    this.learningService.submitArticleAnswers(this.article.id, { ...this.selectedArticleAnswers })
+      .pipe(takeUntil(this.destroy$)).subscribe({
+        next: result => {
+          this.submittingArticleAnswers = false;
+          this.articleAnswerResult = result;
+          this.articleAnswersChecked = true;
+          if (result.completed) {
+            this.article = { ...this.article!, alreadyRead: true };
+            void this.playReadReward(result.questionCoinsAwarded);
+            this.badgePopupService.check();
+            this.petAgeService.recordActivity('articles');
+            window.dispatchEvent(new CustomEvent('superme:learning-completed', { detail: { id: result.articleId, type: 'article' } }));
+          }
+          this.userService.refreshStats().pipe(takeUntil(this.destroy$)).subscribe({
+            next: stats => { if (stats && Number.isFinite(stats.coins)) this.authService.updateUserData({ coins: stats.coins }); },
+            error: () => { /* Submission succeeded; wallet refresh is independent. */ }
+          });
+        },
+        error: () => {
+          this.submittingArticleAnswers = false;
+          this.articleAnswerError = 'We could not submit your answers. Please try again.';
+        }
+      });
+  }
+
+  trackQuestion(_: number, question: ArticleQuestion): number { return question.id; }
+  trackQuestionOption(_: number, option: ArticleQuestion['options'][number]): number { return option.id; }
   article: Article | null = null;
   relatedChallenges: LearningCardData[] = [];
+  relatedArticles: LearningCardData[] = [];
   primaryArticleContent = '';
   secondaryArticleContent = '';
   isLoading = true;
@@ -49,6 +107,8 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   isSubmittingFeedback = false;
   feedbackError = '';
   feedbackSubmitted = false;
+  private readonly microReward = inject(MicroRewardService);
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   showFeedbackPrompt = false;
   rewardMessage = '';
   showRewardAnimation = false;
@@ -245,6 +305,10 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     }).format(date);
   }
 
+  get articleReadAction(): string {
+    return this.articleCoins > 0 ? `Read & Earn ${this.articleCoins} coins` : 'Mark this article as read';
+  }
+
   get articleCoins(): number {
     const article = this.article as any;
     return Math.max(0, Number(article?.coins ?? article?.rewardCoins ?? 0) || 0);
@@ -262,6 +326,23 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     this.confirmMarkAsRead();
   }
 
+  private async playReadReward(coins: number): Promise<void> {
+    const user = this.authService.getUserData();
+    const role = String(user?.relationship).toUpperCase();
+    const articleId = this.article?.id;
+    if (role === 'CHILD' || role === 'PARENT') {
+      const from = this.element.nativeElement.querySelector<HTMLElement>('.learning-details-action__button')
+        ?? this.element.nativeElement;
+      await this.microReward.celebrate({ from, coins, balance: Number(user?.coins) || 0, pill: 'floating', confetti: false })
+        .catch(() => undefined);
+    } else {
+      this.showRewardAnimation = coins > 0;
+    }
+    if (this.article?.id === articleId && this.element.nativeElement.isConnected) {
+      this.showFeedbackPrompt = !this.feedbackSubmitted;
+    }
+  }
+
   openFeedbackPrompt(): void {
     this.confirmMarkAsRead();
   }
@@ -271,7 +352,13 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   }
 
   confirmMarkAsRead(): void {
-    if (!this.article || this.isArticleRead || !this.readTimerComplete || this.isMarking) return;
+    if (!this.article || this.isArticleRead || !this.readTimerComplete || this.isMarking || this.submittingArticleAnswers) return;
+    if (this.articleQuestions.length) {
+      this.showArticleQuestions = true;
+      setTimeout(() => this.articleQuestionsSection?.nativeElement.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+      return;
+    }
+    this.microReward.unlockSound();
     this.isMarking = true;
     this.actionError = '';
     this.learningService.markArticleComplete(
@@ -281,13 +368,12 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-      next: () => {
+      next: response => {
         this.isMarking = false;
         this.showMarkPopup = false;
         this.article = { ...this.article!, alreadyRead: true };
         this.rewardMessage = `You have received ${this.articleCoins} coins for completing this article.`;
-        this.showRewardAnimation = this.articleCoins > 0;
-        this.showFeedbackPrompt = !this.feedbackSubmitted;
+        void this.playReadReward(Number(response?.coinsAwarded ?? response?.coinsEarned ?? this.articleCoins));
         this.userService.refreshStats().pipe(takeUntil(this.destroy$)).subscribe({
           next: stats => {
             if (stats && Number.isFinite(stats.coins)) {
@@ -333,6 +419,15 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
         .subscribe({
         next: (article) => {
           this.article = article;
+          this.showArticleQuestions = false;
+          this.selectedArticleAnswers = {};
+          this.articleAnswersChecked = false;
+          this.articleAnswerResult = null;
+          this.articleAnswerError = '';
+          this.articleQuestions = [...(article?.questions || [])]
+            .sort((a, b) => a.questionOrder - b.questionOrder)
+            .map(question => ({ ...question, options: [...(question.options || [])]
+              .sort((a, b) => a.optionOrder - b.optionOrder) }));
           this.isLoading = false;
           if (article) {
             this.updateCanonical(article.slug);
@@ -346,6 +441,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
             this.prepareArticleContent(article.content);
             this.initializeHelpfulness(article);
             this.loadRelatedChallenges(article);
+            this.loadRelatedArticles(article);
             this.updatePopupRewardCopy();
             if (this.isAuthenticated) this.startReadingTimer();
           }
@@ -384,8 +480,9 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
     try {
       await Share.share({
-        title: this.article.title,
-        text: this.article.description || this.article.title,
+        // Some share targets append the subject to the message. Keep the
+        // article title only in the message so it isn't repeated.
+        text: this.article.title,
         url: this.getPublicArticleUrl(),
         dialogTitle: `Share ${this.article.title}`
       });
@@ -410,6 +507,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
           try {
             localStorage.setItem(this.getFeedbackStorageKey(this.article!.id), value);
           } catch { /* Storage can be unavailable in restricted browser modes. */ }
+          this.goBack();
         },
         error: () => {
           this.isSubmittingFeedback = false;
@@ -607,6 +705,46 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
       .filter((challenge): challenge is Challenge => !!challenge && typeof challenge === 'object')
       .map(challenge => this.learningService.transformChallengeToCard(challenge as Challenge))
       .filter(challenge => Number.isFinite(Number(challenge.id)) && Number(challenge.id) > 0);
+  }
+
+  private loadRelatedArticles(article: Article): void {
+    this.relatedArticles = [];
+    if (!this.isAuthenticated) return;
+    const keywords = this.getArticleKeywords(article);
+    if (!keywords.size) return;
+    this.learningService.fetchArticles(false, this.profileUserId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: articles => {
+        if (String(this.article?.id) !== String(article.id)) return;
+        const seen = new Set<string>([String(article.id)]);
+        this.relatedArticles = articles
+          .filter(item => {
+            if (seen.has(String(item.id)) || String(item.status).toUpperCase() === 'DRAFT') return false;
+            seen.add(String(item.id));
+            return true;
+          })
+          .map(item => ({
+            item,
+            matches: [...this.getArticleKeywords(item)].filter(keyword => keywords.has(keyword)).length
+          }))
+          .filter(({ matches }) => matches > 0)
+          .sort((a, b) => b.matches - a.matches)
+          .slice(0, 3)
+          .map(({ item }) => this.learningService.transformArticleToCard(item));
+      },
+      error: () => { /* Recommendations must not block reading the article. */ }
+    });
+  }
+
+  private getArticleKeywords(article: Article): Set<string> {
+    const keywords = typeof article.keywords === 'string' ? article.keywords.split(',') : article.keywords ?? [];
+    return new Set(keywords.map(keyword => keyword.trim().toLowerCase()).filter(Boolean));
+  }
+
+  openRelatedArticle(article: LearningCardData): void {
+    void this.router.navigate(articleRoute(article), {
+      state: { source: this.router.url, ...(this.profileUserId != null
+        ? { forUserId: this.profileUserId, ownProfile: true } : {}) }
+    });
   }
 
   private updatePopupRewardCopy(): void {

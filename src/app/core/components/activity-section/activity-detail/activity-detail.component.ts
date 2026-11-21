@@ -1,4 +1,7 @@
-import { Component, Input, OnChanges, SimpleChanges, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { MicroRewardService } from 'src/app/core/services/micro-reward/micro-reward.service';
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../../../storage/session-storage';
+import { ElementRef, Component, Input, OnChanges, SimpleChanges, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
@@ -8,7 +11,7 @@ import { Subscription } from 'rxjs';
 import { Habit } from '../habit.types';
 import { NavigationService } from '../../../services/navigation.service';
 import { plannerEditTab } from '../home-calendar-kind';
-import { activityRewardIconHtml } from '../activity-reward-icon';
+import { activityConfirmationConfig } from '../activity-confirmation-config';
 import { FocusTimerService } from '../../superme-timer/focus-timer.service';
 import { HabitService } from '../habit.service';
 import { AuthService } from '../../../services/auth.service';
@@ -19,7 +22,7 @@ import { AutoAbortService } from '../auto-abort.service';
 import { BadgePopupService } from '../../../services/badge-popup.service';
 import { PetAgeService } from '../../../services/pet-age.service';
 import { SupermeCalendarComponent } from '../../superme-inputs/superme-calendar/superme-calendar.component';
-import { SupermePopupComponent, SupermePopupConfig, SupermePopupCTA } from '../../superme-popup/superme-popup.component';
+import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 
 type ActivityType = 'habits' | 'tasks' | 'timetable';
 
@@ -83,7 +86,9 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     private badgePopupService: BadgePopupService,
     private petAgeService: PetAgeService,
     private focusTimer: FocusTimerService,
-    private navigation: NavigationService
+    private navigation: NavigationService,
+    private readonly microReward?: MicroRewardService,
+    private readonly rewardElement?: ElementRef<HTMLElement>
   ) {}
 
   ngOnInit() {
@@ -757,31 +762,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
    */
   openStartPopup() {
     // Configure popup content (image, heading, subtitle, CTAs)
-    const primary: SupermePopupCTA = {
-      text: 'Start Now',
-      buttonStyle: 'green',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (primaryAction) output
-    };
-
-    const secondary: SupermePopupCTA = {
-      text: 'Discard',
-      buttonStyle: 'bronze-transparent',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (secondaryAction) output
-    };
-
-    this.startPopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-Start.webp',
-      imageAlt: 'Ready to Start',
-      heading: 'Ready to Start?',
-      subtitle: "You're about to begin this habit!",
-      primaryCTA: primary,
-      secondaryCTA: secondary,
-      showCloseButton: false,
-      backdrop: true,
-      ctaDirection: 'row'
-    };
+    this.startPopupConfig = activityConfirmationConfig('start');
 
     this.showStartPopup = true;
   }
@@ -837,34 +818,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     const coins = this.getCoinReward();
     const streak = Math.max(1, this.getStreak());
 
-    // Build heading HTML to include coin and streak rows
-    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:var(--text-base);">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;text-align:left;"><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('coin')}<div style="font-weight:600;">+${coins}</div></div><div style="display:flex;align-items:center;gap:8px;">${activityRewardIconHtml('streak')}<div style="font-weight:600;">${streak}</div></div></div>`;
-
-    const primary: SupermePopupCTA = {
-      text: 'Confirm',
-      buttonStyle: 'green',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (primaryAction) output
-    };
-
-    const secondary: SupermePopupCTA = {
-      text: 'Discard',
-      buttonStyle: 'bronze-transparent',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (secondaryAction) output
-    };
-
-    this.completePopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-GreatWork.webp',
-      imageAlt: 'Great Work',
-      heading: headingHtml,
-      subtitle: '',
-      primaryCTA: primary,
-      secondaryCTA: secondary,
-      showCloseButton: false,
-      backdrop: true,
-      ctaDirection: 'row'
-    };
+    this.completePopupConfig = activityConfirmationConfig('complete', { coins, streak });
 
     this.showCompletePopup = true;
   }
@@ -912,33 +866,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     const coins = this.getCoinReward();
     const streak = Math.max(1, this.getStreak());
 
-    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:var(--text-base);">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;">${activityRewardIconHtml('coin')}<div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;">${activityRewardIconHtml('streak')}<div style="font-weight:600;">${streak}</div></div></div>`;
-
-    const primary: SupermePopupCTA = {
-      text: 'Keep Going',
-      buttonStyle: 'green',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (primaryAction) output
-    };
-
-    const secondary: SupermePopupCTA = {
-      text: 'Abort Anyways',
-      buttonStyle: 'bronze-transparent',
-      buttonMedium: true,
-      // callback intentionally omitted; handled via (secondaryAction) output
-    };
-
-    this.abortPopupConfig = {
-      image: 'assets/Images-Transparent/Image-Home-Abort.webp',
-      imageAlt: 'Abort',
-      heading: headingHtml,
-      subtitle: '',
-      primaryCTA: primary,
-      secondaryCTA: secondary,
-      showCloseButton: false,
-      backdrop: true,
-      ctaDirection: 'row'
-    };
+    this.abortPopupConfig = activityConfirmationConfig('abort', { coins, streak });
 
     this.showAbortPopup = true;
   }
@@ -967,13 +895,25 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   onCompleteHabit() {
     if (!this.habit || !this.isDoneEnabled()) return;
 
+    const user = this.authService.getUserData();
+    const animateReward = String(user?.relationship).toUpperCase() === 'CHILD';
+    const origin = this.rewardElement?.nativeElement.getBoundingClientRect();
+    if (animateReward) this.microReward?.unlockSound();
+
     const isTask = this.habit.type === 'tasks';
     const api$ = isTask
       ? this.taskApi.completeTask(this.habit.id)
       : this.habitApi.completeHabit(this.habit.id);
 
     api$.subscribe({
-      next: () => {
+      next: (res: any) => {
+          if (animateReward && origin && !res?.requiresConfirmation) {
+            void this.microReward?.celebrate({
+              from: origin, coins: Number(res?.coinsAwarded ?? res?.coinsEarned ?? this.habit?.coinReward ?? 0),
+              balance: Number(user?.coins) || 0, pill: 'floating', confetti: 'both',
+            }).catch(() => undefined);
+          }
+
         this.habit = { ...this.habit!, status: 'completed' } as Habit;
         this.buttonLogic.clearOngoingState(this.habit);
         this.autoAbortService.cancelAutoAbort(this.habit!.id, this.habit!.type || 'habits');

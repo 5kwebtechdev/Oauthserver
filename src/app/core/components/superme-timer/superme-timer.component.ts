@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../../storage/session-storage';
 import { ChangeDetectorRef, Component, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
@@ -194,7 +195,10 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
       if (this.activityType === 'tasks') this.habits.notifyTaskCompleted();
       else this.habits.completeHabit(this.activityId);
       this.petAge.recordActivity(this.activityType);
-      await this.modal.dismiss({ completed: true }, 'completed');
+      const coinsAwarded = result?.coinsAwarded ?? result?.coinsEarned;
+      await this.modal.dismiss(coinsAwarded == null
+        ? { completed: true }
+        : { completed: true, coinsAwarded }, 'completed');
       this.badges.check();
     } catch {
       this.completionError = 'Completion could not be saved. Please try again.';

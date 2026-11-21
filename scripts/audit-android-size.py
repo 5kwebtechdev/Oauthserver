@@ -39,7 +39,7 @@ for filename in sys.argv[2:]:
         infos = archive.infolist()
         for item in infos:
             name = item.filename.removeprefix('base/')
-            group = ('web-media' if name.startswith('assets/public/assets/') else
+            group = ('web-media' if name.startswith(('assets/public/assets/', 'assets/public/_superme-media/')) else
                      'web-code-and-other' if name.startswith('assets/public/') else
                      '/'.join(name.split('/')[:2]) if name.startswith(('lib/', 'assets/')) else
                      'dex' if name.endswith('.dex') else 'other')

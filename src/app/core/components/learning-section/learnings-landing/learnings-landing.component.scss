@@ -1,0 +1,600 @@
+@use './learnings-tokens';
+@use '../../../../../theme/breakpoints' as bp;
+// Learnings screen (Quiz / Articles / MasterClass). Built to the Figma frames (393 wide). The tabs
+// switch the banner and list; only the banners animate.
+// Colours / type come from the SuperMeApp tokens (theme/superme-tokens), Learning theme.
+
+// Figma values with no matching SuperMeApp token.
+$header-bg: #6b002c; /* not in design tokens */
+
+:host {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--sm-v1-neutral100);
+  color: var(--sm-v1-neutral900);
+  font-family: var(--sm-font-body);
+}
+
+img {
+  display: block;
+}
+
+// ---------------------------------------------------------------------------
+// Header: title bar, tabs, banner
+// ---------------------------------------------------------------------------
+
+.lp-header {
+  overflow: hidden;
+  padding-top: calc(var(--ion-safe-area-top, env(safe-area-inset-top, 0px)) + 12px);
+  background: $header-bg;
+}
+
+.lp-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.lp-title {
+  margin: 0;
+  color: var(--sm-v1-neutral100);
+  font-size: var(--sm-font-size-title-sm);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.lp-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--sm-v1-100);
+
+  img {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+// Three identical, overlapping tab shapes (in % of the 393px frame, so they stretch with the screen).
+// The row is centred: the first shape starts as far off the left edge as the last one runs past the
+// right edge, so the space beside the tabs is the same on both sides. (The Figma frame sits 6px to
+// the right of this.)
+.lp-tabs {
+  position: relative;
+  isolation: isolate;
+  height: 76px;
+  margin: 12px 0 -2px;
+  overflow: hidden;
+}
+
+.lp-tab {
+  --lp-tab-centre: 46.63%; // where the label sits across the shape
+  position: absolute;
+  left: 27.35%;
+  top: 4px;
+  z-index: 2;
+  width: 45.29%;
+  height: 72px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 2px solid var(--sm-v1-neutral100);
+    outline-offset: -4px;
+  }
+}
+
+.lp-tab--first {
+  left: -3.22%;
+}
+
+.lp-tab--last {
+  --lp-tab-centre: 47.75%;
+  left: 57.93%;
+  z-index: 1;
+}
+
+// The selected tab always sits over its neighbours.
+.lp-tab--active {
+  z-index: 3;
+}
+
+// Each tab carries both drawings of its shape; only the one for its state shows.
+.lp-tab-shape {
+  position: absolute;
+  left: -0.5px;
+  top: -0.5px;
+  width: calc(100% + 0.5px);
+  height: 73px;
+  max-width: none;
+}
+
+.lp-tab--active .lp-tab-shape--off,
+.lp-tab:not(.lp-tab--active) .lp-tab-shape--on {
+  display: none;
+}
+
+// Soft light on the selected tab's top edge.
+.lp-tab--active::before {
+  content: '';
+  position: absolute;
+  left: var(--lp-tab-centre);
+  top: 6px;
+  z-index: 1;
+  width: 44px;
+  height: 6px;
+  border-radius: 25px;
+  background: var(--sm-v1-neutral100);
+  filter: blur(9px);
+  transform: translateX(-50%);
+}
+
+.lp-tab-body {
+  position: absolute;
+  left: var(--lp-tab-centre);
+  top: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--sm-v1-neutral100);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.lp-tab--last .lp-tab-body {
+  top: 14px;
+  gap: 10px;
+}
+
+.lp-tab-name {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--sm-font-size-body-sm);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.lp-tab-icon--quiz {
+  width: 32px;
+  height: 28px;
+}
+
+.lp-tab-icon--articles {
+  width: 25px;
+  height: 28px;
+}
+
+.lp-tab-icon--masterclass {
+  width: 30px;
+  height: 18px;
+}
+
+.lp-tab-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lp-tab-count {
+  display: flex;
+  gap: 8px;
+  font-size: var(--sm-font-size-caption);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.lp-tab-divider {
+  display: block;
+  width: 1px;
+  height: 15px;
+  border-radius: 1px;
+  background: var(--sm-v1-neutral300);
+}
+
+.lp-tab-track {
+  position: relative;
+  display: block;
+  height: 4px;
+  border-radius: 30px;
+  background: var(--sm-v1-neutral300);
+}
+
+.lp-tab-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 30px;
+  background: var(--sm-v1-success500main);
+}
+
+// Unselected tabs are dimmed; the selected one is heavier.
+.lp-tab:not(.lp-tab--active) {
+  .lp-tab-name,
+  .lp-tab-progress {
+    opacity: 0.7;
+  }
+
+  .lp-tab-icon {
+    opacity: 1;
+  }
+}
+
+.lp-tab--active {
+  .lp-tab-name {
+    font-weight: 900;
+  }
+
+  .lp-tab-count {
+    font-weight: 800;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Filters
+// ---------------------------------------------------------------------------
+
+.lp-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px 0 16px;
+}
+
+.lp-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--sm-font-size-body);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.lp-pill {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 24px;
+  border-radius: 32px;
+  background: linear-gradient(to bottom, var(--sm-v1-600), var(--sm-v1-900));
+  color: var(--sm-v1-neutral100);
+
+  img {
+    width: 8.94px;
+    height: 5.22px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Quiz list
+// ---------------------------------------------------------------------------
+
+.lp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 16px 0;
+  padding: 0 16px;
+  list-style: none;
+}
+
+.lp-card {
+  display: flex;
+  gap: 4px;
+}
+
+.lp-thumb {
+  flex: none;
+  width: 153px;
+  height: 102px;
+  border-radius: 16px;
+  background: var(--sm-v1-neutral500); // placeholder until the quiz thumbnail is connected
+}
+
+.lp-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 2px 8px 0;
+}
+
+.lp-level {
+  padding: 5px 16px;
+  border: 1px solid var(--sm-v1-error500main);
+  border-radius: 16px;
+  background: var(--sm-v1-error100);
+  color: var(--sm-v1-error500main);
+  font-size: var(--sm-font-size-micro); // 10px in Figma, snapped to the nearest token
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.lp-card-title {
+  margin: 0;
+  font-size: var(--sm-font-size-body);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.lp-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--sm-v1-neutral800);
+  font-size: var(--sm-font-size-body-sm);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.lp-coins,
+.lp-bonus,
+.lp-time {
+  display: flex;
+  align-items: center;
+}
+
+.lp-coins {
+  gap: 2px;
+
+  > img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.lp-bonus {
+  margin-left: -2px;
+
+  img {
+    width: 16px;
+    height: 16px;
+  }
+
+  b {
+    color: var(--sm-v1-success500main);
+    font-size: var(--sm-font-size-caption);
+    font-weight: 700;
+  }
+}
+
+.lp-time {
+  gap: 4px;
+
+  img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// MasterClass: a white card with a square thumbnail.
+.lp-course {
+  display: flex;
+  gap: 4px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--sm-v1-neutral100);
+  box-shadow: 0 0 2px 2px color-mix(in srgb, var(--sm-v1-neutral800) 10%, transparent);
+}
+
+.lp-course-thumb {
+  flex: none;
+  width: 102px;
+  height: 102px;
+  background: transparent;
+}
+
+.lp-course-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 8px;
+}
+
+.lp-course-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.lp-course-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lp-course-lessons {
+  margin: 0;
+  color: color-mix(in srgb, var(--sm-v1-neutral900) 70%, transparent);
+  font-size: var(--sm-font-size-body-sm);
+  font-weight: 600; // Medium (500) in Figma; 600 is the lightest Nunito weight in the library
+  line-height: 1.35;
+}
+
+.lp-course-level {
+  flex: none;
+  padding: 4px 8px;
+  border: 1px solid var(--sm-v1-success500main);
+  border-radius: 26px;
+  background: var(--sm-v1-success100);
+  font-size: var(--sm-font-size-body-sm);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+
+:host {
+  padding-bottom: 24px;
+}
+
+@include bp.below(md) {
+  :host {
+    // The fixed footer's center button extends above the bar.
+    padding-bottom: calc(24px + var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
+  }
+}
+.lp-search { border: 0; padding: 0; cursor: pointer; }
+.lp-filter { min-width: 0; }
+.lp-pill { position: relative; padding: 0; min-width: 80px; }
+.lp-pill select { appearance: none; border: 0; padding: 5px 25px 5px 14px; min-width: 0; width: 100%; border-radius: inherit; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.lp-pill select option { background: #fff; color: #282527; }
+.lp-pill img { position: absolute; right: 11px; pointer-events: none; }
+.lp-filter--category .lp-pill { max-width: 118px; }
+.lp-list > li { list-style: none; }
+.lp-card, .lp-course { width: 100%; padding: 0; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.lp-card { background: transparent; }
+.lp-card-title { overflow-wrap: anywhere; }
+.lp-thumb { position: relative; overflow: hidden; }
+.lp-thumb .lp-level { position: absolute; inset-block-start: 6px; inset-inline-end: 6px; padding: 2px 8px; }
+.lp-course-thumb { border-radius: 0; }
+.lp-thumb app-img, .lp-course-thumb app-img { display: block; width: 100%; height: 100%; }
+
+.lp-thumb.lp-thumb--article {
+  align-self: flex-start;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  background: transparent;
+
+  app-img {
+    position: absolute;
+    inset: 0;
+  }
+}
+.lp-level.is-easy { color: var(--sm-v1-success800); border-color: var(--sm-v1-success500main); background: var(--sm-v1-success100); }
+.lp-level.is-medium { color: var(--sm-v1-warning800); border-color: var(--sm-v1-warning500main); background: var(--sm-v1-warning100); }
+.lp-meta { flex-wrap: wrap; gap: 4px 12px; }
+.lp-state { padding: 32px 16px; text-align: center; color: var(--sm-v1-neutral800); }
+.lp-state p { margin: 8px 0; }
+.lp-state button { padding: 8px 20px; border: 0; border-radius: 20px; background: var(--sm-v1-900); color: #fff; font: inherit; }
+.lp-state--error { padding: 12px 16px; }
+.lp-tab { touch-action: manipulation; }
+@media (max-width: 359px) {
+  .lp-thumb { width: 40%; height: 96px; }
+  .lp-course-thumb { width: 88px; height: 102px; }
+  .lp-filters { padding-left: 12px; gap: 6px; }
+  .lp-filter { gap: 4px; font-size: 13px; }
+  .lp-filter--category .lp-pill { max-width: 95px; }
+  .lp-tab-name { font-size: 12px; }
+}
+@media (min-width: 768px) {
+  .lp-header { border-radius: 0 0 24px 24px; }
+  .lp-bar { padding-inline: 24px; }
+  .lp-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-inline: 24px; gap: 24px; }
+  .lp-filters { padding-inline: 24px; }
+}
+
+.lp-title, .lp-card-title, .lp-filter { font-family: var(--sm-font-body); }
+:host { width: 100%; max-width: 900px; margin: 0 auto; }
+
+// Native select intrinsic widths must not squeeze or split the filter labels.
+.lp-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; padding: 12px 16px 0; }
+.lp-filter { min-width: 0; gap: 6px; white-space: nowrap; }
+.lp-pill, .lp-filter--category .lp-pill { flex: 1 1 0; min-width: 0; max-width: none; }
+.lp-pill select { min-width: 0; width: 100%; font-size: 13px; padding: 5px 22px 5px 10px; text-overflow: ellipsis; }
+.lp-tab--last .lp-tab-name { gap: 2px; font-size: 12px; }
+.lp-tab--last .lp-tab-icon--masterclass { width: 25px; height: 18px; }
+.lp-tab--last .lp-tab-body { left: 45%; }
+@media (max-width: 375px) {
+  .lp-filters { gap: 8px; padding-inline: 12px; }
+  .lp-filter { gap: 4px; font-size: 13px; }
+  .lp-pill select { padding-left: 8px; padding-right: 18px; }
+  .lp-pill img { right: 7px; }
+  .lp-tab-name { font-size: 12px; }
+  .lp-tab--last .lp-tab-name { font-size: 11px; }
+  .lp-tab--last .lp-tab-icon--masterclass { width: 22px; height: 16px; }
+}
+
+// Figma filter pills open app-owned sheets, never native select menus.
+.lp-filters { display: flex; justify-content: space-between; padding: 12px 16px 0; gap: 16px; }
+.lp-filter { flex: 0 1 auto; gap: 6px; font-size: 14px; }
+.lp-pill, .lp-filter--category .lp-pill {
+  flex: 0 1 auto; min-width: 76px; max-width: 140px; height: 30px;
+  padding: 4px 12px; border: 0; justify-content: space-between;
+  font: inherit; cursor: pointer;
+  > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  > img { position: static; flex: none; margin-left: 8px; }
+}
+.lp-filter-modal { --height: calc(248px + env(safe-area-inset-bottom, 0px)); --width: 100%; --max-width: 480px; --border-radius: 24px 24px 0 0; --backdrop-opacity: .35; }
+.lp-filter-modal--category { --height: min(460px, 85vh); }
+.lp-filter-modal::part(content) { max-height: 85vh; }
+.lp-filter-modal::part(handle) { width: 36px; height: 4px; background: #d8d2d9; top: 10px; }
+.lp-sheet { padding: 30px 16px max(18px, env(safe-area-inset-bottom)); overflow-y: auto; height: 100%; box-sizing: border-box; background: white; color: #282527; font-family: var(--sm-font-body, 'Nunito', sans-serif); }
+.lp-sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+.lp-sheet-header h2 { margin: 0; color: #a51d50; font-family: inherit; font-size: 16px; font-weight: 800; line-height: 1.4; }
+.lp-sheet-header > button { border: 0; border-radius: 50%; background: #fbf1f5; color: #aa2052; width: 28px; height: 28px; font-size: 22px; display: grid; place-items: center; line-height: 1; cursor: pointer; }
+.lp-progress-options { display: grid; gap: 8px; }
+.lp-progress-options > button { border: 1px solid #e4dce2; border-radius: 10px; padding: 10px 14px; min-height: 44px; background: white; display: flex; align-items: center; justify-content: space-between; font: inherit; font-size: 14px; color: inherit; cursor: pointer; }
+.lp-progress-options > button.is-selected { border-color: #ae2053; color: #ae2053; background: #fdf6f8; }
+.lp-radio { height: 17px; width: 17px; border: 1px solid #d6ced5; border-radius: 50%; box-sizing: border-box; }
+.is-selected > .lp-radio { border: 5px solid #ae2053; }
+.lp-category-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.lp-category-options > button { min-width: 0; min-height: 82px; padding: 7px 3px; border: 1px solid #e4dce2; border-radius: 10px; background: #fff; color: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; font: inherit; font-size: clamp(8px, 2.7vw, 11px); line-height: 1.2; overflow-wrap: normal; word-break: normal; cursor: pointer; }
+.lp-category-options > button.is-selected { border-color: #b22657; background: #fff5f8; color: #ad2051; }
+.lp-category-options app-img { display: block; width: 40px; height: 40px; flex: none; }
+.lp-all-icon { display: grid; grid-template-columns: 12px 12px; gap: 3px; height: 30px; align-content: center; }
+.lp-all-icon i { width: 12px; height: 12px; background: #b42659; border-radius: 3px; }
+.lp-all-icon i:nth-child(2), .lp-all-icon i:nth-child(3) { background: #e681a5; }
+@media (max-width: 359px) {
+  .lp-filters { padding-inline: 12px; gap: 10px; }
+  .lp-filter { font-size: 12px; gap: 4px; }
+  .lp-pill, .lp-filter--category .lp-pill { min-width: 64px; max-width: 96px; padding-inline: 9px; }
+}
+
+.lp-category-options > button > span { white-space: pre-line; max-width: 100%; }
+
+@media (min-width: 768px) {
+  .lp-filter-modal { --width: 480px; --max-width: calc(100vw - 48px); --height: 260px; --border-radius: 24px; }
+  .lp-filter-modal--category { --height: min(480px, calc(100vh - 64px)); }
+  .lp-filter-modal::part(content) { max-height: calc(100vh - 64px); border-radius: 24px; }
+  .lp-sheet { padding: 24px; }
+  .lp-category-options > button { font-size: 12px; }
+}
+
+.lp-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .375rem;
+  padding: 1rem clamp(6px, 2vw, 16px);
+}
+.lp-pagination button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: .5rem;
+  border: 1px solid #a21b4b;
+  border-radius: .5rem;
+  background: white;
+  color: #8e173e;
+  font: 700 14px/1.2 var(--sm-font-body);
+  font-variant-numeric: tabular-nums;
+}
+.lp-pagination button[aria-current="page"] {
+  background: #8e173e;
+  color: white;
+}
+.lp-pagination button:disabled:not([aria-current="page"]) { opacity: .5; }
+
+#learning-search {
+  --learning-search-accent: #8e173e;
+  --learning-search-tint: #fcf3f6;
+}

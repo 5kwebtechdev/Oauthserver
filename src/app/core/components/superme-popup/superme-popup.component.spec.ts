@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { activityConfirmationConfig } from '../activity-section/activity-confirmation-config';
 import { IonicModule } from '@ionic/angular';
 
 import { SupermePopupComponent } from './superme-popup.component';
@@ -9,8 +10,7 @@ describe('SupermePopupComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SupermePopupComponent],
-      imports: [IonicModule.forRoot()]
+      imports: [SupermePopupComponent, IonicModule.forRoot()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SupermePopupComponent);
@@ -20,6 +20,30 @@ describe('SupermePopupComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('shows the activity artwork and keeps the confirmation actions interactive', () => {
+    component.isVisible = true;
+    const primary = spyOn(component.primaryAction, 'emit');
+    const secondary = spyOn(component.secondaryAction, 'emit');
+    for (const action of ['start', 'complete', 'abort'] as const) {
+      component.config = activityConfirmationConfig(
+        action,
+        action === 'start' ? undefined : { coins: 8, streak: 19 },
+      );
+      fixture.detectChanges();
+      const popup: HTMLElement = fixture.nativeElement.querySelector('.activity-confirmation');
+      expect(popup.querySelector('.superme-popup-image')?.getAttribute('src')).toContain(`/${action}.webp`);
+      const badges = popup.querySelectorAll('.activity-rewards span');
+      expect(badges.length).toBe(action === 'start' ? 0 : 2);
+      if (action !== 'start') {
+        expect(badges[0].textContent?.trim()).toBe('8');
+        expect(badges[1].textContent?.trim()).toBe('19');
+      }
+      popup.querySelectorAll<HTMLButtonElement>('.superme-popup-actions button').forEach(button => button.click());
+    }
+    expect(primary).toHaveBeenCalledTimes(3);
+    expect(secondary).toHaveBeenCalledTimes(3);
   });
 
   it('should handle config input', () => {

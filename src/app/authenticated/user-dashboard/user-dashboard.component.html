@@ -1,11 +1,25 @@
 <!-- ══ Family connected acknowledgment popup ══ -->
 <div class="family-ack-backdrop" *ngIf="showFamilyAck" (click)="dismissFamilyAck()">
+  <div *ngIf="familyAckRole === 'Child'; else standardFamilyAck"
+    class="role-switch-confirmation role-switch-confirmation--child" role="dialog" aria-modal="true"
+    aria-label="You’re all set!" (click)="$event.stopPropagation()" (keydown.escape)="dismissFamilyAck()">
+    <div class="role-switch-confirmation__art">
+      <img src="assets/figma/role-switch/child-success.png" alt="">
+    </div>
+    <button autofocus type="button" class="role-switch-confirmation__close" aria-label="Close" (click)="dismissFamilyAck()">
+      <img src="assets/figma/role-switch/close.svg" alt="">
+    </button>
+    <h2>You’re all set!</h2>
+    <p>You have successfully switched to the child role. Your parent can now see your progress and cheer you on.</p>
+  </div>
+  <ng-template #standardFamilyAck>
   <div class="family-ack-popup" (click)="$event.stopPropagation()">
     <img class="family-ack-popup__img" src="assets/Images-Transparent/Image-Parents-Family.webp" alt="" aria-hidden="true" />
     <h2 class="family-ack-popup__title">You're connected to your family</h2>
     <p class="family-ack-popup__desc">This account is now set to {{ familyAckRole }} and linked to your family.</p>
     <button class="family-ack-popup__btn" (click)="dismissFamilyAck()">Let's Begin</button>
   </div>
+  </ng-template>
 </div>
 
 <!-- ══ Home-screen overlays (PRD: bonus coins, daily login, mood prompt, streak milestone) ══ -->
@@ -107,7 +121,7 @@
                 <span>{{ userCoins.toLocaleString('en-IN') }}</span>
               </button>
               <a class="refer-tool" routerLink="/authed/refer-friend" aria-label="Refer a friend">
-                <img src="assets/figma/streak-screen/gift.png" alt="" aria-hidden="true">
+                <img src="assets/figma/streak-screen/gift-icon-192.webp" loading="eager" fetchpriority="high" decoding="async" alt="" aria-hidden="true">
               </a>
               <button class="bell-tool" type="button"
                 [attr.aria-label]="unreadNotificationCount ? 'Open notifications, ' + unreadNotificationCount + ' unread' : 'Open notifications'"

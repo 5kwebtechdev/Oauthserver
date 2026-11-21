@@ -1,11 +1,11 @@
 export const environment = {
   oauth: { enabled: false, issuer: 'https://auth.supermeapp.com', clientId: 'supermeapp-web-4204' },
   production: false,
-  //apiUrl: 'http://187.127.142.16:8082/v1',
+  //apiUrl: 'https://devapis.supermeapp.com/v1',
   apiUrl: 'https://api.supermeapp.com/v1',
   // Public website used by native share sheets. Never use the local Angular dev URL.
   publicWebUrl: 'https://supermeapp.com',
-  // Razorpay Key ID is a public checkout identifier. Never add the Key Secret here.
+  // Razorpay Key ID is a public checkout identifier. N ever add the Key Secret here.
   razorpayKeyId: 'rzp_test_TG7krxwa0XFHO6',
   apiAuthToken: 'Bearer',
   appleSignIn: {

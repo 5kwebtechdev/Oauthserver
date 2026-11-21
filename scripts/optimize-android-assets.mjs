@@ -1,4 +1,4 @@
-/** Android-only packaging cleanup. Source/website assets are never modified.
+/** Native packaging cleanup for Android and iOS. Source/website assets are never modified.
  * Run after `cap copy android`; that copy restores all originals before each run.
  * Every recompressed image must decode to identical RGBA pixels and dimensions.
  */
@@ -8,11 +8,12 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
-if (process.env.CAPACITOR_PLATFORM_NAME && process.env.CAPACITOR_PLATFORM_NAME !== 'android') process.exit(0);
+const platform = process.env.CAPACITOR_PLATFORM_NAME || 'android';
+if (!['android', 'ios'].includes(platform)) process.exit(0);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sourceRoot = path.join(root, 'src/assets');
-const outputRoot = path.join(root, 'android/app/src/main/assets/public');
-const reportRoot = path.join(root, 'artifacts/android-size');
+const outputRoot = path.join(root, platform === 'ios' ? 'ios/App/App/public' : 'android/app/src/main/assets/public');
+const reportRoot = path.join(root, `artifacts/${platform}-size`);
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 async function files(dir) {
   const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -29,10 +30,10 @@ async function inventory(dir) {
 // The only dynamic home-blank-states consumer is the closed GLANCE_BLANK_STATES
 // table (habits/tasks/tasks-completed/planner/all/all-passed), not tab assets.
 // Keep the shared originals: only these exact generated Android copies are omitted.
-const omitted = [
+const omitted = (platform === 'ios' ? [] : [
   'tab-all.png', 'tab-habit.png', 'tab-habit-selected.png',
   'tab-task.png', 'tab-task-selected.png', 'tab-planner.png', 'tab-planner-selected.png'
-].map(name => `assets/figma/home-blank-states/${name}`);
+]).map(name => `assets/figma/home-blank-states/${name}`);
 
 const sourcesBefore = await inventory(sourceRoot);
 const before = await inventory(outputRoot);
@@ -104,4 +105,4 @@ report.savedBytes = report.beforeBytes - report.afterBytes;
 await fs.mkdir(reportRoot, { recursive: true });
 await fs.writeFile(path.join(reportRoot, 'optimization.json'), JSON.stringify(report, null, 2));
 if (!report.sourceAssetsUnchanged || report.unexpectedMissingFiles.length) throw new Error('Asset inventory verification failed.');
-console.log(`Android assets: saved ${(report.savedBytes / 1048576).toFixed(2)} MiB; ${report.optimized.length} lossless changes; ${report.omitted.length} retired generated copies omitted. Shared sources unchanged.`);
+console.log(`${platform} assets: saved ${(report.savedBytes / 1048576).toFixed(2)} MiB; ${report.optimized.length} lossless changes; ${report.omitted.length} retired generated copies omitted. Shared sources unchanged.`);

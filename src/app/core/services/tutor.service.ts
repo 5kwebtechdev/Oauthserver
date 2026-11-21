@@ -218,7 +218,9 @@ export class TutorService {
         let params = new HttpParams().set('entityType', queryType);
         const selectedCity = String(city ?? '').trim();
         if (selectedCity) params = params.set('city', selectedCity);
-        else if (includeSelectedLocation) for (const [key, value] of Object.entries(this.eduhubLocation.filter)) {
+        else if (includeSelectedLocation) for (const [key, value] of Object.entries(
+            normalizedType === 'ACADEMY' ? this.eduhubLocation.academyFilter : this.eduhubLocation.filter
+        )) {
             if (value) params = params.set(key, value);
         }
         return this.http.get<any>(`${this.apiUrl}/tutors`, {

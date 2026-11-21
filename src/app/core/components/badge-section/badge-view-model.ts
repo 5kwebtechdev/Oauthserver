@@ -7,7 +7,7 @@ export interface BadgeCard {
   earned: boolean; earnedDate: string | null; art: BadgeArt | null; icon: string | null;
   definition?: BadgeDefinition; tiers: TierState[]; individual: boolean;
 }
-export interface TierState { name: Tier; target: number; earned: boolean | null; earnedDate: string | null; art: BadgeArt; }
+export interface TierState { name: Tier; target: number; earned: boolean | null; earnedDate: string | null; startDate: string | null; art: BadgeArt; }
 export interface BadgeView {
   progress: BadgeCard[]; top: BadgeCard[]; other: BadgeCard[]; individual: BadgeCard[];
   total: number | null; individualAvailable: boolean; historyAvailable: boolean;
@@ -64,6 +64,7 @@ export function mapBadgeResponse(input: unknown): BadgeView {
       const state = v2 ? array(b['tiers']).map(record).find(t => t['tier'] === name) : undefined;
       const explicitlyEarned = !v2 && b['isEarned'] === true && tier(b['levelText']) === name;
       return { name, target: definition.milestones[i], earned: typeof state?.['earned'] === 'boolean' ? state['earned'] as boolean : explicitlyEarned ? true : null,
+        startDate: date(state?.['startDate']),
         earnedDate: state?.['earned'] === true ? date(state['earnedDate']) : explicitlyEarned ? date(b['earnedDate']) : null, art: BADGE_ART[`${definition.id}-${i+1}`] };
     }) : [];
     const card: BadgeCard = {

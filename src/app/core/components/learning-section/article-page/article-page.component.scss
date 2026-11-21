@@ -760,7 +760,8 @@
   }
 
   &__label {
-    white-space: nowrap;
+    text-align: center;
+    font-weight: 600;
     font-size: clamp(12px, 3.5vw, 18px);
     line-height: 1.25;
   }
@@ -771,7 +772,6 @@
     height: 48px;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
 
     img {
       display: block;
@@ -779,6 +779,10 @@
       height: 48px;
       object-fit: contain;
       object-position: center;
+
+      &.learning-details-feedback__image--helpful {
+        transform: scale(1.12);
+      }
     }
   }
 }
@@ -957,4 +961,76 @@
   .learning-details-feedback button {
     transition: none;
   }
+}
+
+.article-questions {
+  margin-block: 24px;
+  h2 { font-size: 22px; margin-bottom: 16px; }
+}
+.article-question {
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #e7dfef;
+  border-radius: 16px;
+  overflow-wrap: anywhere;
+  h3 { font-size: 18px; line-height: 1.5; margin: 0 0 12px; }
+  > img { display: block; max-width: 100%; max-height: 320px; object-fit: contain; border-radius: 10px; }
+  &__options { padding-left: 28px; margin-bottom: 0; }
+  &__options li { padding: 8px; line-height: 1.5; }
+}
+
+.article-question__options { display: grid; gap: 12px; padding: 0; margin-top: 16px; }
+.article-answer {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px;
+  padding: 12px; border: 1px solid #eadce2; border-radius: 14px;
+  background: #fcf3f6; color: #282527; text-align: left;
+  font-family: var(--font-sans); font-size: 15px; font-weight: 700; line-height: 1.35;
+  &__letter { display: grid; place-items: center; flex: 0 0 30px; height: 30px; border-radius: 50%; background: white; }
+  small { margin-left: auto; font-size: 12px; }
+  &.is-selected { background: #f0a5bc; border-color: #ac2456; color: #ac2456; }
+  &.is-correct { background: #e8f5e9; border-color: #4caf50; color: #237a2a; }
+  &.is-incorrect { background: #fff0f0; border-color: #bb2124; color: #a21d20; }
+  &:focus-visible { outline: 2px solid #ac2456; outline-offset: 3px; }
+  &:disabled { opacity: 1; }
+}
+.article-answers-submit {
+  width: 100%; min-height: 48px; padding: 12px 20px; border: 0; border-radius: 12px;
+  background: radial-gradient(circle at center, #cf3359 0%, #ac2456 100%);
+  color: white; font: 700 16px var(--font-sans);
+  &:disabled { opacity: .55; }
+}
+
+// Rich article HTML is inserted dynamically; keep table styles scoped to it.
+.article-content {
+  min-width: 0;
+  ::ng-deep table {
+    display: block;
+    width: 100% !important;
+    max-width: 100%;
+    height: auto !important;
+    margin: 20px 0;
+    overflow-x: auto;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font: inherit;
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
+  }
+  ::ng-deep th,
+  ::ng-deep td {
+    min-width: 120px;
+    height: auto !important;
+    padding: 10px 12px !important;
+    border: 1px solid #c9c5cc !important;
+    vertical-align: top;
+    white-space: normal;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+  }
+  ::ng-deep th {
+    font-weight: 700;
+    background-color: #f5f2f8;
+    text-align: start;
+  }
+  ::ng-deep td p, ::ng-deep th p { margin: 0 !important; }
 }

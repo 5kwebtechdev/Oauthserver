@@ -6,7 +6,7 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7"/></svg>
         </button>
         <div *ngIf="currentUserInTopTen" class="share-rank">
-          <button type="button" class="share-rank__button" (click)="shareRank()">
+          <button type="button" class="share-rank__button" (click)="shareRank()" [disabled]="sharingRank" [attr.aria-busy]="sharingRank">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5M4 13v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Share your rank
           </button>
@@ -23,6 +23,19 @@
     </section>
 
     <div class="leaderboard-body">
+      <section *ngIf="browserShare as prepared" class="rank-share-options" aria-label="Share your achievement">
+        <img [src]="browserShareUrl" alt="Your leaderboard achievement card">
+        <div class="rank-share-options__content">
+          <h2>Your achievement card</h2>
+          <div class="rank-share-options__actions">
+            <button *ngIf="prepared.canShare" type="button" (click)="sharePreparedImage()" [disabled]="sharingRank">Share image</button>
+            <a [href]="browserShareUrl" [download]="prepared.file.name">Download image</a>
+            <button type="button" (click)="copyRankMessage()">Copy message</button>
+          </div>
+          <label for="rank-share-message">Sharing message</label>
+          <textarea id="rank-share-message" readonly rows="5" [value]="prepared.text"></textarea>
+        </div>
+      </section>
       <div class="scope-tabs" role="tablist" aria-label="Leaderboard scope">
         <button type="button" role="tab" [attr.aria-selected]="scope === 'GLOBAL'" [class.active]="scope === 'GLOBAL'" (click)="selectScope('GLOBAL')">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a2 2 0 0 0-2 2H5a2 2 0 0 0-2 2v2a4 4 0 0 0 4.4 4A5 5 0 0 0 11 16v3H8a1 1 0 0 0 0 2h8a1 1 0 0 0 0-2h-3v-3a5 5 0 0 0 3.6-3A4 4 0 0 0 21 9V7a2 2 0 0 0-2-2h-2a2 2 0 0 0-2-2H9ZM5 7h2v4a2 2 0 0 1-2-2V7Zm12 0h2v2a2 2 0 0 1-2 2V7Z"/></svg> Global Leaderboard

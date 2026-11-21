@@ -1,0 +1,54 @@
+<!-- Decorative backdrop; the sunburst sits behind the pet. -->
+<img data-layer class="qb-bg" [src]="assetBase() + '/bg.webp'" alt="" aria-hidden="true" />
+
+<div class="qb-row">
+  <div class="qb-copy">
+    <h2 class="qb-title">
+      <span class="qb-line">
+        <span class="qb-line-in">
+          <span class="qb-accent">
+            Quiz
+            <svg class="qb-underline" viewBox="0 0 78.1013 10.0011" preserveAspectRatio="none" aria-hidden="true">
+              <path
+                d="M2.29077 4.06962C1.51313 4.23913 0.842895 4.71034 0.430296 5.39093C0.0175366 6.07086 -0.103784 6.90445 0.0902464 7.69697C0.284276 8.48949 0.776963 9.17275 1.45714 9.5851C2.13748 9.99811 2.94959 10.1064 3.7176 9.8975C3.7176 9.8975 3.7176 9.8975 3.7176 9.8975C4.84101 9.59045 6.04107 9.29517 7.22067 9.02073C28.6908 4.41811 51.2973 1.85171 73.1272 5.44438C74.3244 5.66137 75.5419 5.91075 76.7231 6.18347C77.0066 6.249 77.3081 6.19767 77.56 6.04492C77.812 5.89193 77.9938 5.65003 78.0665 5.36831C78.1392 5.08658 78.0971 4.78692 77.9507 4.5311C77.8041 4.27552 77.5652 4.08474 77.2853 4.00485C77.2853 4.00485 77.2853 4.00485 77.2853 4.00485C76.083 3.66212 74.843 3.3434 73.6236 3.05797C51.345 -1.74655 28.4316 -0.29545 6.05044 3.32725C4.80489 3.55154 3.53043 3.79859 2.29077 4.06962Z"
+              />
+            </svg>
+          </span>
+          Time!
+        </span>
+      </span>
+    </h2>
+
+    <!-- "Fun • Fast • Rewarding" is artwork, so it is read out through the label instead. -->
+    <div class="qb-tagline" role="img" aria-label="Fun, fast, rewarding">
+      <img data-layer [src]="assetBase() + '/tagline.webp'" alt="" />
+    </div>
+  </div>
+
+  <!--
+    The pet, back to front. Every image is the same 1254px canvas, so the layers register on their own.
+    Only the head, eyelids, sheet contents and rays move. Only the chosen pet's images are requested.
+  -->
+  <div class="qb-pet" aria-hidden="true">
+    <div [class]="'qb-rig qb-rig--' + activePet()">
+      <div class="qb-part qb-head">
+        <img data-layer class="qb-part" [src]="petAssets() + '/head.webp'" alt="" />
+        <img data-layer class="qb-part qb-lid qb-lid--left" [src]="petAssets() + '/lid-left.webp'" alt="" />
+        <img data-layer class="qb-part qb-lid qb-lid--right" [src]="petAssets() + '/lid-right.webp'" alt="" />
+      </div>
+
+      <img data-layer class="qb-part" [src]="petAssets() + '/front.webp'" alt="" />
+
+      <img data-layer class="qb-part qb-question qb-question--1" [src]="petAssets() + '/q1.webp'" alt="" />
+      <img data-layer class="qb-part qb-question qb-question--2" [src]="petAssets() + '/q2.webp'" alt="" />
+      <img data-layer class="qb-part qb-option qb-option--a" [src]="petAssets() + '/opt-a.webp'" alt="" />
+      <img data-layer class="qb-part qb-option qb-option--b" [src]="petAssets() + '/opt-b.webp'" alt="" />
+      <img data-layer class="qb-part qb-option qb-option--c" [src]="petAssets() + '/opt-c.webp'" alt="" />
+      <img data-layer class="qb-part qb-option qb-option--d" [src]="petAssets() + '/opt-d.webp'" alt="" />
+
+      <img data-layer class="qb-part qb-ray qb-ray--1" [src]="petAssets() + '/ray-1.webp'" alt="" />
+      <img data-layer class="qb-part qb-ray qb-ray--2" [src]="petAssets() + '/ray-2.webp'" alt="" />
+      <img data-layer class="qb-part qb-ray qb-ray--3" [src]="petAssets() + '/ray-3.webp'" alt="" />
+    </div>
+  </div>
+</div>

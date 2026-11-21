@@ -1,0 +1,3 @@
+@use "../listing-card";
+:host {display:block;min-width:0;}
+.hostel-initials {position:relative;display:flex;align-items:center;justify-content:center;width:81px;height:87px;flex:none;img {position:absolute;inset:0;width:100%;height:100%;}span {position:relative;font:700 28px Nunito,sans-serif;}}

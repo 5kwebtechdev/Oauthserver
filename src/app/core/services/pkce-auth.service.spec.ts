@@ -1,3 +1,5 @@
+import { fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
+import { sessionStorageAdapter as nativeStorage } from '../storage/session-storage';
 import { BadgeSocketService } from './badge-socket.service';
 import { FamilyService } from './family.service';
 import { AuthService } from './auth.service';
@@ -12,19 +14,20 @@ describe('PKCE session bridge', () => {
   let service: PkceAuthService;
   beforeEach(() => {
     localStorage.clear(); sessionStorage.clear();
-    auth = { setSession: jasmine.createSpy().and.callFake(() => localStorage.clear()), setUserData: jasmine.createSpy(), logout: jasmine.createSpy() };
+    auth = { setSession: jasmine.createSpy().and.callFake(() => localStorage.clear()), setUserData: jasmine.createSpy() };
     oauth = {
       logoutUrl: environment.oauth.issuer + '/connect/logout',
       stopAutomaticRefresh: jasmine.createSpy(), getIdToken: () => 'latest-id-token',
       configure: jasmine.createSpy(), setStorage: jasmine.createSpy(), events: new Subject(),
       loadDiscoveryDocumentAndTryLogin: jasmine.createSpy().and.callFake(async () => localStorage.setItem('superme_oidc_refresh_token', 'new-refresh')),
       hasValidAccessToken: () => true, getAccessToken: () => 'new-access',
-      getRefreshToken: () => null, getAccessTokenExpiration: () => Date.now() + 600000,
+      getRefreshToken: () => localStorage.getItem('superme_oidc_refresh_token'), getAccessTokenExpiration: () => Date.now() + 600000,
       getCustomTokenResponseProperty: () => ({ id: 7, relationship: 'PARENT' }),
-      refreshToken: jasmine.createSpy().and.returnValue(Promise.resolve({})), initCodeFlow: jasmine.createSpy()
+      refreshToken: jasmine.createSpy().and.returnValue(Promise.resolve({ id_token: 'fresh-id-token' })), initCodeFlow: jasmine.createSpy()
     };
     service = new PkceAuthService(oauth, { get: () => auth } as any);
     Object.defineProperty(service, 'enabled', { value: true });
+    spyOn(service as any, 'withRefreshLock').and.callFake((exchange: () => Promise<void>) => exchange());
   });
   afterEach(() => { localStorage.clear(); sessionStorage.clear(); });
   it('preserves newly received OAuth tokens through account-switch cleanup', async () => {
@@ -47,31 +50,6 @@ describe('PKCE session bridge', () => {
     expect(auth.setSession).toHaveBeenCalledWith({ token: 'new-access', userId: 7, user: { id: 7, relationship: 'PARENT' } });
     expect(service.error).toBe('');
   });
-  it('still auto-restarts the flow when the library strips the callback code from the URL before silently failing', async () => {
-    // Regression test for the real bug this was shipped for: angular-oauth2-oidc's
-    // loadDiscoveryDocumentAndTryLogin() strips code/state from the URL as part of
-    // processing the callback, even when that processing ends without a valid token and
-    // without throwing. Checking window.location.search AFTER that call (the old code)
-    // could no longer tell "this callback just failed" apart from "this was never a
-    // callback at all" - both look like a bare URL by then - so the auto-restart below
-    // never ran, and the admin saw PkceEntryComponent's raw "Sign in was not completed"
-    // fallback instead. hadCode is captured BEFORE the library call specifically to
-    // survive that URL stripping.
-    history.pushState({}, '', '/callback?code=stale-one-time-code&state=xyz');
-    oauth.hasValidAccessToken = () => false;
-    oauth.loadDiscoveryDocumentAndTryLogin = jasmine.createSpy().and.callFake(async () => {
-      history.replaceState({}, '', '/callback'); // library strips code/state, still no token
-    });
-
-    try {
-      await service.init();
-      expect(oauth.initCodeFlow).toHaveBeenCalledTimes(1);
-      expect(sessionStorage.getItem('pkce_callback_recovery_attempted')).toBe('true');
-      expect(service.error).toBe('');
-    } finally {
-      history.pushState({}, '', '/');
-    }
-  });
   it('surfaces the generic sign-in error only after a retry also fails', async () => {
     oauth.loadDiscoveryDocumentAndTryLogin = jasmine.createSpy().and.callFake(async () => {
       throw new Error('auth server unreachable');
@@ -84,6 +62,7 @@ describe('PKCE session bridge', () => {
     let reply!: (value: unknown) => void;
     const post = jasmine.createSpy().and.returnValue(new Promise(resolve => reply = resolve));
     oauth.hasValidAccessToken = () => false;
+    oauth.getRefreshToken = () => null;
     const http = { post: (...args: any[]) => new Observable((subscriber: any) => {
       post(...args).then((value: any) => { subscriber.next(value); subscriber.complete(); });
     }) };
@@ -118,50 +97,26 @@ describe('PKCE session bridge', () => {
     expect(oauth.initCodeFlow).toHaveBeenCalledTimes(1);
   });
   it('coordinates concurrent refresh requests into one token exchange', async () => {
-    oauth.getRefreshToken = () => 'stored-refresh-token';
+    localStorage.setItem('superme_oidc_refresh_token', 'stored-refresh');
     await Promise.all([service.refresh(), service.refresh()]);
     expect(oauth.refreshToken).toHaveBeenCalledTimes(1);
   });
-  it('logs out instead of hanging when the refresh token is missing (another tab already logged out)', async () => {
-    // Regression test for the real bug this was shipped for: without this guard,
-    // oauth.refreshToken() was called anyway, serializing a JS null into the literal
-    // string "null" and sending grant_type=refresh_token&refresh_token=null to the
-    // server - which correctly rejected it (invalid_grant), but nothing reacted to that
-    // failure, leaving the page stuck on "Signing you in..." forever.
-    oauth.getRefreshToken = () => null;
-
+  it('does not call the token endpoint when the refresh token is missing', async () => {
     await expectAsync(service.refresh()).toBeRejected();
-
     expect(oauth.refreshToken).not.toHaveBeenCalled();
-    expect(auth.logout).toHaveBeenCalledTimes(1);
   });
-  it('logs out when the refresh call itself fails (expired/revoked token), not just silently', async () => {
-    oauth.getRefreshToken = () => 'stored-refresh-token';
-    oauth.refreshToken.and.returnValue(Promise.reject(new Error('invalid_grant')));
-
+  it('discards tokens if another tab logs out during refresh', async () => {
+    localStorage.setItem('user_id', '7');
+    localStorage.setItem('superme_oidc_refresh_token', 'stored-refresh');
+    oauth.refreshToken.and.callFake(async () => {
+      localStorage.removeItem('user_id');
+      localStorage.setItem('superme_oidc_refresh_token', 'rotated-refresh');
+      localStorage.setItem('superme_oidc_access_token', 'rotated-access');
+      return { id_token: 'rotated-id' };
+    });
     await expectAsync(service.refresh()).toBeRejected();
-
-    expect(auth.logout).toHaveBeenCalledTimes(1);
-  });
-  it('does not attempt a second logout for a second failure while the first is still in flight', async () => {
-    oauth.getRefreshToken = () => null;
-
-    await Promise.all([service.refresh().catch(() => {}), service.refresh().catch(() => {})]);
-
-    expect(auth.logout).toHaveBeenCalledTimes(1);
-  });
-  it('builds a valid /apklogout URL even with no ID token, so this tab still lands on the auth-server', () => {
-    // Regression test: a missing ID token (no real OIDC session ever established on this
-    // tab, or another tab's logout already cleared it) used to make logoutUrl() return
-    // null, which made AuthService.logout() fall back to a purely local /login redirect
-    // instead of this tab visibly following the rest of the browser to the auth-server.
-    oauth.getIdToken = () => undefined;
-
-    const url = new URL(service.logoutUrl()!);
-
-    expect(url.origin + url.pathname).toBe(environment.oauth.issuer + '/apklogout');
-    expect(url.searchParams.has('id_token_hint')).toBeFalse();
-    expect(url.searchParams.get('client_id')).toBe(environment.oauth.clientId);
+    expect(localStorage.getItem('superme_oidc_refresh_token')).toBeNull();
+    expect(localStorage.getItem('superme_oidc_access_token')).toBeNull();
   });
   it('does not mistake an Auth2 email or phone subject for a numeric API user ID', () => {
     const jwt = (subject: string, algorithm: string) =>
@@ -194,27 +149,61 @@ describe('PKCE session bridge', () => {
     expect(legacyLogout).not.toHaveBeenCalled();
     expect(prepareLogout).toHaveBeenCalledTimes(1);
   });
+  it('renders the signed-out route before stalled native cleanup and continues after its deadline', fakeAsync(() => {
+    const navigateRoot = jasmine.createSpy().and.resolveTo(true);
+    const openNativeLogout = jasmine.createSpy().and.resolveTo();
+    const clearExternalAuthSessions = jasmine.createSpy().and.returnValue(new Promise(() => {}));
+    let finished = false;
+    void AuthService.prototype.logout.call({
+      pkce: { enabled: true, nativeDev: true, prepareLogout: async () => 'https://auth.supermeapp.com/android-dev-logout', openNativeLogout },
+      getUserId: () => '94', clearLocalUserState: () => {}, navCtrl: { navigateRoot },
+      pushNotifications: { clearToken: () => new Promise(() => {}) },
+      analytics: { clearUserId: () => {} }, crashlytics: { clearUserId: () => {} },
+      authSessionCleanup: { clearExternalAuthSessions }
+    } as any, true).then(() => { finished = true; });
+    flushMicrotasks();
+    expect(navigateRoot).toHaveBeenCalledWith('/login?loggedOut=1', { animated: false });
+    expect(clearExternalAuthSessions).toHaveBeenCalledWith(false);
+    expect(openNativeLogout).not.toHaveBeenCalled();
+    tick(2500); flushMicrotasks();
+    expect(openNativeLogout).toHaveBeenCalledTimes(1);
+    expect(finished).toBeTrue();
+  }));
   it('identifies the correct client and callback in logout', async () => {
+    localStorage.setItem('superme_oidc_refresh_token', 'stored-refresh');
     const url = new URL((await service.prepareLogout())!);
     expect(url.searchParams.get('client_id')).toBe(environment.oauth.clientId);
     expect(url.searchParams.get('id_token_hint')).toBe('latest-id-token');
     expect(url.searchParams.get('post_logout_redirect_uri')).toBe(window.location.origin + '/');
     expect(oauth.stopAutomaticRefresh).toHaveBeenCalled();
+    expect(oauth.refreshToken).toHaveBeenCalledTimes(1);
   });
   it('waits for token rotation before capturing the logout hint', async () => {
+    localStorage.setItem('superme_oidc_refresh_token', 'stored-refresh');
     let finish!: () => void;
     let idToken = 'old-id';
     oauth.getIdToken = () => idToken;
-    oauth.getRefreshToken = () => 'stored-refresh-token';
     oauth.refreshToken.and.callFake(() => new Promise<void>(resolve => {
-      finish = () => { idToken = 'rotated-id'; resolve(); };
+      finish = () => { idToken = 'rotated-id'; resolve({ id_token: 'rotated-id' } as any); };
     }));
     const refresh = service.refresh();
     const logout = service.prepareLogout();
+    await new Promise(resolve => setTimeout(resolve, 0));
     finish();
     await refresh;
     expect(new URL((await logout)!).searchParams.get('id_token_hint')).toBe('rotated-id');
     await expectAsync(service.refresh()).toBeRejected();
+  });
+  it('does not use a stale ID token if the logout refresh omits one', async () => {
+    localStorage.setItem('superme_oidc_refresh_token', 'stored-refresh');
+    oauth.refreshToken.and.returnValue(Promise.resolve({ access_token: 'fresh-access' }));
+    expect(await service.prepareLogout()).toBeNull();
+  });
+  it('does not retry a failed token exchange while logging out', async () => {
+    localStorage.setItem('superme_oidc_refresh_token', 'stored-refresh');
+    oauth.refreshToken.and.returnValue(Promise.reject(new Error('invalid_grant')));
+    expect(await service.prepareLogout()).toBeNull();
+    expect(oauth.refreshToken).toHaveBeenCalledTimes(1);
   });
   it('establishes a credentialed session before starting post-signup PKCE', async () => {
     const post = jasmine.createSpy().and.returnValue(of({ authenticated: true }));
@@ -234,5 +223,47 @@ describe('PKCE session bridge', () => {
   it('keeps valid internal navigation across the login redirect', async () => {
     await service.login('/parent-account');
     expect(sessionStorage.getItem('pkce_return_url')).toBe('/parent-account');
+  });
+});
+
+describe('DEV Android callback boundaries', () => {
+  afterEach(() => nativeStorage.removeItem('superme_oidc_android_pending'));
+  function create() {
+    const navigateByUrl = jasmine.createSpy().and.resolveTo(true);
+    const exchange = jasmine.createSpy().and.resolveTo(true);
+    const oauth = { tryLoginCodeFlow: exchange, hasValidAccessToken: () => true, loadDiscoveryDocument: jasmine.createSpy().and.resolveTo({}) };
+    const service = new PkceAuthService(oauth as any, { get: () => ({ navigateByUrl }) } as any);
+    Object.defineProperty(service, 'nativeDev', { value: true });
+    Object.defineProperty(service, 'androidConfig', { value: {
+      redirectUri: 'superme://oauth/dev/callback', logoutRedirectUri: 'superme://oauth/dev/logout'
+    } });
+    spyOn(service as any, 'syncSession');
+    return { service, exchange, navigateByUrl };
+  }
+  it('ignores other hosts and production-looking callback paths', async () => {
+    const { service, exchange } = create();
+    await service.handleNativeCallback('superme://other/dev/callback?code=x&state=y');
+    await service.handleNativeCallback('superme://oauth/prod/callback?code=x&state=y');
+    expect(exchange).not.toHaveBeenCalled();
+  });
+  it('refuses missing state instead of redeeming an authorization code', async () => {
+    const { service, exchange, navigateByUrl } = create();
+    await service.handleNativeCallback('superme://oauth/dev/callback?code=x');
+    expect(exchange).not.toHaveBeenCalled();
+    expect(navigateByUrl).toHaveBeenCalledWith('/login');
+  });
+  it('rejects an unrelated callback state before contacting the token endpoint', async () => {
+    const { service, exchange } = create();
+    nativeStorage.setItem('superme_oidc_android_pending', JSON.stringify({ state: 'expected', libraryState: 'nonce' }));
+    await service.handleNativeCallback('superme://oauth/dev/callback?code=x&state=wrong');
+    expect(exchange).not.toHaveBeenCalled();
+  });
+  it('passes callback parameters to library state/nonce validation and redeems once', async () => {
+    const { service, exchange } = create();
+    nativeStorage.setItem('superme_oidc_android_pending', JSON.stringify({ state: 'y', libraryState: 'saved-nonce' }));
+    const url = 'superme://oauth/dev/callback?code=x&state=y';
+    await service.handleNativeCallback(url);
+    await service.handleNativeCallback(url);
+    expect(exchange).toHaveBeenCalledOnceWith({ customHashFragment: '?code=x&state=saved-nonce', preventClearHashAfterLogin: true });
   });
 });

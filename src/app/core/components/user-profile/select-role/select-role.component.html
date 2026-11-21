@@ -1,0 +1,541 @@
+<ion-content>
+	<div class="step step-1" *ngIf="currentStep === 1 && !showRoleOverview">
+		<div class="role-flow-shell">
+			<superme-navigator [heading]="userAccountType === 'self' && shouldShowChildRole() && !shouldShowParentRole() ? 'Choose the New Role' : 'Who’s Using the App?'" backIcon="arrowSvg" (back)="backFromRoleSelection()"></superme-navigator>
+			<p class="role-intro" *ngIf="userAccountType !== 'self' || shouldShowParentRole()">Choose your journey. You can always connect accounts later.</p>
+			<div class="role-options">
+			<div class="role-selector container p-0" *ngIf="roleOption('self') && !roleOption('self')?.current" data-role="self" role="button" [attr.tabindex]="canSelectRole('self') ? 0 : -1"
+				(click)="selectRole('self')" (keydown)="onKeySelect($event, 'self')"
+				[class.active]="selectedRole === 'self'" [class.ineligible]="!canSelectRole('self')" [attr.aria-disabled]="!canSelectRole('self')" [attr.aria-pressed]="selectedRole === 'self'">
+				<div class="row">
+					<div class="col-6">
+						<h2 style="padding-left:10px;">Self</h2>
+						<h4 style="padding-left:10px;">Continue your personal journey</h4>
+					</div>
+					<div class="col-6"></div>
+				</div>
+				<p class="role-reason" *ngIf="roleReason('self')">{{ roleReason('self') }}</p>
+			</div>
+			<div class="role-selector container p-0" *ngIf="shouldShowChildRole()" data-role="child" role="button" [attr.tabindex]="canSelectRole('child') ? 0 : -1"
+				(click)="chooseRoleCard('child')" (keydown)="onKeySelect($event, 'child')"
+				[class.active]="selectedRole === 'child'" [class.ineligible]="!canSelectRole('child')" [attr.aria-disabled]="!canSelectRole('child')" [attr.aria-pressed]="selectedRole === 'child'">
+
+        <div class="role-parent-card">
+          <div class="role-parent-card__copy">
+            <h2>Child</h2>
+            <p>Show Off your Wins!</p>
+            <p>Sync your Account with Parents</p>
+            <p>Safe Place for Kids to Learn &amp; Grow</p>
+          </div>
+          <img src="assets/figma/role-switch/child-role.png" alt="">
+        </div>
+				<p class="role-reason" *ngIf="roleReason('child')">{{ roleReason('child') }}</p>
+			</div>
+
+			<div class="role-selector container p-0" *ngIf="shouldShowParentRole()" data-role="parent" role="button" [attr.tabindex]="canSelectRole('parent') ? 0 : -1"
+				(click)="chooseRoleCard('parent')" (keydown)="onKeySelect($event, 'parent')"
+				[class.active]="selectedRole === 'parent'" [class.ineligible]="!canSelectRole('parent')" [attr.aria-disabled]="!canSelectRole('parent')" [attr.aria-pressed]="selectedRole === 'parent'">
+
+        <div class="role-parent-card">
+          <div class="role-parent-card__copy">
+            <h2>Parent</h2>
+            <p>Guide, Reward, Celebrate</p>
+            <p>Set your Child up for Success</p>
+            <p>Build Confidence &amp; Accountability</p>
+          </div>
+          <img src="assets/figma/role-switch/parent-role.png" alt="">
+        </div>
+				<p class="role-reason" *ngIf="roleReason('parent')">{{ roleReason('parent') }}</p>
+			</div>
+			<p class="role-reason" *ngIf="roleEligibility?.ageSwitchConfirmationRequired">Please confirm your age to switch from Child to Self.</p>
+
+			<div *ngIf="!roleOverviewAccepted">
+				<superme-button type="green" size="full" text="Save & Continue" [disabled]="!selectedRole || eligibilityLoading || isSubmitting" (click)="save()"></superme-button>
+			</div>
+			</div>
+		</div>
+	</div>
+
+  <div class="step step-2" *ngIf="showRoleOverview || currentStep === 2">
+    <div class="instruction-flow-shell">
+      <header class="instruction-header">
+        <button type="button" aria-label="Go back" (click)="showRoleOverview ? goBack() : prevStep()">
+          <img src="assets/figma/role-switch/instruction-back.svg" alt="">
+        </button>
+        <h1>Instructions</h1>
+      </header>
+
+      <section class="switch-instructions">
+        <article *ngFor="let group of switchInstructions" [class.switch-instructions__parent]="group.parent">
+          <h2>{{ group.heading }}</h2>
+          <div class="switch-instructions__row" *ngFor="let item of group.items">
+            <span class="switch-instructions__icon"><img [src]="'assets/figma/role-switch/' + item.icon + '.svg'" alt=""></span>
+            <div>
+              <h3>{{ item.title }}</h3>
+              <p>{{ item.before }}<strong>{{ item.emphasis }}</strong>{{ item.after }}</p>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <ion-checkbox *ngIf="!showRoleOverview" class="role-switch-consent"
+        [checked]="instructionConsentChecked"
+        (ionChange)="instructionConsentChecked = $any($event).detail.checked === true">
+        I have read and understood that switching roles affects account linkage and family access as described above.
+      </ion-checkbox>
+
+      <button type="button" class="instruction-next" [disabled]="!showRoleOverview && !instructionConsentChecked"
+        (click)="advanceRoleInstructions()">Next</button>
+    </div>
+  </div>
+
+  <div class="step" *ngIf="currentStep === 3">
+    <ng-container *ngIf="familyCreated; else familySetup">
+<main class="family-success-section" *ngIf="familyCreated">
+        <header class="family-success-hero">
+          <img class="family-success-confetti family-success-confetti--top"
+            src="assets/figma/family-success/confetti-top.svg" alt="" aria-hidden="true">
+
+          <div class="family-success-check" aria-hidden="true">
+            <img src="assets/figma/family-success/check.svg" alt="">
+          </div>
+
+          <div class="family-success-title">
+            <h1>Family Created <strong>Successfully !</strong></h1>
+            <p>You're all set! Share your code with your child and co‑parent so they can join the family.</p>
+          </div>
+        </header>
+
+        <div class="family-success-body">
+          <img class="family-success-confetti family-success-confetti--side"
+            src="assets/figma/family-success/confetti-side.svg" alt="" aria-hidden="true">
+
+          <section class="family-success-card" aria-label="Share your family code">
+            <div class="family-success-code-block">
+              <div class="family-success-card-heading">
+                <span class="family-success-card-heading__icon" aria-hidden="true">
+                  <img src="assets/figma/family-success/groups.svg" alt="">
+                </span>
+                <div>
+                  <h2>Share this Family Code</h2>
+                  <p>Give this code to your child and co‑parent so they can join your family</p>
+                </div>
+              </div>
+
+              <button type="button" class="family-success-code" (click)="copyFamilyCode()"
+                aria-label="Copy family code">
+                <span>{{ familyCode }}</span>
+                <img src="assets/figma/family-success/copy.svg" alt="" aria-hidden="true">
+              </button>
+            </div>
+
+            <div class="family-success-privacy">
+              <span aria-hidden="true">
+                <img src="assets/figma/family-success/shield.svg" alt="">
+              </span>
+              <p>This code is unique to your family; keep it private and share it only with trusted members.</p>
+            </div>
+
+            <div class="family-success-divider" aria-hidden="true">
+              <span></span>
+              <strong>OR</strong>
+              <span></span>
+            </div>
+
+            <div class="family-success-qr">
+              <div #familyQr class="family-success-qr__code">
+                <qrcode [qrdata]="qrCodeData" [width]="104" [errorCorrectionLevel]="'M'"
+                  [elementType]="'canvas'" [margin]="0" cssClass="family-success-qr-canvas">
+                </qrcode>
+              </div>
+              <div>
+                <h3>Scan this QR code.</h3>
+                <p>Ask your child or co‑parent to scan this code and join instantly.</p>
+              </div>
+            </div>
+
+            <div class="family-success-share-card">
+              <div class="family-success-share-copy">
+                <span aria-hidden="true">
+                  <img src="assets/figma/family-success/share.svg" alt="">
+                </span>
+                <p>Share the family code and QR code with your child and co‑parent.</p>
+              </div>
+              <button type="button" (click)="shareQRCode(familyQr)">Share</button>
+            </div>
+          </section>
+
+          <button type="button" class="family-success-done" [disabled]="isSubmitting"
+            [attr.aria-busy]="isSubmitting" (click)="onFamilySuccessDone()">
+            <ion-spinner *ngIf="isSubmitting" name="crescent"></ion-spinner>
+            <span>{{ isSubmitting ? 'Please wait...' : 'Done' }}</span>
+          </button>
+
+          <profile-facts [faqs]="familySuccessFaqs"></profile-facts>
+        </div>
+      </main>
+    </ng-container>
+    <ng-template #familySetup>
+      <ng-container *ngIf="selectedRole === 'parent' && !familyModeChosen; else familyForm">
+<main class="parent-family-choice">
+        <header class="parent-family-choice__hero">
+          <superme-navigator heading="" backIcon="arrowSvg" (back)="prevStep()"></superme-navigator>
+
+          <div class="parent-family-choice__hero-row">
+            <div class="parent-family-choice__hero-copy">
+              <h1><span>Set up your</span><strong>Family Space</strong></h1>
+              <p>Choose the option that matches your role to get started</p>
+              <div class="parent-family-choice__progress-copy">
+                <span>Step 5 of 5</span>
+                <div class="parent-family-choice__progress" role="progressbar"
+                  aria-label="Registration progress" aria-valuemin="1" aria-valuemax="6" aria-valuenow="5">
+                  <span></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="parent-family-choice__hero-image" aria-hidden="true">
+              <img src="assets/Images-Transparent/family-code-header-figma.webp" alt="">
+              <span></span>
+            </div>
+          </div>
+        </header>
+
+        <section class="parent-family-choice__options" aria-label="Choose how to set up your family">
+          <button type="button" class="parent-family-option parent-family-option--create"
+            (click)="chooseSwitchFamilyMode('create')">
+            <span class="parent-family-option__copy">
+              <span class="parent-family-option__badge">Primary Parent</span>
+              <strong class="parent-family-option__title">Create Family</strong>
+              <span class="parent-family-option__description">
+                Start a new family space. You become the family creator and get a unique code to connect your co-parent and children.
+              </span>
+            </span>
+            <span class="parent-family-option__image" aria-hidden="true">
+              <img src="assets/Images-Transparent/family-space-create-figma.webp" alt="">
+            </span>
+          </button>
+
+          <button type="button" class="parent-family-option parent-family-option--join"
+            (click)="chooseSwitchFamilyMode('join')">
+            <span class="parent-family-option__copy">
+              <span class="parent-family-option__badge">Co Parent</span>
+              <strong class="parent-family-option__title">Join Family</strong>
+              <span class="parent-family-option__description">
+                A family space already exists. Enter the code given by your family creator to link with your family.
+              </span>
+            </span>
+            <span class="parent-family-option__image" aria-hidden="true">
+              <img src="assets/Images-Transparent/family-space-join-figma.webp" alt="">
+            </span>
+          </button>
+        </section>
+      </main>
+      </ng-container>
+      <ng-template #familyForm>
+        <ng-container *ngIf="selectedRole === 'child'; else parentForm">
+<main class="family-code-screen">
+      <header class="family-code-hero">
+        <button type="button" class="family-code-back" aria-label="Go back" (click)="backFromFamilyForm()">
+          <img src="assets/Images-Transparent/family-code-back-figma.svg" alt="" aria-hidden="true">
+        </button>
+
+        <div class="family-code-hero__row">
+          <div class="family-code-hero__copy">
+            <h1><span>Link with</span><span>Your <strong>Family</strong></span></h1>
+            <p>Enter the family code shared by your parent or scan the QR code to join your family.</p>
+            <div class="family-code-progress-copy">
+              <span>Step 6 of 6</span>
+              <div class="family-code-progress" role="progressbar" aria-label="Registration progress"
+                aria-valuemin="1" aria-valuemax="6" aria-valuenow="6"></div>
+            </div>
+          </div>
+          <div class="family-code-hero__image" aria-hidden="true">
+            <img src="assets/Images-Transparent/family-code-header-figma.webp" alt="">
+            <span></span>
+          </div>
+        </div>
+      </header>
+
+      <section class="family-code-how" aria-labelledby="family-code-how-title">
+        <div class="family-code-how__heading">
+          <img src="assets/Images-Transparent/family-code-how-left-figma.svg" alt="" aria-hidden="true">
+          <h2 id="family-code-how-title">How it works</h2>
+          <img src="assets/Images-Transparent/family-code-how-right-figma.svg" alt="" aria-hidden="true">
+        </div>
+
+        <div class="family-code-steps">
+          <div class="family-code-step">
+            <span>1</span>
+            <img class="family-code-step__art" src="assets/Images-Transparent/family-code-step-1-figma.webp" alt="">
+            <p>Ask your parent to create their account.</p>
+          </div>
+          <img class="family-code-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg" alt="" aria-hidden="true">
+          <div class="family-code-step">
+            <span>2</span>
+            <img class="family-code-step__art" src="assets/Images-Transparent/family-code-step-2-figma.webp" alt="">
+            <p>After sign up, your parent creates a family in the app.</p>
+          </div>
+          <img class="family-code-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg" alt="" aria-hidden="true">
+          <div class="family-code-step">
+            <span>3</span>
+            <img class="family-code-step__art" src="assets/Images-Transparent/family-code-step-3-figma.webp" alt="">
+            <p>Your parent will see a family code and a QR code.</p>
+          </div>
+          <img class="family-code-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg" alt="" aria-hidden="true">
+          <div class="family-code-step">
+            <span>4</span>
+            <img class="family-code-step__art" src="assets/Images-Transparent/family-code-step-4-figma.webp" alt="">
+            <p>Enter family code or scan the QR code in the next screen.</p>
+          </div>
+          <img class="family-code-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg" alt="" aria-hidden="true">
+          <div class="family-code-step">
+            <span>5</span>
+            <img class="family-code-step__art" src="assets/Images-Transparent/family-code-step-5-figma.webp" alt="">
+            <p>Once linked you are good to proceed!</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="family-code-entry">
+        <div class="family-code-tabs" role="tablist" aria-label="Choose how to link">
+          <button type="button" class="family-code-tab" [class.family-code-tab--active]="!showQrEntry" (click)="showQrEntry = false" role="tab" [attr.aria-selected]="!showQrEntry">
+            <img src="assets/Images-Transparent/family-code-tab-entry-figma.svg" alt="" aria-hidden="true">
+            Enter Family Code
+          </button>
+          <button type="button" class="family-code-tab" role="tab" [attr.aria-selected]="showQrEntry" [class.family-code-tab--active]="showQrEntry" (click)="showQrEntry = true">
+            <img src="assets/Images-Transparent/family-code-tab-qr-figma.svg" alt="" aria-hidden="true">
+            Scan QR Code
+          </button>
+        </div>
+
+        <ng-container *ngIf="showQrEntry; else manualCode"><ng-container *ngTemplateOutlet="qrEntry"></ng-container></ng-container>
+        <ng-template #manualCode><form (submit)="$event.preventDefault(); save()" class="family-code-form">
+          <div class="family-code-input-shell">
+            <input type="text" [value]="familyInput" (input)="onFamilyInputChange($any($event.target).value); $any($event.target).value = familyInput"
+              placeholder="Enter the 8-character code shared by your parent"
+              maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false"
+              aria-label="Family code">
+          </div>
+
+          <p role="status" *ngIf="isCheckingFamilyCode">Checking code...</p>
+           <p role="alert" *ngIf="familyCodeValidationStatus === 'invalid'">Family code is invalid.</p>
+
+          <button type="submit" class="family-code-link-button"
+            [disabled]="!isFormValid() || isSubmitting"
+            [attr.aria-busy]="isSubmitting">
+            {{ isSubmitting ? 'Linking...' : 'Link to Family' }}
+          </button>
+        </form></ng-template>
+      </section>
+
+      <section class="family-code-action-card">
+        <div class="family-code-action-card__icon">
+          <img src="assets/Images-Transparent/family-code-share-figma.svg" alt="" aria-hidden="true">
+        </div>
+        <div class="family-code-action-card__copy">
+          <h3>Share with your parent</h3>
+          <p>Send a message to your parent to ask for the family code</p>
+        </div>
+        <button type="button" (click)="shareFamilyCodeRequest()">Share</button>
+      </section>
+
+      <section class="family-code-action-card family-code-action-card--skip">
+        <div class="family-code-action-card__copy">
+          <h3>Don’t have a code yet?</h3>
+          <p>Skip for now and link later from profile</p>
+        </div>
+        <button type="button" (click)="skipForNow()">Skip for now</button>
+      </section>
+
+      <profile-facts [faqs]="profileChildFaqs"></profile-facts>
+      </main>
+        </ng-container>
+        <ng-template #parentForm>
+<main class="create-family-screen" *ngIf="selectedFamilyAction === 'create'">
+        <header class="create-family-hero">
+          <superme-navigator heading="" backIcon="arrowSvg" (back)="backFromFamilyForm()"></superme-navigator>
+
+          <div class="create-family-hero__row">
+            <div class="create-family-hero__copy">
+              <h1><span>Set your</span><strong>Family Name</strong></h1>
+              <p>Create your family space to build healthy habits and grow together</p>
+            </div>
+
+            <div class="create-family-hero__image" aria-hidden="true">
+              <img src="assets/Images-Transparent/family-code-header-figma.webp" alt="">
+              <span></span>
+            </div>
+          </div>
+        </header>
+
+        <section class="create-family-how" aria-labelledby="create-family-how-title">
+          <div class="create-family-how__heading">
+            <img src="assets/Images-Transparent/family-code-how-left-figma.svg" alt="" aria-hidden="true">
+            <h2 id="create-family-how-title">How it works</h2>
+            <img src="assets/Images-Transparent/family-code-how-right-figma.svg" alt="" aria-hidden="true">
+          </div>
+
+          <div class="create-family-steps">
+            <div class="create-family-step">
+              <span>1</span>
+              <img src="assets/Images-Transparent/create-family-step-1-figma.webp" alt="">
+              <p>Name your family.</p>
+            </div>
+            <img class="create-family-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg"
+              alt="" aria-hidden="true">
+            <div class="create-family-step">
+              <span>2</span>
+              <img src="assets/Images-Transparent/create-family-step-2-figma.webp" alt="">
+              <p>Get your unique family code.</p>
+            </div>
+            <img class="create-family-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg"
+              alt="" aria-hidden="true">
+            <div class="create-family-step">
+              <span>3</span>
+              <img src="assets/Images-Transparent/create-family-step-3-figma.webp" alt="">
+              <p>Share the code with your child.</p>
+            </div>
+            <img class="create-family-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg"
+              alt="" aria-hidden="true">
+            <div class="create-family-step">
+              <span>4</span>
+              <img src="assets/Images-Transparent/create-family-step-4-figma.webp" alt="">
+              <p>They join and you're connected!</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="create-family-entry">
+          <form (submit)="$event.preventDefault(); save()" class="create-family-form">
+            <div class="create-family-form__heading">
+              <span class="create-family-form__icon" aria-hidden="true">
+                <img src="assets/Images-Transparent/create-family-groups-figma.svg" alt="">
+              </span>
+              <span class="create-family-form__copy">
+                <strong>Set your family name</strong>
+                <span>This will be your family space</span>
+              </span>
+            </div>
+
+            <div class="create-family-input">
+              <input type="text" [value]="familyInput" (input)="onFamilyInputChange($any($event.target).value); $any($event.target).value = familyInput" placeholder="eg. Sharma Family"
+                maxlength="30" autocomplete="organization" aria-label="Family name">
+            </div>
+
+            <button type="submit" class="create-family-submit"
+              [disabled]="!isFormValid() || isSubmitting" [attr.aria-busy]="isSubmitting">
+              {{ isSubmitting ? 'Creating...' : 'Create Family' }}
+            </button>
+          </form>
+        </section>
+
+        <profile-facts [faqs]="profileParentFaqs"></profile-facts>
+      </main>
+
+      <main class="create-family-screen parent-join-family-screen" *ngIf="selectedFamilyAction === 'join' && selectedRole === 'parent'">
+        <header class="create-family-hero parent-join-family-hero">
+          <superme-navigator heading="" backIcon="arrowSvg" (back)="backFromFamilyForm()"></superme-navigator>
+
+          <div class="create-family-hero__row">
+            <div class="create-family-hero__copy parent-join-family-hero__copy">
+              <h1><span>Join Your</span><strong>Family Space</strong></h1>
+              <p>Enter the family code given by your family creator to connect and track progress together.</p>
+            </div>
+
+            <div class="create-family-hero__image" aria-hidden="true">
+              <img src="assets/Images-Transparent/family-code-header-figma.webp" alt="">
+              <span></span>
+            </div>
+          </div>
+        </header>
+
+        <section class="create-family-how" aria-labelledby="parent-join-family-how-title">
+          <div class="create-family-how__heading">
+            <img src="assets/Images-Transparent/family-code-how-left-figma.svg" alt="" aria-hidden="true">
+            <h2 id="parent-join-family-how-title">How it works</h2>
+            <img src="assets/Images-Transparent/family-code-how-right-figma.svg" alt="" aria-hidden="true">
+          </div>
+
+          <div class="parent-join-family-steps">
+            <div class="create-family-step">
+              <span>1</span>
+              <img src="assets/Images-Transparent/create-family-step-3-figma.webp" alt="">
+              <p>Get code from your family creator.</p>
+            </div>
+            <img class="create-family-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg"
+              alt="" aria-hidden="true">
+            <div class="create-family-step">
+              <span>2</span>
+              <img src="assets/Images-Transparent/join-family-parent-step-2-figma.webp" alt="">
+              <p>Enter the family code or scan the QR code</p>
+            </div>
+            <img class="create-family-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg"
+              alt="" aria-hidden="true">
+            <div class="create-family-step">
+              <span>3</span>
+              <img src="assets/Images-Transparent/create-family-step-4-figma.webp" alt="">
+              <p>You're now connected!</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="parent-join-family-entry">
+          <div class="parent-join-family-tabs" role="tablist" aria-label="Choose how to join your family">
+            <button type="button" class="parent-join-family-tab" [class.parent-join-family-tab--active]="!showQrEntry" (click)="showQrEntry = false"
+              role="tab" [attr.aria-selected]="!showQrEntry">
+              <img src="assets/Images-Transparent/family-code-tab-entry-figma.svg" alt="" aria-hidden="true">
+              Enter Family Code
+            </button>
+            <button type="button" class="parent-join-family-tab" role="tab" [attr.aria-selected]="showQrEntry" [class.parent-join-family-tab--active]="showQrEntry"
+              (click)="showQrEntry = true">
+              <img src="assets/Images-Transparent/family-code-tab-qr-figma.svg" alt="" aria-hidden="true">
+              Scan QR Code
+            </button>
+          </div>
+
+          <ng-container *ngIf="showQrEntry; else manualCode"><ng-container *ngTemplateOutlet="qrEntry"></ng-container></ng-container>
+        <ng-template #manualCode><form (submit)="$event.preventDefault(); save()" class="parent-join-family-form">
+            <div class="create-family-input parent-join-family-input">
+              <input type="text" [value]="familyInput" (input)="onFamilyInputChange($any($event.target).value); $any($event.target).value = familyInput"
+                placeholder="Enter the 8-character code shared by your creator"
+                maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false"
+                aria-label="Family code">
+            </div>
+
+            <p role="status" *ngIf="isCheckingFamilyCode">Checking code...</p>
+           <p role="alert" *ngIf="familyCodeValidationStatus === 'invalid'">Family code is invalid.</p>
+
+            <button type="submit" class="create-family-submit parent-join-family-submit"
+              [disabled]="!isFormValid() || isSubmitting"
+              [attr.aria-busy]="isSubmitting">
+              {{ isSubmitting ? 'Joining...' : 'Join Family' }}
+            </button>
+          </form></ng-template>
+        </section>
+
+        <profile-facts [faqs]="profileParentFaqs"></profile-facts>
+        <section class="family-code-action-card">
+          <div class="family-code-action-card__icon"><img src="assets/Images-Transparent/family-code-share-figma.svg" alt=""></div>
+          <div class="family-code-action-card__copy"><h3>Share with your family creator</h3><p>Send a message to your family creator to ask for the family code</p></div>
+          <button type="button" (click)="shareFamilyCodeRequest()">Share</button>
+        </section>
+      </main>
+
+        </ng-template>
+      </ng-template>
+    </ng-template>
+  </div>
+
+  <ng-template #qrEntry>
+    <div class="role-qr-entry">
+      <button type="button" class="role-qr-camera" aria-label="Open QR scanner" (click)="onScanQr()">
+        <img src="assets/figma/role-switch/scan-frame.svg" alt="">
+      </button>
+      <button type="button" class="role-qr-upload" (click)="gallery.click()">
+        <img src="assets/figma/role-switch/gallery.svg" alt=""> Upload from gallery
+      </button>
+      <input #gallery type="file" accept="image/*" hidden (change)="readFamilyQrImage(gallery)">
+    </div>
+  </ng-template>
+</ion-content>

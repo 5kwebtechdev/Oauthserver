@@ -1,0 +1,47 @@
+// Coin pill (Figma: Home › "Icon 1"): white pill, V1/500main border, 28px coin, ExtraBold count.
+// The pill never changes size or shape. A landing coin only makes the coin glint (brightness).
+:host {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px 2px 4px;
+  border: 1px solid var(--sm-v1-500main);
+  border-radius: 31px;
+  background: var(--sm-v1-neutral100);
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1); /* not in design tokens: shadow (Neutral800 at 10%) */
+}
+
+.coin {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+}
+// Two identical animations so every landing restarts it.
+.hit-a { animation: glint-a 220ms ease-out; }
+.hit-b { animation: glint-b 220ms ease-out; }
+@keyframes glint-a { 30% { filter: brightness(1.45) saturate(1.2); } }
+@keyframes glint-b { 30% { filter: brightness(1.45) saturate(1.2); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hit-a, .hit-b { animation: none; }
+}
+
+.count {
+  min-width: 3ch; // the pill does not change width from 999 to 1000
+  font-family: var(--sm-font-body);
+  font-weight: 800;
+  font-size: var(--sm-font-size-body-sm);
+  line-height: 1.4;
+  color: var(--sm-v1-accentnew600main);
+  font-variant-numeric: tabular-nums;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

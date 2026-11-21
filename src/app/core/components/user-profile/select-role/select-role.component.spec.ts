@@ -46,6 +46,25 @@ describe('RoleSelectComponent', () => {
     sessionStorage.clear();
   });
 
+  it('opens the family setup choice after Self instructions and Parent selection', () => {
+    authService.getUserData.and.returnValue({ relationship: 'SELF', age: 30 });
+    component.ionViewWillEnter();
+    component.advanceRoleInstructions();
+    component.chooseRoleCard('parent');
+
+    expect(component.currentStep).toBe(3);
+    expect(component.familyModeChosen).toBeFalse();
+
+    component.chooseSwitchFamilyMode('join');
+    expect(component.familyModeChosen).toBeTrue();
+    expect(component.selectedFamilyAction).toBe('join');
+
+    component.backFromFamilyForm();
+    expect(component.familyModeChosen).toBeFalse();
+    component.prevStep();
+    expect(component.currentStep).toBe(1);
+  });
+
   it('queues the Child acknowledgment after joining a family', fakeAsync(() => {
     familyService.joinFamilyWithCode.and.returnValue(of({ familyCode: 'FAMILY01' }));
     component.selectedRole = 'child';

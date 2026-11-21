@@ -1,3 +1,4 @@
+import { TutorHeaderComponent as AcademyDesignHeaderComponent } from '../../education-section/academy-design-header/tutor-header.component';
 import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -45,7 +46,7 @@ interface Academy {
 @Component({
   selector: 'academies-list',
   standalone: true,
-  imports: [
+  imports: [AcademyDesignHeaderComponent,
     CommonModule,
     FormsModule,
     IonicModule,
@@ -61,6 +62,7 @@ interface Academy {
   styleUrls: ['./academies-list.component.scss']
 })
 export class AcademiesListComponent implements OnInit, OnDestroy {
+  academyBack(): void { this.router.navigate(['/authed/education']); }
   readonly adScreen: AdScreen = 'EDUHUB';
   readonly academyPlaceholderImage = 'assets/Images-Transparent/Academies.webp';
   academies: Academy[] = [];

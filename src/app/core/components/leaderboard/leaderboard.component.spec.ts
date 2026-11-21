@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { LeaderboardComponent } from './leaderboard.component';
 import { CoinLeaderboardResponse, CoinLeaderboardService, CoinLeaderboardUser } from '../../services/coin-leaderboard.service';
 import { AvatarService } from '../../services/avatar.service';
+import { LeaderboardRankShareService } from '../../services/leaderboard-rank-share.service';
 
 describe('LeaderboardComponent', () => {
   const entry = (userId: number, rank: number | null, displayName: string, coins: number): CoinLeaderboardUser =>
@@ -25,11 +26,120 @@ describe('LeaderboardComponent', () => {
     const getGroups = jasmine.createSpy('getGroups').and.returnValue(of([]));
     const component = new LeaderboardComponent(
       { getLeaderboard, getGroups } as any,
-      { getAvatarAsset: () => null, getFallbackAvatar: () => ({ value: 'assets/avatar/ChildAvatar.webp' }) } as any,
-      { back: () => {} } as any
+      { getLeaderboardAvatar: () => null, getFallbackAvatar: () => ({ value: 'assets/avatar/ChildAvatar.webp' }) } as any,
+      { back: () => {} } as any,
+      { share: jasmine.createSpy('share').and.resolveTo(), copyMessage: jasmine.createSpy('copyMessage').and.resolveTo(true), shareInBrowser: jasmine.createSpy('shareInBrowser').and.resolveTo(true) } as any
     );
     return { component, getLeaderboard, getGroups };
   }
+
+  it('opens one share sheet for repeated taps and releases the busy state', async () => {
+    const { component } = create();
+    component.result = { ...response, currentUser: entry(99, 1, 'Me', 100) };
+    let finish!: () => void;
+    const share = (component as any).rankShare.share as jasmine.Spy;
+    share.and.returnValue(new Promise<void>(resolve => finish = resolve));
+    const pending = component.shareRank();
+    await component.shareRank();
+    expect(share).toHaveBeenCalledTimes(1);
+    expect(component.sharingRank).toBeTrue();
+    finish();
+    await pending;
+    expect(component.sharingRank).toBeFalse();
+  });
+
+  it('does not block download or a new attempt on pending clipboard permission', async () => {
+    const { component } = create();
+    component.result = { ...response, currentUser: entry(99, 4, 'Me', 100) };
+    const service = (component as any).rankShare;
+    const fallback = { file: new File(['png'], 'card.png'), text: 'Real code', canShare: false };
+    service.share.and.resolveTo(fallback);
+    spyOn(HTMLAnchorElement.prototype, 'click');
+    let finishCopy!: (value: boolean) => void;
+    service.copyMessage.and.returnValue(new Promise<boolean>(resolve => finishCopy = resolve));
+    await component.shareRank();
+    expect(component.sharingRank).toBeFalse();
+    expect(component.browserShare).toBe(fallback);
+    let finishShare!: () => void;
+    service.share.and.returnValue(new Promise<void>(resolve => finishShare = resolve));
+    const secondAttempt = component.shareRank();
+    finishCopy(true);
+    await Promise.resolve();
+    expect(component.sharingRank).toBeTrue();
+    finishShare();
+    await secondAttempt;
+    expect(component.sharingRank).toBeFalse();
+  });
+
+  it('treats native cancellation as a normal dismissal', async () => {
+    const { component } = create();
+    component.result = { ...response, currentUser: entry(99, 3, 'Me', 100) };
+    (component as any).rankShare.share.and.rejectWith(new Error('Share canceled'));
+    await component.shareRank();
+    expect(component.shareFeedback).toBe('');
+    expect(component.sharingRank).toBeFalse();
+  });
+
+  it('shows a sharing failure and allows another attempt', async () => {
+    const { component } = create();
+    component.result = { ...response, currentUser: entry(99, 4, 'Me', 100) };
+    (component as any).rankShare.share.and.rejectWith(new Error('Unable to load your referral code'));
+    await component.shareRank();
+    expect(component.shareFeedback).toBe('Unable to load your referral code');
+    expect(component.sharingRank).toBeFalse();
+  });
+
+  it('downloads the card and copies the complete message on unsupported browsers', async () => {
+    const { component } = create();
+    component.result = { ...response, currentUser: entry(99, 5, 'Me', 100) };
+    const fallback = { file: new File(['original-artwork'], 'SuperMeApp-rank-5.png', { type: 'image/png' }), text: 'Full message with REALCODE', canShare: false };
+    const service = (component as any).rankShare;
+    service.share.and.resolveTo(fallback);
+    const click = spyOn(HTMLAnchorElement.prototype, 'click');
+    await component.shareRank();
+    expect(click).toHaveBeenCalledTimes(1);
+    const anchor = click.calls.mostRecent().object as HTMLAnchorElement;
+    expect(anchor.download).toBe('SuperMeApp-rank-5.png');
+    expect(anchor.href).toBe(component.browserShareUrl!);
+    expect(service.copyMessage).toHaveBeenCalledOnceWith(fallback.text);
+    expect(component.shareFeedback).toContain('message copied');
+    expect(component.browserShare).toBe(fallback);
+    const revoke = spyOn(URL, 'revokeObjectURL');
+    component.ionViewWillLeave();
+    expect(revoke).toHaveBeenCalledOnceWith(anchor.href);
+    expect(component.browserShare).toBeNull();
+  });
+
+  it('provides manual-copy instructions when clipboard access is denied', async () => {
+    const { component } = create();
+    component.browserShare = { file: new File(['png'], 'card.png'), text: 'Actual referral message', canShare: false };
+    (component as any).rankShare.copyMessage.and.resolveTo(false);
+    await component.copyRankMessage();
+    expect(component.shareFeedback).toContain('copy the message manually');
+  });
+
+  it('keeps a new click available if the download outlasts share activation', async () => {
+    const { component } = create();
+    component.result = { ...response, currentUser: entry(99, 1, 'Me', 100) };
+    const fallback = { file: new File(['png'], 'rank-1.png'), text: 'Actual referral message', canShare: true };
+    (component as any).rankShare.share.and.resolveTo(fallback);
+    const download = spyOn(component, 'downloadRankImage');
+    await component.shareRank();
+    expect(download).not.toHaveBeenCalled();
+    await component.sharePreparedImage();
+    expect((component as any).rankShare.shareInBrowser).toHaveBeenCalledOnceWith(fallback.file, fallback.text);
+    expect(component.shareFeedback).toContain('was shared');
+    component.ngOnDestroy();
+  });
+
+  it('recognizes browser cancellation even without an error message', async () => {
+    const { component } = create();
+    component.result = { ...response, currentUser: entry(99, 1, 'Me', 100) };
+    (component as any).rankShare.share.and.rejectWith(new DOMException('', 'AbortError'));
+    await component.shareRank();
+    expect(component.shareFeedback).toBe('');
+    expect(component.browserShare).toBeNull();
+  });
 
   it('keeps the API rank and appends an outside-top-10 user after the top rows', () => {
     const { component } = create();
@@ -107,8 +217,9 @@ describe('LeaderboardComponent', () => {
     await TestBed.configureTestingModule({
       imports: [LeaderboardComponent],
       providers: [
+        { provide: LeaderboardRankShareService, useValue: { share: jasmine.createSpy('share').and.resolveTo() } },
         { provide: CoinLeaderboardService, useValue: { getLeaderboard: () => of(response) } },
-        { provide: AvatarService, useValue: { getAvatarAsset: () => null, getFallbackAvatar: () => ({ value: 'assets/avatar/ChildAvatar.webp' }) } },
+        { provide: AvatarService, useValue: { getLeaderboardAvatar: () => null, getFallbackAvatar: () => ({ value: 'assets/avatar/ChildAvatar.webp' }) } },
         { provide: Location, useValue: { back: () => {} } }
       ]
     }).compileComponents();

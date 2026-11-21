@@ -1,3 +1,4 @@
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { AppLauncher } from '@capacitor/app-launcher';

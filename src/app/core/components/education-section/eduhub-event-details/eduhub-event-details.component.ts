@@ -1,3 +1,4 @@
+import { secureTemporaryStorage as sessionStorage } from '../../../storage/session-storage';
 import { CommonModule, Location } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -126,7 +127,7 @@ export class EduHubEventDetailsComponent implements OnInit {
     if (!Number.isFinite(fee)) return '';
     return fee === 0
       ? 'FREE'
-      : `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / Person`;
+      : `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)}/person`;
   }
 
   get registrationUrl(): string {

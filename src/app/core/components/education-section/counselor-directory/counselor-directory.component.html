@@ -1,42 +1,16 @@
 <ion-content fullscreen class="counselor-directory-content">
   <div class="counselor-directory-page">
-    <header class="counselor-hero">
-      <div class="counselor-toolbar">
-        <div class="counselor-toolbar__title">
-          <button type="button" class="toolbar-button toolbar-button--back" aria-label="Back" (click)="goBack()">
-            <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
-          </button>
-          <div class="counselor-toolbar__heading">
-            <h1>{{ directoryTitle }}</h1>
-            <eduhub-city-selector></eduhub-city-selector>
-          </div>
-        </div>
-        <button type="button" class="toolbar-button toolbar-button--search" [attr.aria-label]="'Search ' + directoryTitle.toLowerCase()"
-          [attr.aria-expanded]="searchOpen" (click)="toggleSearch()">
-          <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
-        </button>
-      </div>
+    <app-counselor-header *ngIf="entityType === 'COUNSELOR'" (back)="goBack()" (refer)="referCounselor()" (search)="toggleSearch()" [filterState]="counselorDesignFilters" (filtersChange)="onCounselorDesignFilters($event)">
 
-      <div *ngIf="searchOpen" class="directory-search">
-        <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
-        <input #directorySearchInput type="search" autocomplete="off"
-          [value]="searchQuery" [placeholder]="'Search ' + directoryTitle.toLowerCase()"
-          (input)="updateSearch(directorySearchInput.value)">
-        <button type="button" aria-label="Close search" (click)="toggleSearch()">×</button>
-      </div>
+    </app-counselor-header>
+    <app-academy-design-header [listingTitle]="entityType === 'ACADEMY' ? 'Academy' : 'Tutor'" *ngIf="entityType === 'ACADEMY' || entityType === 'INDIVIDUAL'"
+      (back)="goBack()" (refer)="referCounselor()" (search)="toggleSearch()">
 
-      <div class="counselor-hero__message">
-        <div class="counselor-speech" aria-hidden="true">
-          <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="">
-          <p><span class="callout-lead">Find trusted <strong>{{ directoryTitle }}</strong></span><br>around you.</p>
-        </div>
-        <img *ngIf="isPandaPet" src="assets/figma/child-learning/header-pet.webp" class="counselor-mascot" alt="" aria-hidden="true">
-        <superme-pet *ngIf="!isPandaPet" class="counselor-mascot" mood="happy" [size]="120"></superme-pet>
-      </div>
-    </header>
+    </app-academy-design-header>
 
+<ng-template #directoryResults>
     <main class="counselor-main">
-      <button type="button" class="counselor-refer" (click)="referCounselor()">
+      <button *ngIf="false" type="button" class="counselor-refer" (click)="referCounselor()">
         <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="" aria-hidden="true">
         <span class="counselor-refer__copy">
           <strong>{{ entityType === 'TUTOR' ? 'Know a great tutor?' : 'Know a ' + singularTitle + '?' }}</strong>
@@ -45,49 +19,10 @@
         <span class="counselor-refer__cta">Refer for listing</span>
       </button>
 
-      <section class="counselor-list-section" aria-labelledby="counselors-nearby-title">
-        <header class="counselor-list-header">
-          <div>
-            <h2 id="counselors-nearby-title">{{ directoryTitle }} Near You</h2>
-            <p>Browse profiles and connect with the right {{ singularTitle.toLowerCase() }}.</p>
-          </div>
-          <div class="verified-menu" (click)="$event.stopPropagation()">
-            <button type="button" [attr.aria-expanded]="showVerifiedMenu" (click)="toggleVerifiedMenu($event)">
-              {{ verifiedOnly ? 'Verified' : 'All' }}
-              <img src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
-            </button>
-            <div *ngIf="showVerifiedMenu" class="verified-menu__options" role="menu">
-              <button type="button" role="menuitem" [class.is-active]="verifiedOnly" (click)="setVerifiedFilter(true, $event)">Verified</button>
-              <button type="button" role="menuitem" [class.is-active]="!verifiedOnly" (click)="setVerifiedFilter(false, $event)">All</button>
-            </div>
-          </div>
-        </header>
+      <section #searchResults class="counselor-list-section" aria-label="Learning service listings">
 
-        <div class="counselor-filter-row" *ngIf="!isLoading">
-          <label class="tutor-scope-select" *ngIf="entityType === 'INDIVIDUAL'">Scope
-            <select [value]="tutorScope" (change)="setTutorScope($any($event.target).value)">
-              <option value="CITY">Only within the selected city</option>
-              <option value="ALL_INDIA">All India</option>
-              <option value="WORLDWIDE">Worldwide</option>
-            </select>
-          </label>
-          <button *ngIf="entityType !== 'COUNSELOR'" type="button" (click)="openEducationFilters()">
-            <img src="assets/Icons-Neutral/Icon-Tutor-Subjects.webp" alt="" aria-hidden="true">
-            <span>{{ educationFilters ? 'Filters applied' : 'Filters' }}</span>
-            <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
-          </button>
-          <button *ngIf="entityType === 'COUNSELOR'" type="button" (click)="openFilters('specialization')">
-            <img src="assets/Icons-Neutral/Icon-Tutor-Subjects.webp" alt="" aria-hidden="true">
-            <span>Specialization</span>
-            <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
-          </button>
-          <button *ngIf="entityType === 'COUNSELOR'" type="button" (click)="openFilters('experience')">
-            <img src="assets/Icons-Neutral/Icon-Tutor-Experience.webp" alt="" aria-hidden="true">
-            <span>Experience</span>
-            <img class="counselor-filter-row__chevron" src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
-          </button>
-        </div>
-        <p class="tutor-fallback-note" *ngIf="entityType === 'INDIVIDUAL' && showingOnlineFallback">No local tutors yet. Mode: Online · Scope: All India.</p>
+        <ng-container *ngIf="!searchOpen" [ngTemplateOutlet]="tutorFilters"></ng-container>
+        <p class="tutor-fallback-note" *ngIf="entityType === 'INDIVIDUAL' && showingOnlineFallback && !searchOpen">No local tutors yet. Mode: Online · Scope: All India.</p>
 
         <div *ngIf="isLoading" class="counselor-loading" aria-label="Loading counselors">
           <article *ngFor="let card of loadingCards" class="counselor-card counselor-card--skeleton">
@@ -108,7 +43,7 @@
           <p *ngIf="searchQuery">Try another name, specialization, or location.</p>
           <p *ngIf="!searchQuery && counselors.length">Try changing your filters.</p>
           <p *ngIf="!counselors.length">New {{ directoryTitle.toLowerCase() }} will appear here when they are added.</p>
-          <button *ngIf="educationFilters || counselors.length" type="button" (click)="clearFilters()">Clear filters</button>
+          <button *ngIf="educationFilters || tutorDesignFilters.selections['sort']?.length || counselors.length" type="button" (click)="clearFilters()">Clear filters</button>
         </div>
 
         <div class="counselor-list" *ngIf="!isLoading && !errorMessage && visibleCounselors.length">
@@ -119,6 +54,8 @@
         </div>
       </section>
     </main>
+</ng-template>
+<ng-container *ngIf="!searchOpen" [ngTemplateOutlet]="directoryResults"></ng-container>
   </div>
 
   <app-footer></app-footer>
@@ -133,20 +70,14 @@
       <footer><button type="button" class="filter-sheet__clear" (click)="clearFilters()">Clear all</button><button type="button" class="filter-sheet__apply" (click)="applyFilters()">{{ resultsLabel }}</button></footer>
     </section>
   </div>
+<ng-template #directoryFilters>
+  <app-counselor-filters *ngIf="entityType === 'COUNSELOR'" [filterState]="counselorDesignFilters" (filtersChange)="onCounselorDesignFilters($event)"></app-counselor-filters>
+  <ng-container [ngTemplateOutlet]="tutorFilters"></ng-container>
+</ng-template>
+<app-eduhub-directory-search [filters]="directoryFilters" [locationLabel]="searchLocationLabel" [busy]="isLoading" [open]="searchOpen" [label]="directoryTitle" [terms]="directorySearchTerms" [resultCount]="visibleCounselors.length" [results]="directoryResults" (searched)="runDirectorySearch($event)" (dismissed)="searchOpen && toggleSearch()"></app-eduhub-directory-search>
 </ion-content>
 
-<div *ngIf="showEducationFilters"
-     class="education-filter-overlay"
-     role="dialog"
-     aria-modal="true"
-     aria-label="Directory filters"
-     (click)="closeEducationFilters()">
-  <section class="education-filter-dialog" (click)="$event.stopPropagation()">
-    <tutor-all-filter
-      [embedded]="true"
-      [initialFilters]="educationFilters"
-      [useServerResults]="true"
-      (filterDismiss)="closeEducationFilters($event)">
-    </tutor-all-filter>
-  </section>
-</div>
+<ng-template #tutorFilters>
+  <app-tutor-filters *ngIf="entityType !== 'COUNSELOR'" [filterState]="tutorDesignFilters"
+    (filtersChange)="onTutorDesignFilters($event)"></app-tutor-filters>
+</ng-template>

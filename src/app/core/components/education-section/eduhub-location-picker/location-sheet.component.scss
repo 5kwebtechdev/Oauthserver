@@ -1,0 +1,152 @@
+$sheet-ease: cubic-bezier(0.32, 0.72, 0, 1); // same curve as the filter sheet
+
+:host {
+  display: block;
+}
+
+.ls-sheet {
+  box-sizing: border-box;
+  max-width: none;
+  max-height: none;
+  margin: auto 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 24px 24px 0 0;
+  overflow: hidden;
+  background: var(--sm-v1-neutral100);
+  color: var(--sm-v1-neutral900);
+  font-family: var(--sm-font-body);
+
+  &[open] {
+    animation: ls-up 340ms $sheet-ease;
+  }
+
+  &[open]::backdrop {
+    animation: ls-fade 340ms ease-out;
+  }
+
+  &::backdrop {
+    background: color-mix(in srgb, var(--sm-v1-neutral900, black) 50%, transparent);
+  }
+}
+
+@keyframes ls-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes ls-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.ls-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: min(72dvh, 560px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.ls-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px 8px 16px;
+
+  h2 {
+    margin: 0;
+    font-size: var(--sm-font-size-subhead);
+    font-weight: 700;
+  }
+}
+
+.ls-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--sm-v1-neutral900);
+  cursor: pointer;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+}
+
+.ls-search {
+  flex: none;
+  box-sizing: border-box;
+  height: 44px;
+  margin: 0 16px 8px;
+  padding: 0 12px;
+  border: 1px solid var(--sm-v1-neutral300);
+  border-radius: 12px;
+  background: var(--sm-v1-neutral100);
+  color: var(--sm-v1-neutral900);
+  font: inherit;
+  font-size: var(--sm-font-size-body);
+  font-weight: 600;
+
+  &:focus {
+    border-color: var(--sm-v1-tutor600);
+    outline: none;
+  }
+}
+
+.ls-list {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 0 16px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.ls-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  font-size: var(--sm-font-size-body);
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  input {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--sm-v1-tutor600);
+  }
+}
+
+.ls-empty {
+  margin: 0;
+  padding: 24px 0;
+  color: var(--sm-v1-neutral800);
+  font-size: var(--sm-font-size-body);
+  font-weight: 600;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ls-sheet[open],
+  .ls-sheet[open]::backdrop {
+    animation: none;
+  }
+}
+.ls-head h2, .ls-option { font-family: var(--sm-font-body, Nunito, sans-serif); }

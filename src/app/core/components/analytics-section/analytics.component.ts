@@ -545,7 +545,10 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     }
 
     return this.http.get<unknown>(`${environment.apiUrl}/journal/entries`, { headers, params }).pipe(
-      map(response => Array.isArray(response) ? response : null),
+      map(response => {
+        const entries = Array.isArray(response) ? response : (response as { entries?: unknown } | null)?.entries;
+        return Array.isArray(entries) ? entries : null;
+      }),
       catchError(() => of(null)),
     );
   }

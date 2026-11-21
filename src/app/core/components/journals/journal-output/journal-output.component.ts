@@ -62,6 +62,9 @@ export class JournalOutputComponent implements OnInit, OnDestroy, ViewWillEnter 
   errorMessage = '';
   entryPendingDelete: JournalOutputEntry | null = null;
   deleting = false;
+  currentStreak = 0;
+  bestStreak = 0;
+  private entriesRequestId = 0;
   private moodSubscription?: Subscription;
   dailyMoodRecords: Record<string, DailyMoodRecord | null> = {};
 
@@ -140,36 +143,6 @@ export class JournalOutputComponent implements OnInit, OnDestroy, ViewWillEnter 
     return result;
   }
 
-  get currentStreak(): number {
-    const dates = this.entryDateSet;
-    const cursor = new Date();
-    cursor.setHours(12, 0, 0, 0);
-    if (!dates.has(this.dateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
-
-    let streak = 0;
-    while (dates.has(this.dateKey(cursor))) {
-      streak += 1;
-      cursor.setDate(cursor.getDate() - 1);
-    }
-    return streak;
-  }
-
-  get bestStreak(): number {
-    const dates = Array.from(this.entryDateSet).sort();
-    let best = 0;
-    let current = 0;
-    let previous: Date | null = null;
-
-    for (const key of dates) {
-      const date = new Date(`${key}T12:00:00`);
-      const difference = previous ? Math.round((date.getTime() - previous.getTime()) / 86400000) : 0;
-      current = previous && difference === 1 ? current + 1 : 1;
-      best = Math.max(best, current);
-      previous = date;
-    }
-    return best;
-  }
-
   get isAtLatestMonth(): boolean {
     const now = new Date();
     return this.currentMonthDate.getMonth() === now.getMonth()
@@ -246,6 +219,7 @@ export class JournalOutputComponent implements OnInit, OnDestroy, ViewWillEnter 
         }
         this.entryPendingDelete = null;
         this.deleting = false;
+        this.retry();
       },
       error: (error) => {
         console.error('Failed to delete journal entry', error);
@@ -282,24 +256,37 @@ export class JournalOutputComponent implements OnInit, OnDestroy, ViewWillEnter 
 
   private loadEntriesFromApi(month: number, year: number): void {
     const url = `${environment.apiUrl}/journal/entries?type=MONTH&month=${month}&year=${year}`;
-    const token = this.authApi.getToken();
     const { headers } = this.authOptions();
+    const requestId = ++this.entriesRequestId;
 
     this.loading = true;
     this.errorMessage = '';
     this.http.get<unknown>(url, { headers, observe: 'response' }).subscribe({
       next: (response) => {
-        this.entries = Array.isArray(response.body) ? this.mapApiEntries(response.body) : [];
+        if (requestId !== this.entriesRequestId) return;
+        const body = response.body as { entries?: unknown; currentStreak?: unknown; bestStreak?: unknown } | null;
+        const items = Array.isArray(body) ? body : body?.entries;
+        this.entries = Array.isArray(items) ? this.mapApiEntries(items) : [];
+        this.currentStreak = this.streakValue(body?.currentStreak);
+        this.bestStreak = this.streakValue(body?.bestStreak);
         this.loadPreviousDayActivityCounts();
         this.loading = false;
       },
       error: (error) => {
+        if (requestId !== this.entriesRequestId) return;
         console.error('Failed to load journal entries', error);
         this.entries = [];
+        this.currentStreak = 0;
+        this.bestStreak = 0;
         this.errorMessage = 'We could not load your journal. Please try again.';
         this.loading = false;
       },
     });
+  }
+
+  private streakValue(value: unknown): number {
+    const number = Number(value);
+    return Number.isFinite(number) && number >= 0 ? Math.floor(number) : 0;
   }
 
   private authOptions(): { headers: HttpHeaders } {

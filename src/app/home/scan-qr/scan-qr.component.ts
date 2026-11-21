@@ -1,3 +1,4 @@
+import { secureTemporaryStorage as sessionStorage } from '../../core/storage/session-storage';
 import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IonicModule, AlertController } from '@ionic/angular';

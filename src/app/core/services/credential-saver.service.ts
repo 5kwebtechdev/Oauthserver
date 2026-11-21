@@ -1,3 +1,5 @@
+import { secureTemporaryStorage as sessionStorage } from '../storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
 import { Capacitor, registerPlugin } from '@capacitor/core';
 

@@ -6,53 +6,21 @@ import { ProfileImageComponent } from '../../profile-image/profile-image.compone
 @Component({
   selector: 'app-pg-hostel-card', standalone: true,
   imports: [CommonModule, ProfileImageComponent],
-  template: `
-    <article class="hostel-card">
-      <div class="card-top">
-        <div class="photo"><img *ngIf="image; else photoInitials" [src]="image" [alt]="title" loading="lazy" (error)="onImageError()"><ng-template #photoInitials><app-profile-image fallbackCategory="hostel" [name]="title"></app-profile-image></ng-template></div>
-        <div class="summary">
-          <div class="title-line"><h3>{{ title }}</h3><img *ngIf="item.verified || item.isVerified" class="verified" src="assets/figma/pg-hostels/detail-verified2.png" alt="Verified"></div>
-          <p *ngIf="item.accommodationType">Type: {{ item.accommodationType }}</p>
-          <p *ngIf="item.suitableFor">Suitable for: {{ item.suitableFor }}</p>
-        </div>
-        <div class="card-actions">
-          <span class="favourite" aria-hidden="true"><img src="assets/figma/pg-hostels/detail-favorite.svg" alt=""></span>
-          <button type="button" class="share" aria-label="Share PG/Hostel" (click)="shareListing()"><img src="assets/figma/pg-hostels/detail-share.svg" alt=""></button>
-        </div>
-      </div>
-      <div class="card-bottom"><strong>{{ price == null ? 'Price on request' : ('₹ ' + (price | number) + ' onwards') }}</strong>
-        <button *ngIf="showAction" type="button" class="details-button" (click)="viewDetails.emit(item)">View Details</button></div>
-    </article>`,
-  styles: [`
-    :host { display:block; min-width:0; }
-    .hostel-card { box-sizing:border-box; width:100%; min-width:0; padding:8px; border-radius:24px; background:#fff; box-shadow:0 0 2px 2px rgba(107,101,106,.1); color:#282527; font-family:Nunito,sans-serif; }
-    .card-top { display:flex; align-items:flex-start; min-width:0; gap:8px; }
-    .photo { width:94px; height:91px; flex:0 0 94px; overflow:hidden; border-radius:16px; background:#e8f1f5; }
-    .photo img { width:100%; height:100%; object-fit:cover; }
-    .photo:has(.eduhub-fallback) { width:auto; height:auto; flex-basis:auto; border-radius:0; background:transparent; }
-    .summary { flex:1; min-width:0; padding-top:2px; }
-    .title-line { display:flex; align-items:center; gap:4px; min-width:0; }
-    h3 { min-width:0; margin:0 0 4px; font-size:15px; line-height:1.35; font-weight:700; overflow-wrap:anywhere; }
-    .verified { width:16px; height:16px; flex:none; object-fit:contain; }
-    p { margin:0 0 2px; color:#6b656a; font-size:13px; font-weight:600; line-height:1.4; overflow-wrap:anywhere; }
-    .card-actions { display:flex; flex:none; gap:5px; }
-    .favourite,.share { box-sizing:border-box; display:grid; place-items:center; width:32px; height:32px; border:0; border-radius:50%; }
-    .favourite { background:#fff; box-shadow:0 0 2px 1px rgba(178,191,242,.5); }
-    .share { background:#1432a8; cursor:pointer; }
-    .favourite img,.share img { width:18px; height:18px; }
-    .card-bottom { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:54px; margin-top:8px; padding:8px 0 0; border-top:1px solid #d9d6d8; }
-    strong { color:#1432a8; font-size:15px; font-weight:700; overflow-wrap:anywhere; }
-    .details-button { flex:0 0 auto; min-width:130px; height:37px; padding:0 14px; border:0; border-radius:10px; background:radial-gradient(ellipse at center,#3158a8,#1432a8); box-shadow:inset -1px -1px 1px #b2caf2; color:#fff; font:700 15px Nunito,sans-serif; cursor:pointer; }
-    button:focus-visible { outline:3px solid #1432a8; outline-offset:2px; }
-    @media(max-width:350px) { .photo { width:78px; flex-basis:78px; } .details-button { min-width:105px; } }
-  `]
+  template: `<article class="education-listing" [class.education-listing--home]="homePreview">
+<button type="button" class="education-listing__profile" (click)="viewDetails.emit(item)" [attr.aria-label]="'View '+title">
+<span class="education-listing__photo education-listing__photo--tall"><img *ngIf="image; else initials" [src]="image" [alt]="title" loading="lazy" (error)="onImageError()"><ng-template #initials><span *ngIf="!homePreview" class="hostel-initials"><img src="assets/hostel-header/card/badge.webp" alt=""><span>{{listingInitials}}</span></span><app-profile-image *ngIf="homePreview" fallbackCategory="hostel" [name]="title"></app-profile-image></ng-template></span>
+<span class="education-listing__body"><span class="education-listing__name"><strong>{{title}}</strong><span *ngIf="item.verified || item.isVerified" class="education-listing__verified"><img src="assets/figma/eduhub-cards/verified.png" alt="Verified"></span></span><span class="education-listing__fields"><span class="education-listing__field"><span class="education-listing__icon"><span><img src="assets/figma/eduhub-cards/home.svg" alt=""></span></span><span class="education-listing__field-text"><span class="education-listing__label">Suitable for &amp; Type</span><span class="education-listing__value">{{item.suitableFor || 'Not specified'}} · {{item.accommodationType || 'PG / Hostel'}}</span></span></span><span class="education-listing__field education-listing__field--secondary"><span class="education-listing__icon"><span><img src="assets/figma/eduhub-cards/location-amber.svg" alt=""></span></span><span class="education-listing__field-text"><span class="education-listing__label">Address</span><span class="education-listing__value">{{item.address || [item.city, item.state].join(' ') || 'Address unavailable'}}</span></span></span></span></span></button>
+<div class="education-listing__footer"><button type="button" class="education-listing__fee" (click)="viewDetails.emit(item)">{{price == null ? 'Price on request' : ('₹ '+(price | number)+'/onwards')}}</button><span *ngIf="item.foodAvailable != null" class="education-listing__mode"><img src="assets/figma/eduhub-cards/food.svg" alt="">{{item.foodAvailable ? 'Food included' : 'No food'}}</span><span class="education-listing__like"><img src="assets/figma/eduhub-cards/heart.svg" alt="Likes">{{item.likesCount || 0}}</span><button *ngIf="!homePreview" type="button" class="education-listing__share" aria-label="Share PG/Hostel" (click)="shareListing()"><img src="assets/figma/parent-eduhub-inner/share.svg" alt=""></button></div></article>`,
+  styleUrls: ['./pg-hostel-card.component.scss']
 })
 export class PgHostelCardComponent {
   @Input({ required: true }) item!: PgHostel;
+  @Input() homePreview = false;
   @Input() showAction = true;
   @Output() viewDetails = new EventEmitter<PgHostel>();
   private readonly failedImages = new WeakMap<PgHostel, Set<string>>();
   constructor(private readonly pgHostels: PgHostelsService) {}
+  get listingInitials(): string { return this.title.split(/\s+/).slice(0,2).map(word => word[0]).join('').toUpperCase(); }
   get title(): string { return String(this.item?.name || this.item?.title || 'PG / Hostel').trim(); }
   get image(): string {
     return this.pgHostels.imageCandidates(this.item).find(url => !this.failedImages.get(this.item)?.has(url)) ?? '';

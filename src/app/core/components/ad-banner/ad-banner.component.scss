@@ -4,6 +4,7 @@
 :host(:not(:has(.adb))) { display: none; }
 
 .adb {
+  --adb-slide-inset: 24px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -16,15 +17,15 @@
 .adb__scroll-track {
   position: relative;
   display: flex;
-  gap: 12px;
+  gap: 16px;
   padding: 0;
   transition: transform .4s ease;
 }
 .adb__card {
   position: relative;
-  flex: 0 0 82%;
+  flex: 0 0 calc(100% - 2 * var(--adb-slide-inset));
   min-width: 0;
-  width: 82%;
+  width: calc(100% - 2 * var(--adb-slide-inset));
   aspect-ratio: ads.$width / ads.$height;
   border-radius: ads.$radius;
   overflow: hidden;
@@ -74,14 +75,19 @@
   cursor: pointer;
 }
 .adb__dot:focus-visible { outline: 2px solid #432477; outline-offset: 3px; }
+.adb--single:not(.adb--home) { --adb-slide-inset: 0px; }
+.adb--home .adb__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 :host-context(app-education-main-page) .adb--eduhub-parent {
   max-width: none;
   gap: 8px;
-  .adb__track-clip { width: calc(100% - 16px); margin-left: 16px; }
-  .adb__scroll-track { gap: 8px; }
-  .adb__card { flex: 0 0 min(305px, calc(100% - 48px)); width: min(305px, calc(100% - 48px)); aspect-ratio: 305 / 182; border-radius: 16px; clip-path: inset(0 round 16px); }
+  .adb__track-clip { width: calc(100% - 32px); margin-inline: 16px; }
+  .adb__card { border-radius: 16px; clip-path: inset(0 round 16px); }
   .adb__dots { gap: 6px; min-height: 22px; }
-  .adb__counter { border-radius: 4px; background: #90214d; font-size: 13px; line-height: 18px; }
+  .adb__counter { border-radius: 999px; background: #90214d; font-size: 13px; line-height: 18px; }
   .adb__dot { width: 8px; height: 8px; background: url('../../../../assets/figma/eduhub-categories/dot.svg') center no-repeat; }
 }
 @media (prefers-reduced-motion: reduce) {

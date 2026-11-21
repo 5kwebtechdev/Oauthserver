@@ -1,6 +1,6 @@
 <ion-content fullscreen class="parent-eduhub-inner-content">
   <div class="parent-eduhub-inner-page">
-    <header class="directory-hero">
+    <header class="directory-hero" *ngIf="!isStationeryDesign && !isBookstoreDesign && !isSportsShopDesign">
       <div class="directory-toolbar">
         <div class="directory-toolbar__title">
           <button type="button" class="icon-button icon-button--back" aria-label="Back" (click)="goBack()">
@@ -18,14 +18,7 @@
         </button>
       </div>
 
-      <div class="directory-search" *ngIf="searchOpen">
-        <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
-        <input #searchInput type="search" autocomplete="off"
-          [value]="searchQuery"
-          [placeholder]="'Search ' + pageTitle.toLowerCase()"
-          (input)="updateSearch(searchInput.value)">
-        <button type="button" aria-label="Close search" (click)="toggleSearch()">×</button>
-      </div>
+
 
       <div class="directory-hero__message">
         <div class="directory-speech">
@@ -37,8 +30,18 @@
       </div>
     </header>
 
+    <app-stationery-shop-header *ngIf="isStationeryDesign" (back)="goBack()" (search)="toggleSearch()" (refer)="referForListing()">
+
+    </app-stationery-shop-header>
+    <app-bookstore-header *ngIf="isBookstoreDesign" (back)="goBack()" (search)="toggleSearch()" (refer)="referForListing()">
+
+    </app-bookstore-header>
+    <app-sports-shop-header *ngIf="isSportsShopDesign" (back)="goBack()" (search)="toggleSearch()" (refer)="referForListing()">
+
+    </app-sports-shop-header>
+<ng-template #directoryResults>
     <main class="directory-main">
-      <button type="button" class="refer-card" (click)="referForListing()">
+      <button *ngIf="!isStationeryDesign && !isBookstoreDesign && !isSportsShopDesign" type="button" class="refer-card" (click)="referForListing()">
         <span class="refer-card__icon" aria-hidden="true">
           <img src="assets/figma/parent-eduhub-inner/refer-listing.webp" alt="">
         </span>
@@ -49,28 +52,7 @@
         <span class="refer-card__cta">Refer for listing</span>
       </button>
 
-      <section class="directory-section" aria-labelledby="directory-list-heading">
-        <header class="directory-section__header">
-          <div class="directory-section__copy">
-            <h2 id="directory-list-heading">{{ sectionTitle }}</h2>
-            <p>Classifieds listings only. Contact sellers directly to enquire or buy.</p>
-          </div>
-
-          <div class="directory-sort" (click)="$event.stopPropagation()">
-            <button type="button" class="directory-sort__button" [attr.aria-expanded]="sortOpen"
-              (click)="toggleSort($event)">
-              <span>{{ selectedSortLabel }}</span>
-              <img src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
-            </button>
-            <div class="directory-sort__menu" *ngIf="sortOpen" role="menu">
-              <button *ngFor="let option of sortOptions" type="button" role="menuitem"
-                [class.is-selected]="selectedSort === option.value"
-                (click)="selectSort(option.value, $event)">
-                {{ option.label }}
-              </button>
-            </div>
-          </div>
-        </header>
+      <section class="directory-section" aria-label="Shop listings">
 
         <div class="directory-loading" *ngIf="loading" aria-label="Loading nearby listings">
           <div class="listing-card listing-card--skeleton" *ngFor="let card of loadingCards">
@@ -109,6 +91,8 @@
         </div>
       </section>
     </main>
+</ng-template>
+<ng-container *ngIf="!searchOpen" [ngTemplateOutlet]="directoryResults"></ng-container>
   </div>
 
   <div class="sheet-backdrop" *ngIf="unlockItem" (click)="closeUnlockSheet()">
@@ -196,4 +180,15 @@
   </div>
 
   <app-footer></app-footer>
+<ng-template #directoryFilters>
+  <div class="directory-search-controls">
+  <label>Sort
+    <select [value]="selectedSort" (change)="selectSort($any($event.target).value, $event)">
+      <option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</option>
+    </select>
+  </label>
+  <label><input type="checkbox" [checked]="searchVerifiedOnly" (change)="searchVerifiedOnly = $any($event.target).checked"> Verified only</label>
+  </div>
+</ng-template>
+<app-eduhub-directory-search [filters]="directoryFilters" [locationLabel]="searchLocationLabel" [busy]="loading" [open]="searchOpen" [label]="pageTitle" [terms]="directorySearchTerms" [resultCount]="visibleListings.length" [results]="directoryResults" (searched)="runDirectorySearch($event)" (dismissed)="searchOpen && toggleSearch()"></app-eduhub-directory-search>
 </ion-content>

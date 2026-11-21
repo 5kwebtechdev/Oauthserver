@@ -1,3 +1,5 @@
+import { secureTemporaryStorage as sessionStorage } from '../storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { finalize, map, shareReplay, tap } from 'rxjs/operators';
@@ -266,7 +268,7 @@ export class UserService {
     }
 
     const revision = this.statsRevision;
-    const refresh$ = this.moodService.getVibesDisplay().pipe(
+    const refresh$ = this.moodService.getVibesDisplay(undefined, true).pipe(
       tap(data => {
         if (revision === this.statsRevision && data && data.length > 0) {
           const userStats = data[0];

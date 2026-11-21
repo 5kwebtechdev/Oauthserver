@@ -1,3 +1,5 @@
+import { secureTemporaryStorage as sessionStorage } from '../storage/session-storage';
+import { sessionStorageAdapter as localStorage } from '../storage/session-storage';
 import { Injectable, Injector } from '@angular/core';
 import { NotesService } from '../components/notes/notes.service';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
@@ -42,9 +44,9 @@ export class AuthSessionCleanupService {
     await this.signOutGoogle(false);
   }
 
-  async clearExternalAuthSessions(): Promise<void> {
+  async clearExternalAuthSessions(initializeGoogle = true): Promise<void> {
     await Promise.all([
-      this.signOutGoogle(true),
+      initializeGoogle || this.googleInitialized ? this.signOutGoogle(initializeGoogle) : Promise.resolve(),
       this.signOutFirebase()
     ]);
   }

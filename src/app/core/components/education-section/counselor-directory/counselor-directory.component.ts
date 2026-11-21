@@ -1,15 +1,23 @@
+import { EduHubDirectorySearchComponent } from '../eduhub-directory-search/eduhub-directory-search.component';
+import { CounselorHeaderComponent } from '../counselor-design/counselor-header/counselor-header.component';
+import { CounselorFiltersComponent } from '../counselor-design/counselor-filters/counselor-filters.component';
+import { CounselorFilterState } from '../counselor-design/counselor-filters/counselor-filters.data';
+import { TutorHeaderComponent as AcademyDesignHeaderComponent } from '../academy-design-header/tutor-header.component';
 import { CommonModule, Location } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
+import { Keyboard } from '@capacitor/keyboard';
 import { IonicModule } from '@ionic/angular';
-import { Observable, Subscription, catchError, map, of, skip, switchMap, take } from 'rxjs';
+import { Observable, Subscription, catchError, forkJoin, map, of, skip, switchMap, take } from 'rxjs';
 
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { Tutor, SelectedFilters, TutorSearchScope, formatContactModes, formatExperience, formatTeachingMode, getExperienceYears } from '../../../models/tutor.model';
-import { TutorAllFilterComponent } from '../../tutor-section/tutor-all-filter/tutor-all-filter.component';
+import { TutorFiltersComponent } from '../academy-design-header/tutor-filters/tutor-filters.component';
+import { toDirectoryFilters, TutorFilterState } from '../academy-design-header/tutor-filters/tutor-filters.data';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { PetAgeService } from '../../../services/pet-age.service';
@@ -25,20 +33,31 @@ type FilterTab = 'specialization' | 'experience';
 @Component({
   selector: 'app-counselor-directory',
   standalone: true,
-  imports: [CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, TutorAllFilterComponent, CounselorCardComponent],
+  imports: [CounselorFiltersComponent, EduHubDirectorySearchComponent,CounselorHeaderComponent,AcademyDesignHeaderComponent,CommonModule, IonicModule, AdBannerComponent, FooterComponent, SupermePetComponent, EduHubCitySelectorComponent, TutorFiltersComponent, CounselorCardComponent],
   templateUrl: './counselor-directory.component.html',
   styleUrls: ['./counselor-directory.component.scss']
 })
 export class CounselorDirectoryComponent implements OnInit, OnDestroy {
+  counselorDesignFilters: CounselorFilterState = { selections: {} };
+  onCounselorDesignFilters(filters: CounselorFilterState): void {
+    this.counselorDesignFilters = filters;
+    this.selectedSpecializations = new Set(filters.selections['specialization'] || []);
+  }
   readonly loadingCards = [0, 1, 2];
   @ViewChild('directorySearchInput') private directorySearchInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('searchResults') private searchResults?: ElementRef<HTMLElement>;
 
   counselors: Tutor[] = [];
   isLoading = true;
   errorMessage = '';
   showVerifiedMenu = false;
+  get directorySearchTerms(): string[] { return [...(this.entityType === 'COUNSELOR' ? this.specializationOptions : []), ...this.counselors.map(item => this.getName(item))]; }
+  runDirectorySearch(value: string): void { this.searchDraft = value; this.searchQuery = value.trim(); }
   searchOpen = false;
+  get searchLocationLabel(): string { return this.cityService.filter.city || this.cityService.filter.state || this.cityService.academyFilter.country || 'All locations'; }
+
   searchQuery = '';
+  searchDraft = '';
   // Active listings are the default. Verification is a trust badge, not a
   // visibility requirement, so unverified active counselors remain visible.
   verifiedOnly = false;
@@ -52,9 +71,10 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   educationFilters: SelectedFilters | null = null;
   tutorScope: TutorSearchScope = 'CITY';
   showingOnlineFallback = false;
-  showEducationFilters = false;
+  tutorDesignFilters: TutorFilterState = { category: null, selections: {} };
   private selectedCity = '';
   private selectedState = '';
+  private selectedCountry = '';
 
   private readonly subscriptions = new Subscription();
   private readonly likeSubscriptions = new Map<number, Subscription>();
@@ -95,12 +115,15 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     // returning to the page or changing location immediately recomputes cards.
     this.selectedCity = this.normalizeLocation(navigationCity || this.cityService.city);
     this.selectedState = this.cityService.state;
+    this.selectedCountry = this.cityService.country;
     this.subscriptions.add(this.cityService.location$.pipe(skip(1)).subscribe(() => {
       const city = this.cityService.city;
       const nextCity = this.normalizeLocation(city);
-      const cityChanged = nextCity !== this.selectedCity || this.selectedState !== this.cityService.state;
+      const cityChanged = nextCity !== this.selectedCity || this.selectedState !== this.cityService.state
+        || (this.entityType === 'ACADEMY' && this.selectedCountry !== this.cityService.country);
       this.selectedCity = nextCity;
       this.selectedState = this.cityService.state;
+      this.selectedCountry = this.cityService.country;
       if (cityChanged) {
         this.tutorScope = 'CITY';
         this.showingOnlineFallback = false;
@@ -108,10 +131,11 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         // the previous city and reload the complete entity directory so both
         // the selector and cards always describe the same location.
         this.educationFilters = null;
+        this.tutorDesignFilters = { category: null, selections: {} };
         const cachedDirectory = this.filterDirectoryType(
           this.tutorService.getDirectoryCache(this.entityType)
         );
-        this.counselors = cachedDirectory.filter(item => this.isActiveListing(item));
+        this.counselors = this.entityType === 'ACADEMY' ? [] : cachedDirectory.filter(item => this.isActiveListing(item));
         this.loadCounselors();
 
         // Keep the route in sync with the selector. Without this, Ionic can
@@ -134,7 +158,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     // when a second mobile request is delayed or returns an anomalous empty
     // response.
     const handedOffItems = this.filterDirectoryType(navigationState.directoryItems);
-    if (handedOffItems.length) {
+    if (this.entityType !== 'ACADEMY' && handedOffItems.length) {
       this.counselors = handedOffItems.filter(item => this.isActiveListing(item));
       this.counselors.forEach(item => this.watchLikes(item));
       this.isLoading = false;
@@ -143,7 +167,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     const directoryCache = this.filterDirectoryType(
       this.tutorService.getDirectoryCache(this.entityType)
     );
-    if (!this.counselors.length && directoryCache.length) {
+    if (this.entityType !== 'ACADEMY' && !this.counselors.length && directoryCache.length) {
       this.counselors = directoryCache.filter(item => this.isActiveListing(item));
       this.counselors.forEach(item => this.watchLikes(item));
       this.isLoading = false;
@@ -154,7 +178,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     // them as a safe fallback while the directory refresh runs.
     this.subscriptions.add(this.tutorService.allTutors$.pipe(take(1)).subscribe(items => {
       const cached = this.filterDirectoryType(items);
-      if (cached.length && !this.counselors.length) {
+      if (this.entityType !== 'ACADEMY' && cached.length && !this.counselors.length) {
         this.counselors = cached.filter(item => this.isActiveListing(item));
         this.counselors.forEach(item => this.watchLikes(item));
         this.isLoading = false;
@@ -168,12 +192,16 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     this.likeSubscriptions.forEach(subscription => subscription.unsubscribe());
     this.likeSubscriptions.clear();
     document.body.style.overflow = '';
-    document.body.classList.remove('tutor-filter-open');
   }
 
   get visibleCounselors(): Tutor[] {
-    const city = this.entityType === 'INDIVIDUAL' && this.tutorScope !== 'CITY' ? '' : this.selectedCity;
-    return this.counselors.filter(counselor => {
+    const city = this.entityType === 'INDIVIDUAL' && this.tutorScope !== 'CITY' && !this.searchOpen ? '' : this.selectedCity;
+    const filterState = this.entityType === 'COUNSELOR' ? this.counselorDesignFilters : this.tutorDesignFilters;
+    const selectedModes = filterState.selections['mode'] ?? [];
+    const results = this.counselors.filter(counselor => {
+      const modes = this.entityType === 'COUNSELOR'
+        ? formatContactModes(counselor.contactModes || []).toLowerCase()
+        : [formatTeachingMode(counselor.teachingMode), formatContactModes(counselor.contactModes || [])].join(' ').toLowerCase();
       const specializations = this.getSpecializations(counselor);
       const experience = this.getExperienceFilterValue(counselor);
       const searchableText = [
@@ -185,7 +213,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         counselor.state
       ].filter(Boolean).join(' ').toLocaleLowerCase();
       return (!this.verifiedOnly || this.isVerified(counselor))
-        && (!city || this.matchesSelectedCity(city, this.normalizeLocation([
+        && (this.entityType === 'ACADEMY' || !city || this.matchesSelectedCity(city, this.normalizeLocation([
           counselor.city,
           counselor.location,
           counselor.state,
@@ -194,9 +222,28 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         ].filter(Boolean).join(' '))))
         && (!this.selectedSpecializations.size || specializations.some(value =>
           Array.from(this.selectedSpecializations).some(selected => this.normalizeSpecialization(selected) === this.normalizeSpecialization(value))))
+        && (!selectedModes.length || selectedModes.some(mode =>
+          modes.includes(mode.toLowerCase()) || (this.entityType !== 'COUNSELOR' && modes.includes('hybrid'))))
         && (!this.selectedExperience.size || this.selectedExperience.has(experience))
         && (!this.searchQuery.trim() || searchableText.includes(this.searchQuery.trim().toLocaleLowerCase()));
     });
+    const sort = filterState.selections['sort']?.[0];
+    if (sort && this.entityType === 'COUNSELOR') {
+      results.sort((a, b) => (Number(a.hourlyRate || a.fees || 0) - Number(b.hourlyRate || b.fees || 0)) * (sort === 'Price: High to Low' ? -1 : 1));
+    } else if (sort) {
+      const priceOf = (tutor: Tutor): number => {
+        const categoryPrice = tutor.categoryMappings?.find(mapping => mapping.categoryHourlyRate > 0)?.categoryHourlyRate;
+        return Number(categoryPrice || tutor.hourlyRate || tutor.fees || 0);
+      };
+      results.sort((a, b) => {
+        const left = priceOf(a);
+        const right = priceOf(b);
+        if (!(left > 0)) return right > 0 ? 1 : 0;
+        if (!(right > 0)) return -1;
+        return (left - right) * (sort === 'Price: High to Low' ? -1 : 1);
+      });
+    }
+    return results;
   }
 
   get specializationOptions(): string[] {
@@ -242,6 +289,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     this.searchOpen = !this.searchOpen;
     if (!this.searchOpen) {
       this.searchQuery = '';
+      this.searchDraft = '';
       return;
     }
 
@@ -249,7 +297,17 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
   }
 
   updateSearch(value: string): void {
-    this.searchQuery = value;
+    this.searchDraft = value;
+  }
+
+  async submitSearch(event: Event): Promise<void> {
+    event.preventDefault();
+    this.searchQuery = this.searchDraft.trim();
+    this.directorySearchInput?.nativeElement.blur();
+    if (Capacitor.isNativePlatform()) {
+      try { await Keyboard.hide(); } catch { /* Blurring still dismisses the input on unsupported platforms. */ }
+    }
+    this.searchResults?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   loadCounselors(): void {
@@ -263,7 +321,9 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     // A background request should not replace valid shared data with a loader.
     this.isLoading = !this.counselors.length;
     this.errorMessage = '';
-    const directoryRequest = this.entityType === 'INDIVIDUAL' && !this.educationFilters
+    const directoryRequest = this.entityType === 'ACADEMY'
+      ? this.loadAcademyDirectory()
+      : this.entityType === 'INDIVIDUAL' && !this.educationFilters
       && (this.tutorScope !== 'CITY' || this.cityService.isAutomaticLocation)
       ? this.tutorService.getHomeTutorListings(this.tutorScope).pipe(map(result => {
           this.showingOnlineFallback = result.usedOnlineFallback && result.tutors.length > 0;
@@ -284,7 +344,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
           }
           // A successful filtered search may legitimately contain no matches.
           // In that case the old unfiltered cards must not remain on screen.
-          if (this.educationFilters || refreshed.length || !this.counselors.length) {
+          if (requestedEntityType === 'ACADEMY' || this.educationFilters || refreshed.length || !this.counselors.length) {
             this.counselors = refreshed;
           }
           this.counselors.forEach(counselor => this.watchLikes(counselor));
@@ -301,6 +361,21 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  private loadAcademyDirectory(): Observable<Tutor[]> {
+    const directory = this.tutorService.getTutorsByEntityType('ACADEMY').pipe(
+      map(items => items.map(item => ({ ...item, entityType: 'ACADEMY' } as Tutor)))
+    );
+    if (!this.educationFilters) return directory;
+
+    return forkJoin({
+      directory,
+      filtered: this.tutorService.searchDirectory('ACADEMY', this.educationFilters)
+    }).pipe(map(({ directory, filtered }) => {
+      const matchingIds = new Set(filtered.map(item => String(item.id)));
+      return directory.filter(item => matchingIds.has(String(item.id)));
+    }));
   }
 
   setTutorScope(scope: TutorSearchScope): void {
@@ -327,9 +402,6 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     // Unlike paginated workshops, the tutors endpoint returns the complete
     // INDIVIDUAL directory. Fetch it without a city parameter and apply the
     // same local city matcher as Home so active unverified tutors remain.
-    // Fetch the complete Academy directory just like Home. Some backend city
-    // filters use legacy spellings or have incomplete city indexing; applying
-    // the shared local matcher avoids valid cities returning an empty page.
     return this.tutorService.getTutorsByEntityType(expectedType).pipe(
       switchMap(items => {
         const requestedDirectory = normalizeRequestedType(items);
@@ -383,23 +455,12 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
     return candidates.some(candidate => listingLocation.includes(candidate));
   }
 
-  openEducationFilters(): void {
-    if (this.showEducationFilters) return;
-    this.showEducationFilters = true;
-    document.body.classList.add('tutor-filter-open');
-  }
-
-  closeEducationFilters(data?: any): void {
-    this.showEducationFilters = false;
-    document.body.classList.remove('tutor-filter-open');
-    if (data?.clearAll || data?.filters) {
-      if (data.clearAll) {
-        this.clearFilters();
-      } else {
-        this.educationFilters = data.filters;
-        this.loadCounselors();
-      }
-    }
+  onTutorDesignFilters(state: TutorFilterState): void {
+    this.tutorDesignFilters = state;
+    const filters = toDirectoryFilters(state);
+    if (JSON.stringify(filters) === JSON.stringify(this.educationFilters)) return;
+    this.educationFilters = filters;
+    this.loadCounselors();
   }
 
   toggleVerifiedMenu(event: Event): void {
@@ -439,10 +500,10 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
 
   clearFilters(): void {
     this.educationFilters = null;
-    this.showEducationFilters = false;
-    document.body.classList.remove('tutor-filter-open');
+    this.tutorDesignFilters = { category: null, selections: {} };
     this.errorMessage = '';
     this.searchQuery = '';
+    this.searchDraft = '';
     this.verifiedOnly = false;
     this.selectedSpecializations.clear();
     this.selectedExperience.clear();
@@ -634,7 +695,7 @@ export class CounselorDirectoryComponent implements OnInit, OnDestroy {
       PER_COURSE: 'Course',
       PER_SUBJECT: 'Subject'
     };
-    return `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} / ${labels[String(counselor.feeType)] || 'Session'}`;
+    return `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)}/${(labels[String(counselor.feeType)] || 'Session').toLowerCase()}`;
   }
 
   trackCounselor(_: number, counselor: Tutor): number {

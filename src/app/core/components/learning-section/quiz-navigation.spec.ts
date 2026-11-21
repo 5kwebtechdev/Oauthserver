@@ -28,7 +28,7 @@ describe('Completed quiz navigation history', () => {
     quiz.challenge = challenge;
     (quiz as any).navigateToResult({ totalQuestions: 5, correctCount: 5 });
     expect(stack[2]).toBe('/authed/content/result');
-    const result = new ResultPageComponent(router, null!, null!, null!);
+    const result = new ResultPageComponent(router, null!, null!, null!, null!);
     result.onContinue();
     expect(stack[2]).toBe('/authed/content');
     stack.pop(); // Back from the next screen.
@@ -54,7 +54,7 @@ describe('Completed quiz navigation history', () => {
       navigateByUrl
     } as any;
     const parentAuth = { isParentUser: () => true } as any;
-    const result = new ResultPageComponent(router, null!, null!, null!, parentAuth);
+    const result = new ResultPageComponent(router, null!, null!, null!, null!, parentAuth);
 
     result.onContinue();
 
@@ -93,7 +93,7 @@ describe('Completed quiz navigation history', () => {
 
     onHardwareBack!();
     quiz.leaveChallengePopupConfig.secondaryCTA?.callback?.();
-    expect(router.navigateByUrl).toHaveBeenCalledOnceWith('/authed/content');
+    expect(router.navigateByUrl).toHaveBeenCalledOnceWith('/authed/content', { replaceUrl: true, state: { quizExit: true } });
 
     quiz.ionViewWillLeave();
     expect(unsubscribe).toHaveBeenCalled();

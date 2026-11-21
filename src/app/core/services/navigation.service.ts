@@ -1,3 +1,4 @@
+import { secureTemporaryStorage as sessionStorage } from '../storage/session-storage';
 import { Injectable } from '@angular/core';
 import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { filter } from 'rxjs/operators';

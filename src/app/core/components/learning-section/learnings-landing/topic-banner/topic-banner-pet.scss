@@ -1,0 +1,231 @@
+@use 'sass:math';
+
+// The pet in the Articles / MasterClass banner: its box, the layers, and three small loops:
+//   the eyes blink, the three yellow rays shrink and expand, and (Articles only) a faint ripple
+//   spreads from the fingertip on the tablet.
+// Where each pet's eyes, rays and fingertip sit is in topic-banner-pets.scss.
+
+// ---------------------------------------------------------------------------
+// Timing
+// ---------------------------------------------------------------------------
+
+$start-delay: 700ms; // lets the headline land first
+
+// Blink: twice in each loop, unevenly spaced so it doesn't feel mechanical.
+$blink-cycle: 5200ms;
+$blink-1: 400ms;
+$blink-2: 3100ms;
+$blink-close: 80ms;
+$blink-shut: 50ms;
+$blink-open: 110ms;
+
+// Rays: three shrink / expand beats, then a rest.
+$rays-cycle: 4200ms;
+$ray-stagger: 80ms;
+
+// Ripple (Articles): two rings, one after the other, then a pause. Kept faint on purpose.
+$ripple-cycle: 2600ms;
+$ripple-stagger: 380ms;
+$ripple-size: 13%; // of the pet's canvas, at full spread
+$ripple-peak: 0.55; // strongest opacity
+
+@function at($ms, $cycle) {
+  @return math.percentage(math.div($ms, $cycle));
+}
+
+// ---------------------------------------------------------------------------
+// Box and rig
+// ---------------------------------------------------------------------------
+
+// Figma places each topic's 1254px canvas slightly larger than the box the banner keeps for the pet.
+:host(.tb--articles) {
+  --tb-box-width: 123.2px;
+  --tb-rig-left: -6.24%;
+  --tb-rig-top: -0.79%;
+  --tb-rig-width: 109.68;
+}
+
+:host(.tb--masterclass) {
+  --tb-box-width: 126.3px;
+  --tb-rig-left: -4.81%;
+  --tb-rig-top: -3.44%;
+  --tb-rig-width: 111.67;
+}
+
+.tb-pet {
+  position: relative;
+  flex: none;
+  width: var(--tb-box-width);
+  height: 134.07px;
+}
+
+.tb-rig,
+.tb-part,
+.tb-ripple {
+  position: absolute;
+}
+
+// --tb-width / --tb-aspect are only set for artwork that is not the usual square canvas: the pet is
+// then drawn at the same scale as the others and kept centred on the same spot.
+.tb-rig {
+  left: var(--tb-rig-left);
+  top: var(--tb-rig-top);
+  width: calc(var(--tb-rig-width) * var(--tb-width, 1) * 1%);
+  aspect-ratio: var(--tb-aspect, 1);
+  margin-left: calc((1 - var(--tb-width, 1)) * var(--tb-rig-width) * 0.5%);
+  margin-top: calc((1 - var(--tb-width, 1) / (var(--tb-aspect, 1))) * var(--tb-rig-width) * 0.5%);
+}
+
+.tb-part {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+// Eyelids are open (flat) unless a blink is running.
+.tb-lid {
+  transform: scaleY(0);
+}
+
+.tb-lid--left {
+  --tb-slant: var(--tb-lid-left-slant);
+  transform-origin: var(--tb-lid-left);
+}
+
+.tb-lid--right {
+  --tb-slant: var(--tb-lid-right-slant);
+  transform-origin: var(--tb-lid-right);
+}
+
+.tb-ray {
+  transform-origin: var(--tb-rays);
+}
+
+// A thin ring centred on the fingertip. Hidden unless this is the Articles banner and it is running.
+.tb-ripple {
+  display: none;
+  left: var(--tb-touch-x);
+  top: var(--tb-touch-y);
+  width: $ripple-size;
+  aspect-ratio: 1;
+  margin: calc($ripple-size / -2) 0 0 calc($ripple-size / -2);
+  border: 1px solid var(--sm-v1-neutral100);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+:host(.tb--articles) .tb-ripple {
+  display: block;
+}
+
+// ---------------------------------------------------------------------------
+// Keyframes
+// ---------------------------------------------------------------------------
+
+// The lid closes down along the eye's own slant, from its top edge.
+@mixin lid($scale) {
+  transform: rotate(var(--tb-slant)) scaleY($scale) rotate(calc(var(--tb-slant) * -1));
+}
+
+@keyframes tb-blink {
+  0% {
+    @include lid(0);
+  }
+  @each $blink in ($blink-1, $blink-2) {
+    #{at($blink, $blink-cycle)} {
+      @include lid(0);
+      animation-timing-function: ease-in;
+    }
+    #{at($blink + $blink-close, $blink-cycle)},
+    #{at($blink + $blink-close + $blink-shut, $blink-cycle)} {
+      @include lid(1);
+      animation-timing-function: ease-out;
+    }
+    #{at($blink + $blink-close + $blink-shut + $blink-open, $blink-cycle)} {
+      @include lid(0);
+    }
+  }
+  100% {
+    @include lid(0);
+  }
+}
+
+// Three shrink / expand beats towards the point the rays share, then rest.
+@keyframes tb-rays {
+  0% {
+    transform: scale(1);
+    animation-timing-function: ease-in-out;
+  }
+  #{at(250ms, $rays-cycle)},
+  #{at(950ms, $rays-cycle)},
+  #{at(1650ms, $rays-cycle)} {
+    transform: scale(0.7);
+    animation-timing-function: ease-in-out;
+  }
+  #{at(600ms, $rays-cycle)},
+  #{at(1300ms, $rays-cycle)} {
+    transform: scale(1.14);
+    animation-timing-function: ease-in-out;
+  }
+  #{at(2000ms, $rays-cycle)} {
+    transform: scale(1.08);
+    animation-timing-function: ease-in-out;
+  }
+  #{at(2250ms, $rays-cycle)},
+  100% {
+    transform: scale(1);
+  }
+}
+
+// The ring grows from the fingertip and fades as it spreads.
+@keyframes tb-ripple {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+    animation-timing-function: ease-out;
+  }
+  #{at(160ms, $ripple-cycle)} {
+    opacity: $ripple-peak;
+    transform: scale(0.42);
+    animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  #{at(1100ms, $ripple-cycle)},
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Run
+// ---------------------------------------------------------------------------
+
+:host(.is-ready) {
+  .tb-lid {
+    animation: tb-blink $blink-cycle linear $start-delay infinite both;
+  }
+
+  @for $i from 1 through 3 {
+    .tb-ray--#{$i} {
+      animation: tb-rays $rays-cycle linear ($start-delay + ($i - 1) * $ray-stagger) infinite both;
+    }
+  }
+
+  @for $i from 1 through 2 {
+    .tb-ripple--#{$i} {
+      animation: tb-ripple $ripple-cycle linear ($start-delay + ($i - 1) * $ripple-stagger) infinite both;
+    }
+  }
+}
+
+:host(.is-offscreen) {
+  .tb-lid,
+  .tb-ray,
+  .tb-ripple {
+    animation-play-state: paused;
+  }
+}
+
+// Reduced motion (see topic-banner.component.scss): animations are off, so the lids stay open, the
+// rays rest at full size and no ripple shows.

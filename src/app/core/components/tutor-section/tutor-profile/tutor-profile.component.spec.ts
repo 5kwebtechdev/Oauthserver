@@ -67,6 +67,29 @@ describe('TutorProfileComponent category fields', () => {
     } as any;
   });
 
+  it('returns to the previous in-app page when a profile was opened from a listing', async () => {
+    const back = jasmine.createSpy('back');
+    (component as any).location = { back };
+    (component as any).route = { snapshot: { paramMap: new Map([['id', '42']]) } };
+    (component as any).router = {
+      url: '/authed/tutors/42',
+      lastSuccessfulNavigation: { previousNavigation: { finalUrl: {} } },
+      serializeUrl: () => '/authed/tutors?city=Chandigarh'
+    };
+
+    await component.close();
+    expect(back).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns directly opened tutor profiles to the tutor directory', async () => {
+    const navigate = jasmine.createSpy('navigate').and.resolveTo(true);
+    (component as any).route = { snapshot: { paramMap: new Map([['id', '42']]) } };
+    (component as any).router = { navigate };
+
+    await component.close();
+    expect(navigate).toHaveBeenCalledWith(['/authed', 'tutors'], { replaceUrl: true });
+  });
+
   it('uses the tutor frame even when the route has no category query parameter', () => {
     (component as any).route = { snapshot: { data: {}, routeConfig: { path: 'tutors/:id' } } };
     component.categoryKey = null;

@@ -1515,12 +1515,12 @@ swiper-slide.swiper-slide-active .pet-card {
   .pet-step-header h1 { margin-top: 8px; }
   .pet-step-progress { margin-top: 16px; }
   .pet-carousel { margin-top: 14px; }
-  .pet-card { height: clamp(280px, 46dvh, 340px); }
+  .pet-card { height: clamp(260px, calc(100dvh - 280px), 460px); }
   .pet-card-copy { padding-top: 18px; }
   .pet-card-copy h2 { margin-bottom: 9px; }
   .pet-card-copy li + li { margin-top: 5px; }
   .pet-card-art { max-height: 210px; }
-  .pet-step-next { height: 52px; min-height: 52px; margin-top: 16px; font-size: 18px; }
+  .pet-step-next { height: 52px; min-height: 52px; margin-top: auto; font-size: 18px; }
 }
 
 @media (min-width: 480px) and (max-width: 767.98px) {

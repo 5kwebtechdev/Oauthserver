@@ -30,18 +30,21 @@
 .contest-entry { display: block; padding: 8px 16px 0; }
 .contest-entry + .rf-hero { margin-top: 24px; }
 
-// Keep the shared navigator's back action, while using this screen's Figma icon.
-:host ::ng-deep .rf-nav {
-  display: block;
+.rf-nav {
+  padding-inline: 16px;
 
-  .navigator-inner { height: 48px; padding: 0 16px; }
-  .navigator-heading-wrap { display: none; }
-  .close-btn-habbit {
-    width: 48px; height: 48px; margin: 0; padding: 0; border: 0;
-    background: center / 48px 48px no-repeat url('../../../../../assets/figma/refer-friend/back.svg');
+  button {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
     cursor: pointer;
   }
-  .close-btn-habbit .back-svg { visibility: hidden; }
+
+  img { width: 48px; height: 48px; }
 }
 
 .rf-hero {

@@ -1,6 +1,7 @@
 <div class="superme-popup-backdrop" *ngIf="isVisible && finalConfig.backdrop" (click)="onBackdropClick($event)">
 
-  <div class="superme-popup-container" *ngIf="isVisible">
+  <div class="superme-popup-container" *ngIf="isVisible"
+    [class.activity-confirmation]="finalConfig.activityConfirmation">
 
     <button class="superme-popup-close" *ngIf="finalConfig.showCloseButton" (click)="onCloseClick()"
       aria-label="Close popup">
@@ -15,6 +16,10 @@
       <p *ngIf="hasSubtitle" class="superme-popup-subtitle">
         {{ finalConfig.subtitle }}
       </p>
+    </div>
+    <div class="activity-rewards" *ngIf="finalConfig.activityRewards as rewards">
+      <span><img src="assets/figma/activity-confirmation/coin.webp" alt="Coins"> {{ rewards.coins }}</span>
+      <span><img src="assets/figma/activity-confirmation/streak.webp" alt="Streak"> {{ rewards.streak }}</span>
     </div>
     <div class="superme-popup-actions" *ngIf="hasPrimaryCTA || hasSecondaryCTA || finalConfig.showShareButton">
       <div class="superme-popup-single-cta" *ngIf="hasOneCTA">

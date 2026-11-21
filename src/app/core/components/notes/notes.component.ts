@@ -1,3 +1,4 @@
+import { secureTemporaryStorage as sessionStorage } from '../../storage/session-storage';
 import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';

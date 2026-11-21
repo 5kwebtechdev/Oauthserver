@@ -65,6 +65,15 @@
 .share-rank__button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 0 13px; border: 1px solid #f5be32; border-radius: 22px; background: #ffd363; color: #282527; font: 800 13px/1 var(--font-sans, 'Nunito', sans-serif); white-space: nowrap; cursor: pointer; }
 .share-rank__button svg { width: 17px; height: 17px; flex: none; }
 .share-rank__feedback { margin: 4px 0 0; color: #48257c; font-size: 11px; text-align: right; }
+.share-rank__button:disabled { opacity: .65; cursor: wait; }
+.rank-share-options { display: flex; align-items: flex-start; gap: 12px; padding: 16px; margin: 12px 0 20px; border: 1px solid #e4daef; border-radius: 20px; background: #faf7fd; }
+.rank-share-options > img { width: 72px; height: auto; flex: none; }
+.rank-share-options__content { flex: 1; min-width: 0; }
+.rank-share-options h2 { margin: 0 0 10px; font: 800 17px/1.3 var(--font-sans, 'Nunito', sans-serif); color: #48257c; }
+.rank-share-options__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.rank-share-options__actions a, .rank-share-options__actions button { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 12px; border: 1px solid #48257c; border-radius: 12px; background: #fff; color: #48257c; font: 700 13px/1.3 var(--font-sans, 'Nunito', sans-serif); text-decoration: none; cursor: pointer; }
+.rank-share-options label { display: block; margin-bottom: 4px; font-size: 13px; }
+.rank-share-options textarea { display: block; width: 100%; min-width: 0; padding: 10px; border: 1px solid #d6cbdf; border-radius: 10px; background: #fff; color: #28232b; font: 13px/1.5 var(--font-sans, 'Nunito', sans-serif); resize: vertical; }
 button:focus-visible { outline: 2px solid #4b237d; outline-offset: 2px; }
 @media (max-width: 374px) {
   .leaderboard-hero { padding-inline: 19px; }

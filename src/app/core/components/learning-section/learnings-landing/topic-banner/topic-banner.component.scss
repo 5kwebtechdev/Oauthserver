@@ -1,0 +1,338 @@
+// Learnings › Articles / MasterClass banner. Colours / type come from the SuperMeApp tokens.
+// The pet has its own stylesheets (topic-banner-pet.scss, topic-banner-pets.scss).
+// Headline motion is the Quiz banner's, unchanged.
+
+// ---------------------------------------------------------------------------
+// Motion constants
+// ---------------------------------------------------------------------------
+
+$fade-in: 320ms;
+
+// Headline: slides up into place once, then stays still.
+$text-ease: cubic-bezier(0.22, 1, 0.36, 1);
+$text-duration: 700ms;
+$text-delay: 150ms;
+$text-mask-end: $text-delay + $text-duration; // clipping is dropped after this
+
+// Tagline pill follows the headline in.
+$tagline-delay: $text-delay + 220ms;
+$tagline-duration: 520ms;
+
+// The arc under the word draws in once the headline has landed, then its loop takes over.
+$underline-delay: $text-delay + $text-duration - 100ms;
+$underline-duration: 480ms;
+
+// Word loop: the arc is wiped and re-drawn like a pen stroke, a sheen follows the pen, then the
+// word settles with a small damped pop.
+$accent-loop: 4800ms;
+$accent-loop-delay: $underline-delay + $underline-duration;
+
+// Banner art colours with no matching SuperMeApp token (raw values in Figma).
+$word-yellow: #fcc005; /* not in design tokens */
+$underline-yellow: #fcc904; /* not in design tokens */
+
+// ---------------------------------------------------------------------------
+// Per topic (Figma frames: 393 x 138)
+// ---------------------------------------------------------------------------
+
+:host(.tb--articles) {
+  --tb-title-size: var(--sm-font-size-feature); // 32px
+  --tb-pad-right: 8px;
+  --tb-tagline-width: 181px;
+  // The arc: 2px in from the word and 1px under its 40px line. Figma draws it 122px wide for
+  // "Articles"; it is narrowed here to sit under "Article".
+  --tb-underline-left: 0.0625em;
+  --tb-underline-top: calc(100% + 1px);
+  --tb-underline-width: 3.36em;
+  --tb-underline-height: 0.3125em;
+}
+
+:host(.tb--masterclass) {
+  --tb-title-size: var(--sm-font-size-title); // 24px
+  --tb-pad-right: 16px;
+  --tb-tagline-width: 172px;
+  // The arc: 140.1 x 10, sitting 4px up into the 40px line.
+  --tb-underline-left: 0.083em;
+  --tb-underline-top: calc(100% - 4px);
+  --tb-underline-width: 5.838em;
+  --tb-underline-height: 0.417em;
+}
+
+// ---------------------------------------------------------------------------
+// Layout
+// ---------------------------------------------------------------------------
+
+:host {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--sm-v1-900); // shown only until the backdrop decodes
+  font-family: var(--sm-font-body);
+}
+
+// Placed as in Figma: full height, wider than the banner so the sunburst sits behind the pet.
+.tb-bg {
+  position: absolute;
+  top: 0;
+  left: -18.07%;
+  z-index: -1;
+  width: 129.35%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+
+.tb-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px var(--tb-pad-right) 0 24px;
+}
+
+.tb-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.tb-title {
+  font-family: var(--sm-font-body);
+  margin: 0;
+  color: var(--sm-v1-neutral100);
+  font-size: var(--tb-title-size);
+  font-style: italic;
+  font-weight: 900;
+  line-height: 40px; // same line box for both topics, as in Figma
+  white-space: nowrap;
+}
+
+.tb-line,
+.tb-line-in {
+  display: block;
+}
+
+// The word is painted by a gradient (all yellow except one lighter band) so the sheen can travel
+// through the letters; at rest only the yellow part is visible.
+.tb-accent {
+  position: relative;
+  display: inline-block;
+  transform-origin: 50% 85%; // baseline: the word grows up from where it sits
+  color: $word-yellow;
+  background: linear-gradient(
+    100deg,
+    $word-yellow 40%,
+    color-mix(in srgb, $word-yellow 30%, var(--sm-v1-neutral100)) 50%,
+    $word-yellow 60%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  // Side room so the pop and the italic overhang never clip the first or last letter.
+  padding: 0 0.14em;
+  margin: 0 -0.14em;
+}
+
+.tb-underline {
+  position: absolute;
+  left: calc(0.14em + var(--tb-underline-left)); // cancels the accent's side padding
+  top: var(--tb-underline-top);
+  width: var(--tb-underline-width);
+  height: var(--tb-underline-height);
+  fill: $underline-yellow;
+}
+
+// Artwork already cropped to the pill (30px tall in Figma).
+.tb-tagline {
+  width: var(--tb-tagline-width);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 30px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Intro (once). Everything waits until the images are decoded.
+// ---------------------------------------------------------------------------
+
+@keyframes tb-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes tb-line-up {
+  from {
+    transform: translate3d(0, 105%, 0);
+  }
+}
+
+// The line masks its own text only while it slides in; afterwards the clip is gone, so the
+// pop and the arc below the word can never be cut off.
+@keyframes tb-line-mask {
+  from,
+  to {
+    clip-path: inset(-1em -1em -0.1em -1em);
+  }
+}
+
+@keyframes tb-tagline-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+}
+
+// Both ends explicit: clip-path can't interpolate to "none", it would just snap at 50%.
+@keyframes tb-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+:host(:not(.is-ready)) {
+  .tb-bg,
+  .tb-line-in,
+  .tb-underline,
+  .tb-tagline,
+  .tb-pet {
+    opacity: 0;
+  }
+}
+
+:host(.is-ready) {
+  .tb-bg,
+  .tb-pet {
+    animation: tb-fade-in $fade-in ease-out both;
+  }
+
+  .tb-line {
+    animation: tb-line-mask $text-mask-end linear;
+  }
+
+  .tb-line-in {
+    animation: tb-line-up $text-duration $text-ease $text-delay both;
+  }
+
+  .tb-tagline {
+    animation: tb-tagline-in $tagline-duration $text-ease $tagline-delay both;
+  }
+
+  .tb-underline {
+    animation:
+      tb-draw $underline-duration cubic-bezier(0.65, 0, 0.35, 1) $underline-delay both,
+      tb-underline-loop $accent-loop linear $accent-loop-delay infinite;
+  }
+
+  .tb-accent {
+    animation:
+      tb-sheen $accent-loop linear $accent-loop-delay infinite,
+      tb-pop $accent-loop linear $accent-loop-delay infinite;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Word loop
+// ---------------------------------------------------------------------------
+
+// Hold -> pen lifts the arc off to the right -> (hidden) pen returns -> redraws left to right.
+@keyframes tb-underline-loop {
+  0%,
+  55% {
+    clip-path: inset(0 0 0 0);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  63% {
+    clip-path: inset(0 0 0 100%);
+  }
+  67% {
+    clip-path: inset(0 100% 0 0);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  79%,
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+// Light band crosses the word left to right, trailing the pen.
+@keyframes tb-sheen {
+  0%,
+  72% {
+    background-position: 100% 0;
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  90%,
+  100% {
+    background-position: 0 0;
+  }
+}
+
+// Pop as the pen finishes: overshoot, then a damped settle. Smaller than the Quiz word's, as these
+// words are longer.
+@keyframes tb-pop {
+  0%,
+  76% {
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  80% {
+    transform: scale(1.04);
+    animation-timing-function: ease-in-out;
+  }
+  85% {
+    transform: scale(0.99);
+    animation-timing-function: ease-in-out;
+  }
+  90% {
+    transform: scale(1.003);
+    animation-timing-function: ease-in-out;
+  }
+  94%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+:host(.is-offscreen) {
+  .tb-accent,
+  .tb-underline {
+    animation-play-state: paused;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reduced motion: final frame, nothing moves.
+// ---------------------------------------------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+  :host *,
+  :host(.is-ready) * {
+    animation: none !important;
+  }
+
+  :host .tb-bg,
+  :host .tb-line-in,
+  :host .tb-underline,
+  :host .tb-tagline,
+  :host .tb-pet {
+    opacity: 1 !important;
+  }
+}
+
+@media (max-width: 359px) {
+  .tb-row { padding-inline: 12px; }
+  .tb-title { font-size: 26px; }
+  :host(.tb--masterclass) .tb-title { font-size: 21px; }
+  .tb-tagline { width: 155px; }
+  .tb-copy { gap: 20px; }
+  .tb-pet { width: calc(var(--tb-box-width) * .86); height: 115.3px; }
+}
