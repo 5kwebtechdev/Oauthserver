@@ -104,6 +104,10 @@ public class DefaultSecurityConfig {
                         // Mobile/web app's own, dedicated logout endpoint - see ApkLogoutController.
                         // Deliberately separate from /connect/logout's strict validation.
                         .requestMatchers("/apklogout", "/android-dev-logout").permitAll()
+                        // REST logout for a client sending its own access token directly - see
+                        // UserLogoutController. The access token itself is the caller's proof;
+                        // this endpoint only ever revokes the exact token presented.
+                        .requestMatchers("/api/auth/logout").permitAll()
                         // Chrome DevTools auto-probes this on any site with DevTools
                         // open; harmless, but left unauthenticated it would otherwise
                         // get cached as the "saved request" and could hijack the
@@ -134,6 +138,7 @@ public class DefaultSecurityConfig {
                         "/api/auth/forgot-password/**", "/api/auth/google-login", "/api/auth/handoff-login",
                         "/api/auth/google-signup-handoff",
                         "/api/auth/continue-with-email/**", "/api/auth/register", "/api/auth/register/**",
+                        "/api/auth/logout",
                         "/v1/**"))
                 .formLogin((form) -> form.loginPage("/login")
                         // Preserve saved OAuth requests; direct logins return to the frontend.
