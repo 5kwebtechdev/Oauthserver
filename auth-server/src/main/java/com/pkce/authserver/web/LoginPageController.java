@@ -867,17 +867,6 @@ public class LoginPageController {
                           </header>
                           <div class="auth-layout" id="auth-layout">
                             <aside class="mascot-col" aria-label="Welcome">
-                              <div class="speech-bubble">
-                                <svg class="sparkle star-gold" viewBox="0 0 24 24" width="13" height="13" fill="#f59e0b" aria-hidden="true">
-                                  <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/>
-                                </svg>
-                                <strong>Hi, SuperStar!</strong>
-                                <span>Log in to continue your SuperMe adventure.</span>
-                                <svg class="sparkle star-purple" viewBox="0 0 24 24" width="12" height="12" fill="#8b5cf6" aria-hidden="true">
-                                  <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/>
-                                </svg>
-                                <div class="speech-tail"></div>
-                              </div>
                               <div class="panda-stage">
                                 <div class="panda-circle"></div>
                                 <img src="%s" alt="SuperMe Panda Mascot" class="panda-img">
