@@ -259,10 +259,11 @@ export class PkceAuthService {
       authorization.searchParams.set('state', state);
       await flushSecureSession();
       await this.openAuthorizationTab(authorization.toString());
-    } catch (error) {
+    } catch {
+      // Native secure webview failed to open; fall back to the plain browser
+      // redirect instead of surfacing an error to the user.
       localStorage.removeItem('superme_oidc_android_pending');
-      this.error = error instanceof NativeGoogleSignInError ? error.message : 'Unable to open secure sign in. Please try again.';
-      await this.injector.get(Router).navigateByUrl('/login', { replaceUrl: true });
+      window.location.assign(url);
     }
   }
   private async openAuthorizationTab(url: string): Promise<void> {
